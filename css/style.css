@@ -14,9 +14,10 @@ body {
 .poi-label {
   position: absolute;
   transform: translate(-50%, -100%);
-  pointer-events: auto;
+  pointer-events: none; /* enabled while the label is revealed on hover */
+  opacity: 0;
   cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  transition: transform 0.15s ease, opacity 0.2s ease;
   z-index: 15;
 }
 .poi-label:hover {

@@ -12,6 +12,8 @@ let cutawayRoofMeshes = [], gardenCropGroups = [], pennantFlags = [];
 let poiDomElements = {};
 // Solid things Kelo-1 should walk around: { x, z, r } circles on the ground
 let worldObstacles = [];
+// Cursor position over the 3D view, used to reveal names on hover
+const hoverPointer = { x: 0, y: 0, active: false, touchUntil: 0 };
 const downRaycaster = new THREE.Raycaster();
 
 function getAnalyticalGroundHeight(x, z) {
@@ -104,9 +106,26 @@ function initDiorama3D() {
       createPOILabelsDOM();
 
       // Click anywhere on the 3D terrain or mountains to send Kelo-1 exploring!
+      // Track the cursor for hover-only name labels (touch: a tap shows names for a few seconds)
+      const hoverRaycaster = new THREE.Raycaster();
+      const updateHover = (e, isTouch) => {
+        const rect = renderer.domElement.getBoundingClientRect();
+        hoverPointer.x = e.clientX - rect.left;
+        hoverPointer.y = e.clientY - rect.top;
+        hoverPointer.active = true;
+        hoverPointer.touchUntil = isTouch ? Date.now() + 3500 : 0;
+        if (typeof setHoveredParcelLabel === 'function') {
+          hoverRaycaster.setFromCamera(new THREE.Vector2((hoverPointer.x / rect.width) * 2 - 1, -(hoverPointer.y / rect.height) * 2 + 1), camera);
+          setHoveredParcelLabel(hoverRaycaster);
+        }
+      };
+      renderer.domElement.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') updateHover(e, false); });
+      renderer.domElement.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') hoverPointer.active = false; });
+
       let pointerDownPos = { x: 0, y: 0 };
       renderer.domElement.addEventListener('pointerdown', (e) => {
         pointerDownPos = { x: e.clientX, y: e.clientY };
+        if (e.pointerType !== 'mouse') updateHover(e, true);
       });
       renderer.domElement.addEventListener('pointerup', (e) => {
         if (Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y) > 6) return;
@@ -1614,18 +1633,26 @@ function projectLabelsToScreen() {
       }
 
       // Project Building & Mountain Pins (anchored above exact terrain elevation!)
+      // Names only appear when the cursor is near the place (or it was just tapped)
+      const pointerLive = hoverPointer.active && (hoverPointer.touchUntil === 0 || Date.now() < hoverPointer.touchUntil);
       Object.values(TOWN_LOCATIONS).forEach(loc => {
         const el = poiDomElements[loc.id];
         if (!el) return;
         const pinBaseY = (typeof loc.groundY === 'number') ? loc.groundY : getIslandGroundHeight(loc.x, loc.z);
         const v = new THREE.Vector3(loc.x, pinBaseY + 3.6, loc.z);
         v.project(camera);
-        if (v.z > 1) {
-          el.style.opacity = '0';
-        } else {
-          el.style.opacity = '1';
-          el.style.left = `${(v.x * 0.5 + 0.5) * w}px`;
-          el.style.top = `${(-(v.y * 0.5) + 0.5) * h}px`;
+        const ground = new THREE.Vector3(loc.x, pinBaseY + 1.0, loc.z).project(camera);
+        const lx = (v.x * 0.5 + 0.5) * w, ly = (-(v.y * 0.5) + 0.5) * h;
+        const gx = (ground.x * 0.5 + 0.5) * w, gy = (-(ground.y * 0.5) + 0.5) * h;
+        const near = pointerLive && v.z <= 1 && (
+          Math.hypot(hoverPointer.x - gx, hoverPointer.y - gy) < 70 ||
+          Math.hypot(hoverPointer.x - lx, hoverPointer.y - ly) < 45 ||
+          (Math.abs(hoverPointer.x - gx) < 40 && hoverPointer.y > ly && hoverPointer.y < gy));
+        el.style.opacity = near ? '1' : '0';
+        el.style.pointerEvents = near ? 'auto' : 'none';
+        if (v.z <= 1) {
+          el.style.left = `${lx}px`;
+          el.style.top = `${ly}px`;
         }
       });
     }

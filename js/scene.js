@@ -74,7 +74,7 @@ function initDiorama3D() {
 
       clock = new THREE.Clock();
 
-      hemiLight = new THREE.HemisphereLight(AMBIANCE_PRESETS[0].hemiSky, AMBIANCE_PRESETS[0].hemiGround, 0.85);
+      hemiLight = new THREE.HemisphereLight(AMBIANCE_PRESETS[0].hemiSky, AMBIANCE_PRESETS[0].hemiGround, 0.8);
       scene.add(hemiLight);
 
       sunLight = new THREE.DirectionalLight(AMBIANCE_PRESETS[0].sunColor, AMBIANCE_PRESETS[0].sunInt);
@@ -86,6 +86,8 @@ function initDiorama3D() {
       sunLight.shadow.camera.right = 45;
       sunLight.shadow.camera.top = 45;
       sunLight.shadow.camera.bottom = -45;
+      sunLight.shadow.bias = -0.0006;
+      sunLight.shadow.normalBias = 0.02;
       scene.add(sunLight);
 
       forgeArcLight = new THREE.PointLight(0x38bdf8, 0, 9);
@@ -94,6 +96,9 @@ function initDiorama3D() {
 
       buildAlpineTerrainAndMountains3D();
       buildHomesteadAndBuildings3D();
+      if (typeof renderPostOfficeParcels3D === 'function') renderPostOfficeParcels3D();
+      // Scenery goes last so trees and rocks keep clear of every building
+      buildValleyScenery3D();
       buildKelo1Character3D();
       initEmergentCreationsLayer3D();
       createPOILabelsDOM();
@@ -168,13 +173,14 @@ function buildAlpineTerrainAndMountains3D() {
         const vy = getAnalyticalGroundHeight(vx, vz);
         pos.setY(i, vy);
 
-        // Color by altitude: Snow-capped peaks -> Slate granite cliffs -> Lush alpine meadow -> Shoreline gravel
+        // Stylized palette by altitude, with gentle variation so the ground doesn't look flat
         const c = new THREE.Color();
-        if (vy > 7.2) c.setHex(0xf8fafc); // Snow cap
-        else if (vy > 2.6) c.setHex(0x64748b); // Granite mountain ridge
-        else if (vz > 8.2) c.setHex(0xd6d3d1); // Pebble shoreline
-        else if (Math.abs(vx + 2) < 2.2 && vz > -10 && vz < 9) c.setHex(0x9ca3af); // Winding dirt trail
-        else c.setHex(0x3f6212); // Okanagan valley meadow
+        const wobble = Math.sin(vx * 0.9) * Math.cos(vz * 0.7) * 0.5 + Math.sin(vx * 0.23 + vz * 0.31) * 0.5;
+        if (vy > 8.5) c.setHex(0xf4f8ff); // Snow cap
+        else if (vy > 2.6) c.setHex(0x6f7a8f).lerp(new THREE.Color(0x58627a), Math.max(0, wobble)); // Rocky ridge
+        else if (vz > 8.2) c.setHex(0xf6e3a8); // Sandy beach
+        else if (Math.abs(vx + 2) < 2.0 && vz > -10 && vz < 9) c.setHex(0xe9c98b); // Dirt trail
+        else c.setHex(0x5ccf3e).lerp(new THREE.Color(0x3fae2e), Math.max(0, wobble)); // Bright meadow grass
         colors.push(c.r, c.g, c.b);
       }
       groundGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
@@ -182,7 +188,7 @@ function buildAlpineTerrainAndMountains3D() {
 
       const groundMesh = new THREE.Mesh(
         groundGeo,
-        new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.88, flatShading: true })
+        new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 })
       );
       groundMesh.receiveShadow = true;
       terrainSwapGroup.add(groundMesh);
@@ -190,15 +196,15 @@ function buildAlpineTerrainAndMountains3D() {
       // Okanagan Lake Water Surface in the South
       const lakeMesh = new THREE.Mesh(
         new THREE.PlaneGeometry(110, 40),
-        new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.18, metalness: 0.35 })
+        new THREE.MeshStandardMaterial({ color: 0x1288c9, roughness: 0.15, metalness: 0.15, transparent: true, opacity: 0.94 })
       );
       lakeMesh.rotation.x = -Math.PI / 2;
       lakeMesh.position.set(0, -0.18, 26);
       scene.add(lakeMesh);
 
       // Conifer Forest (Douglas Firs around the foothills)
-      const trunkMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.9 });
-      const needleMat = new THREE.MeshStandardMaterial({ color: 0x14532d, roughness: 0.8, flatShading: true });
+      const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8a5a2b, roughness: 0.9 });
+      const needleMat = new THREE.MeshStandardMaterial({ color: 0x1f9a4b, roughness: 0.75 });
       for (let i = 0; i < 38; i++) {
         const tx = (Math.random() - 0.5) * 68;
         const tz = -11 - Math.random() * 24;
@@ -217,6 +223,8 @@ function buildAlpineTerrainAndMountains3D() {
         scene.add(tree);
         worldObstacles.push({ x: tx, z: tz, r: 0.6 });
       }
+
+      buildSkyAndClouds3D();
 
       // Sailboat & Ogopogo on Okanagan Lake
       sailboatGroup = new THREE.Group();
@@ -369,6 +377,114 @@ function buildHomesteadAndBuildings3D() {
       buildNetNode3D();
 
       buildPostOffice3D();
+    }
+
+// --- Stylized sky, clouds, round trees, flowers and rocks ---------------------------------------
+let skyDome = null;
+let cloudGroup = null;
+
+function buildSkyAndClouds3D() {
+      const preset = AMBIANCE_PRESETS[state.lightingIdx] || AMBIANCE_PRESETS[0];
+      skyDome = new THREE.Mesh(
+        new THREE.SphereGeometry(180, 32, 16),
+        new THREE.ShaderMaterial({
+          side: THREE.BackSide,
+          depthWrite: false,
+          fog: false,
+          uniforms: { topColor: { value: new THREE.Color(preset.skyTop) }, horizonColor: { value: new THREE.Color(preset.skyHorizon) } },
+          vertexShader: 'varying vec3 vPos; void main() { vPos = (modelMatrix * vec4(position, 1.0)).xyz; gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0); }',
+          fragmentShader: 'uniform vec3 topColor; uniform vec3 horizonColor; varying vec3 vPos; void main() { float h = clamp(normalize(vPos).y * 1.6 + 0.08, 0.0, 1.0); gl_FragColor = vec4(mix(horizonColor, topColor, pow(h, 0.7)), 1.0); }'
+        })
+      );
+      scene.add(skyDome);
+
+      // Puffy cartoon clouds that drift slowly
+      cloudGroup = new THREE.Group();
+      const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, emissive: 0xffffff, emissiveIntensity: 0.25 });
+      for (let i = 0; i < 12; i++) {
+        const cloud = new THREE.Group();
+        const puffs = 3 + Math.floor(Math.random() * 3);
+        for (let k = 0; k < puffs; k++) {
+          const puff = new THREE.Mesh(new THREE.SphereGeometry(1.6 + Math.random() * 1.4, 14, 10), cloudMat);
+          puff.position.set(k * 1.9 - puffs, Math.random() * 0.8, Math.random() * 1.2);
+          puff.scale.y = 0.7;
+          cloud.add(puff);
+        }
+        cloud.position.set((Math.random() - 0.5) * 140, 26 + Math.random() * 12, -70 + Math.random() * 90);
+        cloud.userData.speed = 0.4 + Math.random() * 0.6;
+        cloudGroup.add(cloud);
+      }
+      scene.add(cloudGroup);
+    }
+
+function updateClouds(dt) {
+      if (!cloudGroup) return;
+      cloudGroup.children.forEach(c => {
+        c.position.x += c.userData.speed * dt;
+        if (c.position.x > 80) c.position.x = -80;
+      });
+    }
+
+// Round, bright deciduous trees, flowers and boulders around the valley (kept off paths and buildings)
+function buildValleyScenery3D() {
+      const leafColors = [0x4cc93b, 0x7ad94a, 0x36b37e, 0xf2a93b];
+      const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8a5a2b, roughness: 0.9 });
+      const clearOf = (x, z, r) => !worldObstacles.some(o => Math.hypot(x - o.x, z - o.z) < o.r + r)
+        && !Object.values(TOWN_LOCATIONS).some(l => Math.hypot(x - l.x, z - l.z) < r + 2.2)
+        && Math.abs(x + 2) > 3 && z < 7.5;
+      let placed = 0;
+      for (let i = 0; i < 140 && placed < 26; i++) {
+        const x = (Math.random() - 0.5) * 64;
+        const z = -11 + Math.random() * 18;
+        if (!clearOf(x, z, 1.4) || Math.hypot(x + 9.5, z + 7.8) < 5) continue;
+        const gy = getAnalyticalGroundHeight(x, z);
+        const tree = new THREE.Group();
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.24, 1.4, 8), trunkMat);
+        trunk.position.y = 0.7;
+        trunk.castShadow = true;
+        tree.add(trunk);
+        const leafMat = new THREE.MeshStandardMaterial({ color: leafColors[placed % leafColors.length], roughness: 0.8 });
+        [[0, 1.9, 0, 1.05], [0.55, 1.6, 0.2, 0.7], [-0.5, 1.65, -0.15, 0.75]].forEach(([lx, ly, lz, r]) => {
+          const blob = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 12), leafMat);
+          blob.position.set(lx, ly, lz);
+          blob.castShadow = true;
+          tree.add(blob);
+        });
+        tree.position.set(x, gy, z);
+        tree.rotation.y = Math.random() * Math.PI;
+        scene.add(tree);
+        worldObstacles.push({ x, z, r: 0.75 });
+        placed++;
+      }
+
+      // Little flower patches and smooth boulders (decor only, small enough to walk past)
+      const petalColors = [0xff5d8f, 0xffd23f, 0xffffff, 0xa78bfa, 0xff8c42];
+      for (let i = 0; i < 70; i++) {
+        const x = (Math.random() - 0.5) * 60;
+        const z = -10 + Math.random() * 17;
+        if (!clearOf(x, z, 0.4)) continue;
+        const gy = getAnalyticalGroundHeight(x, z);
+        const flower = new THREE.Group();
+        const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.3, 4), new THREE.MeshStandardMaterial({ color: 0x2f9e44 }));
+        stem.position.y = 0.15;
+        const bloom = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 6), new THREE.MeshStandardMaterial({ color: petalColors[i % petalColors.length], emissive: petalColors[i % petalColors.length], emissiveIntensity: 0.15 }));
+        bloom.position.y = 0.32;
+        flower.add(stem, bloom);
+        flower.position.set(x, gy, z);
+        scene.add(flower);
+      }
+      const rockMat = new THREE.MeshStandardMaterial({ color: 0xa3a9b8, roughness: 0.85 });
+      for (let i = 0; i < 14; i++) {
+        const x = (Math.random() - 0.5) * 60;
+        const z = -10 + Math.random() * 17;
+        if (!clearOf(x, z, 1.0)) continue;
+        const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.4 + Math.random() * 0.4, 1), rockMat);
+        rock.scale.y = 0.6;
+        rock.position.set(x, getAnalyticalGroundHeight(x, z) + 0.15, z);
+        rock.castShadow = true;
+        scene.add(rock);
+        worldObstacles.push({ x, z, r: 0.6 });
+      }
     }
 
 // A flat sign with text drawn on a canvas, readable from the front
@@ -785,6 +901,10 @@ function applyLightingPreset(idx) {
       hemiLight.groundColor.setHex(preset.hemiGround);
       sunLight.color.setHex(preset.sunColor);
       sunLight.intensity = preset.sunInt;
+      if (skyDome) {
+        skyDome.material.uniforms.topColor.value.setHex(preset.skyTop);
+        skyDome.material.uniforms.horizonColor.value.setHex(preset.skyHorizon);
+      }
       return preset;
     }
 
@@ -1408,6 +1528,7 @@ function animateDiorama() {
       }
 
       if (typeof updateCarriedObject === 'function') updateCarriedObject(t);
+      updateClouds(1 / 60);
 
       // 2. Scale Garden Crops smoothly based on ripeness
       state.gardenPlots.forEach((plot, idx) => {

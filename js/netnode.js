@@ -146,7 +146,7 @@ SHAPES: each part has "shape" (cylinder, box, sphere, cone, torus, knot, octahed
 
 // Kelo-1 goes to the NetNode cafe and really browses. `topic` is optional; he picks his own otherwise.
 async function browseInternet(topic = null, originLabel = 'Own Curiosity') {
-      if (state.isBusy || state.isBrowsing) return;
+      if (state.isBusy || state.isBrowsing || state.isBuilding) return;
       const query = String(topic || pickCuriosity()).trim().slice(0, 100);
       directKeloToActivity('cyber', `Logged on at the NetNode cafe to look up "${query}".`, 'Browsing the Web');
       state.isBrowsing = true;

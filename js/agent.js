@@ -440,6 +440,7 @@ const state = {
   "photoAlbum": [],
   "mailbox": [],
   "isCollectingMail": false,
+  "isBuilding": false,
   "lettersReceived": 0,
   "isBrowsing": false,
   "concepts": [
@@ -1122,8 +1123,7 @@ Return ONLY valid JSON matching this schema:
             createdTime: 'Just built in 3D',
             philosophy: synth.opinionReasoning
           };
-          state.inventedCreations.unshift(newCreation);
-          spawnEmergent3DObjectInWorld(newCreation, false);
+          weldAndPlace(newCreation);
         }
 
         state.opinions.unshift({
@@ -1150,7 +1150,7 @@ Return ONLY valid JSON matching this schema:
     }
 
 async function directKeloToActivity(locKey, customReason = '', originLabel = 'Suggested Whim') {
-    if (state.isBusy) return;
+    if (state.isBusy || state.isBuilding) return;
     const loc = TOWN_LOCATIONS[locKey];
     if (!loc) return;
 
@@ -1825,8 +1825,8 @@ function applyDecision(decision, originLabel) {
             : null;
           if (designed && designed.uses === 0) showToast(`📐 New shape: ${designed.name}`);
         }
-        state.inventedCreations.unshift(creation);
-        spawnEmergent3DObjectInWorld(creation, false);
+        // Everything gets made at the welding table first, then carried out and placed
+        weldAndPlace(creation);
       }
 
       const op = decision.newOpinion;
@@ -1983,9 +1983,9 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
 // Kelo-1 makes a decision of his own. `trigger` is an optional nudge he may follow or ignore.
 // `context.focus` names something he should consider (a gift, a photo); `context.image` is an analyzed photo.
 async function decideNextAction(trigger = null, originLabel = 'Free Will', context = {}) {
-      // Wait briefly if he is mid-thought, so gifts and photos are never silently dropped
-      for (let i = 0; i < 40 && state.isBusy; i++) await new Promise(r => setTimeout(r, 250));
-      if (state.isBusy) return;
+      // Wait if he is mid-thought or mid-build, so gifts and photos are never silently dropped
+      for (let i = 0; i < 360 && (state.isBusy || state.isBuilding); i++) await new Promise(r => setTimeout(r, 250));
+      if (state.isBusy || state.isBuilding) return;
       state.isBusy = true;
       try {
         let decision = null;
@@ -1998,6 +1998,8 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will', conte
     }
 
 function runAutonomousLifeTick() {
+      // Finish the current build or mail run before starting something new
+      if (state.isBuilding || state.isCollectingMail) return;
       // Most of the time Kelo-1 makes a fully open-ended decision. Otherwise he falls back
       // into one of his familiar routines (which are also his own choice).
       // Mail waiting at the post office? He may (or may not) feel like picking it up now

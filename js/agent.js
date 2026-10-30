@@ -472,6 +472,20 @@ const state = {
   ]
 };
 
+// Where Kelo-1's memory lives: browser storage on the website (about 5 MB), or files on disk in the
+// Windows app (up to 10 GB, see desktop/main.js). Same interface either way.
+const keloStore = (() => {
+  const disk = window.keloDesktop && window.keloDesktop.memory;
+  return {
+    isDesktop: Boolean(disk),
+    getItem: (k) => (disk ? disk.getItem(k) : localStorage.getItem(k)),
+    setItem: (k, v) => (disk ? disk.setItem(k, v) : localStorage.setItem(k, v)),
+    removeItem: (k) => (disk ? disk.removeItem(k) : localStorage.removeItem(k)),
+    keys: () => (disk ? disk.keys() : Object.keys(localStorage)),
+    usage: () => (disk ? disk.usage() : null)
+  };
+})();
+
 // Optional LLM keys, kept only in this browser's localStorage. Gemini is tried first, then Claude;
 // with neither (or if both fail) Kelo-1 uses his built-in procedural brain, so he never runs out.
 let apiKey = '';
@@ -1240,7 +1254,7 @@ function handleUserLocationSuggestion(locKey, source) {
 function loadPersistentBrainState() {
       if (typeof loadMemoryArchive === 'function') loadMemoryArchive();
       try {
-        const raw = localStorage.getItem('kelo1_autonomous_brain_v2');
+        const raw = keloStore.getItem('kelo1_autonomous_brain_v2');
         if (!raw) return;
         const saved = JSON.parse(raw);
         if (saved.worldviewManifesto) state.worldviewManifesto = saved.worldviewManifesto;
@@ -1295,7 +1309,7 @@ function savePersistentBrainState() {
       trimBrainState();
       try {
         const visitor = (document.getElementById('visitorNameInput')?.value || 'curiousWanderer').trim();
-        localStorage.setItem('kelo1_autonomous_brain_v2', JSON.stringify({
+        keloStore.setItem('kelo1_autonomous_brain_v2', JSON.stringify({
           worldviewManifesto: state.worldviewManifesto,
           worldviewEpoch: state.worldviewEpoch,
           changedLatelySummary: state.changedLatelySummary,

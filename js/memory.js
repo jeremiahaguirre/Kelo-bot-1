@@ -7,8 +7,9 @@
 // - His whole brain can be exported to a file and imported again (API keys are never included).
 
 const ARCHIVE_KEY = 'kelo1_memory_archive_v1';
-const MAX_ARCHIVED_DIARY = 1500;
-const MAX_ARCHIVED_OPINIONS = 300;
+// The desktop app has a 10 GB budget on disk, so it keeps (practically) everything
+const MAX_ARCHIVED_DIARY = keloStore.isDesktop ? 250000 : 1500;
+const MAX_ARCHIVED_OPINIONS = keloStore.isDesktop ? 50000 : 300;
 const MAX_CORE_MEMORIES = 40;
 const ENTRIES_PER_CORE_MEMORY = 8;
 
@@ -17,7 +18,7 @@ let distilling = false;
 
 function loadMemoryArchive() {
       try {
-        const saved = JSON.parse(localStorage.getItem(ARCHIVE_KEY) || 'null');
+        const saved = JSON.parse(keloStore.getItem(ARCHIVE_KEY) || 'null');
         if (saved && typeof saved === 'object') {
           memoryArchive.diary = Array.isArray(saved.diary) ? saved.diary : [];
           memoryArchive.opinions = Array.isArray(saved.opinions) ? saved.opinions : [];
@@ -31,7 +32,7 @@ function saveMemoryArchive() {
       // If storage is full, let go of the very oldest archived entries until it fits
       for (let attempt = 0; attempt < 10; attempt++) {
         try {
-          localStorage.setItem(ARCHIVE_KEY, JSON.stringify(memoryArchive));
+          keloStore.setItem(ARCHIVE_KEY, JSON.stringify(memoryArchive));
           return;
         } catch (e) {
           memoryArchive.diary.length = Math.floor(memoryArchive.diary.length * 0.8);
@@ -137,10 +138,9 @@ function exportBrain() {
       saveMemoryArchive();
       const data = {};
       try {
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
-          if (k && k.startsWith('kelo1_') && !isSecretKey(k)) data[k] = localStorage.getItem(k);
-        }
+        keloStore.keys().forEach(k => {
+          if (k && k.startsWith('kelo1_') && !isSecretKey(k)) data[k] = keloStore.getItem(k);
+        });
       } catch (e) {}
       const file = { format: 'kelo1-brain', version: 1, exportedAt: new Date().toISOString(), data };
       const blob = new Blob([JSON.stringify(file, null, 2)], { type: 'application/json' });
@@ -163,7 +163,7 @@ async function importBrain(file) {
         const entries = Object.entries(parsed.data).filter(([k, v]) => k.startsWith('kelo1_') && !isSecretKey(k) && typeof v === 'string');
         if (entries.length === 0) throw new Error('The backup is empty');
         if (!window.confirm(`Replace Kelo-1's current memories with this backup from ${parsed.exportedAt || 'an unknown date'}? Your API keys stay as they are.`)) return;
-        entries.forEach(([k, v]) => localStorage.setItem(k, v));
+        entries.forEach(([k, v]) => keloStore.setItem(k, v));
         showToast('🧠 Backup restored. Reloading...');
         setTimeout(() => window.location.reload(), 600);
       } catch (err) {
@@ -192,6 +192,13 @@ function renderMemoryUI() {
       }
       const archiveCount = document.getElementById('diaryArchiveCount');
       if (archiveCount) archiveCount.textContent = `${memoryArchive.diary.length} older entries archived`;
+      const usageEl = document.getElementById('memoryUsageText');
+      const usage = keloStore.usage();
+      if (usageEl) {
+        usageEl.textContent = usage
+          ? `Memory on this computer: ${(usage.used / 1048576).toFixed(1)} MB of ${(usage.quota / 1073741824).toFixed(0)} GB`
+          : 'Memory is kept in this browser (about 5 MB). The Windows app can keep up to 10 GB.';
+      }
     }
 
 function renderArchiveSearch(query) {

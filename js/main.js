@@ -636,6 +636,21 @@ window.addEventListener('DOMContentLoaded', () => {
   // The gear icon opens the same settings as the AI Brain button
   document.getElementById('btnOpenSettings')?.addEventListener('click', () => document.getElementById('btnOpenAIConfig')?.click());
 
+  // Desktop app: load keys from the encrypted store and respond to the native menu
+  if (window.keloDesktop && window.keloDesktop.isDesktop) {
+    window.keloDesktop.getKeys().then(keys => {
+      apiKey = keys.gemini || '';
+      claudeApiKey = keys.anthropic || '';
+      try {
+        localStorage.removeItem('kelo1_gemini_api_key');
+        localStorage.removeItem('kelo1_anthropic_api_key');
+      } catch (e) {}
+      updateBrainButtonText();
+    });
+    window.keloDesktop.onOpenSettings(() => document.getElementById('btnOpenAIConfig')?.click());
+    window.keloDesktop.onToggleMenu(() => document.getElementById('btnToggleMenu')?.click());
+  }
+
   document.getElementById('btnNextDecision')?.addEventListener('click', () => runAutonomousLifeTick());
 
   // Lighting: cycle through the ambiance presets
@@ -687,11 +702,19 @@ window.addEventListener('DOMContentLoaded', () => {
       else localStorage.removeItem(name);
     } catch (e) {}
   };
+  const desktop = window.keloDesktop && window.keloDesktop.isDesktop ? window.keloDesktop : null;
   document.getElementById('btnSaveAIConfig')?.addEventListener('click', () => {
     apiKey = document.getElementById('geminiApiKeyInput').value.trim();
     claudeApiKey = document.getElementById('anthropicApiKeyInput').value.trim();
-    storeKey('kelo1_gemini_api_key', apiKey);
-    storeKey('kelo1_anthropic_api_key', claudeApiKey);
+    if (desktop) {
+      // Desktop app: keys are encrypted by Windows, never kept in browser storage
+      desktop.setKeys({ gemini: apiKey, anthropic: claudeApiKey });
+      storeKey('kelo1_gemini_api_key', '');
+      storeKey('kelo1_anthropic_api_key', '');
+    } else {
+      storeKey('kelo1_gemini_api_key', apiKey);
+      storeKey('kelo1_anthropic_api_key', claudeApiKey);
+    }
     updateBrainButtonText();
     closeModal('aiConfigModal');
     showToast(hasLLMKey() ? '🧠 AI keys saved in this browser.' : '🧠 Using the built-in procedural brain.');

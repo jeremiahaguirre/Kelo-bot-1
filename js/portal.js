@@ -20,7 +20,7 @@ const GIFT_CATALOG = [
 ];
 const MAX_PHOTOS_PER_SEND = 4;
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
-const MAX_ALBUM = 12;
+const MAX_ALBUM = keloStore.isDesktop ? 2000 : 12;
 const ALBUM_STORAGE_KEY = 'kelo1_photo_album_v1';
 
 let pendingPortalPhotos = [];
@@ -29,8 +29,8 @@ function portalVisitorName() {
       return (document.getElementById('visitorNameInput')?.value || 'curiousWanderer').trim().slice(0, 40) || 'curiousWanderer';
     }
 
-// Small JPEG copy of a photo for the photo wall (keeps localStorage usage low)
-function makeThumbnail(dataUrl, maxSize = 220) {
+// JPEG copy of a photo for the photo wall: small in the browser, larger in the desktop app
+function makeThumbnail(dataUrl, maxSize = keloStore.isDesktop ? 640 : 220) {
       return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => {
@@ -48,7 +48,7 @@ function makeThumbnail(dataUrl, maxSize = 220) {
 
 function loadPhotoAlbum() {
       try {
-        const saved = JSON.parse(localStorage.getItem(ALBUM_STORAGE_KEY) || '[]');
+        const saved = JSON.parse(keloStore.getItem(ALBUM_STORAGE_KEY) || '[]');
         state.photoAlbum = Array.isArray(saved)
           ? saved.filter(p => p && typeof p.thumb === 'string' && p.thumb.startsWith('data:image/jpeg;base64,'))
           : [];
@@ -62,7 +62,7 @@ function savePhotoAlbum() {
       // If storage is full, drop the oldest photos until it fits
       for (let keep = state.photoAlbum.length; keep >= 0; keep--) {
         try {
-          localStorage.setItem(ALBUM_STORAGE_KEY, JSON.stringify(state.photoAlbum.slice(0, keep)));
+          keloStore.setItem(ALBUM_STORAGE_KEY, JSON.stringify(state.photoAlbum.slice(0, keep)));
           return;
         } catch (e) {}
       }

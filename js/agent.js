@@ -1632,12 +1632,13 @@ function categorizeItem(name, hint) {
       const h = String(hint || '').toLowerCase().trim();
       if (h) return h.slice(0, 24);
       const n = String(name || '').toLowerCase();
-      if (/(cherr|apple|peach|bread|loaf|tart|cake|pie|ramen|noodle|soup|cheese|fudge|cocoa|coffee|tea|salmon|fish|berry|fruit|snack|pizza|taco|sandwich|cookie|chocolate|honey|food|meal|carrot|tomato)/.test(n)) return 'food';
-      if (/(kite|yo-yo|yoyo|kaleidoscope|puzzle|ball|toy|game|doll|frog|top|marble|lego|block)/.test(n)) return 'toy';
-      if (/(island|land|treehouse|dock|observatory|garden plot|cabin|house|tower)/.test(n)) return 'place';
-      if (/(canoe|boat|balloon|bike|bicycle|car|train|submarine|glider|sled|truck|excavator|digger|backhoe|tractor)/.test(n)) return 'vehicle';
-      if (/(goat|dog|cat|bird|pigeon|fish|jellyfish|pet)/.test(n)) return 'companion';
-      if (/(drill|saw|hammer|wrench|torch|iron|telescope|rope|microphone|spectrometer|tool|knife|compass|lamp|shovel|spade|pick ?axe|mattock)/.test(n)) return 'tool';
+      // Whole words only, so "Topic" isn't a toy "top" and "team" isn't "tea"
+      if (/\b(cherr(y|ies)|apples?|peach(es)?|bread|loaf|loaves|tarts?|cakes?|pies?|ramen|noodles?|soups?|cheeses?|cheddar|fudge|cocoa|coffee|tea|salmon|fish|berr(y|ies)|blueberr(y|ies)|fruits?|snacks?|pizzas?|tacos?|sandwich(es)?|cookies?|chocolates?|honey|food|meals?|carrots?|tomato(es)?|cobbler|stew|desserts?|pastr(y|ies)|buns?|croissants?|muffins?|bagels?)\b/.test(n)) return 'food';
+      if (/\b(kites?|yo-?yos?|kaleidoscopes?|puzzles?|balls?|toys?|games?|dolls?|frogs?|spinning tops?|marbles?|lego|blocks?|harmonicas?|kalimbas?|ukuleles?|guitars?|flutes?|drums?)\b/.test(n)) return 'toy';
+      if (/\b(islands?|land|treehouses?|docks?|observator(y|ies)|garden plots?|cabins?|houses?|towers?|huts?)\b/.test(n)) return 'place';
+      if (/\b(canoes?|boats?|balloons?|bikes?|bicycles?|cars?|trains?|submarines?|gliders?|sleds?|trucks?|excavators?|diggers?|backhoes?|tractors?|kayaks?)\b/.test(n)) return 'vehicle';
+      if (/\b(goats?|dogs?|cats?|birds?|pigeons?|jellyfish|pets?|pupp(y|ies)|kittens?|chickens?)\b/.test(n)) return 'companion';
+      if (/\b(drills?|saws?|hammers?|jack ?hammers?|wrench(es)?|torch(es)?|irons?|telescopes?|ropes?|microphones?|spectrometers?|tools?|knives|knife|compass(es)?|lamps?|shovels?|spades?|pick ?ax(e|es)?|mattocks?|chisels?|spokeshaves?|pliers|screwdrivers?|brush(es)?|easels?|binoculars|cameras?|lens(es)?)\b/.test(n)) return 'tool';
       return 'thing';
     }
 

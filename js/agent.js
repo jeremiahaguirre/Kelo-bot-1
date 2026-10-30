@@ -421,7 +421,25 @@ const state = {
       "text": "Dear Diary, inoculated the north-facing retaining wall with oyster mushroom spores and chitosan aggregate. Within three weeks the living mycelium network will bind the loose mountain gravel better than Portland cement."
     }
   ],
-  "rhythmPhaseText": "Absorbed in the Okanagan valley air..."
+  "rhythmPhaseText": "Absorbed in the Okanagan valley air...",
+  "concepts": [
+    {
+      "name": "Grown Architecture",
+      "emoji": "🍄",
+      "definition": "Buildings that are cultivated like gardens instead of poured like concrete, so they can heal themselves.",
+      "origin": "Early Experiments",
+      "parents": [],
+      "uses": 1
+    },
+    {
+      "name": "Altitude Patience",
+      "emoji": "⛏️",
+      "definition": "The idea that the best things, like gold veins and good ideas, sit high up and take a slow climb to reach.",
+      "origin": "Early Experiments",
+      "parents": [],
+      "uses": 1
+    }
+  ]
 };
 
 // Optional LLM keys, kept only in this browser's localStorage. Gemini is tried first, then Claude;
@@ -449,6 +467,7 @@ const MAX_OPINIONS = 16;
 const MAX_CHAT_LOG = 40;
 const MAX_CREATIONS = 24;
 const MAX_REQUESTS = 12;
+const MAX_CONCEPTS = 24;
 
 // Escape any user- or LLM-supplied text before it goes into an innerHTML template
 function escapeHtml(value) {
@@ -1161,6 +1180,7 @@ function loadPersistentBrainState() {
         if (Array.isArray(saved.inventedCreations) && saved.inventedCreations.length > 0) state.inventedCreations = saved.inventedCreations;
         if (Array.isArray(saved.diaryEntries) && saved.diaryEntries.length > 0) state.diaryEntries = saved.diaryEntries;
         if (Array.isArray(saved.toolInventory) && saved.toolInventory.length > 0) state.toolInventory = saved.toolInventory;
+        if (Array.isArray(saved.concepts) && saved.concepts.length > 0) state.concepts = saved.concepts;
         if (saved.lastVisitorName) {
           const nameInput = document.getElementById('visitorNameInput');
           if (nameInput) nameInput.value = saved.lastVisitorName;
@@ -1186,6 +1206,7 @@ function savePersistentBrainState() {
           inventedCreations: state.inventedCreations.slice(0, 12),
           toolInventory: state.toolInventory.slice(0, 16),
           diaryEntries: (state.diaryEntries || []).slice(0, 20),
+          concepts: state.concepts.slice(0, MAX_CONCEPTS),
           lastVisitorName: visitor
         }));
       } catch (e) {}
@@ -1285,9 +1306,82 @@ function randomSculptureParts() {
       return sanitizeParts(parts);
     }
 
+// ---------------------------------------------------------------------------
+// CONCEPTS
+// Kelo-1 invents named ideas, keeps them, reuses them, and blends old ones into
+// new ones. Concepts come from his own decisions, things he reads at the NetNode
+// cafe, and gifts or photos from visitors.
+// ---------------------------------------------------------------------------
+
+const CONCEPT_SUFFIXES = ['Theory', 'Principle', 'Effect', 'Practice', 'Paradox', 'Loop', 'Craft', 'Ethic', 'Geometry', 'Rhythm'];
+const CONCEPT_STOPWORDS = new Set(['the', 'and', 'with', 'from', 'that', 'this', 'his', 'own', 'about', 'into', 'over', 'under', 'shaped', 'like']);
+
+// The most distinctive word in a phrase, used to name blended concepts
+function conceptKeyword(text) {
+      const words = String(text || '').replace(/[^A-Za-z\s-]/g, ' ').split(/\s+/)
+        .filter(w => w.length > 3 && !CONCEPT_STOPWORDS.has(w.toLowerCase()));
+      if (words.length === 0) return 'Wonder';
+      const w = words.reduce((a, b) => (b.length > a.length ? b : a));
+      return w[0].toUpperCase() + w.slice(1).toLowerCase();
+    }
+
+function findConcept(name) {
+      const key = String(name || '').trim().toLowerCase();
+      return state.concepts.find(c => c.name.toLowerCase() === key) || null;
+    }
+
+// Add (or reinforce) a concept; returns the stored concept or null if invalid
+function addConcept(raw, origin) {
+      if (!raw || typeof raw !== 'object') return null;
+      const name = (typeof raw.name === 'string' ? raw.name.trim() : '').slice(0, 60);
+      const definition = (typeof raw.definition === 'string' ? raw.definition.trim() : '').slice(0, 300);
+      if (!name || !definition) return null;
+      const existing = findConcept(name);
+      if (existing) {
+        existing.uses = (existing.uses || 0) + 1;
+        return existing;
+      }
+      const concept = {
+        name,
+        emoji: (typeof raw.emoji === 'string' && raw.emoji.trim()) ? raw.emoji.trim().slice(0, 8) : '💡',
+        definition,
+        origin: String(origin || 'Own Idea').slice(0, 60),
+        parents: (Array.isArray(raw.builtFrom) ? raw.builtFrom : raw.parents || [])
+          .filter(p => typeof p === 'string').slice(0, 3).map(p => p.slice(0, 60)),
+        uses: 0
+      };
+      state.concepts.unshift(concept);
+      if (state.concepts.length > MAX_CONCEPTS) {
+        // Forget the least-used old idea first
+        let weakest = state.concepts.length - 1;
+        state.concepts.forEach((c, i) => { if (i > 0 && (c.uses || 0) < (state.concepts[weakest].uses || 0)) weakest = i; });
+        state.concepts.splice(weakest, 1);
+      }
+      return concept;
+    }
+
+// Combine two sources (concept names, things he saw or read) into a brand-new concept
+function blendNewConcept(sourceA, sourceB) {
+      const a = conceptKeyword(sourceA);
+      let b = conceptKeyword(sourceB);
+      if (b === a) b = conceptKeyword(pick(FREE_SUBJECTS));
+      return {
+        name: `${a} ${b} ${pick(CONCEPT_SUFFIXES)}`,
+        emoji: pick(['💡', '🧩', '🌀', '🔮', '🧬', '🪐', '🌱', '⚗️']),
+        definition: pick([
+          `The idea that ${String(sourceA).toLowerCase()} and ${String(sourceB).toLowerCase()} follow the same hidden pattern.`,
+          `What happens when you treat ${String(sourceA).toLowerCase()} the way you would treat ${String(sourceB).toLowerCase()}.`,
+          `A way of seeing ${String(sourceA).toLowerCase()} through the lens of ${String(sourceB).toLowerCase()}.`
+        ]).slice(0, 300),
+        builtFrom: [String(sourceA).slice(0, 60), String(sourceB).slice(0, 60)]
+      };
+    }
+
 function generateProceduralDecision() {
       const verb = pick(FREE_VERBS);
-      const subject = pick(FREE_SUBJECTS);
+      // Sometimes he returns to one of his own concepts instead of something new
+      const revisit = state.concepts.length > 0 && Math.random() < 0.3 ? pick(state.concepts) : null;
+      const subject = revisit ? `his idea of "${revisit.name}"` : pick(FREE_SUBJECTS);
       const reason = pick(FREE_REASONS);
       const feeling = pick(FREE_FEELINGS);
       const emoji = pick(FREE_EMOJIS);
@@ -1340,7 +1434,12 @@ function generateProceduralDecision() {
         } : null,
         requestGear: Math.random() < 0.15 ? pick(['Field Microphone', 'Pocket Spectrometer', 'Watercolor Set', 'Climbing Rope', 'Seed Packets', 'Brass Telescope']) : null,
         codeProject: Math.random() < 0.1 ? { name: `${verb}-${subject}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40), desc: `A tool to help me ${verb} ${subject}.` } : null,
-        webQuery: Math.random() < 0.2 ? `how to ${verb} ${subject}` : null
+        webQuery: Math.random() < 0.2 ? (revisit ? revisit.name : subject.replace(/^(an?|the|his) /, '')) : null,
+        usedConcept: revisit ? revisit.name : null,
+        newConcept: Math.random() < 0.3
+          ? blendNewConcept(revisit ? revisit.name : subject,
+            state.concepts.length > 0 && Math.random() < 0.6 ? pick(state.concepts).name : pick(FREE_SUBJECTS))
+          : null
       };
     }
 
@@ -1359,6 +1458,7 @@ Current state:
 - Worldview: "${state.worldviewManifesto}"
 - Recent diary: ${recentDiary}
 - Known places: ${places}
+- Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
 - World bounds: x from -32 to 32, z from -32 to 10 (z below -14 is mountains, z above 8 is the lake shore)
 ${trigger ? `- Something just prompted you (you may follow it, reinterpret it, or decline): "${trigger}"` : '- Nothing prompted you. This is purely your own impulse.'}
 
@@ -1378,7 +1478,9 @@ Return ONLY JSON:
   "askQuestion": null OR {"title": "...", "question": "...", "presets": ["answer option", "answer option"]},
   "requestGear": null OR "comma-separated items you want",
   "codeProject": null OR {"name": "repo-name", "desc": "..."},
-  "webQuery": null OR "something you want to research",
+  "webQuery": null OR "a topic you want to look up at the NetNode cafe",
+  "usedConcept": null OR "name of one of your existing concepts this decision builds on",
+  "newConcept": null OR {"name": "2-4 word name for a brand-new idea you just invented", "emoji": "one emoji", "definition": "1 sentence", "builtFrom": ["ideas or things it grew out of"]},
   "updatedWorldview": null OR "1-2 sentences if your philosophy shifted"
 }`;
       return callLLMJSON([{ text: prompt }]);
@@ -1504,6 +1606,13 @@ function applyDecision(decision, originLabel) {
           });
           state.githubCommits++;
         }
+      }
+
+      const used = findConcept(decision.usedConcept);
+      if (used) used.uses = (used.uses || 0) + 1;
+      const invented = addConcept(decision.newConcept, `Invented while: ${title}`);
+      if (invented && invented.uses === 0) {
+        showToast(`${invented.emoji} New concept: ${invented.name}`);
       }
 
       const wq = str(decision.webQuery, 120);

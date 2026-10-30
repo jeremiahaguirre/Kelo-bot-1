@@ -113,11 +113,11 @@ function renderRequestsTab() {
               ${req.fulfilled ? '✓ Delivered / Reflected' : escapeHtml(req.urgency)}
             </span>
           </div>
-          ${req.requestedGear ? `<div class="text-[11px] font-mono text-amber-300 bg-amber-950/30 border border-amber-500/30 px-2.5 py-1 rounded-lg">Requested Gear: ${escapeHtml(req.requestedGear)}</div>` : ''}
+          ${req.requestedGear ? `<div class="text-[11px] font-mono text-amber-300 bg-amber-950/30 border border-amber-500/30 px-2.5 py-1 rounded-lg">Wants: ${escapeHtml(req.requestedGear)}</div>` : ''}
           <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
           ${!req.fulfilled ? `
             <div class="space-y-2 pt-1">
-              <div class="text-[10px] font-mono uppercase text-slate-400">${req.isToolRequest ? 'Deliver this gear as Supply Broker or customize delivery:' : 'Share a perspective or write your own answer:'}</div>
+              <div class="text-[10px] font-mono uppercase text-slate-400">${req.isToolRequest ? 'Bring it, or describe what you are bringing instead:' : 'Share a perspective or write your own answer:'}</div>
               <div class="flex flex-col gap-1.5">
                 ${(req.presets || []).map(preset => `
                   <button data-req-id="${escapeHtml(req.id)}" data-answer="${escapeHtml(preset)}" class="preset-answer-btn text-left text-[11px] px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-amber-500/25 text-slate-200 hover:text-amber-200 border border-slate-800 hover:border-amber-500/40 transition">
@@ -126,16 +126,16 @@ function renderRequestsTab() {
                 `).join('')}
               </div>
               <div class="flex gap-1.5 pt-1">
-                <input id="custom-ans-${escapeHtml(req.id)}" type="text" maxlength="140" placeholder="${req.isToolRequest ? 'Or specify custom tools/materials to drop...' : 'Or type your own honest answer to Kelo-1...'}"
+                <input id="custom-ans-${escapeHtml(req.id)}" type="text" maxlength="140" placeholder="${req.isToolRequest ? 'Or describe what you are bringing...' : 'Or type your own honest answer to Kelo-1...'}"
                   class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400" />
                 <button data-req-id="${escapeHtml(req.id)}" class="custom-answer-btn px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs shrink-0 transition">
-                  ${req.isToolRequest ? 'Supply Gear' : 'Answer'}
+                  ${req.isToolRequest ? 'Deliver' : 'Answer'}
                 </button>
               </div>
             </div>
           ` : `
             <div class="p-2.5 rounded-xl bg-emerald-950/25 border border-emerald-500/30 text-[11px] text-emerald-200 space-y-1">
-              <div class="font-mono text-[10px] text-emerald-400">${req.isToolRequest ? 'Supply Broker Delivery Confirmed:' : 'Your Perspective Shared with Kelo-1:'}</div>
+              <div class="font-mono text-[10px] text-emerald-400">${req.isToolRequest ? 'You delivered:' : 'Your Perspective Shared with Kelo-1:'}</div>
               <div class="italic">"${escapeHtml(req.userAnswer)}"</div>
             </div>
           `}
@@ -151,37 +151,25 @@ function renderRequestsTab() {
         state.happiness = Math.min(100, state.happiness + 15);
         state.wonderLevel = Math.min(100, state.wonderLevel + 10);
 
+        // Something he asked for: deliver it, then he decides what to do with it
         if (req.isToolRequest && req.requestedGear) {
-          req.requestedGear.split(',').forEach(g => {
-            const clean = g.trim();
-            if (clean && !state.toolInventory.includes(clean)) state.toolInventory.unshift(clean);
-          });
+          receiveItem(req.requestedGear, req.category, visitor, req.userAnswer, { type: 'request' });
+          return;
         }
 
         state.likes.unshift({
           icon: req.icon,
-          topic: req.isToolRequest ? `Equipped: ${escapeHtml(req.requestedGear)}` : `${visitor}'s Perspective on "${escapeHtml(req.title)}"`,
-          nuance: req.isToolRequest
-            ? `${visitor} supplied [${escapeHtml(req.requestedGear)}]! I immediately took it out into the terrain to put it to work.`
-            : `When I asked "${escapeHtml(req.title)}", ${visitor} told me: "${escapeHtml(req.userAnswer)}".`
+          topic: `${visitor}'s Perspective on "${req.title}"`,
+          nuance: `When I asked "${req.title}", ${visitor} told me: "${req.userAnswer}".`
         });
-
         state.chatLog.push({
           sender: 'Kelo-1',
-          text: req.isToolRequest
-            ? `Gear received from ${visitor}: [${escapeHtml(req.requestedGear)}]! Heading out into the island right now to use it!`
-            : `Thank you for answering my question, ${visitor}! "${escapeHtml(req.userAnswer)}"—I'm writing this in my Diary right now.`,
+          text: `Thank you for answering my question, ${visitor}! "${req.userAnswer}" I'm writing this in my diary right now.`,
           time: 'Just now',
           isBot: true
         });
-
-        if (req.rewardAction === 'mountain_drill') {
-          synthesizeUnboundedExperience(`Use the newly delivered ${escapeHtml(req.requestedGear)} to drill for gold high up on the northern mountain ridge`, 'Supply Broker Gear Used', { x: -15.5, z: -26.5 });
-        } else if (req.rewardAction === 'custom_weld') {
-          synthesizeUnboundedExperience(`Use the newly delivered ${escapeHtml(req.requestedGear)} to weld a new 3D monument on the island`, 'Supply Broker Gear Used');
-        } else {
-          directKeloToActivity(req.rewardAction, `Reflecting deeply on ${visitor}'s input ("${escapeHtml(req.userAnswer)}")`, 'Shaped by Dialogue');
-        }
+        recordVisitorMemory(visitor, `Answered my question "${req.title}".`);
+        decideNextAction(`You asked visitors "${req.title}" and ${visitor} answered: "${req.userAnswer}". Think about it and decide what to do next; you may agree, disagree, or act on it.`, 'Shaped by Dialogue');
       };
 
       list.querySelectorAll('.preset-answer-btn').forEach(btn => {

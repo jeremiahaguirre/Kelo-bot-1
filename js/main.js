@@ -53,6 +53,7 @@ function renderAllUI() {
       if (typeof renderPortal === 'function') renderPortal();
       if (typeof renderMemoryUI === 'function') renderMemoryUI();
       if (typeof renderHobbiesUI === 'function') renderHobbiesUI();
+      if (typeof renderMiningUI === 'function') renderMiningUI();
     }
 
 function renderChatBox() {

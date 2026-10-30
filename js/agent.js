@@ -423,6 +423,8 @@ const state = {
   ],
   "rhythmPhaseText": "Absorbed in the Okanagan valley air...",
   "shapeLibrary": [],
+  "curiosityQueue": [],
+  "isBrowsing": false,
   "concepts": [
     {
       "name": "Grown Architecture",
@@ -1217,6 +1219,8 @@ function loadPersistentBrainState() {
         if (Array.isArray(saved.diaryEntries) && saved.diaryEntries.length > 0) state.diaryEntries = saved.diaryEntries;
         if (Array.isArray(saved.toolInventory) && saved.toolInventory.length > 0) state.toolInventory = saved.toolInventory;
         if (Array.isArray(saved.concepts) && saved.concepts.length > 0) state.concepts = saved.concepts;
+        if (Array.isArray(saved.webHistory) && saved.webHistory.length > 0) state.webHistory = saved.webHistory;
+        if (Array.isArray(saved.curiosityQueue)) state.curiosityQueue = saved.curiosityQueue.filter(q => typeof q === 'string');
         if (Array.isArray(saved.shapeLibrary)) {
           state.shapeLibrary = saved.shapeLibrary.filter(sh => sh && sh.name && sanitizeParts(sh.parts))
             .map(sh => ({ ...sh, parts: sanitizeParts(sh.parts) }));
@@ -1248,6 +1252,8 @@ function savePersistentBrainState() {
           diaryEntries: (state.diaryEntries || []).slice(0, 20),
           concepts: state.concepts.slice(0, MAX_CONCEPTS),
           shapeLibrary: state.shapeLibrary.slice(0, MAX_SHAPES),
+          webHistory: state.webHistory.slice(0, 12),
+          curiosityQueue: state.curiosityQueue.slice(0, 10),
           lastVisitorName: visitor
         }));
       } catch (e) {}
@@ -1763,10 +1769,11 @@ function applyDecision(decision, originLabel) {
         showToast(`${invented.emoji} New concept: ${invented.name}`);
       }
 
+      // Things he wants to look up go on his curiosity list; sometimes he heads to NetNode right away
       const wq = str(decision.webQuery, 120);
-      if (wq) {
-        state.webHistory.unshift({ query: wq, time: 'Just now', verdict: `Looked this up while deciding to ${title.toLowerCase()}.` });
-        if (state.webHistory.length > 10) state.webHistory.length = 10;
+      if (wq && typeof queueCuriosity === 'function') {
+        queueCuriosity(wq);
+        if (Math.random() < 0.4) setTimeout(() => browseInternet(null, 'Followed a Curiosity'), 6000);
       }
 
       const wv = str(decision.updatedWorldview, 600);
@@ -1807,6 +1814,11 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will') {
 function runAutonomousLifeTick() {
       // Most of the time Kelo-1 makes a fully open-ended decision. Otherwise he falls back
       // into one of his familiar routines (which are also his own choice).
+      // Sometimes he goes online to chase something he has been wondering about
+      if (typeof browseInternet === 'function' && Math.random() < (state.curiosityQueue.length > 0 ? 0.2 : 0.08)) {
+        browseInternet(null, 'Own Curiosity');
+        return;
+      }
       const openEndedChance = hasLLMKey() ? 0.85 : 0.6;
       if (Math.random() < openEndedChance) {
         decideNextAction(null, 'Free Will');

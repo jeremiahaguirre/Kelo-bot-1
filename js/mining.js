@@ -239,9 +239,11 @@ async function digAt(x, z, originLabel = 'Digging') {
           site.finds.push(f.id);
         });
         // Small everyday finds keep it rewarding
-        const pebble = found.length === 0 && Math.random() < 0.3
-          ? pick(['an oddly round pebble', 'a rusty bolt', 'a smooth river stone', 'a chunk of mica that sparkles', 'an old bottle cap'])
-          : null;
+        const pebble = found.length === 0 && Math.random() < 0.3 ? pick(JUNK_FINDS) : null;
+        if (pebble) {
+          state.belongings.unshift({ name: pebble, category: 'junk', emoji: '🪨', from: 'a dig' });
+          state.unstoredItems.push(pebble);
+        }
 
         site.sessions = (site.sessions || 0) + 1;
         if (typeof bumpLifeStat === 'function') bumpLifeStat('digSessions');

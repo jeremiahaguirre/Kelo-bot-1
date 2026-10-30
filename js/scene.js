@@ -35,8 +35,13 @@ function getAnalyticalGroundHeight(x, z) {
         h += (x - 14) * 0.28 * Math.max(0.2, Math.abs(z) / 14);
       }
       const base = Math.max(-0.25, h);
-      // Holes Kelo-1 has dug (js/mining.js) lower the ground
-      return typeof digDepressionAt === 'function' ? base - digDepressionAt(x, z) : base;
+      // Holes Kelo-1 has dug (js/mining.js) and the Disposal Pit (js/disposal.js) lower the ground
+      return base - groundDugAt(x, z);
+    }
+
+function groundDugAt(x, z) {
+      return (typeof digDepressionAt === 'function' ? digDepressionAt(x, z) : 0)
+        + (typeof pitDepressionAt === 'function' ? pitDepressionAt(x, z) : 0);
     }
 
 function getIslandGroundHeight(x, z) {
@@ -235,6 +240,7 @@ function buildAlpineTerrainAndMountains3D() {
         const tx = (Math.random() - 0.5) * 68;
         const tz = -11 - Math.random() * 24;
         if (Math.hypot(tx - (-15.5), tz - (-26.5)) < 4.0) continue; // Keep gold vein clear
+        if (typeof DISPOSAL_PIT !== 'undefined' && Math.hypot(tx - DISPOSAL_PIT.x, tz - DISPOSAL_PIT.z) < DISPOSAL_PIT.r + 1.5) continue; // Keep the pit clear
         const ty = getAnalyticalGroundHeight(tx, tz);
         if (ty > 9.5) continue;
         const tree = new THREE.Group();
@@ -411,7 +417,7 @@ function refreshTerrainAround(cx, cz, radius) {
         const vx = pos.getX(i), vz = pos.getZ(i);
         if (Math.hypot(vx - cx, vz - cz) > radius) continue;
         pos.setY(i, getAnalyticalGroundHeight(vx, vz));
-        const dug = typeof digDepressionAt === 'function' ? digDepressionAt(vx, vz) : 0;
+        const dug = groundDugAt(vx, vz);
         if (dug > 0.05) {
           const c = dirt.clone().lerp(deep, Math.min(1, dug / 3));
           col.setXYZ(i, c.r, c.g, c.b);
@@ -623,7 +629,9 @@ function buildOuterLands3D() {
       for (let i = 0; i < pos.count; i++) {
         const x = pos.getX(i), z = pos.getZ(i);
         const inside = Math.abs(x) < ISLAND_HALF_X && Math.abs(z) < ISLAND_HALF_Z;
-        const y = inside ? getAnalyticalGroundHeight(x, z) - 0.4 : outerTerrainHeight(x, z);
+        // Under the island it only matters at the seam; deeper in, it drops well below so holes and the pit stay open
+        const nearSeam = Math.min(ISLAND_HALF_X - Math.abs(x), ISLAND_HALF_Z - Math.abs(z)) < 3;
+        const y = inside ? getAnalyticalGroundHeight(x, z) - (nearSeam ? 0.4 : 8) : outerTerrainHeight(x, z);
         pos.setY(i, y);
         if (y > 26) c.setHex(0xf4f8ff); // snow only on the high peaks
         else if (y > 7) c.setHex(0x6f7a8f).lerp(new THREE.Color(0x8b93a7), (y - 7) / 19);

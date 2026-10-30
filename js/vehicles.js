@@ -2,7 +2,7 @@
 // Loaded after storehouse.js. Things like a dump truck or a canoe are used, not carried:
 // they are parked (land vehicles in a yard beside the Storehouse, boats at a dock on the shore),
 // and Kelo-1 walks to them, climbs in and drives. With a dump truck and an excavator he really
-// hauls dirt: the excavator scoops it into the truck and he drives the load to a spoil heap.
+// hauls dirt: the excavator scoops it into the truck and he drives the load to the Disposal Pit.
 // Without a boat, wading into the lake teaches him he can't breathe underwater.
 
 const VEHICLE_TYPES = [
@@ -15,7 +15,6 @@ const VEHICLE_TYPES = [
 ];
 const YARD_SLOTS = [[9.4, -5.4], [9.4, -8.2], [1.8, -5.2], [1.8, -8.4], [9.6, -10.6], [1.6, -10.8]];
 const DOCK_SLOTS = [[2.2, 9.6], [5.6, 9.8], [-1.4, 9.4]];
-const SPOIL_HEAP = { x: 20, z: -9 };
 const WATER_LEVEL = -0.18;
 
 const vehicleMeshes = {};
@@ -164,20 +163,7 @@ async function travelTo(target, label) {
       await waitForArrival(90000);
     }
 
-// --- Hauling dirt: the excavator loads the truck, he drives it to the spoil heap -----------
-let spoilHeapMesh = null;
-
-function renderSpoilHeap() {
-      if (!scene) return;
-      if (spoilHeapMesh) scene.remove(spoilHeapMesh);
-      if (!state.spoilHeap) return;
-      const size = 0.6 + Math.sqrt(state.spoilHeap) * 0.5;
-      spoilHeapMesh = new THREE.Mesh(new THREE.ConeGeometry(size, size * 0.8, 10), new THREE.MeshStandardMaterial({ color: 0x8a5a33, roughness: 1, flatShading: true }));
-      spoilHeapMesh.position.set(SPOIL_HEAP.x, getAnalyticalGroundHeight(SPOIL_HEAP.x, SPOIL_HEAP.z) + size * 0.4, SPOIL_HEAP.z);
-      spoilHeapMesh.castShadow = true;
-      scene.add(spoilHeapMesh);
-    }
-
+// --- Hauling dirt: the excavator loads the truck, he drives it to the Disposal Pit ----------
 // Called from inside a dig session (flags already set by digAt)
 async function haulDirt(site) {
       const truck = findVehicle('truck');
@@ -206,18 +192,11 @@ async function haulDirt(site) {
         renderVehicles3D();
       }
       if (exMesh) exMesh.rotation.y = excavator.rotY || 0;
-      // 4. Drive the full truck to the spoil heap and dump it
-      await driveVehicle(truck, { x: SPOIL_HEAP.x - 2.5, z: SPOIL_HEAP.z + 1.5 }, 'Driving the loaded dump truck to the spoil heap');
-      const tMesh = vehicleMeshes[truck.id];
-      if (tMesh) {
-        for (let a = 0; a <= 10; a++) { tMesh.rotation.z = -a * 0.04; await new Promise(r => setTimeout(r, 80)); }
-      }
-      state.spoilHeap = (state.spoilHeap || 0) + (truck.load || 0);
-      truck.load = 0;
-      renderSpoilHeap();
-      if (tMesh) tMesh.rotation.z = 0;
+      // 4. Drive the full truck to the Disposal Pit and tip it over the rim (js/disposal.js)
+      await driveVehicle(truck, { x: DISPOSAL_PIT.x - DISPOSAL_PIT.r - 2.0, z: DISPOSAL_PIT.z + 1.2 }, 'Driving the loaded dump truck to the Disposal Pit');
+      await tipDirtIntoPit(truck);
       renderVehicles3D();
-      state.speechBubble = `Dumped ${amount.toFixed(1)} loads of dirt at the spoil heap.`;
+      state.speechBubble = `Tipped ${amount.toFixed(1)} loads of dirt into the Disposal Pit.`;
       renderAllUI();
       return amount;
     }
@@ -324,6 +303,5 @@ window.addEventListener('DOMContentLoaded', () => {
     state.riding = null;
     state.ridingSpeed = 1;
     renderVehicles3D();
-    renderSpoilHeap();
   }, 0);
 });

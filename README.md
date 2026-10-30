@@ -73,6 +73,9 @@ Kelo-bot-1/
 ├── js/
 │   ├── agent.js         # State, decision engine, AI providers, requests (loaded first)
 │   ├── memory.js        # Long-term memory, core memories, backups
+│   ├── worldclock.js    # His calendar: 12-hour days, 365-day years, seasons
+│   ├── needs.js         # Food, water and sleep, which he has to discover
+│   ├── forms.js         # Shapes for things he builds
 │   ├── netnode.js       # Real Wikipedia browsing at the NetNode cafe
 │   ├── postoffice.js    # Mail he picks up when he chooses
 │   ├── workshop.js      # Everything is welded at the workshop, carried and placed
@@ -81,6 +84,9 @@ Kelo-bot-1/
 │   ├── growth.js        # Merges what he dreamt while you were away
 │   ├── scene.js         # Three.js world, pathfinding, terrain
 │   ├── items3d.js       # 3D models of items, the pick-up counter, carrying
+│   ├── storehouse.js    # The Storehouse shelves where everything he owns is kept
+│   ├── vehicles.js      # Parked vehicles he drives, boating, hauling dirt
+│   ├── disposal.js      # The Disposal Pit: whatever he throws in is gone for good
 │   ├── main.js          # UI wiring
 │   └── portal.js        # Send-him-something panel
 ├── brain/growth.json    # His dreams, written by the scheduled Action

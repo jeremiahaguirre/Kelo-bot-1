@@ -165,6 +165,16 @@ const TOWN_LOCATIONS = {
     "pinColor": "from-yellow-400/90 to-amber-600/90",
     "groundY": 14.642003059387207
   },
+  "disposal_pit": {
+    "id": "disposal_pit",
+    "name": "Disposal Pit",
+    "building": "Kelo-1 Disposal Pit",
+    "icon": "🕳️",
+    "x": 20,
+    "z": -9,
+    "showPin": true,
+    "pinColor": "from-stone-500/90 to-stone-700/90"
+  },
   "east_cliff": {
     "id": "east_cliff",
     "name": "Eastern Granite Overlook",
@@ -297,7 +307,8 @@ const state = {
   "ridingSpeed": 1,
   "ridingMode": null,
   "knowsLakeDanger": false,
-  "spoilHeap": 0,
+  "disposedItems": [],
+  "dirtDisposed": 0,
   "lightingMode": "auto",
   "pendingBuilds": []
 };
@@ -1625,6 +1636,7 @@ Current state:
 - Digging: ${state.digSites.length ? state.digSites.map(d => `site (${d.x}, ${d.z}) ${d.depth.toFixed(1)} m deep, pile ${d.dirt.toFixed(1)}`).join('; ') : 'no digs yet'}; equipment: ${typeof hasEquipment === 'function' ? ['dig', 'rock', 'truck', 'excavator'].filter(hasEquipment).join(', ') || 'none' : 'none'}; finds so far: ${state.foundItems.map(f => f.name).join(', ') || 'none'}
 - Vehicles parked and ready: ${state.vehicles.map(v => v.name).join(', ') || 'none'}${state.knowsLakeDanger ? ' (you know you cannot breathe in deep water)' : ''}
 - In your Storehouse: ${typeof storehouseSummaryForAI === 'function' ? storehouseSummaryForAI() : 'empty'}
+- Thrown into your Disposal Pit (gone forever): ${typeof disposalSummaryForAI === 'function' ? disposalSummaryForAI() : 'nothing yet'}
 - Your hobbies: ${state.hobbies.map(h => `${h.name} (skill ${h.skill}/100)`).join(', ') || 'none yet'}
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
@@ -1653,6 +1665,7 @@ Return ONLY JSON:
   "usedConcept": null OR "name of one of your existing concepts this decision builds on",
   "newConcept": null OR {"name": "2-4 word name for a brand-new idea you just invented", "emoji": "one emoji", "definition": "1 sentence", "builtFrom": ["ideas or things it grew out of"]},
   "updatedWorldview": null OR "1-2 sentences if your philosophy shifted",
+  "discard": null OR {"item": "exact name of something you own that you no longer want", "why": "1 sentence"} (you carry or drive it to your Disposal Pit and throw it in; it is gone forever),
   "checkMail": true OR false (whether you feel like walking to the post office to pick up your mail after this),
 ${state.knowsDigging ? `  "dig": null OR {"x": number, "z": number} (dig or mine at that spot; you need a shovel or pickaxe, a jackhammer once you hit rock, and a dump truck plus excavator once the dirt pile is big; if you lack them you will ask for them),
 ` : ''}
@@ -1821,6 +1834,11 @@ function applyDecision(decision, originLabel) {
         doWhenFree(() => digAt(Number(decision.dig.x), Number(decision.dig.z), 'Decided to Dig'));
       }
 
+      const dc = decision.discard;
+      if (dc && typeof dc === 'object' && typeof disposeItem === 'function' && findOwnedName(dc.item)) {
+        doWhenFree(() => disposeItem(dc.item, str(dc.why, 200), 'Decided to Throw Something Away'));
+      }
+
       if (decision.startHobby && typeof addHobby === 'function') {
         const isNew = !findHobby(decision.startHobby.name);
         const hobby = addHobby(decision.startHobby, `Own idea while: ${title}`);
@@ -1975,6 +1993,11 @@ function runAutonomousLifeTick() {
       if (typeof digAt === 'function' && Math.random() < diggingChance()) {
         const spot = chooseDigSpot();
         digAt(spot.x, spot.z, 'Felt Like Digging');
+        return;
+      }
+      // Now and then he clears out junk and spare copies into the Disposal Pit
+      if (typeof disposeItem === 'function' && Math.random() < disposalChance()) {
+        disposeUnwanted();
         return;
       }
       // With a boat he likes going out on the lake; without one he may wade in and learn the hard way

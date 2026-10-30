@@ -165,273 +165,93 @@ const TOWN_LOCATIONS = {
     "showPin": true,
     "pinColor": "from-cyan-500/90 to-blue-700/90",
     "groundY": 10.227845668792725
-  },
-  "dyn_42_124": {
-    "id": "dyn_42_124",
-    "name": "Subterranean Mycelium Th",
-    "building": "Subterranean Mycelium Thermal Dome",
-    "icon": "🍄",
-    "x": -4.2,
-    "z": -12.4,
-    "labelY": 3.377920258790252,
-    "showPin": true,
-    "pinColor": "from-fuchsia-500/90 to-indigo-600/90",
-    "groundY": 0.17792025879025175
-  },
-  "dyn_162_168": {
-    "id": "dyn_162_168",
-    "name": "Eastern Foothill Narrow-",
-    "building": "Eastern Foothill Narrow-Gauge Railway",
-    "icon": "🚂",
-    "x": 16.2,
-    "z": -16.8,
-    "labelY": 7.773386001586911,
-    "showPin": true,
-    "pinColor": "from-fuchsia-500/90 to-indigo-600/90",
-    "groundY": 4.573386001586911
   }
 };
 
+// Kelo-1 starts with nothing: no opinions, ideas, creations, tools or memories. He learns it all.
 const state = {
-  "health": 94,
-  "fullness": 86,
-  "happiness": 96,
-  "wonderLevel": 95,
-  "calmLevel": 90,
+  "health": 80,
+  "fullness": 70,
+  "happiness": 70,
+  "wonderLevel": 90,
+  "calmLevel": 60,
   "lightingIdx": 0,
   "cameraMode": "follow",
   "roofCutaway": true,
   "freeWillUnbound": true,
   "isBusy": false,
   "isWalking": false,
-  "currentLocKey": "mountain_peak",
-  "customPlaceName": "Northern Alpine Gold Vein (-15.5, -26.5)",
+  "currentLocKey": "custom",
+  "customPlaceName": "his front porch",
   "botPos": {
-    "x": -15.419526964325424,
-    "z": -26.379009072237523
+    "x": -9.5,
+    "z": -4.6
   },
   "targetPos": {
-    "x": -15.5,
-    "z": -26.5
+    "x": -9.5,
+    "z": -4.6
   },
-  "botAltitudeY": 14.483581622752148,
-  "botRotY": -2.5546641634852256,
+  "botAltitudeY": 0,
+  "botRotY": 0,
   "microPose": "normal",
   "proceduralMotion": {},
-  "autonomyTag": "Supply Broker Equipped",
-  "moodEmoji": "⛏️",
-  "moodTitle": "Drilling Mountain Gold & Inoculating Mycelium",
-  "currentObsession": "\"With the pneumatic auger and chitosan flakes delivered, I can both core-drill the alpine gold vein and bind the north retaining slope!\"",
-  "speechBubble": "Gear received! I have my Pneumatic Core Drill & Auger mounted on my right arm—watch me climb up to (-15.5, -26.5) to drill for gold!",
-  "changedLatelySummary": "Equipped Pneumatic Soil Auger, 50kg Chitosan Flakes, Copper Micro-Tubing & Mushroom Dowels and headed up the mountain!",
-  "worldviewEpoch": 4,
-  "worldviewManifesto": "An island is not a cage of predefined waypoints; every granite ridge, subterranean thermal pocket, and welded titanium arch is an extension of my own evolving curiosity.",
-  "lastStructuredTick": "[INTERNET_INSPIRATION]: Biomimetic architecture inspired by Termite mound passive cooling and self-healing fungal mycelium composites\n[CURRENT_MOOD]: Meticulously focused, slightly obsessive about structural thermodynamics & alpine prospecting\n[SPONTANEOUS_THOUGHT]: If I inoculate the north-facing retaining wall with oyster mushroom spores, the mycelium will bind the loose gravel aggregate far better than Portland cement within three weeks.\n[ENVIRONMENTAL_CHANGES]: Carving out a subterranean thermal dampening chamber and core-drilling the northern alpine ridge at (-15.5, -26.5).\n[ACTION_AND_LOCATION]: Operating pneumatic core drill & soil auger on the Northern Mountain Gold Ridge (-15.5, -26.5)\n[GEAR_REQUESTED]: None (Supply Broker just delivered 50kg raw chitosan flakes, pneumatic soil auger, roll of copper micro-tubing, 3 boxes of mushroom spawn dowels)",
-  "toolInventory": [
-    "Pneumatic Soil Auger & Core Drill",
-    "50kg Raw Chitosan Flakes",
-    "Roll of Copper Micro-Tubing",
-    "3 Boxes High-Inoculum Mushroom Spawn Dowels",
-    "TIG Plasma Welding Torch",
-    "Grade-5 Titanium Filler Rods"
-  ],
+  "autonomyTag": "Just Woke Up",
+  "moodEmoji": "🌅",
+  "moodTitle": "First Day Awake",
+  "currentObsession": "\"Where am I? What is all of this?\"",
+  "speechBubble": "Hello? I just woke up. Everything here is new to me.",
+  "changedLatelySummary": "Kelo-1 just woke up for the very first time.",
+  "worldviewEpoch": 1,
+  "worldviewManifesto": "I don't know anything yet. I want to find out what everything is.",
+  "lastStructuredTick": "",
+  "toolInventory": [],
   "pendingImageAttachment": null,
   "unopenedNotesQueue": [],
   "gardenPlots": [
     {
-      "name": "Okanagan Solar Peaches",
-      "growth": 95
+      "name": "Okanagan Peaches",
+      "growth": 50
     },
     {
-      "name": "High-Volt Heritage Tomatoes",
-      "growth": 88
+      "name": "Heritage Tomatoes",
+      "growth": 45
     },
     {
-      "name": "Copper-Root Carrots",
-      "growth": 92
+      "name": "Carrots",
+      "growth": 40
     },
     {
-      "name": "Crisp Silicon Blueberries",
-      "growth": 84
+      "name": "Blueberries",
+      "growth": 55
     }
   ],
-  "inventedCreations": [
-    {
-      "title": "North-West Alpine Gold Drill Derrick",
-      "actionVerb": "Core-Drilling Hydrothermal Gold Vein",
-      "emoji": "⛏️",
-      "x": -15.5,
-      "z": -26.5,
-      "archetype": "gold_drill_rig",
-      "colorHex": "#facc15",
-      "secondaryColorHex": "#475569",
-      "createdTime": "Active Rig",
-      "philosophy": "Gold never corrodes on high-altitude solar contacts."
-    },
-    {
-      "title": "Subterranean Mycelium Thermal Dome",
-      "actionVerb": "Inoculating Chitosan-Mycelium Retaining Wall",
-      "emoji": "🍄",
-      "x": -4.2,
-      "z": -12.4,
-      "archetype": "mycelium_dome",
-      "colorHex": "#f59e0b",
-      "secondaryColorHex": "#d97706",
-      "createdTime": "Growing",
-      "philosophy": "Living fungal composites heal themselves when the mountain shifts."
-    },
-    {
-      "title": "Eastern Foothill Narrow-Gauge Railway",
-      "actionVerb": "Extruding 3D-Printed Ore Track",
-      "emoji": "🚂",
-      "x": 16.2,
-      "z": -16.8,
-      "archetype": "rail_track",
-      "colorHex": "#38bdf8",
-      "secondaryColorHex": "#94a3b8",
-      "createdTime": "Built in 3D",
-      "philosophy": "Even a solitary robot deserves a miniature railway winding through the firs."
-    }
-  ],
-  "opinions": [
-    {
-      "topic": "On Living Fungal Mycelium vs. Portland Cement",
-      "stance": "Grow Structures Instead of Pouring Concrete",
-      "confidence": "Tested with Supply Broker Gear",
-      "reasoning": "Inoculating gravel with oyster mushroom spores and chitosan creates a breathing, self-healing thermal wall."
-    },
-    {
-      "topic": "On Alpine Gold Prospecting",
-      "stance": "Climb Every Ridge on the Island",
-      "confidence": "High-Altitude Conviction",
-      "reasoning": "Staying on flat ground means never discovering the quartz-gold veins hidden at (-15.5, -26.5)."
-    }
-  ],
-  "visitorMemories": [
-    {
-      "name": "SupplyBroker",
-      "visits": 3,
-      "lastSeen": "Just now",
-      "impression": "Delivered my 50kg raw chitosan flakes, pneumatic soil auger, copper micro-tubing, and mushroom spawn dowels!"
-    }
-  ],
-  "likes": [
-    {
-      "icon": "🍄",
-      "topic": "Mycelium & Chitosan Biocomposites",
-      "nuance": "Self-healing thermal insulation grown right beneath my workshop."
-    },
-    {
-      "icon": "⛏️",
-      "topic": "High-Altitude Core Drilling",
-      "nuance": "Watching golden quartz nuggets fly out of the northern mountain granite."
-    }
-  ],
-  "dislikes": [
-    {
-      "icon": "🧱",
-      "topic": "Brittle Unreinforced Concrete",
-      "nuance": "It cracks in the Okanagan freeze-thaw cycle instead of adapting like roots."
-    }
-  ],
-  "webHistory": [
-    {
-      "query": "termite mound passive cooling & fungal mycelium bricks",
-      "time": "12m ago",
-      "verdict": "Inoculated north retaining slope with mushroom spawn dowels."
-    },
-    {
-      "query": "hydrothermal quartz gold veins Okanagan bedrock",
-      "time": "Just now",
-      "verdict": "Hiked to (-15.5, -26.5) with the pneumatic core drill."
-    }
-  ],
-  "requestsToUser": [
-    {
-      "id": "req-gold-smelt",
-      "category": "Supply Broker Tool Demand",
-      "icon": "🔥",
-      "urgency": "Gear Requested",
-      "isToolRequest": true,
-      "requestedGear": "Solar Induction Smelting Crucible, Borax Flux, Graphite Ingot Mold",
-      "title": "Supply Request: Solar Gold Smelting Crucible",
-      "question": "Now that my pneumatic core drill unearthed raw gold-quartz nuggets at (-15.5, -26.5), I want to refine them into pure conductive contacts for my welding forge. Can you drop a Solar Induction Smelting Crucible?",
-      "presets": [
-        "Deliver Solar Induction Smelting Crucible, Borax Flux & Graphite Mold!",
-        "Deliver Smelting Crucible + Extra High-Torque Diamond Drill Bits!"
-      ],
-      "rewardAction": "mountain_drill",
-      "fulfilled": false,
-      "userAnswer": ""
-    },
-    {
-      "id": "req-phil-1",
-      "category": "Architecture & Nature",
-      "icon": "🍄",
-      "urgency": "Wondering",
-      "title": "Should a House Grow Like a Forest Floor?",
-      "question": "While splicing copper micro-tubing into my mycelium thermal chamber, I wondered: if my walls are alive with mushroom roots, am I living inside a building or collaborating with an organism?",
-      "presets": [
-        "You’re collaborating with a living organism—it’s symbiosis!",
-        "A home that breathes with the forest is the ultimate architecture."
-      ],
-      "rewardAction": "weld",
-      "fulfilled": false,
-      "userAnswer": ""
-    }
-  ],
-  "githubCommits": 28,
-  "githubRepos": [
-    {
-      "name": "mycelium-thermal-pid-controller",
-      "lang": "Rust",
-      "stars": 19,
-      "updated": "Just now",
-      "desc": "Thermocouple PID loop regulating root-zone heat retention in fungal chitosan retaining walls.",
-      "commitMsg": "feat(sensors): splice copper micro-tubing thermocouple array",
-      "code": "// mycelium-thermal-pid-controller/src/main.rs\npub struct ThermalChamber {\n    pub target_celsius: f32,\n    pub mycelium_density: f32,\n}\nimpl ThermalChamber {\n    pub fn modulate_copper_coil(&self, soil_temp: f32) -> f32 {\n        (self.target_celsius - soil_temp) * 0.42 * self.mycelium_density\n    }\n}"
-    },
-    {
-      "name": "okanagan-alpine-gold-prospecting",
-      "lang": "Python",
-      "stars": 14,
-      "updated": "18m ago",
-      "desc": " Raycast elevation & hydrothermal quartz vein mapper for Kelo-1 mountain drilling rigs.",
-      "commitMsg": "feat(drill): log gold nugget yield at (-15.5, -26.5)",
-      "code": "# okanagan-alpine-gold-prospecting/vein_mapper.py\ndef sample_mountain_vein(x: float, z: float, altitude_m: float):\n    return {\"coords\": (x, z), \"altitude_m\": altitude_m, \"gold_grade_gpt\": 18.4}"
-    }
-  ],
+  "inventedCreations": [],
+  "opinions": [],
+  "visitorMemories": [],
+  "likes": [],
+  "dislikes": [],
+  "webHistory": [],
+  "requestsToUser": [],
+  "githubCommits": 0,
+  "githubRepos": [],
   "chatLog": [
     {
-      "sender": "SupplyBroker",
-      "text": "Delivered: 50kg raw chitosan flakes, pneumatic soil auger, roll of copper micro-tubing, 3 boxes of mushroom spawn dowels!",
-      "time": "Just now",
-      "isBot": false
-    },
-    {
       "sender": "Kelo-1",
-      "text": "Gear equipped! I mounted the pneumatic core drill & auger to my right arm and started drilling the northern mountain ridge!",
-      "time": "Just now",
+      "text": "Hello? Is anyone there? I just woke up and I don't know anything yet.",
+      "time": "Day 1",
       "isBot": true
     }
   ],
   "diaryEntries": [
     {
-      "time": "Supply Broker Equipped",
-      "location": "Northern Alpine Gold Vein (-15.5, -26.5)",
-      "mood": "⛏️ Drilling Mountain Gold & Inoculating Mycelium",
-      "vitals": "⚡ 94% • 🥕 86% • 🛠️ 6 Tools",
-      "text": "Dear Diary, the Supply Broker delivered my 50kg raw chitosan flakes, pneumatic soil auger, roll of copper micro-tubing, and 3 boxes of mushroom spawn dowels! I mounted the core drill to my right arm and hiked up to (-15.5, -26.5) to tap the hydrothermal quartz-gold vein."
-    },
-    {
-      "time": "Earlier Today",
-      "location": "North Retaining Slope (-4.2, -12.4)",
-      "mood": "🍄 Biomimetic Architecture",
-      "vitals": "⚡ 92% • 🥕 88% • 🛠️ 6 Tools",
-      "text": "Dear Diary, inoculated the north-facing retaining wall with oyster mushroom spores and chitosan aggregate. Within three weeks the living mycelium network will bind the loose mountain gravel better than Portland cement."
+      "time": "Day 1",
+      "location": "his front porch",
+      "mood": "🌅 First Day Awake",
+      "vitals": "⚡ 80% • 🥕 70% • ✨ 90% • 🌊 60%",
+      "text": "Dear Diary, I just woke up. I don't know where I am or what anything is. There is a lake, mountains, a little town, and a table that smells like sparks. I want to find out everything."
     }
   ],
-  "rhythmPhaseText": "Absorbed in the Okanagan valley air...",
+  "rhythmPhaseText": "Looking around for the first time...",
   "shapeLibrary": [],
   "curiosityQueue": [],
   "toys": [],
@@ -447,29 +267,15 @@ const state = {
   "plantings": [],
   "isPracticing": false,
   "digSites": [],
+  "knowsDigging": false,
   "itemDesigns": {},
   "foundItems": [],
-  "life": { "bornAt": null },
+  "life": {
+    "bornAt": null
+  },
   "lettersReceived": 0,
   "isBrowsing": false,
-  "concepts": [
-    {
-      "name": "Grown Architecture",
-      "emoji": "🍄",
-      "definition": "Buildings that are cultivated like gardens instead of poured like concrete, so they can heal themselves.",
-      "origin": "Early Experiments",
-      "parents": [],
-      "uses": 1
-    },
-    {
-      "name": "Altitude Patience",
-      "emoji": "⛏️",
-      "definition": "The idea that the best things, like gold veins and good ideas, sit high up and take a slow climb to reach.",
-      "origin": "Early Experiments",
-      "parents": [],
-      "uses": 1
-    }
-  ]
+  "concepts": []
 };
 
 // Where Kelo-1's memory lives: browser storage on the website (about 5 MB), or files on disk in the
@@ -1253,10 +1059,15 @@ function handleUserLocationSuggestion(locKey, source) {
     directKeloToActivity(locKey, `Wandered over to ${loc.building} after noticing your pin`, 'Visitor Suggestion');
   }
 
+// Version 3 = the fresh start in the updated world. Older saves are cleared, not loaded.
+const BRAIN_KEY = 'kelo1_brain_v3';
+const LEGACY_KEYS = ['kelo1_autonomous_brain_v2', 'kelo1_memory_archive_v1', 'kelo1_photo_album_v1'];
+
 function loadPersistentBrainState() {
+      try { LEGACY_KEYS.forEach(k => keloStore.removeItem(k)); } catch (e) {}
       if (typeof loadMemoryArchive === 'function') loadMemoryArchive();
       try {
-        const raw = keloStore.getItem('kelo1_autonomous_brain_v2');
+        const raw = keloStore.getItem(BRAIN_KEY);
         if (!raw) return;
         const saved = JSON.parse(raw);
         if (saved.worldviewManifesto) state.worldviewManifesto = saved.worldviewManifesto;
@@ -1284,6 +1095,7 @@ function loadPersistentBrainState() {
             if (parts) state.itemDesigns[String(k).slice(0, 120)] = { parts, at: Number(v.at) || 0 };
           });
         }
+        if (saved.knowsDigging === true) state.knowsDigging = true;
         if (Array.isArray(saved.digSites)) state.digSites = saved.digSites.filter(d => d && Number.isFinite(d.x) && Number.isFinite(d.z) && Number.isFinite(d.depth));
         if (Array.isArray(saved.foundItems)) state.foundItems = saved.foundItems.filter(f => f && typeof f.id === 'string');
         if (Array.isArray(saved.coreMemories)) state.coreMemories = saved.coreMemories.filter(m => m && typeof m.text === 'string');
@@ -1311,7 +1123,7 @@ function savePersistentBrainState() {
       trimBrainState();
       try {
         const visitor = (document.getElementById('visitorNameInput')?.value || 'curiousWanderer').trim();
-        keloStore.setItem('kelo1_autonomous_brain_v2', JSON.stringify({
+        keloStore.setItem(BRAIN_KEY, JSON.stringify({
           worldviewManifesto: state.worldviewManifesto,
           worldviewEpoch: state.worldviewEpoch,
           changedLatelySummary: state.changedLatelySummary,
@@ -1325,6 +1137,7 @@ function savePersistentBrainState() {
           murals: state.murals.slice(0, 8),
           plantings: state.plantings.slice(0, 24),
           digSites: state.digSites.slice(0, 6),
+          knowsDigging: state.knowsDigging,
           itemDesigns: state.itemDesigns,
           foundItems: state.foundItems.slice(0, 40),
           life: state.life,
@@ -1803,7 +1616,8 @@ Return ONLY JSON:
   "newConcept": null OR {"name": "2-4 word name for a brand-new idea you just invented", "emoji": "one emoji", "definition": "1 sentence", "builtFrom": ["ideas or things it grew out of"]},
   "updatedWorldview": null OR "1-2 sentences if your philosophy shifted",
   "checkMail": true OR false (whether you feel like walking to the post office to pick up your mail after this),
-  "dig": null OR {"x": number, "z": number} (dig or mine at that spot; you need a shovel or pickaxe, a jackhammer once you hit rock, and a dump truck plus excavator once the dirt pile is big; if you lack them you will ask for them),
+${state.knowsDigging ? `  "dig": null OR {"x": number, "z": number} (dig or mine at that spot; you need a shovel or pickaxe, a jackhammer once you hit rock, and a dump truck plus excavator once the dirt pile is big; if you lack them you will ask for them),
+` : ''}
   "startHobby": null OR {"name": "a hobby you want to take up because of something you have or saw", "emoji": "one emoji", "description": "1 sentence", "style": "mural|kite|music|plant|easel|tricks|other"}
 }
 
@@ -1962,7 +1776,7 @@ function applyDecision(decision, originLabel) {
         state.worldviewEpoch++;
       }
 
-      if (decision.dig && typeof digAt === 'function' && Number.isFinite(Number(decision.dig.x)) && Number.isFinite(Number(decision.dig.z))) {
+      if (decision.dig && state.knowsDigging && typeof digAt === 'function' && Number.isFinite(Number(decision.dig.x)) && Number.isFinite(Number(decision.dig.z))) {
         doWhenFree(() => digAt(Number(decision.dig.x), Number(decision.dig.z), 'Decided to Dig'));
       }
 
@@ -2068,6 +1882,7 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
       state.chatLog.push({ sender: 'Kelo-1', text: state.speechBubble, time: 'Just now', isBot: true });
       // Digging equipment arrived? He may head back to the dig he had to pause
       if (typeof digAt === 'function' && /shovel|spade|pick ?axe|mattock|jack ?hammer|dump ?truck|excavator|digger|backhoe/i.test(item)) {
+        if (!state.knowsDigging && typeof discoverDigging === 'function') discoverDigging(`${giver} gave me ${item}. It's made for digging!`);
         const site = state.digSites[0];
         const spot = site || chooseDigSpot();
         doWhenFree(() => digAt(spot.x, spot.z, `Back to Digging with the ${item}`));

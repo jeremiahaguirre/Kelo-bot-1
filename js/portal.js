@@ -21,7 +21,7 @@ const GIFT_CATALOG = [
 const MAX_PHOTOS_PER_SEND = 4;
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
 const MAX_ALBUM = keloStore.isDesktop ? 2000 : 12;
-const ALBUM_STORAGE_KEY = 'kelo1_photo_album_v1';
+const ALBUM_STORAGE_KEY = 'kelo1_photo_album_v2';
 
 let pendingPortalPhotos = [];
 

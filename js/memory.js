@@ -6,7 +6,7 @@
 // - Life stats track how long he has existed and what he has done.
 // - His whole brain can be exported to a file and imported again (API keys are never included).
 
-const ARCHIVE_KEY = 'kelo1_memory_archive_v1';
+const ARCHIVE_KEY = 'kelo1_memory_archive_v2';
 // The desktop app has a 10 GB budget on disk, so it keeps (practically) everything
 const MAX_ARCHIVED_DIARY = keloStore.isDesktop ? 250000 : 1500;
 const MAX_ARCHIVED_OPINIONS = keloStore.isDesktop ? 50000 : 300;

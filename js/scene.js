@@ -218,7 +218,7 @@ function buildAlpineTerrainAndMountains3D() {
       // Okanagan Lake Water Surface in the South
       const lakeMesh = new THREE.Mesh(
         new THREE.PlaneGeometry(110, 40),
-        new THREE.MeshStandardMaterial({ color: 0x1288c9, roughness: 0.15, metalness: 0.15, transparent: true, opacity: 0.94 })
+        new THREE.MeshStandardMaterial({ color: 0x0b5f99, roughness: 0.18, metalness: 0.2, transparent: true, opacity: 0.95 })
       );
       lakeMesh.rotation.x = -Math.PI / 2;
       lakeMesh.position.set(0, -0.18, 26);
@@ -257,13 +257,8 @@ function buildAlpineTerrainAndMountains3D() {
       sailboatGroup.position.set(-8, -0.15, 15.5);
       scene.add(sailboatGroup);
 
-      ogopogoGroup = new THREE.Group();
-      for (let h = 0; h < 3; h++) {
-        const hump = new THREE.Mesh(new THREE.SphereGeometry(0.38, 10, 10), new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.4 }));
-        hump.position.x = h * 0.85;
-        ogopogoGroup.add(hump);
-      }
-      ogopogoGroup.position.set(6, -0.25, 16.5);
+      ogopogoGroup = buildSeaDragon3D();
+      ogopogoGroup.position.set(6, -0.2, 16.5);
       scene.add(ogopogoGroup);
 
       // Soaring Alpine Bird Flock
@@ -421,6 +416,139 @@ function refreshTerrainAround(cx, cz, radius) {
       pos.needsUpdate = true;
       col.needsUpdate = true;
       geo.computeVertexNormals();
+    }
+
+// --- Ogopogo, the Okanagan Lake sea dragon --------------------------------------------------
+const DRAGON_LENGTH = 9;
+const DRAGON_RINGS = 72;
+const DRAGON_SIDES = 12;
+
+// Where the body runs at a point along its length (0 = tail tip, 1 = neck), rising in coils
+function dragonSpine(u, t) {
+      const x = (u - 0.5) * DRAGON_LENGTH;
+      const wave = Math.sin(u * Math.PI * 3.2 - t * 1.6);
+      // The neck lifts high out of the water; the coils break the surface in arches
+      const neckLift = Math.pow(Math.max(0, u - 0.82) / 0.18, 1.6) * 2.2;
+      return new THREE.Vector3(x, wave * 0.75 + neckLift, Math.sin(u * Math.PI * 2 + t * 0.7) * 0.35);
+    }
+
+// Thickest in the middle, tapering to a thin tail and a slimmer neck
+function dragonRadius(u) {
+      return 0.08 + Math.sin(Math.min(1, u * 1.15) * Math.PI) * 0.36 * (u > 0.8 ? 0.75 : 1);
+    }
+
+function buildSeaDragon3D() {
+      const dragon = new THREE.Group();
+      const skin = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.45, metalness: 0.15, vertexColors: true });
+      const bodyGeo = new THREE.BufferGeometry();
+      const verts = new Float32Array((DRAGON_RINGS + 1) * (DRAGON_SIDES + 1) * 3);
+      const colors = new Float32Array(verts.length);
+      const index = [];
+      for (let i = 0; i < DRAGON_RINGS; i++) {
+        for (let j = 0; j < DRAGON_SIDES; j++) {
+          const a = i * (DRAGON_SIDES + 1) + j, b = a + DRAGON_SIDES + 1;
+          index.push(a, b, a + 1, b, b + 1, a + 1);
+        }
+      }
+      // Pale belly, dark green back with a lighter stripe
+      for (let i = 0; i <= DRAGON_RINGS; i++) {
+        for (let j = 0; j <= DRAGON_SIDES; j++) {
+          const ang = (j / DRAGON_SIDES) * Math.PI * 2;
+          const c = new THREE.Color(Math.sin(ang) < -0.3 ? 0xd9f99d : (Math.abs(Math.sin(ang * 3)) > 0.9 ? 0x22c55e : 0x166534));
+          const k = (i * (DRAGON_SIDES + 1) + j) * 3;
+          colors[k] = c.r; colors[k + 1] = c.g; colors[k + 2] = c.b;
+        }
+      }
+      bodyGeo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+      bodyGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      bodyGeo.setIndex(index);
+      const body = new THREE.Mesh(bodyGeo, skin);
+      body.castShadow = true;
+      dragon.add(body);
+
+      // Head: long snout, lower jaw, glowing eyes, swept-back horns and frills
+      const head = new THREE.Group();
+      const headMat = new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.45, metalness: 0.15 });
+      const skull = new THREE.Mesh(new THREE.SphereGeometry(0.42, 16, 12), headMat);
+      skull.scale.set(1.2, 0.85, 0.9);
+      const snout = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.3, 0.75, 12), headMat);
+      snout.rotation.z = -Math.PI / 2;
+      snout.position.set(0.6, -0.04, 0);
+      const jaw = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.1, 0.34), new THREE.MeshStandardMaterial({ color: 0xbef264, roughness: 0.6 }));
+      jaw.position.set(0.55, -0.24, 0);
+      jaw.rotation.z = -0.18;
+      const eyeMat = new THREE.MeshStandardMaterial({ color: 0xfde047, emissive: 0xfacc15, emissiveIntensity: 0.9 });
+      [-1, 1].forEach(side => {
+        const eye = new THREE.Mesh(new THREE.SphereGeometry(0.08, 10, 8), eyeMat);
+        eye.position.set(0.25, 0.14, side * 0.3);
+        const horn = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.6, 8), new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.4 }));
+        horn.position.set(-0.25, 0.42, side * 0.18);
+        horn.rotation.set(side * 0.25, 0, 0.9);
+        const frillShape = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(-0.55, 0.35), new THREE.Vector2(-0.45, 0.05), new THREE.Vector2(-0.6, -0.15)]);
+        const frill = new THREE.Mesh(new THREE.ExtrudeGeometry(frillShape, { depth: 0.02, bevelEnabled: false }), new THREE.MeshStandardMaterial({ color: 0x0f766e, side: THREE.DoubleSide }));
+        frill.position.set(-0.2, 0.0, side * 0.33);
+        const nostril = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 6), new THREE.MeshStandardMaterial({ color: 0x052e16 }));
+        nostril.position.set(0.95, 0.08, side * 0.08);
+        head.add(eye, horn, frill, nostril);
+      });
+      head.add(skull, snout, jaw);
+      dragon.add(head);
+
+      // Back spines and a tail fin, placed along the body every frame
+      const spineMat = new THREE.MeshStandardMaterial({ color: 0x0f766e, roughness: 0.5 });
+      const spines = [];
+      for (let k = 0; k < 14; k++) {
+        const spike = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.32, 6), spineMat);
+        spike.userData.u = 0.12 + k * 0.05;
+        spines.push(spike);
+        dragon.add(spike);
+      }
+      const finShape = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(-0.7, 0.55), new THREE.Vector2(-0.45, 0), new THREE.Vector2(-0.7, -0.55)]);
+      const tailFin = new THREE.Mesh(new THREE.ExtrudeGeometry(finShape, { depth: 0.03, bevelEnabled: false }), spineMat);
+      dragon.add(tailFin);
+
+      dragon.userData = { body, head, spines, tailFin };
+      updateSeaDragon(0, dragon);
+      return dragon;
+    }
+
+// Re-shape the body each frame so it swims in rolling coils
+function updateSeaDragon(t, dragon = ogopogoGroup) {
+      if (!dragon || !dragon.userData.body) return;
+      const { body, head, spines, tailFin } = dragon.userData;
+      const pos = body.geometry.attributes.position;
+      const up = new THREE.Vector3(0, 1, 0);
+      for (let i = 0; i <= DRAGON_RINGS; i++) {
+        const u = i / DRAGON_RINGS;
+        const p = dragonSpine(u, t);
+        const tangent = dragonSpine(Math.min(1, u + 0.01), t).sub(dragonSpine(Math.max(0, u - 0.01), t)).normalize();
+        const side = new THREE.Vector3().crossVectors(tangent, up).normalize();
+        const normal = new THREE.Vector3().crossVectors(side, tangent).normalize();
+        const r = dragonRadius(u);
+        for (let j = 0; j <= DRAGON_SIDES; j++) {
+          const ang = (j / DRAGON_SIDES) * Math.PI * 2;
+          const k = (i * (DRAGON_SIDES + 1) + j) * 3;
+          pos.array[k] = p.x + (normal.x * Math.sin(ang) + side.x * Math.cos(ang)) * r;
+          pos.array[k + 1] = p.y + (normal.y * Math.sin(ang) + side.y * Math.cos(ang)) * r;
+          pos.array[k + 2] = p.z + (normal.z * Math.sin(ang) + side.z * Math.cos(ang)) * r;
+        }
+      }
+      pos.needsUpdate = true;
+      body.geometry.computeVertexNormals();
+      body.geometry.computeBoundingSphere();
+
+      const neck = dragonSpine(1, t);
+      head.position.set(neck.x + 0.25, neck.y + 0.1, neck.z);
+      head.rotation.z = Math.sin(t * 0.9) * 0.12 - 0.1;
+      head.rotation.y = Math.sin(t * 0.6) * 0.25;
+      spines.forEach(s => {
+        const p = dragonSpine(s.userData.u, t);
+        s.position.set(p.x, p.y + dragonRadius(s.userData.u) + 0.1, p.z);
+        s.rotation.z = 0.35;
+      });
+      const tail = dragonSpine(0, t);
+      tailFin.position.set(tail.x, tail.y, tail.z);
+      tailFin.rotation.z = Math.sin(t * 1.6) * 0.3;
     }
 
 // --- Stylized sky, clouds, round trees, flowers and rocks ---------------------------------------
@@ -1600,8 +1728,9 @@ function animateDiorama() {
         sailboatGroup.rotation.z = Math.sin(t * 1.8) * 0.05;
       }
       if (ogopogoGroup) {
-        ogopogoGroup.position.y = -0.3 + Math.sin(t * 3.0) * 0.12;
-        ogopogoGroup.position.x = 6 + Math.sin(t * 0.45) * 4.5;
+        ogopogoGroup.position.x = 6 + Math.sin(t * 0.12) * 6;
+        ogopogoGroup.rotation.y = Math.cos(t * 0.12) > 0 ? 0 : Math.PI; // turn around at each end of the swim
+        updateSeaDragon(t);
       }
       if (birdFlockGroup) {
         birdFlockGroup.position.x = -20 + Math.sin(t * 0.18) * 12;

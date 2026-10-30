@@ -406,7 +406,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btnInventOwnAction')?.addEventListener('click', () => {
-    synthesizeUnboundedExperience(null, 'Autonomous AI Task');
+    decideNextAction(null, 'Invented Himself');
   });
 
   document.getElementById('chatForm')?.addEventListener('submit', (e) => {

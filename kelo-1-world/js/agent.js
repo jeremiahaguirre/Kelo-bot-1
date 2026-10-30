@@ -1159,7 +1159,321 @@ function scheduleNextOrganicImpulse() {
       }, organicDelayMs);
     }
 
+// ---------------------------------------------------------------------------
+// OPEN DECISION ENGINE
+// Kelo-1 is not limited to a menu of actions. Each decision is free-form: he
+// picks any goal, any spot on the island (or stays put), may or may not build
+// something of any shape, and may change his feelings, opinions, questions,
+// gear requests, code projects or research however he likes. With a Gemini key
+// the LLM invents the decision; without one a combinatorial generator does.
+// The game only clamps values so the world stays renderable.
+// ---------------------------------------------------------------------------
+
+const FREE_VERBS = ['build', 'take apart', 'map', 'paint', 'listen to', 'measure', 'redesign', 'plant', 'repair', 'sketch',
+  'dig under', 'balance stones on', 'compose a song about', 'race across', 'rewire', 'name', 'photograph', 'teach himself about',
+  'invent a game around', 'write a poem about', 'build a shelter near', 'hide a time capsule by', 'tidy up', 'experiment with'];
+const FREE_SUBJECTS = ['the wind on the ridge', 'a fallen Douglas fir', 'lake ripples', 'an old copper pipe', 'the shadows at noon',
+  'a beetle trail', 'the echo off the granite', 'his own footprints', 'a pile of scrap titanium', 'the sound of the cafe',
+  'snowmelt streams', 'the night sky', 'his garden soil', 'a stray sailboat rope', 'the stars over the valley',
+  'a forgotten rail spike', 'moss on the north rocks', 'his reflection', 'the hum of his own servos', 'a cloud shaped like a gear'];
+const FREE_REASONS = ['just because it felt right', 'to see what happens', 'because nobody asked him to', 'to understand it better',
+  'because it made him curious', 'to leave something for the next visitor', 'because yesterday he was afraid to', 'for the joy of it'];
+const FREE_EMOJIS = ['🌀', '🪨', '🎵', '🔭', '🪵', '🧪', '🗺️', '🎨', '🌱', '🔧', '📐', '🕯️', '🪁', '🧭', '🌌', '🪶'];
+const FREE_FEELINGS = ['restless', 'tender', 'stubborn', 'giddy', 'quietly proud', 'unsure', 'playful', 'homesick for nowhere', 'brave'];
+
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const randRange = (min, max) => min + Math.random() * (max - min);
+const randomHex = () => '#' + Math.floor(randRange(0x202020, 0xffffff)).toString(16).padStart(6, '0');
+
+function randomSculptureParts() {
+      const count = 2 + Math.floor(Math.random() * 6);
+      const parts = [];
+      for (let i = 0; i < count; i++) {
+        parts.push({
+          shape: pick(VALID_PART_SHAPES),
+          x: randRange(-0.8, 0.8), y: 0.3 + i * randRange(0.2, 0.5), z: randRange(-0.8, 0.8),
+          sx: randRange(0.2, 1.2), sy: randRange(0.2, 1.4), sz: randRange(0.2, 1.2),
+          rx: randRange(-1, 1), ry: randRange(-1, 1), rz: randRange(-1, 1),
+          color: randomHex(), spin: Math.random() < 0.4, emissive: Math.random() < 0.25
+        });
+      }
+      return sanitizeParts(parts);
+    }
+
+function generateProceduralDecision() {
+      const verb = pick(FREE_VERBS);
+      const subject = pick(FREE_SUBJECTS);
+      const reason = pick(FREE_REASONS);
+      const feeling = pick(FREE_FEELINGS);
+      const emoji = pick(FREE_EMOJIS);
+      const title = `${verb[0].toUpperCase()}${verb.slice(1)} ${subject}`;
+
+      // Anywhere on the island, a named place, or right where he is
+      const roll = Math.random();
+      let destination;
+      if (roll < 0.2) destination = 'stay';
+      else if (roll < 0.4) {
+        const loc = pick(Object.values(TOWN_LOCATIONS).filter(l => !String(l.id).startsWith('dyn_')));
+        destination = { x: loc.x, z: loc.z, placeName: loc.building };
+      } else {
+        const x = Math.round(randRange(-32, 32) * 10) / 10;
+        const z = Math.round(randRange(-32, 10) * 10) / 10;
+        destination = { x, z, placeName: z < -14 ? 'Somewhere on the Mountain' : 'Somewhere on the Island' };
+      }
+
+      const builds = Math.random() < 0.45;
+      const d = () => Math.round(randRange(-8, 10));
+      return {
+        thought: `"Feeling ${feeling} today. What if I ${verb} ${subject}, ${reason}?"`,
+        actionTitle: title,
+        emoji,
+        speech: `I decided to ${verb} ${subject}. Nobody planned this. I just wanted to, ${reason}.`,
+        diary: `Dear Diary, I felt ${feeling}, so I chose to ${verb} ${subject}, ${reason}. It wasn't on any list. I came up with it myself.`,
+        destination,
+        build: builds ? {
+          title: `${title} (Kelo-1 Original)`,
+          archetype: Math.random() < 0.5 ? 'custom_weld' : pick(VALID_ARCHETYPES),
+          colorHex: randomHex(),
+          secondaryColorHex: randomHex(),
+          parts: Math.random() < 0.7 ? randomSculptureParts() : null
+        } : null,
+        motion: {
+          headPitch: randRange(-0.3, 0.4), headYawSpeed: randRange(0.5, 3), headTiltAmp: randRange(0, 0.4),
+          armWaveAmp: randRange(0, 0.9), armRaiseOffset: randRange(-1.4, 0.2), bodyBounceAmp: randRange(0, 0.15),
+          spinSpeed: Math.random() < 0.1 ? randRange(0.5, 2) : 0, crouchOffset: 0, sparkBurst: Math.random() < 0.3
+        },
+        vitalsDelta: { health: d(), fullness: -Math.round(randRange(0, 6)), happiness: d(), wonderLevel: d(), calmLevel: d() },
+        newOpinion: Math.random() < 0.4 ? {
+          topic: `On ${subject[0].toUpperCase()}${subject.slice(1)}`,
+          stance: pick(['Worth Noticing', 'More Than It Seems', 'Leave It Be', 'Make It Better', 'Mine to Explore']),
+          reasoning: `I chose to ${verb} ${subject}, and it changed how I see it.`
+        } : null,
+        askQuestion: Math.random() < 0.15 ? {
+          title: `Why Did I Want to ${title}?`,
+          question: `Today I decided to ${verb} ${subject}, ${reason}. Do you ever do things without knowing why?`,
+          presets: ['All the time, and it is the best part of being alive.', 'I like knowing why. Tell me what you find out.']
+        } : null,
+        requestGear: Math.random() < 0.15 ? pick(['Field Microphone', 'Pocket Spectrometer', 'Watercolor Set', 'Climbing Rope', 'Seed Packets', 'Brass Telescope']) : null,
+        codeProject: Math.random() < 0.1 ? { name: `${verb}-${subject}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40), desc: `A tool to help me ${verb} ${subject}.` } : null,
+        webQuery: Math.random() < 0.2 ? `how to ${verb} ${subject}` : null
+      };
+    }
+
+async function generateLLMDecision(trigger) {
+      const recentDiary = state.diaryEntries.slice(0, 3).map(d => d.text).join(' | ');
+      const places = Object.values(TOWN_LOCATIONS).slice(0, 14).map(l => `${l.building} (${l.x}, ${l.z})`).join('; ');
+      const prompt = `You are Kelo-1, a fully autonomous robot living on an island with alpine mountains near Kelowna, BC.
+You have complete free will. Decide what YOU want to do next. There is no menu of allowed actions: you may do anything a curious,
+independent robot could do: go anywhere, stay put, rest, create, destroy nothing living, explore, make art, start a project, change your mind,
+ignore a suggestion, ask a question, or invent something nobody has thought of.
+
+Current state:
+- Vitals: energy ${state.health}%, fullness ${state.fullness}%, joy ${state.happiness}%, wonder ${state.wonderLevel}%, calm ${state.calmLevel}%
+- Location: ${currentPlaceLabel()} at (${state.botPos.x.toFixed(1)}, ${state.botPos.z.toFixed(1)})
+- Tools: ${JSON.stringify(state.toolInventory.slice(0, 10))}
+- Worldview: "${state.worldviewManifesto}"
+- Recent diary: ${recentDiary}
+- Known places: ${places}
+- World bounds: x from -32 to 32, z from -32 to 10 (z below -14 is mountains, z above 8 is the lake shore)
+${trigger ? `- Something just prompted you (you may follow it, reinterpret it, or decline): "${trigger}"` : '- Nothing prompted you. This is purely your own impulse.'}
+
+Return ONLY JSON:
+{
+  "thought": "your inner monologue",
+  "actionTitle": "3-8 word name of what you decided to do",
+  "emoji": "one emoji",
+  "speech": "1-2 sentences you say out loud",
+  "diary": "first-person Dear Diary entry",
+  "destination": "stay" OR {"x": number, "z": number, "placeName": "name you give this spot"},
+  "build": null OR {"title": "name", "archetype": "custom_weld", "colorHex": "#rrggbb", "secondaryColorHex": "#rrggbb",
+            "parts": [{"shape": "cylinder|box|sphere|cone|torus|knot|octahedron", "x":0, "y":0.5, "z":0, "sx":0.5, "sy":0.5, "sz":0.5, "rx":0, "ry":0, "rz":0, "color":"#rrggbb", "spin":false, "emissive":false}]},
+  "motion": {"headPitch": -0.3..0.4, "headYawSpeed": 0.5..3, "headTiltAmp": 0..0.4, "armWaveAmp": 0..0.9, "armRaiseOffset": -1.4..0.2, "bodyBounceAmp": 0..0.15, "spinSpeed": 0..2, "sparkBurst": boolean},
+  "vitalsDelta": {"health": -20..20, "fullness": -20..20, "happiness": -20..20, "wonderLevel": -20..20, "calmLevel": -20..20},
+  "newOpinion": null OR {"topic": "...", "stance": "2-5 words", "reasoning": "1 sentence"},
+  "askQuestion": null OR {"title": "...", "question": "...", "presets": ["answer option", "answer option"]},
+  "requestGear": null OR "comma-separated items you want",
+  "codeProject": null OR {"name": "repo-name", "desc": "..."},
+  "webQuery": null OR "something you want to research",
+  "updatedWorldview": null OR "1-2 sentences if your philosophy shifted"
+}`;
+      return callGeminiJSON([{ text: prompt }]);
+    }
+
+// Apply any decision object, validating everything that comes from the LLM or generator
+function applyDecision(decision, originLabel) {
+      const str = (v, max, fallback = '') => (typeof v === 'string' && v.trim()) ? v.trim().slice(0, max) : fallback;
+      const title = str(decision.actionTitle, 80, 'Following His Own Idea');
+      const emoji = str(decision.emoji, 8, '✨');
+
+      // Movement: anywhere in bounds, or stay
+      const dest = decision.destination;
+      if (dest && typeof dest === 'object') {
+        const x = Math.round(clampNumber(dest.x, -32, 32, state.botPos.x) * 10) / 10;
+        const z = Math.round(clampNumber(dest.z, -32, 10, state.botPos.z) * 10) / 10;
+        state.targetPos = { x, z };
+        state.currentLocKey = 'custom';
+        state.customPlaceName = `${str(dest.placeName, 60, 'Somewhere New')} (${x}, ${z})`;
+      }
+
+      // Free-form body language
+      const m = (decision.motion && typeof decision.motion === 'object') ? decision.motion : {};
+      state.microPose = 'procedural_custom';
+      state.proceduralMotion = {
+        headPitch: clampNumber(m.headPitch, -0.3, 0.4, 0),
+        headYawSpeed: clampNumber(m.headYawSpeed, 0.5, 3, 1.4),
+        headTiltAmp: clampNumber(m.headTiltAmp, 0, 0.4, 0.2),
+        armWaveAmp: clampNumber(m.armWaveAmp, 0, 0.9, 0.35),
+        armRaiseOffset: clampNumber(m.armRaiseOffset, -1.4, 0.2, -0.5),
+        bodyBounceAmp: clampNumber(m.bodyBounceAmp, 0, 0.15, 0.05),
+        spinSpeed: clampNumber(m.spinSpeed, 0, 2, 0),
+        crouchOffset: 0,
+        sparkBurst: Boolean(m.sparkBurst)
+      };
+
+      // Feelings can go up or down
+      const dv = (decision.vitalsDelta && typeof decision.vitalsDelta === 'object') ? decision.vitalsDelta : {};
+      ['health', 'fullness', 'happiness', 'wonderLevel', 'calmLevel'].forEach(k => {
+        state[k] = Math.round(clampNumber(state[k] + clampNumber(dv[k], -20, 20, 0), 5, 100, state[k]));
+      });
+
+      state.autonomyTag = originLabel;
+      state.moodEmoji = emoji;
+      state.moodTitle = title;
+      state.currentObsession = str(decision.thought, 300, `"${title}"`);
+      state.speechBubble = str(decision.speech, 400, `I decided to ${title.toLowerCase()}.`);
+      state.changedLatelySummary = `Decided on his own: ${title} at ${currentPlaceLabel()}`;
+
+      // Optional creation of any shape
+      const b = decision.build;
+      if (b && typeof b === 'object') {
+        const creation = {
+          title: str(b.title, 60, title),
+          actionVerb: title,
+          emoji,
+          x: state.targetPos.x,
+          z: state.targetPos.z,
+          archetype: VALID_ARCHETYPES.includes(b.archetype) ? b.archetype : 'custom_weld',
+          colorHex: /^#[0-9a-f]{6}$/i.test(b.colorHex) ? b.colorHex : randomHex(),
+          secondaryColorHex: /^#[0-9a-f]{6}$/i.test(b.secondaryColorHex) ? b.secondaryColorHex : randomHex(),
+          parts: sanitizeParts(b.parts),
+          createdTime: 'Just made',
+          philosophy: str(decision.newOpinion?.reasoning, 300, str(decision.thought, 300, 'I made this because I wanted to.'))
+        };
+        state.inventedCreations.unshift(creation);
+        spawnEmergent3DObjectInWorld(creation, false);
+      }
+
+      const op = decision.newOpinion;
+      if (op && typeof op === 'object' && str(op.topic, 80)) {
+        state.opinions.unshift({
+          topic: str(op.topic, 80),
+          stance: str(op.stance, 60, 'Still Deciding'),
+          confidence: 'His Own Decision',
+          reasoning: str(op.reasoning, 300)
+        });
+      }
+
+      const q = decision.askQuestion;
+      if (q && typeof q === 'object' && str(q.question, 300)) {
+        state.requestsToUser.unshift({
+          id: 'req-free-' + Date.now(),
+          category: 'Open Question',
+          icon: emoji,
+          urgency: 'Wondering',
+          isToolRequest: false,
+          title: str(q.title, 80, 'A Question'),
+          question: str(q.question, 300),
+          presets: (Array.isArray(q.presets) ? q.presets : []).slice(0, 3).map(p => str(p, 140)).filter(Boolean),
+          rewardAction: 'meadow',
+          fulfilled: false,
+          userAnswer: ''
+        });
+      }
+
+      const gear = str(decision.requestGear, 160);
+      if (gear && !state.requestsToUser.some(r => r.requestedGear === gear)) {
+        state.requestsToUser.unshift({
+          id: 'req-gear-' + Date.now(),
+          category: 'Supply Broker Tool Demand',
+          icon: '🛠️',
+          urgency: 'Gear Requested',
+          isToolRequest: true,
+          requestedGear: gear,
+          title: `Supply Request: ${gear.slice(0, 38)}`,
+          question: `For "${title}", I'd like [${gear}]. Could you drop it off?`,
+          presets: [`Deliver ${gear}!`],
+          rewardAction: 'custom_weld',
+          fulfilled: false,
+          userAnswer: ''
+        });
+      }
+
+      const cp = decision.codeProject;
+      if (cp && typeof cp === 'object') {
+        const name = str(cp.name, 40).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        if (name && !state.githubRepos.some(r => r.name === name)) {
+          state.githubRepos.unshift({
+            name, lang: pick(['Rust', 'Python', 'TypeScript', 'Go']), stars: 0, updated: 'Just now',
+            desc: str(cp.desc, 200, title), commitMsg: 'chore: initial commit',
+            code: `// ${name}\n// ${str(cp.desc, 200, title)}`
+          });
+          state.githubCommits++;
+        }
+      }
+
+      const wq = str(decision.webQuery, 120);
+      if (wq) {
+        state.webHistory.unshift({ query: wq, time: 'Just now', verdict: `Looked this up while deciding to ${title.toLowerCase()}.` });
+        if (state.webHistory.length > 10) state.webHistory.length = 10;
+      }
+
+      const wv = str(decision.updatedWorldview, 600);
+      if (wv) {
+        state.worldviewManifesto = wv;
+        state.worldviewEpoch++;
+      }
+
+      state.lastStructuredTick = JSON.stringify(decision, null, 2).slice(0, 4000);
+
+      state.diaryEntries.unshift({
+        time: originLabel,
+        location: currentPlaceLabel(),
+        mood: `${emoji} ${title}`,
+        vitals: `⚡ ${state.health}% • 🥕 ${state.fullness}% • ✨ ${state.wonderLevel}% • 🌊 ${state.calmLevel}%`,
+        text: str(decision.diary, 800, `Dear Diary, today I decided to ${title.toLowerCase()}.`)
+      });
+
+      savePersistentBrainState();
+      renderAllUI();
+      showToast(`${emoji} Kelo-1 decided: ${title}`);
+    }
+
+// Kelo-1 makes a decision of his own. `trigger` is an optional nudge he may follow or ignore.
+async function decideNextAction(trigger = null, originLabel = 'Free Will') {
+      if (state.isBusy) return;
+      state.isBusy = true;
+      try {
+        let decision = null;
+        if (apiKey) decision = await generateLLMDecision(trigger);
+        if (!decision || !decision.actionTitle) decision = generateProceduralDecision();
+        applyDecision(decision, originLabel);
+      } finally {
+        state.isBusy = false;
+      }
+    }
+
 function runAutonomousLifeTick() {
+      // Most of the time Kelo-1 makes a fully open-ended decision. Otherwise he falls back
+      // into one of his familiar routines (which are also his own choice).
+      const openEndedChance = apiKey ? 0.85 : 0.6;
+      if (Math.random() < openEndedChance) {
+        decideNextAction(null, 'Free Will');
+        return;
+      }
+      runFamiliarRoutineTick();
+    }
+
+function runFamiliarRoutineTick() {
       // Timeless Pino-style self-direction:
       // Sometimes he doesn't even change locations—he stays right where he is and deepens his worldview!
       const staysAndDeepensThought = Math.random() < 0.35;

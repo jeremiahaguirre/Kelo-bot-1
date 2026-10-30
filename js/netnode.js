@@ -168,6 +168,7 @@ async function browseInternet(topic = null, originLabel = 'Own Curiosity') {
           return;
         }
 
+        if (typeof bumpLifeStat === 'function') bumpLifeStat('articles', hops.length);
         const reflection = await reflectOnReading(query, hops);
         const str = (v, max) => (typeof v === 'string' && v.trim()) ? v.trim().slice(0, max) : '';
         const last = hops[hops.length - 1];

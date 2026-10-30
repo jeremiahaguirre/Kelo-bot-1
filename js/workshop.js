@@ -99,6 +99,7 @@ async function runWeldJob(creation, destLabel) {
         creation.z = Math.round(clampNumber(state.botPos.z + Math.cos(state.botRotY) * 1.7, -33, 11, dest.z) * 10) / 10;
         creation.createdTime = 'Welded & placed';
         state.inventedCreations.unshift(creation);
+        if (typeof bumpLifeStat === 'function') bumpLifeStat('builds');
         spawnEmergent3DObjectInWorld(creation, false);
         state.microPose = 'procedural_custom';
         state.moodTitle = `Placed ${title}`.slice(0, 80);

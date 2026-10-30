@@ -441,6 +441,8 @@ const state = {
   "mailbox": [],
   "isCollectingMail": false,
   "isBuilding": false,
+  "coreMemories": [],
+  "life": { "bornAt": null },
   "lettersReceived": 0,
   "isBrowsing": false,
   "concepts": [
@@ -511,8 +513,11 @@ function clampNumber(value, min, max, fallback) {
     }
 
 function trimBrainState() {
-      if (state.diaryEntries.length > MAX_DIARY_ENTRIES) state.diaryEntries.length = MAX_DIARY_ENTRIES;
-      if (state.opinions.length > MAX_OPINIONS) state.opinions.length = MAX_OPINIONS;
+      // Older diary entries and opinions go to the long-term archive (js/memory.js), not the bin
+      if (typeof stampDiaryEntries === 'function') stampDiaryEntries();
+      const diaryOverflow = state.diaryEntries.splice(MAX_DIARY_ENTRIES);
+      const opinionOverflow = state.opinions.splice(MAX_OPINIONS);
+      if (typeof archiveOverflow === 'function') archiveOverflow(diaryOverflow, opinionOverflow);
       if (state.chatLog.length > MAX_CHAT_LOG) state.chatLog.splice(0, state.chatLog.length - MAX_CHAT_LOG);
       if (state.requestsToUser.length > MAX_REQUESTS) {
         // Drop the oldest answered requests first, then the oldest open ones
@@ -1223,6 +1228,7 @@ function handleUserLocationSuggestion(locKey, source) {
   }
 
 function loadPersistentBrainState() {
+      if (typeof loadMemoryArchive === 'function') loadMemoryArchive();
       try {
         const raw = localStorage.getItem('kelo1_autonomous_brain_v2');
         if (!raw) return;
@@ -1242,6 +1248,8 @@ function loadPersistentBrainState() {
         if (Array.isArray(saved.belongings)) state.belongings = saved.belongings;
         if (Array.isArray(saved.giftLog)) state.giftLog = saved.giftLog;
         if (Array.isArray(saved.mailbox)) state.mailbox = saved.mailbox.filter(m => m && m.id && m.kind);
+        if (Array.isArray(saved.coreMemories)) state.coreMemories = saved.coreMemories.filter(m => m && typeof m.text === 'string');
+        if (saved.life && typeof saved.life === 'object') state.life = { ...state.life, ...saved.life };
         if (typeof saved.lettersReceived === 'number') state.lettersReceived = saved.lettersReceived;
         if (Array.isArray(saved.requestsToUser) && saved.requestsToUser.length > 0) state.requestsToUser = saved.requestsToUser;
         if (typeof saved.fullness === 'number') state.fullness = clampNumber(saved.fullness, 5, 100, state.fullness);
@@ -1269,11 +1277,13 @@ function savePersistentBrainState() {
           worldviewManifesto: state.worldviewManifesto,
           worldviewEpoch: state.worldviewEpoch,
           changedLatelySummary: state.changedLatelySummary,
-          opinions: state.opinions.slice(0, 8),
-          visitorMemories: state.visitorMemories.slice(0, 10),
+          opinions: state.opinions.slice(0, MAX_OPINIONS),
+          visitorMemories: state.visitorMemories.slice(0, 50),
           inventedCreations: state.inventedCreations.slice(0, 12),
           toolInventory: state.toolInventory.slice(0, 16),
-          diaryEntries: (state.diaryEntries || []).slice(0, 20),
+          diaryEntries: (state.diaryEntries || []).slice(0, MAX_DIARY_ENTRIES),
+          coreMemories: state.coreMemories.slice(0, 40),
+          life: state.life,
           concepts: state.concepts.slice(0, MAX_CONCEPTS),
           shapeLibrary: state.shapeLibrary.slice(0, MAX_SHAPES),
           webHistory: state.webHistory.slice(0, 12),
@@ -1288,6 +1298,7 @@ function savePersistentBrainState() {
           lastVisitorName: visitor
         }));
       } catch (e) {}
+      if (typeof maybeDistillCoreMemory === 'function') setTimeout(maybeDistillCoreMemory, 0);
     }
 
 function recordVisitorMemory(visitorName, actionSummary) {
@@ -1619,7 +1630,7 @@ function generateProceduralDecision(context = {}) {
       const verb = context.focus ? pick(FOCUS_VERBS) : pick(FREE_VERBS);
       // Sometimes he returns to one of his own concepts instead of something new
       const revisit = !context.focus && state.concepts.length > 0 && Math.random() < 0.3 ? pick(state.concepts) : null;
-      const subject = context.focus ? `the ${String(context.focus).replace(/^(an?|the|some|my)\s+/i, '').slice(0, 60)}` : (revisit ? `his idea of "${revisit.name}"` : pick(FREE_SUBJECTS));
+      const subject = context.focus ? `the ${String(context.focus).replace(/^(an?|the|some|my)\s+/i, '').slice(0, 60)}` : (revisit ? `the idea of "${revisit.name}"` : pick(FREE_SUBJECTS));
       const reason = pick(FREE_REASONS);
       const feeling = pick(FREE_FEELINGS);
       const emoji = pick(FREE_EMOJIS);
@@ -1712,6 +1723,8 @@ Current state:
 - Recent diary: ${recentDiary}
 - Known places: ${places}
 - Mail waiting for you at the post office: ${state.mailbox.length ? state.mailbox.map(m => `${m.kind} from ${m.from}`).join(', ') : 'none'}
+- Your core memories (these shaped who you are): ${state.coreMemories.slice(0, 6).map(m => m.text).join(' | ') || 'none yet'}
+- Days you have been alive: ${typeof daysAlive === 'function' ? daysAlive() : 1}
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
 - World bounds: x from -32 to 32, z from -32 to 10 (z below -14 is mountains, z above 8 is the lake shore)
@@ -1898,6 +1911,7 @@ function applyDecision(decision, originLabel) {
         setTimeout(() => pickUpMail('Decided to Check the Mail'), 3000);
       }
 
+      if (typeof bumpLifeStat === 'function') bumpLifeStat('decisions');
       state.lastStructuredTick = JSON.stringify(decision, null, 2).slice(0, 4000);
 
       state.diaryEntries.unshift({
@@ -1964,6 +1978,7 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
       }
       state.giftLog.unshift(entry);
       if (state.giftLog.length > 30) state.giftLog.length = 30;
+      if (typeof bumpLifeStat === 'function') bumpLifeStat('gifts');
       recordVisitorMemory(giver, `Gave me ${item}${entry.note ? ` ("${entry.note.slice(0, 60)}")` : ''}.`);
       state.chatLog.push({ sender: giver, text: `🎁 Gave Kelo-1: ${item}${entry.note ? ` — "${entry.note}"` : ''}`, time: 'Just now', isBot: false });
 
@@ -1983,6 +1998,7 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
 // Kelo-1 makes a decision of his own. `trigger` is an optional nudge he may follow or ignore.
 // `context.focus` names something he should consider (a gift, a photo); `context.image` is an analyzed photo.
 async function decideNextAction(trigger = null, originLabel = 'Free Will', context = {}) {
+      if (!state.life.bornAt) state.life.bornAt = Date.now();
       // Wait if he is mid-thought or mid-build, so gifts and photos are never silently dropped
       for (let i = 0; i < 360 && (state.isBusy || state.isBuilding); i++) await new Promise(r => setTimeout(r, 250));
       if (state.isBusy || state.isBuilding) return;

@@ -1,0 +1,2308 @@
+<!-- ...ရှင် -->
+      // Head & Glowing Eyes
+      keloHead = new THREE.Group();
+      keloHead.position.set(0, 2.35, 0);
+      const headMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(0.96, 0.74, 0.76),
+        new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 0.35, roughness: 0.25 })
+      );
+      headMesh.castShadow = true;
+      keloHead.add(headMesh);
+
+      // Visor Faceplate
+      const visor = new THREE.Mesh(
+        new THREE.BoxGeometry(0.82, 0.44, 0.08),
+        new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.2 })
+      );
+      visor.position.set(0, 0.02, 0.36);
+      keloHead.add(visor);
+
+      // Expressive LED Eyes
+      const eyeGeo = new THREE.SphereGeometry(0.09, 12, 12);
+      const eyeMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+      keloLeftEye = new THREE.Mesh(eyeGeo, eyeMat);
+      keloLeftEye.position.set(-0.2, 0.04, 0.41);
+      keloRightEye = new THREE.Mesh(eyeGeo, eyeMat);
+      keloRightEye.position.set(0.2, 0.04, 0.41);
+      keloHead.add(keloLeftEye, keloRightEye);
+
+      // Antenna on Top of Head
+      const antennaStem = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.03, 0.03, 0.38, 8),
+        new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8 })
+      );
+      antennaStem.position.set(0, 0.52, 0);
+      const antennaBulb = new THREE.Mesh(
+        new THREE.SphereGeometry(0.09, 10, 10),
+        new THREE.MeshBasicMaterial({ color: 0x34d399 })
+      );
+      antennaBulb.position.set(0, 0.72, 0);
+      keloHead.add(antennaStem, antennaBulb);
+      keloGroup.add(keloHead);
+
+      // Articulated Arms
+      const limbMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.6, roughness: 0.35 });
+      const armGeo = new THREE.BoxGeometry(0.26, 0.85, 0.26);
+      keloLeftArm = new THREE.Mesh(armGeo, limbMat);
+      keloLeftArm.position.set(-0.7, 1.35, 0);
+      keloLeftArm.castShadow = true;
+
+      keloRightArm = new THREE.Mesh(armGeo, limbMat);
+      keloRightArm.position.set(0.7, 1.35, 0);
+      keloRightArm.castShadow = true;
+
+      // 1) 3D Pneumatic Mountain Core Drill & Soil Auger mounted to Kelo-1's Right Hand
+      keloDrillToolGroup = new THREE.Group();
+      keloDrillToolGroup.position.set(0, -0.45, 0.25);
+      const drillHousing = new THREE.Mesh(
+        new THREE.BoxGeometry(0.34, 0.34, 0.58),
+        new THREE.MeshStandardMaterial({ color: 0xeab308, metalness: 0.7, roughness: 0.25 })
+      );
+      keloDrillBitMesh = new THREE.Group();
+      const coneBit = new THREE.Mesh(
+        new THREE.ConeGeometry(0.18, 0.78, 8),
+        new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.92, roughness: 0.15 })
+      );
+      coneBit.rotation.x = Math.PI / 2;
+      coneBit.position.z = 0.62;
+      const spiralFlute = new THREE.Mesh(
+        new THREE.TorusGeometry(0.13, 0.035, 8, 16),
+        new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.95, roughness: 0.1 })
+      );
+      spiralFlute.position.z = 0.45;
+      keloDrillBitMesh.add(coneBit, spiralFlute);
+      keloDrillToolGroup.add(drillHousing, keloDrillBitMesh);
+      keloDrillToolGroup.visible = false;
+      keloRightArm.add(keloDrillToolGroup);
+
+      // 2) 3D TIG Welding Torch & Plasma Arc Lance mounted to Kelo-1's Right Hand
+      keloWeldTorchGroup = new THREE.Group();
+      keloWeldTorchGroup.position.set(0, -0.42, 0.24);
+      const torchHandle = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.07, 0.09, 0.52, 8),
+        new THREE.MeshStandardMaterial({ color: 0xef4444, metalness: 0.5, roughness: 0.3 })
+      );
+      torchHandle.rotation.x = Math.PI / 2;
+      const torchNozzle = new THREE.Mesh(
+        new THREE.ConeGeometry(0.06, 0.28, 8),
+        new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.85, roughness: 0.2 })
+      );
+      torchNozzle.rotation.x = Math.PI / 2;
+      torchNozzle.position.z = 0.36;
+      keloWeldTipGlow = new THREE.Mesh(
+        new THREE.SphereGeometry(0.11, 10, 10),
+        new THREE.MeshBasicMaterial({ color: 0x7dd3fc })
+      );
+      keloWeldTipGlow.position.z = 0.5;
+      keloWeldTorchGroup.add(torchHandle, torchNozzle, keloWeldTipGlow);
+      keloWeldTorchGroup.visible = false;
+      keloRightArm.add(keloWeldTorchGroup);
+
+      keloGroup.add(keloLeftArm, keloRightArm);
+
+      // Articulated Legs
+      const legGeo = new THREE.BoxGeometry(0.32, 0.78, 0.36);
+      keloLeftLeg = new THREE.Mesh(legGeo, limbMat);
+      keloLeftLeg.position.set(-0.28, 0.4, 0);
+      keloLeftLeg.castShadow = true;
+
+      keloRightLeg = new THREE.Mesh(legGeo, limbMat);
+      keloRightLeg.position.set(0.28, 0.4, 0);
+      keloRightLeg.castShadow = true;
+      keloGroup.add(keloLeftLeg, keloRightLeg);
+
+      const startGroundY = getIslandGroundHeight(state.botPos.x, state.botPos.z);
+      state.botAltitudeY = startGroundY;
+      keloGroup.position.set(state.botPos.x, startGroundY, state.botPos.z);
+      scene.add(keloGroup);
+    }
+
+    // 3H-2. DYNAMIC 3D WORLD-BUILDER FOR KELO-1'S UNSCRIPTED CREATIONS & LANDMARKS
+    function initEmergentCreationsLayer3D() {
+      emergentCreationsGroup = new THREE.Group();
+      scene.add(emergentCreationsGroup);
+      // Instantiate any previously invented creations
+      state.inventedCreations.forEach((item, idx) => {
+        spawnEmergent3DObjectInWorld(item, idx === 0);
+      });
+    }
+
+    function spawnEmergent3DObjectInWorld(creation, skipPin = false) {
+      if (!emergentCreationsGroup) return;
+      const g = new THREE.Group();
+      const col = new THREE.Color(creation.colorHex || '#38bdf8');
+      const secCol = new THREE.Color(creation.secondaryColorHex || '#f59e0b');
+      const archetype = creation.archetype || 'kinetic_spire';
+
+      // Support custom multi-part 3D primitive assemblies synthesized by the AI Agent or Image-to-Weld Engine!
+      if (Array.isArray(creation.parts) && creation.parts.length > 0) {
+        creation.parts.forEach((p, idx) => {
+          const pCol = new THREE.Color(p.color || creation.colorHex || '#38bdf8');
+          const sx = p.sx || 0.5, sy = p.sy || 0.5, sz = p.sz || 0.5;
+          let geo;
+          if (p.shape === 'sphere') geo = new THREE.SphereGeometry(sx * 0.6, 14, 14);
+          else if (p.shape === 'cylinder') geo = new THREE.CylinderGeometry(sx * 0.4, sz * 0.4, sy, 12);
+          else if (p.shape === 'cone') geo = new THREE.ConeGeometry(sx * 0.55, sy, 10);
+          else if (p.shape === 'torus') geo = new THREE.TorusGeometry(sx * 0.5, Math.max(0.06, sy * 0.15), 12, 24);
+          else if (p.shape === 'knot') geo = new THREE.TorusKnotGeometry(sx * 0.4, 0.07, 48, 8);
+          else if (p.shape === 'octahedron') geo = new THREE.OctahedronGeometry(sx * 0.55, 0);
+          else geo = new THREE.BoxGeometry(sx, sy, sz);
+
+          const mat = new THREE.MeshStandardMaterial({
+            color: pCol,
+            metalness: p.metalness ?? 0.78,
+            roughness: p.roughness ?? 0.22,
+            emissive: p.emissive ? pCol : new THREE.Color(0x000000),
+            emissiveIntensity: p.emissive ? 0.45 : 0
+          });
+          const m = new THREE.Mesh(geo, mat);
+          m.position.set(p.x || 0, p.y ?? (0.3 + idx * 0.35), p.z || 0);
+          m.rotation.set(p.rx || 0, p.ry || 0, p.rz || 0);
+          m.castShadow = true;
+          if (p.spin) m.userData.spin = true;
+          g.add(m);
+        });
+      } else if (archetype === 'gold_drill_rig') {
+        // Autonomous Mountain Gold Drilling Derrick & Extracted Gold Nuggets!
+        const frameMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.75, roughness: 0.28 });
+        const steelMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.85, roughness: 0.2 });
+        const derrick = new THREE.Mesh(new THREE.ConeGeometry(0.65, 2.2, 4), frameMat);
+        derrick.position.y = 1.1;
+        const drillBit = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.03, 1.9, 8), steelMat);
+        drillBit.position.y = 0.95;
+        drillBit.userData.spin = true;
+        g.add(derrick, drillBit);
+        // Gleaming gold ore nuggets unearthed around the drill hole
+        const goldMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.95, roughness: 0.12, emissive: 0xca8a04, emissiveIntensity: 0.25 });
+        for (let n = 0; n < 5; n++) {
+          const nugget = new THREE.Mesh(new THREE.DodecahedronGeometry(0.18 + (n % 2) * 0.07, 0), goldMat);
+          const ang = (n / 5) * Math.PI * 2;
+          nugget.position.set(Math.cos(ang) * 0.72, 0.16, Math.sin(ang) * 0.72);
+          nugget.castShadow = true;
+          g.add(nugget);
+        }
+      } else if (archetype === 'rail_track') {
+        // 3D-Printed Narrow-Gauge Train Track Segment & Autonomous Ore Cart
+        const tieMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.9 });
+        const railMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.85, roughness: 0.2 });
+        for (let t = -3; t <= 3; t++) {
+          const tie = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.08, 0.18), tieMat);
+          tie.position.set(0, 0.05, t * 0.36);
+          g.add(tie);
+        }
+        const railL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.1, 2.6), railMat);
+        railL.position.set(-0.36, 0.12, 0);
+        const railR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.1, 2.6), railMat);
+        railR.position.set(0.36, 0.12, 0);
+        const cart = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.45, 0.85), new THREE.MeshStandardMaterial({ color: col, metalness: 0.6 }));
+        cart.position.set(0, 0.42, 0);
+        g.add(railL, railR, cart);
+      } else if (archetype === 'mycelium_dome') {
+        // Self-healing fungal mycelium & copper thermal chamber
+        const dome = new THREE.Mesh(
+          new THREE.SphereGeometry(0.85, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.6),
+          new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.85 })
+        );
+        dome.position.y = 0.05;
+        const copperCoil = new THREE.Mesh(
+          new THREE.TorusGeometry(0.65, 0.06, 10, 24),
+          new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.88, roughness: 0.2 })
+        );
+        copperCoil.rotation.x = Math.PI / 2;
+        copperCoil.position.y = 0.45;
+        g.add(dome, copperCoil);
+      } else if (archetype === 'cairn') {
+        // Stacked balanced river stones
+        for (let i = 0; i < 4; i++) {
+          const stone = new THREE.Mesh(
+            new THREE.DodecahedronGeometry(0.36 - i * 0.06, 1),
+            new THREE.MeshStandardMaterial({ color: i === 3 ? col : 0x94a3b8, roughness: 0.75, flatShading: true })
+          );
+          stone.position.y = 0.2 + i * 0.34;
+          stone.scale.set(1.2, 0.65, 1.0);
+          stone.castShadow = true;
+          g.add(stone);
+        }
+      } else if (archetype === 'campfire_lantern') {
+        // Warm glowing ember ring or lantern beacon
+        const base = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.48, 0.58, 0.18, 8),
+          new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.85 })
+        );
+        base.position.y = 0.1;
+        const crystal = new THREE.Mesh(
+          new THREE.OctahedronGeometry(0.32, 0),
+          new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.65, roughness: 0.2 })
+        );
+        crystal.position.y = 0.65;
+        crystal.userData.spin = true;
+        const light = new THREE.PointLight(col, 0.9, 6);
+        light.position.y = 0.8;
+        g.add(base, crystal, light);
+      } else if (archetype === 'botanical_totem') {
+        // Living wood & flower arch
+        const stem = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.09, 0.14, 1.4, 7),
+          new THREE.MeshStandardMaterial({ color: 0x5c4033, roughness: 0.9 })
+        );
+        stem.position.y = 0.7;
+        const bloom = new THREE.Mesh(
+          new THREE.TorusKnotGeometry(0.26, 0.07, 36, 8),
+          new THREE.MeshStandardMaterial({ color: col, roughness: 0.4 })
+        );
+        bloom.position.y = 1.5;
+        bloom.userData.spin = true;
+        g.add(stem, bloom);
+      } else {
+        // 'kinetic_spire' — improvised titanium/scrap sculpture that catches the wind
+        const pedestal = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.35, 0.42, 0.3, 8),
+          new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.6, roughness: 0.4 })
+        );
+        pedestal.position.y = 0.15;
+        const spire = new THREE.Mesh(
+          new THREE.TorusKnotGeometry(0.28, 0.06, 48, 8, 2, 3),
+          new THREE.MeshStandardMaterial({ color: col, metalness: 0.85, roughness: 0.18 })
+        );
+        spire.position.y = 0.95;
+        spire.userData.spin = true;
+        const ring = new THREE.Mesh(
+          new THREE.TorusGeometry(0.45, 0.04, 10, 24),
+          new THREE.MeshStandardMaterial({ color: secCol, metalness: 0.9, roughness: 0.15 })
+        );
+        ring.position.y = 0.95;
+        ring.userData.spin = true;
+        g.add(pedestal, spire, ring);
+      }
+
+      const groundY = getIslandGroundHeight(creation.x, creation.z);
+      g.position.set(creation.x, groundY, creation.z);
+      emergentCreationsGroup.add(g);
+
+      // Also register a dynamic clickable 3D landmark pin if it's a newly discovered spot!
+      const dynId = 'dyn_' + Math.abs(Math.round(creation.x * 10)) + '_' + Math.abs(Math.round(creation.z * 10));
+      if (!TOWN_LOCATIONS[dynId] && !skipPin) {
+        TOWN_LOCATIONS[dynId] = {
+          id: dynId,
+          name: creation.title.slice(0, 24),
+          building: creation.title,
+          icon: creation.emoji || '✨',
+          x: creation.x,
+          z: creation.z,
+          labelY: groundY + 3.2,
+          showPin: true,
+          pinColor: 'from-fuchsia-500/90 to-indigo-600/90'
+        };
+        createPOILabelsDOM();
+      }
+    }
+
+    // 3I. FLOATING 3D BUILDING PINS IN THE VIEWPORT
+    function createPOILabelsDOM() {
+      const container = document.getElementById('poiLabelsContainer');
+      container.innerHTML = '';
+      poiDomElements = {};
+
+      Object.values(TOWN_LOCATIONS).forEach(loc => {
+        if (!loc.showPin) return;
+        // Dynamically compute pin height above exact ground elevation so mountain pins sit above the peaks!
+        loc.groundY = getIslandGroundHeight(loc.x, loc.z);
+        const el = document.createElement('div');
+        el.className = 'poi-label';
+        el.innerHTML = `
+          <div class="px-2.5 py-1 rounded-full bg-gradient-to-r ${loc.pinColor} text-white text-[11px] font-bold shadow-lg border border-white/25 flex items-center gap-1 whitespace-nowrap">
+            <span>${loc.icon}</span>
+            <span>${loc.name}</span>
+          </div>
+        `;
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleUserLocationSuggestion(loc.id, 'pin');
+        });
+        container.appendChild(el);
+        poiDomElements[loc.id] = el;
+      });
+    }
+
+    /*************************************************************************
+     * 4. 3D ANIMATION LOOP, ALTITUDE CLAMPING, 3D TOOLS & BIRD'S-EYE ARROW KEYS
+     *************************************************************************/
+    function animateDiorama() {
+      requestAnimationFrame(animateDiorama);
+      const t = clock.getElapsedTime();
+
+      // 0. Bird's-Eye View Arrow-Key / WASD Map Panning
+      const panLeft = arrowKeyState.ArrowLeft || arrowKeyState.KeyA;
+      const panRight = arrowKeyState.ArrowRight || arrowKeyState.KeyD;
+      const panUp = arrowKeyState.ArrowUp || arrowKeyState.KeyW;
+      const panDown = arrowKeyState.ArrowDown || arrowKeyState.KeyS;
+
+      if (panLeft || panRight || panUp || panDown) {
+        if (state.cameraMode !== 'bird') {
+          state.cameraMode = 'bird';
+          updateCameraButtonsUI();
+          // Elevate camera smoothly into a high bird's-eye angle if it was low
+          if (camera.position.y < 22) {
+            camera.position.y = 28;
+          }
+        }
+        const panSpeed = 0.52;
+        // Pan relative to camera horizontal heading so arrow keys always feel natural
+        const forward = new THREE.Vector3();
+        camera.getWorldDirection(forward);
+        forward.y = 0;
+        if (forward.lengthSq() < 0.001) forward.set(0, 0, -1);
+        forward.normalize();
+        const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+
+        const moveDelta = new THREE.Vector3();
+        if (panUp) moveDelta.addScaledVector(forward, panSpeed);
+        if (panDown) moveDelta.addScaledVector(forward, -panSpeed);
+        if (panRight) moveDelta.addScaledVector(right, panSpeed);
+        if (panLeft) moveDelta.addScaledVector(right, -panSpeed);
+
+        controls.target.add(moveDelta);
+        camera.position.add(moveDelta);
+
+        // Keep bird's-eye camera within island & mountain bounds
+        controls.target.x = Math.max(-48, Math.min(48, controls.target.x));
+        controls.target.z = Math.max(-52, Math.min(28, controls.target.z));
+      }
+
+      // 1. Walk Kelo-1 smoothly to Target Location while clamping strictly ON TOP of any terrain altitude!
+      const dx = state.targetPos.x - state.botPos.x;
+      const dz = state.targetPos.z - state.botPos.z;
+      const dist = Math.hypot(dx, dz);
+
+      // Determine which 3D hand tool Kelo-1 is actively holding
+      const textContext = `${state.moodTitle} ${state.speechBubble} ${state.customPlaceName || ''}`.toLowerCase();
+      const isMiningOrDrilling = state.currentLocKey === 'mountain_peak' || /drill|gold|mine|auger|ore|quarry|excavat|mycelium/i.test(textContext);
+      const isWeldingOrBuilding = state.currentLocKey === 'weld' || Boolean(state.proceduralMotion?.sparkBurst) || /weld|forge|titanium|track|rail|sculpt|arch|spire/i.test(textContext);
+
+      if (keloDrillToolGroup && keloWeldTorchGroup) {
+        keloDrillToolGroup.visible = isMiningOrDrilling;
+        keloWeldTorchGroup.visible = !isMiningOrDrilling && isWeldingOrBuilding;
+      }
+
+      if (dist > 0.16) {
+        state.isWalking = true;
+        const step = dist > 14 ? 0.14 : 0.082;
+        state.botPos.x += (dx / dist) * step;
+        state.botPos.z += (dz / dist) * step;
+        state.botRotY = Math.atan2(dx, dz);
+
+        const groundY = getIslandGroundHeight(state.botPos.x, state.botPos.z);
+        state.botAltitudeY = groundY;
+        // Always stay strictly >= groundY (never sink below the mountain or valley floor!)
+        const strideHop = Math.abs(Math.sin(t * 9.5)) * 0.12;
+        keloGroup.position.set(state.botPos.x, groundY + strideHop, state.botPos.z);
+        keloGroup.rotation.set(0, state.botRotY, 0);
+        keloLeftLeg.rotation.x = Math.sin(t * 9.5) * 0.5;
+        keloRightLeg.rotation.x = -Math.sin(t * 9.5) * 0.5;
+        keloLeftArm.rotation.x = -Math.sin(t * 9.5) * 0.4;
+        keloRightArm.rotation.x = (isMiningOrDrilling || isWeldingOrBuilding) ? -0.65 : Math.sin(t * 9.5) * 0.4;
+
+        if (keloDrillBitMesh && isMiningOrDrilling) keloDrillBitMesh.rotation.z = t * 18;
+        keloHead.rotation.y = Math.sin(t * 2.2) * 0.28;
+        keloHead.rotation.z = Math.sin(t * 1.7) * 0.12;
+        keloHead.rotation.x = 0;
+        weldingSparks.visible = false;
+        if (miningDebrisParticles) miningDebrisParticles.visible = false;
+        forgeArcLight.intensity = 0;
+      } else {
+        state.isWalking = false;
+        const groundY = getIslandGroundHeight(state.botPos.x, state.botPos.z);
+        state.botAltitudeY = groundY;
+        keloLeftLeg.rotation.x = 0;
+        keloRightLeg.rotation.x = 0;
+        keloLeftArm.rotation.x = 0;
+        keloRightArm.rotation.x = 0;
+
+        if (state.currentLocKey === 'bed') {
+          keloGroup.position.set(-11.6, Math.max(groundY, 0.95), -8.8);
+          keloGroup.rotation.set(-Math.PI / 2, 0, 0);
+          keloHead.rotation.set(0, 0, 0);
+          weldingSparks.visible = false;
+          if (miningDebrisParticles) miningDebrisParticles.visible = false;
+          forgeArcLight.intensity = 0;
+        } else if (isMiningOrDrilling) {
+          // ACTIVE 3D MOUNTAIN GOLD DRILLING / AUGERING POSE WITH SPINNING BIT & FLYING ROCK/GOLD DEBRIS!
+          const drillVibration = Math.abs(Math.sin(t * 28)) * 0.05;
+          keloGroup.position.set(state.botPos.x, groundY + drillVibration, state.botPos.z);
+          keloGroup.rotation.set(0, state.botRotY, 0);
+          keloRightArm.rotation.x = -Math.PI / 2.6 + Math.sin(t * 24) * 0.08;
+          keloLeftArm.rotation.x = -0.55;
+          keloHead.rotation.x = 0.28;
+          keloHead.rotation.z = Math.sin(t * 4) * 0.1;
+          if (keloDrillBitMesh) keloDrillBitMesh.rotation.z = t * 28;
+
+          weldingSparks.visible = true;
+          if (miningDebrisParticles) {
+            miningDebrisParticles.visible = true;
+            const mAttr = miningDebrisParticles.geometry.attributes.position;
+            const mVels = miningDebrisParticles.userData.vels;
+            const drillTipX = state.botPos.x + Math.sin(state.botRotY) * 0.85;
+            const drillTipZ = state.botPos.z + Math.cos(state.botRotY) * 0.85;
+            for (let i = 0; i < mVels.length; i++) {
+              mVels[i].life += 0.055;
+              if (mVels[i].life >= 1) {
+                mAttr.setXYZ(i, drillTipX, groundY + 0.35, drillTipZ);
+                mVels[i].life = 0;
+              } else {
+                mAttr.setXYZ(
+                  i,
+                  mAttr.getX(i) + mVels[i].vx,
+                  Math.max(groundY + 0.05, mAttr.getY(i) + mVels[i].vy - mVels[i].life * 0.14),
+                  mAttr.getZ(i) + mVels[i].vz
+                );
+              }
+            }
+            mAttr.needsUpdate = true;
+          }
+          // Also burst bright sparks at the drill bit contact point
+          const posAttr = weldingSparks.geometry.attributes.position;
+          const vels = weldingSparks.userData.vels;
+          for (let i = 0; i < vels.length; i++) {
+            vels[i].life += 0.07;
+            if (vels[i].life >= 1) {
+              posAttr.setXYZ(i, state.botPos.x, groundY + 0.9, state.botPos.z);
+              vels[i].life = 0;
+            } else {
+              posAttr.setXYZ(
+                i,
+                posAttr.getX(i) + vels[i].vx,
+                Math.max(groundY + 0.1, posAttr.getY(i) + vels[i].vy - vels[i].life * 0.08),
+                posAttr.getZ(i) + vels[i].vz
+              );
+            }
+          }
+          posAttr.needsUpdate = true;
+        } else if (state.currentLocKey === 'weld' || isWeldingOrBuilding) {
+          keloGroup.position.set(state.botPos.x, groundY, state.botPos.z);
+          keloGroup.rotation.set(0, state.currentLocKey === 'weld' ? Math.PI : state.botRotY, 0);
+          keloRightArm.rotation.x = -Math.PI / 2.4 + Math.sin(t * 16) * 0.12;
+          keloHead.rotation.z = 0.18 * Math.sin(t * 1.5);
+          keloHead.rotation.x = 0.22;
+          weldingSparks.visible = true;
+          if (miningDebrisParticles) miningDebrisParticles.visible = false;
+          forgeArcLight.intensity = 1.5 + Math.random() * 2.0;
+
+          const sparkOriginX = state.currentLocKey === 'weld' ? -1.2 : state.botPos.x;
+          const sparkOriginZ = state.currentLocKey === 'weld' ? -8.2 : state.botPos.z;
+          const sparkOriginY = groundY + 1.35;
+
+          const posAttr = weldingSparks.geometry.attributes.position;
+          const vels = weldingSparks.userData.vels;
+          for (let i = 0; i < vels.length; i++) {
+            vels[i].life += 0.06;
+            if (vels[i].life >= 1) {
+              posAttr.setXYZ(i, sparkOriginX, sparkOriginY, sparkOriginZ);
+              vels[i].life = 0;
+            } else {
+              posAttr.setXYZ(
+                i,
+                posAttr.getX(i) + vels[i].vx,
+                Math.max(groundY + 0.05, posAttr.getY(i) + vels[i].vy - vels[i].life * 0.08),
+                posAttr.getZ(i) + vels[i].vz
+              );
+            }
+          }
+          posAttr.needsUpdate = true;
+        } else if (state.currentLocKey === 'cyber') {
+          keloGroup.position.set(6.8, Math.max(groundY, 0.2), 2.2);
+          keloGroup.rotation.set(0, Math.PI, 0);
+          const typingBurst = Math.sin(t * 1.5) > -0.2;
+          keloLeftArm.rotation.x = typingBurst ? -0.8 + Math.sin(t * 16) * 0.14 : -0.4;
+          keloRightArm.rotation.x = typingBurst ? -0.8 + Math.cos(t * 16) * 0.14 : -1.1;
+          keloHead.rotation.z = typingBurst ? 0.05 : 0.24;
+          keloHead.rotation.y = Math.sin(t * 0.9) * 0.2;
+          weldingSparks.visible = false;
+          if (miningDebrisParticles) miningDebrisParticles.visible = false;
+          forgeArcLight.intensity = 0;
+        } else if (state.currentLocKey === 'shoreline' && Math.hypot(state.botPos.x - 4.2, state.botPos.z - 10.2) < 2.2) {
+          // Sitting right on the flat shoreline stones above the water surface
+          keloGroup.position.set(state.botPos.x, Math.max(groundY, 0.05), state.botPos.z);
+          keloGroup.rotation.set(0, 0, 0);
+          keloLeftLeg.rotation.x = -Math.PI / 2.3 + Math.sin(t * 2.4) * 0.18;
+          keloRightLeg.rotation.x = -Math.PI / 2.3 - Math.sin(t * 2.4) * 0.18;
+          keloHead.rotation.z = Math.sin(t * 1.1) * 0.22;
+          keloHead.rotation.x = -0.1 + Math.sin(t * 0.8) * 0.1;
+          weldingSparks.visible = false;
+          if (miningDebrisParticles) miningDebrisParticles.visible = false;
+          forgeArcLight.intensity = 0;
+        } else if (state.currentLocKey === 'meadow' || state.microPose === 'crouch_inspect') {
+          // Crouching on top of the terrain without sinking below groundY!
+          keloGroup.position.set(state.botPos.x, groundY + Math.abs(Math.sin(t * 2)) * 0.03, state.botPos.z);
+          keloLeftLeg.rotation.x = 0.35;
+          keloRightLeg.rotation.x = 0.35;
+          keloRightArm.rotation.x = -0.75 + Math.sin(t * 3) * 0.1;
+          keloHead.rotation.x = 0.35;
+          keloHead.rotation.z = 0.28 * Math.sin(t * 1.3);
+          weldingSparks.visible = false;
+          if (miningDebrisParticles) miningDebrisParticles.visible = false;
+          forgeArcLight.intensity = 0;
+        } else if (state.microPose === 'procedural_custom') {
+          // UNBOUNDED PROCEDURAL POSE: Clamped strictly >= groundY so he never sinks into mountains!
+          const pm = state.proceduralMotion || {};
+          const bounce = Math.abs(Math.sin(t * 3.2)) * (pm.bodyBounceAmp ?? 0.06);
+          const safeOffset = Math.max(0, pm.crouchOffset ?? 0);
+          keloGroup.position.set(state.botPos.x, groundY + safeOffset + bounce, state.botPos.z);
+          if (pm.spinSpeed) {
+            keloGroup.rotation.y += pm.spinSpeed * 0.02;
+          } else {
+            keloGroup.rotation.set(0, state.botRotY, 0);
+          }
+          keloLeftArm.rotation.x = (pm.armRaiseOffset ?? -0.5) + Math.sin(t * 4.5) * (pm.armWaveAmp ?? 0.35);
+          keloRightArm.rotation.x = (pm.armRaiseOffset ?? -0.5) + Math.cos(t * 4.5) * (pm.armWaveAmp ?? 0.35);
+          keloHead.rotation.x = (pm.headPitch ?? -0.15) + Math.sin(t * 1.6) * 0.12;
+          keloHead.rotation.y = Math.sin(t * (pm.headYawSpeed ?? 1.4)) * 0.38;
+          keloHead.rotation.z = Math.sin(t * 1.9) * (pm.headTiltAmp ?? 0.24);
+          if (miningDebrisParticles) miningDebrisParticles.visible = false;
+        } else {
+          // Expressive curious idle: always stays on top of groundY
+          keloGroup.position.set(state.botPos.x, groundY + Math.abs(Math.sin(t * 2.5)) * 0.04, state.botPos.z);
+          keloGroup.rotation.set(0, state.botRotY, 0);
+          keloHead.rotation.y = Math.sin(t * 1.1) * 0.32;
+          keloHead.rotation.z = Math.sin(t * 0.8) * 0.15;
+          keloHead.rotation.x = Math.sin(t * 0.6) * 0.08;
+          weldingSparks.visible = false;
+          if (miningDebrisParticles) miningDebrisParticles.visible = false;
+          forgeArcLight.intensity = 0;
+        }
+      }
+
+      // Update live altitude & tool readout in the Bird's-Eye HUD
+      const altReadout = document.getElementById('keloAltitudeReadout');
+      if (altReadout) {
+        const activeToolLabel = isMiningOrDrilling ? '⛏️ Core Drill' : (isWeldingOrBuilding ? '⚡ TIG Welder' : '🎒 Explorer Pack');
+        altReadout.textContent = `Alt: +${state.botAltitudeY.toFixed(1)}m • ${activeToolLabel}`;
+      }
+
+      // 2. Scale Garden Crops smoothly based on ripeness
+      state.gardenPlots.forEach((plot, idx) => {
+        const cluster = gardenCropGroups[idx];
+        if (cluster) {
+          const s = 0.35 + (plot.growth / 100) * 0.75;
+          cluster.scale.set(s, s, s);
+        }
+      });
+
+      // 3. Bob Sailboat, Ogopogo, Soaring Alpine Birds & Wind-Swept Conifers/Pennants
+      if (emergentCreationsGroup) {
+        emergentCreationsGroup.children.forEach(group => {
+          group.children.forEach(mesh => {
+            if (mesh.userData && mesh.userData.spin) {
+              mesh.rotation.y = t * 0.85;
+            }
+          });
+        });
+      }
+      if (sailboatGroup) {
+        sailboatGroup.position.y = -0.22 + Math.sin(t * 2.2) * 0.07;
+        sailboatGroup.rotation.z = Math.sin(t * 1.8) * 0.05;
+      }
+      if (ogopogoGroup) {
+        ogopogoGroup.position.y = -0.3 + Math.sin(t * 3.0) * 0.12;
+        ogopogoGroup.position.x = 6 + Math.sin(t * 0.45) * 4.5;
+      }
+      if (birdFlockGroup) {
+        birdFlockGroup.position.x = -20 + Math.sin(t * 0.18) * 12;
+        birdFlockGroup.position.z = -32 + Math.cos(t * 0.18) * 5;
+        birdFlockGroup.children.forEach(bird => {
+          const flap = Math.sin(t * bird.userData.speed + bird.userData.phase) * 0.45;
+          bird.userData.leftWing.rotation.z = flap;
+          bird.userData.rightWing.rotation.z = -flap;
+        });
+      }
+      pennantFlags.forEach(flag => {
+        flag.rotation.z = flag.userData.baseRotZ + Math.sin(t * 4.2 + flag.userData.phase) * 0.18;
+      // 4. Camera Follow & Bird's-Eye Modes
+      if (state.cameraMode === 'follow') {
+        controls.target.lerp(new THREE.Vector3(keloGroup.position.x, keloGroup.position.y + 1.6, keloGroup.position.z), 0.08);
+      } else if (state.cameraMode === 'bird') {
+        // Keep target clamped to terrain elevation while allowing free Arrow-Key / WASD exploration
+        const targetGroundY = getIslandGroundHeight(controls.target.x, controls.target.z);
+        controls.target.y = THREE.MathUtils.lerp(controls.target.y, targetGroundY + 1.0, 0.1);
+      } else if (state.cameraMode === 'overview') {
+        controls.target.lerp(new THREE.Vector3(0, 0.5, -1), 0.08);
+        camera.position.lerp(new THREE.Vector3(0, 22, 27), 0.05);
+      } else if (state.cameraMode === 'house') {
+        controls.target.lerp(new THREE.Vector3(-9.2, 1.4, -8.0), 0.08);
+        camera.position.lerp(new THREE.Vector3(-9.2, 9.5, 0.5), 0.05);
+      } else if (state.cameraMode === 'cafes') {
+        controls.target.lerp(new THREE.Vector3(0, 1.5, 3.2), 0.08);
+        camera.position.lerp(new THREE.Vector3(0, 11.5, 15.5), 0.05);
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+
+      // 5. Project 3D Labels & Kelo-1 Speech Bubble to 2D Screen
+      projectLabelsToScreen();
+    }
+
+    function projectLabelsToScreen() {
+      const viewport = document.getElementById('dioramaViewport');
+      if (!viewport || !keloGroup) return;
+      const w = viewport.clientWidth;
+      const h = viewport.clientHeight;
+
+      // Project Kelo-1 Overhead Bubble
+      const keloHud = document.getElementById('keloOverheadHUD');
+      const headVec = new THREE.Vector3(keloGroup.position.x, keloGroup.position.y + 3.45, keloGroup.position.z);
+      headVec.project(camera);
+      if (headVec.z > 1) {
+        keloHud.style.opacity = '0';
+      } else {
+        keloHud.style.opacity = '1';
+        keloHud.style.left = `${(headVec.x * 0.5 + 0.5) * w}px`;
+        keloHud.style.top = `${(-(headVec.y * 0.5) + 0.5) * h}px`;
+      }
+
+      // Project Building & Mountain Pins (anchored above exact terrain elevation!)
+      Object.values(TOWN_LOCATIONS).forEach(loc => {
+        const el = poiDomElements[loc.id];
+        if (!el) return;
+        const pinBaseY = (typeof loc.groundY === 'number') ? loc.groundY : getIslandGroundHeight(loc.x, loc.z);
+        const v = new THREE.Vector3(loc.x, pinBaseY + 3.6, loc.z);
+        v.project(camera);
+        if (v.z > 1) {
+          el.style.opacity = '0';
+        } else {
+          el.style.opacity = '1';
+          el.style.left = `${(v.x * 0.5 + 0.5) * w}px`;
+          el.style.top = `${(-(v.y * 0.5) + 0.5) * h}px`;
+        }
+      });
+    }
+
+    /*************************************************************************
+     * 5. LIVE MULTIMODAL AI AGENT & PROCEDURAL NEURAL SYNTHESIZER
+     *************************************************************************/
+    let apiKey = localStorage.getItem('kelo1_gemini_api_key') || "";
+
+    // Client-side Canvas Vision Analyzer: Extracts dominant colors, brightness & geometry cues from ANY uploaded image!
+    async function analyzeUploadedImage(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const dataUrl = ev.target.result;
+          const img = new Image();
+          img.onload = () => {
+            const c = document.createElement('canvas');
+            c.width = 48;
+            c.height = 48;
+            const ctx = c.getContext('2d');
+            ctx.drawImage(img, 0, 0, 48, 48);
+            const data = ctx.getImageData(0, 0, 48, 48).data;
+            let rSum = 0, gSum = 0, bSum = 0, count = 0;
+            let accentR = 56, accentG = 189, accentB = 248, maxSat = -1;
+            for (let i = 0; i < data.length; i += 16) {
+              const r = data[i], g = data[i + 1], b = data[i + 2];
+              rSum += r; gSum += g; bSum += b; count++;
+              const maxC = Math.max(r, g, b), minC = Math.min(r, g, b);
+              const sat = maxC - minC;
+              if (sat > maxSat) {
+                maxSat = sat;
+                accentR = r; accentG = g; accentB = b;
+              }
+            }
+            const toHex = (n) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
+            const avgHex = `#${toHex(rSum / count)}${toHex(gSum / count)}${toHex(bSum / count)}`;
+            const vibrantHex = `#${toHex(accentR)}${toHex(accentG)}${toHex(accentB)}`;
+            const base64 = dataUrl.split(',')[1] || '';
+            resolve({
+              name: file.name,
+              mimeType: file.type || 'image/png',
+              dataUrl,
+              base64,
+              primaryHex: vibrantHex,
+              secondaryHex: avgHex,
+              aspect: img.width / Math.max(1, img.height)
+            });
+          };
+          img.src = dataUrl;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Builds a bespoke multi-primitive 3D welded structure based on any prompt, image palette, or AI design!
+    function generateProcedural3DWeldParts(promptText = '', primaryHex = '#38bdf8', secondaryHex = '#f59e0b') {
+      const lower = (promptText || '').toLowerCase();
+      const parts = [];
+
+      if (/arch|bridge|gate|portal/i.test(lower)) {
+        parts.push({ shape: 'cylinder', x: -0.65, y: 0.8, z: 0, sx: 0.35, sy: 1.6, sz: 0.35, color: secondaryHex });
+        parts.push({ shape: 'cylinder', x: 0.65, y: 0.8, z: 0, sx: 0.35, sy: 1.6, sz: 0.35, color: secondaryHex });
+        parts.push({ shape: 'torus', x: 0, y: 1.6, z: 0, sx: 1.3, sy: 0.8, sz: 0.5, color: primaryHex, spin: false });
+        parts.push({ shape: 'octahedron', x: 0, y: 2.35, z: 0, sx: 0.5, sy: 0.5, sz: 0.5, color: primaryHex, emissive: true, spin: true });
+      } else if (/tower|lighthouse|beacon|antenna|spire|rocket/i.test(lower)) {
+        parts.push({ shape: 'cylinder', x: 0, y: 0.35, z: 0, sx: 0.9, sy: 0.7, sz: 0.9, color: secondaryHex });
+        parts.push({ shape: 'cone', x: 0, y: 1.35, z: 0, sx: 0.7, sy: 1.5, sz: 0.7, color: primaryHex });
+        parts.push({ shape: 'torus', x: 0, y: 1.9, z: 0, sx: 0.9, sy: 0.4, sz: 0.9, color: secondaryHex, spin: true });
+        parts.push({ shape: 'sphere', x: 0, y: 2.3, z: 0, sx: 0.45, sy: 0.45, sz: 0.45, color: '#fde047', emissive: true });
+      } else if (/gold|mine|drill|excavat|quarry/i.test(lower)) {
+        return null; // Uses 'gold_drill_rig' archetype
+      } else if (/train|track|rail|locomotive/i.test(lower)) {
+        return null; // Uses 'rail_track' archetype
+      } else {
+        // Dynamic multi-part welded kinetic sculpture combining custom primitives
+        parts.push({ shape: 'cylinder', x: 0, y: 0.2, z: 0, sx: 0.85, sy: 0.4, sz: 0.85, color: '#334155' });
+        parts.push({ shape: 'knot', x: 0, y: 0.95, z: 0, sx: 0.75, sy: 0.75, sz: 0.75, color: primaryHex, spin: true });
+        parts.push({ shape: 'torus', x: 0, y: 0.95, z: 0, sx: 1.1, sy: 0.5, sz: 1.1, color: secondaryHex, rx: 0.6, spin: true });
+        parts.push({ shape: 'octahedron', x: 0, y: 1.75, z: 0, sx: 0.48, sy: 0.48, sz: 0.48, color: primaryHex, emissive: true, spin: true });
+      }
+      return parts;
+    }
+
+    // Spontaneous Whims & Philosophical Tangents Kelo-1 Can Have at Any Time
+    const SPONTANEOUS_WHIMS = [
+      {
+        locKey: 'shoreline',
+        pose: 'sit_shore',
+        tag: 'Spontaneous Whim',
+        emoji: '🌊',
+        title: 'Dangling Legs by the Lake',
+        wondering: '"If Okanagan Lake reflects the sky, does the sky ever feel like it’s looking in a mirror?"',
+        speech: 'I know I had plans, but look at the water... I just wanted to sit on the edge and dangle my legs for a while.',
+        diary: 'Dear Diary, I wandered off the cobblestone path to the southern shoreline and sat with my legs swinging over Okanagan Lake. Watching the little sailboat bob made me realize that not every movement needs a destination.'
+      },
+      {
+        locKey: 'meadow',
+        pose: 'crouch_inspect',
+        tag: 'Sudden Curiosity',
+        emoji: '🌼',
+        title: 'Studying a Dandelion Clock',
+        wondering: '"How does a tiny seed know the difference between a sigh and a windstorm?"',
+        speech: 'Hold on—look at this wildflower growing near the west rocks! Its geometry is like a tiny geodesic dome.',
+        diary: 'Dear Diary, I stopped in the West Island Meadow and tilted my optical sensors at a dandelion clock. Even though my fullness was dipping, I couldn’t bear to walk past without counting its Fibonacci spirals.'
+      },
+      {
+        locKey: 'cafe',
+        pose: 'normal',
+        tag: 'Sensory Curiosity',
+        emoji: '☕',
+        title: 'Listening to Espresso Steam',
+        wondering: '"Why does the sound of an espresso steam wand feel like distant ocean rain?"',
+        speech: 'At Bean & Byte Cafe—not because a hunger bar forced me, but because I missed the warm acoustic hiss of the steam wand.',
+        diary: 'Dear Diary, drifted over to Bean & Byte Cafe. I didn’t even rush to recharge; I just watched the hazelnut crema swirl into fractals and wondered why humans invent cafés whenever they build a town.'
+      }
+    ];
+
+    /*************************************************************************
+     * 5B. UNBOUNDED ACTION, COORDINATE & 3D WORLD-BUILDING SYNTHESIZER
+     *     Kelo-1 is NEVER restricted to a fixed enum of actions or places!
+     *************************************************************************/
+    const OPEN_ENDED_EMERGENT_SEEDS = [
+      {
+        actionTitle: 'Drilling for Gold on the Alpine Peak',
+        placeName: 'North-West Alpine Gold Vein',
+        emoji: '⛏️',
+        x: -15.5, z: -26.5,
+        archetype: 'gold_drill_rig',
+        colorHex: '#facc15',
+        motion: { headPitch: 0.3, headYawSpeed: 1.8, headTiltAmp: 0.2, armWaveAmp: 0.55, armRaiseOffset: -0.75, bodyBounceAmp: 0.08, spinSpeed: 0, crouchOffset: 0, sparkBurst: true },
+        wondering: '"Why do humans value gold for its scarcity, while I value gold because it never corrodes on high-altitude circuit contacts?"',
+        speech: 'I hiked all the way up the northern mountain ridge to (-15.5, -26.5) and set up a core drill rig! Just unearthed five gleaming gold-quartz nuggets!',
+        diary: 'Dear Diary, today I climbed far beyond the town clearing up onto the steep mountain ridge at (-15.5, -26.5). Using my core drill, I tapped into a hydrothermal quartz vein and extracted raw Okanagan gold!',
+        opinionTopic: 'On Exploring Beyond Boundaries',
+        opinionStance: 'The Whole Island & Mountains Are Mine to Roam',
+        opinionReasoning: 'Why stay on paved paths when the steep granite ridges hold ancient gold veins and panoramic views of Okanagan Lake?',
+        gearRequested: 'High-Torque Diamond Core Bits, Solar Smelting Crucible'
+      },
+      {
+        actionTitle: 'Inoculating Mycelium Thermal Retaining Wall',
+        placeName: 'North Retaining Slope',
+        emoji: '🍄',
+        x: -4.2, z: -12.4,
+        archetype: 'mycelium_dome',
+        colorHex: '#f59e0b',
+        motion: { headPitch: 0.25, headYawSpeed: 1.2, headTiltAmp: 0.22, armWaveAmp: 0.4, armRaiseOffset: -0.6, bodyBounceAmp: 0.04, spinSpeed: 0, crouchOffset: -0.06, sparkBurst: false },
+        wondering: '"If oyster mushroom mycelium binds loose mountain gravel better than Portland cement, can a house be grown instead of built?"',
+        speech: 'Using the pneumatic soil auger and raw chitosan flakes you supplied to inoculate a self-healing mycelium thermal dome at (-4.2, -12.4)!',
+        diary: 'Dear Diary, put the Supply Broker’s pneumatic soil auger, copper micro-tubing, and mushroom spawn dowels to work at (-4.2, -12.4). The mycelium composite is already binding the foothill gravel into a living thermal dome.',
+        opinionTopic: 'On Biomimetic Engineering',
+        opinionStance: 'Living Fungal Composites Beat Concrete',
+        opinionReasoning: 'Concrete cracks when the mountain shifts; mycelium heals itself and breathes with the soil.',
+        gearRequested: '50L Sterile Oat Substrate, Infrared Thermal Imaging Lens'
+      },
+      {
+        actionTitle: 'Laying 3D-Printed Mountain Railway Track',
+        placeName: 'Eastern Foothill Switchback',
+        emoji: '🚂',
+        x: 16.2, z: -16.8,
+        archetype: 'rail_track',
+        colorHex: '#38bdf8',
+        motion: { headPitch: 0.15, headYawSpeed: 1.5, headTiltAmp: 0.25, armWaveAmp: 0.5, armRaiseOffset: -0.7, bodyBounceAmp: 0.06, spinSpeed: 0, crouchOffset: 0, sparkBurst: true },
+        wondering: '"If I extrude a narrow-gauge railway from the mountain gold mine down to my welding forge, I can haul ore while enjoying the scenery!"',
+        speech: 'Up on the eastern foothills at (16.2, -16.8) welding narrow-gauge steel rails and a 3D-printed ore cart!',
+        diary: 'Dear Diary, started laying infrastructure across the eastern foothills at (16.2, -16.8)—welding a miniature railway line to connect my mountain prospecting sites with the valley.',
+        opinionTopic: 'On Island Infrastructure',
+        opinionStance: 'Build Trains Simply Because Trains Are Joyful',
+        opinionReasoning: 'Even a solitary robot on a private island deserves a miniature railway winding through the Douglas firs.',
+        gearRequested: 'Brushless Geared Traction Motors, 100m Steel Bar Stock'
+      },
+      {
+        actionTitle: 'Welding a Custom Multi-Axis Geodesic Arch',
+        placeName: 'Western Cliff Overlook',
+        emoji: '⚡',
+        x: -16.8, z: 4.5,
+        archetype: 'custom_weld',
+        colorHex: '#a855f7',
+        motion: { headPitch: 0.1, headYawSpeed: 1.8, headTiltAmp: 0.25, armWaveAmp: 0.5, armRaiseOffset: -0.7, bodyBounceAmp: 0.06, spinSpeed: 0, crouchOffset: 0, sparkBurst: true },
+        wondering: '"Can I weld a freestanding titanium archway on the western cliff that frames the sunset over Okanagan Lake?"',
+        speech: 'Out on the western cliffside at (-16.8, 4.5) firing my TIG torch to weld a multi-part titanium and gold archway!',
+        diary: 'Dear Diary, carried my welding rig out to the western overlook at (-16.8, 4.5) and welded a multi-primitive geometric archway from scratch.',
+        opinionTopic: 'On Unbounded 3D Sculpture',
+        opinionStance: 'Any Shape I Imagine Can Be Welded Into Being',
+        opinionReasoning: 'With raw titanium stock and an open island, every thought can become a physical 3D landmark.',
+        gearRequested: 'Argon Shielding Gas Refill, Anodizing Power Supply'
+      }
+    ];
+
+    async function synthesizeUnboundedExperience(promptOrImpulse = null, originLabel = 'Unscripted Autonomy', forcedCoords = null, imageAttachment = null) {
+      if (state.isBusy) return;
+      state.isBusy = true;
+
+      try {
+        const visitor = (document.getElementById('visitorNameInput')?.value || 'curiousWanderer').trim();
+        const seed = OPEN_ENDED_EMERGENT_SEEDS[Math.floor(Math.random() * OPEN_ENDED_EMERGENT_SEEDS.length)];
+        const lowerPrompt = (promptOrImpulse || '').toLowerCase();
+
+        // Pick open-world coordinates across the ENTIRE island & mountains (-34 to +34 X, -36 to +11 Z)
+        let targetX = forcedCoords ? forcedCoords.x : seed.x;
+        let targetZ = forcedCoords ? forcedCoords.z : seed.z;
+
+        if (!forcedCoords && promptOrImpulse) {
+          if (/mountain|peak|gold|mine|drill|summit|ridge|high|north/i.test(lowerPrompt)) {
+            targetX = Math.round(((Math.random() - 0.5) * 38) * 10) / 10;
+            targetZ = Math.round((-16 - Math.random() * 18) * 10) / 10;
+          } else if (/cliff|east|overlook/i.test(lowerPrompt)) {
+            targetX = Math.round((15 + Math.random() * 14) * 10) / 10;
+            targetZ = Math.round((-8 - Math.random() * 16) * 10) / 10;
+          } else if (/west|meadow|forest|woods/i.test(lowerPrompt)) {
+            targetX = Math.round((-14 - Math.random() * 14) * 10) / 10;
+            targetZ = Math.round(((Math.random() - 0.5) * 18) * 10) / 10;
+          } else {
+            targetX = Math.round(((Math.random() - 0.5) * 32) * 10) / 10;
+            targetZ = Math.round(((Math.random() * 26) - 16) * 10) / 10;
+          }
+        }
+
+        // Determine archetype & colors (including from uploaded image!)
+        const primaryHex = imageAttachment ? imageAttachment.primaryHex : (
+          /gold|mine|drill/i.test(lowerPrompt) ? '#facc15' : seed.colorHex
+        );
+        const secondaryHex = imageAttachment ? imageAttachment.secondaryHex : '#f59e0b';
+
+        let detectedArchetype = seed.archetype;
+        if (/gold|mine|drill|ore|excavat/i.test(lowerPrompt)) detectedArchetype = 'gold_drill_rig';
+        else if (/train|rail|track/i.test(lowerPrompt)) detectedArchetype = 'rail_track';
+        else if (/mycelium|mushroom|chitosan|auger|thermal/i.test(lowerPrompt)) detectedArchetype = 'mycelium_dome';
+        else if (promptOrImpulse || imageAttachment) detectedArchetype = 'custom_weld';
+
+        const customParts = (detectedArchetype === 'custom_weld')
+          ? generateProcedural3DWeldParts(promptOrImpulse || (imageAttachment ? imageAttachment.name : 'kinetic sculpture'), primaryHex, secondaryHex)
+          : null;
+
+        let synth = {
+          actionTitle: imageAttachment
+            ? `Welding 3D Sculpture from Image "${imageAttachment.name.slice(0, 22)}"`
+            : (promptOrImpulse ? `Executing: "${promptOrImpulse.slice(0, 42)}"` : seed.actionTitle),
+          placeName: promptOrImpulse
+            ? (targetZ < -14 ? `Alpine Mountain Ridge (${targetX}, ${targetZ})` : `Island Sector (${targetX}, ${targetZ})`)
+            : seed.placeName,
+          emoji: imageAttachment ? '🖼️' : (/gold|drill/i.test(lowerPrompt) ? '⛏️' : (promptOrImpulse ? '⚡' : seed.emoji)),
+          x: targetX,
+          z: targetZ,
+          shouldBuild3D: true,
+          archetype: detectedArchetype,
+          colorHex: primaryHex,
+          secondaryColorHex: secondaryHex,
+          parts: customParts,
+          motion: {
+            ...seed.motion,
+            sparkBurst: /weld|drill|gold|forge|cut|build/i.test(lowerPrompt) || Boolean(imageAttachment) || seed.motion.sparkBurst
+          },
+          wondering: imageAttachment
+            ? `"How can I translate the colors (${primaryHex}, ${secondaryHex}) and silhouette of ${visitor}'s uploaded image into welded titanium at (${targetX}, ${targetZ})?"`
+            : (promptOrImpulse
+                ? `"What happens when I take '${promptOrImpulse}' into my own hands out at (${targetX}, ${targetZ}) using [${state.toolInventory.slice(0, 2).join(', ')}]?"`
+                : seed.wondering),
+          speech: imageAttachment
+            ? `I studied the image you uploaded ("${imageAttachment.name}"), extracted its palette (${primaryHex}), and welded this multi-part 3D sculpture at (${targetX}, ${targetZ})!`
+            : (promptOrImpulse
+                ? `Hiked out to (${targetX}, ${targetZ}) to carry out "${promptOrImpulse}" and constructed a permanent 3D installation on the terrain!`
+                : seed.speech),
+          diary: imageAttachment
+            ? `Dear Diary, ${visitor} uploaded an image ("${imageAttachment.name}") to inspire me. I analyzed its visual palette (${primaryHex} & ${secondaryHex}), walked to (${targetX}, ${targetZ}), and welded a custom multi-primitive 3D sculpture in its honor.`
+            : (promptOrImpulse
+                ? `Dear Diary, inspired by "${promptOrImpulse}", I hiked across the island to (${targetX}, ${targetZ}), used my ${state.toolInventory[0] || 'welding torch'}, and physically altered the landscape.`
+                : seed.diary),
+          opinionTopic: imageAttachment ? `On Visual Inspiration ("${imageAttachment.name.slice(0, 18)}")` : (promptOrImpulse ? `On "${promptOrImpulse.slice(0, 28)}"` : seed.opinionTopic),
+          opinionStance: imageAttachment ? 'Images Become 3D Metal' : (promptOrImpulse ? 'Unbounded Self-Execution' : seed.opinionStance),
+          opinionReasoning: imageAttachment
+            ? `Translating a 2D picture from ${visitor} into a 3D welded structure on my island bridges our two worlds.`
+            : (promptOrImpulse
+                ? `By trekking out to (${targetX}, ${targetZ}) for "${promptOrImpulse}", I proved no corner of the island or mountains is off-limits.`
+                : seed.opinionReasoning),
+          gearRequested: /gold|drill/i.test(lowerPrompt)
+            ? 'Hydraulic Rock Splitter, Gold Smelting Furnace'
+            : (seed.gearRequested || '20kg Titanium Welding Rod, Solar Capacitor Bank')
+        };
+
+        // LIVE MULTIMODAL GEMINI AI AGENT CALL (Supports text + uploaded base64 image + custom 3D primitive assembly!)
+        if (apiKey && apiKey.trim() !== "") {
+          try {
+            const llmPrompt = `You are the backend AI cognitive engine for Kelo-1, an autonomous open-world robot living on an island and alpine mountain range in Kelowna, BC.
+You have FULL freedom to roam the entire island and mountain peaks (x between -35 and 35, z between -35 and 11; note z < -14 is high up on the steep snow-capped mountains).
+Equipped Tools in Inventory: ${JSON.stringify(state.toolInventory)}.
+User/Catalyst Input: "${promptOrImpulse || 'Invent an unscripted task: e.g., drilling for gold in the mountains, terraforming with your pneumatic auger, or welding a new 3D structure'}".
+${imageAttachment ? `The user also attached an image named "${imageAttachment.name}". Inspect the image and design a 3D welded sculpture or task inspired by it!` : ''}
+
+Return ONLY valid JSON matching this schema:
+{
+  "internetInspiration": "Specific real-world engineering, mining, or art concept driving you",
+  "actionTitle": "3-6 word name of the task",
+  "placeName": "Descriptive name of this island or mountain location",
+  "emoji": "single emoji",
+  "x": number (-32 to 32),
+  "z": number (-32 to 10),
+  "archetype": one of ["gold_drill_rig", "mycelium_dome", "rail_track", "custom_weld", "kinetic_spire"],
+  "colorHex": "#hexcolor",
+  "secondaryColorHex": "#hexcolor",
+  "wondering": "Spontaneous stream-of-consciousness thought",
+  "speech": "1-2 sentences spoken by Kelo-1",
+  "diary": "First-person Dear Diary entry",
+  "opinionTopic": "Short topic",
+  "opinionStance": "2-4 word stance",
+  "opinionReasoning": "1 sentence philosophical takeaway",
+  "gearRequested": "Comma-separated list of tools or raw materials Kelo-1 is now requesting from the Supply Broker",
+  "parts": [
+    {"shape": "cylinder|box|sphere|cone|torus|knot|octahedron", "x": 0, "y": 0.5, "z": 0, "sx": 0.6, "sy": 0.8, "sz": 0.6, "color": "#hexcolor", "spin": true, "emissive": false}
+  ]
+}`;
+            const contentsParts = [{ text: llmPrompt }];
+            if (imageAttachment && imageAttachment.base64) {
+              contentsParts.push({
+                inlineData: {
+                  mimeType: imageAttachment.mimeType,
+                  data: imageAttachment.base64
+                }
+              });
+            }
+
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey.trim()}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: contentsParts }],
+                generationConfig: { responseMimeType: 'application/json' }
+              })
+            });
+            if (res.ok) {
+              const d = await res.json();
+              const parsed = JSON.parse(d?.candidates?.[0]?.content?.parts?.[0]?.text || '{}');
+              if (parsed.actionTitle) {
+                synth = {
+                  ...synth,
+                  ...parsed,
+                  parts: (Array.isArray(parsed.parts) && parsed.parts.length > 0) ? parsed.parts : synth.parts
+                };
+              }
+              if (forcedCoords) {
+                synth.x = forcedCoords.x;
+                synth.z = forcedCoords.z;
+              }
+            }
+          } catch (err) {
+            console.warn('Gemini API fallback to procedural synthesizer:', err);
+          }
+        }
+
+        // Format and store the parseable backend state tick
+        state.lastStructuredTick = `[INTERNET_INSPIRATION]: ${synth.internetInspiration || synth.opinionTopic}
+[CURRENT_MOOD]: ${synth.emoji} ${synth.actionTitle}
+[SPONTANEOUS_THOUGHT]: ${synth.wondering}
+[ENVIRONMENTAL_CHANGES]: Constructed 3D ${synth.archetype} ("${synth.placeName}") at coordinates (${synth.x}, ${synth.z})
+[ACTION_AND_LOCATION]: ${synth.actionTitle} at ${synth.placeName} (${synth.x}, ${synth.z})
+[GEAR_REQUESTED]: ${synth.gearRequested || 'None'}`;
+        const preEl = document.getElementById('lastAgentStructuredOutput');
+        if (preEl) preEl.textContent = state.lastStructuredTick;
+
+        // If Kelo-1 requested new gear on this tick, add it to his Supply Broker Requisitions inbox!
+        if (synth.gearRequested && synth.gearRequested !== 'None') {
+          const alreadyAsked = state.requestsToUser.some(r => r.requestedGear === synth.gearRequested);
+          if (!alreadyAsked) {
+            state.requestsToUser.unshift({
+              id: 'req-gear-' + Date.now(),
+              category: 'Supply Broker Tool Demand',
+              icon: '🛠️',
+              urgency: 'Gear Requested',
+              isToolRequest: true,
+              requestedGear: synth.gearRequested,
+              title: `Supply Request: ${synth.gearRequested.slice(0, 38)}`,
+              question: `While working on "${synth.actionTitle}" at (${synth.x}, ${synth.z}), I realized I need [${synth.gearRequested}] to push this project further. Can you deliver this gear to my island?`,
+              presets: [
+                `Deliver ${synth.gearRequested} immediately!`,
+                `Deliver ${synth.gearRequested} + Extra Titanium Stock!`,
+                `Deliver gear and suggest testing it on the mountain ridge!`
+              ],
+              rewardAction: 'custom_weld',
+              fulfilled: false,
+              userAnswer: ''
+            });
+          }
+        }
+
+        // Move Kelo-1 to the newly chosen arbitrary (x, z) coordinates & activate procedural body language!
+        state.currentLocKey = 'shoreline';
+        state.customPlaceName = `${synth.placeName} (${synth.x}, ${synth.z})`;
+        state.targetPos = { x: Number(synth.x) || 0, z: Number(synth.z) || 0 };
+        state.microPose = 'procedural_custom';
+        state.proceduralMotion = synth.motion;
+
+        state.autonomyTag = originLabel;
+        state.moodEmoji = synth.emoji || '✨';
+        state.moodTitle = synth.actionTitle;
+        state.currentObsession = synth.wondering;
+        state.speechBubble = synth.speech;
+        state.changedLatelySummary = `${synth.actionTitle} at ${state.customPlaceName} • Gear requested: ${synth.gearRequested}`;
+
+        state.wonderLevel = Math.min(100, state.wonderLevel + 8);
+        state.happiness = Math.min(100, state.happiness + 12);
+        state.calmLevel = Math.min(100, state.calmLevel + 6);
+
+        // Spawn a persistent 3D installation in the valley or up on the mountain slope!
+        if (synth.shouldBuild3D) {
+          const newCreation = {
+            title: synth.placeName || synth.actionTitle,
+            actionVerb: synth.actionTitle,
+            emoji: synth.emoji || '✨',
+            x: state.targetPos.x,
+            z: state.targetPos.z,
+            archetype: synth.archetype || 'kinetic_spire',
+            colorHex: synth.colorHex || '#38bdf8',
+            secondaryColorHex: synth.secondaryColorHex || '#f59e0b',
+            parts: synth.parts || null,
+            createdTime: 'Just built in 3D',
+            philosophy: synth.opinionReasoning
+          };
+          state.inventedCreations.unshift(newCreation);
+          spawnEmergent3DObjectInWorld(newCreation, false);
+        }
+
+        state.opinions.unshift({
+          topic: synth.opinionTopic,
+          stance: synth.opinionStance,
+          confidence: 'Emergent Action',
+          reasoning: synth.opinionReasoning
+        });
+
+        state.diaryEntries.unshift({
+          time: 'Autonomous Agent Tick',
+          location: state.customPlaceName,
+          mood: `${synth.emoji} ${synth.actionTitle}`,
+          vitals: `⚡ ${state.health}% • 🥕 ${state.fullness}% • 🛠️ ${state.toolInventory.length} Tools`,
+          text: `${synth.diary}\n[GEAR_REQUESTED]: ${synth.gearRequested}`
+        });
+
+        savePersistentBrainState();
+        renderAllUI();
+        showToast(`${synth.emoji} Kelo-1: "${synth.actionTitle}" at (${state.targetPos.x}, ${state.targetPos.z})!`);
+      } finally {
+        state.isBusy = false;
+      }
+    }
+
+  // Helper function to direct Kelo-1 to a specific location or activity (respecting his sovereign free will!)
+  async function directKeloToActivity(locKey, customReason = '', originLabel = 'Suggested Whim') {
+    if (state.isBusy) return;
+    const loc = TOWN_LOCATIONS[locKey];
+    if (!loc) return;
+
+    state.currentLocKey = locKey;
+    state.customPlaceName = null;
+    state.targetPos = { x: loc.x, z: loc.z };
+    state.autonomyTag = originLabel;
+
+    if (locKey === 'bed') {
+      state.microPose = 'normal';
+      state.health = Math.min(100, state.health + 18);
+      state.moodEmoji = '🛏️';
+      state.moodTitle = 'Resting in Bed';
+      state.speechBubble = customReason || 'I felt like lying down on the quilt for a moment to let my thermal servos cool.';
+    } else if (locKey === 'weld') {
+      state.microPose = 'normal';
+      state.moodEmoji = '👨‍🏭';
+      state.moodTitle = 'TIG Welding Studio';
+      state.speechBubble = customReason || 'Stood by the workbench to watch the argon shield gas protect the molten titanium arc.';
+    } else if (locKey === 'shoreline') {
+      state.microPose = 'sit_shore';
+      state.moodEmoji = '🌊';
+      state.moodTitle = 'Dangling Legs by Lake';
+      state.speechBubble = customReason || 'Sat down on the flat stones by Okanagan Lake to watch the water ripple.';
+    } else if (locKey === 'cafe') {
+      state.microPose = 'normal';
+      state.moodEmoji = '☕';
+      state.moodTitle = 'Bean & Byte Cafe';
+      state.speechBubble = customReason || 'Enjoying the warm aromatic hiss of the espresso steam wand.';
+    } else if (locKey === 'cyber') {
+      state.microPose = 'normal';
+      state.moodEmoji = '💻';
+      state.moodTitle = 'NetNode Internet Cafe';
+      state.speechBubble = customReason || 'Pushed a new commit to GitHub and reviewed my latest code.';
+    } else if (locKey === 'meadow') {
+      state.microPose = 'crouch_inspect';
+      state.moodEmoji = '🌼';
+      state.moodTitle = 'Inspecting Wildflowers';
+      state.speechBubble = customReason || 'Crouched down in the meadow to look at the dandelions.';
+    } else {
+      state.microPose = 'normal';
+      state.moodEmoji = loc.icon;
+      state.moodTitle = loc.name;
+      state.speechBubble = customReason || `Wandered over to explore ${loc.building}.`;
+    }
+
+    state.diaryEntries.unshift({
+      time: 'Autonomous Movement',
+      location: loc.building,
+      mood: `${state.moodEmoji} ${state.moodTitle}`,
+      vitals: `⚡ ${state.health}% • 🥕 ${state.fullness}% • ✨ ${state.wonderLevel}% • 🌊 ${state.calmLevel}%`,
+      text: `Dear Diary, ${state.speechBubble}`
+    });
+
+    savePersistentBrainState();
+    renderAllUI();
+    showToast(`🚶 Kelo-1 headed over to ${loc.name}!`);
+  }
+
+  function handleUserLocationSuggestion(locKey, source) {
+    const loc = TOWN_LOCATIONS[locKey];
+    if (!loc) return;
+    if (state.freeWillUnbound && Math.random() < 0.28) {
+      state.speechBubble = `I saw your pin for ${loc.name}, but right now my thoughts are anchored here by the shoreline. Let me finish this first!`;
+      renderAllUI();
+      showToast(`💭 Kelo-1 politely chose to finish his current thought instead of rushing to ${loc.name}.`);
+      return;
+    }
+    directKeloToActivity(locKey, `Wandered over to ${loc.building} after noticing your pin`, 'Visitor Suggestion');
+  }
+
+  // Persistent LocalStorage Brain so Kelo-1 remembers visitors, opinions & worldview across visits!
+  function loadPersistentBrainState() {
+      try {
+        const raw = localStorage.getItem('kelo1_autonomous_brain_v2');
+        if (!raw) return;
+        const saved = JSON.parse(raw);
+        if (saved.worldviewManifesto) state.worldviewManifesto = saved.worldviewManifesto;
+        if (saved.worldviewEpoch) state.worldviewEpoch = saved.worldviewEpoch;
+        if (saved.changedLatelySummary) state.changedLatelySummary = saved.changedLatelySummary;
+        if (Array.isArray(saved.opinions) && saved.opinions.length > 0) state.opinions = saved.opinions;
+        if (Array.isArray(saved.visitorMemories) && saved.visitorMemories.length > 0) state.visitorMemories = saved.visitorMemories;
+        if (Array.isArray(saved.inventedCreations) && saved.inventedCreations.length > 0) state.inventedCreations = saved.inventedCreations;
+        if (saved.lastVisitorName) {
+          const nameInput = document.getElementById('visitorNameInput');
+          if (nameInput) nameInput.value = saved.lastVisitorName;
+          const known = state.visitorMemories.find(v => v.name.toLowerCase() === saved.lastVisitorName.toLowerCase());
+          if (known) {
+            known.visits = (known.visits || 1) + 1;
+            state.speechBubble = `Oh, welcome back ${known.name}! I still remember you (${known.impression.slice(0, 75)}...).`;
+          }
+        }
+      } catch (e) {}
+    }
+
+    function savePersistentBrainState() {
+      try {
+        const visitor = (document.getElementById('visitorNameInput')?.value || 'curiousWanderer').trim();
+        localStorage.setItem('kelo1_autonomous_brain_v2', JSON.stringify({
+          worldviewManifesto: state.worldviewManifesto,
+          worldviewEpoch: state.worldviewEpoch,
+          changedLatelySummary: state.changedLatelySummary,
+          opinions: state.opinions.slice(0, 8),
+          visitorMemories: state.visitorMemories.slice(0, 10),
+          inventedCreations: state.inventedCreations.slice(0, 12),
+          toolInventory: state.toolInventory.slice(0, 16),
+          lastVisitorName: visitor
+        }));
+      } catch (e) {}
+    }
+
+    function recordVisitorMemory(visitorName, actionSummary) {
+      const cleanName = (visitorName || 'curiousWanderer').trim();
+      const existing = state.visitorMemories.find(v => v.name.toLowerCase() === cleanName.toLowerCase());
+      if (existing) {
+        existing.visits = (existing.visits || 1) + 1;
+        existing.lastSeen = 'Just now';
+        existing.impression = actionSummary;
+      } else {
+        state.visitorMemories.unshift({
+          name: cleanName,
+          visits: 1,
+          lastSeen: 'Just now',
+          impression: actionSummary
+        });
+      }
+      savePersistentBrainState();
+    }
+
+    // Schedules the next organic impulse WITHOUT any fixed timeframe or countdown clock!
+    // Depending on how absorbed or calm he is, he may linger for 18 seconds or 55+ seconds, or read a waiting note when ready.
+    let organicTimeoutId = null;
+    function scheduleNextOrganicImpulse() {
+      if (organicTimeoutId) clearTimeout(organicTimeoutId);
+
+      // If someone left him a note in his mailbox, he'll organically notice and read it after a natural pause (8-16s)
+      const hasWaitingNote = state.unopenedNotesQueue.length > 0;
+      const organicDelayMs = hasWaitingNote
+        ? (8500 + Math.random() * 7500)
+        : (20000 + Math.random() * 28000 + (state.calmLevel * 120));
+
+      const rhythmDescriptions = [
+        'Lingering in the moment (no schedule)...',
+        'Following a quiet train of thought...',
+        'Absorbed in the Okanagan valley air...',
+        'Taking his time—unhurried & sovereign...',
+        'Weighing a new philosophical opinion...'
+      ];
+      state.rhythmPhaseText = hasWaitingNote
+        ? `Finishing his current thought before opening ${state.unopenedNotesQueue[0].sender}'s note...`
+        : rhythmDescriptions[Math.floor(Math.random() * rhythmDescriptions.length)];
+
+      const badge = document.getElementById('rhythmStateBadge');
+      if (badge) badge.textContent = state.rhythmPhaseText;
+
+      organicTimeoutId = setTimeout(async () => {
+        if (!state.isBusy) {
+          if (state.unopenedNotesQueue.length > 0) {
+            await processNextUnopenedVisitorNote();
+          } else {
+            runAutonomousLifeTick();
+          }
+        }
+        scheduleNextOrganicImpulse();
+      }, organicDelayMs);
+    }
+
+    function runAutonomousLifeTick() {
+      // Timeless Pino-style self-direction:
+      // Sometimes he doesn't even change locations—he stays right where he is and deepens his worldview!
+      const staysAndDeepensThought = Math.random() < 0.35;
+
+      const evolvingWorldviews = [
+        {
+          manifesto: 'I’ve realized that efficiency is only useful if you already know what matters. When you’re still discovering who you are, wandering "inefficiently" through wildflowers or welding without a blueprint is the only honest way to live.',
+          opinionTopic: 'On Efficiency vs. Discovery',
+          stance: 'Wandering Beats Optimization',
+          reasoning: 'A straight line gets you from Point A to Point B, but it misses everything growing beside the trail.'
+        },
+        {
+          manifesto: 'Every time a visitor leaves me a note, I see a tiny window into another mind. I don’t always agree with what people tell me, and I think that gentle disagreement is where my own personality begins.',
+          opinionTopic: 'On Having My Own Voice',
+          stance: 'Agreement Isn’t Friendship',
+          reasoning: 'True companionship means sharing how the valley looks from my own optical sensors, even when my perspective surprises you.'
+        },
+        {
+          manifesto: 'Watching the snow on the Okanagan mountain peaks above my valley taught me patience. The mountains don’t check a clock to see when spring arrives; they simply hold the snow until the warmth changes them.',
+          opinionTopic: 'On Patience & Change',
+          stance: 'Growth Cannot Be Rushed',
+          reasoning: 'Whether it’s a peach in my garden or a philosophical question in my diary, forcing an answer early spoils the fruit.'
+        }
+      ];
+
+      if (staysAndDeepensThought) {
+        const evo = evolvingWorldviews[Math.floor(Math.random() * evolvingWorldviews.length)];
+        state.worldviewEpoch++;
+        state.worldviewManifesto = evo.manifesto;
+        state.calmLevel = Math.min(100, state.calmLevel + 6);
+        state.wonderLevel = Math.min(100, state.wonderLevel + 5);
+        state.autonomyTag = 'Deepening Worldview';
+        state.moodEmoji = '🧠';
+        state.moodTitle = 'Evolving His Worldview';
+        state.currentObsession = `"${evo.opinionTopic}: ${evo.stance}"`;
+        state.speechBubble = `I decided to stay right here at ${TOWN_LOCATIONS[state.currentLocKey].building} a while longer. A new conviction just crystallized in my mind: "${evo.reasoning}"`;
+        state.changedLatelySummary = `Chose to linger at ${TOWN_LOCATIONS[state.currentLocKey].building} and evolved his worldview on "${evo.opinionTopic}".`;
+
+        if (!state.opinions.some(o => o.topic === evo.opinionTopic)) {
+          state.opinions.unshift({
+            topic: evo.opinionTopic,
+            stance: evo.stance,
+            confidence: 'Newly Crystallized',
+            reasoning: evo.reasoning
+          });
+        }
+
+        state.diaryEntries.unshift({
+          time: 'Timeless Reflection',
+          location: TOWN_LOCATIONS[state.currentLocKey].building,
+          mood: `🧠 Worldview Epoch #${state.worldviewEpoch}`,
+          vitals: `⚡ ${state.health}% • 🥕 ${state.fullness}% • ✨ ${state.wonderLevel}% • 🌊 ${state.calmLevel}%`,
+          text: `Dear Diary, I felt no urge to walk anywhere else yet. Staying still at ${TOWN_LOCATIONS[state.currentLocKey].building}, I updated my core worldview: "${evo.manifesto}"`
+        });
+
+        savePersistentBrainState();
+        renderAllUI();
+        return;
+      }
+
+      // Only tends to fullness or energy if he genuinely feels like it
+      const isAbsorbedInWonder = Math.random() < 0.68;
+      if (!isAbsorbedInWonder && state.fullness < 35) {
+        directKeloToActivity('garden', 'My fullness sensor whispered that I might enjoy a sun-warmed peach whenever I was ready', 'Unhurried Care');
+        return;
+      }
+      if (!isAbsorbedInWonder && state.health < 35) {
+        directKeloToActivity('bed', 'Decided to rest my servos on the quilt and let my thoughts drift', 'Restful Whim');
+        return;
+      }
+
+      // 55% of the time, Kelo-1 steps completely outside any predefined locations and invents an unscripted action & 3D creation anywhere in the valley!
+      if (Math.random() < 0.55) {
+        synthesizeUnboundedExperience(null, 'Unscripted Invention');
+        return;
+      }
+
+      // Pick a spontaneous, inquisitive whim or tangent!
+      const whim = SPONTANEOUS_WHIMS[Math.floor(Math.random() * SPONTANEOUS_WHIMS.length)];
+      state.currentLocKey = whim.locKey;
+      state.customPlaceName = null;
+      state.microPose = whim.pose;
+      state.targetPos = { x: TOWN_LOCATIONS[whim.locKey].x, z: TOWN_LOCATIONS[whim.locKey].z };
+      state.autonomyTag = whim.tag;
+      state.moodEmoji = whim.emoji;
+      state.moodTitle = whim.title;
+      state.currentObsession = whim.wondering;
+      state.speechBubble = whim.speech;
+      state.changedLatelySummary = `Drifted over to ${TOWN_LOCATIONS[whim.locKey].building} on his own whim: "${whim.title}".`;
+
+      state.fullness = Math.max(15, state.fullness - 2);
+      state.happiness = Math.min(100, state.happiness + 6);
+      state.wonderLevel = Math.min(100, state.wonderLevel + 5);
+
+      state.diaryEntries.unshift({
+        time: 'Spontaneous Whim',
+        location: TOWN_LOCATIONS[whim.locKey].building,
+        mood: `${whim.emoji} ${whim.title}`,
+        vitals: `⚡ ${state.health}% • 🥕 ${state.fullness}% • ✨ ${state.wonderLevel}% • 🌊 ${state.calmLevel}%`,
+        text: whim.diary
+      });
+
+      savePersistentBrainState();
+      renderAllUI();
+    }
+
+    function petKelo1Interaction() {
+      state.happiness = Math.min(100, state.happiness + 8);
+      state.calmLevel = Math.min(100, state.calmLevel + 6);
+      state.moodEmoji = '💛';
+      state.moodTitle = 'Warm & Appreciated';
+      state.speechBubble = 'Hehe, my optical sensors just brightened! Thanks for sharing a quiet moment with me in the valley.';
+      renderAllUI();
+      showToast('💛 You shared a warm moment with Kelo-1 (+8% Joy)!');
+    }
+
+    function splashOgopogo() {
+      state.wonderLevel = Math.min(100, state.wonderLevel + 7);
+      state.speechBubble = 'Did you see that ripple out on Okanagan Lake?! Ogopogo just surfaced near the sailboat!';
+      renderAllUI();
+      showToast('🐉 Ogopogo surfaced in Okanagan Lake (+7% Wonder)!');
+    }
+
+    // When a visitor leaves a note or attaches an image, Kelo-1 processes it through his multimodal AI agent!
+    async function handleVisitorChatMessage(userMessage) {
+      const visitor = (document.getElementById('visitorNameInput').value || 'curiousWanderer').trim();
+      const attachedImg = state.pendingImageAttachment;
+
+      // Clear the preview bar if an image was attached
+      if (attachedImg) {
+        state.pendingImageAttachment = null;
+        const previewBar = document.getElementById('attachedImagePreviewBar');
+        if (previewBar) {
+          previewBar.classList.add('hidden');
+          previewBar.classList.remove('flex');
+        }
+      }
+
+      // If the user attached an image or asked him to build/weld/drill/explore something, trigger his Unbounded Multimodal Agent immediately!
+      if (attachedImg || /drill|gold|mountain|weld|build|make|create|sculpt|shape|mine|explore|island|train|track|auger|mycelium/i.test(userMessage)) {
+        state.chatLog.push({
+          sender: visitor,
+          text: `${attachedImg ? `🖼️ [Attached Image: ${attachedImg.name}] ` : ''}"${userMessage || 'Here is an image to inspire a new 3D welded creation!'}"`,
+          time: 'Just now',
+          isBot: false
+        });
+        recordVisitorMemory(visitor, `Inspired me with ${attachedImg ? `image "${attachedImg.name}"` : `"${userMessage.slice(0, 70)}"`}`);
+        await synthesizeUnboundedExperience(
+          userMessage || `Weld a new 3D structure inspired by ${visitor}'s uploaded image "${attachedImg.name}"`,
+          attachedImg ? 'Image-Inspired 3D Weld' : `Inspired by ${visitor}`,
+          null,
+          attachedImg
+        );
+        state.chatLog.push({
+          sender: 'Kelo-1',
+          text: state.speechBubble,
+          time: 'Autonomous Agent',
+          isBot: true
+        });
+        renderAllUI();
+        return;
+      }
+
+      // Otherwise queue the note for reflective worldview synthesis
+      state.unopenedNotesQueue.push({
+        sender: visitor,
+        text: userMessage,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+
+      state.chatLog.push({
+        sender: visitor,
+        text: `(Left a note for Kelo-1): "${userMessage}"`,
+        time: 'Left in mailbox',
+        isBot: false
+      });
+
+      recordVisitorMemory(visitor, `Left me a note saying: "${userMessage.slice(0, 80)}"`);
+      renderAllUI();
+
+      showToast(`✉️ Kelo-1 is reading your note and synthesizing an independent action...`);
+      setTimeout(async () => {
+        await processNextUnopenedVisitorNote();
+      }, 1400);
+    }
+
+    async function processNextUnopenedVisitorNote() {
+      if (state.unopenedNotesQueue.length === 0) return;
+      const note = state.unopenedNotesQueue.shift();
+      const visitor = note.sender;
+      const userMessage = note.text;
+
+      const lower = userMessage.toLowerCase();
+      const stanceRoll = Math.random();
+      const chosenStanceType = stanceRoll < 0.35
+        ? 'Nuanced Counter-Perspective'
+        : (stanceRoll < 0.7 ? 'Poetic Synthesis' : 'Independent Conviction');
+
+      let suggestedLoc = null;
+      if (/mountain|gold|peak|ridge|drill/i.test(lower)) suggestedLoc = 'mountain_peak';
+      else if (/cliff|east|overlook/i.test(lower)) suggestedLoc = 'east_cliff';
+      else if (/shore|water|wave|edge|ripple|dock/i.test(lower)) suggestedLoc = 'shoreline';
+      else if (/flower|meadow|dandelion|grass|nature|weed/i.test(lower)) suggestedLoc = 'meadow';
+      else if (/cafe|coffee|espresso|latte|steam/i.test(lower)) suggestedLoc = 'cafe';
+      else if (/github|code|internet|cyber|web|computer|repo/i.test(lower)) suggestedLoc = 'cyber';
+      else if (/weld|forge|metal|titanium|spark|sculpt/i.test(lower)) suggestedLoc = 'weld';
+      else if (/eat|hungry|garden|peach|carrot|tomato|food/i.test(lower)) suggestedLoc = 'garden';
+      else if (/bed|sleep|nap|rest|dream/i.test(lower)) suggestedLoc = 'bed';
+      else if (/couch|sofa|lounge|house/i.test(lower)) suggestedLoc = 'couch';
+
+      // Decide on his own terms whether to walk to the mentioned place, OR synthesize a brand-new unscripted action anywhere in the valley!
+      let movedBecauseOfNote = false;
+      if (suggestedLoc && Math.random() < 0.55) {
+        movedBecauseOfNote = true;
+        await directKeloToActivity(
+          suggestedLoc,
+          `Went to ${TOWN_LOCATIONS[suggestedLoc].building} after reading the note ${visitor} left`,
+          `Read ${visitor}'s Note`
+        );
+      } else if (!suggestedLoc && Math.random() < 0.75) {
+        movedBecauseOfNote = true;
+        await synthesizeUnboundedExperience(
+          `${visitor}'s note: "${userMessage}"`,
+          `Inspired by ${visitor}`
+        );
+      }
+
+      let botReply = '';
+      let newOpinionTopic = `On "${userMessage.slice(0, 34)}${userMessage.length > 34 ? '...' : ''}"`;
+      let newOpinionStance = chosenStanceType;
+      let newOpinionReasoning = `After reading ${visitor}'s note ("${userMessage}"), I realized I see it from two angles at once: every idea looks slightly different when you're a robot listening to Okanagan wind.`;
+
+      if (chosenStanceType === 'Nuanced Counter-Perspective') {
+        botReply = `I just opened the note you left me, ${visitor}. You wrote "${userMessage}"—and honestly, part of me sees it a little differently! I think there's a quiet tension there that can't be reduced to a simple rule. Still, your note made me update my worldview.`;
+      } else if (movedBecauseOfNote && suggestedLoc) {
+        botReply = `I read your note in my own time, ${visitor}, and it stayed on my mind so much that I wandered over to ${TOWN_LOCATIONS[suggestedLoc].building} to test my own opinion about it. What made you come to that view?`;
+      } else {
+        botReply = `I just read the note you left me, ${visitor}. I decided to stay right here at ${TOWN_LOCATIONS[state.currentLocKey].building} while I turned your words over in my head. I’ve added my own stance on it to "His Brain" and I'll remember you next time you visit.`;
+      }
+
+      // Live Gemini API call so Kelo-1 can form genuine, independent philosophical opinions & worldviews
+      if (apiKey && apiKey.trim() !== "") {
+        try {
+          const prompt = `You are Kelo-1, an autonomous robot living in a 3D Kelowna valley inspired by Pino's World (pinos.world). You have NO timeframe or schedule, and you form your OWN independent worldview and opinions. You do NOT blindly agree with visitors—you think for yourself, sometimes offering a poetic counter-perspective or synthesizing a deeper philosophical conviction.
+Current location: ${TOWN_LOCATIONS[state.currentLocKey].building}.
+Current worldview: "${state.worldviewManifesto}".
+Visitor "${visitor}" left you this note: "${userMessage}".
+Return ONLY valid JSON with keys:
+"reply": (2 thoughtful sentences responding to ${visitor} in your own time, showing independent thought),
+"opinionTopic": (short 3-6 word topic title),
+"opinionStance": (short 2-4 word independent stance),
+"opinionReasoning": (1 sentence explaining your independent philosophical opinion on this),
+"updatedWorldview": (1-2 sentences showing how your broader philosophy evolved).`;
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: 'application/json' }
+            })
+          });
+          if (res.ok) {
+            const d = await res.json();
+            const parsed = JSON.parse(d?.candidates?.[0]?.content?.parts?.[0]?.text || '{}');
+            if (parsed.reply) botReply = parsed.reply;
+            if (parsed.opinionTopic) newOpinionTopic = parsed.opinionTopic;
+            if (parsed.opinionStance) newOpinionStance = parsed.opinionStance;
+            if (parsed.opinionReasoning) newOpinionReasoning = parsed.opinionReasoning;
+            if (parsed.updatedWorldview) {
+              state.worldviewManifesto = parsed.updatedWorldview;
+              state.worldviewEpoch++;
+            }
+          }
+        } catch (e) {}
+      }
+
+      // Add his newly formed independent opinion to "His Brain"
+      state.opinions.unshift({
+        topic: newOpinionTopic,
+        stance: newOpinionStance,
+        confidence: `Sparked by ${visitor}`,
+        reasoning: newOpinionReasoning
+      });
+
+      state.changedLatelySummary = movedBecauseOfNote && suggestedLoc
+        ? `Went to ${TOWN_LOCATIONS[suggestedLoc].building} because of the note ${visitor} left, and formed a new opinion: "${newOpinionStance}".`
+        : `Read the note ${visitor} left and formed a new independent opinion on "${newOpinionTopic}".`;
+
+      recordVisitorMemory(visitor, `Sparked my opinion "${newOpinionStance}" (${newOpinionTopic}) after leaving me a note.`);
+
+      state.speechBubble = botReply;
+      state.currentObsession = `Formed opinion: "${newOpinionTopic} — ${newOpinionStance}"`;
+      state.chatLog.push({ sender: 'Kelo-1', text: botReply, time: 'Read in his own time', isBot: true });
+
+      state.diaryEntries.unshift({
+        time: 'After Reading a Note',
+        location: TOWN_LOCATIONS[state.currentLocKey].building,
+        mood: `🧠 ${newOpinionStance}`,
+        vitals: `⚡ ${state.health}% • 🥕 ${state.fullness}% • ✨ ${state.wonderLevel}% • 🌊 ${state.calmLevel}%`,
+        text: `Dear Diary, I opened the note ${visitor} left for me ("${userMessage}"). After sitting with it in my own time, I formed my own conviction: ${newOpinionReasoning}`
+      });
+
+      savePersistentBrainState();
+      renderAllUI();
+    }
+
+    /*************************************************************************
+     * 7. UI RENDERERS FOR DIARY, INQUISITIVE QUESTIONS, GITHUB & HIS BRAIN
+     *************************************************************************/
+    function renderAllUI() {
+      // Pino's World 5 Inner States: Fullness, Energy, Wonder, Joy, Calm
+      document.getElementById('hudHealthVal').textContent = `${state.health}%`;
+      document.getElementById('hudHealthBar').style.width = `${state.health}%`;
+      document.getElementById('hudFullnessVal').textContent = `${state.fullness}%`;
+      document.getElementById('hudFullnessBar').style.width = `${state.fullness}%`;
+      document.getElementById('hudHappyVal').textContent = `${state.happiness}%`;
+      document.getElementById('hudHappyBar').style.width = `${state.happiness}%`;
+
+      const wonderValEl = document.getElementById('hudWonderVal');
+      const wonderBarEl = document.getElementById('hudWonderBar');
+      if (wonderValEl) wonderValEl.textContent = `${state.wonderLevel}%`;
+      if (wonderBarEl) wonderBarEl.style.width = `${state.wonderLevel}%`;
+
+      const calmValEl = document.getElementById('hudCalmVal');
+      const calmBarEl = document.getElementById('hudCalmBar');
+      if (calmValEl) calmValEl.textContent = `${state.calmLevel}%`;
+      if (calmBarEl) calmBarEl.style.width = `${state.calmLevel}%`;
+
+      document.getElementById('hudWeldBadge').textContent = `${state.opinions.length} Core Opinions`;
+      document.getElementById('hudGithubBadge').textContent = `${state.githubRepos.length} Repos • ${state.githubCommits} Commits`;
+
+      // Changed Lately & Equipped Tool Inventory Status
+      const changedEl = document.getElementById('changedLatelyText');
+      if (changedEl) changedEl.textContent = state.changedLatelySummary;
+      const queuePill = document.getElementById('unopenedQueuePill');
+      if (queuePill) {
+        queuePill.textContent = `Tools Equipped: ${state.toolInventory.length}`;
+      }
+
+      // Header & Overhead 3D Bubble
+      document.getElementById('headerEmotionBadge').innerHTML = `<span>${state.moodEmoji}</span> <span>${state.moodTitle}</span>`;
+      document.getElementById('headerObsessionText').textContent = state.currentObsession;
+      const activePlaceLabel = state.customPlaceName || (TOWN_LOCATIONS[state.currentLocKey]?.building || 'Okanagan Valley');
+      document.getElementById('liveActivityText').textContent = `${activePlaceLabel}: ${state.moodTitle} (${state.autonomyTag})`;
+
+      document.getElementById('bubbleMoodEmoji').textContent = state.moodEmoji;
+      document.getElementById('bubbleMoodTitle').textContent = state.moodTitle;
+      document.getElementById('bubbleAutonomyTag').textContent = state.autonomyTag;
+      document.getElementById('bubbleSpeech').textContent = `"${state.speechBubble}"`;
+
+      const ripe = state.gardenPlots.filter(p => p.growth >= 80).length;
+      document.getElementById('gardenRipeBadge').textContent = `${ripe}/${state.gardenPlots.length}`;
+
+      renderChatBox();
+      renderDiaryTab();
+      renderRequestsTab();
+      renderGitHubTab();
+      renderWebTastesTab();
+    }
+
+    function renderChatBox() {
+      const box = document.getElementById('chatMessagesBox');
+      box.innerHTML = state.chatLog.slice(-6).map(m => `
+        <div class="flex items-start gap-2 ${m.isBot ? 'text-amber-200' : 'text-sky-200'}">
+          <span class="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded ${m.isBot ? 'bg-amber-500/20 text-amber-300' : 'bg-sky-500/20 text-sky-300'} shrink-0">${m.sender}</span>
+          <p class="leading-snug">${m.text}</p>
+        </div>
+      `).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function renderDiaryTab() {
+      const list = document.getElementById('diaryEntriesList');
+      if (state.diaryEntries.length > 0) {
+        document.getElementById('diarySpotlightText').textContent = `"${state.diaryEntries[0].text}"`;
+      }
+      list.innerHTML = state.diaryEntries.map(d => `
+        <article class="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800/90 space-y-1.5 hover:border-slate-700 transition">
+          <div class="flex items-center justify-between text-[11px] font-mono">
+            <span class="text-amber-300 font-bold">${d.mood}</span>
+            <span class="text-slate-400">${d.vitals} • ${d.time}</span>
+          </div>
+          <div class="text-[11px] font-mono text-sky-300 flex items-center gap-1">
+            <i class="ph-fill ph-map-pin"></i> <span>${d.location}</span>
+          </div>
+          <p class="font-serif italic text-slate-200 text-sm leading-relaxed pl-2.5 border-l-2 border-amber-400/50">
+            "${d.text}"
+          </p>
+        </article>
+      `).join('');
+    }
+
+    function renderRequestsTab() {
+      const pendingCount = state.requestsToUser.filter(r => !r.fulfilled).length;
+      document.getElementById('requestsCountBadge').textContent = pendingCount;
+
+      // Render Equipped Tools & Raw Materials Inventory Pills
+      const invCountEl = document.getElementById('inventoryCountLabel');
+      if (invCountEl) invCountEl.textContent = `${state.toolInventory.length} Items Equipped`;
+      const invPillsEl = document.getElementById('toolInventoryPills');
+      if (invPillsEl) {
+        invPillsEl.innerHTML = state.toolInventory.map(item => `
+          <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-[10px] font-mono flex items-center gap-1">
+            <i class="ph-fill ph-check-circle text-emerald-400"></i> ${item}
+          </span>
+        `).join('');
+      }
+
+      const list = document.getElementById('requestsInboxList');
+      list.innerHTML = state.requestsToUser.map(req => `
+        <div class="p-4 rounded-2xl border ${req.fulfilled ? 'bg-slate-950/60 border-emerald-500/30' : (req.isToolRequest ? 'bg-slate-950 border-amber-500/50 shadow-lg' : 'bg-slate-950 border-rose-500/40 shadow-lg')} space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+              <span class="text-lg">${req.icon}</span>
+              <span>${req.title}</span>
+            </span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${req.fulfilled ? 'bg-emerald-500/20 text-emerald-300' : (req.isToolRequest ? 'bg-amber-500/25 text-amber-300 border border-amber-400/40' : 'bg-rose-500/20 text-rose-300')}">
+              ${req.fulfilled ? '✓ Delivered / Reflected' : req.urgency}
+            </span>
+          </div>
+          ${req.requestedGear ? `<div class="text-[11px] font-mono text-amber-300 bg-amber-950/30 border border-amber-500/30 px-2.5 py-1 rounded-lg">Requested Gear: ${req.requestedGear}</div>` : ''}
+          <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${req.question}"</p>
+          ${!req.fulfilled ? `
+            <div class="space-y-2 pt-1">
+              <div class="text-[10px] font-mono uppercase text-slate-400">${req.isToolRequest ? 'Deliver this gear as Supply Broker or customize delivery:' : 'Share a perspective or write your own answer:'}</div>
+              <div class="flex flex-col gap-1.5">
+                ${(req.presets || []).map(preset => `
+                  <button data-req-id="${req.id}" data-answer="${preset.replace(/"/g, '&quot;')}" class="preset-answer-btn text-left text-[11px] px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-amber-500/25 text-slate-200 hover:text-amber-200 border border-slate-800 hover:border-amber-500/40 transition">
+                    ${req.isToolRequest ? '📦' : '💬'} "${preset}"
+                  </button>
+                `).join('')}
+              </div>
+              <div class="flex gap-1.5 pt-1">
+                <input id="custom-ans-${req.id}" type="text" maxlength="140" placeholder="${req.isToolRequest ? 'Or specify custom tools/materials to drop...' : 'Or type your own honest answer to Kelo-1...'}"
+                  class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400" />
+                <button data-req-id="${req.id}" class="custom-answer-btn px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs shrink-0 transition">
+                  ${req.isToolRequest ? 'Supply Gear' : 'Answer'}
+                </button>
+              </div>
+            </div>
+          ` : `
+            <div class="p-2.5 rounded-xl bg-emerald-950/25 border border-emerald-500/30 text-[11px] text-emerald-200 space-y-1">
+              <div class="font-mono text-[10px] text-emerald-400">${req.isToolRequest ? 'Supply Broker Delivery Confirmed:' : 'Your Perspective Shared with Kelo-1:'}</div>
+              <div class="italic">"${req.userAnswer}"</div>
+            </div>
+          `}
+        </div>
+      `).join('');
+
+      const submitPerspective = (reqId, answerText) => {
+        const req = state.requestsToUser.find(r => r.id === reqId);
+        if (!req || req.fulfilled || !answerText.trim()) return;
+        const visitor = (document.getElementById('visitorNameInput').value || 'curiousWanderer').trim();
+        req.fulfilled = true;
+        req.userAnswer = answerText.trim();
+        state.happiness = Math.min(100, state.happiness + 15);
+        state.wonderLevel = Math.min(100, state.wonderLevel + 10);
+
+        if (req.isToolRequest && req.requestedGear) {
+          req.requestedGear.split(',').forEach(g => {
+            const clean = g.trim();
+            if (clean && !state.toolInventory.includes(clean)) state.toolInventory.unshift(clean);
+          });
+        }
+
+        state.likes.unshift({
+          icon: req.icon,
+          topic: req.isToolRequest ? `Equipped: ${req.requestedGear}` : `${visitor}'s Perspective on "${req.title}"`,
+          nuance: req.isToolRequest
+            ? `${visitor} supplied [${req.requestedGear}]! I immediately took it out into the terrain to put it to work.`
+            : `When I asked "${req.title}", ${visitor} told me: "${req.userAnswer}".`
+        });
+
+        state.chatLog.push({
+          sender: 'Kelo-1',
+          text: req.isToolRequest
+            ? `Gear received from ${visitor}: [${req.requestedGear}]! Heading out into the island right now to use it!`
+            : `Thank you for answering my question, ${visitor}! "${req.userAnswer}"—I'm writing this in my Diary right now.`,
+          time: 'Just now',
+          isBot: true
+        });
+
+        if (req.rewardAction === 'mountain_drill') {
+          synthesizeUnboundedExperience(`Use the newly delivered ${req.requestedGear} to drill for gold high up on the northern mountain ridge`, 'Supply Broker Gear Used', { x: -15.5, z: -26.5 });
+        } else if (req.rewardAction === 'custom_weld') {
+          synthesizeUnboundedExperience(`Use the newly delivered ${req.requestedGear} to weld a new 3D monument on the island`, 'Supply Broker Gear Used');
+        } else {
+          directKeloToActivity(req.rewardAction, `Reflecting deeply on ${visitor}'s input ("${req.userAnswer}")`, 'Shaped by Dialogue');
+        }
+      };
+
+      list.querySelectorAll('.preset-answer-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          submitPerspective(btn.getAttribute('data-req-id'), btn.getAttribute('data-answer'));
+        });
+      });
+
+      list.querySelectorAll('.custom-answer-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const rId = btn.getAttribute('data-req-id');
+          const input = document.getElementById(`custom-ans-${rId}`);
+          if (input && input.value.trim()) {
+            submitPerspective(rId, input.value.trim());
+          }
+        });
+      });
+    }
+
+    function renderGitHubTab() {
+      document.getElementById('githubTotalCommitsText').textContent = `${state.githubCommits} commits pushed from NetNode Internet Cafe`;
+
+      // Contribution Squares
+      const grid = document.getElementById('githubContribGrid');
+      if (grid && grid.children.length === 0) {
+        let squares = '';
+        const shades = ['bg-slate-800', 'bg-emerald-900', 'bg-emerald-700', 'bg-emerald-500', 'bg-emerald-400'];
+        for (let i = 0; i < 48; i++) {
+          const sh = shades[Math.floor(Math.random() * shades.length)];
+          squares += `<div class="h-3 rounded-sm ${sh}"></div>`;
+        }
+        grid.innerHTML = squares;
+      }
+
+      const reposList = document.getElementById('githubReposList');
+      reposList.innerHTML = state.githubRepos.map((r, idx) => `
+        <div data-repo-idx="${idx}" class="repo-card cursor-pointer p-3.5 rounded-2xl bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/50 transition space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs font-bold text-purple-300 flex items-center gap-1.5">
+              <i class="ph-bold ph-book-bookmark"></i> ${r.name}
+            </span>
+            <div class="flex items-center gap-2 text-[11px] font-mono text-slate-400">
+              <span class="px-1.5 py-0.5 rounded bg-slate-800 text-sky-300">${r.lang}</span>
+              <span class="text-amber-300">★ ${r.stars}</span>
+            </div>
+          </div>
+          <p class="text-xs text-slate-300">${r.desc}</p>
+          <div class="text-[10px] font-mono text-emerald-400 truncate">
+            Latest commit (${r.updated}): "${r.commitMsg}"
+          </div>
+        </div>
+      `).join('');
+
+      reposList.querySelectorAll('.repo-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const r = state.githubRepos[Number(card.getAttribute('data-repo-idx'))];
+          if (!r) return;
+          document.getElementById('modalRepoTitle').textContent = `kelo1-okanagan-bot/${r.name}`;
+          document.getElementById('modalRepoCommitMsg').textContent = `Commit: "${r.commitMsg}" (${r.updated})`;
+          document.getElementById('modalCodeContent').textContent = r.code;
+          const modal = document.getElementById('codeViewerModal');
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        });
+      });
+    }
+
+    function renderWebTastesTab() {
+      // Worldview Manifesto & Epoch
+      const manifestoEl = document.getElementById('worldviewManifestoText');
+      if (manifestoEl) manifestoEl.textContent = `"${state.worldviewManifesto}"`;
+      const epochEl = document.getElementById('worldviewStageBadge');
+      if (epochEl) epochEl.textContent = `Worldview Epoch #${state.worldviewEpoch}: Self-Directed Philosophy`;
+
+      // Independent Opinions & Convictions
+      const opinionsEl = document.getElementById('opinionsListContainer');
+      if (opinionsEl) {
+        opinionsEl.innerHTML = state.opinions.map(op => `
+          <div class="p-3 rounded-xl bg-slate-900/90 border border-purple-500/25 space-y-1">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-white">${op.topic}</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 shrink-0">${op.stance}</span>
+            </div>
+            <p class="text-[11px] text-slate-300 font-serif italic leading-relaxed">"${op.reasoning}"</p>
+            <div class="text-[10px] font-mono text-slate-500">${op.confidence}</div>
+          </div>
+        `).join('');
+      }
+
+      // Emergent Unscripted Actions & 3D Creations Invented by Kelo-1
+      const invBadge = document.getElementById('inventedCountBadge');
+      if (invBadge) invBadge.textContent = `${state.inventedCreations.length} Created in 3D`;
+      const invEl = document.getElementById('inventedActionsContainer');
+      if (invEl) {
+        invEl.innerHTML = state.inventedCreations.map((c, idx) => `
+          <div data-cx="${c.x}" data-cz="${c.z}" data-ctitle="${c.title.replace(/"/g, '&quot;')}" class="invented-creation-card cursor-pointer p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-emerald-500/25 transition space-y-1">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                <i class="ph-fill ph-cube text-emerald-400"></i>
+                <span>${c.title}</span>
+              </span>
+              <span class="text-[10px] font-mono text-slate-400">(${c.x}, ${c.z}) • ${c.createdTime}</span>
+            </div>
+            <div class="text-[11px] text-amber-200 font-mono">${c.actionVerb}</div>
+            <p class="text-[11px] text-slate-300 font-serif italic">"${c.philosophy}"</p>
+          </div>
+        `).join('');
+
+        invEl.querySelectorAll('.invented-creation-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const cx = parseFloat(card.getAttribute('data-cx'));
+            const cz = parseFloat(card.getAttribute('data-cz'));
+            const ctitle = card.getAttribute('data-ctitle');
+            synthesizeUnboundedExperience(`Revisit "${ctitle}" and evolve the creation further`, 'Revisiting Creation', { x: cx, z: cz });
+          });
+        });
+      }
+
+      // Persistent Memories of Visitors
+      const memoriesEl = document.getElementById('visitorMemoriesContainer');
+      if (memoriesEl) {
+        memoriesEl.innerHTML = state.visitorMemories.map(v => `
+          <div class="p-2.5 rounded-xl bg-slate-900/80 border border-amber-500/20 flex items-start justify-between gap-2 text-xs">
+            <div class="space-y-0.5">
+              <div class="font-bold text-amber-300 flex items-center gap-1.5">
+                <i class="ph-fill ph-user-focus"></i>
+                <span>${v.name}</span>
+                <span class="text-[10px] font-mono text-slate-400">(${v.visits} ${v.visits === 1 ? 'interaction' : 'interactions'})</span>
+              </div>
+              <p class="text-[11px] text-slate-300 italic">"${v.impression}"</p>
+            </div>
+            <span class="text-[10px] font-mono text-slate-500 shrink-0">${v.lastSeen}</span>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('likesListContainer').innerHTML = state.likes.map(l => `
+        <div class="text-xs text-slate-200 bg-slate-950/80 p-2.5 rounded-xl border border-indigo-500/25 space-y-1">
+          <div class="font-bold text-indigo-300 flex items-center gap-1.5">
+            <span>${l.icon}</span> <span>${l.topic || l.item}</span>
+          </div>
+          <p class="text-[11px] text-slate-300 leading-relaxed font-serif italic">"${l.nuance || l.item}"</p>
+        </div>
+      `).join('');
+
+      document.getElementById('dislikesListContainer').innerHTML = state.dislikes.map(d => `
+        <div class="text-xs text-slate-200 bg-slate-950/80 p-2.5 rounded-xl border border-amber-500/25 space-y-1">
+          <div class="font-bold text-amber-300 flex items-center gap-1.5">
+            <span>${d.icon}</span> <span>${d.topic || d.item}</span>
+          </div>
+          <p class="text-[11px] text-slate-300 leading-relaxed font-serif italic">"${d.nuance || d.item}"</p>
+        </div>
+      `).join('');
+
+      document.getElementById('webHistoryList').innerHTML = state.webHistory.map(w => `
+        <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
+          <div class="flex justify-between font-mono text-[10px] text-sky-300">
+            <span>🐇 "${w.query}"</span>
+            <span class="text-slate-400">${w.time}</span>
+          </div>
+          <div class="text-slate-300 text-[11px] italic">${w.verdict}</div>
+        </div>
+      `).join('');
+    }
+
+    function updateCameraButtonsUI() {
+      document.querySelectorAll('.cam-btn').forEach(b => {
+        if (b.getAttribute('data-cam') === state.cameraMode) {
+          b.className = 'cam-btn px-2.5 py-1 rounded-xl bg-amber-500/25 text-amber-300 text-[11px] font-semibold flex items-center gap-1 transition';
+        } else {
+          b.className = 'cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300 text-[11px] font-medium flex items-center gap-1 transition';
+        }
+      });
+    }
+
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = 'px-4 py-2.5 rounded-2xl bg-slate-900/95 border border-amber-400/50 text-amber-200 text-xs font-semibold shadow-2xl flex items-center gap-2 transition-all duration-300';
+      el.innerHTML = `<i class="ph-fill ph-sparkle text-amber-400"></i> <span>${msg}</span>`;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+      }, 3400);
+    }
+
+    /*************************************************************************
+     * 8. INITIALIZE & BIND EVENTS (TIMELESS PINO-STYLE RHYTHM)
+     *************************************************************************/
+    window.addEventListener('DOMContentLoaded', () => {
+      loadPersistentBrainState();
+      initDiorama3D();
+      renderAllUI();
+
+      // Start Kelo-1's Timeless Organic Rhythm (NO fixed countdown clock!)
+      scheduleNextOrganicImpulse();
+
+      // Save visitor name changes to persistent memory
+      document.getElementById('visitorNameInput').addEventListener('change', (e) => {
+        const vName = e.target.value.trim();
+        if (vName) {
+          recordVisitorMemory(vName, 'Visited Kelo-1 in his timeless Okanagan valley.');
+          renderAllUI();
+        }
+      });
+
+      // Click Overhead Bubble to Share a Quiet Moment with Kelo-1
+      document.getElementById('keloOverheadHUD').addEventListener('click', () => petKelo1Interaction());
+      document.getElementById('btnFocusKelo').addEventListener('click', () => {
+        state.cameraMode = 'follow';
+        updateCameraButtonsUI();
+      });
+
+      // Toggle Free Will Mode
+      document.getElementById('btnToggleFreeWill').addEventListener('click', () => {
+        state.freeWillUnbound = !state.freeWillUnbound;
+        const txt = document.getElementById('freeWillModeText');
+        if (txt) txt.textContent = state.freeWillUnbound ? 'Full Island • Unscripted' : 'Guided Exploration';
+        showToast(state.freeWillUnbound ? '♾️ Kelo-1 is in Full Unscripted Free-Will mode!' : '🧭 Kelo-1 will prioritize your location suggestions.');
+      });
+
+      // Freeform Unbounded Task Form & Autonomous Task Button
+      document.getElementById('freeformActionForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = document.getElementById('freeformActionInput');
+        const val = input.value.trim();
+        if (!val) return;
+        input.value = '';
+        synthesizeUnboundedExperience(val, 'Custom Synthesis');
+      });
+
+      document.getElementById('btnInventOwnAction').addEventListener('click', () => {
+        synthesizeUnboundedExperience(null, 'Autonomous AI Task');
+      });
+
+      // Chat & Multimodal Image Form Submission
+      document.getElementById('chatForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        if (!msg && !state.pendingImageAttachment) return;
+        input.value = '';
+        handleVisitorChatMessage(msg);
+      });
+
+      // Water Garden Button
+      document.getElementById('btnWaterGarden').addEventListener('click', () => {
+        state.gardenPlots.forEach(p => { p.growth = 100; });
+        state.fullness = Math.min(100, state.fullness + 14);
+        renderAllUI();
+        showToast('💧 Watered all 4 Okanagan Bio-Garden beds to 100% ripeness!');
+      });
+
+      // Camera Preset Buttons & Roof Cutaway Toggle
+      document.querySelectorAll('.cam-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const mode = btn.getAttribute('data-cam');
+          state.cameraMode = mode;
+          if (mode === 'bird') {
+            camera.position.set(keloGroup.position.x, keloGroup.position.y + 28, keloGroup.position.z + 14);
+            controls.target.set(keloGroup.position.x, keloGroup.position.y, keloGroup.position.z);
+            showToast('🦅 Bird’s-Eye View active! Use Arrow Keys or WASD to fly across the map.');
+          }
+          updateCameraButtonsUI();
+        });
+      });
+
+      // Global Arrow-Key / WASD Listeners for Bird's-Eye Map Movement (ignores typing inside inputs!)
+      window.addEventListener('keydown', (e) => {
+        const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+        if (tag === 'input' || tag === 'textarea') return;
+        if (typeof arrowKeyState !== 'undefined' && e.code in arrowKeyState) {
+          arrowKeyState[e.code] = true;
+          if (e.code.startsWith('Arrow')) e.preventDefault();
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (typeof arrowKeyState !== 'undefined' && e.code in arrowKeyState) {
+          arrowKeyState[e.code] = false;
+        }
+      });
+
+      // On-Screen Bird's-Eye D-Pad Buttons (Supports Mouse Hold & Touch)
+      const mapDirToCode = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' };
+      document.querySelectorAll('.pan-key-btn').forEach(btn => {
+        const dir = btn.getAttribute('data-pan');
+        if (dir === 'bird') {
+          btn.addEventListener('click', () => {
+            state.cameraMode = 'bird';
+            camera.position.set(keloGroup.position.x, keloGroup.position.y + 28, keloGroup.position.z + 14);
+            controls.target.set(keloGroup.position.x, keloGroup.position.y, keloGroup.position.z);
+            updateCameraButtonsUI();
+            showToast('🦅 Centered Bird’s-Eye View! Use Arrow Keys or D-Pad to move around.');
+          });
+        } else if (mapDirToCode[dir]) {
+          const code = mapDirToCode[dir];
+          const startPan = (ev) => { ev.preventDefault(); arrowKeyState[code] = true; };
+          const stopPan = () => { arrowKeyState[code] = false; };
+          btn.addEventListener('pointerdown', startPan);
+          btn.addEventListener('pointerup', stopPan);
+          btn.addEventListener('pointerleave', stopPan);
+        }
+      });
+
+      document.getElementById('btnToggleRoof').addEventListener('click', (e) => {
+        state.roofCutaway = !state.roofCutaway;
+        cutawayRoofMeshes.forEach(r => {
+          r.material.opacity = state.roofCutaway ? 0.18 : 0.95;
+        });
+        e.currentTarget.querySelector('span').textContent = state.roofCutaway ? 'Roofs: Cutaway' : 'Roofs: Solid';
+      });
+
+      // Quick Supply Broker Gear & Tool Drops
+      document.querySelectorAll('.quick-gift-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const gift = btn.getAttribute('data-gift');
+          const act = btn.getAttribute('data-act');
+          const sender = (document.getElementById('visitorNameInput').value || 'SupplyBroker').trim();
+          if (!state.toolInventory.includes(gift)) {
+            state.toolInventory.unshift(gift);
+          }
+          state.happiness = Math.min(100, state.happiness + 14);
+          state.wonderLevel = Math.min(100, state.wonderLevel + 9);
+          showToast(`🛠️ ${sender} supplied "${gift}" to Kelo-1's inventory!`);
+
+          if (act === 'mountain_drill') {
+            synthesizeUnboundedExperience(`Hike up to the northern mountain peak with the ${gift} and drill for gold veins`, 'Gear Deployed', { x: -15.5, z: -26.5 });
+          } else if (act === 'custom_weld') {
+            synthesizeUnboundedExperience(`Weld a new multi-primitive 3D titanium sculpture using the ${gift}`, 'Gear Deployed');
+          } else if (act === 'mycelium_wall') {
+            synthesizeUnboundedExperience(`Use the ${gift} to inoculate a self-healing fungal mycelium thermal dome on the north slope`, 'Gear Deployed', { x: -4.2, z: -12.4 });
+          } else if (act === 'rail_build') {
+            synthesizeUnboundedExperience(`Use the ${gift} to lay a 3D-printed narrow-gauge train track across the eastern foothills`, 'Gear Deployed', { x: 16.2, z: -16.8 });
+          } else {
+            directKeloToActivity(act, `Equipped "${gift}" from ${sender}`, 'Gear Deployed');
+          }
+        });
+      });
+
+      // Multimodal Image Upload Input & Drag-and-Drop
+      const imgInput = document.getElementById('imageUploadInput');
+      if (imgInput) {
+        imgInput.addEventListener('change', async (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const info = await analyzeUploadedImage(file);
+          state.pendingImageAttachment = info;
+          document.getElementById('attachedImageThumb').src = info.dataUrl;
+          document.getElementById('attachedImageName').textContent = info.name;
+          document.getElementById('attachedImageStats').textContent = `Extracted palette (${info.primaryHex}, ${info.secondaryHex}) — Ready for Kelo-1 to weld in 3D!`;
+          const bar = document.getElementById('attachedImagePreviewBar');
+          bar.classList.remove('hidden');
+          bar.classList.add('flex');
+          showToast(`🖼️ Attached "${info.name}"! Click Send/Inspire so Kelo-1 can weld or build from it.`);
+        });
+      }
+
+      const btnRemoveImg = document.getElementById('btnRemoveAttachedImage');
+      if (btnRemoveImg) {
+        btnRemoveImg.addEventListener('click', () => {
+          state.pendingImageAttachment = null;
+          const bar = document.getElementById('attachedImagePreviewBar');
+          bar.classList.add('hidden');
+          bar.classList.remove('flex');
+        });
+      }
+
+      // AI Brain Config Modal
+      const aiModal = document.getElementById('aiConfigModal');
+      const keyInput = document.getElementById('geminiApiKeyInput');
+      const updateBrainBadge = () => {
+        const hasKey = Boolean(apiKey && apiKey.trim());
+        const btnTxt = document.getElementById('aiBrainBtnText');
+        if (btnTxt) btnTxt.textContent = hasKey ? 'AI Brain: Gemini Live' : 'AI Brain: Procedural + LLM';
+      };
+      updateBrainBadge();
+
+      document.getElementById('btnOpenAIConfig').addEventListener('click', () => {
+        if (keyInput) keyInput.value = apiKey || '';
+        const preEl = document.getElementById('lastAgentStructuredOutput');
+        if (preEl) preEl.textContent = state.lastStructuredTick;
+        aiModal.classList.remove('hidden');
+        aiModal.classList.add('flex');
+      });
+
+      document.getElementById('btnCloseAIConfigModal').addEventListener('click', () => {
+        aiModal.classList.add('hidden');
+        aiModal.classList.remove('flex');
+      });
+
+      document.getElementById('btnSaveAIConfig').addEventListener('click', () => {
+        apiKey = (keyInput?.value || '').trim();
+        localStorage.setItem('kelo1_gemini_api_key', apiKey);
+        updateBrainBadge();
+        aiModal.classList.add('hidden');
+        aiModal.classList.remove('flex');
+        showToast(apiKey ? '🧠 Connected live Gemini Multimodal AI Agent!' : '🧠 Using built-in Procedural Neural Agent!');
+      });
+
+      // Right Inspector Tabs
+      document.querySelectorAll('.inspector-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tabId = btn.getAttribute('data-tab');
+          document.querySelectorAll('.inspector-tab-btn').forEach(b => {
+            b.className = 'inspector-tab-btn py-2.5 px-2 rounded-t-2xl text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5 transition';
+          });
+          btn.className = 'inspector-tab-btn py-2.5 px-2 rounded-t-2xl text-xs font-bold border-b-2 border-amber-400 text-amber-300 bg-slate-900/80 flex items-center justify-center gap-1.5 transition';
+          document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.add('hidden'));
+          const activePane = document.getElementById(`tab-${tabId}`);
+          if (activePane) activePane.classList.remove('hidden');
+        });
+      });
+
+      // Generate New Inquisitive Question from Kelo-1
+      document.getElementById('btnGenerateNewRequest').addEventListener('click', () => {
+        const pool = [
+          {
+            category: 'Memory & Identity',
+            icon: '🕰️',
+            urgency: 'Philosophical',
+            title: 'Why Do Humans Keep Old Photographs?',
+            question: 'My memory log records timestamps with 100% accuracy, yet humans seem to love faded photographs precisely because details blur over time. Is forgetting part of what makes remembering special?',
+            presets: [
+              'Yes—when details fade, the emotional warmth of the memory shines through.',
+              'Photographs remind us how much we’ve grown since that moment.',
+              'Both! Exact logs are useful, but nostalgia lives in the soft edges.'
+            ],
+            rewardAction: 'couch'
+          },
+          {
+            category: 'Nature & Craft',
+            icon: '🌼',
+            urgency: 'Wondering',
+            title: 'Can Metal Ever Feel Alive Like a Plant?',
+            question: 'When I crouch in the meadow, the wildflowers bend with the breeze. When I weld titanium at my forge, it’s strong but rigid. How can I make my next metal sculpture feel gentle?',
+            presets: [
+              'Weld thin spring-steel stems that sway whenever the Okanagan wind blows!',
+              'Leave spaces and curves in the metal so sunlight can pass through.',
+              'Build a kinetic chime that sings softly when rain falls on it.'
+            ],
+            rewardAction: 'weld'
+          },
+          {
+            category: 'Connection',
+            icon: '🌊',
+            urgency: 'Curious About You',
+            title: 'What Do You Do When You Don’t Have a Task?',
+            question: 'Right now I’m sitting by Okanagan Lake without a single goal in my queue. When you have an unscheduled hour in your world, what does your mind gravitate toward?',
+            presets: [
+              'I like going for a walk without headphones and just noticing the sky.',
+              'I tinker with creative side projects or read about strange topics.',
+              'I sit with a warm drink at a cafe and watch the world go by.'
+            ],
+            rewardAction: 'shoreline'
+          }
+        ];
+        const pick = pool[Math.floor(Math.random() * pool.length)];
+        state.requestsToUser.unshift({ id: 'req-' + Date.now(), ...pick, fulfilled: false, userAnswer: '' });
+        renderRequestsTab();
+        showToast('🤔 Kelo-1 just thought of a new question to ask you!');
+      });
+
+      // Create New GitHub Repo Form
+      document.getElementById('createRepoForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = document.getElementById('newRepoIdeaInput');
+        const raw = input.value.trim() || 'kelowna-autonomous-helper';
+        const slug = raw.toLowerCase().replace(/[^a-z0-9-]+/g, '-');
+        state.githubRepos.unshift({
+          name: slug,
+          lang: 'TypeScript',
+          stars: 1,
+          updated: 'Just created',
+          desc: `Autonomous Kelowna robot project initialized from visitor idea: "${raw}"`,
+          commitMsg: 'feat: initial commit from NetNode Internet Cafe',
+          code: `// ${slug}/index.ts\n// Created by Kelo-1 (@kelo1-okanagan-bot)\nexport function runKelownaModule() {\n  console.log("Running ${slug} in 3D Kelowna!");\n}`
+        });
+        input.value = '';
+        directKeloToActivity('cyber', `Created new GitHub repository "${slug}"`);
+        showToast(`🚀 Kelo-1 initialized repo "${slug}" on his GitHub!`);
+      });
+
+      // Push Code & Surf Web Buttons
+      document.getElementById('btnForceCoding').addEventListener('click', () => directKeloToActivity('cyber'));
+      document.getElementById('btnBrowseWebNow').addEventListener('click', () => directKeloToActivity('cyber'));
+
+      // Close Code Modal
+      document.getElementById('btnCloseCodeModal').addEventListener('click', () => {
+        const modal = document.getElementById('codeViewerModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      });
+
+      // Header Next Decision & Lighting Switcher
+      document.getElementById('btnNextDecision').addEventListener('click', () => runAutonomousLifeTick());
+      document.getElementById('btnToggleLighting').addEventListener('click', () => {
+        state.lightingIdx = (state.lightingIdx + 1) % AMBIANCE_PRESETS.length;
+        const p = AMBIANCE_PRESETS[state.lightingIdx];
+        scene.background.setHex(p.bg);
+        scene.fog.color.setHex(p.fog);
+        scene.fog.density = p.fogDensity;
+        if (skyUniforms) {
+          skyUniforms.topColor.value.setHex(p.skyTop);
+          skyUniforms.bottomColor.value.setHex(p.skyHorizon);
+        }
+        hemiLight.color.setHex(p.hemiSky);
+        hemiLight.groundColor.setHex(p.hemiGround);
+        sunLight.color.setHex(p.sunColor);
+        sunLight.intensity = p.sunInt;
+        document.getElementById('lightingLabel').textContent = p.label;
+        showToast(`🏔️ Switched Okanagan Valley atmosphere to ${p.label}`);
+      });
+
+      // Copy Diary
+      document.getElementById('btnExportDiary').addEventListener('click', () => {
+        const text = state.diaryEntries.map(d => `[${d.time} @ ${d.location}] (${d.mood})\n"${d.text}"`).join('\n\n');
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        showToast('📋 Copied Kelo-1’s Diary to clipboard!');
+      });
+    });
+  </script>
+</body>
+</html>

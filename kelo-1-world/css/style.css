@@ -1,13 +1,37 @@
-/* Extracted custom CSS (Add any specific animations or scrollbar styling here) */
+/* Kelo-bot-1 — css/style.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
 body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  background-color: #020617;
+  color: #f8fafc;
+  overflow-x: hidden;
 }
+
+.font-serif { font-family: 'Newsreader', serif; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+
 .poi-label {
-    position: absolute;
-    pointer-events: auto;
-    cursor: pointer;
-    transform: translate(-50%, -50%);
-    transition: opacity 0.2s ease-in-out;
+  position: absolute;
+  transform: translate(-50%, -100%);
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  z-index: 15;
 }
+.poi-label:hover {
+  transform: translate(-50%, -108%) scale(1.07);
+}
+
+#keloOverheadHUD {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 20;
+  transition: opacity 0.15s ease;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+::-webkit-scrollbar-thumb { background: rgba(71, 85, 105, 0.8); border-radius: 9999px; }

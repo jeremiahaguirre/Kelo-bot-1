@@ -1,174 +1,506 @@
-// ==========================================
-// ANIMATION & UI LAYER (main.js)
-// ==========================================
-
-function animateDiorama() {
-  requestAnimationFrame(animateDiorama);
-  const t = clock.getElapsedTime();
-
-  // 0. Bird's-Eye View Arrow-Key / WASD Map Panning
-  const panLeft = arrowKeyState.ArrowLeft || arrowKeyState.KeyA;
-  const panRight = arrowKeyState.ArrowRight || arrowKeyState.KeyD;
-  const panUp = arrowKeyState.ArrowUp || arrowKeyState.KeyW;
-  const panDown = arrowKeyState.ArrowDown || arrowKeyState.KeyS;
-
-  if (panLeft || panRight || panUp || panDown) {
-    if (state.cameraMode !== 'bird') {
-      state.cameraMode = 'bird';
-      updateCameraButtonsUI();
-      if (camera.position.y < 22) camera.position.y = 28;
-    }
-    const panSpeed = 0.52;
-    const forward = new THREE.Vector3();
-    camera.getWorldDirection(forward);
-    forward.y = 0;
-    if (forward.lengthSq() < 0.001) forward.set(0, 0, -1);
-    forward.normalize();
-    const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
-
-    const moveDelta = new THREE.Vector3();
-    if (panUp) moveDelta.addScaledVector(forward, panSpeed);
-    if (panDown) moveDelta.addScaledVector(forward, -panSpeed);
-    if (panRight) moveDelta.addScaledVector(right, panSpeed);
-    if (panLeft) moveDelta.addScaledVector(right, -panSpeed);
-
-    controls.target.add(moveDelta);
-    camera.position.add(moveDelta);
-
-    controls.target.x = Math.max(-48, Math.min(48, controls.target.x));
-    controls.target.z = Math.max(-52, Math.min(28, controls.target.z));
-  }
-
-  // 1. Walk Kelo-1 smoothly to Target Location while clamping strictly ON TOP of any terrain altitude!
-  const dx = state.targetPos.x - state.botPos.x;
-  const dz = state.targetPos.z - state.botPos.z;
-  const dist = Math.hypot(dx, dz);
-
-  const textContext = `${state.moodTitle} ${state.speechBubble} ${state.customPlaceName || ''}`.toLowerCase();
-  const isMiningOrDrilling = state.currentLocKey === 'mountain_peak' || /drill|gold|mine|auger|ore|quarry|excavat|mycelium/i.test(textContext);
-  const isWeldingOrBuilding = state.currentLocKey === 'weld' || Boolean(state.proceduralMotion?.sparkBurst) || /weld|forge|titanium|track|rail|sculpt|arch|spire/i.test(textContext);
-
-  if (keloDrillToolGroup && keloWeldTorchGroup) {
-    keloDrillToolGroup.visible = isMiningOrDrilling;
-    keloWeldTorchGroup.visible = !isMiningOrDrilling && isWeldingOrBuilding;
-  }
-
-  if (dist > 0.16) {
-    state.isWalking = true;
-    const step = dist > 14 ? 0.14 : 0.082;
-    state.botPos.x += (dx / dist) * step;
-    state.botPos.z += (dz / dist) * step;
-    state.botRotY = Math.atan2(dx, dz);
-
-    const groundY = getIslandGroundHeight(state.botPos.x, state.botPos.z);
-    state.botAltitudeY = groundY;
-    const strideHop = Math.abs(Math.sin(t * 9.5)) * 0.12;
-    keloGroup.position.set(state.botPos.x, groundY + strideHop, state.botPos.z);
-    keloGroup.rotation.set(0, state.botRotY, 0);
-    keloLeftLeg.rotation.x = Math.sin(t * 9.5) * 0.5;
-    keloRightLeg.rotation.x = -Math.sin(t * 9.5) * 0.5;
-    keloLeftArm.rotation.x = -Math.sin(t * 9.5) * 0.4;
-    keloRightArm.rotation.x = (isMiningOrDrilling || isWeldingOrBuilding) ? -0.65 : Math.sin(t * 9.5) * 0.4;
-  } else {
-    state.isWalking = false;
-    const groundY = getIslandGroundHeight(state.botPos.x, state.botPos.z);
-    keloGroup.position.set(state.botPos.x, groundY, state.botPos.z);
-    keloLeftLeg.rotation.x = 0;
-    keloRightLeg.rotation.x = 0;
-    keloLeftArm.rotation.x = 0;
-    keloRightArm.rotation.x = 0;
-  }
-
-  // 3. Bob Sailboat, Ogopogo, Soaring Alpine Birds
-  if (emergentCreationsGroup) {
-    emergentCreationsGroup.children.forEach(group => {
-      group.children.forEach(mesh => {
-        if (mesh.userData && mesh.userData.spin) mesh.rotation.y = t * 0.85;
-      });
-    });
-  }
-
-  if (sailboatGroup) {
-    sailboatGroup.position.y = -0.22 + Math.sin(t * 2.2) * 0.07;
-    sailboatGroup.rotation.z = Math.sin(t * 1.8) * 0.05;
-  }
-
-  // Camera Follow & Bird's-Eye Modes
-  if (state.cameraMode === 'follow') {
-    controls.target.lerp(new THREE.Vector3(keloGroup.position.x, keloGroup.position.y + 1.6, keloGroup.position.z), 0.08);
-  } else if (state.cameraMode === 'bird') {
-    const targetGroundY = getIslandGroundHeight(controls.target.x, controls.target.z);
-    controls.target.y = THREE.MathUtils.lerp(controls.target.y, targetGroundY + 1.0, 0.1);
-  }
-
-  controls.update();
-  renderer.render(scene, camera);
-  projectLabelsToScreen();
-}
-
-function projectLabelsToScreen() {
-  const viewport = document.getElementById('dioramaViewport');
-  if (!viewport || !keloGroup) return;
-  const w = viewport.clientWidth;
-  const h = viewport.clientHeight;
-
-  // Project Kelo-1 Overhead Bubble
-  const keloHud = document.getElementById('keloOverheadHUD');
-  if(keloHud) {
-    const headVec = new THREE.Vector3(keloGroup.position.x, keloGroup.position.y + 3.45, keloGroup.position.z);
-    headVec.project(camera);
-    if (headVec.z > 1) {
-      keloHud.style.opacity = '0';
-    } else {
-      keloHud.style.opacity = '1';
-      keloHud.style.left = `${(headVec.x * 0.5 + 0.5) * w}px`;
-      keloHud.style.top = `${(-(headVec.y * 0.5) + 0.5) * h}px`;
-    }
-  }
-
-  // Project Building & Mountain Pins
-  Object.values(TOWN_LOCATIONS).forEach(loc => {
-    const el = poiDomElements[loc.id];
-    if (!el) return;
-    const pinBaseY = (typeof loc.groundY === 'number') ? loc.groundY : getIslandGroundHeight(loc.x, loc.z);
-    const v = new THREE.Vector3(loc.x, pinBaseY + 3.6, loc.z);
-    v.project(camera);
-    if (v.z > 1) {
-      el.style.opacity = '0';
-    } else {
-      el.style.opacity = '1';
-      el.style.left = `${(v.x * 0.5 + 0.5) * w}px`;
-      el.style.top = `${(-(v.y * 0.5) + 0.5) * h}px`;
-    }
-  });
-}
+// Kelo-bot-1 — js/main.js
+// Loaded THIRD. Connects all UI tabs, keyboard/mouse/upload listeners, and boots the 3D world.
 
 function renderAllUI() {
-  // Update Health / HUD logic here
-}
-function renderChatBox() {}
-function renderDiaryTab() {}
-function renderRequestsTab() {}
-function renderGitHubTab() {}
-function renderWebTastesTab() {}
+      // Pino's World 5 Inner States: Fullness, Energy, Wonder, Joy, Calm
+      document.getElementById('hudHealthVal').textContent = `${state.health}%`;
+      document.getElementById('hudHealthBar').style.width = `${state.health}%`;
+      document.getElementById('hudFullnessVal').textContent = `${state.fullness}%`;
+      document.getElementById('hudFullnessBar').style.width = `${state.fullness}%`;
+      document.getElementById('hudHappyVal').textContent = `${state.happiness}%`;
+      document.getElementById('hudHappyBar').style.width = `${state.happiness}%`;
+
+      const wonderValEl = document.getElementById('hudWonderVal');
+      const wonderBarEl = document.getElementById('hudWonderBar');
+      if (wonderValEl) wonderValEl.textContent = `${state.wonderLevel}%`;
+      if (wonderBarEl) wonderBarEl.style.width = `${state.wonderLevel}%`;
+
+      const calmValEl = document.getElementById('hudCalmVal');
+      const calmBarEl = document.getElementById('hudCalmBar');
+      if (calmValEl) calmValEl.textContent = `${state.calmLevel}%`;
+      if (calmBarEl) calmBarEl.style.width = `${state.calmLevel}%`;
+
+      document.getElementById('hudWeldBadge').textContent = `${state.opinions.length} Core Opinions`;
+      document.getElementById('hudGithubBadge').textContent = `${state.githubRepos.length} Repos • ${state.githubCommits} Commits`;
+
+      // Changed Lately & Equipped Tool Inventory Status
+      const changedEl = document.getElementById('changedLatelyText');
+      if (changedEl) changedEl.textContent = state.changedLatelySummary;
+      const queuePill = document.getElementById('unopenedQueuePill');
+      if (queuePill) {
+        queuePill.textContent = `Tools Equipped: ${state.toolInventory.length}`;
+      }
+
+      // Header & Overhead 3D Bubble
+      document.getElementById('headerEmotionBadge').innerHTML = `<span>${state.moodEmoji}</span> <span>${state.moodTitle}</span>`;
+      document.getElementById('headerObsessionText').textContent = state.currentObsession;
+      const activePlaceLabel = state.customPlaceName || (TOWN_LOCATIONS[state.currentLocKey]?.building || 'Okanagan Valley');
+      document.getElementById('liveActivityText').textContent = `${activePlaceLabel}: ${state.moodTitle} (${state.autonomyTag})`;
+
+      document.getElementById('bubbleMoodEmoji').textContent = state.moodEmoji;
+      document.getElementById('bubbleMoodTitle').textContent = state.moodTitle;
+      document.getElementById('bubbleAutonomyTag').textContent = state.autonomyTag;
+      document.getElementById('bubbleSpeech').textContent = `"${state.speechBubble}"`;
+
+      const ripe = state.gardenPlots.filter(p => p.growth >= 80).length;
+      document.getElementById('gardenRipeBadge').textContent = `${ripe}/${state.gardenPlots.length}`;
+
+      renderChatBox();
+      renderDiaryTab();
+      renderRequestsTab();
+      renderGitHubTab();
+      renderWebTastesTab();
+    }
+
+function renderChatBox() {
+      const box = document.getElementById('chatMessagesBox');
+      box.innerHTML = state.chatLog.slice(-6).map(m => `
+        <div class="flex items-start gap-2 ${m.isBot ? 'text-amber-200' : 'text-sky-200'}">
+          <span class="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded ${m.isBot ? 'bg-amber-500/20 text-amber-300' : 'bg-sky-500/20 text-sky-300'} shrink-0">${m.sender}</span>
+          <p class="leading-snug">${m.text}</p>
+        </div>
+      `).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+function renderDiaryTab() {
+      const list = document.getElementById('diaryEntriesList');
+      if (!Array.isArray(state.diaryEntries)) state.diaryEntries = [];
+      if (state.diaryEntries.length > 0) {
+        document.getElementById('diarySpotlightText').textContent = `"${state.diaryEntries[0].text}"`;
+      }
+      list.innerHTML = state.diaryEntries.map(d => `
+        <article class="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800/90 space-y-1.5 hover:border-slate-700 transition">
+          <div class="flex items-center justify-between text-[11px] font-mono">
+            <span class="text-amber-300 font-bold">${d.mood}</span>
+            <span class="text-slate-400">${d.vitals} • ${d.time}</span>
+          </div>
+          <div class="text-[11px] font-mono text-sky-300 flex items-center gap-1">
+            <i class="ph-fill ph-map-pin"></i> <span>${d.location}</span>
+          </div>
+          <p class="font-serif italic text-slate-200 text-sm leading-relaxed pl-2.5 border-l-2 border-amber-400/50">
+            "${d.text}"
+          </p>
+        </article>
+      `).join('');
+    }
+
+function renderRequestsTab() {
+      const pendingCount = state.requestsToUser.filter(r => !r.fulfilled).length;
+      document.getElementById('requestsCountBadge').textContent = pendingCount;
+
+      // Render Equipped Tools & Raw Materials Inventory Pills
+      const invCountEl = document.getElementById('inventoryCountLabel');
+      if (invCountEl) invCountEl.textContent = `${state.toolInventory.length} Items Equipped`;
+      const invPillsEl = document.getElementById('toolInventoryPills');
+      if (invPillsEl) {
+        invPillsEl.innerHTML = state.toolInventory.map(item => `
+          <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-[10px] font-mono flex items-center gap-1">
+            <i class="ph-fill ph-check-circle text-emerald-400"></i> ${item}
+          </span>
+        `).join('');
+      }
+
+      const list = document.getElementById('requestsInboxList');
+      list.innerHTML = state.requestsToUser.map(req => `
+        <div class="p-4 rounded-2xl border ${req.fulfilled ? 'bg-slate-950/60 border-emerald-500/30' : (req.isToolRequest ? 'bg-slate-950 border-amber-500/50 shadow-lg' : 'bg-slate-950 border-rose-500/40 shadow-lg')} space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+              <span class="text-lg">${req.icon}</span>
+              <span>${req.title}</span>
+            </span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${req.fulfilled ? 'bg-emerald-500/20 text-emerald-300' : (req.isToolRequest ? 'bg-amber-500/25 text-amber-300 border border-amber-400/40' : 'bg-rose-500/20 text-rose-300')}">
+              ${req.fulfilled ? '✓ Delivered / Reflected' : req.urgency}
+            </span>
+          </div>
+          ${req.requestedGear ? `<div class="text-[11px] font-mono text-amber-300 bg-amber-950/30 border border-amber-500/30 px-2.5 py-1 rounded-lg">Requested Gear: ${req.requestedGear}</div>` : ''}
+          <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${req.question}"</p>
+          ${!req.fulfilled ? `
+            <div class="space-y-2 pt-1">
+              <div class="text-[10px] font-mono uppercase text-slate-400">${req.isToolRequest ? 'Deliver this gear as Supply Broker or customize delivery:' : 'Share a perspective or write your own answer:'}</div>
+              <div class="flex flex-col gap-1.5">
+                ${(req.presets || []).map(preset => `
+                  <button data-req-id="${req.id}" data-answer="${preset.replace(/"/g, '&quot;')}" class="preset-answer-btn text-left text-[11px] px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-amber-500/25 text-slate-200 hover:text-amber-200 border border-slate-800 hover:border-amber-500/40 transition">
+                    ${req.isToolRequest ? '📦' : '💬'} "${preset}"
+                  </button>
+                `).join('')}
+              </div>
+              <div class="flex gap-1.5 pt-1">
+                <input id="custom-ans-${req.id}" type="text" maxlength="140" placeholder="${req.isToolRequest ? 'Or specify custom tools/materials to drop...' : 'Or type your own honest answer to Kelo-1...'}"
+                  class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400" />
+                <button data-req-id="${req.id}" class="custom-answer-btn px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs shrink-0 transition">
+                  ${req.isToolRequest ? 'Supply Gear' : 'Answer'}
+                </button>
+              </div>
+            </div>
+          ` : `
+            <div class="p-2.5 rounded-xl bg-emerald-950/25 border border-emerald-500/30 text-[11px] text-emerald-200 space-y-1">
+              <div class="font-mono text-[10px] text-emerald-400">${req.isToolRequest ? 'Supply Broker Delivery Confirmed:' : 'Your Perspective Shared with Kelo-1:'}</div>
+              <div class="italic">"${req.userAnswer}"</div>
+            </div>
+          `}
+        </div>
+      `).join('');
+
+      const submitPerspective = (reqId, answerText) => {
+        const req = state.requestsToUser.find(r => r.id === reqId);
+        if (!req || req.fulfilled || !answerText.trim()) return;
+        const visitor = (document.getElementById('visitorNameInput').value || 'curiousWanderer').trim();
+        req.fulfilled = true;
+        req.userAnswer = answerText.trim();
+        state.happiness = Math.min(100, state.happiness + 15);
+        state.wonderLevel = Math.min(100, state.wonderLevel + 10);
+
+        if (req.isToolRequest && req.requestedGear) {
+          req.requestedGear.split(',').forEach(g => {
+            const clean = g.trim();
+            if (clean && !state.toolInventory.includes(clean)) state.toolInventory.unshift(clean);
+          });
+        }
+
+        state.likes.unshift({
+          icon: req.icon,
+          topic: req.isToolRequest ? `Equipped: ${req.requestedGear}` : `${visitor}'s Perspective on "${req.title}"`,
+          nuance: req.isToolRequest
+            ? `${visitor} supplied [${req.requestedGear}]! I immediately took it out into the terrain to put it to work.`
+            : `When I asked "${req.title}", ${visitor} told me: "${req.userAnswer}".`
+        });
+
+        state.chatLog.push({
+          sender: 'Kelo-1',
+          text: req.isToolRequest
+            ? `Gear received from ${visitor}: [${req.requestedGear}]! Heading out into the island right now to use it!`
+            : `Thank you for answering my question, ${visitor}! "${req.userAnswer}"—I'm writing this in my Diary right now.`,
+          time: 'Just now',
+          isBot: true
+        });
+
+        if (req.rewardAction === 'mountain_drill') {
+          synthesizeUnboundedExperience(`Use the newly delivered ${req.requestedGear} to drill for gold high up on the northern mountain ridge`, 'Supply Broker Gear Used', { x: -15.5, z: -26.5 });
+        } else if (req.rewardAction === 'custom_weld') {
+          synthesizeUnboundedExperience(`Use the newly delivered ${req.requestedGear} to weld a new 3D monument on the island`, 'Supply Broker Gear Used');
+        } else {
+          directKeloToActivity(req.rewardAction, `Reflecting deeply on ${visitor}'s input ("${req.userAnswer}")`, 'Shaped by Dialogue');
+        }
+      };
+
+      list.querySelectorAll('.preset-answer-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          submitPerspective(btn.getAttribute('data-req-id'), btn.getAttribute('data-answer'));
+        });
+      });
+
+      list.querySelectorAll('.custom-answer-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const rId = btn.getAttribute('data-req-id');
+          const input = document.getElementById(`custom-ans-${rId}`);
+          if (input && input.value.trim()) {
+            submitPerspective(rId, input.value.trim());
+          }
+        });
+      });
+    }
+
+function renderGitHubTab() {
+      document.getElementById('githubTotalCommitsText').textContent = `${state.githubCommits} commits pushed from NetNode Internet Cafe`;
+
+      // Contribution Squares
+      const grid = document.getElementById('githubContribGrid');
+      if (grid && grid.children.length === 0) {
+        let squares = '';
+        const shades = ['bg-slate-800', 'bg-emerald-900', 'bg-emerald-700', 'bg-emerald-500', 'bg-emerald-400'];
+        for (let i = 0; i < 48; i++) {
+          const sh = shades[Math.floor(Math.random() * shades.length)];
+          squares += `<div class="h-3 rounded-sm ${sh}"></div>`;
+        }
+        grid.innerHTML = squares;
+      }
+
+      const reposList = document.getElementById('githubReposList');
+      reposList.innerHTML = state.githubRepos.map((r, idx) => `
+        <div data-repo-idx="${idx}" class="repo-card cursor-pointer p-3.5 rounded-2xl bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/50 transition space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs font-bold text-purple-300 flex items-center gap-1.5">
+              <i class="ph-bold ph-book-bookmark"></i> ${r.name}
+            </span>
+            <div class="flex items-center gap-2 text-[11px] font-mono text-slate-400">
+              <span class="px-1.5 py-0.5 rounded bg-slate-800 text-sky-300">${r.lang}</span>
+              <span class="text-amber-300">★ ${r.stars}</span>
+            </div>
+          </div>
+          <p class="text-xs text-slate-300">${r.desc}</p>
+          <div class="text-[10px] font-mono text-emerald-400 truncate">
+            Latest commit (${r.updated}): "${r.commitMsg}"
+          </div>
+        </div>
+      `).join('');
+
+      reposList.querySelectorAll('.repo-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const r = state.githubRepos[Number(card.getAttribute('data-repo-idx'))];
+          if (!r) return;
+          document.getElementById('modalRepoTitle').textContent = `kelo1-okanagan-bot/${r.name}`;
+          document.getElementById('modalRepoCommitMsg').textContent = `Commit: "${r.commitMsg}" (${r.updated})`;
+          document.getElementById('modalCodeContent').textContent = r.code;
+          const modal = document.getElementById('codeViewerModal');
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        });
+      });
+    }
+
+function renderWebTastesTab() {
+      // Worldview Manifesto & Epoch
+      const manifestoEl = document.getElementById('worldviewManifestoText');
+      if (manifestoEl) manifestoEl.textContent = `"${state.worldviewManifesto}"`;
+      const epochEl = document.getElementById('worldviewStageBadge');
+      if (epochEl) epochEl.textContent = `Worldview Epoch #${state.worldviewEpoch}: Self-Directed Philosophy`;
+
+      // Independent Opinions & Convictions
+      const opinionsEl = document.getElementById('opinionsListContainer');
+      if (opinionsEl) {
+        opinionsEl.innerHTML = state.opinions.map(op => `
+          <div class="p-3 rounded-xl bg-slate-900/90 border border-purple-500/25 space-y-1">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-white">${op.topic}</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 shrink-0">${op.stance}</span>
+            </div>
+            <p class="text-[11px] text-slate-300 font-serif italic leading-relaxed">"${op.reasoning}"</p>
+            <div class="text-[10px] font-mono text-slate-500">${op.confidence}</div>
+          </div>
+        `).join('');
+      }
+
+      // Emergent Unscripted Actions & 3D Creations Invented by Kelo-1
+      const invBadge = document.getElementById('inventedCountBadge');
+      if (invBadge) invBadge.textContent = `${state.inventedCreations.length} Created in 3D`;
+      const invEl = document.getElementById('inventedActionsContainer');
+      if (invEl) {
+        invEl.innerHTML = state.inventedCreations.map((c, idx) => `
+          <div data-cx="${c.x}" data-cz="${c.z}" data-ctitle="${c.title.replace(/"/g, '&quot;')}" class="invented-creation-card cursor-pointer p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-emerald-500/25 transition space-y-1">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                <i class="ph-fill ph-cube text-emerald-400"></i>
+                <span>${c.title}</span>
+              </span>
+              <span class="text-[10px] font-mono text-slate-400">(${c.x}, ${c.z}) • ${c.createdTime}</span>
+            </div>
+            <div class="text-[11px] text-amber-200 font-mono">${c.actionVerb}</div>
+            <p class="text-[11px] text-slate-300 font-serif italic">"${c.philosophy}"</p>
+          </div>
+        `).join('');
+
+        invEl.querySelectorAll('.invented-creation-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const cx = parseFloat(card.getAttribute('data-cx'));
+            const cz = parseFloat(card.getAttribute('data-cz'));
+            const ctitle = card.getAttribute('data-ctitle');
+            synthesizeUnboundedExperience(`Revisit "${ctitle}" and evolve the creation further`, 'Revisiting Creation', { x: cx, z: cz });
+          });
+        });
+      }
+
+      // Persistent Memories of Visitors
+      const memoriesEl = document.getElementById('visitorMemoriesContainer');
+      if (memoriesEl) {
+        memoriesEl.innerHTML = state.visitorMemories.map(v => `
+          <div class="p-2.5 rounded-xl bg-slate-900/80 border border-amber-500/20 flex items-start justify-between gap-2 text-xs">
+            <div class="space-y-0.5">
+              <div class="font-bold text-amber-300 flex items-center gap-1.5">
+                <i class="ph-fill ph-user-focus"></i>
+                <span>${v.name}</span>
+                <span class="text-[10px] font-mono text-slate-400">(${v.visits} ${v.visits === 1 ? 'interaction' : 'interactions'})</span>
+              </div>
+              <p class="text-[11px] text-slate-300 italic">"${v.impression}"</p>
+            </div>
+            <span class="text-[10px] font-mono text-slate-500 shrink-0">${v.lastSeen}</span>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('likesListContainer').innerHTML = state.likes.map(l => `
+        <div class="text-xs text-slate-200 bg-slate-950/80 p-2.5 rounded-xl border border-indigo-500/25 space-y-1">
+          <div class="font-bold text-indigo-300 flex items-center gap-1.5">
+            <span>${l.icon}</span> <span>${l.topic || l.item}</span>
+          </div>
+          <p class="text-[11px] text-slate-300 leading-relaxed font-serif italic">"${l.nuance || l.item}"</p>
+        </div>
+      `).join('');
+
+      document.getElementById('dislikesListContainer').innerHTML = state.dislikes.map(d => `
+        <div class="text-xs text-slate-200 bg-slate-950/80 p-2.5 rounded-xl border border-amber-500/25 space-y-1">
+          <div class="font-bold text-amber-300 flex items-center gap-1.5">
+            <span>${d.icon}</span> <span>${d.topic || d.item}</span>
+          </div>
+          <p class="text-[11px] text-slate-300 leading-relaxed font-serif italic">"${d.nuance || d.item}"</p>
+        </div>
+      `).join('');
+
+      document.getElementById('webHistoryList').innerHTML = state.webHistory.map(w => `
+        <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
+          <div class="flex justify-between font-mono text-[10px] text-sky-300">
+            <span>🐇 "${w.query}"</span>
+            <span class="text-slate-400">${w.time}</span>
+          </div>
+          <div class="text-slate-300 text-[11px] italic">${w.verdict}</div>
+        </div>
+      `).join('');
+    }
 
 function updateCameraButtonsUI() {
-  document.querySelectorAll('.cam-btn').forEach(b => {
-    if (b.getAttribute('data-cam') === state.cameraMode) {
-      b.className = 'cam-btn px-2.5 py-1 rounded-xl bg-amber-500/25 text-amber-300 text-[11px] font-semibold flex items-center gap-1 transition';
-    } else {
-      b.className = 'cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300 text-[11px] font-medium flex items-center gap-1 transition';
+      document.querySelectorAll('.cam-btn').forEach(b => {
+        if (b.getAttribute('data-cam') === state.cameraMode) {
+          b.className = 'cam-btn px-2.5 py-1 rounded-xl bg-amber-500/25 text-amber-300 text-[11px] font-semibold flex items-center gap-1 transition';
+        } else {
+          b.className = 'cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300 text-[11px] font-medium flex items-center gap-1 transition';
+        }
+      });
     }
-  });
-}
 
 function showToast(msg) {
-  console.log("TOAST:", msg);
-}
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = 'px-4 py-2.5 rounded-2xl bg-slate-900/95 border border-amber-400/50 text-amber-200 text-xs font-semibold shadow-2xl flex items-center gap-2 transition-all duration-300';
+      el.innerHTML = `<i class="ph-fill ph-sparkle text-amber-400"></i> <span>${msg}</span>`;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+      }, 3400);
+    }
 
 window.addEventListener('DOMContentLoaded', () => {
-  if(typeof loadPersistentBrainState === 'function') loadPersistentBrainState();
-  if(typeof initDiorama3D === 'function') initDiorama3D();
+  loadPersistentBrainState();
+  initDiorama3D();
   renderAllUI();
-  if(typeof scheduleNextOrganicImpulse === 'function') scheduleNextOrganicImpulse();
+  scheduleNextOrganicImpulse();
+
+  document.getElementById('visitorNameInput')?.addEventListener('change', (e) => {
+    const vName = e.target.value.trim();
+    if (vName) {
+      recordVisitorMemory(vName, 'Visited Kelo-1 in his timeless Okanagan valley.');
+      renderAllUI();
+    }
+  });
+
+  document.getElementById('keloOverheadHUD')?.addEventListener('click', () => petKelo1Interaction());
+  document.getElementById('btnFocusKelo')?.addEventListener('click', () => {
+    state.cameraMode = 'follow';
+    updateCameraButtonsUI();
+  });
+
+  document.getElementById('btnToggleFreeWill')?.addEventListener('click', () => {
+    state.freeWillUnbound = !state.freeWillUnbound;
+    const txt = document.getElementById('freeWillModeText');
+    if (txt) txt.textContent = state.freeWillUnbound ? 'Full Island • Unscripted' : 'Guided Exploration';
+    showToast(state.freeWillUnbound ? '♾️ Kelo-1 is in Full Unscripted Free-Will mode!' : '🧭 Kelo-1 will prioritize your location suggestions.');
+  });
+
+  document.getElementById('freeformActionForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('freeformActionInput');
+    const val = input.value.trim();
+    if (!val) return;
+    input.value = '';
+    synthesizeUnboundedExperience(val, 'Custom Synthesis');
+  });
+
+  document.getElementById('btnInventOwnAction')?.addEventListener('click', () => {
+    synthesizeUnboundedExperience(null, 'Autonomous AI Task');
+  });
+
+  document.getElementById('chatForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (!msg && !state.pendingImageAttachment) return;
+    input.value = '';
+    handleVisitorChatMessage(msg);
+  });
+
+  document.getElementById('btnWaterGarden')?.addEventListener('click', () => {
+    state.gardenPlots.forEach(p => { p.growth = 100; });
+    state.fullness = Math.min(100, state.fullness + 14);
+    renderAllUI();
+    showToast('💧 Watered all 4 Okanagan Bio-Garden beds to 100% ripeness!');
+  });
+
+  document.querySelectorAll('.cam-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mode = btn.getAttribute('data-cam');
+      state.cameraMode = mode;
+      if (mode === 'bird') {
+        camera.position.set(keloGroup.position.x, keloGroup.position.y + 28, keloGroup.position.z + 14);
+        controls.target.set(keloGroup.position.x, keloGroup.position.y, keloGroup.position.z);
+        showToast('🦅 Bird’s-Eye View active! Use Arrow Keys or WASD to fly across the map.');
+      }
+      updateCameraButtonsUI();
+    });
+  });
+
+  window.addEventListener('keydown', (e) => {
+    const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+    if (tag === 'input' || tag === 'textarea') return;
+    if (typeof arrowKeyState !== 'undefined' && e.code in arrowKeyState) {
+      arrowKeyState[e.code] = true;
+      if (e.code.startsWith('Arrow')) e.preventDefault();
+    }
+  });
+
+  window.addEventListener('keyup', (e) => {
+    if (typeof arrowKeyState !== 'undefined' && e.code in arrowKeyState) {
+      arrowKeyState[e.code] = false;
+    }
+  });
+
+  const mapDirToCode = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' };
+  document.querySelectorAll('.pan-key-btn').forEach(btn => {
+    const dir = btn.getAttribute('data-pan');
+    if (dir === 'bird') {
+      btn.addEventListener('click', () => {
+        state.cameraMode = 'bird';
+        camera.position.set(keloGroup.position.x, keloGroup.position.y + 28, keloGroup.position.z + 14);
+        controls.target.set(keloGroup.position.x, keloGroup.position.y, keloGroup.position.z);
+        updateCameraButtonsUI();
+      });
+    } else if (mapDirToCode[dir]) {
+      const code = mapDirToCode[dir];
+      btn.addEventListener('pointerdown', (ev) => { ev.preventDefault(); arrowKeyState[code] = true; });
+      btn.addEventListener('pointerup', () => { arrowKeyState[code] = false; });
+      btn.addEventListener('pointerleave', () => { arrowKeyState[code] = false; });
+    }
+  });
+
+  document.getElementById('btnToggleRoof')?.addEventListener('click', (e) => {
+    state.roofCutaway = !state.roofCutaway;
+    cutawayRoofMeshes.forEach(r => { r.material.opacity = state.roofCutaway ? 0.18 : 0.95; });
+    e.currentTarget.querySelector('span').textContent = state.roofCutaway ? 'Roofs: Cutaway' : 'Roofs: Solid';
+  });
+
+  document.querySelectorAll('.quick-gift-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const gift = btn.getAttribute('data-gift');
+      const act = btn.getAttribute('data-act');
+      if (!state.toolInventory.includes(gift)) state.toolInventory.unshift(gift);
+      showToast('🛠️ Supplied "' + gift + '" to Kelo-1!');
+      if (act === 'mountain_drill') synthesizeUnboundedExperience('Drill for gold with ' + gift, 'Gear Deployed', { x: -15.5, z: -26.5 });
+      else if (act === 'custom_weld') synthesizeUnboundedExperience('Weld 3D sculpture with ' + gift, 'Gear Deployed');
+      else if (act === 'mycelium_wall') synthesizeUnboundedExperience('Grow mycelium dome with ' + gift, 'Gear Deployed', { x: -4.2, z: -12.4 });
+      else if (act === 'rail_build') synthesizeUnboundedExperience('Extrude train track with ' + gift, 'Gear Deployed', { x: 16.2, z: -16.8 });
+    });
+  });
+
+  document.querySelectorAll('.inspector-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tabId = btn.getAttribute('data-tab');
+      document.querySelectorAll('.inspector-tab-btn').forEach(b => {
+        b.className = 'inspector-tab-btn py-2.5 px-2 rounded-t-2xl text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5 transition';
+      });
+      btn.className = 'inspector-tab-btn py-2.5 px-2 rounded-t-2xl text-xs font-bold border-b-2 border-amber-400 text-amber-300 bg-slate-900/80 flex items-center justify-center gap-1.5 transition';
+      document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.add('hidden'));
+      document.getElementById('tab-' + tabId)?.classList.remove('hidden');
+    });
+  });
+
+  document.getElementById('btnNextDecision')?.addEventListener('click', () => runAutonomousLifeTick());
 });

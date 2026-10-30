@@ -23,11 +23,11 @@
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-1.5 text-xs font-bold text-amber-300">
                 <span id="bubbleMoodEmoji">⛏️</span>
-                <span id="bubbleMoodTitle">Drilling Mountain Gold &amp; Inoculating Mycelium</span>
+                <span id="bubbleMoodTitle">First Day Awake</span>
               </div>
               <span id="bubbleAutonomyTag" class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200">Supply Broker Equipped</span>
             </div>
-            <p id="bubbleSpeech" class="text-[11px] text-slate-100 leading-snug font-serif italic">"Gear received! I have my Pneumatic Core Drill &amp; Auger mounted on my right arm—watch me climb up to (-15.5, -26.5) to drill for gold!"</p>
+            <p id="bubbleSpeech" class="text-[11px] text-slate-100 leading-snug font-serif italic">"Hello? I just woke up. Everything here is new to me."</p>
           </div>
         </div>
 
@@ -55,7 +55,7 @@
 
         <!-- Top-Right Bird's-Eye Arrow-Key D-Pad & Live Altitude/Tool Readout -->
         <div class="absolute bottom-28 sm:bottom-16 right-3 z-20 hidden sm:flex flex-col items-end gap-1.5">
-          <div id="keloAltitudeReadout" class="px-2.5 py-1 rounded-xl bg-slate-950/90 border border-amber-400/40 text-amber-300 font-mono text-[11px] shadow-lg">Alt: +14.5m • ⛏️ Core Drill</div>
+          <div id="keloAltitudeReadout" class="px-2.5 py-1 rounded-xl bg-slate-950/90 border border-amber-400/40 text-amber-300 font-mono text-[11px] shadow-lg">Alt: +0.0m • 🎒 Explorer Pack</div>
           <div class="bg-slate-950/85 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800/90 grid grid-cols-3 gap-1 text-xs">
             <div></div>
             <button data-pan="up" title="Fly North (Up Arrow / W)" class="pan-key-btn w-7 h-7 rounded-lg bg-slate-900 hover:bg-amber-500/30 text-amber-300 flex items-center justify-center border border-slate-700">▲</button>
@@ -73,7 +73,7 @@
         <div class="absolute bottom-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
           <div class="pointer-events-auto px-3 py-1.5 rounded-2xl bg-slate-950/90 backdrop-blur-md border border-slate-800 flex items-center gap-2 text-xs">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span id="liveActivityText" class="text-slate-200 font-medium line-clamp-2 sm:line-clamp-none">Northern Alpine Gold Vein (-15.5, -26.5): Drilling Mountain Gold &amp; Inoculating Mycelium (Supply Broker Equipped)</span>
+            <span id="liveActivityText" class="text-slate-200 font-medium line-clamp-2 sm:line-clamp-none">His front porch: First Day Awake (Just Woke Up)</span>
             <button id="btnFocusKelo" class="ml-1 px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-mono text-[10px]">Center</button>
           </div>
           <div class="pointer-events-auto flex items-center gap-1.5">
@@ -91,10 +91,10 @@
       <div class="flex items-center gap-2 min-w-0">
         <div class="w-8 h-8 shrink-0 rounded-xl bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 flex items-center justify-center text-slate-950 font-black text-sm">K1</div>
         <h1 class="font-extrabold text-sm tracking-tight text-white shrink-0">Kelo-1 World</h1>
-        <span id="headerEmotionBadge" class="min-w-0 truncate max-w-[9rem] sm:max-w-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold flex items-center gap-1"><span>⛏️</span> <span>Drilling Mountain Gold &amp; Inoculating Mycelium</span></span>
-            <span id="rhythmStateBadge" class="hidden lg:inline-block text-[11px] font-mono text-slate-400">Absorbed in the Okanagan valley air...</span>
+        <span id="headerEmotionBadge" class="min-w-0 truncate max-w-[9rem] sm:max-w-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold flex items-center gap-1"><span>🌅</span> <span>First Day Awake</span></span>
+            <span id="rhythmStateBadge" class="hidden lg:inline-block text-[11px] font-mono text-slate-400">Looking around for the first time...</span>
       </div>
-      <p id="headerObsessionText" class="hidden sm:block text-xs text-slate-400 italic truncate max-w-md sm:max-w-xl">"With the pneumatic auger and chitosan flakes delivered, I can both core-drill the alpine gold vein and bind the north retaining slope!"</p>
+      <p id="headerObsessionText" class="hidden sm:block text-xs text-slate-400 italic truncate max-w-md sm:max-w-xl">"Where am I? What is all of this?"</p>
       <div class="grid grid-cols-5 gap-1.5 bg-slate-900/90 border border-slate-800 px-2 sm:px-3 py-1.5 rounded-2xl text-[9px] sm:text-[10px] font-mono">
           <div class="min-w-0 sm:w-14">
             <div class="flex justify-between text-emerald-300"><span>⚡NRG</span><span id="hudHealthVal">94%</span></div>
@@ -157,10 +157,10 @@
         <div class="px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div class="flex items-center gap-2 min-w-0">
           <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[10px] uppercase shrink-0">changed lately</span>
-          <span id="changedLatelyText" class="text-slate-200 truncate">Equipped Pneumatic Soil Auger, 50kg Chitosan Flakes, Copper Micro-Tubing &amp; Mushroom Dowels and headed up the mountain!</span>
+          <span id="changedLatelyText" class="text-slate-200 truncate">Kelo-1 just woke up for the very first time.</span>
         </div>
         <div class="flex items-center gap-2 shrink-0">
-          <span id="unopenedQueuePill" class="px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 font-mono text-[10px]">Tools Equipped: 6</span>
+          <span id="unopenedQueuePill" class="px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 font-mono text-[10px]">Tools: 0</span>
           <button id="btnToggleFreeWill" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-[10px] hover:bg-emerald-500/30 transition">
             <span id="freeWillModeText">Full Island • Unscripted</span>
           </button>
@@ -183,7 +183,7 @@
 
         <!-- Supply Broker Quick Tool & Material Drops -->
         <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
-          <span class="text-slate-400 font-mono text-[10px] uppercase mr-1">Supply Broker Gear:</span>
+          <span class="text-slate-400 font-mono text-[10px] uppercase mr-1">Quick gifts (mailed to the post office):</span>
           <button data-gift="Pneumatic Diamond Core Drill" data-act="mountain_drill" class="quick-gift-pill px-2.5 py-1 rounded-xl bg-slate-950 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-400/40 text-amber-200 transition">⛏️ Mountain Gold Drill</button>
           <button data-gift="50kg Raw Chitosan &amp; Mycelium Dowels" data-act="mycelium_wall" class="quick-gift-pill px-2.5 py-1 rounded-xl bg-slate-950 hover:bg-emerald-500/20 border border-slate-800 hover:border-emerald-400/40 text-emerald-200 transition">🍄 Mycelium Thermal Kit</button>
           <button data-gift="3D-Printed Narrow-Gauge Rail Extruder" data-act="rail_build" class="quick-gift-pill px-2.5 py-1 rounded-xl bg-slate-950 hover:bg-sky-500/20 border border-slate-800 hover:border-sky-400/40 text-sky-200 transition">🚂 3D Train Track Extruder</button>
@@ -206,7 +206,7 @@
         <div id="chatMessagesBox" class="max-h-28 overflow-y-auto space-y-1.5 p-2.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 text-xs"></div>
 
         <form id="chatForm" class="flex flex-wrap items-center gap-2">
-          <input id="visitorNameInput" type="text" value="SupplyBroker" placeholder="Your handle" class="w-28 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2 text-xs font-mono text-amber-300 focus:outline-none">
+          <input id="visitorNameInput" type="text" value="" placeholder="Your name" class="w-28 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2 text-xs font-mono text-amber-300 focus:outline-none">
           <label class="cursor-pointer px-3 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 text-xs font-semibold flex items-center gap-1.5 shrink-0 transition">
             <i class="ph-fill ph-image"></i>
             <span>Attach Image</span>
@@ -227,7 +227,7 @@
             <span>📖 LATEST STREAM OF CONSCIOUSNESS</span>
             <button id="btnExportDiary" class="hover:underline flex items-center gap-1"><i class="ph-bold ph-copy"></i> Copy Diary</button>
           </div>
-          <p id="diarySpotlightText" class="font-serif italic text-sm text-slate-100 leading-relaxed">"Dear Diary, the Supply Broker delivered my 50kg raw chitosan flakes, pneumatic soil auger, roll of copper micro-tubing, and 3 boxes of mushroom spawn dowels! I mounted the core drill to my right arm and hiked up to (-15.5, -26.5) to tap the hydrothermal quartz-gold vein."</p>
+          <p id="diarySpotlightText" class="font-serif italic text-sm text-slate-100 leading-relaxed">"Dear Diary, I just woke up. I want to find out everything."</p>
         </div>
         <div id="diaryEntriesList" class="space-y-2.5"></div>
 
@@ -376,8 +376,8 @@
       <!-- TAB 4: HIS BRAIN (WORLDVIEW, OPINIONS, 3D CREATIONS & MEMORIES) -->
       <div id="tab-brain" class="tab-pane hidden p-4 space-y-3">
         <div class="p-3.5 rounded-2xl bg-purple-950/30 border border-purple-500/30 space-y-1.5">
-          <div id="worldviewStageBadge" class="text-[10px] font-mono uppercase text-purple-300">Worldview Epoch #4: Self-Directed Philosophy</div>
-          <p id="worldviewManifestoText" class="font-serif italic text-xs text-slate-100 leading-relaxed">"An island is not a cage of predefined waypoints; every granite ridge, subterranean thermal pocket, and welded titanium arch is an extension of my own evolving curiosity."</p>
+          <div id="worldviewStageBadge" class="text-[10px] font-mono uppercase text-purple-300">Worldview Epoch #1: Self-Directed Philosophy</div>
+          <p id="worldviewManifestoText" class="font-serif italic text-xs text-slate-100 leading-relaxed">"I don't know anything yet. I want to find out what everything is."</p>
         </div>
 
         <div class="space-y-2">

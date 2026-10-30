@@ -583,16 +583,12 @@ window.addEventListener('DOMContentLoaded', () => {
     e.currentTarget.querySelector('span').textContent = state.roofCutaway ? 'Roofs: Cutaway' : 'Roofs: Solid';
   });
 
+  // Quick gifts go through the post office like everything else; he picks them up when he chooses
   document.querySelectorAll('.quick-gift-pill').forEach(btn => {
     btn.addEventListener('click', () => {
       const gift = btn.getAttribute('data-gift');
-      const act = btn.getAttribute('data-act');
-      if (!state.toolInventory.includes(gift)) state.toolInventory.unshift(gift);
-      showToast('🛠️ Supplied "' + gift + '" to Kelo-1!');
-      if (act === 'mountain_drill') synthesizeUnboundedExperience('Drill for gold with ' + gift, 'Gear Deployed', { x: -15.5, z: -26.5 });
-      else if (act === 'custom_weld') synthesizeUnboundedExperience('Weld 3D sculpture with ' + gift, 'Gear Deployed');
-      else if (act === 'mycelium_wall') synthesizeUnboundedExperience('Grow mycelium dome with ' + gift, 'Gear Deployed', { x: -4.2, z: -12.4 });
-      else if (act === 'rail_build') synthesizeUnboundedExperience('Extrude train track with ' + gift, 'Gear Deployed', { x: 16.2, z: -16.8 });
+      const from = (document.getElementById('visitorNameInput').value || 'curiousWanderer').trim();
+      postMail({ kind: 'gift', from, name: gift, category: categorizeItem(gift), note: '' });
     });
   });
 

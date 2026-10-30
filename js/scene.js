@@ -1870,16 +1870,7 @@ function projectLabelsToScreen() {
       const h = viewport.clientHeight;
 
       // Project Kelo-1 Overhead Bubble
-      const keloHud = document.getElementById('keloOverheadHUD');
-      const headVec = new THREE.Vector3(keloGroup.position.x, keloGroup.position.y + 3.45, keloGroup.position.z);
-      headVec.project(camera);
-      if (headVec.z > 1) {
-        keloHud.style.opacity = '0';
-      } else {
-        keloHud.style.opacity = '1';
-        keloHud.style.left = `${(headVec.x * 0.5 + 0.5) * w}px`;
-        keloHud.style.top = `${(-(headVec.y * 0.5) + 0.5) * h}px`;
-      }
+      // (What he's doing is shown in the docked panel at the bottom; nothing to project here)
 
       // Project Building & Mountain Pins (anchored above exact terrain elevation!)
       // Names only appear when the cursor is near the place (or it was just tapped)

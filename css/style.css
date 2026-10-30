@@ -25,12 +25,7 @@ body {
 }
 
 #keloOverheadHUD {
-  position: absolute;
-  transform: translate(-50%, -100%);
   pointer-events: auto;
-  cursor: pointer;
-  z-index: 20;
-  transition: opacity 0.15s ease;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }

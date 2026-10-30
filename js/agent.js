@@ -424,8 +424,18 @@ const state = {
   "rhythmPhaseText": "Absorbed in the Okanagan valley air..."
 };
 
+// Optional LLM keys, kept only in this browser's localStorage. Gemini is tried first, then Claude;
+// with neither (or if both fail) Kelo-1 uses his built-in procedural brain, so he never runs out.
 let apiKey = '';
-try { apiKey = localStorage.getItem('kelo1_gemini_api_key') || ''; } catch (e) {}
+let claudeApiKey = '';
+try {
+  apiKey = localStorage.getItem('kelo1_gemini_api_key') || '';
+  claudeApiKey = localStorage.getItem('kelo1_anthropic_api_key') || '';
+} catch (e) {}
+
+function hasLLMKey() {
+      return Boolean(apiKey.trim() || claudeApiKey.trim());
+    }
 let organicTimeoutId = null;
 
 // Gemini models to try in order. The "-latest" aliases track Google's current Flash models,
@@ -504,6 +514,74 @@ async function callGeminiJSON(parts) {
       }
       console.warn('All Gemini models failed.');
       return null;
+    }
+
+// Claude (Anthropic) fallback, called through the official Anthropic SDK loaded on demand from the CDN
+const CLAUDE_MODEL = 'claude-opus-5-5';
+const ANTHROPIC_SDK_URL = 'https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@1.3.0/+esm';
+let anthropicClient = null;
+let anthropicClientKey = '';
+
+async function getAnthropicClient() {
+      if (anthropicClient && anthropicClientKey === claudeApiKey) return anthropicClient;
+      const { default: Anthropic } = await import(ANTHROPIC_SDK_URL);
+      // The visitor supplies their own key, so calling straight from the browser is intended here
+      anthropicClient = new Anthropic({ apiKey: claudeApiKey.trim(), dangerouslyAllowBrowser: true });
+      anthropicClientKey = claudeApiKey;
+      return anthropicClient;
+    }
+
+// Pull the JSON object out of a text reply (tolerates ```json fences or a sentence around it)
+function parseJSONFromText(text) {
+      const start = text.indexOf('{');
+      const end = text.lastIndexOf('}');
+      if (start < 0 || end <= start) return null;
+      try {
+        const parsed = JSON.parse(text.slice(start, end + 1));
+        return (parsed && typeof parsed === 'object') ? parsed : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+// Same contract as callGeminiJSON: takes Gemini-style parts ({text} / {inlineData}), returns parsed JSON or null
+async function callClaudeJSON(parts) {
+      if (!claudeApiKey || !claudeApiKey.trim()) return null;
+      try {
+        const client = await getAnthropicClient();
+        const content = [];
+        parts.forEach(p => {
+          if (p.inlineData) {
+            content.push({ type: 'image', source: { type: 'base64', media_type: p.inlineData.mimeType, data: p.inlineData.data } });
+          }
+        });
+        const text = parts.filter(p => typeof p.text === 'string').map(p => p.text).join('\n\n');
+        content.push({ type: 'text', text: `${text}\n\nRespond with the JSON object only.` });
+
+        const response = await client.beta.messages.create({
+          model: CLAUDE_MODEL,
+          max_tokens: 16000,
+          output_config: { effort: 'medium' },
+          // If a safety classifier declines, let the API retry on a suitable fallback model
+          betas: ['server-side-fallback-2026-07-01'],
+          fallbacks: 'default',
+          messages: [{ role: 'user', content }]
+        });
+        if (response.stop_reason === 'refusal') {
+          console.warn('Claude declined this request:', response.stop_details?.category);
+          return null;
+        }
+        const replyText = response.content.filter(b => b.type === 'text').map(b => b.text).join('');
+        return parseJSONFromText(replyText);
+      } catch (err) {
+        console.warn('Claude request failed:', err?.status || '', err?.message || err);
+        return null;
+      }
+    }
+
+// Try every configured LLM in order; null means "use the procedural brain"
+async function callLLMJSON(parts) {
+      return (await callGeminiJSON(parts)) || (await callClaudeJSON(parts));
     }
 
 const VALID_PART_SHAPES = ['cylinder', 'box', 'sphere', 'cone', 'torus', 'knot', 'octahedron'];
@@ -841,7 +919,7 @@ async function synthesizeUnboundedExperience(promptOrImpulse = null, originLabel
         };
 
         // LIVE MULTIMODAL GEMINI AI AGENT CALL (Supports text + uploaded base64 image + custom 3D primitive assembly!)
-        if (apiKey && apiKey.trim() !== "") {
+        if (hasLLMKey()) {
           {
             const llmPrompt = `You are the backend AI cognitive engine for Kelo-1, an autonomous open-world robot living on an island and alpine mountain range in Kelowna, BC.
 You have FULL freedom to roam the entire island and mountain peaks (x between -35 and 35, z between -35 and 11; note z < -14 is high up on the steep snow-capped mountains).
@@ -881,7 +959,7 @@ Return ONLY valid JSON matching this schema:
               });
             }
 
-            const parsed = await callGeminiJSON(contentsParts);
+            const parsed = await callLLMJSON(contentsParts);
             if (parsed && parsed.actionTitle) {
               const textKeys = ['internetInspiration', 'actionTitle', 'placeName', 'emoji', 'wondering', 'speech', 'diary',
                 'opinionTopic', 'opinionStance', 'opinionReasoning', 'gearRequested'];
@@ -1303,7 +1381,7 @@ Return ONLY JSON:
   "webQuery": null OR "something you want to research",
   "updatedWorldview": null OR "1-2 sentences if your philosophy shifted"
 }`;
-      return callGeminiJSON([{ text: prompt }]);
+      return callLLMJSON([{ text: prompt }]);
     }
 
 // Apply any decision object, validating everything that comes from the LLM or generator
@@ -1461,7 +1539,7 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will') {
       state.isBusy = true;
       try {
         let decision = null;
-        if (apiKey) decision = await generateLLMDecision(trigger);
+        if (hasLLMKey()) decision = await generateLLMDecision(trigger);
         if (!decision || !decision.actionTitle) decision = generateProceduralDecision();
         applyDecision(decision, originLabel);
       } finally {
@@ -1472,7 +1550,7 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will') {
 function runAutonomousLifeTick() {
       // Most of the time Kelo-1 makes a fully open-ended decision. Otherwise he falls back
       // into one of his familiar routines (which are also his own choice).
-      const openEndedChance = apiKey ? 0.85 : 0.6;
+      const openEndedChance = hasLLMKey() ? 0.85 : 0.6;
       if (Math.random() < openEndedChance) {
         decideNextAction(null, 'Free Will');
         return;
@@ -1721,7 +1799,7 @@ async function processNextUnopenedVisitorNote() {
       }
 
       // Live Gemini API call so Kelo-1 can form genuine, independent philosophical opinions & worldviews
-      if (apiKey && apiKey.trim() !== "") {
+      if (hasLLMKey()) {
         try {
           const prompt = `You are Kelo-1, an autonomous robot living in a 3D Kelowna valley inspired by Pino's World (pinos.world). You have NO timeframe or schedule, and you form your OWN independent worldview and opinions. You do NOT blindly agree with visitors—you think for yourself, sometimes offering a poetic counter-perspective or synthesizing a deeper philosophical conviction.
 Current location: ${currentPlaceLabel()}.
@@ -1733,7 +1811,7 @@ Return ONLY valid JSON with keys:
 "opinionStance": (short 2-4 word independent stance),
 "opinionReasoning": (1 sentence explaining your independent philosophical opinion on this),
 "updatedWorldview": (1-2 sentences showing how your broader philosophy evolved).`;
-          const parsed = await callGeminiJSON([{ text: prompt }]);
+          const parsed = await callLLMJSON([{ text: prompt }]);
           if (parsed) {
             const str = (v, max) => (typeof v === 'string' && v.trim()) ? v.trim().slice(0, max) : null;
             botReply = str(parsed.reply, 600) || botReply;

@@ -196,6 +196,7 @@ async function searchOnce(query, originLabel) {
         }
 
         if (typeof bumpLifeStat === 'function') bumpLifeStat('articles', hops.length);
+        if (typeof noticeDiggingInReading === 'function') noticeDiggingInReading(hops);
         const reflection = await reflectOnReading(query, hops);
         const str = (v, max) => (typeof v === 'string' && v.trim()) ? v.trim().slice(0, max) : '';
         const last = hops[hops.length - 1];

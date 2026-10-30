@@ -102,6 +102,7 @@ function initDiorama3D() {
       buildAlpineTerrainAndMountains3D();
       buildHomesteadAndBuildings3D();
       if (typeof renderPostOfficeParcels3D === 'function') renderPostOfficeParcels3D();
+      if (typeof buildStorehouse3D === 'function') buildStorehouse3D();
       // Scenery goes last so trees and rocks keep clear of every building
       buildValleyScenery3D();
       buildKelo1Character3D();
@@ -120,6 +121,7 @@ function initDiorama3D() {
         if (typeof setHoveredParcelLabel === 'function') {
           hoverRaycaster.setFromCamera(new THREE.Vector2((hoverPointer.x / rect.width) * 2 - 1, -(hoverPointer.y / rect.height) * 2 + 1), camera);
           setHoveredParcelLabel(hoverRaycaster);
+          if (typeof setHoveredStoreLabel === 'function') setHoveredStoreLabel(hoverRaycaster);
         }
       };
       renderer.domElement.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') updateHover(e, false); });
@@ -1759,6 +1761,9 @@ function animateDiorama() {
       } else if (state.cameraMode === 'house') {
         controls.target.lerp(new THREE.Vector3(-9.2, 1.4, -8.0), 0.08);
         camera.position.lerp(new THREE.Vector3(-9.2, 9.5, 0.5), 0.05);
+      } else if (state.cameraMode === 'storehouse') {
+        controls.target.lerp(new THREE.Vector3(5.5, 1.2, -6.8), 0.08);
+        camera.position.lerp(new THREE.Vector3(5.5, 4.2, 0.8), 0.05);
       } else if (state.cameraMode === 'cafes') {
         controls.target.lerp(new THREE.Vector3(0, 1.5, 3.2), 0.08);
         camera.position.lerp(new THREE.Vector3(0, 11.5, 15.5), 0.05);

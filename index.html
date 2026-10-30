@@ -48,6 +48,9 @@
           <button data-cam="cafes" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300 text-[11px] font-medium flex items-center gap-1 transition">
             <i class="ph-fill ph-coffee"></i> <span>Cafes</span>
           </button>
+<button data-cam="storehouse" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300 text-[11px] font-medium flex items-center gap-1 transition">
+            <i class="ph-fill ph-warehouse"></i> <span>Storehouse</span>
+          </button>
           <button id="btnToggleRoof" class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-mono border border-slate-700/80 transition">
             <span>Roofs: Cutaway</span>
           </button>
@@ -337,7 +340,7 @@
 
         <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
           <div class="flex items-center justify-between text-xs">
-            <span class="font-bold text-amber-300 flex items-center gap-1.5"><i class="ph-fill ph-backpack"></i> His Tools, Toys &amp; Belongings</span>
+            <span class="font-bold text-amber-300 flex items-center gap-1.5"><i class="ph-fill ph-warehouse"></i> In His Storehouse</span>
             <span id="inventoryCountLabel" class="font-mono text-[10px] text-slate-400">6 Items Equipped</span>
           </div>
           <div id="toolInventoryPills" class="flex flex-wrap gap-1.5"></div>
@@ -477,6 +480,7 @@
             <button data-cam="overview" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">⛰️ Valley</button>
             <button data-cam="house" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">🏠 House</button>
             <button data-cam="cafes" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">☕ Cafes</button>
+<button data-cam="storehouse" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">📦 Storehouse</button>
           </div>
           <p class="text-[11px] text-slate-400">Drag to orbit the camera, scroll or pinch to zoom, and use the arrow keys or WASD in Bird's-Eye mode to fly around. Click the ground to suggest a spot to explore, or click Kelo-1 to say hi.</p>
         </div>
@@ -536,6 +540,7 @@
   <script src="./js/growth.js"></script>
   <script src="./js/scene.js"></script>
   <script src="./js/items3d.js"></script>
+  <script src="./js/storehouse.js"></script>
   <script src="./js/main.js"></script>
   <script src="./js/portal.js"></script>
 </body>

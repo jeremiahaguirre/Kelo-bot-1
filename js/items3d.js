@@ -4,6 +4,93 @@
 // and things Kelo-1 carries look like what they are. Unknown items become a labelled gift box.
 
 const ITEM_MODEL_RULES = [
+  // Digging equipment (checked first so "jackhammer" isn't mistaken for a plain hammer)
+  [/jack ?hammer|rock breaker/, () => {
+    const body = mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.45, 10), 0xf59e0b);
+    body.position.y = 0.5;
+    const handle = mesh(new THREE.BoxGeometry(0.4, 0.06, 0.06), 0x1f2937);
+    handle.position.y = 0.76;
+    const bit = mesh(new THREE.CylinderGeometry(0.025, 0.01, 0.35, 8), 0x94a3b8, { metalness: 0.8 });
+    bit.position.y = 0.12;
+    return group(body, handle, bit);
+  }],
+  [/excavator|digger|backhoe/, () => {
+    const base = mesh(new THREE.BoxGeometry(0.5, 0.12, 0.34), 0x1f2937);
+    base.position.y = 0.06;
+    const cab = mesh(new THREE.BoxGeometry(0.3, 0.26, 0.28), 0xfacc15);
+    cab.position.set(-0.05, 0.25, 0);
+    const boom = mesh(new THREE.BoxGeometry(0.42, 0.06, 0.06), 0xfacc15);
+    boom.position.set(0.28, 0.38, 0);
+    boom.rotation.z = -0.5;
+    const bucket = mesh(new THREE.BoxGeometry(0.12, 0.12, 0.16), 0x475569);
+    bucket.position.set(0.48, 0.2, 0);
+    return group(base, cab, boom, bucket);
+  }],
+  [/dump ?truck|truck/, () => {
+    const cab = mesh(new THREE.BoxGeometry(0.18, 0.2, 0.26), 0xef4444);
+    cab.position.set(0.24, 0.18, 0);
+    const bed = mesh(new THREE.BoxGeometry(0.36, 0.16, 0.3), 0xfacc15);
+    bed.position.set(-0.06, 0.2, 0);
+    const g = group(cab, bed);
+    [[-0.18, 0.15], [-0.18, -0.15], [0.24, 0.15], [0.24, -0.15]].forEach(([x, z]) => {
+      const wheel = mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.04, 12), 0x111827);
+      wheel.rotation.x = Math.PI / 2;
+      wheel.position.set(x, 0.06, z);
+      g.add(wheel);
+    });
+    return g;
+  }],
+  [/shovel|spade/, () => {
+    const handle = mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.7, 8), 0x8a5a2b);
+    handle.position.y = 0.45;
+    const blade = mesh(new THREE.BoxGeometry(0.2, 0.24, 0.03), 0x94a3b8, { metalness: 0.7 });
+    blade.position.y = 0.06;
+    return group(handle, blade);
+  }],
+  [/pick ?axe|mattock/, () => {
+    const handle = mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.7, 8), 0x8a5a2b);
+    handle.position.y = 0.35;
+    const head = mesh(new THREE.BoxGeometry(0.5, 0.06, 0.06), 0x94a3b8, { metalness: 0.7 });
+    head.position.y = 0.68;
+    return group(handle, head);
+  }],
+  // Things he can dig up
+  [/geode|amethyst|garnet/, () => {
+    const rock = mesh(new THREE.SphereGeometry(0.2, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), 0x78716c, { side: THREE.DoubleSide });
+    rock.rotation.x = Math.PI / 2;
+    rock.position.y = 0.2;
+    const crystal = mesh(new THREE.IcosahedronGeometry(0.13, 0), 0xa855f7, { emissive: 0x7e22ce, emissiveIntensity: 0.4 });
+    crystal.position.set(0, 0.2, 0.04);
+    return group(rock, crystal);
+  }],
+  [/quartz|crystal|jade/, (lower) => {
+    const g = group();
+    for (let i = 0; i < 4; i++) {
+      const c = mesh(new THREE.ConeGeometry(0.05, 0.3, 6), /jade/.test(lower) ? 0x22c55e : 0xe0f2fe, { transparent: true, opacity: 0.85, emissive: 0x38bdf8, emissiveIntensity: 0.2 });
+      c.position.set((i - 1.5) * 0.06, 0.15, (i % 2) * 0.05);
+      c.rotation.z = (i - 1.5) * 0.25;
+      g.add(c);
+    }
+    return g;
+  }],
+  [/fossil|trilobite|ammonite|bone|petrified/, () => {
+    const slab = mesh(new THREE.CylinderGeometry(0.25, 0.27, 0.08, 14), 0xd6c7a1);
+    slab.position.y = 0.04;
+    const spiral = mesh(new THREE.TorusGeometry(0.1, 0.03, 6, 16), 0x8b7355);
+    spiral.rotation.x = Math.PI / 2;
+    spiral.position.y = 0.1;
+    return group(slab, spiral);
+  }],
+  [/coin|nugget/, (lower) => {
+    const coin = mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.03, 18), /silver/.test(lower) ? 0xcbd5e1 : 0xfacc15, { metalness: 0.9, roughness: 0.25 });
+    coin.position.y = 0.05;
+    return group(coin);
+  }],
+  [/meteorite|obsidian|arrowhead/, () => {
+    const m = mesh(new THREE.DodecahedronGeometry(0.16, 0), 0x1f2937, { metalness: 0.6, roughness: 0.4, flatShading: true });
+    m.position.y = 0.14;
+    return group(m);
+  }],
   [/cherr/, () => fruitBunch(0xb91c1c, 0.12, 5)],
   [/apple/, () => fruitBunch(0xdc2626, 0.17, 3)],
   [/peach|apricot/, () => fruitBunch(0xffa36c, 0.17, 3)],

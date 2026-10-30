@@ -42,11 +42,21 @@ const SUBJECT_FORMS = [
     P('extrude', 0, 0, 0, 1, 1, 1, c.main, { outline: [[-1.3, 1.1], [-2.2, 1.8], [-2.0, 1.1], [-2.2, 0.5]], depth: 0.1 }),
     P('tube', 0, 0, 0, 1, 1, 1, '#bae6fd', { path: [[0.6, 1.6, 0], [0.6, 2.3, 0], [0.4, 2.6, 0]], radius: 0.05 })
   ]],
-  [/serpent|ogopogo|dragon|snake|sea monster|eel/, 'Lake Serpent', (c) => [
-    P('tube', 0, 0, 0, 1, 1, 1, c.main, { path: [[-2.2, 0.2, 0], [-1.6, 1.0, 0], [-1.0, 0.2, 0], [-0.4, 1.0, 0], [0.2, 0.2, 0], [0.8, 1.1, 0], [1.3, 1.8, 0]], radius: 0.28 }),
-    P('sphere', 1.45, 2.0, 0, 0.6, 0.45, 0.45, c.main),
-    P('sphere', 1.6, 2.2, 0.18, 0.1, 0.1, 0.1, '#facc15', { emissive: true }),
-    P('cone', 1.25, 2.4, 0, 0.1, 0.35, 0.1, c.accent)
+  [/serpent|ogopogo|dragon|snake|sea monster|eel/, 'Sea Dragon', (c) => [
+    // Coiling body built from tapering tube sections, then a horned head with a snout
+    P('tube', 0, 0, 0, 1, 1, 1, c.main, { path: [[-2.4, 0.1, 0], [-2.0, 0.5, 0.1], [-1.6, 0.15, 0]], radius: 0.1 }),
+    P('tube', 0, 0, 0, 1, 1, 1, c.main, { path: [[-1.6, 0.15, 0], [-1.1, 0.9, -0.1], [-0.6, 0.2, 0]], radius: 0.2 }),
+    P('tube', 0, 0, 0, 1, 1, 1, c.main, { path: [[-0.6, 0.2, 0], [0.0, 1.1, 0.1], [0.5, 0.25, 0]], radius: 0.28 }),
+    P('tube', 0, 0, 0, 1, 1, 1, c.main, { path: [[0.5, 0.25, 0], [1.1, 1.2, 0], [1.4, 2.2, 0], [1.6, 2.8, 0]], radius: 0.22 }),
+    P('sphere', 1.75, 3.0, 0, 0.75, 0.55, 0.6, c.main),
+    P('cone', 2.25, 2.95, 0, 0.32, 0.6, 0.32, c.main, { rz: -Math.PI / 2 }),
+    P('box', 2.15, 2.75, 0, 0.6, 0.08, 0.28, '#bef264', { rz: -0.15 }),
+    P('sphere', 1.95, 3.15, 0.25, 0.12, 0.12, 0.12, '#fde047', { emissive: true }),
+    P('sphere', 1.95, 3.15, -0.25, 0.12, 0.12, 0.12, '#fde047', { emissive: true }),
+    P('cone', 1.45, 3.4, 0.15, 0.1, 0.55, 0.1, '#fef3c7', { rz: 0.9 }),
+    P('cone', 1.45, 3.4, -0.15, 0.1, 0.55, 0.1, '#fef3c7', { rz: 0.9 }),
+    ...[-1.1, 0.0, 1.1].map(x => P('cone', x, x === 0 ? 1.45 : 1.25, 0, 0.12, 0.4, 0.12, c.accent)),
+    P('extrude', 0, 0, 0, 1, 1, 1, c.accent, { outline: [[-2.4, 0.1], [-2.9, 0.6], [-2.7, 0.1], [-2.9, -0.3]], depth: 0.04 })
   ]],
   [/tree|fir|pine|forest|oak|maple|douglas/, 'Tree', (c) => [
     P('cylinder', 0, 0.8, 0, 0.35, 1.6, 0.35, '#8a5a2b'),

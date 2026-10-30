@@ -1,6 +1,7 @@
 // Kelo-bot-1 — js/portal.js
-// Loaded last. The "Send Kelo-1 Something" portal in the Requests tab: messages, small tools
-// and toys (or anything you can name), and photos. Kelo-1 decides what to do with each.
+// Loaded last. The "Send Kelo-1 Something" portal in the Post Office tab: messages, small tools
+// and toys (or anything you can name), and photos. Everything is mailed to the post office
+// (js/postoffice.js); Kelo-1 picks it up when he chooses and decides what to do with each.
 
 const GIFT_CATALOG = [
   { name: 'Magnifying glass', kind: 'tool', emoji: '🔍' },
@@ -79,7 +80,25 @@ function setPortalMode(mode) {
       try { localStorage.setItem('kelo1_portal_mode', mode); } catch (e) {}
     }
 
+function renderMailbox() {
+      const count = document.getElementById('mailboxCount');
+      if (count) count.textContent = `${state.mailbox.length} waiting • ${state.lettersReceived || 0} picked up so far`;
+      const list = document.getElementById('mailboxList');
+      if (!list) return;
+      list.innerHTML = state.mailbox.length === 0
+        ? '<p class="text-[11px] text-slate-500 italic">The post office is empty. Anything you send waits here until Kelo-1 decides to pick it up.</p>'
+        : state.mailbox.map(m => `
+          <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-900/80 border border-red-500/25 text-xs">
+            ${m.thumbs && m.thumbs[0] ? `<img src="${escapeHtml(m.thumbs[0])}" alt="" class="w-8 h-8 rounded-lg object-cover shrink-0">` : `<span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">${escapeHtml(m.emoji)}</span>`}
+            <div class="min-w-0 flex-1">
+              <div class="font-semibold text-red-100 truncate">${escapeHtml(m.kind === 'message' ? 'Letter' : (m.name || m.kind))}</div>
+              <div class="text-[10px] font-mono text-slate-400 truncate">from ${escapeHtml(m.from)} • ${escapeHtml(m.time)}${m.note ? ` • "${escapeHtml(m.note.slice(0, 60))}"` : ''}</div>
+            </div>
+          </div>`).join('');
+    }
+
 function renderPortal() {
+      renderMailbox();
       // Everything he owns
       const owned = [
         ...state.toolInventory.map(name => ({ name, emoji: '🛠️' })),
@@ -141,37 +160,20 @@ function renderPhotoPreview() {
       });
     }
 
-async function sendPhotosToKelo(caption) {
+function mailPendingPhotos(caption) {
       const photos = pendingPortalPhotos.splice(0, MAX_PHOTOS_PER_SEND);
       renderPhotoPreview();
       if (photos.length === 0) return;
-      const from = portalVisitorName();
-      const cleanCaption = String(caption || '').trim().slice(0, 200);
-      const time = new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-
-      const albumEntries = photos.map(p => ({ thumb: p.thumb, caption: cleanCaption, from, palette: [p.analyzed.primaryHex, p.analyzed.secondaryHex], time, reaction: '' }));
-      state.photoAlbum.unshift(...albumEntries);
-      const logEntry = { type: 'photo', name: photos.length > 1 ? `${photos.length} photos` : 'A photo', category: 'photo', emoji: '📷', from, note: cleanCaption, time, reaction: '' };
-      state.giftLog.unshift(logEntry);
-      recordVisitorMemory(from, `Sent me ${logEntry.name.toLowerCase()}${cleanCaption ? ` ("${cleanCaption.slice(0, 60)}")` : ''}.`);
-      state.chatLog.push({ sender: from, text: `📷 Sent Kelo-1 ${logEntry.name.toLowerCase()}${cleanCaption ? `: "${cleanCaption}"` : ''}`, time: 'Just now', isBot: false });
-      savePhotoAlbum();
-      renderAllUI();
-      showToast(`📷 Sent ${logEntry.name.toLowerCase()} to Kelo-1`);
-
-      // One decision for the batch; the AI brain (if any) sees the first photo itself
       const first = photos[0].analyzed;
-      await decideNextAction(
-        `${from} sent you ${logEntry.name.toLowerCase()}${cleanCaption ? ` captioned "${cleanCaption}"` : ''}. The main colors are ${first.primaryHex} and ${first.secondaryHex}. Look at it and decide for yourself what, if anything, it makes you want to do, build, ask, or think about.`,
-        `Photo from ${from}`,
-        { focus: cleanCaption || 'photo', image: first }
-      );
-      logEntry.reaction = state.speechBubble;
-      albumEntries.forEach(e => { e.reaction = state.speechBubble; });
-      state.chatLog.push({ sender: 'Kelo-1', text: state.speechBubble, time: 'Just now', isBot: true });
-      savePhotoAlbum();
-      savePersistentBrainState();
-      renderAllUI();
+      postMail({
+        kind: 'photo',
+        from: portalVisitorName(),
+        name: photos.length > 1 ? `${photos.length} photos` : 'A photo',
+        note: String(caption || '').trim().slice(0, 200),
+        thumbs: photos.map(p => p.thumb),
+        palette: [first.primaryHex, first.secondaryHex],
+        image: first
+      });
     }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -192,10 +194,9 @@ window.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     const text = msgInput.value.trim();
     if (!text) return;
+    if (!postMail({ kind: 'message', from: portalVisitorName(), note: text })) return;
     msgInput.value = '';
     msgCount.textContent = '0 / 500';
-    handleVisitorChatMessage(text);
-    showToast('✉️ Message delivered to Kelo-1');
   });
 
   // Tools, toys, or anything else
@@ -228,14 +229,14 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     const kind = giftKind.value;
     const note = giftNote.value.trim();
-    const emoji = chosenEmoji;
+    const category = categorizeItem(name, kind);
+    const emoji = chosenEmoji || CATEGORY_ICONS[category] || '📦';
+    if (!postMail({ kind: 'gift', from: portalVisitorName(), name, category, emoji, note })) return;
     giftName.value = '';
     giftNote.value = '';
     giftKind.value = '';
     chosenEmoji = null;
     catalog?.querySelectorAll('.gift-chip').forEach(c => c.classList.remove('border-amber-400'));
-    showToast(`🎁 Sent "${name}" to Kelo-1`);
-    await receiveItem(name, kind, portalVisitorName(), note, { type: 'gift', emoji: emoji || undefined });
   });
 
   // Photos
@@ -275,8 +276,10 @@ window.addEventListener('DOMContentLoaded', () => {
     const captionEl = document.getElementById('portalPhotoCaption');
     const caption = captionEl.value;
     captionEl.value = '';
-    sendPhotosToKelo(caption);
+    mailPendingPhotos(caption);
   });
+
+  document.getElementById('btnRingPostOfficeBell')?.addEventListener('click', () => ringPostOfficeBell());
 
   renderPortal();
 });

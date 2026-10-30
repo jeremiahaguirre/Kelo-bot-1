@@ -228,7 +228,7 @@
           <i class="ph-fill ph-notebook"></i> <span>His Diary</span>
         </button>
         <button data-tab="requests" class="inspector-tab-btn py-2.5 px-2 rounded-t-2xl text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5 transition">
-          <i class="ph-fill ph-wrench"></i> <span>Tool Requests</span>
+          <i class="ph-fill ph-envelope-simple"></i> <span>Post Office</span>
           <span id="requestsCountBadge" class="px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px]">2</span>
         </button>
         <button data-tab="github" class="inspector-tab-btn py-2.5 px-2 rounded-t-2xl text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5 transition">
@@ -253,6 +253,18 @@
 
       <!-- TAB 2: SUPPLY BROKER TOOL REQUESTS & OPEN QUESTIONS -->
       <div id="tab-requests" class="tab-pane hidden flex-1 p-4 space-y-3 overflow-y-auto max-h-[680px]">
+        <!-- POST OFFICE: mail waiting for Kelo-1 to pick up -->
+        <div class="p-3 rounded-2xl bg-gradient-to-br from-red-500/15 to-rose-500/5 border border-red-500/35 space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <div class="text-xs font-bold text-red-200 flex items-center gap-1.5">📮 Okanagan Post Office</div>
+              <div id="mailboxCount" class="text-[10px] font-mono text-slate-400">0 waiting</div>
+            </div>
+            <button id="btnRingPostOfficeBell" class="px-2.5 py-1 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-400/40 text-red-200 text-[11px] font-semibold transition" title="A gentle nudge. Kelo-1 still decides when to go.">🔔 Ring the Bell</button>
+          </div>
+          <div id="mailboxList" class="space-y-1.5"></div>
+        </div>
+
         <!-- SEND KELO-1 SOMETHING: messages, tools & toys, photos -->
         <div class="p-3 rounded-2xl bg-gradient-to-br from-sky-500/10 to-indigo-500/5 border border-sky-500/30 space-y-2.5">
           <div class="flex items-center justify-between gap-2">
@@ -306,13 +318,13 @@
             </div>
           </form>
 
-          <p class="text-[10px] text-slate-400">Kelo-1 decides for himself what to do with everything you send. He might use it, play with it, build from it, or set it aside.</p>
+          <p class="text-[10px] text-slate-400">Everything you send goes to the post office. Kelo-1 picks it up when he feels like it, then decides for himself what to do with it.</p>
         </div>
 
         <!-- What you've sent and how he reacted -->
         <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
           <div class="flex items-center justify-between text-xs">
-            <span class="font-bold text-rose-300 flex items-center gap-1.5"><i class="ph-fill ph-clock-counter-clockwise"></i> Sent to Kelo-1</span>
+            <span class="font-bold text-rose-300 flex items-center gap-1.5"><i class="ph-fill ph-clock-counter-clockwise"></i> Picked Up &amp; Opened</span>
             <span id="giftLogCount" class="font-mono text-[10px] text-slate-400">0 items</span>
           </div>
           <div id="giftLogList" class="space-y-1.5 max-h-56 overflow-y-auto"></div>
@@ -332,7 +344,7 @@
           <div id="toolInventoryPills" class="flex flex-wrap gap-1.5"></div>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-slate-300">Things He Wants &amp; Questions He's Asking</span>
+          <span class="text-xs font-bold text-slate-300">✉️ Letters From Kelo-1: Things He Wants &amp; Questions</span>
           <button id="btnGenerateNewRequest" class="px-2.5 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-[11px] font-semibold transition">+ New Question</button>
         </div>
         <div id="requestsInboxList" class="space-y-3"></div>
@@ -469,6 +481,7 @@
   <!-- Connected Modular Scripts for GitHub Pages (jeremiahaguirre/Kelo-bot-1) -->
   <script src="./js/agent.js"></script>
   <script src="./js/netnode.js"></script>
+  <script src="./js/postoffice.js"></script>
   <script src="./js/scene.js"></script>
   <script src="./js/main.js"></script>
   <script src="./js/portal.js"></script>

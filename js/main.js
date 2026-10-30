@@ -144,7 +144,10 @@ function renderRequestsTab() {
 
         // Something he asked for: deliver it, then he decides what to do with it
         if (req.isToolRequest && req.requestedGear) {
-          receiveItem(req.requestedGear, req.category, visitor, req.userAnswer, { type: 'request' });
+          // Deliveries go to the post office like any other mail; he picks them up when he chooses
+          postMail({ kind: 'request', from: visitor, name: req.requestedGear, category: req.category, emoji: req.icon, note: req.userAnswer });
+          savePersistentBrainState();
+          renderAllUI();
           return;
         }
 

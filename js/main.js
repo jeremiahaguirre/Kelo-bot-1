@@ -35,7 +35,7 @@ function renderAllUI() {
       document.getElementById('headerEmotionBadge').innerHTML = `<span>${escapeHtml(state.moodEmoji)}</span> <span>${escapeHtml(state.moodTitle)}</span>`;
       document.getElementById('headerObsessionText').textContent = state.currentObsession;
       const activePlaceLabel = currentPlaceLabel();
-      document.getElementById('liveActivityText').textContent = `${activePlaceLabel}: ${escapeHtml(state.moodTitle)} (${state.autonomyTag})`;
+      document.getElementById('liveActivityText').textContent = `${activePlaceLabel}: ${state.moodTitle} (${state.autonomyTag})`;
 
       document.getElementById('bubbleMoodEmoji').textContent = state.moodEmoji;
       document.getElementById('bubbleMoodTitle').textContent = state.moodTitle;
@@ -221,8 +221,8 @@ function renderGitHubTab() {
         card.addEventListener('click', () => {
           const r = state.githubRepos[Number(card.getAttribute('data-repo-idx'))];
           if (!r) return;
-          document.getElementById('modalRepoTitle').textContent = `kelo1-okanagan-bot/${escapeHtml(r.name)}`;
-          document.getElementById('modalRepoCommitMsg').textContent = `Commit: "${escapeHtml(r.commitMsg)}" (${escapeHtml(r.updated)})`;
+          document.getElementById('modalRepoTitle').textContent = `kelo1-okanagan-bot/${r.name}`;
+          document.getElementById('modalRepoCommitMsg').textContent = `Commit: "${r.commitMsg}" (${r.updated})`;
           document.getElementById('modalCodeContent').textContent = r.code;
           const modal = document.getElementById('codeViewerModal');
           modal.classList.remove('hidden');

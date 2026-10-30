@@ -2,24 +2,47 @@
 
 Live GitHub Pages URL: **https://jeremiahaguirre.github.io/Kelo-bot-1/**
 
-An autonomous, open-world 3D AI robot simulation set on an island and alpine mountain range in **Kelowna, BC**, inspired by *Pino's World*.
+An autonomous, open-world 3D AI robot simulation set on an island and alpine mountain range in **Kelowna, BC**, inspired by *Pino's World*. Kelo-1 decides what to do on his own: he explores the whole island and mountain, welds sculptures at his workshop, digs for hidden treasures, reads real Wikipedia articles at the NetNode cafe, picks up hobbies, and writes letters asking visitors for things he wants.
 
-## 📁 Connected Repository File Hierarchy
+Play it in the browser, or install the **Windows app** (below).
 
-```text
-Kelo-bot-1/
-├── index.html       # Main application layout & GitHub Pages entrypoint
-├── css/
-│   └── style.css    # Glassmorphism HUD, 3D floating pins & typography
-├── js/
-│   ├── agent.js     # Shared state, open decision engine, LLM providers & Supply Broker (loaded first)
-│   ├── scene.js     # Three.js 3D island, alpine mountains, tools & raycast ground clamping
-│   └── main.js      # UI renderers, button/keyboard handlers & DOM bootstrapper
-└── README.md        # Project & GitHub Pages documentation
+## 💻 Install on Windows
+
+### Option A: download the ready-made app
+1. Open the repository on GitHub and go to **Releases** (right-hand side of the main page).
+   If there is no release yet, go to **Actions → Build Windows app → Run workflow**, wait for it to finish (about 5–10 minutes), open the finished run, and download **Kelo-1-World-Windows** under *Artifacts* (it's a .zip; extract it).
+2. You will have two files. Pick one:
+   - **`Kelo-1-World-Setup-x.y.z.exe`**: the installer. Double-click it, choose where to install, and it adds a desktop and Start-menu shortcut.
+   - **`Kelo-1-World-Portable-x.y.z.exe`**: no installation; double-click to run it from anywhere (even a USB stick).
+3. Windows may show **"Windows protected your PC"** because the app isn't code-signed. Click **More info → Run anyway**.
+4. Kelo-1 World opens in its own window. An internet connection is needed (for the 3D engine, Wikipedia browsing and the optional AI brain).
+
+### Add your API keys (optional)
+Click the **⚙️ gear icon** in the top-right corner (or use the menu **Kelo-1 → Settings (API keys)…**, or press **Ctrl+,**). Paste a Gemini and/or Anthropic key and click **Save Agent Config**.
+In the Windows app, keys are encrypted with Windows' own protection and stored separately from his memory.
+
+### Where his memory lives
+The Windows app keeps Kelo-1's memory as files on your computer with room for **up to 10 GB**: years of diary entries, his photo wall at a higher resolution, concepts, hobbies, digs and more.
+Open the folder from the menu **Kelo-1 → Open Memory Folder** (it's in `%APPDATA%\Kelo-1 World\kelo-memory`). Use **Diary → Back Up His Brain** to save a backup file, and **Restore From Backup** to move him between computers or between the website and the app.
+
+### Uninstall
+Use **Settings → Apps → Installed apps → Kelo-1 World → Uninstall** (installer version), or just delete the portable .exe. His memory folder stays until you delete it.
+
+### Build it yourself (developers)
+Requires [Node.js 20+](https://nodejs.org/).
+```bash
+npm install
 ```
+```bash
+npm start
+```
+```bash
+npm run dist:win
+```
+`npm start` runs the app; `npm run dist:win` builds the installer and portable .exe into `dist/` (run it on Windows).
 
 ## 🧠 Kelo-1's Brain
-Kelo-1 decides what to do on his own. He isn't limited to a list of actions: each decision can send him anywhere on the island (or keep him put), build a sculpture of any shape, change his feelings, form opinions, ask you questions, request gear, start code projects, research topics and update his worldview.
+Kelo-1 decides what to do on his own. He isn't limited to a list of actions: each decision can send him anywhere on the island or mountain, weld a sculpture of any shape (always at his welding table first), dig or mine, take up hobbies, form opinions and concepts, ask you questions, request anything he wants, start code projects, research topics and update his worldview.
 
 Decisions come from the first brain that answers:
 
@@ -27,9 +50,45 @@ Decisions come from the first brain that answers:
 2. **Claude** (optional): an Anthropic API key from the [Claude Console](https://platform.claude.com/).
 3. **Built-in procedural brain**: needs no key and always works.
 
-Add keys with the **AI Brain** button in the header. Keys are saved only in your own browser and sent only to Google or Anthropic.
+On the website, keys are saved only in your own browser and sent only to Google or Anthropic.
 
 > ⚠️ Never commit an API key to this repository. The site is public, so anyone could copy a key from the code.
+
+## 🌙 He keeps growing while you're away
+A scheduled GitHub Action (`.github/workflows/dream.yml`) runs every 6 hours: Kelo-1 reads about his curiosities on Wikipedia, reflects, invents concepts and forms core memories, saving them to `brain/growth.json`. The website and the Windows app merge these "dreams" the next time they open.
+To give his dreams an AI brain, add `GEMINI_API_KEY` and/or `ANTHROPIC_API_KEY` under **Settings → Secrets and variables → Actions** in the repository.
+
+## 📮 Talking to him
+Open the **☰ menu** (top right):
+- **Talk**: chat with him or suggest a task.
+- **Post**: send letters, tools, toys, anything you can name, and photos. Everything waits at the post office until he chooses to pick it up. His own requests arrive as letters; you can send what he asked for or say no.
+- **Diary**, **Brain**, **GitHub**, **World**: his thoughts, memories, concepts, hobbies, digs, finds and world controls.
+
+## 📁 Files
+
+```text
+Kelo-bot-1/
+├── index.html           # The app (also the GitHub Pages entry point)
+├── css/style.css
+├── js/
+│   ├── agent.js         # State, decision engine, AI providers, requests (loaded first)
+│   ├── memory.js        # Long-term memory, core memories, backups
+│   ├── netnode.js       # Real Wikipedia browsing at the NetNode cafe
+│   ├── postoffice.js    # Mail he picks up when he chooses
+│   ├── workshop.js      # Everything is welded at the workshop, carried and placed
+│   ├── hobbies.js       # Hobbies sparked by items (murals, kites, music...)
+│   ├── mining.js        # Digging, equipment needs, hidden finds
+│   ├── growth.js        # Merges what he dreamt while you were away
+│   ├── scene.js         # Three.js world, pathfinding, terrain
+│   ├── items3d.js       # 3D models of items, the pick-up counter, carrying
+│   ├── main.js          # UI wiring
+│   └── portal.js        # Send-him-something panel
+├── brain/growth.json    # His dreams, written by the scheduled Action
+├── scripts/dream.mjs    # The dreaming script
+├── desktop/             # Windows app (Electron): main process + preload bridge
+├── package.json         # Desktop app build configuration
+└── .github/workflows/   # dream.yml (dreams) and desktop.yml (Windows build)
+```
 
 ## 🚀 Going Live on GitHub Pages
 1. Push to the `main` branch of `https://github.com/jeremiahaguirre/Kelo-bot-1`.

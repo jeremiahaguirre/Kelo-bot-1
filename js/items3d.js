@@ -4,6 +4,133 @@
 // and things Kelo-1 carries look like what they are. Unknown items become a labelled gift box.
 
 const ITEM_MODEL_RULES = [
+  // Workshop and supply items Kelo-1 often asks for
+  [/spray ?paint|aerosol/, () => {
+    const can = mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.36, 14), 0xff3d7f, { metalness: 0.6 });
+    can.position.y = 0.18;
+    const cap = mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.08, 12), 0xf8fafc);
+    cap.position.y = 0.4;
+    const can2 = can.clone();
+    can2.material = can.material.clone();
+    can2.material.color.setHex(0x3ddcff);
+    can2.position.set(0.2, 0.18, 0.05);
+    return group(can, cap, can2);
+  }],
+  [/crucible|cauldron|bucket|\bpot\b|kettle/, () => {
+    const pot = mesh(new THREE.CylinderGeometry(0.22, 0.16, 0.3, 16, 1, true), 0x57534e, { side: THREE.DoubleSide, metalness: 0.4 });
+    pot.position.y = 0.15;
+    const bottom = mesh(new THREE.CircleGeometry(0.16, 16), 0x44403c);
+    bottom.rotation.x = -Math.PI / 2;
+    bottom.position.y = 0.01;
+    const glow = mesh(new THREE.CircleGeometry(0.2, 16), 0xf97316, { emissive: 0xea580c, emissiveIntensity: 0.6 });
+    glow.rotation.x = -Math.PI / 2;
+    glow.position.y = 0.24;
+    return group(pot, bottom, glow);
+  }],
+  [/flux|powder|sand|salt|flour|substrate|fertili[sz]er|soil|\bbag\b|sack/, () => {
+    const sack = mesh(new THREE.SphereGeometry(0.2, 12, 10), 0xd6c7a1, { roughness: 1 });
+    sack.scale.set(1, 1.3, 0.8);
+    sack.position.y = 0.24;
+    const tie = mesh(new THREE.CylinderGeometry(0.05, 0.08, 0.08, 10), 0xa16207);
+    tie.position.y = 0.5;
+    return group(sack, tie);
+  }],
+  [/ingot|mold|mould/, () => {
+    const g = group();
+    for (let i = 0; i < 3; i++) {
+      const bar = mesh(new THREE.BoxGeometry(0.3, 0.08, 0.12), i === 2 ? 0x1f2937 : 0xfacc15, { metalness: 0.85, roughness: 0.3 });
+      bar.position.set(0, 0.04 + i * 0.08, (i % 2) * 0.04);
+      g.add(bar);
+    }
+    return g;
+  }],
+  [/bar stock|steel bar|rods?\b|pipe|tubing|beam|rebar/, (lower) => {
+    const g = group();
+    const color = /copper/.test(lower) ? 0xb45309 : /titanium/.test(lower) ? 0xa5b4fc : 0x94a3b8;
+    for (let i = 0; i < 5; i++) {
+      const rod = mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.7, 8), color, { metalness: 0.85, roughness: 0.25 });
+      rod.rotation.z = Math.PI / 2;
+      rod.position.set(0, 0.03 + (i % 2) * 0.05, (i - 2) * 0.055);
+      g.add(rod);
+    }
+    return g;
+  }],
+  [/drill bits?|\bbits\b/, () => {
+    const g = group();
+    for (let i = 0; i < 4; i++) {
+      const bit = mesh(new THREE.ConeGeometry(0.03, 0.3, 8), 0xe2e8f0, { metalness: 0.9 });
+      bit.position.set((i - 1.5) * 0.08, 0.15, 0);
+      g.add(bit);
+    }
+    return g;
+  }],
+  [/motor|engine|generator|turbine/, () => {
+    const body = mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.3, 16), 0x334155, { metalness: 0.6 });
+    body.rotation.z = Math.PI / 2;
+    body.position.y = 0.16;
+    const shaft = mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.2, 8), 0xcbd5e1, { metalness: 0.9 });
+    shaft.rotation.z = Math.PI / 2;
+    shaft.position.set(0.24, 0.16, 0);
+    return group(body, shaft);
+  }],
+  [/\blens\b|mirror|monocle/, () => {
+    const lens = mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.04, 24), 0xbae6fd, { transparent: true, opacity: 0.7, metalness: 0.2 });
+    lens.rotation.x = Math.PI / 2;
+    lens.position.y = 0.19;
+    const rim = mesh(new THREE.TorusGeometry(0.17, 0.02, 8, 24), 0x1f2937);
+    rim.position.y = 0.19;
+    return group(lens, rim);
+  }],
+  [/tank|canister|cylinder|bottle|jar|flask|thermos|gas refill|argon|propane|oxygen/, (lower) => {
+    const color = /argon|gas|oxygen/.test(lower) ? 0x0d9488 : /glass|jar|bottle/.test(lower) ? 0xbae6fd : 0x64748b;
+    const body = mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.45, 14), color, { transparent: /glass|jar|bottle/.test(lower), opacity: 0.85, metalness: 0.4 });
+    body.position.y = 0.23;
+    const top = mesh(new THREE.SphereGeometry(0.11, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), color);
+    top.position.y = 0.45;
+    const valve = mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.08, 8), 0x1f2937);
+    valve.position.y = 0.58;
+    return group(body, top, valve);
+  }],
+  [/capacitor|battery|power cell|power supply/, () => {
+    const cell = mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.32, 14), 0x22c55e);
+    cell.position.y = 0.16;
+    const cap = mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.04, 10), 0xcbd5e1, { metalness: 0.9 });
+    cap.position.y = 0.34;
+    return group(cell, cap);
+  }],
+  [/solar|panel/, () => {
+    const panel = mesh(new THREE.BoxGeometry(0.5, 0.03, 0.34), 0x1e3a8a, { metalness: 0.5, roughness: 0.2 });
+    panel.position.y = 0.2;
+    panel.rotation.x = -0.4;
+    const stand = mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.2, 6), 0x94a3b8);
+    stand.position.y = 0.1;
+    return group(panel, stand);
+  }],
+  [/seed packet|seeds?\b/, () => {
+    const g = group();
+    [0xf472b6, 0x4ade80, 0xfacc15].forEach((c, i) => {
+      const packet = mesh(new THREE.BoxGeometry(0.16, 0.22, 0.02), c);
+      packet.position.set((i - 1) * 0.12, 0.11, i * 0.02);
+      packet.rotation.y = (i - 1) * 0.2;
+      g.add(packet);
+    });
+    return g;
+  }],
+  [/book|novel|journal|notebook|manual/, () => {
+    const book = mesh(new THREE.BoxGeometry(0.3, 0.06, 0.22), 0x7c3aed);
+    book.position.y = 0.03;
+    const pages = mesh(new THREE.BoxGeometry(0.28, 0.05, 0.2), 0xfef3c7);
+    pages.position.set(0.01, 0.03, 0);
+    return group(book, pages);
+  }],
+  [/guitar|ukulele|violin/, () => {
+    const body = mesh(new THREE.SphereGeometry(0.16, 14, 10), 0xb45309);
+    body.scale.set(1, 1.2, 0.35);
+    body.position.y = 0.18;
+    const neck = mesh(new THREE.BoxGeometry(0.05, 0.4, 0.03), 0x78350f);
+    neck.position.y = 0.5;
+    return group(body, neck);
+  }],
   // Digging equipment (checked first so "jackhammer" isn't mistaken for a plain hammer)
   [/jack ?hammer|rock breaker/, () => {
     const body = mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.45, 10), 0xf59e0b);
@@ -335,7 +462,7 @@ const ITEM_MODEL_RULES = [
     roof.rotation.y = Math.PI / 4;
     return group(hut, roof);
   }],
-  [/dock|pier|plank|cedar|wood|lumber/, () => {
+  [/dock|pier|plank|cedar|lumber|timber/, () => {
     const g = group();
     for (let i = 0; i < 4; i++) {
       const plank = mesh(new THREE.BoxGeometry(0.6, 0.05, 0.12), 0xb7793e);
@@ -459,6 +586,97 @@ function photoFrameModel(thumbDataUrl) {
       return g;
     }
 
+// Colours and materials named in an item ("copper", "red", "glass", "wooden"...)
+const COLOR_WORDS = [
+  [/gold|golden|brass/, 0xfacc15, 0.85], [/silver|steel|iron|chrome|aluminum|aluminium|tin/, 0x94a3b8, 0.85],
+  [/copper|bronze/, 0xb45309, 0.8], [/titanium/, 0xa5b4fc, 0.8], [/wood|wooden|cedar|oak|pine|bamboo/, 0xa16207, 0],
+  [/glass|crystal/, 0xbae6fd, 0.2], [/stone|rock|granite|clay/, 0x78716c, 0], [/rubber|black/, 0x1f2937, 0],
+  [/red/, 0xef4444, 0], [/orange/, 0xf97316, 0], [/yellow/, 0xfacc15, 0], [/green/, 0x22c55e, 0], [/blue/, 0x3b82f6, 0],
+  [/purple|violet/, 0xa855f7, 0], [/pink/, 0xf472b6, 0], [/white/, 0xf8fafc, 0], [/brown/, 0x92400e, 0]
+];
+
+// For items with no specific model: build something from the shape and material words in the name
+function inferredItemModel(lower) {
+      const tone = COLOR_WORDS.find(([re]) => re.test(lower));
+      const color = tone ? tone[1] : null;
+      const opts = tone && tone[2] ? { metalness: tone[2], roughness: 0.3 } : {};
+      const c = (fallback) => color ?? fallback;
+      if (/plate|sheet|board|tile|slab|panel|pane/.test(lower)) {
+        const g = group();
+        for (let i = 0; i < 3; i++) {
+          const sheet = mesh(new THREE.BoxGeometry(0.5, 0.02, 0.35), c(0x94a3b8), opts);
+          sheet.position.set(0, 0.01 + i * 0.025, i * 0.01);
+          g.add(sheet);
+        }
+        return g;
+      }
+      if (/ball|sphere|orb|globe|marble/.test(lower)) {
+        const b = mesh(new THREE.SphereGeometry(0.18, 16, 12), c(0x3b82f6), opts);
+        b.position.y = 0.18;
+        return group(b);
+      }
+      if (/ring|hoop|loop|coil|wire|cable|hose/.test(lower)) {
+        const r = mesh(new THREE.TorusGeometry(0.2, 0.04, 10, 24), c(0xb45309), opts);
+        r.rotation.x = Math.PI / 2;
+        r.position.y = 0.05;
+        return group(r);
+      }
+      if (/wheel|tire|tyre|disc|disk|gear|cog/.test(lower)) {
+        const w = mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.06, 20), c(0x334155), opts);
+        w.rotation.x = Math.PI / 2;
+        w.position.y = 0.2;
+        return group(w);
+      }
+      if (/stick|pole|rod|wand|staff|bar\b/.test(lower)) {
+        const st = mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.8, 8), c(0xa16207), opts);
+        st.rotation.z = Math.PI / 2.4;
+        st.position.y = 0.2;
+        return group(st);
+      }
+      if (/box|kit|crate|case|chest|set\b|toolbox/.test(lower)) {
+        const box = mesh(new THREE.BoxGeometry(0.42, 0.26, 0.3), c(0x92400e), opts);
+        box.position.y = 0.13;
+        const latch = mesh(new THREE.BoxGeometry(0.08, 0.06, 0.02), 0xcbd5e1, { metalness: 0.8 });
+        latch.position.set(0, 0.2, 0.16);
+        return group(box, latch);
+      }
+      if (/cube|block|brick/.test(lower)) {
+        const b = mesh(new THREE.BoxGeometry(0.25, 0.25, 0.25), c(0xef4444), opts);
+        b.position.y = 0.125;
+        return group(b);
+      }
+      if (color !== null) {
+        // We know what it's made of, if not its shape: a chunky object in that material
+        const blob = mesh(new THREE.DodecahedronGeometry(0.2, 0), color, opts);
+        blob.position.y = 0.2;
+        return group(blob);
+      }
+      return null;
+    }
+
+// AI-designed models for exact items, cached by name (see designItemModelWithAI)
+function aiDesignedItemModel(lower) {
+      const design = state.itemDesigns && state.itemDesigns[lower];
+      if (!design || typeof buildCreationGroup !== 'function') return null;
+      const g = buildCreationGroup({ parts: design.parts, colorHex: '#94a3b8', secondaryColorHex: '#475569' });
+      g.scale.setScalar(0.28);
+      return g;
+    }
+
+function singleItemModel(lower) {
+      const designed = aiDesignedItemModel(lower);
+      if (designed) return designed;
+      const rule = ITEM_MODEL_RULES.find(([re]) => re.test(lower));
+      if (rule) return rule[1](lower);
+      return inferredItemModel(lower) || giftBox();
+    }
+
+// "A crucible, borax flux & a graphite mold" -> three separate things side by side
+function splitItemList(name) {
+      const parts = String(name || '').split(/\s*(?:,|&|\+|\band\b)\s*/i).map(p => p.trim()).filter(p => p.length > 2);
+      return parts.length > 1 && parts.length <= 5 ? parts : null;
+    }
+
 // A model for any named item, with its name on a small label above it
 function buildItemModel3D(name, { kind = 'gift', thumb = null, label = true } = {}) {
       let model;
@@ -466,8 +684,18 @@ function buildItemModel3D(name, { kind = 'gift', thumb = null, label = true } = 
       else if (kind === 'photo') model = photoFrameModel(thumb);
       else {
         const lower = String(name || '').toLowerCase();
-        const rule = ITEM_MODEL_RULES.find(([re]) => re.test(lower));
-        model = rule ? rule[1](lower) : giftBox();
+        const list = aiDesignedItemModel(lower) ? null : splitItemList(lower);
+        if (list) {
+          model = group();
+          list.forEach((piece, i) => {
+            const sub = singleItemModel(piece);
+            sub.scale.multiplyScalar(0.8);
+            sub.position.x = (i - (list.length - 1) / 2) * 0.45;
+            model.add(sub);
+          });
+        } else {
+          model = singleItemModel(lower);
+        }
       }
       if (label && name) {
         const text = String(name).replace(/^(an?|the|some)\s+/i, '').slice(0, 22).toUpperCase();
@@ -478,6 +706,30 @@ function buildItemModel3D(name, { kind = 'gift', thumb = null, label = true } = 
         model.add(tag);
       }
       return model;
+    }
+
+// With an AI key, ask the AI to design a small 3D model of an item nobody has a model for.
+// Designs are cached by item name so each item is only designed once.
+async function designItemModelWithAI(name) {
+      const lower = String(name || '').toLowerCase().trim();
+      if (!lower || !hasLLMKey() || (state.itemDesigns && state.itemDesigns[lower])) return;
+      if (ITEM_MODEL_RULES.some(([re]) => re.test(lower))) return;
+      const prompt = `Design a small, recognizable 3D model of this real object for a stylized game: "${name}".
+Use 2 to 14 parts. Return ONLY JSON: {"parts": [ ... ]}
+Each part: "shape" (cylinder, box, sphere, cone, torus, knot, octahedron, dodecahedron, icosahedron, tetrahedron, ring, lathe, extrude, tube),
+"x","y","z" (y is height, object sits on y=0, keep within -2..2 and 0..3), "rx","ry","rz", "color" "#rrggbb" (realistic colours),
+sizes "sx","sy","sz" for basic shapes; lathe uses "profile":[[radius,height],...]; extrude uses "outline":[[x,y],...] and "depth"; tube uses "path":[[x,y,z],...] and "radius".
+Make it look like the actual object (proportions, colours, distinctive features).`;
+      const parsed = await callLLMJSON([{ text: prompt }]);
+      const parts = parsed ? sanitizeParts(parsed.parts) : null;
+      if (!parts) return;
+      state.itemDesigns = state.itemDesigns || {};
+      state.itemDesigns[lower] = { parts, at: Date.now() };
+      const keys = Object.keys(state.itemDesigns);
+      if (keys.length > 40) delete state.itemDesigns[keys.sort((a, b) => state.itemDesigns[a].at - state.itemDesigns[b].at)[0]];
+      parcelDisplayKey = null; // rebuild the counter with the new model
+      savePersistentBrainState();
+      renderAllUI();
     }
 
 // --- Post office pickup counter: deliveries wait here as their real models ------------------

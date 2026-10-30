@@ -51,6 +51,7 @@ function renderAllUI() {
       renderGitHubTab();
       renderWebTastesTab();
       if (typeof renderPortal === 'function') renderPortal();
+      if (typeof renderMemoryUI === 'function') renderMemoryUI();
     }
 
 function renderChatBox() {

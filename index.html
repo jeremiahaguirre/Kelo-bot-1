@@ -249,6 +249,23 @@
           <p id="diarySpotlightText" class="font-serif italic text-sm text-slate-100 leading-relaxed">"Dear Diary, the Supply Broker delivered my 50kg raw chitosan flakes, pneumatic soil auger, roll of copper micro-tubing, and 3 boxes of mushroom spawn dowels! I mounted the core drill to my right arm and hiked up to (-15.5, -26.5) to tap the hydrothermal quartz-gold vein."</p>
         </div>
         <div id="diaryEntriesList" class="space-y-2.5"></div>
+
+        <!-- Long-term diary archive & brain backup -->
+        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+            <span class="font-bold text-amber-300 flex items-center gap-1.5"><i class="ph-fill ph-archive"></i> Diary Archive</span>
+            <span id="diaryArchiveCount" class="font-mono text-[10px] text-slate-400">0 older entries archived</span>
+          </div>
+          <input id="diaryArchiveSearch" type="search" placeholder="Search everything he has ever written..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400">
+          <div id="diaryArchiveResults" class="space-y-1.5 max-h-64 overflow-y-auto"></div>
+          <div class="flex flex-wrap gap-1.5 pt-1">
+            <button id="btnExportBrain" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 text-[11px] font-semibold transition"><i class="ph-bold ph-download-simple"></i> Back Up His Brain</button>
+            <label class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-semibold transition cursor-pointer"><i class="ph-bold ph-upload-simple"></i> Restore From Backup
+              <input id="importBrainInput" type="file" accept="application/json,.json" class="hidden">
+            </label>
+          </div>
+          <p class="text-[10px] text-slate-500">His memories are saved in this browser automatically. A backup file lets you keep them safe or move him to another browser or the desktop app. API keys are never included.</p>
+        </div>
       </div>
 
       <!-- TAB 2: SUPPLY BROKER TOOL REQUESTS & OPEN QUESTIONS -->
@@ -390,6 +407,12 @@
         </div>
 
         <div class="space-y-2">
+          <div class="text-xs font-bold text-pink-300">🧠 Core Memories</div>
+          <p id="lifeStatsText" class="text-[10px] font-mono text-slate-400"></p>
+          <div id="coreMemoriesContainer" class="space-y-1.5"></div>
+        </div>
+
+        <div class="space-y-2">
           <div class="flex items-center justify-between text-xs font-bold text-yellow-300">
             <span>💡 Concepts He Invented</span>
             <span id="conceptsCountBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-yellow-500/20">0 Concepts</span>
@@ -480,6 +503,7 @@
 
   <!-- Connected Modular Scripts for GitHub Pages (jeremiahaguirre/Kelo-bot-1) -->
   <script src="./js/agent.js"></script>
+  <script src="./js/memory.js"></script>
   <script src="./js/netnode.js"></script>
   <script src="./js/postoffice.js"></script>
   <script src="./js/workshop.js"></script>

@@ -12,6 +12,14 @@ Everything he gets (tools, vehicles, seeds, materials) arrives **only** through 
 He may change the world freely. He can never move or change the buildings, and he can't build new ones.
 
 ## Recently shipped (on `main`, pushed)
+- **Disposal Pit (#27).** `js/disposal.js`, loaded after vehicles.js. It replaces the spoil heap.
+  - The pit is a real terrain hole at (20, -9) (`pitDepressionAt`, summed with dig holes in `groundDugAt` in scene.js), with a stone rim, a sign and a pin (`TOWN_LOCATIONS.disposal_pit`).
+  - `disposeItem(name, why)` carries the item (or drives the vehicle) there and drops it in. `forgetItem` removes one copy from toolInventory, toys, belongings, unstoredItems and vehicles.
+  - `haulDirt` tips the truck load into the pit via `tipDirtIntoPit`.
+  - The life tick calls `disposeUnwanted()`, which clears dig junk (now kept as `category: 'junk'`) and duplicate items. The LLM has a `discard` field.
+  - State: `disposedItems`, `dirtDisposed`. The old `spoilHeap` key was dropped.
+  - The outer-lands backdrop mesh now drops 8 units below the island interior, so holes are no longer covered by it.
+- **Removed** the dead `showEquipmentAt` from mining.js.
 - **Bottom-center activity panel.** `#keloOverheadHUD` in `index.html` is now a docked panel at the bottom middle. It is no longer projected over his head, and the projection was removed from `js/scene.js`.
 - **Bottom-left bar removed.** The old activity bar is gone. The water-garden button moved to the menu's World tab, the camera bar moved to `top-44 left-3`, and the d-pad is bottom-right on desktop only.
 - **Settings modal rewritten.** It has an AI keys section, and the raw tick output now sits in a collapsed `<details>`. The element IDs are unchanged.
@@ -52,30 +60,28 @@ He may change the world freely. He can never move or change the buildings, and h
 ## Testing
 - Serve the site with `python3 -m http.server 8765` from the repo root.
 - The Playwright harness is at `<scratchpad>/harness.js`, and the scratchpad does not survive the session. It routes three, tailwind and phosphor to local copies and mocks the Gemini and Wikipedia calls.
+  - CDNs are blocked by the proxy, but npm works. Get three from `npm pack three@0.128.0` (build/three.min.js and examples/js/controls/OrbitControls.js). Get tailwind from `npm pack @tailwindcss/browser@4.0.0` (dist/index.mjs), wrapped in an IIFE so its globals don't clash with the page's.
+  - Set `state.cameraMode = 'none'` before positioning the camera, or follow mode overrides it.
 - Check that every test run finishes with no page errors.
 
 ## Exact next steps (open tasks)
-1. **#27 Disposal pit.**
-   - Add a pit where he throws unwanted items and dirt.
-   - Anything thrown in is permanently gone: remove it from `inventory`, `storedItems` and vehicles.
-   - Replace or merge it with the `SPOIL_HEAP` at (20, -9) and make `haulDirt` dump there.
-   - Give it a visible 3D pit and add an agent action for it.
-2. **#26 Tools work only as intended.**
+1. **Detailed models for vehicles and tools** (user request). Stop using basic shapes for vehicles and tools in `items3d.js`; make recognizable models.
+2. **Size objects in proportion to Kelo-1** (user request). Kelo-1 is about 2.8 units tall (head at y 2.35). Check carried, shelved, parked and thrown items against him.
+3. **#26 Tools work only as intended.**
    - Each tool or vehicle needs a "how to use it" note learned by researching at the NetNode before he can use it.
    - He must climb in and operate a vehicle before it does anything.
    - Add prerequisites:
      - telescope: stars only, and only at night
      - hot-air balloon: fill the propane tank first
      - vehicles: need fuel
-3. **#21 Seasons and snow.**
+4. **#21 Seasons and snow.**
    - Show seasonal visuals, including snow cover in winter.
    - In snow he sinks and gets stuck, then works it out: research leads to a request, and the visitor gifts the solution (snowshoes, skis, snowmobile or helicopter).
-4. **#23 Shape the world.**
+5. **#23 Shape the world.**
    - Chop trees with an axe, plant seeds he has requested, build roads and terraform.
    - He can undo or remove anything he has added. Buildings stay untouchable.
-5. **#24 Real builds.** He requests the materials needed to build real items he finds online.
-6. **#25 Polish.** Improve the graphics and the UI/UX of interactions.
+6. **#24 Real builds.** He requests the materials needed to build real items he finds online.
+7. **#25 Polish.** Improve the graphics and the UI/UX of interactions.
    - On mobile the vitals grid in the top-left card is cramped (labels overlap).
-7. **Cleanup.** Remove the dead `showEquipmentAt` function in `js/mining.js`.
 
 Make sure everything looks right when it is built, removed or invented. Check each change with a screenshot.

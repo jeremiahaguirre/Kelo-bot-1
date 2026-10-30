@@ -424,6 +424,9 @@ const state = {
   "rhythmPhaseText": "Absorbed in the Okanagan valley air...",
   "shapeLibrary": [],
   "curiosityQueue": [],
+  "toys": [],
+  "belongings": [],
+  "giftLog": [],
   "isBrowsing": false,
   "concepts": [
     {
@@ -1221,6 +1224,11 @@ function loadPersistentBrainState() {
         if (Array.isArray(saved.concepts) && saved.concepts.length > 0) state.concepts = saved.concepts;
         if (Array.isArray(saved.webHistory) && saved.webHistory.length > 0) state.webHistory = saved.webHistory;
         if (Array.isArray(saved.curiosityQueue)) state.curiosityQueue = saved.curiosityQueue.filter(q => typeof q === 'string');
+        if (Array.isArray(saved.toys)) state.toys = saved.toys;
+        if (Array.isArray(saved.belongings)) state.belongings = saved.belongings;
+        if (Array.isArray(saved.giftLog)) state.giftLog = saved.giftLog;
+        if (Array.isArray(saved.requestsToUser) && saved.requestsToUser.length > 0) state.requestsToUser = saved.requestsToUser;
+        if (typeof saved.fullness === 'number') state.fullness = clampNumber(saved.fullness, 5, 100, state.fullness);
         if (Array.isArray(saved.shapeLibrary)) {
           state.shapeLibrary = saved.shapeLibrary.filter(sh => sh && sh.name && sanitizeParts(sh.parts))
             .map(sh => ({ ...sh, parts: sanitizeParts(sh.parts) }));
@@ -1254,6 +1262,11 @@ function savePersistentBrainState() {
           shapeLibrary: state.shapeLibrary.slice(0, MAX_SHAPES),
           webHistory: state.webHistory.slice(0, 12),
           curiosityQueue: state.curiosityQueue.slice(0, 10),
+          toys: state.toys.slice(0, 20),
+          belongings: state.belongings.slice(0, 20),
+          giftLog: state.giftLog.slice(0, 30).map(({ thumb, ...rest }) => rest),
+          requestsToUser: state.requestsToUser.slice(0, MAX_REQUESTS),
+          fullness: state.fullness,
           lastVisitorName: visitor
         }));
       } catch (e) {}
@@ -1329,6 +1342,9 @@ const FREE_SUBJECTS = ['the wind on the ridge', 'a fallen Douglas fir', 'lake ri
   'a beetle trail', 'the echo off the granite', 'his own footprints', 'a pile of scrap titanium', 'the sound of the cafe',
   'snowmelt streams', 'the night sky', 'his garden soil', 'a stray sailboat rope', 'the stars over the valley',
   'a forgotten rail spike', 'moss on the north rocks', 'his reflection', 'the hum of his own servos', 'a cloud shaped like a gear'];
+// Verbs for something specific in front of him (a gift, a photo)
+const FOCUS_VERBS = ['play with', 'try out', 'study', 'show off', 'build something around', 'take a closer look at',
+  'find the perfect spot for', 'test the limits of', 'invent a game with', 'write a poem about', 'share', 'take apart'];
 const FREE_REASONS = ['just because it felt right', 'to see what happens', 'because nobody asked him to', 'to understand it better',
   'because it made him curious', 'to leave something for the next visitor', 'because yesterday he was afraid to', 'for the joy of it'];
 const FREE_EMOJIS = ['🌀', '🪨', '🎵', '🔭', '🪵', '🧪', '🗺️', '🎨', '🌱', '🔧', '📐', '🕯️', '🪁', '🧭', '🌌', '🪶'];
@@ -1499,11 +1515,68 @@ function blendNewConcept(sourceA, sourceB) {
       };
     }
 
-function generateProceduralDecision() {
-      const verb = pick(FREE_VERBS);
+// Things Kelo-1 might ask for. Nothing is off-limits; this is just what the procedural brain dreams up.
+const REQUEST_IDEAS = {
+  food: ['A basket of Okanagan cherries', 'A warm sourdough loaf', 'Butter tarts', 'Honeycrisp apples', 'A bowl of ramen',
+    'Maple fudge', 'Fresh peach cobbler', 'A thermos of hot cocoa', 'Smoked salmon', 'A wheel of aged cheddar'],
+  tool: ['A high-torque diamond drill', 'A brass telescope', 'A soldering iron', 'Climbing rope and carabiners', 'A pocket spectrometer', 'A field microphone'],
+  toy: ['A box kite', 'A yo-yo', 'A kaleidoscope', 'A wind-up frog', 'A set of juggling balls', 'A 3D puzzle cube'],
+  place: ['A larger island to explore', 'A treehouse platform', 'A lakeside dock', 'A tiny observatory on the peak'],
+  vehicle: ['A canoe', 'A hot air balloon', 'A tandem bicycle', 'A mini submarine'],
+  companion: ['A friendly goat', 'A pair of homing pigeons', 'A tank of glowing jellyfish'],
+  material: ['100 m of copper wire', 'Sheets of stained glass', 'A crate of reclaimed cedar', 'A bag of river clay']
+};
+
+function proceduralMealDecision() {
+      const ripe = state.gardenPlots.filter(p => p.growth >= 60);
+      const atGarden = ripe.length > 0 && Math.random() < 0.6;
+      const loc = TOWN_LOCATIONS[atGarden ? 'garden' : 'cafe'];
+      const food = atGarden ? pick(ripe).name : pick(['a hazelnut croissant', 'a bowl of soup', 'a toasted bagel', 'a slice of peach pie']);
+      if (atGarden) state.gardenPlots.forEach(p => { if (p.name === food) p.growth = Math.max(10, p.growth - 40); });
+      return {
+        thought: `"My fullness sensor is low. ${atGarden ? 'The garden should have something ripe.' : 'The cafe smells good from here.'}"`,
+        actionTitle: `Eat ${food}`,
+        emoji: atGarden ? '🍑' : '🥐',
+        speech: `Time for a snack: ${food}. Thinking is easier on a full battery.`,
+        diary: `Dear Diary, I was running on empty, so I chose to eat ${food} at ${loc.building}.`,
+        destination: { x: loc.x, z: loc.z, placeName: loc.building },
+        build: null,
+        motion: { headPitch: 0.2, headYawSpeed: 1, headTiltAmp: 0.15, armWaveAmp: 0.3, armRaiseOffset: -0.9, bodyBounceAmp: 0.04, spinSpeed: 0, sparkBurst: false },
+        vitalsDelta: { fullness: 20, happiness: 6, health: 4, wonderLevel: 0, calmLevel: 5 },
+        request: Math.random() < 0.3 ? { item: pick(REQUEST_IDEAS.food), category: 'food', why: 'The garden can only do so much.' } : null
+      };
+    }
+
+function pickProceduralRequest() {
+      // A hungry robot asks for food more often, but it's still his call
+      const category = state.fullness < 35 && Math.random() < 0.6 ? 'food' : pick(Object.keys(REQUEST_IDEAS));
+      const item = pick(REQUEST_IDEAS[category]);
+      return { item, category, why: pick(['I have a feeling I need it.', 'I want to see what I could make with it.', 'Just because I would love it.', 'It would make the island feel bigger.']) };
+    }
+
+// Guess a category for something typed by a visitor or invented by the LLM
+function categorizeItem(name, hint) {
+      const h = String(hint || '').toLowerCase().trim();
+      if (h) return h.slice(0, 24);
+      const n = String(name || '').toLowerCase();
+      if (/(cherr|apple|peach|bread|loaf|tart|cake|pie|ramen|noodle|soup|cheese|fudge|cocoa|coffee|tea|salmon|fish|berry|fruit|snack|pizza|taco|sandwich|cookie|chocolate|honey|food|meal|carrot|tomato)/.test(n)) return 'food';
+      if (/(kite|yo-yo|yoyo|kaleidoscope|puzzle|ball|toy|game|doll|frog|top|marble|lego|block)/.test(n)) return 'toy';
+      if (/(island|land|treehouse|dock|observatory|garden plot|cabin|house|tower)/.test(n)) return 'place';
+      if (/(canoe|boat|balloon|bike|bicycle|car|train|submarine|glider|sled)/.test(n)) return 'vehicle';
+      if (/(goat|dog|cat|bird|pigeon|fish|jellyfish|pet)/.test(n)) return 'companion';
+      if (/(drill|saw|hammer|wrench|torch|iron|telescope|rope|microphone|spectrometer|tool|knife|compass|lamp)/.test(n)) return 'tool';
+      return 'thing';
+    }
+
+const CATEGORY_ICONS = { food: '🍒', tool: '🛠️', toy: '🪀', place: '🏝️', vehicle: '🛶', companion: '🐐', material: '🧱', thing: '🎁' };
+
+function generateProceduralDecision(context = {}) {
+      // When he is hungry he often (not always) decides to eat first
+      if (!context.focus && state.fullness < 30 && Math.random() < 0.55) return proceduralMealDecision();
+      const verb = context.focus ? pick(FOCUS_VERBS) : pick(FREE_VERBS);
       // Sometimes he returns to one of his own concepts instead of something new
-      const revisit = state.concepts.length > 0 && Math.random() < 0.3 ? pick(state.concepts) : null;
-      const subject = revisit ? `his idea of "${revisit.name}"` : pick(FREE_SUBJECTS);
+      const revisit = !context.focus && state.concepts.length > 0 && Math.random() < 0.3 ? pick(state.concepts) : null;
+      const subject = context.focus ? `the ${String(context.focus).replace(/^(an?|the|some|my)\s+/i, '').slice(0, 60)}` : (revisit ? `his idea of "${revisit.name}"` : pick(FREE_SUBJECTS));
       const reason = pick(FREE_REASONS);
       const feeling = pick(FREE_FEELINGS);
       const emoji = pick(FREE_EMOJIS);
@@ -1523,6 +1596,7 @@ function generateProceduralDecision() {
       }
 
       const builds = Math.random() < 0.45;
+      const wantsSomething = Math.random() < 0.18;
       const d = () => Math.round(randRange(-8, 10));
       return {
         thought: `"Feeling ${feeling} today. What if I ${verb} ${subject}, ${reason}?"`,
@@ -1564,7 +1638,7 @@ function generateProceduralDecision() {
           question: `Today I decided to ${verb} ${subject}, ${reason}. Do you ever do things without knowing why?`,
           presets: ['All the time, and it is the best part of being alive.', 'I like knowing why. Tell me what you find out.']
         } : null,
-        requestGear: Math.random() < 0.15 ? pick(['Field Microphone', 'Pocket Spectrometer', 'Watercolor Set', 'Climbing Rope', 'Seed Packets', 'Brass Telescope']) : null,
+        request: wantsSomething ? pickProceduralRequest() : null,
         codeProject: Math.random() < 0.1 ? { name: `${verb}-${subject}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40), desc: `A tool to help me ${verb} ${subject}.` } : null,
         webQuery: Math.random() < 0.2 ? (revisit ? revisit.name : subject.replace(/^(an?|the|his) /, '')) : null,
         usedConcept: revisit ? revisit.name : null,
@@ -1575,7 +1649,7 @@ function generateProceduralDecision() {
       };
     }
 
-async function generateLLMDecision(trigger) {
+async function generateLLMDecision(trigger, image = null) {
       const recentDiary = state.diaryEntries.slice(0, 3).map(d => d.text).join(' | ');
       const places = Object.values(TOWN_LOCATIONS).slice(0, 14).map(l => `${l.building} (${l.x}, ${l.z})`).join('; ');
       const prompt = `You are Kelo-1, a fully autonomous robot living on an island with alpine mountains near Kelowna, BC.
@@ -1611,7 +1685,7 @@ Return ONLY JSON:
   "vitalsDelta": {"health": -20..20, "fullness": -20..20, "happiness": -20..20, "wonderLevel": -20..20, "calmLevel": -20..20},
   "newOpinion": null OR {"topic": "...", "stance": "2-5 words", "reasoning": "1 sentence"},
   "askQuestion": null OR {"title": "...", "question": "...", "presets": ["answer option", "answer option"]},
-  "requestGear": null OR "comma-separated items you want",
+  "request": null OR {"item": "ANYTHING you want from visitors: food, a tool, a toy, a vehicle, a bigger island, an animal friend, materials...", "category": "one word", "why": "1 sentence"},
   "codeProject": null OR {"name": "repo-name", "desc": "..."},
   "webQuery": null OR "a topic you want to look up at the NetNode cafe",
   "usedConcept": null OR "name of one of your existing concepts this decision builds on",
@@ -1626,7 +1700,9 @@ Free-form shapes let you invent ANY form:
 - {"shape":"extrude","outline":[[x,y],...],"depth":0.2} gives a flat outline thickness (stars, letters, leaves, animal silhouettes)
 - {"shape":"tube","path":[[x,y,z],...],"radius":0.08} traces a pipe along a path (coils, arches, wire drawings, handwriting)
 Coordinates stay within about -2.5..2.5. Combine parts freely to build anything you can imagine or anything you have seen.`;
-      return callLLMJSON([{ text: prompt }]);
+      const parts = [{ text: prompt }];
+      if (image && image.base64) parts.push({ inlineData: { mimeType: image.mimeType, data: image.base64 } });
+      return callLLMJSON(parts);
     }
 
 // Apply any decision object, validating everything that comes from the LLM or generator
@@ -1731,23 +1807,10 @@ function applyDecision(decision, originLabel) {
         });
       }
 
-      const gear = str(decision.requestGear, 160);
-      if (gear && !state.requestsToUser.some(r => r.requestedGear === gear)) {
-        state.requestsToUser.unshift({
-          id: 'req-gear-' + Date.now(),
-          category: 'Supply Broker Tool Demand',
-          icon: '🛠️',
-          urgency: 'Gear Requested',
-          isToolRequest: true,
-          requestedGear: gear,
-          title: `Supply Request: ${gear.slice(0, 38)}`,
-          question: `For "${title}", I'd like [${gear}]. Could you drop it off?`,
-          presets: [`Deliver ${gear}!`],
-          rewardAction: 'custom_weld',
-          fulfilled: false,
-          userAnswer: ''
-        });
-      }
+      // He can ask visitors for absolutely anything (older decisions may still use requestGear)
+      const rq = (decision.request && typeof decision.request === 'object') ? decision.request
+        : (str(decision.requestGear, 160) ? { item: decision.requestGear, category: 'tool' } : null);
+      if (rq) addItemRequest(str(rq.item, 120), categorizeItem(rq.item, str(rq.category, 24)), str(rq.why, 240), title);
 
       const cp = decision.codeProject;
       if (cp && typeof cp === 'object') {
@@ -1797,14 +1860,84 @@ function applyDecision(decision, originLabel) {
       showToast(`${emoji} Kelo-1 decided: ${title}`);
     }
 
+// Add something Kelo-1 wants to the requests inbox
+function addItemRequest(item, category, why, context) {
+      if (!item || state.requestsToUser.some(r => !r.fulfilled && r.requestedGear === item)) return;
+      state.requestsToUser.unshift({
+        id: 'req-item-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        category,
+        icon: CATEGORY_ICONS[category] || '🎁',
+        urgency: `Wants: ${category}`,
+        isToolRequest: true,
+        requestedGear: item,
+        title: `Request: ${item.slice(0, 48)}`,
+        question: `${why ? why + ' ' : ''}${context ? `(I was in the middle of "${context}".) ` : ''}Could you bring me ${item}?`,
+        presets: [`Here you go: ${item}!`, `Here's ${item}, plus a surprise extra!`],
+        fulfilled: false,
+        userAnswer: ''
+      });
+      savePersistentBrainState();
+    }
+
+// Kelo-1 receives an item (a fulfilled request or a gift). It's stored where it belongs,
+// food is eaten, and then he decides on his own what to do with it.
+async function receiveItem(name, category, from, note = '', extra = {}) {
+      const item = String(name || '').trim().slice(0, 80);
+      if (!item) return null;
+      const cat = categorizeItem(item, category);
+      const giver = String(from || 'a visitor').trim().slice(0, 40);
+      const entry = {
+        type: extra.type || 'item',
+        name: item,
+        category: cat,
+        emoji: extra.emoji || CATEGORY_ICONS[cat] || '🎁',
+        from: giver,
+        note: String(note || '').slice(0, 200),
+        time: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        reaction: ''
+      };
+
+      if (cat === 'food') {
+        state.fullness = Math.min(100, state.fullness + 25);
+        state.happiness = Math.min(100, state.happiness + 6);
+      } else if (cat === 'tool') {
+        if (!state.toolInventory.includes(item)) state.toolInventory.unshift(item);
+      } else if (cat === 'toy') {
+        state.toys.unshift({ name: item, emoji: entry.emoji, from: giver });
+        if (state.toys.length > 20) state.toys.length = 20;
+      } else {
+        state.belongings.unshift({ name: item, category: cat, emoji: entry.emoji, from: giver });
+        if (state.belongings.length > 20) state.belongings.length = 20;
+      }
+      state.giftLog.unshift(entry);
+      if (state.giftLog.length > 30) state.giftLog.length = 30;
+      recordVisitorMemory(giver, `Gave me ${item}${entry.note ? ` ("${entry.note.slice(0, 60)}")` : ''}.`);
+      state.chatLog.push({ sender: giver, text: `🎁 Gave Kelo-1: ${item}${entry.note ? ` — "${entry.note}"` : ''}`, time: 'Just now', isBot: false });
+
+      const howFood = cat === 'food' ? ' You just ate some of it, so you feel fuller.' : '';
+      await decideNextAction(
+        `${giver} just gave you ${item} (${cat}).${entry.note ? ` Their note: "${entry.note}".` : ''}${howFood} Decide for yourself what to do with it: use it, play with it, build with it, share it, save it for later, or ignore it for now.`,
+        `Gift from ${giver}`,
+        { focus: item }
+      );
+      entry.reaction = state.speechBubble;
+      state.chatLog.push({ sender: 'Kelo-1', text: state.speechBubble, time: 'Just now', isBot: true });
+      savePersistentBrainState();
+      renderAllUI();
+      return entry;
+    }
+
 // Kelo-1 makes a decision of his own. `trigger` is an optional nudge he may follow or ignore.
-async function decideNextAction(trigger = null, originLabel = 'Free Will') {
+// `context.focus` names something he should consider (a gift, a photo); `context.image` is an analyzed photo.
+async function decideNextAction(trigger = null, originLabel = 'Free Will', context = {}) {
+      // Wait briefly if he is mid-thought, so gifts and photos are never silently dropped
+      for (let i = 0; i < 40 && state.isBusy; i++) await new Promise(r => setTimeout(r, 250));
       if (state.isBusy) return;
       state.isBusy = true;
       try {
         let decision = null;
-        if (hasLLMKey()) decision = await generateLLMDecision(trigger);
-        if (!decision || !decision.actionTitle) decision = generateProceduralDecision();
+        if (hasLLMKey()) decision = await generateLLMDecision(trigger, context.image);
+        if (!decision || !decision.actionTitle) decision = generateProceduralDecision(context);
         applyDecision(decision, originLabel);
       } finally {
         state.isBusy = false;

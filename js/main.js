@@ -89,7 +89,17 @@ function renderDiaryTab() {
 
 function renderRequestsTab() {
       const pendingCount = state.requestsToUser.filter(r => !r.fulfilled).length;
-      document.getElementById('requestsCountBadge').textContent = pendingCount;
+      const countBadge = document.getElementById('requestsCountBadge');
+      if (countBadge) {
+        countBadge.textContent = pendingCount;
+        countBadge.classList.toggle('hidden', pendingCount === 0);
+      }
+      // The menu button shows how many letters from Kelo-1 are waiting for an answer
+      const menuBadge = document.getElementById('menuMailBadge');
+      if (menuBadge) {
+        menuBadge.textContent = pendingCount;
+        menuBadge.classList.toggle('hidden', pendingCount === 0);
+      }
 
       // The inventory pills are rendered by renderPortal() in js/portal.js
 
@@ -584,17 +594,45 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  document.querySelectorAll('.inspector-tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tabId = btn.getAttribute('data-tab');
-      document.querySelectorAll('.inspector-tab-btn').forEach(b => {
-        b.className = 'inspector-tab-btn py-2.5 px-2 rounded-t-2xl text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5 transition';
-      });
-      btn.className = 'inspector-tab-btn py-2.5 px-2 rounded-t-2xl text-xs font-bold border-b-2 border-amber-400 text-amber-300 bg-slate-900/80 flex items-center justify-center gap-1.5 transition';
-      document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.add('hidden'));
-      document.getElementById('tab-' + tabId)?.classList.remove('hidden');
+  // Right-hand menu: tabs (remembered between visits), open/close, Esc to close
+  const TAB_ACTIVE = 'inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold bg-amber-500/20 text-amber-200 transition';
+  const TAB_IDLE = 'inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition';
+  const showTab = (tabId) => {
+    document.querySelectorAll('.inspector-tab-btn').forEach(b => {
+      const active = b.getAttribute('data-tab') === tabId;
+      b.className = active ? TAB_ACTIVE : TAB_IDLE;
+      b.setAttribute('aria-selected', String(active));
     });
+    document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.toggle('hidden', pane.id !== 'tab-' + tabId));
+    try { localStorage.setItem('kelo1_menu_tab', tabId); } catch (e) {}
+  };
+  document.querySelectorAll('.inspector-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => showTab(btn.getAttribute('data-tab')));
   });
+  let savedTab = 'talk';
+  try { savedTab = localStorage.getItem('kelo1_menu_tab') || 'talk'; } catch (e) {}
+  showTab(document.getElementById('tab-' + savedTab) ? savedTab : 'talk');
+
+  const sideMenu = document.getElementById('sideMenu');
+  const menuButton = document.getElementById('btnToggleMenu');
+  const scrim = document.getElementById('sideMenuScrim');
+  const setMenuOpen = (open) => {
+    sideMenu.classList.toggle('translate-x-full', !open);
+    sideMenu.setAttribute('aria-hidden', String(!open));
+    menuButton.setAttribute('aria-expanded', String(open));
+    scrim.classList.toggle('hidden', !open);
+  };
+  menuButton?.addEventListener('click', () => setMenuOpen(sideMenu.classList.contains('translate-x-full')));
+  document.getElementById('btnCloseMenu')?.addEventListener('click', () => setMenuOpen(false));
+  scrim?.addEventListener('click', () => setMenuOpen(false));
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('aiConfigModal').classList.contains('hidden')) setMenuOpen(false);
+  });
+  // Open a specific tab from elsewhere (e.g. "Kelo-1 sent you a letter")
+  window.openKeloMenu = (tabId) => { showTab(tabId); setMenuOpen(true); };
+
+  // The gear icon opens the same settings as the AI Brain button
+  document.getElementById('btnOpenSettings')?.addEventListener('click', () => document.getElementById('btnOpenAIConfig')?.click());
 
   document.getElementById('btnNextDecision')?.addEventListener('click', () => runAutonomousLifeTick());
 

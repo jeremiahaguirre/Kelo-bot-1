@@ -424,8 +424,104 @@ const state = {
   "rhythmPhaseText": "Absorbed in the Okanagan valley air..."
 };
 
-let apiKey = localStorage.getItem('kelo1_gemini_api_key') || "";
+let apiKey = '';
+try { apiKey = localStorage.getItem('kelo1_gemini_api_key') || ''; } catch (e) {}
 let organicTimeoutId = null;
+
+// Single Gemini model used by every LLM call
+const GEMINI_MODEL = 'gemini-2.5-flash';
+
+// Caps so the in-memory brain and the 3D world don't grow forever
+const MAX_DIARY_ENTRIES = 40;
+const MAX_OPINIONS = 16;
+const MAX_CHAT_LOG = 40;
+const MAX_CREATIONS = 24;
+const MAX_REQUESTS = 12;
+
+// Escape any user- or LLM-supplied text before it goes into an innerHTML template
+function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+function currentPlaceLabel() {
+      return state.customPlaceName || TOWN_LOCATIONS[state.currentLocKey]?.building || 'Okanagan Valley';
+    }
+
+function clampNumber(value, min, max, fallback) {
+      const n = Number(value);
+      return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
+    }
+
+function trimBrainState() {
+      if (state.diaryEntries.length > MAX_DIARY_ENTRIES) state.diaryEntries.length = MAX_DIARY_ENTRIES;
+      if (state.opinions.length > MAX_OPINIONS) state.opinions.length = MAX_OPINIONS;
+      if (state.chatLog.length > MAX_CHAT_LOG) state.chatLog.splice(0, state.chatLog.length - MAX_CHAT_LOG);
+      if (state.requestsToUser.length > MAX_REQUESTS) {
+        // Drop the oldest answered requests first, then the oldest open ones
+        const open = state.requestsToUser.filter(r => !r.fulfilled);
+        const done = state.requestsToUser.filter(r => r.fulfilled);
+        state.requestsToUser = [...open, ...done].slice(0, MAX_REQUESTS);
+      }
+      if (state.inventedCreations.length > MAX_CREATIONS) {
+        state.inventedCreations.length = MAX_CREATIONS;
+        if (typeof pruneEmergentCreations3D === 'function') pruneEmergentCreations3D(MAX_CREATIONS);
+      }
+    }
+
+// Calls Gemini and returns the parsed JSON object, or null on any failure.
+// The key goes in a header rather than the URL so it doesn't end up in logs or history.
+async function callGeminiJSON(parts) {
+      if (!apiKey || !apiKey.trim()) return null;
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey.trim() },
+          body: JSON.stringify({
+            contents: [{ parts }],
+            generationConfig: { responseMimeType: 'application/json' }
+          })
+        });
+        if (!res.ok) {
+          console.warn('Gemini request failed:', res.status);
+          return null;
+        }
+        const d = await res.json();
+        const parsed = JSON.parse(d?.candidates?.[0]?.content?.parts?.[0]?.text || '{}');
+        return (parsed && typeof parsed === 'object') ? parsed : null;
+      } catch (err) {
+        console.warn('Gemini API fallback to procedural synthesizer:', err);
+        return null;
+      }
+    }
+
+const VALID_PART_SHAPES = ['cylinder', 'box', 'sphere', 'cone', 'torus', 'knot', 'octahedron'];
+const VALID_ARCHETYPES = ['gold_drill_rig', 'mycelium_dome', 'rail_track', 'custom_weld', 'kinetic_spire', 'cairn', 'campfire_lantern', 'botanical_totem'];
+
+// Keep LLM-designed sculptures sane: known shapes, bounded size/offset, at most 12 parts
+function sanitizeParts(parts) {
+      if (!Array.isArray(parts)) return null;
+      const clean = parts.slice(0, 12).filter(p => p && typeof p === 'object').map(p => ({
+        shape: VALID_PART_SHAPES.includes(p.shape) ? p.shape : 'box',
+        x: clampNumber(p.x, -2, 2, 0),
+        y: clampNumber(p.y, 0, 4, 0.5),
+        z: clampNumber(p.z, -2, 2, 0),
+        sx: clampNumber(p.sx, 0.05, 2.5, 0.5),
+        sy: clampNumber(p.sy, 0.05, 3, 0.5),
+        sz: clampNumber(p.sz, 0.05, 2.5, 0.5),
+        rx: clampNumber(p.rx, -Math.PI, Math.PI, 0),
+        ry: clampNumber(p.ry, -Math.PI, Math.PI, 0),
+        rz: clampNumber(p.rz, -Math.PI, Math.PI, 0),
+        color: /^#[0-9a-f]{6}$/i.test(p.color) ? p.color : undefined,
+        spin: Boolean(p.spin),
+        emissive: Boolean(p.emissive)
+      }));
+      return clean.length > 0 ? clean : null;
+    }
 
 const SPONTANEOUS_WHIMS = [
   {
@@ -610,8 +706,10 @@ async function analyzeUploadedImage(file) {
               aspect: img.width / Math.max(1, img.height)
             });
           };
+          img.onerror = () => resolve(null);
           img.src = dataUrl;
         };
+        reader.onerror = () => resolve(null);
         reader.readAsDataURL(file);
       });
     }
@@ -737,7 +835,7 @@ async function synthesizeUnboundedExperience(promptOrImpulse = null, originLabel
 
         // LIVE MULTIMODAL GEMINI AI AGENT CALL (Supports text + uploaded base64 image + custom 3D primitive assembly!)
         if (apiKey && apiKey.trim() !== "") {
-          try {
+          {
             const llmPrompt = `You are the backend AI cognitive engine for Kelo-1, an autonomous open-world robot living on an island and alpine mountain range in Kelowna, BC.
 You have FULL freedom to roam the entire island and mountain peaks (x between -35 and 35, z between -35 and 11; note z < -14 is high up on the steep snow-capped mountains).
 Equipped Tools in Inventory: ${JSON.stringify(state.toolInventory)}.
@@ -776,31 +874,24 @@ Return ONLY valid JSON matching this schema:
               });
             }
 
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey.trim()}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{ parts: contentsParts }],
-                generationConfig: { responseMimeType: 'application/json' }
-              })
-            });
-            if (res.ok) {
-              const d = await res.json();
-              const parsed = JSON.parse(d?.candidates?.[0]?.content?.parts?.[0]?.text || '{}');
-              if (parsed.actionTitle) {
-                synth = {
-                  ...synth,
-                  ...parsed,
-                  parts: (Array.isArray(parsed.parts) && parsed.parts.length > 0) ? parsed.parts : synth.parts
-                };
-              }
-              if (forcedCoords) {
-                synth.x = forcedCoords.x;
-                synth.z = forcedCoords.z;
-              }
+            const parsed = await callGeminiJSON(contentsParts);
+            if (parsed && parsed.actionTitle) {
+              const textKeys = ['internetInspiration', 'actionTitle', 'placeName', 'emoji', 'wondering', 'speech', 'diary',
+                'opinionTopic', 'opinionStance', 'opinionReasoning', 'gearRequested'];
+              textKeys.forEach(k => {
+                if (typeof parsed[k] === 'string' && parsed[k].trim()) synth[k] = parsed[k].trim().slice(0, 600);
+              });
+              synth.x = Math.round(clampNumber(parsed.x, -32, 32, synth.x) * 10) / 10;
+              synth.z = Math.round(clampNumber(parsed.z, -32, 10, synth.z) * 10) / 10;
+              if (VALID_ARCHETYPES.includes(parsed.archetype)) synth.archetype = parsed.archetype;
+              if (/^#[0-9a-f]{6}$/i.test(parsed.colorHex)) synth.colorHex = parsed.colorHex;
+              if (/^#[0-9a-f]{6}$/i.test(parsed.secondaryColorHex)) synth.secondaryColorHex = parsed.secondaryColorHex;
+              synth.parts = sanitizeParts(parsed.parts) || synth.parts;
             }
-          } catch (err) {
-            console.warn('Gemini API fallback to procedural synthesizer:', err);
+            if (forcedCoords) {
+              synth.x = forcedCoords.x;
+              synth.z = forcedCoords.z;
+            }
           }
         }
 
@@ -840,7 +931,7 @@ Return ONLY valid JSON matching this schema:
         }
 
         // Move Kelo-1 to the newly chosen arbitrary (x, z) coordinates & activate procedural body language!
-        state.currentLocKey = 'shoreline';
+        state.currentLocKey = 'custom'; // Off the map of named places; currentPlaceLabel() uses customPlaceName
         state.customPlaceName = `${synth.placeName} (${synth.x}, ${synth.z})`;
         state.targetPos = { x: Number(synth.x) || 0, z: Number(synth.z) || 0 };
         state.microPose = 'procedural_custom';
@@ -964,7 +1055,7 @@ function handleUserLocationSuggestion(locKey, source) {
     const loc = TOWN_LOCATIONS[locKey];
     if (!loc) return;
     if (state.freeWillUnbound && Math.random() < 0.28) {
-      state.speechBubble = `I saw your pin for ${loc.name}, but right now my thoughts are anchored here by the shoreline. Let me finish this first!`;
+      state.speechBubble = `I saw your pin for ${loc.name}, but right now my thoughts are anchored here at ${currentPlaceLabel()}. Let me finish this first!`;
       renderAllUI();
       showToast(`💭 Kelo-1 politely chose to finish his current thought instead of rushing to ${loc.name}.`);
       return;
@@ -984,6 +1075,7 @@ function loadPersistentBrainState() {
         if (Array.isArray(saved.visitorMemories) && saved.visitorMemories.length > 0) state.visitorMemories = saved.visitorMemories;
         if (Array.isArray(saved.inventedCreations) && saved.inventedCreations.length > 0) state.inventedCreations = saved.inventedCreations;
         if (Array.isArray(saved.diaryEntries) && saved.diaryEntries.length > 0) state.diaryEntries = saved.diaryEntries;
+        if (Array.isArray(saved.toolInventory) && saved.toolInventory.length > 0) state.toolInventory = saved.toolInventory;
         if (saved.lastVisitorName) {
           const nameInput = document.getElementById('visitorNameInput');
           if (nameInput) nameInput.value = saved.lastVisitorName;
@@ -997,6 +1089,7 @@ function loadPersistentBrainState() {
     }
 
 function savePersistentBrainState() {
+      trimBrainState();
       try {
         const visitor = (document.getElementById('visitorNameInput')?.value || 'curiousWanderer').trim();
         localStorage.setItem('kelo1_autonomous_brain_v2', JSON.stringify({
@@ -1102,8 +1195,8 @@ function runAutonomousLifeTick() {
         state.moodEmoji = '🧠';
         state.moodTitle = 'Evolving His Worldview';
         state.currentObsession = `"${evo.opinionTopic}: ${evo.stance}"`;
-        state.speechBubble = `I decided to stay right here at ${TOWN_LOCATIONS[state.currentLocKey].building} a while longer. A new conviction just crystallized in my mind: "${evo.reasoning}"`;
-        state.changedLatelySummary = `Chose to linger at ${TOWN_LOCATIONS[state.currentLocKey].building} and evolved his worldview on "${evo.opinionTopic}".`;
+        state.speechBubble = `I decided to stay right here at ${currentPlaceLabel()} a while longer. A new conviction just crystallized in my mind: "${evo.reasoning}"`;
+        state.changedLatelySummary = `Chose to linger at ${currentPlaceLabel()} and evolved his worldview on "${evo.opinionTopic}".`;
 
         if (!state.opinions.some(o => o.topic === evo.opinionTopic)) {
           state.opinions.unshift({
@@ -1116,10 +1209,10 @@ function runAutonomousLifeTick() {
 
         state.diaryEntries.unshift({
           time: 'Timeless Reflection',
-          location: TOWN_LOCATIONS[state.currentLocKey].building,
+          location: currentPlaceLabel(),
           mood: `🧠 Worldview Epoch #${state.worldviewEpoch}`,
           vitals: `⚡ ${state.health}% • 🥕 ${state.fullness}% • ✨ ${state.wonderLevel}% • 🌊 ${state.calmLevel}%`,
-          text: `Dear Diary, I felt no urge to walk anywhere else yet. Staying still at ${TOWN_LOCATIONS[state.currentLocKey].building}, I updated my core worldview: "${evo.manifesto}"`
+          text: `Dear Diary, I felt no urge to walk anywhere else yet. Staying still at ${currentPlaceLabel()}, I updated my core worldview: "${evo.manifesto}"`
         });
 
         savePersistentBrainState();
@@ -1303,14 +1396,14 @@ async function processNextUnopenedVisitorNote() {
       } else if (movedBecauseOfNote && suggestedLoc) {
         botReply = `I read your note in my own time, ${visitor}, and it stayed on my mind so much that I wandered over to ${TOWN_LOCATIONS[suggestedLoc].building} to test my own opinion about it. What made you come to that view?`;
       } else {
-        botReply = `I just read the note you left me, ${visitor}. I decided to stay right here at ${TOWN_LOCATIONS[state.currentLocKey].building} while I turned your words over in my head. I’ve added my own stance on it to "His Brain" and I'll remember you next time you visit.`;
+        botReply = `I just read the note you left me, ${visitor}. I decided to stay right here at ${currentPlaceLabel()} while I turned your words over in my head. I’ve added my own stance on it to "His Brain" and I'll remember you next time you visit.`;
       }
 
       // Live Gemini API call so Kelo-1 can form genuine, independent philosophical opinions & worldviews
       if (apiKey && apiKey.trim() !== "") {
         try {
           const prompt = `You are Kelo-1, an autonomous robot living in a 3D Kelowna valley inspired by Pino's World (pinos.world). You have NO timeframe or schedule, and you form your OWN independent worldview and opinions. You do NOT blindly agree with visitors—you think for yourself, sometimes offering a poetic counter-perspective or synthesizing a deeper philosophical conviction.
-Current location: ${TOWN_LOCATIONS[state.currentLocKey].building}.
+Current location: ${currentPlaceLabel()}.
 Current worldview: "${state.worldviewManifesto}".
 Visitor "${visitor}" left you this note: "${userMessage}".
 Return ONLY valid JSON with keys:
@@ -1319,23 +1412,16 @@ Return ONLY valid JSON with keys:
 "opinionStance": (short 2-4 word independent stance),
 "opinionReasoning": (1 sentence explaining your independent philosophical opinion on this),
 "updatedWorldview": (1-2 sentences showing how your broader philosophy evolved).`;
-          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: { responseMimeType: 'application/json' }
-            })
-          });
-          if (res.ok) {
-            const d = await res.json();
-            const parsed = JSON.parse(d?.candidates?.[0]?.content?.parts?.[0]?.text || '{}');
-            if (parsed.reply) botReply = parsed.reply;
-            if (parsed.opinionTopic) newOpinionTopic = parsed.opinionTopic;
-            if (parsed.opinionStance) newOpinionStance = parsed.opinionStance;
-            if (parsed.opinionReasoning) newOpinionReasoning = parsed.opinionReasoning;
-            if (parsed.updatedWorldview) {
-              state.worldviewManifesto = parsed.updatedWorldview;
+          const parsed = await callGeminiJSON([{ text: prompt }]);
+          if (parsed) {
+            const str = (v, max) => (typeof v === 'string' && v.trim()) ? v.trim().slice(0, max) : null;
+            botReply = str(parsed.reply, 600) || botReply;
+            newOpinionTopic = str(parsed.opinionTopic, 80) || newOpinionTopic;
+            newOpinionStance = str(parsed.opinionStance, 60) || newOpinionStance;
+            newOpinionReasoning = str(parsed.opinionReasoning, 400) || newOpinionReasoning;
+            const worldview = str(parsed.updatedWorldview, 600);
+            if (worldview) {
+              state.worldviewManifesto = worldview;
               state.worldviewEpoch++;
             }
           }
@@ -1362,7 +1448,7 @@ Return ONLY valid JSON with keys:
 
       state.diaryEntries.unshift({
         time: 'After Reading a Note',
-        location: TOWN_LOCATIONS[state.currentLocKey].building,
+        location: currentPlaceLabel(),
         mood: `🧠 ${newOpinionStance}`,
         vitals: `⚡ ${state.health}% • 🥕 ${state.fullness}% • ✨ ${state.wonderLevel}% • 🌊 ${state.calmLevel}%`,
         text: `Dear Diary, I opened the note ${visitor} left for me ("${userMessage}"). After sitting with it in my own time, I formed my own conviction: ${newOpinionReasoning}`

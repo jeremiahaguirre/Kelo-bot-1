@@ -504,10 +504,41 @@ function buildKelo1Character3D() {
 function initEmergentCreationsLayer3D() {
       emergentCreationsGroup = new THREE.Group();
       scene.add(emergentCreationsGroup);
-      // Instantiate any previously invented creations
-      state.inventedCreations.forEach((item, idx) => {
-        spawnEmergent3DObjectInWorld(item, idx === 0);
+      // Instantiate any previously invented creations, oldest first so the newest end up last in the group
+      state.inventedCreations.slice().reverse().forEach((item, revIdx) => {
+        spawnEmergent3DObjectInWorld(item, revIdx === state.inventedCreations.length - 1);
       });
+    }
+
+// Remove the oldest 3D creations (and their map pins) once there are more than maxCount
+function pruneEmergentCreations3D(maxCount) {
+      if (!emergentCreationsGroup) return;
+      let removedPin = false;
+      while (emergentCreationsGroup.children.length > maxCount) {
+        const oldest = emergentCreationsGroup.children[0];
+        emergentCreationsGroup.remove(oldest);
+        oldest.traverse(obj => {
+          if (obj.geometry) obj.geometry.dispose();
+          if (obj.material) obj.material.dispose();
+        });
+        if (oldest.userData.pinId && TOWN_LOCATIONS[oldest.userData.pinId]) {
+          delete TOWN_LOCATIONS[oldest.userData.pinId];
+          removedPin = true;
+        }
+      }
+      if (removedPin) createPOILabelsDOM();
+    }
+
+function applyLightingPreset(idx) {
+      const preset = AMBIANCE_PRESETS[idx] || AMBIANCE_PRESETS[0];
+      scene.background = new THREE.Color(preset.bg);
+      scene.fog.color.setHex(preset.fog);
+      scene.fog.density = preset.fogDensity;
+      hemiLight.color.setHex(preset.hemiSky);
+      hemiLight.groundColor.setHex(preset.hemiGround);
+      sunLight.color.setHex(preset.sunColor);
+      sunLight.intensity = preset.sunInt;
+      return preset;
     }
 
 function spawnEmergent3DObjectInWorld(creation, skipPin = false) {
@@ -663,8 +694,9 @@ function spawnEmergent3DObjectInWorld(creation, skipPin = false) {
       emergentCreationsGroup.add(g);
 
       // Also register a dynamic clickable 3D landmark pin if it's a newly discovered spot!
-      const dynId = 'dyn_' + Math.abs(Math.round(creation.x * 10)) + '_' + Math.abs(Math.round(creation.z * 10));
+      const dynId = 'dyn_' + Math.round(creation.x * 10) + '_' + Math.round(creation.z * 10);
       if (!TOWN_LOCATIONS[dynId] && !skipPin) {
+        g.userData.pinId = dynId;
         TOWN_LOCATIONS[dynId] = {
           id: dynId,
           name: creation.title.slice(0, 24),
@@ -693,8 +725,8 @@ function createPOILabelsDOM() {
         el.className = 'poi-label';
         el.innerHTML = `
           <div class="px-2.5 py-1 rounded-full bg-gradient-to-r ${loc.pinColor} text-white text-[11px] font-bold shadow-lg border border-white/25 flex items-center gap-1 whitespace-nowrap">
-            <span>${loc.icon}</span>
-            <span>${loc.name}</span>
+            <span>${escapeHtml(loc.icon)}</span>
+            <span>${escapeHtml(loc.name)}</span>
           </div>
         `;
         el.addEventListener('click', (e) => {

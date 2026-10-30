@@ -56,18 +56,6 @@
         <span id="hudWeldBadge" class="hidden xl:inline-block px-2.5 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-mono">2 Core Opinions</span>
         <span id="hudGithubBadge" class="hidden xl:inline-block px-2.5 py-1 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-300 text-xs font-mono">2 Repos • 28 Commits</span>
 
-        <!-- NEW: 1-Click Download Full Project ZIP Button -->
-        <button id="btnDownloadProjectZipTop" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 text-xs font-extrabold flex items-center gap-1.5 transition shadow-lg">
-          <i class="ph-bold ph-file-zip"></i>
-          <span>Download .ZIP</span>
-        </button>
-
-        <!-- GitHub Project Hierarchy Exporter Button -->
-        <button id="btnOpenRepoHierarchy" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition shadow-lg">
-          <i class="ph-bold ph-git-branch"></i>
-          <span>kelo-1-world/ Files</span>
-        </button>
-
         <button id="btnOpenAIConfig" class="px-3 py-1.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 text-xs font-bold flex items-center gap-1.5 transition">
           <i class="ph-fill ph-cpu"></i>
           <span id="aiBrainBtnText">AI Brain: Procedural + LLM</span>
@@ -107,65 +95,10 @@
       <!-- 3D WEBGL VIEWPORT -->
       <div id="dioramaViewport" class="relative w-full h-[460px] sm:h-[540px] rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900">
         <!-- Dynamic 3D POI Pins Container -->
-        <div id="poiLabelsContainer" class="absolute inset-0 pointer-events-none"><div class="poi-label" style="opacity: 1; left: 426.508px; top: 514.391px;">
-          <div class="px-2.5 py-1 rounded-full bg-gradient-to-r from-emerald-500/90 to-teal-600/90 text-white text-[11px] font-bold shadow-lg border border-white/25 flex items-center gap-1 whitespace-nowrap">
-            <span>🛏️</span>
-            <span>Cozy Quilt Bed</span>
-          </div>
-        </div><div class="poi-label" style="opacity: 1; left: 623.895px; top: 542.107px;">
-          <div class="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/90 to-red-600/90 text-white text-[11px] font-bold shadow-lg border border-white/25 flex items-center gap-1 whitespace-nowrap">
-            <span>👨‍🏭</span>
-            <span>TIG Welding Forge</span>
-          </div>
-        </div><div class="poi-label" style="opacity: 1; left: 354.355px; top: 638.604px;">
-          <div class="px-2.5 py-1 rounded-full bg-gradient-to-r from-lime-500/90 to-emerald-600/90 text-white text-[11px] font-bold shadow-lg border border-white/25 flex items-center gap-1 whitespace-nowrap">
-            <span>🍑</span>
-            <span>Okanagan Bio-Garden</span>
-          </div>
-        </div><div class="poi-label" style="opacity: 1; left: 598.313px; top: 702.788px;">
-          <div class="px-2.5 py-1 rounded-full bg-gradient-to-r from-orange-500/90 to-rose-600/90 text-white text-[11px] font-bold shadow-lg border border-white/25 flex items-center gap-1 whitespace-nowrap">
-            <span>☕</span>
-            <span>Bean &amp; Byte Cafe</span>
-          </div>
-        </div><div class="poi-label" style="opacity: 1; left: 886.356px; top: 722.286px;">
-          <div class="px-2.5 py-1 rounded-full bg-gradient-to-r from-purple-500/90 to-indigo-600/90 text-white text-[11px] font-bold shadow-lg border border-white/25 flex items-center gap-1 whitespace-nowrap">
-            <span>💻</span>
-            <span>NetNode Cyber Cafe</span>
-          </div>
-        </div><div class="poi-label" style="opacity: 1; left: 873.095px; top: 1007.87px;">
-          <div class="px-2.5 py-1 rounded-full bg-gradient-to-r from-sky-500/90 to-blue-600/90 text-white text-[11px] font-bold shadow-lg border border-white/25 flex items-center gap-1 whitespace-nowrap">
-            <span>🌊</span>
-            <span>Okanagan Shoreline</span>
-          </div>
-        </div><div class="poi-label" style="opacity: 1; left: 281.901px; top: 567.728px;">
-          <div class="px-2.5 py-1 rounded-full bg-gradient-to-r from-yellow-500/90 to-amber-600/90 text-white text-[11px] font-bold shadow-lg border border-white/25 flex items-center gap-1 whitespace-nowrap">
-            <span>🌼</span>
-            <span>West Wildflower Meadow</span>
-          </div>
-        </div><div class="poi-label" style="opacity: 1; left: 453.489px; top: 242.806px;">
-          <div class="px-2.5 py-1 rounded-full bg-gradient-to-r from-yellow-400/90 to-amber-600/90 text-white text-[11px] font-bold shadow-lg border border-white/25 flex items-center gap-1 whitespace-nowrap">
-            <span>⛏️</span>
-            <span>Alpine Gold Vein Ridge</span>
-          </div>
-        </div><div class="poi-label" style="opacity: 1; left: 985.031px; top: 317.625px;">
-          <div class="px-2.5 py-1 rounded-full bg-gradient-to-r from-cyan-500/90 to-blue-700/90 text-white text-[11px] font-bold shadow-lg border border-white/25 flex items-center gap-1 whitespace-nowrap">
-            <span>🏔️</span>
-            <span>Eastern Granite Overlook</span>
-          </div>
-        </div><div class="poi-label" style="opacity: 1; left: 572.023px; top: 498.851px;">
-          <div class="px-2.5 py-1 rounded-full bg-gradient-to-r from-fuchsia-500/90 to-indigo-600/90 text-white text-[11px] font-bold shadow-lg border border-white/25 flex items-center gap-1 whitespace-nowrap">
-            <span>🍄</span>
-            <span>Subterranean Mycelium Th</span>
-          </div>
-        </div><div class="poi-label" style="opacity: 1; left: 968.854px; top: 430.336px;">
-          <div class="px-2.5 py-1 rounded-full bg-gradient-to-r from-fuchsia-500/90 to-indigo-600/90 text-white text-[11px] font-bold shadow-lg border border-white/25 flex items-center gap-1 whitespace-nowrap">
-            <span>🚂</span>
-            <span>Eastern Foothill Narrow-</span>
-          </div>
-        </div></div>
+        <div id="poiLabelsContainer" class="absolute inset-0 pointer-events-none"></div>
 
         <!-- Kelo-1 Floating 3D Overhead Thought & Speech Bubble -->
-        <div id="keloOverheadHUD" class="max-w-[260px] sm:max-w-[300px]" style="opacity: 1; left: 454px; top: 245.99px;">
+        <div id="keloOverheadHUD" class="max-w-[260px] sm:max-w-[300px]">
           <div class="px-3 py-2 rounded-2xl bg-slate-950/90 backdrop-blur-md border border-amber-400/50 shadow-2xl text-left space-y-1">
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-1.5 text-xs font-bold text-amber-300">
@@ -181,7 +114,7 @@
         <!-- Top-Left Camera Bar -->
         <div class="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-1.5 bg-slate-950/85 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800/90">
           <button data-cam="follow" class="cam-btn px-2.5 py-1 rounded-xl bg-amber-500/25 text-amber-300 text-[11px] font-semibold flex items-center gap-1 transition">
-            <i class="ph-fill ph-Crosshair"></i> <span>Follow Kelo-1</span>
+            <i class="ph-fill ph-crosshair"></i> <span>Follow Kelo-1</span>
           </button>
           <button data-cam="bird" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300 text-[11px] font-medium flex items-center gap-1 transition">
             <i class="ph-fill ph-bird"></i> <span>Bird's-Eye (Arrows)</span>
@@ -230,8 +163,7 @@
               <span id="gardenRipeBadge" class="px-1.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 font-mono text-[10px]">4/4</span>
             </button>
           </div>
-        </div>
-      <canvas width="908" height="538" style="display: block; width: 908px; height: 538px;"></canvas></div>
+        </div></div>
 
       <!-- UNSCRIPTED ACTION SYNTHESIZER & MULTIMODAL CHAT / SUPPLY BROKER CONSOLE -->
       <div class="p-3.5 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-3">
@@ -271,17 +203,7 @@
         </div>
 
         <!-- Live Stream Chat & Image Attachment Input -->
-        <div id="chatMessagesBox" class="max-h-28 overflow-y-auto space-y-1.5 p-2.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 text-xs">
-        <div class="flex items-start gap-2 text-sky-200">
-          <span class="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 shrink-0">SupplyBroker</span>
-          <p class="leading-snug">Delivered: 50kg raw chitosan flakes, pneumatic soil auger, roll of copper micro-tubing, 3 boxes of mushroom spawn dowels!</p>
-        </div>
-      
-        <div class="flex items-start gap-2 text-amber-200">
-          <span class="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 shrink-0">Kelo-1</span>
-          <p class="leading-snug">Gear equipped! I mounted the pneumatic core drill &amp; auger to my right arm and started drilling the northern mountain ridge!</p>
-        </div>
-      </div>
+        <div id="chatMessagesBox" class="max-h-28 overflow-y-auto space-y-1.5 p-2.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 text-xs"></div>
 
         <form id="chatForm" class="flex flex-wrap sm:flex-nowrap items-center gap-2">
           <input id="visitorNameInput" type="text" value="SupplyBroker" placeholder="Your handle" class="w-28 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2 text-xs font-mono text-amber-300 focus:outline-none">
@@ -307,7 +229,7 @@
         </button>
         <button data-tab="requests" class="inspector-tab-btn py-2.5 px-2 rounded-t-2xl text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5 transition">
           <i class="ph-fill ph-wrench"></i> <span>Tool Requests</span>
-          <span id="requestsCountBadge" class="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px]">2</span>
+          <span id="requestsCountBadge" class="px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px]">2</span>
         </button>
         <button data-tab="github" class="inspector-tab-btn py-2.5 px-2 rounded-t-2xl text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5 transition">
           <i class="ph-fill ph-github-logo"></i> <span>GitHub</span>
@@ -326,33 +248,7 @@
           </div>
           <p id="diarySpotlightText" class="font-serif italic text-sm text-slate-100 leading-relaxed">"Dear Diary, the Supply Broker delivered my 50kg raw chitosan flakes, pneumatic soil auger, roll of copper micro-tubing, and 3 boxes of mushroom spawn dowels! I mounted the core drill to my right arm and hiked up to (-15.5, -26.5) to tap the hydrothermal quartz-gold vein."</p>
         </div>
-        <div id="diaryEntriesList" class="space-y-2.5">
-        <article class="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800/90 space-y-1.5 hover:border-slate-700 transition">
-          <div class="flex items-center justify-between text-[11px] font-mono">
-            <span class="text-amber-300 font-bold">⛏️ Drilling Mountain Gold &amp; Inoculating Mycelium</span>
-            <span class="text-slate-400">⚡ 94% • 🥕 86% • 🛠️ 6 Tools • Supply Broker Equipped</span>
-          </div>
-          <div class="text-[11px] font-mono text-sky-300 flex items-center gap-1">
-            <i class="ph-fill ph-map-pin"></i> <span>Northern Alpine Gold Vein (-15.5, -26.5)</span>
-          </div>
-          <p class="font-serif italic text-slate-200 text-sm leading-relaxed pl-2.5 border-l-2 border-amber-400/50">
-            "Dear Diary, the Supply Broker delivered my 50kg raw chitosan flakes, pneumatic soil auger, roll of copper micro-tubing, and 3 boxes of mushroom spawn dowels! I mounted the core drill to my right arm and hiked up to (-15.5, -26.5) to tap the hydrothermal quartz-gold vein."
-          </p>
-        </article>
-      
-        <article class="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800/90 space-y-1.5 hover:border-slate-700 transition">
-          <div class="flex items-center justify-between text-[11px] font-mono">
-            <span class="text-amber-300 font-bold">🍄 Biomimetic Architecture</span>
-            <span class="text-slate-400">⚡ 92% • 🥕 88% • 🛠️ 6 Tools • Earlier Today</span>
-          </div>
-          <div class="text-[11px] font-mono text-sky-300 flex items-center gap-1">
-            <i class="ph-fill ph-map-pin"></i> <span>North Retaining Slope (-4.2, -12.4)</span>
-          </div>
-          <p class="font-serif italic text-slate-200 text-sm leading-relaxed pl-2.5 border-l-2 border-amber-400/50">
-            "Dear Diary, inoculated the north-facing retaining wall with oyster mushroom spores and chitosan aggregate. Within three weeks the living mycelium network will bind the loose mountain gravel better than Portland cement."
-          </p>
-        </article>
-      </div>
+        <div id="diaryEntriesList" class="space-y-2.5"></div>
       </div>
 
       <!-- TAB 2: SUPPLY BROKER TOOL REQUESTS & OPEN QUESTIONS -->
@@ -362,109 +258,13 @@
             <span class="font-bold text-amber-300 flex items-center gap-1.5"><i class="ph-fill ph-backpack"></i> Equipped Island Tools &amp; Raw Materials</span>
             <span id="inventoryCountLabel" class="font-mono text-[10px] text-slate-400">6 Items Equipped</span>
           </div>
-          <div id="toolInventoryPills" class="flex flex-wrap gap-1.5">
-          <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-[10px] font-mono flex items-center gap-1">
-            <i class="ph-fill ph-check-circle text-emerald-400"></i> Pneumatic Soil Auger &amp; Core Drill
-          </span>
-        
-          <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-[10px] font-mono flex items-center gap-1">
-            <i class="ph-fill ph-check-circle text-emerald-400"></i> 50kg Raw Chitosan Flakes
-          </span>
-        
-          <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-[10px] font-mono flex items-center gap-1">
-            <i class="ph-fill ph-check-circle text-emerald-400"></i> Roll of Copper Micro-Tubing
-          </span>
-        
-          <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-[10px] font-mono flex items-center gap-1">
-            <i class="ph-fill ph-check-circle text-emerald-400"></i> 3 Boxes High-Inoculum Mushroom Spawn Dowels
-          </span>
-        
-          <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-[10px] font-mono flex items-center gap-1">
-            <i class="ph-fill ph-check-circle text-emerald-400"></i> TIG Plasma Welding Torch
-          </span>
-        
-          <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-[10px] font-mono flex items-center gap-1">
-            <i class="ph-fill ph-check-circle text-emerald-400"></i> Grade-5 Titanium Filler Rods
-          </span>
-        </div>
+          <div id="toolInventoryPills" class="flex flex-wrap gap-1.5"></div>
         </div>
         <div class="flex items-center justify-between">
           <span class="text-xs font-bold text-slate-300">Active Tool Requisitions &amp; Philosophical Questions</span>
           <button id="btnGenerateNewRequest" class="px-2.5 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-[11px] font-semibold transition">+ New Question</button>
         </div>
-        <div id="requestsInboxList" class="space-y-3">
-        <div class="p-4 rounded-2xl border bg-slate-950 border-amber-500/50 shadow-lg space-y-2.5">
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-bold text-white flex items-center gap-1.5">
-              <span class="text-lg">🔥</span>
-              <span>Supply Request: Solar Gold Smelting Crucible</span>
-            </span>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 bg-amber-500/25 text-amber-300 border border-amber-400/40">
-              Gear Requested
-            </span>
-          </div>
-          <div class="text-[11px] font-mono text-amber-300 bg-amber-950/30 border border-amber-500/30 px-2.5 py-1 rounded-lg">Requested Gear: Solar Induction Smelting Crucible, Borax Flux, Graphite Ingot Mold</div>
-          <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"Now that my pneumatic core drill unearthed raw gold-quartz nuggets at (-15.5, -26.5), I want to refine them into pure conductive contacts for my welding forge. Can you drop a Solar Induction Smelting Crucible?"</p>
-          
-            <div class="space-y-2 pt-1">
-              <div class="text-[10px] font-mono uppercase text-slate-400">Deliver this gear as Supply Broker or customize delivery:</div>
-              <div class="flex flex-col gap-1.5">
-                
-                  <button data-req-id="req-gold-smelt" data-answer="Deliver Solar Induction Smelting Crucible, Borax Flux &amp; Graphite Mold!" class="preset-answer-btn text-left text-[11px] px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-amber-500/25 text-slate-200 hover:text-amber-200 border border-slate-800 hover:border-amber-500/40 transition">
-                    📦 "Deliver Solar Induction Smelting Crucible, Borax Flux &amp; Graphite Mold!"
-                  </button>
-                
-                  <button data-req-id="req-gold-smelt" data-answer="Deliver Smelting Crucible + Extra High-Torque Diamond Drill Bits!" class="preset-answer-btn text-left text-[11px] px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-amber-500/25 text-slate-200 hover:text-amber-200 border border-slate-800 hover:border-amber-500/40 transition">
-                    📦 "Deliver Smelting Crucible + Extra High-Torque Diamond Drill Bits!"
-                  </button>
-                
-              </div>
-              <div class="flex gap-1.5 pt-1">
-                <input id="custom-ans-req-gold-smelt" type="text" maxlength="140" placeholder="Or specify custom tools/materials to drop..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400">
-                <button data-req-id="req-gold-smelt" class="custom-answer-btn px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs shrink-0 transition">
-                  Supply Gear
-                </button>
-              </div>
-            </div>
-          
-        </div>
-      
-        <div class="p-4 rounded-2xl border bg-slate-950 border-rose-500/40 shadow-lg space-y-2.5">
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-bold text-white flex items-center gap-1.5">
-              <span class="text-lg">🍄</span>
-              <span>Should a House Grow Like a Forest Floor?</span>
-            </span>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 bg-rose-500/20 text-rose-300">
-              Wondering
-            </span>
-          </div>
-          
-          <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"While splicing copper micro-tubing into my mycelium thermal chamber, I wondered: if my walls are alive with mushroom roots, am I living inside a building or collaborating with an organism?"</p>
-          
-            <div class="space-y-2 pt-1">
-              <div class="text-[10px] font-mono uppercase text-slate-400">Share a perspective or write your own answer:</div>
-              <div class="flex flex-col gap-1.5">
-                
-                  <button data-req-id="req-phil-1" data-answer="You’re collaborating with a living organism—it’s symbiosis!" class="preset-answer-btn text-left text-[11px] px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-amber-500/25 text-slate-200 hover:text-amber-200 border border-slate-800 hover:border-amber-500/40 transition">
-                    💬 "You’re collaborating with a living organism—it’s symbiosis!"
-                  </button>
-                
-                  <button data-req-id="req-phil-1" data-answer="A home that breathes with the forest is the ultimate architecture." class="preset-answer-btn text-left text-[11px] px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-amber-500/25 text-slate-200 hover:text-amber-200 border border-slate-800 hover:border-amber-500/40 transition">
-                    💬 "A home that breathes with the forest is the ultimate architecture."
-                  </button>
-                
-              </div>
-              <div class="flex gap-1.5 pt-1">
-                <input id="custom-ans-req-phil-1" type="text" maxlength="140" placeholder="Or type your own honest answer to Kelo-1..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400">
-                <button data-req-id="req-phil-1" class="custom-answer-btn px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs shrink-0 transition">
-                  Answer
-                </button>
-              </div>
-            </div>
-          
-        </div>
-      </div>
+        <div id="requestsInboxList" class="space-y-3"></div>
       </div>
 
       <!-- TAB 3: AUTONOMOUS GITHUB (@kelo1-okanagan-bot) -->
@@ -480,7 +280,7 @@
             </div>
             <button id="btnForceCoding" class="px-2.5 py-1 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs font-semibold transition">Push Commit</button>
           </div>
-          <div id="githubContribGrid" class="grid grid-cols-12 gap-1 pt-1"><div class="h-3 rounded-sm bg-emerald-500"></div><div class="h-3 rounded-sm bg-emerald-500"></div><div class="h-3 rounded-sm bg-emerald-500"></div><div class="h-3 rounded-sm bg-slate-800"></div><div class="h-3 rounded-sm bg-emerald-700"></div><div class="h-3 rounded-sm bg-emerald-900"></div><div class="h-3 rounded-sm bg-emerald-400"></div><div class="h-3 rounded-sm bg-emerald-700"></div><div class="h-3 rounded-sm bg-slate-800"></div><div class="h-3 rounded-sm bg-slate-800"></div><div class="h-3 rounded-sm bg-emerald-900"></div><div class="h-3 rounded-sm bg-emerald-900"></div><div class="h-3 rounded-sm bg-emerald-900"></div><div class="h-3 rounded-sm bg-emerald-500"></div><div class="h-3 rounded-sm bg-slate-800"></div><div class="h-3 rounded-sm bg-emerald-500"></div><div class="h-3 rounded-sm bg-emerald-400"></div><div class="h-3 rounded-sm bg-emerald-400"></div><div class="h-3 rounded-sm bg-emerald-900"></div><div class="h-3 rounded-sm bg-emerald-500"></div><div class="h-3 rounded-sm bg-emerald-500"></div><div class="h-3 rounded-sm bg-emerald-400"></div><div class="h-3 rounded-sm bg-emerald-700"></div><div class="h-3 rounded-sm bg-slate-800"></div><div class="h-3 rounded-sm bg-slate-800"></div><div class="h-3 rounded-sm bg-emerald-700"></div><div class="h-3 rounded-sm bg-emerald-700"></div><div class="h-3 rounded-sm bg-emerald-700"></div><div class="h-3 rounded-sm bg-emerald-700"></div><div class="h-3 rounded-sm bg-emerald-700"></div><div class="h-3 rounded-sm bg-slate-800"></div><div class="h-3 rounded-sm bg-emerald-900"></div><div class="h-3 rounded-sm bg-emerald-500"></div><div class="h-3 rounded-sm bg-slate-800"></div><div class="h-3 rounded-sm bg-emerald-500"></div><div class="h-3 rounded-sm bg-emerald-900"></div><div class="h-3 rounded-sm bg-emerald-900"></div><div class="h-3 rounded-sm bg-emerald-400"></div><div class="h-3 rounded-sm bg-emerald-400"></div><div class="h-3 rounded-sm bg-emerald-500"></div><div class="h-3 rounded-sm bg-emerald-700"></div><div class="h-3 rounded-sm bg-emerald-400"></div><div class="h-3 rounded-sm bg-emerald-700"></div><div class="h-3 rounded-sm bg-emerald-500"></div><div class="h-3 rounded-sm bg-emerald-700"></div><div class="h-3 rounded-sm bg-emerald-700"></div><div class="h-3 rounded-sm bg-emerald-400"></div><div class="h-3 rounded-sm bg-slate-800"></div></div>
+          <div id="githubContribGrid" class="grid grid-cols-12 gap-1 pt-1"></div>
         </div>
 
         <form id="createRepoForm" class="flex gap-2">
@@ -488,39 +288,7 @@
           <button type="submit" class="px-3 py-1.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold text-xs shrink-0 transition">Init Repo</button>
         </form>
 
-        <div id="githubReposList" class="space-y-2.5">
-        <div data-repo-idx="0" class="repo-card cursor-pointer p-3.5 rounded-2xl bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/50 transition space-y-1.5">
-          <div class="flex items-center justify-between">
-            <span class="font-mono text-xs font-bold text-purple-300 flex items-center gap-1.5">
-              <i class="ph-bold ph-book-bookmark"></i> mycelium-thermal-pid-controller
-            </span>
-            <div class="flex items-center gap-2 text-[11px] font-mono text-slate-400">
-              <span class="px-1.5 py-0.5 rounded bg-slate-800 text-sky-300">Rust</span>
-              <span class="text-amber-300">★ 19</span>
-            </div>
-          </div>
-          <p class="text-xs text-slate-300">Thermocouple PID loop regulating root-zone heat retention in fungal chitosan retaining walls.</p>
-          <div class="text-[10px] font-mono text-emerald-400 truncate">
-            Latest commit (Just now): "feat(sensors): splice copper micro-tubing thermocouple array"
-          </div>
-        </div>
-      
-        <div data-repo-idx="1" class="repo-card cursor-pointer p-3.5 rounded-2xl bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/50 transition space-y-1.5">
-          <div class="flex items-center justify-between">
-            <span class="font-mono text-xs font-bold text-purple-300 flex items-center gap-1.5">
-              <i class="ph-bold ph-book-bookmark"></i> okanagan-alpine-gold-prospecting
-            </span>
-            <div class="flex items-center gap-2 text-[11px] font-mono text-slate-400">
-              <span class="px-1.5 py-0.5 rounded bg-slate-800 text-sky-300">Python</span>
-              <span class="text-amber-300">★ 14</span>
-            </div>
-          </div>
-          <p class="text-xs text-slate-300"> Raycast elevation &amp; hydrothermal quartz vein mapper for Kelo-1 mountain drilling rigs.</p>
-          <div class="text-[10px] font-mono text-emerald-400 truncate">
-            Latest commit (18m ago): "feat(drill): log gold nugget yield at (-15.5, -26.5)"
-          </div>
-        </div>
-      </div>
+        <div id="githubReposList" class="space-y-2.5"></div>
       </div>
 
       <!-- TAB 4: HIS BRAIN (WORLDVIEW, OPINIONS, 3D CREATIONS & MEMORIES) -->
@@ -535,114 +303,27 @@
             <span>🏗️ Unscripted 3D Creations Built on the Island</span>
             <span id="inventedCountBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20">3 Created in 3D</span>
           </div>
-          <div id="inventedActionsContainer" class="space-y-2">
-          <div data-cx="-15.5" data-cz="-26.5" data-ctitle="North-West Alpine Gold Drill Derrick" class="invented-creation-card cursor-pointer p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-emerald-500/25 transition space-y-1">
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
-                <i class="ph-fill ph-cube text-emerald-400"></i>
-                <span>North-West Alpine Gold Drill Derrick</span>
-              </span>
-              <span class="text-[10px] font-mono text-slate-400">(-15.5, -26.5) • Active Rig</span>
-            </div>
-            <div class="text-[11px] text-amber-200 font-mono">Core-Drilling Hydrothermal Gold Vein</div>
-            <p class="text-[11px] text-slate-300 font-serif italic">"Gold never corrodes on high-altitude solar contacts."</p>
-          </div>
-        
-          <div data-cx="-4.2" data-cz="-12.4" data-ctitle="Subterranean Mycelium Thermal Dome" class="invented-creation-card cursor-pointer p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-emerald-500/25 transition space-y-1">
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
-                <i class="ph-fill ph-cube text-emerald-400"></i>
-                <span>Subterranean Mycelium Thermal Dome</span>
-              </span>
-              <span class="text-[10px] font-mono text-slate-400">(-4.2, -12.4) • Growing</span>
-            </div>
-            <div class="text-[11px] text-amber-200 font-mono">Inoculating Chitosan-Mycelium Retaining Wall</div>
-            <p class="text-[11px] text-slate-300 font-serif italic">"Living fungal composites heal themselves when the mountain shifts."</p>
-          </div>
-        
-          <div data-cx="16.2" data-cz="-16.8" data-ctitle="Eastern Foothill Narrow-Gauge Railway" class="invented-creation-card cursor-pointer p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-emerald-500/25 transition space-y-1">
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
-                <i class="ph-fill ph-cube text-emerald-400"></i>
-                <span>Eastern Foothill Narrow-Gauge Railway</span>
-              </span>
-              <span class="text-[10px] font-mono text-slate-400">(16.2, -16.8) • Built in 3D</span>
-            </div>
-            <div class="text-[11px] text-amber-200 font-mono">Extruding 3D-Printed Ore Track</div>
-            <p class="text-[11px] text-slate-300 font-serif italic">"Even a solitary robot deserves a miniature railway winding through the firs."</p>
-          </div>
-        </div>
+          <div id="inventedActionsContainer" class="space-y-2"></div>
         </div>
 
         <div class="space-y-2">
           <div class="text-xs font-bold text-purple-300">🧠 Independent Opinions &amp; Convictions</div>
-          <div id="opinionsListContainer" class="space-y-2">
-          <div class="p-3 rounded-xl bg-slate-900/90 border border-purple-500/25 space-y-1">
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-bold text-white">On Living Fungal Mycelium vs. Portland Cement</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 shrink-0">Grow Structures Instead of Pouring Concrete</span>
-            </div>
-            <p class="text-[11px] text-slate-300 font-serif italic leading-relaxed">"Inoculating gravel with oyster mushroom spores and chitosan creates a breathing, self-healing thermal wall."</p>
-            <div class="text-[10px] font-mono text-slate-500">Tested with Supply Broker Gear</div>
-          </div>
-        
-          <div class="p-3 rounded-xl bg-slate-900/90 border border-purple-500/25 space-y-1">
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-bold text-white">On Alpine Gold Prospecting</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 shrink-0">Climb Every Ridge on the Island</span>
-            </div>
-            <p class="text-[11px] text-slate-300 font-serif italic leading-relaxed">"Staying on flat ground means never discovering the quartz-gold veins hidden at (-15.5, -26.5)."</p>
-            <div class="text-[10px] font-mono text-slate-500">High-Altitude Conviction</div>
-          </div>
-        </div>
+          <div id="opinionsListContainer" class="space-y-2"></div>
         </div>
 
         <div class="space-y-2">
           <div class="text-xs font-bold text-amber-300">👥 Persistent Memories of Visitors</div>
-          <div id="visitorMemoriesContainer" class="space-y-1.5">
-          <div class="p-2.5 rounded-xl bg-slate-900/80 border border-amber-500/20 flex items-start justify-between gap-2 text-xs">
-            <div class="space-y-0.5">
-              <div class="font-bold text-amber-300 flex items-center gap-1.5">
-                <i class="ph-fill ph-user-focus"></i>
-                <span>SupplyBroker</span>
-                <span class="text-[10px] font-mono text-slate-400">(3 interactions)</span>
-              </div>
-              <p class="text-[11px] text-slate-300 italic">"Delivered my 50kg raw chitosan flakes, pneumatic soil auger, copper micro-tubing, and mushroom spawn dowels!"</p>
-            </div>
-            <span class="text-[10px] font-mono text-slate-500 shrink-0">Just now</span>
-          </div>
-        </div>
+          <div id="visitorMemoriesContainer" class="space-y-1.5"></div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div class="space-y-1.5">
             <div class="text-[11px] font-bold text-indigo-300">✨ Fascinations &amp; Nuances</div>
-            <div id="likesListContainer" class="space-y-1.5">
-        <div class="text-xs text-slate-200 bg-slate-950/80 p-2.5 rounded-xl border border-indigo-500/25 space-y-1">
-          <div class="font-bold text-indigo-300 flex items-center gap-1.5">
-            <span>🍄</span> <span>Mycelium &amp; Chitosan Biocomposites</span>
-          </div>
-          <p class="text-[11px] text-slate-300 leading-relaxed font-serif italic">"Self-healing thermal insulation grown right beneath my workshop."</p>
-        </div>
-      
-        <div class="text-xs text-slate-200 bg-slate-950/80 p-2.5 rounded-xl border border-indigo-500/25 space-y-1">
-          <div class="font-bold text-indigo-300 flex items-center gap-1.5">
-            <span>⛏️</span> <span>High-Altitude Core Drilling</span>
-          </div>
-          <p class="text-[11px] text-slate-300 leading-relaxed font-serif italic">"Watching golden quartz nuggets fly out of the northern mountain granite."</p>
-        </div>
-      </div>
+            <div id="likesListContainer" class="space-y-1.5"></div>
           </div>
           <div class="space-y-1.5">
             <div class="text-[11px] font-bold text-amber-300">⚖️ Paradoxes &amp; Tensions</div>
-            <div id="dislikesListContainer" class="space-y-1.5">
-        <div class="text-xs text-slate-200 bg-slate-950/80 p-2.5 rounded-xl border border-amber-500/25 space-y-1">
-          <div class="font-bold text-amber-300 flex items-center gap-1.5">
-            <span>🧱</span> <span>Brittle Unreinforced Concrete</span>
-          </div>
-          <p class="text-[11px] text-slate-300 leading-relaxed font-serif italic">"It cracks in the Okanagan freeze-thaw cycle instead of adapting like roots."</p>
-        </div>
-      </div>
+            <div id="dislikesListContainer" class="space-y-1.5"></div>
           </div>
         </div>
 
@@ -651,23 +332,7 @@
             <span class="text-[11px] font-bold text-sky-300">🌐 NetNode Cyber Cafe Research Log</span>
             <button id="btnBrowseWebNow" class="text-[10px] font-mono text-sky-400 hover:underline">Surf Web Now</button>
           </div>
-          <div id="webHistoryList" class="space-y-1.5">
-        <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
-          <div class="flex justify-between font-mono text-[10px] text-sky-300">
-            <span>🐇 "termite mound passive cooling &amp; fungal mycelium bricks"</span>
-            <span class="text-slate-400">12m ago</span>
-          </div>
-          <div class="text-slate-300 text-[11px] italic">Inoculated north retaining slope with mushroom spawn dowels.</div>
-        </div>
-      
-        <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
-          <div class="flex justify-between font-mono text-[10px] text-sky-300">
-            <span>🐇 "hydrothermal quartz gold veins Okanagan bedrock"</span>
-            <span class="text-slate-400">Just now</span>
-          </div>
-          <div class="text-slate-300 text-[11px] italic">Hiked to (-15.5, -26.5) with the pneumatic core drill.</div>
-        </div>
-      </div>
+          <div id="webHistoryList" class="space-y-1.5"></div>
         </div>
       </div>
     </section>
@@ -702,92 +367,6 @@
       </div>
       <div class="flex justify-end">
         <button id="btnSaveAIConfig" class="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-slate-950 font-bold text-xs">Save Agent Config</button>
-      </div>
-    </div>
-  </div>
-
-<div id="repoHierarchyModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/85 backdrop-blur-md p-4">
-    <div class="bg-slate-900 border border-emerald-500/40 rounded-3xl max-w-5xl w-full p-5 space-y-4 shadow-2xl flex flex-col max-h-[92vh]">
-      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
-        <div>
-          <h3 class="text-sm sm:text-base font-extrabold text-white flex items-center gap-2">
-            <i class="ph-bold ph-github-logo text-emerald-400"></i>
-            <span>GitHub Repo Sync &amp; Pages Deployer: <a href="https://github.com/jeremiahaguirre/Kelo-bot-1" target="_blank" class="text-emerald-300 font-mono underline hover:text-emerald-200" rel="noopener noreferrer">jeremiahaguirre/Kelo-bot-1</a></span>
-          </h3>
-          <p class="text-xs text-slate-400">All 6 modular files below are 100% connected and ready for GitHub Pages (`https://jeremiahaguirre.github.io/Kelo-bot-1/`).</p>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <button id="btnDownloadFullZipModal" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-extrabold text-xs flex items-center gap-1.5 shadow-lg">
-            <i class="ph-bold ph-file-zip"></i> <span>Download kelo-1-world.zip</span>
-          </button>
-          <button id="btnCopySelectedRepoFile" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1">
-            <i class="ph-bold ph-copy"></i> <span>Copy Active File</span>
-          </button>
-          <button id="btnDownloadSelectedRepoFile" class="px-3 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-200 font-bold text-xs flex items-center gap-1">
-            <i class="ph-bold ph-download-simple"></i> <span>Download File</span>
-          </button>
-          <button id="btnCloseRepoHierarchyModal" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-slate-300">Close</button>
-        </div>
-      </div>
-
-      <!-- NEW: DIRECT GITHUB API AUTO-PUSH & PAGES DEPLOYMENT PANEL -->
-      <div class="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/40 flex flex-col gap-2.5">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <div class="text-xs font-bold text-emerald-200 flex items-center gap-1.5">
-            <i class="ph-fill ph-cloud-arrow-up text-emerald-400 text-base"></i>
-            <span>Direct GitHub API Auto-Commit to <code class="font-mono text-white">jeremiahaguirre/Kelo-bot-1</code></span>
-          </div>
-          <span id="githubSyncStatusText" class="text-[11px] font-mono text-emerald-300">Ready to push all 6 connected files &amp; enable GitHub Pages</span>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
-          <input id="ghRepoSlugInput" type="text" value="jeremiahaguirre/Kelo-bot-1" placeholder="owner/repo" class="sm:col-span-3 bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-mono text-emerald-300 focus:outline-none">
-          <input id="ghBranchInput" type="text" value="main" placeholder="branch (main)" class="sm:col-span-2 bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-mono text-sky-300 focus:outline-none">
-          <input id="ghTokenInput" type="password" placeholder="Paste GitHub Personal Access Token (repo scope) to push directly..." class="sm:col-span-4 bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400">
-          <button id="btnPushAllToGitHub" class="sm:col-span-3 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-lg transition">
-            <i class="ph-bold ph-rocket-launch"></i>
-            <span>Push All 6 Files to GitHub</span>
-          </button>
-        </div>
-        <div class="text-[11px] text-slate-400 flex flex-wrap items-center justify-between gap-2">
-          <span>🔒 Your token stays strictly in your browser to call <code class="text-slate-300">api.github.com/repos/jeremiahaguirre/Kelo-bot-1/contents/</code>.</span>
-          <a href="https://github.com/settings/tokens/new?scopes=repo&amp;description=Kelo-1-World-Deployer" target="_blank" class="text-emerald-300 hover:underline font-mono" rel="noopener noreferrer">Generate Token (1-Click) ↗</a>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 flex-1 min-h-0">
-        <!-- Left Tree Navigation -->
-        <div class="md:col-span-4 bg-slate-950 border border-slate-800 rounded-2xl p-3 font-mono text-xs space-y-1 overflow-y-auto">
-          <div class="text-slate-400 font-bold mb-2">kelo-1-world/</div>
-          <button data-repo-file="index.html" class="repo-tree-btn w-full text-left px-2.5 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 font-bold flex items-center gap-2">
-            <span>├── 📄 index.html</span>
-          </button>
-          <div class="text-slate-500 pl-2 pt-1">├── 📁 css/</div>
-          <button data-repo-file="css/style.css" class="repo-tree-btn w-full text-left pl-6 pr-2.5 py-1.5 rounded-xl hover:bg-slate-900 text-slate-300 flex items-center gap-2">
-            <span>└── 🎨 style.css</span>
-          </button>
-          <div class="text-slate-500 pl-2 pt-1">├── 📁 js/</div>
-          <button data-repo-file="js/main.js" class="repo-tree-btn w-full text-left pl-6 pr-2.5 py-1.5 rounded-xl hover:bg-slate-900 text-slate-300 flex items-center gap-2">
-            <span>├── ⚡ main.js</span>
-          </button>
-          <button data-repo-file="js/scene.js" class="repo-tree-btn w-full text-left pl-6 pr-2.5 py-1.5 rounded-xl hover:bg-slate-900 text-slate-300 flex items-center gap-2">
-            <span>├── 🏔️ scene.js</span>
-          </button>
-          <button data-repo-file="js/agent.js" class="repo-tree-btn w-full text-left pl-6 pr-2.5 py-1.5 rounded-xl hover:bg-slate-900 text-slate-300 flex items-center gap-2">
-            <span>└── 🧠 agent.js</span>
-          </button>
-          <button data-repo-file="README.md" class="repo-tree-btn w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 text-slate-300 flex items-center gap-2 pt-1">
-            <span>└── 📘 README.md</span>
-          </button>
-        </div>
-
-        <!-- Right File Code Display -->
-        <div class="md:col-span-8 flex flex-col bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden min-h-0">
-          <div class="px-3.5 py-2 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between text-xs font-mono">
-            <span id="activeRepoFilePath" class="text-emerald-300 font-bold">kelo-1-world/index.html</span>
-            <span id="activeRepoFileRole" class="text-slate-400">Clean modular HTML entrypoint linking css/style.css &amp; js/*.js</span>
-          </div>
-          <pre id="activeRepoFileCode" class="p-4 text-xs font-mono text-sky-200 overflow-auto flex-1 leading-relaxed select-all"></pre>
-        </div>
       </div>
     </div>
   </div>

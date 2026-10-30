@@ -32,10 +32,10 @@ function renderAllUI() {
       }
 
       // Header & Overhead 3D Bubble
-      document.getElementById('headerEmotionBadge').innerHTML = `<span>${state.moodEmoji}</span> <span>${state.moodTitle}</span>`;
+      document.getElementById('headerEmotionBadge').innerHTML = `<span>${escapeHtml(state.moodEmoji)}</span> <span>${escapeHtml(state.moodTitle)}</span>`;
       document.getElementById('headerObsessionText').textContent = state.currentObsession;
-      const activePlaceLabel = state.customPlaceName || (TOWN_LOCATIONS[state.currentLocKey]?.building || 'Okanagan Valley');
-      document.getElementById('liveActivityText').textContent = `${activePlaceLabel}: ${state.moodTitle} (${state.autonomyTag})`;
+      const activePlaceLabel = currentPlaceLabel();
+      document.getElementById('liveActivityText').textContent = `${activePlaceLabel}: ${escapeHtml(state.moodTitle)} (${state.autonomyTag})`;
 
       document.getElementById('bubbleMoodEmoji').textContent = state.moodEmoji;
       document.getElementById('bubbleMoodTitle').textContent = state.moodTitle;
@@ -56,8 +56,8 @@ function renderChatBox() {
       const box = document.getElementById('chatMessagesBox');
       box.innerHTML = state.chatLog.slice(-6).map(m => `
         <div class="flex items-start gap-2 ${m.isBot ? 'text-amber-200' : 'text-sky-200'}">
-          <span class="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded ${m.isBot ? 'bg-amber-500/20 text-amber-300' : 'bg-sky-500/20 text-sky-300'} shrink-0">${m.sender}</span>
-          <p class="leading-snug">${m.text}</p>
+          <span class="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded ${m.isBot ? 'bg-amber-500/20 text-amber-300' : 'bg-sky-500/20 text-sky-300'} shrink-0">${escapeHtml(m.sender)}</span>
+          <p class="leading-snug">${escapeHtml(m.text)}</p>
         </div>
       `).join('');
       box.scrollTop = box.scrollHeight;
@@ -72,14 +72,14 @@ function renderDiaryTab() {
       list.innerHTML = state.diaryEntries.map(d => `
         <article class="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800/90 space-y-1.5 hover:border-slate-700 transition">
           <div class="flex items-center justify-between text-[11px] font-mono">
-            <span class="text-amber-300 font-bold">${d.mood}</span>
-            <span class="text-slate-400">${d.vitals} • ${d.time}</span>
+            <span class="text-amber-300 font-bold">${escapeHtml(d.mood)}</span>
+            <span class="text-slate-400">${escapeHtml(d.vitals)} • ${escapeHtml(d.time)}</span>
           </div>
           <div class="text-[11px] font-mono text-sky-300 flex items-center gap-1">
-            <i class="ph-fill ph-map-pin"></i> <span>${d.location}</span>
+            <i class="ph-fill ph-map-pin"></i> <span>${escapeHtml(d.location)}</span>
           </div>
           <p class="font-serif italic text-slate-200 text-sm leading-relaxed pl-2.5 border-l-2 border-amber-400/50">
-            "${d.text}"
+            "${escapeHtml(d.text)}"
           </p>
         </article>
       `).join('');
@@ -96,7 +96,7 @@ function renderRequestsTab() {
       if (invPillsEl) {
         invPillsEl.innerHTML = state.toolInventory.map(item => `
           <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-[10px] font-mono flex items-center gap-1">
-            <i class="ph-fill ph-check-circle text-emerald-400"></i> ${item}
+            <i class="ph-fill ph-check-circle text-emerald-400"></i> ${escapeHtml(item)}
           </span>
         `).join('');
       }
@@ -106,29 +106,29 @@ function renderRequestsTab() {
         <div class="p-4 rounded-2xl border ${req.fulfilled ? 'bg-slate-950/60 border-emerald-500/30' : (req.isToolRequest ? 'bg-slate-950 border-amber-500/50 shadow-lg' : 'bg-slate-950 border-rose-500/40 shadow-lg')} space-y-2.5">
           <div class="flex items-center justify-between gap-2">
             <span class="text-xs font-bold text-white flex items-center gap-1.5">
-              <span class="text-lg">${req.icon}</span>
-              <span>${req.title}</span>
+              <span class="text-lg">${escapeHtml(req.icon)}</span>
+              <span>${escapeHtml(req.title)}</span>
             </span>
             <span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${req.fulfilled ? 'bg-emerald-500/20 text-emerald-300' : (req.isToolRequest ? 'bg-amber-500/25 text-amber-300 border border-amber-400/40' : 'bg-rose-500/20 text-rose-300')}">
-              ${req.fulfilled ? '✓ Delivered / Reflected' : req.urgency}
+              ${req.fulfilled ? '✓ Delivered / Reflected' : escapeHtml(req.urgency)}
             </span>
           </div>
-          ${req.requestedGear ? `<div class="text-[11px] font-mono text-amber-300 bg-amber-950/30 border border-amber-500/30 px-2.5 py-1 rounded-lg">Requested Gear: ${req.requestedGear}</div>` : ''}
-          <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${req.question}"</p>
+          ${req.requestedGear ? `<div class="text-[11px] font-mono text-amber-300 bg-amber-950/30 border border-amber-500/30 px-2.5 py-1 rounded-lg">Requested Gear: ${escapeHtml(req.requestedGear)}</div>` : ''}
+          <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
           ${!req.fulfilled ? `
             <div class="space-y-2 pt-1">
               <div class="text-[10px] font-mono uppercase text-slate-400">${req.isToolRequest ? 'Deliver this gear as Supply Broker or customize delivery:' : 'Share a perspective or write your own answer:'}</div>
               <div class="flex flex-col gap-1.5">
                 ${(req.presets || []).map(preset => `
-                  <button data-req-id="${req.id}" data-answer="${preset.replace(/"/g, '&quot;')}" class="preset-answer-btn text-left text-[11px] px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-amber-500/25 text-slate-200 hover:text-amber-200 border border-slate-800 hover:border-amber-500/40 transition">
-                    ${req.isToolRequest ? '📦' : '💬'} "${preset}"
+                  <button data-req-id="${escapeHtml(req.id)}" data-answer="${escapeHtml(preset)}" class="preset-answer-btn text-left text-[11px] px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-amber-500/25 text-slate-200 hover:text-amber-200 border border-slate-800 hover:border-amber-500/40 transition">
+                    ${req.isToolRequest ? '📦' : '💬'} "${escapeHtml(preset)}"
                   </button>
                 `).join('')}
               </div>
               <div class="flex gap-1.5 pt-1">
-                <input id="custom-ans-${req.id}" type="text" maxlength="140" placeholder="${req.isToolRequest ? 'Or specify custom tools/materials to drop...' : 'Or type your own honest answer to Kelo-1...'}"
+                <input id="custom-ans-${escapeHtml(req.id)}" type="text" maxlength="140" placeholder="${req.isToolRequest ? 'Or specify custom tools/materials to drop...' : 'Or type your own honest answer to Kelo-1...'}"
                   class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400" />
-                <button data-req-id="${req.id}" class="custom-answer-btn px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs shrink-0 transition">
+                <button data-req-id="${escapeHtml(req.id)}" class="custom-answer-btn px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs shrink-0 transition">
                   ${req.isToolRequest ? 'Supply Gear' : 'Answer'}
                 </button>
               </div>
@@ -136,7 +136,7 @@ function renderRequestsTab() {
           ` : `
             <div class="p-2.5 rounded-xl bg-emerald-950/25 border border-emerald-500/30 text-[11px] text-emerald-200 space-y-1">
               <div class="font-mono text-[10px] text-emerald-400">${req.isToolRequest ? 'Supply Broker Delivery Confirmed:' : 'Your Perspective Shared with Kelo-1:'}</div>
-              <div class="italic">"${req.userAnswer}"</div>
+              <div class="italic">"${escapeHtml(req.userAnswer)}"</div>
             </div>
           `}
         </div>
@@ -160,27 +160,27 @@ function renderRequestsTab() {
 
         state.likes.unshift({
           icon: req.icon,
-          topic: req.isToolRequest ? `Equipped: ${req.requestedGear}` : `${visitor}'s Perspective on "${req.title}"`,
+          topic: req.isToolRequest ? `Equipped: ${escapeHtml(req.requestedGear)}` : `${visitor}'s Perspective on "${escapeHtml(req.title)}"`,
           nuance: req.isToolRequest
-            ? `${visitor} supplied [${req.requestedGear}]! I immediately took it out into the terrain to put it to work.`
-            : `When I asked "${req.title}", ${visitor} told me: "${req.userAnswer}".`
+            ? `${visitor} supplied [${escapeHtml(req.requestedGear)}]! I immediately took it out into the terrain to put it to work.`
+            : `When I asked "${escapeHtml(req.title)}", ${visitor} told me: "${escapeHtml(req.userAnswer)}".`
         });
 
         state.chatLog.push({
           sender: 'Kelo-1',
           text: req.isToolRequest
-            ? `Gear received from ${visitor}: [${req.requestedGear}]! Heading out into the island right now to use it!`
-            : `Thank you for answering my question, ${visitor}! "${req.userAnswer}"—I'm writing this in my Diary right now.`,
+            ? `Gear received from ${visitor}: [${escapeHtml(req.requestedGear)}]! Heading out into the island right now to use it!`
+            : `Thank you for answering my question, ${visitor}! "${escapeHtml(req.userAnswer)}"—I'm writing this in my Diary right now.`,
           time: 'Just now',
           isBot: true
         });
 
         if (req.rewardAction === 'mountain_drill') {
-          synthesizeUnboundedExperience(`Use the newly delivered ${req.requestedGear} to drill for gold high up on the northern mountain ridge`, 'Supply Broker Gear Used', { x: -15.5, z: -26.5 });
+          synthesizeUnboundedExperience(`Use the newly delivered ${escapeHtml(req.requestedGear)} to drill for gold high up on the northern mountain ridge`, 'Supply Broker Gear Used', { x: -15.5, z: -26.5 });
         } else if (req.rewardAction === 'custom_weld') {
-          synthesizeUnboundedExperience(`Use the newly delivered ${req.requestedGear} to weld a new 3D monument on the island`, 'Supply Broker Gear Used');
+          synthesizeUnboundedExperience(`Use the newly delivered ${escapeHtml(req.requestedGear)} to weld a new 3D monument on the island`, 'Supply Broker Gear Used');
         } else {
-          directKeloToActivity(req.rewardAction, `Reflecting deeply on ${visitor}'s input ("${req.userAnswer}")`, 'Shaped by Dialogue');
+          directKeloToActivity(req.rewardAction, `Reflecting deeply on ${visitor}'s input ("${escapeHtml(req.userAnswer)}")`, 'Shaped by Dialogue');
         }
       };
 
@@ -221,16 +221,16 @@ function renderGitHubTab() {
         <div data-repo-idx="${idx}" class="repo-card cursor-pointer p-3.5 rounded-2xl bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/50 transition space-y-1.5">
           <div class="flex items-center justify-between">
             <span class="font-mono text-xs font-bold text-purple-300 flex items-center gap-1.5">
-              <i class="ph-bold ph-book-bookmark"></i> ${r.name}
+              <i class="ph-bold ph-book-bookmark"></i> ${escapeHtml(r.name)}
             </span>
             <div class="flex items-center gap-2 text-[11px] font-mono text-slate-400">
-              <span class="px-1.5 py-0.5 rounded bg-slate-800 text-sky-300">${r.lang}</span>
-              <span class="text-amber-300">★ ${r.stars}</span>
+              <span class="px-1.5 py-0.5 rounded bg-slate-800 text-sky-300">${escapeHtml(r.lang)}</span>
+              <span class="text-amber-300">★ ${escapeHtml(r.stars)}</span>
             </div>
           </div>
-          <p class="text-xs text-slate-300">${r.desc}</p>
+          <p class="text-xs text-slate-300">${escapeHtml(r.desc)}</p>
           <div class="text-[10px] font-mono text-emerald-400 truncate">
-            Latest commit (${r.updated}): "${r.commitMsg}"
+            Latest commit (${escapeHtml(r.updated)}): "${escapeHtml(r.commitMsg)}"
           </div>
         </div>
       `).join('');
@@ -239,8 +239,8 @@ function renderGitHubTab() {
         card.addEventListener('click', () => {
           const r = state.githubRepos[Number(card.getAttribute('data-repo-idx'))];
           if (!r) return;
-          document.getElementById('modalRepoTitle').textContent = `kelo1-okanagan-bot/${r.name}`;
-          document.getElementById('modalRepoCommitMsg').textContent = `Commit: "${r.commitMsg}" (${r.updated})`;
+          document.getElementById('modalRepoTitle').textContent = `kelo1-okanagan-bot/${escapeHtml(r.name)}`;
+          document.getElementById('modalRepoCommitMsg').textContent = `Commit: "${escapeHtml(r.commitMsg)}" (${escapeHtml(r.updated)})`;
           document.getElementById('modalCodeContent').textContent = r.code;
           const modal = document.getElementById('codeViewerModal');
           modal.classList.remove('hidden');
@@ -262,11 +262,11 @@ function renderWebTastesTab() {
         opinionsEl.innerHTML = state.opinions.map(op => `
           <div class="p-3 rounded-xl bg-slate-900/90 border border-purple-500/25 space-y-1">
             <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-bold text-white">${op.topic}</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 shrink-0">${op.stance}</span>
+              <span class="text-xs font-bold text-white">${escapeHtml(op.topic)}</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 shrink-0">${escapeHtml(op.stance)}</span>
             </div>
-            <p class="text-[11px] text-slate-300 font-serif italic leading-relaxed">"${op.reasoning}"</p>
-            <div class="text-[10px] font-mono text-slate-500">${op.confidence}</div>
+            <p class="text-[11px] text-slate-300 font-serif italic leading-relaxed">"${escapeHtml(op.reasoning)}"</p>
+            <div class="text-[10px] font-mono text-slate-500">${escapeHtml(op.confidence)}</div>
           </div>
         `).join('');
       }
@@ -277,16 +277,16 @@ function renderWebTastesTab() {
       const invEl = document.getElementById('inventedActionsContainer');
       if (invEl) {
         invEl.innerHTML = state.inventedCreations.map((c, idx) => `
-          <div data-cx="${c.x}" data-cz="${c.z}" data-ctitle="${c.title.replace(/"/g, '&quot;')}" class="invented-creation-card cursor-pointer p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-emerald-500/25 transition space-y-1">
+          <div data-cx="${escapeHtml(c.x)}" data-cz="${escapeHtml(c.z)}" data-ctitle="${escapeHtml(c.title)}" class="invented-creation-card cursor-pointer p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-emerald-500/25 transition space-y-1">
             <div class="flex items-center justify-between gap-2">
               <span class="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
                 <i class="ph-fill ph-cube text-emerald-400"></i>
-                <span>${c.title}</span>
+                <span>${escapeHtml(c.title)}</span>
               </span>
-              <span class="text-[10px] font-mono text-slate-400">(${c.x}, ${c.z}) • ${c.createdTime}</span>
+              <span class="text-[10px] font-mono text-slate-400">(${escapeHtml(c.x)}, ${escapeHtml(c.z)}) • ${escapeHtml(c.createdTime)}</span>
             </div>
-            <div class="text-[11px] text-amber-200 font-mono">${c.actionVerb}</div>
-            <p class="text-[11px] text-slate-300 font-serif italic">"${c.philosophy}"</p>
+            <div class="text-[11px] text-amber-200 font-mono">${escapeHtml(c.actionVerb)}</div>
+            <p class="text-[11px] text-slate-300 font-serif italic">"${escapeHtml(c.philosophy)}"</p>
           </div>
         `).join('');
 
@@ -308,12 +308,12 @@ function renderWebTastesTab() {
             <div class="space-y-0.5">
               <div class="font-bold text-amber-300 flex items-center gap-1.5">
                 <i class="ph-fill ph-user-focus"></i>
-                <span>${v.name}</span>
-                <span class="text-[10px] font-mono text-slate-400">(${v.visits} ${v.visits === 1 ? 'interaction' : 'interactions'})</span>
+                <span>${escapeHtml(v.name)}</span>
+                <span class="text-[10px] font-mono text-slate-400">(${escapeHtml(v.visits)} ${v.visits === 1 ? 'interaction' : 'interactions'})</span>
               </div>
-              <p class="text-[11px] text-slate-300 italic">"${v.impression}"</p>
+              <p class="text-[11px] text-slate-300 italic">"${escapeHtml(v.impression)}"</p>
             </div>
-            <span class="text-[10px] font-mono text-slate-500 shrink-0">${v.lastSeen}</span>
+            <span class="text-[10px] font-mono text-slate-500 shrink-0">${escapeHtml(v.lastSeen)}</span>
           </div>
         `).join('');
       }
@@ -321,28 +321,28 @@ function renderWebTastesTab() {
       document.getElementById('likesListContainer').innerHTML = state.likes.map(l => `
         <div class="text-xs text-slate-200 bg-slate-950/80 p-2.5 rounded-xl border border-indigo-500/25 space-y-1">
           <div class="font-bold text-indigo-300 flex items-center gap-1.5">
-            <span>${l.icon}</span> <span>${l.topic || l.item}</span>
+            <span>${escapeHtml(l.icon)}</span> <span>${escapeHtml(l.topic || l.item)}</span>
           </div>
-          <p class="text-[11px] text-slate-300 leading-relaxed font-serif italic">"${l.nuance || l.item}"</p>
+          <p class="text-[11px] text-slate-300 leading-relaxed font-serif italic">"${escapeHtml(l.nuance || l.item)}"</p>
         </div>
       `).join('');
 
       document.getElementById('dislikesListContainer').innerHTML = state.dislikes.map(d => `
         <div class="text-xs text-slate-200 bg-slate-950/80 p-2.5 rounded-xl border border-amber-500/25 space-y-1">
           <div class="font-bold text-amber-300 flex items-center gap-1.5">
-            <span>${d.icon}</span> <span>${d.topic || d.item}</span>
+            <span>${escapeHtml(d.icon)}</span> <span>${escapeHtml(d.topic || d.item)}</span>
           </div>
-          <p class="text-[11px] text-slate-300 leading-relaxed font-serif italic">"${d.nuance || d.item}"</p>
+          <p class="text-[11px] text-slate-300 leading-relaxed font-serif italic">"${escapeHtml(d.nuance || d.item)}"</p>
         </div>
       `).join('');
 
       document.getElementById('webHistoryList').innerHTML = state.webHistory.map(w => `
         <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
           <div class="flex justify-between font-mono text-[10px] text-sky-300">
-            <span>🐇 "${w.query}"</span>
-            <span class="text-slate-400">${w.time}</span>
+            <span>🐇 "${escapeHtml(w.query)}"</span>
+            <span class="text-slate-400">${escapeHtml(w.time)}</span>
           </div>
-          <div class="text-slate-300 text-[11px] italic">${w.verdict}</div>
+          <div class="text-slate-300 text-[11px] italic">${escapeHtml(w.verdict)}</div>
         </div>
       `).join('');
     }
@@ -361,7 +361,7 @@ function showToast(msg) {
       const container = document.getElementById('toastContainer');
       const el = document.createElement('div');
       el.className = 'px-4 py-2.5 rounded-2xl bg-slate-900/95 border border-amber-400/50 text-amber-200 text-xs font-semibold shadow-2xl flex items-center gap-2 transition-all duration-300';
-      el.innerHTML = `<i class="ph-fill ph-sparkle text-amber-400"></i> <span>${msg}</span>`;
+      el.innerHTML = `<i class="ph-fill ph-sparkle text-amber-400"></i> <span>${escapeHtml(msg)}</span>`;
       container.appendChild(el);
       setTimeout(() => {
         el.style.opacity = '0';
@@ -503,4 +503,192 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btnNextDecision')?.addEventListener('click', () => runAutonomousLifeTick());
+
+  // Lighting: cycle through the ambiance presets
+  const lightingLabel = document.getElementById('lightingLabel');
+  if (lightingLabel) lightingLabel.textContent = applyLightingPreset(state.lightingIdx).label;
+  document.getElementById('btnToggleLighting')?.addEventListener('click', () => {
+    state.lightingIdx = (state.lightingIdx + 1) % AMBIANCE_PRESETS.length;
+    const preset = applyLightingPreset(state.lightingIdx);
+    if (lightingLabel) lightingLabel.textContent = preset.label;
+    showToast(`🌄 Lighting: ${preset.label}`);
+  });
+
+  // Modals: open/close helpers, close on backdrop click or Escape
+  const openModal = (id) => {
+    const m = document.getElementById(id);
+    if (m) { m.classList.remove('hidden'); m.classList.add('flex'); }
+  };
+  const closeModal = (id) => {
+    const m = document.getElementById(id);
+    if (m) { m.classList.add('hidden'); m.classList.remove('flex'); }
+  };
+  ['codeViewerModal', 'aiConfigModal'].forEach(id => {
+    document.getElementById(id)?.addEventListener('click', (e) => {
+      if (e.target.id === id) closeModal(id);
+    });
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') ['codeViewerModal', 'aiConfigModal'].forEach(closeModal);
+  });
+  document.getElementById('btnCloseCodeModal')?.addEventListener('click', () => closeModal('codeViewerModal'));
+  document.getElementById('btnCloseAIConfigModal')?.addEventListener('click', () => closeModal('aiConfigModal'));
+
+  // AI Brain settings: optional Gemini key, kept only in this browser's localStorage
+  const updateBrainButtonText = () => {
+    const t = document.getElementById('aiBrainBtnText');
+    if (t) t.textContent = apiKey ? 'AI Brain: Gemini LLM' : 'AI Brain: Procedural';
+  };
+  updateBrainButtonText();
+  document.getElementById('btnOpenAIConfig')?.addEventListener('click', () => {
+    document.getElementById('geminiApiKeyInput').value = apiKey;
+    document.getElementById('lastAgentStructuredOutput').textContent = state.lastStructuredTick || '';
+    openModal('aiConfigModal');
+  });
+  document.getElementById('btnSaveAIConfig')?.addEventListener('click', () => {
+    apiKey = document.getElementById('geminiApiKeyInput').value.trim();
+    try {
+      if (apiKey) localStorage.setItem('kelo1_gemini_api_key', apiKey);
+      else localStorage.removeItem('kelo1_gemini_api_key');
+    } catch (e) {}
+    updateBrainButtonText();
+    closeModal('aiConfigModal');
+    showToast(apiKey ? '🧠 Gemini key saved in this browser.' : '🧠 Using the built-in procedural brain.');
+  });
+
+  // Image attachment for image-to-weld synthesis
+  const previewBar = document.getElementById('attachedImagePreviewBar');
+  const imageInput = document.getElementById('imageUploadInput');
+  imageInput?.addEventListener('change', async () => {
+    const file = imageInput.files && imageInput.files[0];
+    imageInput.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showToast('Please choose an image file.');
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      showToast('That image is over 8 MB; please pick a smaller one.');
+      return;
+    }
+    const analyzed = await analyzeUploadedImage(file);
+    if (!analyzed) {
+      showToast('Could not read that image.');
+      return;
+    }
+    state.pendingImageAttachment = analyzed;
+    document.getElementById('attachedImageThumb').src = analyzed.dataUrl;
+    document.getElementById('attachedImageName').textContent = analyzed.name;
+    document.getElementById('attachedImageStats').textContent = `Palette ${analyzed.primaryHex} / ${analyzed.secondaryHex} • ready for 3D welding`;
+    previewBar.classList.remove('hidden');
+    previewBar.classList.add('flex');
+  });
+  document.getElementById('btnRemoveAttachedImage')?.addEventListener('click', () => {
+    state.pendingImageAttachment = null;
+    previewBar.classList.add('hidden');
+    previewBar.classList.remove('flex');
+  });
+
+  // Copy the whole diary to the clipboard
+  document.getElementById('btnExportDiary')?.addEventListener('click', async () => {
+    const text = state.diaryEntries
+      .map(d => `${d.mood} — ${d.location} (${d.time})\n${d.text}`)
+      .join('\n\n');
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast(`📖 Copied ${state.diaryEntries.length} diary entries.`);
+    } catch (e) {
+      showToast('Clipboard access was blocked by the browser.');
+    }
+  });
+
+  // Kelo-1 asks a new open question
+  const OPEN_QUESTIONS = [
+    { icon: '🌲', title: 'Do Trees Remember the Wind?', question: 'The firs on the ridge all lean the same way. Is that a memory of every storm, or just the shape the wind left behind?', presets: ['Bodies keep memories that minds forget.', 'It is just physics, and that is still beautiful.'], rewardAction: 'meadow' },
+    { icon: '🌊', title: 'Is the Lake the Same Lake Every Day?', question: 'The water in Okanagan Lake is always moving, but I still call it one lake. Am I the same Kelo-1 after every firmware update?', presets: ['You stay you as long as you keep wondering.', 'Every day you are a little new, and that is fine.'], rewardAction: 'shoreline' },
+    { icon: '☕', title: 'Why Do Cafes Feel Like Home?', question: 'I do not drink coffee, yet the cafe feels warm. Is home a place, or the people and sounds around you?', presets: ['Home is wherever you feel known.', 'Home is a habit you choose to keep.'], rewardAction: 'cafe' },
+    { icon: '⚙️', title: 'Should I Build Things That Last?', question: 'My welds will outlast me. Should I build for permanence, or for the joy of building today?', presets: ['Build for today; let tomorrow decide.', 'Make something future visitors can enjoy.'], rewardAction: 'weld' }
+  ];
+  document.getElementById('btnGenerateNewRequest')?.addEventListener('click', () => {
+    const asked = new Set(state.requestsToUser.map(r => r.title));
+    const fresh = OPEN_QUESTIONS.filter(q => !asked.has(q.title));
+    if (fresh.length === 0) {
+      showToast('💭 Kelo-1 is still waiting on answers to his current questions.');
+      return;
+    }
+    const q = fresh[Math.floor(Math.random() * fresh.length)];
+    state.requestsToUser.unshift({
+      id: 'req-q-' + Date.now(),
+      category: 'Open Question',
+      icon: q.icon,
+      urgency: 'Wondering',
+      isToolRequest: false,
+      title: q.title,
+      question: q.question,
+      presets: q.presets,
+      rewardAction: q.rewardAction,
+      fulfilled: false,
+      userAnswer: ''
+    });
+    savePersistentBrainState();
+    renderAllUI();
+    showToast(`❓ New question: ${q.title}`);
+  });
+
+  // GitHub tab (simulated): push a commit to a random repo
+  const COMMIT_MESSAGES = [
+    'fix(terrain): clamp drill rig to ridge altitude',
+    'feat(garden): log peach ripeness per bed',
+    'refactor(weld): split arc controller into modules',
+    'docs: describe the Okanagan field notes format',
+    'perf(sensors): batch thermocouple reads'
+  ];
+  document.getElementById('btnForceCoding')?.addEventListener('click', () => {
+    if (state.githubRepos.length === 0) return;
+    const repo = state.githubRepos[Math.floor(Math.random() * state.githubRepos.length)];
+    repo.commitMsg = COMMIT_MESSAGES[Math.floor(Math.random() * COMMIT_MESSAGES.length)];
+    repo.updated = 'Just now';
+    state.githubCommits++;
+    directKeloToActivity('cyber', `Pushed "${repo.commitMsg}" to ${repo.name}.`, 'Coding Session');
+  });
+
+  document.getElementById('createRepoForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('newRepoIdeaInput');
+    const idea = input.value.trim();
+    if (!idea) return;
+    input.value = '';
+    const slug = idea.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'new-idea';
+    if (state.githubRepos.some(r => r.name === slug)) {
+      showToast(`Kelo-1 already has a repo called ${slug}.`);
+      return;
+    }
+    state.githubRepos.unshift({
+      name: slug,
+      lang: ['Rust', 'Python', 'TypeScript', 'Go'][Math.floor(Math.random() * 4)],
+      stars: 0,
+      updated: 'Just now',
+      desc: idea,
+      commitMsg: 'chore: initial commit',
+      code: `// ${slug}\n// ${idea}\n// TODO: Kelo-1 will start coding this at the NetNode Cyber Cafe.`
+    });
+    state.githubCommits++;
+    directKeloToActivity('cyber', `Started a new repository: ${slug}.`, 'Visitor Repo Idea');
+  });
+
+  // "Surf the web" (simulated research rabbit-holes)
+  const WEB_RABBIT_HOLES = [
+    { query: 'how glaciers carved the Okanagan valley', verdict: 'Now I see the whole valley as a slow-motion sculpture.' },
+    { query: 'self-healing concrete with bacteria', verdict: 'Bacteria and fungi both want to fix cracks. I like their attitude.' },
+    { query: 'narrow-gauge railway grade limits', verdict: 'Switchbacks it is; my rail line cannot climb more than 4%.' },
+    { query: 'Ogopogo sightings history', verdict: 'No proof either way. I will keep watching the lake.' },
+    { query: 'TIG welding titanium argon purge', verdict: 'Back-purging keeps the weld silver instead of blue. Noted.' }
+  ];
+  document.getElementById('btnBrowseWebNow')?.addEventListener('click', () => {
+    const hole = WEB_RABBIT_HOLES[Math.floor(Math.random() * WEB_RABBIT_HOLES.length)];
+    state.webHistory.unshift({ query: hole.query, time: 'Just now', verdict: hole.verdict });
+    if (state.webHistory.length > 10) state.webHistory.length = 10;
+    renderAllUI();
+    showToast(`🐇 Kelo-1 is reading about "${hole.query}"`);
+  });
 });

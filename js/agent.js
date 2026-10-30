@@ -427,6 +427,7 @@ const state = {
   "toys": [],
   "belongings": [],
   "giftLog": [],
+  "photoAlbum": [],
   "isBrowsing": false,
   "concepts": [
     {
@@ -1595,7 +1596,8 @@ function generateProceduralDecision(context = {}) {
         destination = { x, z, placeName: z < -14 ? 'Somewhere on the Mountain' : 'Somewhere on the Island' };
       }
 
-      const builds = Math.random() < 0.45;
+      // A photo often inspires a build in its colors
+      const builds = context.image ? Math.random() < 0.75 : Math.random() < 0.45;
       const wantsSomething = Math.random() < 0.18;
       const d = () => Math.round(randRange(-8, 10));
       return {
@@ -1612,7 +1614,10 @@ function generateProceduralDecision(context = {}) {
             const saved = pick(state.shapeLibrary);
             return { title: `${saved.name} No. ${(saved.uses || 0) + 2}`, archetype: 'custom_weld', useShape: saved.name, colorHex: randomHex(), secondaryColorHex: randomHex() };
           }
-          const parts = randomSculptureParts();
+          let parts = randomSculptureParts();
+          if (context.image && parts) {
+            parts = parts.map((pt, i) => ({ ...pt, color: i % 2 ? context.image.secondaryHex : context.image.primaryHex }));
+          }
           return {
             title: `${title} (Kelo-1 Original)`,
             archetype: parts ? 'custom_weld' : pick(VALID_ARCHETYPES),

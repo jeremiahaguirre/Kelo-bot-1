@@ -428,8 +428,10 @@ let apiKey = '';
 try { apiKey = localStorage.getItem('kelo1_gemini_api_key') || ''; } catch (e) {}
 let organicTimeoutId = null;
 
-// Single Gemini model used by every LLM call
-const GEMINI_MODEL = 'gemini-2.5-flash';
+// Gemini models to try in order. The "-latest" aliases track Google's current Flash models,
+// so they don't break when a specific version is retired. The lite model is the fallback
+// when the main one is overloaded or unavailable.
+const GEMINI_MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest'];
 
 // Caps so the in-memory brain and the 3D world don't grow forever
 const MAX_DIARY_ENTRIES = 40;
@@ -477,26 +479,31 @@ function trimBrainState() {
 // The key goes in a header rather than the URL so it doesn't end up in logs or history.
 async function callGeminiJSON(parts) {
       if (!apiKey || !apiKey.trim()) return null;
-      try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey.trim() },
-          body: JSON.stringify({
-            contents: [{ parts }],
-            generationConfig: { responseMimeType: 'application/json' }
-          })
-        });
-        if (!res.ok) {
-          console.warn('Gemini request failed:', res.status);
-          return null;
+      for (const model of GEMINI_MODELS) {
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey.trim() },
+            body: JSON.stringify({
+              contents: [{ parts }],
+              generationConfig: { responseMimeType: 'application/json' }
+            })
+          });
+          if (!res.ok) {
+            console.warn(`Gemini ${model} request failed:`, res.status);
+            // Busy, rate-limited or retired: try the next model. Anything else (e.g. bad key) won't improve.
+            if ([404, 429, 500, 503].includes(res.status)) continue;
+            return null;
+          }
+          const d = await res.json();
+          const parsed = JSON.parse(d?.candidates?.[0]?.content?.parts?.[0]?.text || '{}');
+          return (parsed && typeof parsed === 'object') ? parsed : null;
+        } catch (err) {
+          console.warn(`Gemini ${model} error:`, err);
         }
-        const d = await res.json();
-        const parsed = JSON.parse(d?.candidates?.[0]?.content?.parts?.[0]?.text || '{}');
-        return (parsed && typeof parsed === 'object') ? parsed : null;
-      } catch (err) {
-        console.warn('Gemini API fallback to procedural synthesizer:', err);
-        return null;
       }
+      console.warn('All Gemini models failed.');
+      return null;
     }
 
 const VALID_PART_SHAPES = ['cylinder', 'box', 'sphere', 'cone', 'torus', 'knot', 'octahedron'];

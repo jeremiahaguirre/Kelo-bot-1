@@ -422,6 +422,7 @@ const state = {
     }
   ],
   "rhythmPhaseText": "Absorbed in the Okanagan valley air...",
+  "shapeLibrary": [],
   "concepts": [
     {
       "name": "Grown Architecture",
@@ -468,6 +469,7 @@ const MAX_CHAT_LOG = 40;
 const MAX_CREATIONS = 24;
 const MAX_REQUESTS = 12;
 const MAX_CONCEPTS = 24;
+const MAX_SHAPES = 20;
 
 // Escape any user- or LLM-supplied text before it goes into an innerHTML template
 function escapeHtml(value) {
@@ -603,27 +605,61 @@ async function callLLMJSON(parts) {
       return (await callGeminiJSON(parts)) || (await callClaudeJSON(parts));
     }
 
-const VALID_PART_SHAPES = ['cylinder', 'box', 'sphere', 'cone', 'torus', 'knot', 'octahedron'];
+// Basic solids plus three free-form shapes he can draw himself, so a sculpture can take any form:
+//   lathe:   a profile [[radius, height], ...] spun around the vertical axis (vases, towers, bells, mushrooms)
+//   extrude: a flat outline [[x, y], ...] given thickness (stars, letters, leaves, silhouettes)
+//   tube:    a path [[x, y, z], ...] traced by a pipe (coils, arches, knots, handwriting)
+const BASIC_PART_SHAPES = ['cylinder', 'box', 'sphere', 'cone', 'torus', 'knot', 'octahedron',
+  'dodecahedron', 'icosahedron', 'tetrahedron', 'ring'];
+const FREEFORM_PART_SHAPES = ['lathe', 'extrude', 'tube'];
+const VALID_PART_SHAPES = [...BASIC_PART_SHAPES, ...FREEFORM_PART_SHAPES];
 const VALID_ARCHETYPES = ['gold_drill_rig', 'mycelium_dome', 'rail_track', 'custom_weld', 'kinetic_spire', 'cairn', 'campfire_lantern', 'botanical_totem'];
+const MAX_SCULPTURE_PARTS = 24;
 
-// Keep LLM-designed sculptures sane: known shapes, bounded size/offset, at most 12 parts
+// Clean a list of [a, b] or [a, b, c] points, bounded so shapes stay a sensible size
+function sanitizePoints(points, dims, min, max, maxCount) {
+      if (!Array.isArray(points)) return null;
+      const clean = points.slice(0, maxCount)
+        .filter(pt => Array.isArray(pt) && pt.length >= dims)
+        .map(pt => pt.slice(0, dims).map(v => Math.round(clampNumber(v, min, max, 0) * 1000) / 1000));
+      return clean;
+    }
+
+// Keep designed sculptures renderable: known shape types, bounded sizes, offsets and point counts
 function sanitizeParts(parts) {
       if (!Array.isArray(parts)) return null;
-      const clean = parts.slice(0, 12).filter(p => p && typeof p === 'object').map(p => ({
-        shape: VALID_PART_SHAPES.includes(p.shape) ? p.shape : 'box',
-        x: clampNumber(p.x, -2, 2, 0),
-        y: clampNumber(p.y, 0, 4, 0.5),
-        z: clampNumber(p.z, -2, 2, 0),
-        sx: clampNumber(p.sx, 0.05, 2.5, 0.5),
-        sy: clampNumber(p.sy, 0.05, 3, 0.5),
-        sz: clampNumber(p.sz, 0.05, 2.5, 0.5),
-        rx: clampNumber(p.rx, -Math.PI, Math.PI, 0),
-        ry: clampNumber(p.ry, -Math.PI, Math.PI, 0),
-        rz: clampNumber(p.rz, -Math.PI, Math.PI, 0),
-        color: /^#[0-9a-f]{6}$/i.test(p.color) ? p.color : undefined,
-        spin: Boolean(p.spin),
-        emissive: Boolean(p.emissive)
-      }));
+      const clean = [];
+      parts.slice(0, MAX_SCULPTURE_PARTS).filter(p => p && typeof p === 'object').forEach(p => {
+        const part = {
+          shape: VALID_PART_SHAPES.includes(p.shape) ? p.shape : 'box',
+          x: clampNumber(p.x, -2.5, 2.5, 0),
+          y: clampNumber(p.y, 0, 5, 0.5),
+          z: clampNumber(p.z, -2.5, 2.5, 0),
+          sx: clampNumber(p.sx, 0.05, 2.5, 0.5),
+          sy: clampNumber(p.sy, 0.05, 3, 0.5),
+          sz: clampNumber(p.sz, 0.05, 2.5, 0.5),
+          rx: clampNumber(p.rx, -Math.PI, Math.PI, 0),
+          ry: clampNumber(p.ry, -Math.PI, Math.PI, 0),
+          rz: clampNumber(p.rz, -Math.PI, Math.PI, 0),
+          color: /^#[0-9a-f]{6}$/i.test(p.color) ? p.color : undefined,
+          spin: Boolean(p.spin),
+          emissive: Boolean(p.emissive)
+        };
+        if (part.shape === 'lathe') {
+          part.profile = sanitizePoints(p.profile, 2, 0, 2.5, 32);
+          if (!part.profile || part.profile.length < 2) return;
+          part.profile.forEach(pt => { pt[1] = clampNumber(pt[1], 0, 4, 0); });
+        } else if (part.shape === 'extrude') {
+          part.outline = sanitizePoints(p.outline, 2, -2.5, 2.5, 48);
+          if (!part.outline || part.outline.length < 3) return;
+          part.depth = clampNumber(p.depth, 0.02, 1.5, 0.2);
+        } else if (part.shape === 'tube') {
+          part.path = sanitizePoints(p.path, 3, -2.5, 4, 24);
+          if (!part.path || part.path.length < 2) return;
+          part.radius = clampNumber(p.radius, 0.02, 0.5, 0.08);
+        }
+        clean.push(part);
+      });
       return clean.length > 0 ? clean : null;
     }
 
@@ -1181,6 +1217,10 @@ function loadPersistentBrainState() {
         if (Array.isArray(saved.diaryEntries) && saved.diaryEntries.length > 0) state.diaryEntries = saved.diaryEntries;
         if (Array.isArray(saved.toolInventory) && saved.toolInventory.length > 0) state.toolInventory = saved.toolInventory;
         if (Array.isArray(saved.concepts) && saved.concepts.length > 0) state.concepts = saved.concepts;
+        if (Array.isArray(saved.shapeLibrary)) {
+          state.shapeLibrary = saved.shapeLibrary.filter(sh => sh && sh.name && sanitizeParts(sh.parts))
+            .map(sh => ({ ...sh, parts: sanitizeParts(sh.parts) }));
+        }
         if (saved.lastVisitorName) {
           const nameInput = document.getElementById('visitorNameInput');
           if (nameInput) nameInput.value = saved.lastVisitorName;
@@ -1207,6 +1247,7 @@ function savePersistentBrainState() {
           toolInventory: state.toolInventory.slice(0, 16),
           diaryEntries: (state.diaryEntries || []).slice(0, 20),
           concepts: state.concepts.slice(0, MAX_CONCEPTS),
+          shapeLibrary: state.shapeLibrary.slice(0, MAX_SHAPES),
           lastVisitorName: visitor
         }));
       } catch (e) {}
@@ -1291,19 +1332,94 @@ const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const randRange = (min, max) => min + Math.random() * (max - min);
 const randomHex = () => '#' + Math.floor(randRange(0x202020, 0xffffff)).toString(16).padStart(6, '0');
 
-function randomSculptureParts() {
-      const count = 2 + Math.floor(Math.random() * 6);
+// Small seeded random generator, so the same seed (e.g. an article title) always gives the same shape
+function makeRng(seedText) {
+      let h = 1779033703 ^ String(seedText || '').length;
+      for (let i = 0; i < String(seedText || '').length; i++) {
+        h = Math.imul(h ^ String(seedText).charCodeAt(i), 3432918353);
+        h = (h << 13) | (h >>> 19);
+      }
+      let a = h >>> 0;
+      return () => {
+        a |= 0; a = (a + 0x6D2B79F5) | 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+// One free-form part with a freshly drawn profile, outline or path
+function randomFreeformPart(rng, baseY) {
+      const r = (min, max) => min + rng() * (max - min);
+      const kind = ['lathe', 'extrude', 'tube'][Math.floor(rng() * 3)];
+      const part = { shape: kind, x: r(-0.5, 0.5), y: baseY, z: r(-0.5, 0.5), ry: r(-1, 1), color: randomHexFrom(rng), spin: rng() < 0.3, emissive: rng() < 0.2 };
+      if (kind === 'lathe') {
+        const n = 4 + Math.floor(rng() * 8);
+        part.profile = Array.from({ length: n }, (_, k) => [r(0.05, 0.9), (k / (n - 1)) * r(0.8, 2.2)]);
+      } else if (kind === 'extrude') {
+        // A wobbly star/blob outline
+        const n = 5 + Math.floor(rng() * 10);
+        const spikes = rng() < 0.5;
+        part.outline = Array.from({ length: n }, (_, k) => {
+          const ang = (k / n) * Math.PI * 2;
+          const rad = (spikes && k % 2 ? 0.35 : 0.8) * r(0.6, 1.1);
+          return [Math.cos(ang) * rad, Math.sin(ang) * rad + 0.9];
+        });
+        part.depth = r(0.05, 0.4);
+      } else {
+        const n = 3 + Math.floor(rng() * 6);
+        part.path = Array.from({ length: n }, (_, k) => [r(-1, 1), 0.2 + k * r(0.15, 0.45), r(-1, 1)]);
+        part.radius = r(0.04, 0.16);
+      }
+      return part;
+    }
+
+function randomHexFrom(rng) {
+      return '#' + Math.floor(0x202020 + rng() * (0xffffff - 0x202020)).toString(16).padStart(6, '0');
+    }
+
+function randomSculptureParts(rng = Math.random) {
+      const r = (min, max) => min + rng() * (max - min);
+      const count = 2 + Math.floor(rng() * 7);
       const parts = [];
       for (let i = 0; i < count; i++) {
+        const baseY = 0.3 + i * r(0.2, 0.5);
+        if (rng() < 0.35) {
+          parts.push(randomFreeformPart(rng, baseY));
+          continue;
+        }
         parts.push({
-          shape: pick(VALID_PART_SHAPES),
-          x: randRange(-0.8, 0.8), y: 0.3 + i * randRange(0.2, 0.5), z: randRange(-0.8, 0.8),
-          sx: randRange(0.2, 1.2), sy: randRange(0.2, 1.4), sz: randRange(0.2, 1.2),
-          rx: randRange(-1, 1), ry: randRange(-1, 1), rz: randRange(-1, 1),
-          color: randomHex(), spin: Math.random() < 0.4, emissive: Math.random() < 0.25
+          shape: BASIC_PART_SHAPES[Math.floor(rng() * BASIC_PART_SHAPES.length)],
+          x: r(-0.8, 0.8), y: baseY, z: r(-0.8, 0.8),
+          sx: r(0.2, 1.2), sy: r(0.2, 1.4), sz: r(0.2, 1.2),
+          rx: r(-1, 1), ry: r(-1, 1), rz: r(-1, 1),
+          color: randomHexFrom(rng), spin: rng() < 0.4, emissive: rng() < 0.25
         });
       }
       return sanitizeParts(parts);
+    }
+
+// ---------------------------------------------------------------------------
+// SHAPE LIBRARY
+// Shapes Kelo-1 invented or saw online, saved by name so he can weld them again.
+// ---------------------------------------------------------------------------
+
+function findShape(name) {
+      const key = String(name || '').trim().toLowerCase();
+      return state.shapeLibrary.find(sh => sh.name.toLowerCase() === key) || null;
+    }
+
+function addShapeDesign(raw, origin) {
+      if (!raw || typeof raw !== 'object') return null;
+      const name = (typeof raw.name === 'string' ? raw.name.trim() : '').slice(0, 50);
+      const parts = sanitizeParts(raw.parts);
+      if (!name || !parts) return null;
+      const existing = findShape(name);
+      if (existing) return existing;
+      const shape = { name, emoji: (typeof raw.emoji === 'string' && raw.emoji.trim()) ? raw.emoji.trim().slice(0, 8) : '📐', origin: String(origin || 'Invented').slice(0, 80), parts, uses: 0 };
+      state.shapeLibrary.unshift(shape);
+      if (state.shapeLibrary.length > MAX_SHAPES) state.shapeLibrary.length = MAX_SHAPES;
+      return shape;
     }
 
 // ---------------------------------------------------------------------------
@@ -1409,13 +1525,23 @@ function generateProceduralDecision() {
         speech: `I decided to ${verb} ${subject}. Nobody planned this. I just wanted to, ${reason}.`,
         diary: `Dear Diary, I felt ${feeling}, so I chose to ${verb} ${subject}, ${reason}. It wasn't on any list. I came up with it myself.`,
         destination,
-        build: builds ? {
-          title: `${title} (Kelo-1 Original)`,
-          archetype: Math.random() < 0.5 ? 'custom_weld' : pick(VALID_ARCHETYPES),
-          colorHex: randomHex(),
-          secondaryColorHex: randomHex(),
-          parts: Math.random() < 0.7 ? randomSculptureParts() : null
-        } : null,
+        build: builds ? (() => {
+          // Reuse a saved shape, invent and name a new one, or just weld something one-off
+          const roll = Math.random();
+          if (roll < 0.25 && state.shapeLibrary.length > 0) {
+            const saved = pick(state.shapeLibrary);
+            return { title: `${saved.name} No. ${(saved.uses || 0) + 2}`, archetype: 'custom_weld', useShape: saved.name, colorHex: randomHex(), secondaryColorHex: randomHex() };
+          }
+          const parts = randomSculptureParts();
+          return {
+            title: `${title} (Kelo-1 Original)`,
+            archetype: parts ? 'custom_weld' : pick(VALID_ARCHETYPES),
+            colorHex: randomHex(),
+            secondaryColorHex: randomHex(),
+            parts,
+            saveAsShape: parts && roll < 0.6 ? `${conceptKeyword(subject)} ${pick(['Form', 'Spire', 'Totem', 'Bloom', 'Coil', 'Arch', 'Lantern', 'Knot'])}` : null
+          };
+        })() : null,
         motion: {
           headPitch: randRange(-0.3, 0.4), headYawSpeed: randRange(0.5, 3), headTiltAmp: randRange(0, 0.4),
           armWaveAmp: randRange(0, 0.9), armRaiseOffset: randRange(-1.4, 0.2), bodyBounceAmp: randRange(0, 0.15),
@@ -1458,6 +1584,7 @@ Current state:
 - Worldview: "${state.worldviewManifesto}"
 - Recent diary: ${recentDiary}
 - Known places: ${places}
+- Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
 - World bounds: x from -32 to 32, z from -32 to 10 (z below -14 is mountains, z above 8 is the lake shore)
 ${trigger ? `- Something just prompted you (you may follow it, reinterpret it, or decline): "${trigger}"` : '- Nothing prompted you. This is purely your own impulse.'}
@@ -1471,7 +1598,9 @@ Return ONLY JSON:
   "diary": "first-person Dear Diary entry",
   "destination": "stay" OR {"x": number, "z": number, "placeName": "name you give this spot"},
   "build": null OR {"title": "name", "archetype": "custom_weld", "colorHex": "#rrggbb", "secondaryColorHex": "#rrggbb",
-            "parts": [{"shape": "cylinder|box|sphere|cone|torus|knot|octahedron", "x":0, "y":0.5, "z":0, "sx":0.5, "sy":0.5, "sz":0.5, "rx":0, "ry":0, "rz":0, "color":"#rrggbb", "spin":false, "emissive":false}]},
+            "parts": [up to 24 parts, see SHAPES below],
+            "saveAsShape": null OR "a name for this design if it is a new shape worth remembering",
+            "useShape": null OR "name of a shape from your shape library to weld again"},
   "motion": {"headPitch": -0.3..0.4, "headYawSpeed": 0.5..3, "headTiltAmp": 0..0.4, "armWaveAmp": 0..0.9, "armRaiseOffset": -1.4..0.2, "bodyBounceAmp": 0..0.15, "spinSpeed": 0..2, "sparkBurst": boolean},
   "vitalsDelta": {"health": -20..20, "fullness": -20..20, "happiness": -20..20, "wonderLevel": -20..20, "calmLevel": -20..20},
   "newOpinion": null OR {"topic": "...", "stance": "2-5 words", "reasoning": "1 sentence"},
@@ -1482,7 +1611,15 @@ Return ONLY JSON:
   "usedConcept": null OR "name of one of your existing concepts this decision builds on",
   "newConcept": null OR {"name": "2-4 word name for a brand-new idea you just invented", "emoji": "one emoji", "definition": "1 sentence", "builtFrom": ["ideas or things it grew out of"]},
   "updatedWorldview": null OR "1-2 sentences if your philosophy shifted"
-}`;
+}
+
+SHAPES: every part has "shape", position "x","y","z" (y is height above ground, 0-5), rotation "rx","ry","rz", "color" "#rrggbb", "spin", "emissive".
+Basic shapes (size via "sx","sy","sz"): cylinder, box, sphere, cone, torus, knot, octahedron, dodecahedron, icosahedron, tetrahedron, ring.
+Free-form shapes let you invent ANY form:
+- {"shape":"lathe","profile":[[radius,height],...]} spins a profile around the vertical axis (vases, towers, bells, mushrooms, bottles)
+- {"shape":"extrude","outline":[[x,y],...],"depth":0.2} gives a flat outline thickness (stars, letters, leaves, animal silhouettes)
+- {"shape":"tube","path":[[x,y,z],...],"radius":0.08} traces a pipe along a path (coils, arches, wire drawings, handwriting)
+Coordinates stay within about -2.5..2.5. Combine parts freely to build anything you can imagine or anything you have seen.`;
       return callLLMJSON([{ text: prompt }]);
     }
 
@@ -1542,10 +1679,21 @@ function applyDecision(decision, originLabel) {
           archetype: VALID_ARCHETYPES.includes(b.archetype) ? b.archetype : 'custom_weld',
           colorHex: /^#[0-9a-f]{6}$/i.test(b.colorHex) ? b.colorHex : randomHex(),
           secondaryColorHex: /^#[0-9a-f]{6}$/i.test(b.secondaryColorHex) ? b.secondaryColorHex : randomHex(),
-          parts: sanitizeParts(b.parts),
+          parts: null,
           createdTime: 'Just made',
           philosophy: str(decision.newOpinion?.reasoning, 300, str(decision.thought, 300, 'I made this because I wanted to.'))
         };
+        const savedShape = findShape(b.useShape);
+        if (savedShape) {
+          creation.parts = savedShape.parts;
+          savedShape.uses = (savedShape.uses || 0) + 1;
+        } else {
+          creation.parts = sanitizeParts(b.parts);
+          const designed = creation.parts && str(b.saveAsShape, 50)
+            ? addShapeDesign({ name: str(b.saveAsShape, 50), emoji, parts: creation.parts }, `Invented while: ${title}`)
+            : null;
+          if (designed && designed.uses === 0) showToast(`📐 New shape: ${designed.name}`);
+        }
         state.inventedCreations.unshift(creation);
         spawnEmergent3DObjectInWorld(creation, false);
       }

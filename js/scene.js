@@ -560,6 +560,20 @@ function spawnEmergent3DObjectInWorld(creation, skipPin = false) {
           else if (p.shape === 'torus') geo = new THREE.TorusGeometry(sx * 0.5, Math.max(0.06, sy * 0.15), 12, 24);
           else if (p.shape === 'knot') geo = new THREE.TorusKnotGeometry(sx * 0.4, 0.07, 48, 8);
           else if (p.shape === 'octahedron') geo = new THREE.OctahedronGeometry(sx * 0.55, 0);
+          else if (p.shape === 'dodecahedron') geo = new THREE.DodecahedronGeometry(sx * 0.55, 0);
+          else if (p.shape === 'icosahedron') geo = new THREE.IcosahedronGeometry(sx * 0.55, 0);
+          else if (p.shape === 'tetrahedron') geo = new THREE.TetrahedronGeometry(sx * 0.6, 0);
+          else if (p.shape === 'ring') geo = new THREE.RingGeometry(sx * 0.25, sx * 0.55, 24);
+          else if (p.shape === 'lathe' && Array.isArray(p.profile)) {
+            geo = new THREE.LatheGeometry(p.profile.map(([r, y]) => new THREE.Vector2(r, y)), 24);
+          } else if (p.shape === 'extrude' && Array.isArray(p.outline)) {
+            const outline = new THREE.Shape(p.outline.map(([x, y]) => new THREE.Vector2(x, y)));
+            geo = new THREE.ExtrudeGeometry(outline, { depth: p.depth || 0.2, bevelEnabled: false });
+            geo.translate(0, 0, -(p.depth || 0.2) / 2);
+          } else if (p.shape === 'tube' && Array.isArray(p.path)) {
+            const curve = new THREE.CatmullRomCurve3(p.path.map(([x, y, z]) => new THREE.Vector3(x, y, z)));
+            geo = new THREE.TubeGeometry(curve, Math.max(16, p.path.length * 8), p.radius || 0.08, 8, false);
+          }
           else geo = new THREE.BoxGeometry(sx, sy, sz);
 
           const mat = new THREE.MeshStandardMaterial({
@@ -567,7 +581,9 @@ function spawnEmergent3DObjectInWorld(creation, skipPin = false) {
             metalness: p.metalness ?? 0.78,
             roughness: p.roughness ?? 0.22,
             emissive: p.emissive ? pCol : new THREE.Color(0x000000),
-            emissiveIntensity: p.emissive ? 0.45 : 0
+            emissiveIntensity: p.emissive ? 0.45 : 0,
+            // Open shapes (lathe profiles, rings) need both faces so they don't vanish from behind
+            side: (p.shape === 'lathe' || p.shape === 'ring') ? THREE.DoubleSide : THREE.FrontSide
           });
           const m = new THREE.Mesh(geo, mat);
           m.position.set(p.x || 0, p.y ?? (0.3 + idx * 0.35), p.z || 0);

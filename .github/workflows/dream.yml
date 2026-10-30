@@ -1,0 +1,52 @@
+# Lets Kelo-1 keep growing while nobody has the world open.
+# Every 6 hours he reads about something on Wikipedia, reflects, and saves the results to
+# brain/growth.json; the website and desktop app merge them in on their next visit.
+# Optional repository secrets for an AI brain: GEMINI_API_KEY, ANTHROPIC_API_KEY.
+name: Kelo-1 dreams
+
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kelo1-dream
+  cancel-in-progress: false
+
+jobs:
+  dream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      HAS_CLAUDE_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install the Claude SDK (only if a Claude key is set)
+        if: env.HAS_CLAUDE_KEY == 'true'
+        run: npm install --no-save @anthropic-ai/sdk@1.3.0
+
+      - name: Dream
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/dream.mjs
+
+      - name: Save what he dreamt
+        run: |
+          if git diff --quiet -- brain/growth.json; then
+            echo "Nothing new."
+            exit 0
+          fi
+          git config user.name "kelo1-dreams[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add brain/growth.json
+          git commit -m "Kelo-1 dreamt while nobody was watching"
+          git push

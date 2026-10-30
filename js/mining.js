@@ -176,6 +176,10 @@ async function digAt(x, z, originLabel = 'Digging') {
 
       state.isPracticing = true; // a physical activity: nothing else interrupts it
       try {
+        // Grab the right tool off the Storehouse shelf first
+        if (typeof fetchFromStorehouse === 'function') {
+          await fetchFromStorehouse(site && site.depth >= ROCK_DEPTH && hasEquipment('rock') ? TOOL_NEEDS.rock.re : TOOL_NEEDS.dig.re);
+        }
         if (!site) {
           site = { id: 'dig-' + Date.now(), x, z, depth: 0, dirt: 0, finds: [], startedAt: Date.now() };
           state.digSites.unshift(site);
@@ -232,6 +236,7 @@ async function digAt(x, z, originLabel = 'Digging') {
         found.forEach(f => {
           state.foundItems.unshift({ id: f.id, name: f.name, emoji: f.emoji, at: Date.now(), siteId: site.id, depth: site.depth });
           state.belongings.unshift({ name: f.name, category: 'find', emoji: f.emoji, from: 'the mountain' });
+          state.unstoredItems.push(f.name);
           site.finds.push(f.id);
         });
         // Small everyday finds keep it rewarding
@@ -270,6 +275,7 @@ async function digAt(x, z, originLabel = 'Digging') {
         }
         savePersistentBrainState();
         renderAllUI();
+        if (found.length && typeof putAwayItems === 'function') doWhenFree(putAwayItems);
         return found.length ? 'found' : 'dug';
       } finally {
         if (typeof setCarriedObject === 'function') setCarriedObject(null);

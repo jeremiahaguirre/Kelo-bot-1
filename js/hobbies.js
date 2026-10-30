@@ -335,6 +335,8 @@ async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
           spot = pick([{ x: -16, z: -1.5, label: 'the meadow' }, { x: 4.2, z: 9.6, label: 'the lake edge' }, { x: -4, z: -2, label: 'the valley' }]);
         }
 
+        // Fetch the gear for this hobby (paint, kite, instrument...) from the Storehouse first
+        if (hobby.tool && typeof fetchFromStorehouse === 'function') await fetchFromStorehouse(hobby.tool);
         state.currentLocKey = 'custom';
         state.customPlaceName = spot.label;
         state.targetPos = { x: spot.x, z: spot.z };

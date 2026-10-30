@@ -47,6 +47,16 @@ const AMBIANCE_PRESETS = [
 ];
 
 const TOWN_LOCATIONS = {
+  "storehouse": {
+    "id": "storehouse",
+    "name": "Storehouse",
+    "building": "Kelo-1 Storehouse",
+    "icon": "📦",
+    "x": 5.5,
+    "z": -3.9,
+    "showPin": true,
+    "pinColor": "from-orange-500/90 to-red-700/90"
+  },
   "post_office": {
     "id": "post_office",
     "name": "Post Office",
@@ -269,6 +279,7 @@ const state = {
   "digSites": [],
   "knowsDigging": false,
   "itemDesigns": {},
+  "unstoredItems": [],
   "foundItems": [],
   "life": {
     "bornAt": null
@@ -1096,6 +1107,7 @@ function loadPersistentBrainState() {
           });
         }
         if (saved.knowsDigging === true) state.knowsDigging = true;
+        if (Array.isArray(saved.unstoredItems)) state.unstoredItems = saved.unstoredItems.filter(n => typeof n === 'string');
         if (Array.isArray(saved.digSites)) state.digSites = saved.digSites.filter(d => d && Number.isFinite(d.x) && Number.isFinite(d.z) && Number.isFinite(d.depth));
         if (Array.isArray(saved.foundItems)) state.foundItems = saved.foundItems.filter(f => f && typeof f.id === 'string');
         if (Array.isArray(saved.coreMemories)) state.coreMemories = saved.coreMemories.filter(m => m && typeof m.text === 'string');
@@ -1138,6 +1150,7 @@ function savePersistentBrainState() {
           plantings: state.plantings.slice(0, 24),
           digSites: state.digSites.slice(0, 6),
           knowsDigging: state.knowsDigging,
+          unstoredItems: state.unstoredItems.slice(0, 40),
           itemDesigns: state.itemDesigns,
           foundItems: state.foundItems.slice(0, 40),
           life: state.life,
@@ -1587,6 +1600,7 @@ Current state:
 - Your core memories (these shaped who you are): ${state.coreMemories.slice(0, 6).map(m => m.text).join(' | ') || 'none yet'}
 - Days you have been alive: ${typeof daysAlive === 'function' ? daysAlive() : 1}
 - Digging: ${state.digSites.length ? state.digSites.map(d => `site (${d.x}, ${d.z}) ${d.depth.toFixed(1)} m deep, pile ${d.dirt.toFixed(1)}`).join('; ') : 'no digs yet'}; equipment: ${typeof hasEquipment === 'function' ? ['dig', 'rock', 'truck', 'excavator'].filter(hasEquipment).join(', ') || 'none' : 'none'}; finds so far: ${state.foundItems.map(f => f.name).join(', ') || 'none'}
+- In your Storehouse: ${typeof storehouseSummaryForAI === 'function' ? storehouseSummaryForAI() : 'empty'}
 - Your hobbies: ${state.hobbies.map(h => `${h.name} (skill ${h.skill}/100)`).join(', ') || 'none yet'}
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
@@ -1858,12 +1872,17 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
         state.fullness = Math.min(100, state.fullness + 25);
         state.happiness = Math.min(100, state.happiness + 6);
       } else if (cat === 'tool') {
-        if (!state.toolInventory.includes(item)) state.toolInventory.unshift(item);
+        if (!state.toolInventory.includes(item)) {
+          state.toolInventory.unshift(item);
+          state.unstoredItems.push(item);
+        }
       } else if (cat === 'toy') {
         state.toys.unshift({ name: item, emoji: entry.emoji, from: giver });
         if (state.toys.length > 20) state.toys.length = 20;
+        state.unstoredItems.push(item);
       } else {
         state.belongings.unshift({ name: item, category: cat, emoji: entry.emoji, from: giver });
+        state.unstoredItems.push(item);
         if (state.belongings.length > 20) state.belongings.length = 20;
       }
       state.giftLog.unshift(entry);
@@ -1915,6 +1934,11 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will', conte
 function runAutonomousLifeTick() {
       // Finish the current build or mail run before starting something new
       if (state.isBuilding || state.isCollectingMail || state.isPracticing) return;
+      // Tidy first: new things he is still holding go to the Storehouse
+      if (state.unstoredItems.length && typeof putAwayItems === 'function') {
+        putAwayItems();
+        return;
+      }
       // Sometimes he feels like digging (and asks for tools if he doesn't have them)
       if (typeof digAt === 'function' && Math.random() < diggingChance()) {
         const spot = chooseDigSpot();

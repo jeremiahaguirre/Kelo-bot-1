@@ -442,6 +442,10 @@ const state = {
   "isCollectingMail": false,
   "isBuilding": false,
   "coreMemories": [],
+  "hobbies": [],
+  "murals": [],
+  "plantings": [],
+  "isPracticing": false,
   "life": { "bornAt": null },
   "lettersReceived": 0,
   "isBrowsing": false,
@@ -1155,7 +1159,7 @@ Return ONLY valid JSON matching this schema:
     }
 
 async function directKeloToActivity(locKey, customReason = '', originLabel = 'Suggested Whim') {
-    if (state.isBusy || state.isBuilding) return;
+    if (state.isBusy || state.isBuilding || state.isPracticing) return;
     const loc = TOWN_LOCATIONS[locKey];
     if (!loc) return;
 
@@ -1248,6 +1252,9 @@ function loadPersistentBrainState() {
         if (Array.isArray(saved.belongings)) state.belongings = saved.belongings;
         if (Array.isArray(saved.giftLog)) state.giftLog = saved.giftLog;
         if (Array.isArray(saved.mailbox)) state.mailbox = saved.mailbox.filter(m => m && m.id && m.kind);
+        if (Array.isArray(saved.hobbies)) state.hobbies = saved.hobbies.filter(h => h && typeof h.name === 'string');
+        if (Array.isArray(saved.murals)) state.murals = saved.murals.filter(m => m && typeof m.wallId === 'string');
+        if (Array.isArray(saved.plantings)) state.plantings = saved.plantings.filter(p => p && Number.isFinite(p.x) && Number.isFinite(p.z));
         if (Array.isArray(saved.coreMemories)) state.coreMemories = saved.coreMemories.filter(m => m && typeof m.text === 'string');
         if (saved.life && typeof saved.life === 'object') state.life = { ...state.life, ...saved.life };
         if (typeof saved.lettersReceived === 'number') state.lettersReceived = saved.lettersReceived;
@@ -1283,6 +1290,9 @@ function savePersistentBrainState() {
           toolInventory: state.toolInventory.slice(0, 16),
           diaryEntries: (state.diaryEntries || []).slice(0, MAX_DIARY_ENTRIES),
           coreMemories: state.coreMemories.slice(0, 40),
+          hobbies: state.hobbies.slice(0, 12),
+          murals: state.murals.slice(0, 8),
+          plantings: state.plantings.slice(0, 24),
           life: state.life,
           concepts: state.concepts.slice(0, MAX_CONCEPTS),
           shapeLibrary: state.shapeLibrary.slice(0, MAX_SHAPES),
@@ -1725,6 +1735,7 @@ Current state:
 - Mail waiting for you at the post office: ${state.mailbox.length ? state.mailbox.map(m => `${m.kind} from ${m.from}`).join(', ') : 'none'}
 - Your core memories (these shaped who you are): ${state.coreMemories.slice(0, 6).map(m => m.text).join(' | ') || 'none yet'}
 - Days you have been alive: ${typeof daysAlive === 'function' ? daysAlive() : 1}
+- Your hobbies: ${state.hobbies.map(h => `${h.name} (skill ${h.skill}/100)`).join(', ') || 'none yet'}
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
 - World bounds: x from -32 to 32, z from -32 to 10 (z below -14 is mountains, z above 8 is the lake shore)
@@ -1752,7 +1763,8 @@ Return ONLY JSON:
   "usedConcept": null OR "name of one of your existing concepts this decision builds on",
   "newConcept": null OR {"name": "2-4 word name for a brand-new idea you just invented", "emoji": "one emoji", "definition": "1 sentence", "builtFrom": ["ideas or things it grew out of"]},
   "updatedWorldview": null OR "1-2 sentences if your philosophy shifted",
-  "checkMail": true OR false (whether you feel like walking to the post office to pick up your mail after this)
+  "checkMail": true OR false (whether you feel like walking to the post office to pick up your mail after this),
+  "startHobby": null OR {"name": "a hobby you want to take up because of something you have or saw", "emoji": "one emoji", "description": "1 sentence", "style": "mural|kite|music|plant|easel|tricks|other"}
 }
 
 SHAPES: every part has "shape", position "x","y","z" (y is height above ground, 0-5), rotation "rx","ry","rz", "color" "#rrggbb", "spin", "emissive".
@@ -1907,6 +1919,12 @@ function applyDecision(decision, originLabel) {
         state.worldviewEpoch++;
       }
 
+      if (decision.startHobby && typeof addHobby === 'function') {
+        const isNew = !findHobby(decision.startHobby.name);
+        const hobby = addHobby(decision.startHobby, `Own idea while: ${title}`);
+        if (hobby && isNew) practiceWhenFree(hobby, 'Trying a New Hobby');
+      }
+
       if (decision.checkMail === true && state.mailbox.length > 0 && typeof pickUpMail === 'function') {
         setTimeout(() => pickUpMail('Decided to Check the Mail'), 3000);
       }
@@ -1990,6 +2008,8 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
       );
       entry.reaction = state.speechBubble;
       state.chatLog.push({ sender: 'Kelo-1', text: state.speechBubble, time: 'Just now', isBot: true });
+      // Some things spark a lasting hobby (spray paint, a kite, an instrument, seeds...)
+      if (cat !== 'food' && typeof maybeStartHobbyFromItem === 'function') maybeStartHobbyFromItem(item, giver);
       savePersistentBrainState();
       renderAllUI();
       return entry;
@@ -2000,8 +2020,8 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
 async function decideNextAction(trigger = null, originLabel = 'Free Will', context = {}) {
       if (!state.life.bornAt) state.life.bornAt = Date.now();
       // Wait if he is mid-thought or mid-build, so gifts and photos are never silently dropped
-      for (let i = 0; i < 360 && (state.isBusy || state.isBuilding); i++) await new Promise(r => setTimeout(r, 250));
-      if (state.isBusy || state.isBuilding) return;
+      for (let i = 0; i < 360 && (state.isBusy || state.isBuilding || state.isPracticing); i++) await new Promise(r => setTimeout(r, 250));
+      if (state.isBusy || state.isBuilding || state.isPracticing) return;
       state.isBusy = true;
       try {
         let decision = null;
@@ -2015,7 +2035,12 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will', conte
 
 function runAutonomousLifeTick() {
       // Finish the current build or mail run before starting something new
-      if (state.isBuilding || state.isCollectingMail) return;
+      if (state.isBuilding || state.isCollectingMail || state.isPracticing) return;
+      // Sometimes he just wants to spend time on one of his hobbies
+      if (typeof practiceHobby === 'function' && Math.random() < hobbyPracticeChance()) {
+        practiceHobby(pickHobbyToPractise(), 'Practising a Hobby');
+        return;
+      }
       // Most of the time Kelo-1 makes a fully open-ended decision. Otherwise he falls back
       // into one of his familiar routines (which are also his own choice).
       // Mail waiting at the post office? He may (or may not) feel like picking it up now

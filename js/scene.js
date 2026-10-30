@@ -1547,6 +1547,7 @@ function animateDiorama() {
       }
 
       if (typeof updateCarriedObject === 'function') updateCarriedObject(t);
+      if (typeof updateHobbyProps === 'function') updateHobbyProps(t);
       updateClouds(1 / 60);
 
       // 2. Scale Garden Crops smoothly based on ripeness

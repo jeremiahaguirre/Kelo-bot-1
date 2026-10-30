@@ -46,6 +46,8 @@ function clearBenchWorkpiece() {
     }
 
 async function runWeldJob(creation, destLabel) {
+      // Let him finish a hobby session before heading to the bench
+      for (let i = 0; i < 120 && state.isPracticing; i++) await sleep(250);
       state.isBuilding = true;
       const title = creation.title || 'something new';
       const dest = { x: clampNumber(creation.x, -32, 32, 0), z: clampNumber(creation.z, -32, 10, 0) };

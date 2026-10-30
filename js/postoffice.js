@@ -83,7 +83,7 @@ async function openParcel(parcel) {
 
 // Kelo-1 walks to the post office and opens a few parcels. He only does this when he chooses to.
 async function pickUpMail(originLabel = 'Checking the Mail') {
-      if (state.mailbox.length === 0 || state.isCollectingMail || state.isBusy || state.isBuilding) return false;
+      if (state.mailbox.length === 0 || state.isCollectingMail || state.isBusy || state.isBuilding || state.isPracticing) return false;
       state.isCollectingMail = true;
       try {
         directKeloToActivity('post_office', `Walked to the post office to see what people sent (${state.mailbox.length} waiting).`, originLabel);

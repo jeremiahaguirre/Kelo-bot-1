@@ -481,6 +481,10 @@ function showToast(msg) {
 
 window.addEventListener('DOMContentLoaded', () => {
   loadPersistentBrainState();
+  // Keep his memory safe: save every 20 seconds and whenever the tab is hidden or closed
+  setInterval(savePersistentBrainState, 20000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') savePersistentBrainState(); });
+  window.addEventListener('pagehide', savePersistentBrainState);
   initDiorama3D();
   renderAllUI();
   scheduleNextOrganicImpulse();

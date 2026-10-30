@@ -447,6 +447,7 @@ const state = {
   "plantings": [],
   "isPracticing": false,
   "digSites": [],
+  "itemDesigns": {},
   "foundItems": [],
   "life": { "bornAt": null },
   "lettersReceived": 0,
@@ -1260,6 +1261,13 @@ function loadPersistentBrainState() {
         if (Array.isArray(saved.hobbies)) state.hobbies = saved.hobbies.filter(h => h && typeof h.name === 'string');
         if (Array.isArray(saved.murals)) state.murals = saved.murals.filter(m => m && typeof m.wallId === 'string');
         if (Array.isArray(saved.plantings)) state.plantings = saved.plantings.filter(p => p && Number.isFinite(p.x) && Number.isFinite(p.z));
+        if (saved.itemDesigns && typeof saved.itemDesigns === 'object') {
+          state.itemDesigns = {};
+          Object.entries(saved.itemDesigns).slice(0, 40).forEach(([k, v]) => {
+            const parts = v && sanitizeParts(v.parts);
+            if (parts) state.itemDesigns[String(k).slice(0, 120)] = { parts, at: Number(v.at) || 0 };
+          });
+        }
         if (Array.isArray(saved.digSites)) state.digSites = saved.digSites.filter(d => d && Number.isFinite(d.x) && Number.isFinite(d.z) && Number.isFinite(d.depth));
         if (Array.isArray(saved.foundItems)) state.foundItems = saved.foundItems.filter(f => f && typeof f.id === 'string');
         if (Array.isArray(saved.coreMemories)) state.coreMemories = saved.coreMemories.filter(m => m && typeof m.text === 'string');
@@ -1301,6 +1309,7 @@ function savePersistentBrainState() {
           murals: state.murals.slice(0, 8),
           plantings: state.plantings.slice(0, 24),
           digSites: state.digSites.slice(0, 6),
+          itemDesigns: state.itemDesigns,
           foundItems: state.foundItems.slice(0, 40),
           life: state.life,
           concepts: state.concepts.slice(0, MAX_CONCEPTS),

@@ -27,6 +27,10 @@ function postMail(parcel) {
         return null;
       }
       state.mailbox.push(entry);
+      // Let the AI brain (if any) design a model of the exact item while it waits at the post office
+      if ((entry.kind === 'gift' || entry.kind === 'request') && typeof designItemModelWithAI === 'function') {
+        (splitItemList(entry.name) || [entry.name]).forEach(n => designItemModelWithAI(n));
+      }
       savePersistentBrainState();
       renderAllUI();
       showToast(`📮 Your ${entry.kind === 'message' ? 'letter' : entry.kind} is at the post office. Kelo-1 will pick it up when he chooses.`);

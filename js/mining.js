@@ -39,7 +39,6 @@ const HIDDEN_FINDS = (() => {
 })();
 
 const dirtPileMeshes = {};
-const equipmentMeshes = {};
 
 function ownedItemNames() {
       return [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)];
@@ -100,23 +99,6 @@ function updateDirtPile3D(site) {
       worldObstacles.push(obstacle);
       pile.userData.obstacle = obstacle;
       dirtPileMeshes[site.id] = pile;
-    }
-
-// Park the dump truck and excavator at a site once he has them and uses them there
-function showEquipmentAt(site) {
-      if (!scene || typeof buildItemModel3D !== 'function') return;
-      ['truck', 'excavator'].forEach((kind, i) => {
-        if (!hasEquipment(kind)) return;
-        let m = equipmentMeshes[kind];
-        if (!m) {
-          m = buildItemModel3D(kind === 'truck' ? 'dump truck' : 'excavator', { label: false });
-          m.scale.setScalar(3.2);
-          scene.add(m);
-          equipmentMeshes[kind] = m;
-        }
-        const x = site.x - 2.6, z = site.z + (i ? 2.2 : -2.2);
-        m.position.set(x, getAnalyticalGroundHeight(x, z), z);
-      });
     }
 
 // Ask for missing equipment once (no duplicate letters)

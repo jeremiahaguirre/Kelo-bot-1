@@ -289,6 +289,9 @@ const state = {
   "concepts": [],
   "lastVisitorName": "",
   "calendar": null,
+  "hydration": 80,
+  "knownNeeds": { "food": false, "water": false, "sleep": false },
+  "isSleeping": false,
   "lightingMode": "auto",
   "pendingBuilds": []
 };
@@ -1157,7 +1160,7 @@ function loadPersistentBrainState() {
     }
 
 // Moment-to-moment flags and things stored elsewhere; everything else in state is saved
-const TRANSIENT_STATE_KEYS = new Set(['isBusy', 'isWalking', 'isBuilding', 'isPracticing', 'isCollectingMail', 'isBrowsing',
+const TRANSIENT_STATE_KEYS = new Set(['isSleeping', 'isBusy', 'isWalking', 'isBuilding', 'isPracticing', 'isCollectingMail', 'isBrowsing',
   'pendingImageAttachment', 'photoAlbum', 'rhythmPhaseText', 'unopenedNotesQueue']);
 
 // Save his whole self: memories, feelings, where he is, what he is doing, everything he owns
@@ -1502,7 +1505,8 @@ function proceduralDeclinedDecision(item) {
 function generateProceduralDecision(context = {}) {
       if (context.declined) return proceduralDeclinedDecision(context.focus);
       // When he is hungry he often (not always) decides to eat first
-      if (!context.focus && state.fullness < 30 && Math.random() < 0.55) return proceduralMealDecision();
+      // Running on empty makes his plans fall apart (he has to discover why; see js/needs.js)
+      if (!context.focus && typeof isFoggy === 'function' && isFoggy() && Math.random() < 0.55) return foggyDecision();
       const verb = context.focus ? pick(FOCUS_VERBS) : pick(FREE_VERBS);
       // Sometimes he returns to one of his own concepts instead of something new
       const revisit = !context.focus && state.concepts.length > 0 && Math.random() < 0.3 ? pick(state.concepts) : null;
@@ -1603,6 +1607,7 @@ Current state:
 - Known places: ${places}
 - Mail waiting for you at the post office: ${state.mailbox.length ? state.mailbox.map(m => `${m.kind} from ${m.from}`).join(', ') : 'none'}
 - Your core memories (these shaped who you are): ${state.coreMemories.slice(0, 6).map(m => m.text).join(' | ') || 'none yet'}
+- How your body feels: ${typeof bodySymptoms === 'function' && bodySymptoms().length ? bodySymptoms().join('; ') : 'fine'}
 - Days you have been alive: ${typeof daysAlive === 'function' ? daysAlive() : 1}${typeof worldNow === 'function' ? ` (it is ${worldNow().season.toLowerCase()}, ${clockLabel(worldNow().hour)}${worldNow().isNight ? ', night' : ''})` : ''}
 - Digging: ${state.digSites.length ? state.digSites.map(d => `site (${d.x}, ${d.z}) ${d.depth.toFixed(1)} m deep, pile ${d.dirt.toFixed(1)}`).join('; ') : 'no digs yet'}; equipment: ${typeof hasEquipment === 'function' ? ['dig', 'rock', 'truck', 'excavator'].filter(hasEquipment).join(', ') || 'none' : 'none'}; finds so far: ${state.foundItems.map(f => f.name).join(', ') || 'none'}
 - In your Storehouse: ${typeof storehouseSummaryForAI === 'function' ? storehouseSummaryForAI() : 'empty'}
@@ -1874,7 +1879,9 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
       };
 
       if (cat === 'food') {
+        const hungryBefore = state.fullness < 45;
         state.fullness = Math.min(100, state.fullness + 25);
+        if (hungryBefore && typeof discoverNeed === 'function') discoverNeed('food', `I ate the ${item} ${giver} sent and the fog in my head lifted.`);
         state.happiness = Math.min(100, state.happiness + 6);
       } else if (cat === 'tool') {
         if (!state.toolInventory.includes(item)) {
@@ -1929,6 +1936,8 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will', conte
       try {
         let decision = null;
         if (hasLLMKey()) decision = await generateLLMDecision(trigger, context.image);
+        // Even the AI brain can't think straight on an empty tank
+        if (decision && typeof isFoggy === 'function' && isFoggy() && Math.random() < 0.5) decision = foggyDecision();
         if (!decision || !decision.actionTitle) decision = generateProceduralDecision(context);
         applyDecision(decision, originLabel);
       } finally {
@@ -1938,7 +1947,7 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will', conte
 
 function runAutonomousLifeTick() {
       // Finish the current build or mail run before starting something new
-      if (state.isBuilding || state.isCollectingMail || state.isPracticing) return;
+      if (state.isBuilding || state.isCollectingMail || state.isPracticing || state.isSleeping) return;
       // Tidy first: new things he is still holding go to the Storehouse
       if (state.unstoredItems.length && typeof putAwayItems === 'function') {
         putAwayItems();
@@ -2038,11 +2047,11 @@ function runFamiliarRoutineTick() {
 
       // Only tends to fullness or energy if he genuinely feels like it
       const isAbsorbedInWonder = Math.random() < 0.68;
-      if (!isAbsorbedInWonder && state.fullness < 35) {
+      if (!isAbsorbedInWonder && state.fullness < 35 && state.knownNeeds.food) {
         directKeloToActivity('garden', 'My fullness sensor whispered that I might enjoy a sun-warmed peach whenever I was ready', 'Unhurried Care');
         return;
       }
-      if (!isAbsorbedInWonder && state.health < 35) {
+      if (!isAbsorbedInWonder && state.health < 35 && state.knownNeeds.sleep) {
         directKeloToActivity('bed', 'Decided to rest my servos on the quilt and let my thoughts drift', 'Restful Whim');
         return;
       }

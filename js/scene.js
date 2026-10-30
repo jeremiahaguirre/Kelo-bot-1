@@ -1589,6 +1589,11 @@ function animateDiorama() {
         const strideHop = Math.abs(Math.sin(t * 9.5)) * 0.12;
         keloGroup.position.set(state.botPos.x, groundY + strideHop, state.botPos.z);
         keloGroup.rotation.set(0, state.botRotY, 0);
+        // Exhausted legs give way now and then (js/needs.js); he stops while he picks himself up
+        if (typeof maybeStumble === 'function' && maybeStumble(t)) {
+          state.botPos.x -= sx * step;
+          state.botPos.z -= sz * step;
+        }
         keloLeftLeg.rotation.x = Math.sin(t * 9.5) * 0.5;
         keloRightLeg.rotation.x = -Math.sin(t * 9.5) * 0.5;
         keloLeftArm.rotation.x = -Math.sin(t * 9.5) * 0.4;
@@ -1610,7 +1615,14 @@ function animateDiorama() {
         keloLeftArm.rotation.x = 0;
         keloRightArm.rotation.x = 0;
 
-        if (state.currentLocKey === 'bed') {
+        if (state.microPose === 'collapsed') {
+          // Fell asleep where he stood
+          keloGroup.position.set(state.botPos.x, groundY + 0.35, state.botPos.z);
+          keloGroup.rotation.set(-Math.PI / 2, state.botRotY, 0);
+          weldingSparks.visible = false;
+          if (miningDebrisParticles) miningDebrisParticles.visible = false;
+          forgeArcLight.intensity = 0;
+        } else if (state.currentLocKey === 'bed') {
           keloGroup.position.set(-11.6, Math.max(groundY, 0.95), -8.8);
           keloGroup.rotation.set(-Math.PI / 2, 0, 0);
           keloHead.rotation.set(0, 0, 0);

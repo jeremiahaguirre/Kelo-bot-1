@@ -3,22 +3,22 @@
 
 function renderAllUI() {
       // Pino's World 5 Inner States: Fullness, Energy, Wonder, Joy, Calm
-      document.getElementById('hudHealthVal').textContent = `${state.health}%`;
-      document.getElementById('hudHealthBar').style.width = `${state.health}%`;
-      document.getElementById('hudFullnessVal').textContent = `${state.fullness}%`;
-      document.getElementById('hudFullnessBar').style.width = `${state.fullness}%`;
-      document.getElementById('hudHappyVal').textContent = `${state.happiness}%`;
-      document.getElementById('hudHappyBar').style.width = `${state.happiness}%`;
+      document.getElementById('hudHealthVal').textContent = `${Math.round(state.health)}%`;
+      document.getElementById('hudHealthBar').style.width = `${Math.round(state.health)}%`;
+      document.getElementById('hudFullnessVal').textContent = `${Math.round(state.fullness)}%`;
+      document.getElementById('hudFullnessBar').style.width = `${Math.round(state.fullness)}%`;
+      document.getElementById('hudHappyVal').textContent = `${Math.round(state.happiness)}%`;
+      document.getElementById('hudHappyBar').style.width = `${Math.round(state.happiness)}%`;
 
       const wonderValEl = document.getElementById('hudWonderVal');
       const wonderBarEl = document.getElementById('hudWonderBar');
-      if (wonderValEl) wonderValEl.textContent = `${state.wonderLevel}%`;
-      if (wonderBarEl) wonderBarEl.style.width = `${state.wonderLevel}%`;
+      if (wonderValEl) wonderValEl.textContent = `${Math.round(state.wonderLevel)}%`;
+      if (wonderBarEl) wonderBarEl.style.width = `${Math.round(state.wonderLevel)}%`;
 
       const calmValEl = document.getElementById('hudCalmVal');
       const calmBarEl = document.getElementById('hudCalmBar');
-      if (calmValEl) calmValEl.textContent = `${state.calmLevel}%`;
-      if (calmBarEl) calmBarEl.style.width = `${state.calmLevel}%`;
+      if (calmValEl) calmValEl.textContent = `${Math.round(state.calmLevel)}%`;
+      if (calmBarEl) calmBarEl.style.width = `${Math.round(state.calmLevel)}%`;
 
       document.getElementById('hudWeldBadge').textContent = `${state.opinions.length} Core Opinions`;
       document.getElementById('hudGithubBadge').textContent = `${state.githubRepos.length} Repos • ${state.githubCommits} Commits`;

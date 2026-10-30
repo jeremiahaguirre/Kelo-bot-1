@@ -99,7 +99,7 @@
       </div>
       <p id="worldClockText" class="text-[10px] sm:text-[11px] font-mono text-sky-200"></p>
       <p id="headerObsessionText" class="hidden sm:block text-xs text-slate-400 italic truncate max-w-md sm:max-w-xl">"Where am I? What is all of this?"</p>
-      <div class="grid grid-cols-5 gap-1.5 bg-slate-900/90 border border-slate-800 px-2 sm:px-3 py-1.5 rounded-2xl text-[9px] sm:text-[10px] font-mono">
+      <div class="grid grid-cols-6 gap-1.5 bg-slate-900/90 border border-slate-800 px-2 sm:px-3 py-1.5 rounded-2xl text-[9px] sm:text-[10px] font-mono">
           <div class="min-w-0 sm:w-14">
             <div class="flex justify-between text-emerald-300"><span>⚡NRG</span><span id="hudHealthVal">94%</span></div>
             <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudHealthBar" class="h-full bg-emerald-400" style="width: 94%;"></div></div>
@@ -107,6 +107,10 @@
           <div class="min-w-0 sm:w-14">
             <div class="flex justify-between text-amber-300"><span>🥕FUL</span><span id="hudFullnessVal">86%</span></div>
             <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudFullnessBar" class="h-full bg-amber-400" style="width: 86%;"></div></div>
+          </div>
+          <div class="min-w-0 sm:w-14">
+            <div class="flex justify-between text-cyan-300"><span>💧H2O</span><span id="hudWaterVal">80%</span></div>
+            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudWaterBar" class="h-full bg-cyan-400" style="width: 80%;"></div></div>
           </div>
           <div class="min-w-0 sm:w-14">
             <div class="flex justify-between text-rose-300"><span>💛JOY</span><span id="hudHappyVal">96%</span></div>
@@ -533,6 +537,7 @@
   <script src="./js/agent.js"></script>
   <script src="./js/memory.js"></script>
   <script src="./js/worldclock.js"></script>
+  <script src="./js/needs.js"></script>
   <script src="./js/forms.js"></script>
   <script src="./js/netnode.js"></script>
   <script src="./js/postoffice.js"></script>

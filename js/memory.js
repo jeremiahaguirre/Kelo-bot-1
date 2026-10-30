@@ -222,6 +222,9 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   const search = document.getElementById('diaryArchiveSearch');
   search?.addEventListener('input', () => renderArchiveSearch(search.value));
-  renderArchiveSearch('');
-  renderMemoryUI();
+  // Render after main.js has loaded his saved state
+  setTimeout(() => {
+    renderArchiveSearch('');
+    renderMemoryUI();
+  }, 0);
 });

@@ -1483,6 +1483,11 @@ function findPath(from, to) {
 
 // Direction toward the next waypoint, recomputing the path when the target or the world changes
 function nextPathDirection(px, pz, target) {
+      // Boats and aircraft go straight; there is nothing to walk around out there
+      if (state.riding && (state.ridingMode === 'water' || state.ridingMode === 'air')) {
+        const dx = target.x - px, dz = target.z - pz, len = Math.hypot(dx, dz) || 1;
+        return [dx / len, dz / len];
+      }
       const key = `${target.x.toFixed(2)},${target.z.toFixed(2)},${worldObstacles.length}`;
       if (key !== currentPathKey) {
         currentPath = findPath({ x: px, z: pz }, target);
@@ -1576,7 +1581,7 @@ function animateDiorama() {
 
       if (dist > arrivalRadius(state.targetPos)) {
         state.isWalking = true;
-        const step = dist > 14 ? 0.14 : 0.082;
+        const step = (dist > 14 ? 0.14 : 0.082) * (state.ridingSpeed || 1);
         const [sx, sz] = nextPathDirection(state.botPos.x, state.botPos.z, state.targetPos);
         state.botPos.x += sx * step;
         state.botPos.z += sz * step;
@@ -1784,6 +1789,7 @@ function animateDiorama() {
 
       if (typeof updateCarriedObject === 'function') updateCarriedObject(t);
       if (typeof updateHobbyProps === 'function') updateHobbyProps(t);
+      if (typeof updateVehicles === 'function') updateVehicles(t);
       if (typeof checkForGlints === 'function') checkForGlints();
       updateClouds(1 / 60);
       if (skyDome) skyDome.position.copy(camera.position);

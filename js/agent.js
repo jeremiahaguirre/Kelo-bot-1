@@ -292,6 +292,12 @@ const state = {
   "hydration": 80,
   "knownNeeds": { "food": false, "water": false, "sleep": false },
   "isSleeping": false,
+  "vehicles": [],
+  "riding": null,
+  "ridingSpeed": 1,
+  "ridingMode": null,
+  "knowsLakeDanger": false,
+  "spoilHeap": 0,
   "lightingMode": "auto",
   "pendingBuilds": []
 };
@@ -1160,7 +1166,7 @@ function loadPersistentBrainState() {
     }
 
 // Moment-to-moment flags and things stored elsewhere; everything else in state is saved
-const TRANSIENT_STATE_KEYS = new Set(['isSleeping', 'isBusy', 'isWalking', 'isBuilding', 'isPracticing', 'isCollectingMail', 'isBrowsing',
+const TRANSIENT_STATE_KEYS = new Set(['riding', 'ridingSpeed', 'ridingMode', 'isSleeping', 'isBusy', 'isWalking', 'isBuilding', 'isPracticing', 'isCollectingMail', 'isBrowsing',
   'pendingImageAttachment', 'photoAlbum', 'rhythmPhaseText', 'unopenedNotesQueue']);
 
 // Save his whole self: memories, feelings, where he is, what he is doing, everything he owns
@@ -1610,6 +1616,7 @@ Current state:
 - How your body feels: ${typeof bodySymptoms === 'function' && bodySymptoms().length ? bodySymptoms().join('; ') : 'fine'}
 - Days you have been alive: ${typeof daysAlive === 'function' ? daysAlive() : 1}${typeof worldNow === 'function' ? ` (it is ${worldNow().season.toLowerCase()}, ${clockLabel(worldNow().hour)}${worldNow().isNight ? ', night' : ''})` : ''}
 - Digging: ${state.digSites.length ? state.digSites.map(d => `site (${d.x}, ${d.z}) ${d.depth.toFixed(1)} m deep, pile ${d.dirt.toFixed(1)}`).join('; ') : 'no digs yet'}; equipment: ${typeof hasEquipment === 'function' ? ['dig', 'rock', 'truck', 'excavator'].filter(hasEquipment).join(', ') || 'none' : 'none'}; finds so far: ${state.foundItems.map(f => f.name).join(', ') || 'none'}
+- Vehicles parked and ready: ${state.vehicles.map(v => v.name).join(', ') || 'none'}${state.knowsLakeDanger ? ' (you know you cannot breathe in deep water)' : ''}
 - In your Storehouse: ${typeof storehouseSummaryForAI === 'function' ? storehouseSummaryForAI() : 'empty'}
 - Your hobbies: ${state.hobbies.map(h => `${h.name} (skill ${h.skill}/100)`).join(', ') || 'none yet'}
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
@@ -1666,7 +1673,10 @@ function applyDecision(decision, originLabel) {
 
       // Movement: anywhere in bounds, or stay
       const dest = decision.destination;
-      if (dest && typeof dest === 'object') {
+      if (dest && typeof dest === 'object' && Number(dest.z) > 9.5 && typeof wadeIntoLake === 'function') {
+        // Somewhere out on the lake: by boat if he has one, otherwise he finds out about deep water
+        doWhenFree(() => wadeIntoLake('Wanted to Go Out on the Lake'));
+      } else if (dest && typeof dest === 'object') {
         const x = Math.round(clampNumber(dest.x, WORLD_MIN_X, WORLD_MAX_X, state.botPos.x) * 10) / 10;
         const z = Math.round(clampNumber(dest.z, WORLD_MIN_Z, WORLD_MAX_Z, state.botPos.z) * 10) / 10;
         state.targetPos = { x, z };
@@ -1897,6 +1907,7 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
         state.unstoredItems.push(item);
         if (state.belongings.length > 20) state.belongings.length = 20;
       }
+      if (typeof registerVehicle === 'function' && vehicleTypeFor(item)) registerVehicle(item);
       state.giftLog.unshift(entry);
       if (state.giftLog.length > 30) state.giftLog.length = 30;
       if (typeof bumpLifeStat === 'function') bumpLifeStat('gifts');
@@ -1959,6 +1970,9 @@ function runAutonomousLifeTick() {
         digAt(spot.x, spot.z, 'Felt Like Digging');
         return;
       }
+      // With a boat he likes going out on the lake; without one he may wade in and learn the hard way
+      if (typeof goBoating === 'function' && findVehicle('boat') && Math.random() < 0.1) { goBoating(); return; }
+      if (typeof wadeIntoLake === 'function' && !state.knowsLakeDanger && Math.random() < 0.04) { wadeIntoLake(); return; }
       // Sometimes he just wants to spend time on one of his hobbies
       if (typeof practiceHobby === 'function' && Math.random() < hobbyPracticeChance()) {
         practiceHobby(pickHobbyToPractise(), 'Practising a Hobby');

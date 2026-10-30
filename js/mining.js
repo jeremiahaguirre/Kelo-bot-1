@@ -206,7 +206,6 @@ async function digAt(x, z, originLabel = 'Digging') {
         state.moodTitle = site.depth >= ROCK_DEPTH ? 'Jackhammering through rock' : 'Digging into the mountain';
         state.microPose = 'digging';
         renderAllUI();
-        showEquipmentAt(site);
 
         const machines = hasEquipment('excavator');
         const stepDepth = (site.depth >= ROCK_DEPTH ? 0.12 : 0.2) * (machines ? 1.6 : 1);
@@ -223,11 +222,11 @@ async function digAt(x, z, originLabel = 'Digging') {
         }
 
         // Haul the pile away if he has both machines
+        // He drives the excavator and the dump truck to the pile, loads the truck and hauls it off
         let hauled = 0;
-        if (site.dirt >= PILE_LIMIT * 0.7 && hasEquipment('truck') && hasEquipment('excavator')) {
-          hauled = Math.min(site.dirt - 1, 4);
-          site.dirt = Math.round((site.dirt - hauled) * 100) / 100;
-          updateDirtPile3D(site);
+        if (site.dirt >= PILE_LIMIT * 0.7 && hasEquipment('truck') && hasEquipment('excavator') && typeof haulDirt === 'function') {
+          if (typeof setCarriedObject === 'function') setCarriedObject(null);
+          hauled = await haulDirt(site);
         }
 
         // Anything buried here at this depth?

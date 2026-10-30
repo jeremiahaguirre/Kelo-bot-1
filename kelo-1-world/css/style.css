@@ -1,0 +1,13 @@
+/* Extracted custom CSS (Add any specific animations or scrollbar styling here) */
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+.poi-label {
+    position: absolute;
+    pointer-events: auto;
+    cursor: pointer;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.2s ease-in-out;
+}

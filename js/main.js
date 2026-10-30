@@ -280,6 +280,29 @@ function renderWebTastesTab() {
         });
       }
 
+      // Shape library; clicking a shape asks Kelo-1 to weld it again (or remix it)
+      const shapesBadge = document.getElementById('shapesCountBadge');
+      if (shapesBadge) shapesBadge.textContent = `${state.shapeLibrary.length} Shapes`;
+      const shapesEl = document.getElementById('shapeLibraryContainer');
+      if (shapesEl) {
+        shapesEl.innerHTML = state.shapeLibrary.length === 0
+          ? '<p class="text-[11px] text-slate-500 italic">No saved shapes yet. He names the forms he is proud of.</p>'
+          : state.shapeLibrary.map((sh, idx) => `
+          <div data-shape-idx="${idx}" class="shape-card cursor-pointer p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-cyan-500/25 hover:border-cyan-400/60 transition space-y-0.5">
+            <div class="text-xs font-bold text-cyan-200 flex items-center gap-1.5"><span>${escapeHtml(sh.emoji)}</span> <span class="truncate">${escapeHtml(sh.name)}</span></div>
+            <div class="text-[10px] font-mono text-slate-400">${sh.parts.length} parts • welded ${escapeHtml((sh.uses || 0) + 1)}×</div>
+            <div class="text-[10px] font-mono text-slate-500 truncate">${escapeHtml(sh.origin)}</div>
+          </div>
+        `).join('');
+        shapesEl.querySelectorAll('.shape-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const sh = state.shapeLibrary[Number(card.getAttribute('data-shape-idx'))];
+            if (!sh) return;
+            decideNextAction(`A visitor admired your shape "${sh.name}". Weld it again somewhere new, remix it into a new shape, or do something else entirely.`, 'Shape Admired');
+          });
+        });
+      }
+
       // Independent Opinions & Convictions
       const opinionsEl = document.getElementById('opinionsListContainer');
       if (opinionsEl) {

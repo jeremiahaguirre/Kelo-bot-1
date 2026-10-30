@@ -387,6 +387,7 @@ function buildItemModel3D(name, { kind = 'gift', thumb = null, label = true } = 
         const tag = makeSignMesh(text, { bg: '#fff7ed', fg: '#7c2d12', width: 0.75, height: 0.16 });
         tag.position.y = 0.8;
         tag.userData.isLabel = true;
+        tag.visible = false; // shown only while the cursor is over the item
         model.add(tag);
       }
       return model;
@@ -429,6 +430,20 @@ function renderPostOfficeParcels3D() {
         model.position.set(-0.9 + (i % 3) * 0.9, 0, i < 3 ? 0.15 : -0.3);
         model.scale.setScalar(0.85);
         parcelDisplayGroup.add(model);
+      });
+    }
+
+// Reveal the name tag of the parcel under the cursor, hide the rest
+function setHoveredParcelLabel(raycaster) {
+      if (!parcelDisplayGroup) return;
+      const hits = raycaster.intersectObjects(parcelDisplayGroup.children, true);
+      let hovered = null;
+      if (hits.length > 0) {
+        hovered = hits[0].object;
+        while (hovered && hovered.parent !== parcelDisplayGroup) hovered = hovered.parent;
+      }
+      parcelDisplayGroup.children.forEach(model => {
+        model.traverse(o => { if (o.userData && o.userData.isLabel) o.visible = model === hovered; });
       });
     }
 

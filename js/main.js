@@ -256,6 +256,30 @@ function renderWebTastesTab() {
       const epochEl = document.getElementById('worldviewStageBadge');
       if (epochEl) epochEl.textContent = `Worldview Epoch #${state.worldviewEpoch}: Self-Directed Philosophy`;
 
+      // Concepts Kelo-1 invented; clicking one asks him to explore it further (he may take it anywhere)
+      const conceptsBadge = document.getElementById('conceptsCountBadge');
+      if (conceptsBadge) conceptsBadge.textContent = `${state.concepts.length} Concepts`;
+      const conceptsEl = document.getElementById('conceptsListContainer');
+      if (conceptsEl) {
+        conceptsEl.innerHTML = state.concepts.map((c, idx) => `
+          <div data-concept-idx="${idx}" class="concept-card cursor-pointer p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-yellow-500/25 hover:border-yellow-400/60 transition space-y-1">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-yellow-200 flex items-center gap-1.5"><span>${escapeHtml(c.emoji)}</span> <span>${escapeHtml(c.name)}</span></span>
+              <span class="text-[10px] font-mono text-slate-400 shrink-0">used ${escapeHtml(c.uses || 0)}×</span>
+            </div>
+            <p class="text-[11px] text-slate-300 font-serif italic">"${escapeHtml(c.definition)}"</p>
+            <div class="text-[10px] font-mono text-slate-500 truncate">${c.parents && c.parents.length ? `Built from: ${escapeHtml(c.parents.join(' + '))}` : escapeHtml(c.origin || '')}</div>
+          </div>
+        `).join('');
+        conceptsEl.querySelectorAll('.concept-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const c = state.concepts[Number(card.getAttribute('data-concept-idx'))];
+            if (!c) return;
+            decideNextAction(`A visitor asked you to keep exploring your concept "${c.name}" (${c.definition}). Develop it, test it, combine it with something, or change your mind about it.`, 'Exploring a Concept');
+          });
+        });
+      }
+
       // Independent Opinions & Convictions
       const opinionsEl = document.getElementById('opinionsListContainer');
       if (opinionsEl) {

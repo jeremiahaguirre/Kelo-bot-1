@@ -446,6 +446,8 @@ const state = {
   "murals": [],
   "plantings": [],
   "isPracticing": false,
+  "digSites": [],
+  "foundItems": [],
   "life": { "bornAt": null },
   "lettersReceived": 0,
   "isBrowsing": false,
@@ -644,6 +646,9 @@ const FREEFORM_PART_SHAPES = ['lathe', 'extrude', 'tube'];
 const VALID_PART_SHAPES = [...BASIC_PART_SHAPES, ...FREEFORM_PART_SHAPES];
 const VALID_ARCHETYPES = ['gold_drill_rig', 'mycelium_dome', 'rail_track', 'custom_weld', 'kinetic_spire', 'cairn', 'campfire_lantern', 'botanical_totem'];
 const MAX_SCULPTURE_PARTS = 24;
+
+// Everywhere Kelo-1 can go: the whole valley and the entire mountain range behind it
+const WORLD_MIN_X = -44, WORLD_MAX_X = 44, WORLD_MIN_Z = -40, WORLD_MAX_Z = 10;
 
 // Clean a list of [a, b] or [a, b, c] points, bounded so shapes stay a sensible size
 function sanitizePoints(points, dims, min, max, maxCount) {
@@ -1006,7 +1011,7 @@ async function synthesizeUnboundedExperience(promptOrImpulse = null, originLabel
         if (hasLLMKey()) {
           {
             const llmPrompt = `You are the backend AI cognitive engine for Kelo-1, an autonomous open-world robot living on an island and alpine mountain range in Kelowna, BC.
-You have FULL freedom to roam the entire island and mountain peaks (x between -35 and 35, z between -35 and 11; note z < -14 is high up on the steep snow-capped mountains).
+You have FULL freedom to roam the entire island and mountain peaks (x between -44 and 44, z between -40 and 10; note z < -14 is high up on the steep snow-capped mountains).
 Equipped Tools in Inventory: ${JSON.stringify(state.toolInventory)}.
 User/Catalyst Input: "${promptOrImpulse || 'Invent an unscripted task: e.g., drilling for gold in the mountains, terraforming with your pneumatic auger, or welding a new 3D structure'}".
 ${imageAttachment ? `The user also attached an image named "${imageAttachment.name}". Inspect the image and design a 3D welded sculpture or task inspired by it!` : ''}
@@ -1050,8 +1055,8 @@ Return ONLY valid JSON matching this schema:
               textKeys.forEach(k => {
                 if (typeof parsed[k] === 'string' && parsed[k].trim()) synth[k] = parsed[k].trim().slice(0, 600);
               });
-              synth.x = Math.round(clampNumber(parsed.x, -32, 32, synth.x) * 10) / 10;
-              synth.z = Math.round(clampNumber(parsed.z, -32, 10, synth.z) * 10) / 10;
+              synth.x = Math.round(clampNumber(parsed.x, WORLD_MIN_X, WORLD_MAX_X, synth.x) * 10) / 10;
+              synth.z = Math.round(clampNumber(parsed.z, WORLD_MIN_Z, WORLD_MAX_Z, synth.z) * 10) / 10;
               if (VALID_ARCHETYPES.includes(parsed.archetype)) synth.archetype = parsed.archetype;
               if (/^#[0-9a-f]{6}$/i.test(parsed.colorHex)) synth.colorHex = parsed.colorHex;
               if (/^#[0-9a-f]{6}$/i.test(parsed.secondaryColorHex)) synth.secondaryColorHex = parsed.secondaryColorHex;
@@ -1255,6 +1260,8 @@ function loadPersistentBrainState() {
         if (Array.isArray(saved.hobbies)) state.hobbies = saved.hobbies.filter(h => h && typeof h.name === 'string');
         if (Array.isArray(saved.murals)) state.murals = saved.murals.filter(m => m && typeof m.wallId === 'string');
         if (Array.isArray(saved.plantings)) state.plantings = saved.plantings.filter(p => p && Number.isFinite(p.x) && Number.isFinite(p.z));
+        if (Array.isArray(saved.digSites)) state.digSites = saved.digSites.filter(d => d && Number.isFinite(d.x) && Number.isFinite(d.z) && Number.isFinite(d.depth));
+        if (Array.isArray(saved.foundItems)) state.foundItems = saved.foundItems.filter(f => f && typeof f.id === 'string');
         if (Array.isArray(saved.coreMemories)) state.coreMemories = saved.coreMemories.filter(m => m && typeof m.text === 'string');
         if (saved.life && typeof saved.life === 'object') state.life = { ...state.life, ...saved.life };
         if (typeof saved.lettersReceived === 'number') state.lettersReceived = saved.lettersReceived;
@@ -1293,6 +1300,8 @@ function savePersistentBrainState() {
           hobbies: state.hobbies.slice(0, 12),
           murals: state.murals.slice(0, 8),
           plantings: state.plantings.slice(0, 24),
+          digSites: state.digSites.slice(0, 6),
+          foundItems: state.foundItems.slice(0, 40),
           life: state.life,
           concepts: state.concepts.slice(0, MAX_CONCEPTS),
           shapeLibrary: state.shapeLibrary.slice(0, MAX_SHAPES),
@@ -1601,9 +1610,9 @@ function categorizeItem(name, hint) {
       if (/(cherr|apple|peach|bread|loaf|tart|cake|pie|ramen|noodle|soup|cheese|fudge|cocoa|coffee|tea|salmon|fish|berry|fruit|snack|pizza|taco|sandwich|cookie|chocolate|honey|food|meal|carrot|tomato)/.test(n)) return 'food';
       if (/(kite|yo-yo|yoyo|kaleidoscope|puzzle|ball|toy|game|doll|frog|top|marble|lego|block)/.test(n)) return 'toy';
       if (/(island|land|treehouse|dock|observatory|garden plot|cabin|house|tower)/.test(n)) return 'place';
-      if (/(canoe|boat|balloon|bike|bicycle|car|train|submarine|glider|sled)/.test(n)) return 'vehicle';
+      if (/(canoe|boat|balloon|bike|bicycle|car|train|submarine|glider|sled|truck|excavator|digger|backhoe|tractor)/.test(n)) return 'vehicle';
       if (/(goat|dog|cat|bird|pigeon|fish|jellyfish|pet)/.test(n)) return 'companion';
-      if (/(drill|saw|hammer|wrench|torch|iron|telescope|rope|microphone|spectrometer|tool|knife|compass|lamp)/.test(n)) return 'tool';
+      if (/(drill|saw|hammer|wrench|torch|iron|telescope|rope|microphone|spectrometer|tool|knife|compass|lamp|shovel|spade|pick ?axe|mattock)/.test(n)) return 'tool';
       return 'thing';
     }
 
@@ -1654,8 +1663,8 @@ function generateProceduralDecision(context = {}) {
         const loc = pick(Object.values(TOWN_LOCATIONS).filter(l => !String(l.id).startsWith('dyn_')));
         destination = { x: loc.x, z: loc.z, placeName: loc.building };
       } else {
-        const x = Math.round(randRange(-32, 32) * 10) / 10;
-        const z = Math.round(randRange(-32, 10) * 10) / 10;
+        const x = Math.round(randRange(WORLD_MIN_X + 2, WORLD_MAX_X - 2) * 10) / 10;
+        const z = Math.round(randRange(WORLD_MIN_Z + 2, WORLD_MAX_Z) * 10) / 10;
         destination = { x, z, placeName: z < -14 ? 'Somewhere on the Mountain' : 'Somewhere on the Island' };
       }
 
@@ -1735,10 +1744,11 @@ Current state:
 - Mail waiting for you at the post office: ${state.mailbox.length ? state.mailbox.map(m => `${m.kind} from ${m.from}`).join(', ') : 'none'}
 - Your core memories (these shaped who you are): ${state.coreMemories.slice(0, 6).map(m => m.text).join(' | ') || 'none yet'}
 - Days you have been alive: ${typeof daysAlive === 'function' ? daysAlive() : 1}
+- Digging: ${state.digSites.length ? state.digSites.map(d => `site (${d.x}, ${d.z}) ${d.depth.toFixed(1)} m deep, pile ${d.dirt.toFixed(1)}`).join('; ') : 'no digs yet'}; equipment: ${typeof hasEquipment === 'function' ? ['dig', 'rock', 'truck', 'excavator'].filter(hasEquipment).join(', ') || 'none' : 'none'}; finds so far: ${state.foundItems.map(f => f.name).join(', ') || 'none'}
 - Your hobbies: ${state.hobbies.map(h => `${h.name} (skill ${h.skill}/100)`).join(', ') || 'none yet'}
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
-- World bounds: x from -32 to 32, z from -32 to 10 (z below -14 is mountains, z above 8 is the lake shore)
+- World bounds: x from -44 to 44, z from -40 to 10 (z below -14 is the mountain range, which you can roam freely; z above 8 is the lake shore)
 ${trigger ? `- Something just prompted you (you may follow it, reinterpret it, or decline): "${trigger}"` : '- Nothing prompted you. This is purely your own impulse.'}
 
 Return ONLY JSON:
@@ -1764,6 +1774,7 @@ Return ONLY JSON:
   "newConcept": null OR {"name": "2-4 word name for a brand-new idea you just invented", "emoji": "one emoji", "definition": "1 sentence", "builtFrom": ["ideas or things it grew out of"]},
   "updatedWorldview": null OR "1-2 sentences if your philosophy shifted",
   "checkMail": true OR false (whether you feel like walking to the post office to pick up your mail after this),
+  "dig": null OR {"x": number, "z": number} (dig or mine at that spot; you need a shovel or pickaxe, a jackhammer once you hit rock, and a dump truck plus excavator once the dirt pile is big; if you lack them you will ask for them),
   "startHobby": null OR {"name": "a hobby you want to take up because of something you have or saw", "emoji": "one emoji", "description": "1 sentence", "style": "mural|kite|music|plant|easel|tricks|other"}
 }
 
@@ -1788,8 +1799,8 @@ function applyDecision(decision, originLabel) {
       // Movement: anywhere in bounds, or stay
       const dest = decision.destination;
       if (dest && typeof dest === 'object') {
-        const x = Math.round(clampNumber(dest.x, -32, 32, state.botPos.x) * 10) / 10;
-        const z = Math.round(clampNumber(dest.z, -32, 10, state.botPos.z) * 10) / 10;
+        const x = Math.round(clampNumber(dest.x, WORLD_MIN_X, WORLD_MAX_X, state.botPos.x) * 10) / 10;
+        const z = Math.round(clampNumber(dest.z, WORLD_MIN_Z, WORLD_MAX_Z, state.botPos.z) * 10) / 10;
         state.targetPos = { x, z };
         state.currentLocKey = 'custom';
         state.customPlaceName = `${str(dest.placeName, 60, 'Somewhere New')} (${x}, ${z})`;
@@ -1919,6 +1930,10 @@ function applyDecision(decision, originLabel) {
         state.worldviewEpoch++;
       }
 
+      if (decision.dig && typeof digAt === 'function' && Number.isFinite(Number(decision.dig.x)) && Number.isFinite(Number(decision.dig.z))) {
+        doWhenFree(() => digAt(Number(decision.dig.x), Number(decision.dig.z), 'Decided to Dig'));
+      }
+
       if (decision.startHobby && typeof addHobby === 'function') {
         const isNew = !findHobby(decision.startHobby.name);
         const hobby = addHobby(decision.startHobby, `Own idea while: ${title}`);
@@ -1943,6 +1958,17 @@ function applyDecision(decision, originLabel) {
       savePersistentBrainState();
       renderAllUI();
       showToast(`${emoji} Kelo-1 decided: ${title}`);
+    }
+
+// Run an activity as soon as Kelo-1 is free (mid-build, mid-errand...), giving up after ~3 minutes
+function doWhenFree(fn, attempt = 0) {
+      setTimeout(() => {
+        if (state.isBusy || state.isBuilding || state.isPracticing || state.isCollectingMail) {
+          if (attempt < 36) doWhenFree(fn, attempt + 1);
+          return;
+        }
+        fn();
+      }, attempt === 0 ? 3000 : 5000);
     }
 
 // Add something Kelo-1 wants to the requests inbox
@@ -2008,6 +2034,12 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
       );
       entry.reaction = state.speechBubble;
       state.chatLog.push({ sender: 'Kelo-1', text: state.speechBubble, time: 'Just now', isBot: true });
+      // Digging equipment arrived? He may head back to the dig he had to pause
+      if (typeof digAt === 'function' && /shovel|spade|pick ?axe|mattock|jack ?hammer|dump ?truck|excavator|digger|backhoe/i.test(item)) {
+        const site = state.digSites[0];
+        const spot = site || chooseDigSpot();
+        doWhenFree(() => digAt(spot.x, spot.z, `Back to Digging with the ${item}`));
+      }
       // Some things spark a lasting hobby (spray paint, a kite, an instrument, seeds...)
       if (cat !== 'food' && typeof maybeStartHobbyFromItem === 'function') maybeStartHobbyFromItem(item, giver);
       savePersistentBrainState();
@@ -2036,6 +2068,12 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will', conte
 function runAutonomousLifeTick() {
       // Finish the current build or mail run before starting something new
       if (state.isBuilding || state.isCollectingMail || state.isPracticing) return;
+      // Sometimes he feels like digging (and asks for tools if he doesn't have them)
+      if (typeof digAt === 'function' && Math.random() < diggingChance()) {
+        const spot = chooseDigSpot();
+        digAt(spot.x, spot.z, 'Felt Like Digging');
+        return;
+      }
       // Sometimes he just wants to spend time on one of his hobbies
       if (typeof practiceHobby === 'function' && Math.random() < hobbyPracticeChance()) {
         practiceHobby(pickHobbyToPractise(), 'Practising a Hobby');

@@ -50,7 +50,7 @@ async function runWeldJob(creation, destLabel) {
       for (let i = 0; i < 120 && state.isPracticing; i++) await sleep(250);
       state.isBuilding = true;
       const title = creation.title || 'something new';
-      const dest = { x: clampNumber(creation.x, -32, 32, 0), z: clampNumber(creation.z, -32, 10, 0) };
+      const dest = { x: clampNumber(creation.x, WORLD_MIN_X, WORLD_MAX_X, 0), z: clampNumber(creation.z, WORLD_MIN_Z, WORLD_MAX_Z, 0) };
       const bench = TOWN_LOCATIONS.weld;
       try {
         // 1. Walk to the welding table
@@ -97,8 +97,8 @@ async function runWeldJob(creation, destLabel) {
 
         // 4. Set it down just in front of him so he isn't standing inside it
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
-        creation.x = Math.round(clampNumber(state.botPos.x + Math.sin(state.botRotY) * 1.7, -33, 33, dest.x) * 10) / 10;
-        creation.z = Math.round(clampNumber(state.botPos.z + Math.cos(state.botRotY) * 1.7, -33, 11, dest.z) * 10) / 10;
+        creation.x = Math.round(clampNumber(state.botPos.x + Math.sin(state.botRotY) * 1.7, WORLD_MIN_X, WORLD_MAX_X, dest.x) * 10) / 10;
+        creation.z = Math.round(clampNumber(state.botPos.z + Math.cos(state.botRotY) * 1.7, WORLD_MIN_Z, WORLD_MAX_Z + 1, dest.z) * 10) / 10;
         creation.createdTime = 'Welded & placed';
         state.inventedCreations.unshift(creation);
         if (typeof bumpLifeStat === 'function') bumpLifeStat('builds');

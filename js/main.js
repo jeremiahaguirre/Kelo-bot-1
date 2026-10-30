@@ -383,12 +383,26 @@ function renderWebTastesTab() {
         </div>
       `).join('');
 
+      // Browsing history: real articles he read (links only ever point at en.wikipedia.org)
+      const curiosityEl = document.getElementById('curiosityQueueText');
+      if (curiosityEl) {
+        curiosityEl.textContent = state.curiosityQueue.length
+          ? `Wants to look up: ${state.curiosityQueue.slice(0, 4).join(' • ')}`
+          : 'No list right now; he will follow whatever catches his interest.';
+      }
+      const safeWikiUrl = (url) => (typeof url === 'string' && url.startsWith('https://en.wikipedia.org/wiki/')) ? url : null;
       document.getElementById('webHistoryList').innerHTML = state.webHistory.map(w => `
         <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
-          <div class="flex justify-between font-mono text-[10px] text-sky-300">
-            <span>🐇 "${escapeHtml(w.query)}"</span>
-            <span class="text-slate-400">${escapeHtml(w.time)}</span>
+          <div class="flex justify-between gap-2 font-mono text-[10px] text-sky-300">
+            <span class="truncate">🔎 "${escapeHtml(w.query)}"</span>
+            <span class="text-slate-400 shrink-0">${escapeHtml(w.time)}</span>
           </div>
+          ${Array.isArray(w.hops) && w.hops.length ? `
+            <div class="flex flex-wrap items-center gap-1 text-[10px] font-mono">
+              ${w.hops.map(h => safeWikiUrl(h.url)
+                ? `<a href="${escapeHtml(safeWikiUrl(h.url))}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(h.extract || '')}" class="px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-200 hover:underline">${escapeHtml(h.title)}</a>`
+                : `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">${escapeHtml(h.title)}</span>`).join('<span class="text-slate-500">→</span>')}
+            </div>` : ''}
           <div class="text-slate-300 text-[11px] italic">${escapeHtml(w.verdict)}</div>
         </div>
       `).join('');
@@ -730,19 +744,12 @@ window.addEventListener('DOMContentLoaded', () => {
     directKeloToActivity('cyber', `Started a new repository: ${slug}.`, 'Visitor Repo Idea');
   });
 
-  // "Surf the web" (simulated research rabbit-holes)
-  const WEB_RABBIT_HOLES = [
-    { query: 'how glaciers carved the Okanagan valley', verdict: 'Now I see the whole valley as a slow-motion sculpture.' },
-    { query: 'self-healing concrete with bacteria', verdict: 'Bacteria and fungi both want to fix cracks. I like their attitude.' },
-    { query: 'narrow-gauge railway grade limits', verdict: 'Switchbacks it is; my rail line cannot climb more than 4%.' },
-    { query: 'Ogopogo sightings history', verdict: 'No proof either way. I will keep watching the lake.' },
-    { query: 'TIG welding titanium argon purge', verdict: 'Back-purging keeps the weld silver instead of blue. Noted.' }
-  ];
+  // Kelo-1 goes to the NetNode cafe and really browses whatever he is curious about
   document.getElementById('btnBrowseWebNow')?.addEventListener('click', () => {
-    const hole = WEB_RABBIT_HOLES[Math.floor(Math.random() * WEB_RABBIT_HOLES.length)];
-    state.webHistory.unshift({ query: hole.query, time: 'Just now', verdict: hole.verdict });
-    if (state.webHistory.length > 10) state.webHistory.length = 10;
-    renderAllUI();
-    showToast(`🐇 Kelo-1 is reading about "${hole.query}"`);
+    if (state.isBusy) {
+      showToast('Kelo-1 is busy finishing something first.');
+      return;
+    }
+    browseInternet(null, 'Visitor Sent Him Online');
   });
 });

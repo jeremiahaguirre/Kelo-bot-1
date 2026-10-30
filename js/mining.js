@@ -288,13 +288,103 @@ function chooseDigSpot() {
     }
 
 function diggingChance() {
+      // He has to discover that digging is a thing first
+      if (!state.knowsDigging) return 0;
       // More likely once he owns digging tools; occasionally he wants to dig (and will ask) anyway
       return hasEquipment('dig') ? 0.16 : 0.05;
+    }
+
+// --- Discovering digging --------------------------------------------------------------------
+// Kelo-1 starts out not knowing he can dig. He finds out by noticing something glint in the
+// ground while exploring, by reading about mining/gems/fossils, or by being given a shovel.
+let glintSprite = null;
+let lastGlintCheck = 0;
+let glintCooldownUntil = 0;
+
+function discoverDigging(how) {
+      if (state.knowsDigging) return;
+      state.knowsDigging = true;
+      state.moodEmoji = '✨';
+      state.moodTitle = 'Discovered something under the ground';
+      state.speechBubble = `${how} I think things are buried in this island. I could dig for them!`;
+      state.diaryEntries.unshift({
+        time: 'A Discovery', location: currentPlaceLabel(), mood: '✨ Things are buried here',
+        vitals: `⚡ ${state.health}% • 🥕 ${state.fullness}% • ✨ ${state.wonderLevel}% • 🌊 ${state.calmLevel}%`,
+        text: `Dear Diary, ${how} So the ground isn't just ground; there are things hidden in it. I want to dig. ${hasEquipment('dig') ? 'Good thing I have something to dig with.' : 'I will need something to dig with, so I am writing a letter.'}`
+      });
+      addConcept({ name: 'Buried Treasure Theory', emoji: '⛏️', definition: 'The island keeps secrets under its surface, and patience with a shovel reveals them.', builtFrom: [how.slice(0, 50)] }, 'Discovered digging');
+      queueCuriosity('Geology');
+      if (!hasEquipment('dig')) requestEquipment('dig');
+      state.wonderLevel = Math.min(100, state.wonderLevel + 10);
+      savePersistentBrainState();
+      renderAllUI();
+      showToast('✨ Kelo-1 discovered that things are buried on the island');
+    }
+
+// Article titles or text about mining or the underground can teach him about digging
+const DIG_TOPICS = /\b(mining|mine|miner|quarry|excavation|archaeolog|geode|gemstone|gem|fossil|ore|prospect|gold rush|geology|mineral|spelunk|cave|bedrock|tunnel)/i;
+
+function noticeDiggingInReading(hops) {
+      if (state.knowsDigging || !Array.isArray(hops)) return;
+      const hit = hops.find(h => DIG_TOPICS.test(h.title) || DIG_TOPICS.test(h.extract));
+      if (hit) discoverDigging(`I read about ${hit.title} at the NetNode cafe and realised people dig into the ground to find things.`);
+    }
+
+function showGlint(find) {
+      if (!scene) return;
+      if (!glintSprite) {
+        const c = document.createElement('canvas');
+        c.width = c.height = 64;
+        const ctx = c.getContext('2d');
+        const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 30);
+        g.addColorStop(0, 'rgba(255,255,255,1)');
+        g.addColorStop(0.3, 'rgba(255,236,150,0.9)');
+        g.addColorStop(1, 'rgba(255,220,100,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, 64, 64);
+        ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(32, 4); ctx.lineTo(32, 60); ctx.moveTo(4, 32); ctx.lineTo(60, 32); ctx.stroke();
+        glintSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }));
+        scene.add(glintSprite);
+      }
+      glintSprite.position.set(find.x, getAnalyticalGroundHeight(find.x, find.z) + 0.35, find.z);
+      glintSprite.userData.until = Date.now() + 6000;
+      glintSprite.visible = true;
+    }
+
+// Checked about once a second: is he near something buried that he hasn't found yet?
+function checkForGlints() {
+      const now = Date.now();
+      if (glintSprite && glintSprite.visible) {
+        const left = glintSprite.userData.until - now;
+        glintSprite.visible = left > 0;
+        const pulse = 0.6 + Math.abs(Math.sin(now / 180)) * 0.7;
+        glintSprite.scale.set(pulse, pulse, pulse);
+      }
+      if (now - lastGlintCheck < 1000 || now < glintCooldownUntil) return;
+      lastGlintCheck = now;
+      const near = HIDDEN_FINDS.find(f => !state.foundItems.some(g => g.id === f.id)
+        && Math.hypot(f.x - state.botPos.x, f.z - state.botPos.z) < 7);
+      if (!near || Math.random() > 0.35) return;
+      glintCooldownUntil = now + 45000;
+      showGlint(near);
+      if (!state.knowsDigging) {
+        discoverDigging('While I was exploring, something glinted between the rocks and then disappeared.');
+      } else if (!state.isBusy && !state.isBuilding && !state.isPracticing && Math.random() < 0.5) {
+        state.speechBubble = 'Did something just glint over there? I want to dig and see.';
+        renderAllUI();
+        doWhenFree(() => digAt(near.x, near.z, 'Saw Something Glint'));
+      }
     }
 
 function renderMiningUI() {
       const el = document.getElementById('digSitesContainer');
       if (!el) return;
+      if (!state.knowsDigging) {
+        el.innerHTML = '<p class="text-[11px] text-slate-500 italic">He hasn\'t discovered that things are buried here yet. Exploring the mountain, reading at NetNode, or a shovel might teach him.</p>';
+        return;
+      }
       const sites = state.digSites.map(s => {
         const missing = missingEquipmentFor(s);
         return `

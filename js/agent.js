@@ -84,7 +84,7 @@ const TOWN_LOCATIONS = {
     "building": "Outdoor Welding Studio",
     "icon": "👨‍🏭",
     "x": -1.2,
-    "z": -8.2,
+    "z": -6.6,
     "showPin": true,
     "pinColor": "from-amber-500/90 to-red-600/90",
     "groundY": -0.026114585930713738
@@ -94,8 +94,8 @@ const TOWN_LOCATIONS = {
     "name": "Okanagan Bio-Garden",
     "building": "Raised Cedar Planters",
     "icon": "🍑",
-    "x": -10.5,
-    "z": 2.4,
+    "x": -10.3,
+    "z": 5.0,
     "showPin": true,
     "pinColor": "from-lime-500/90 to-emerald-600/90",
     "groundY": -0.25
@@ -105,8 +105,8 @@ const TOWN_LOCATIONS = {
     "name": "Bean & Byte Cafe",
     "building": "Bean & Byte Espresso Bar",
     "icon": "☕",
-    "x": -1.5,
-    "z": 3.5,
+    "x": 0.0,
+    "z": 5.6,
     "showPin": true,
     "pinColor": "from-orange-500/90 to-rose-600/90",
     "groundY": -0.04820776730775833
@@ -117,7 +117,7 @@ const TOWN_LOCATIONS = {
     "building": "NetNode Internet & GitHub Hub",
     "icon": "💻",
     "x": 6.8,
-    "z": 2.2,
+    "z": 4.4,
     "showPin": true,
     "pinColor": "from-purple-500/90 to-indigo-600/90",
     "groundY": 0.21131333621589513
@@ -251,7 +251,7 @@ const state = {
       "growth": 92
     },
     {
-      "name": " crisp Silicon Blueberries",
+      "name": "Crisp Silicon Blueberries",
       "growth": 84
     }
   ],

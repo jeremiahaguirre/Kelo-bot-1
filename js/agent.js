@@ -344,9 +344,16 @@ const MAX_REQUESTS = 12;
 const MAX_CONCEPTS = 24;
 const MAX_SHAPES = 20;
 
+// Map coordinates like "(12.5, -3.4)" are for his own navigation, never shown on screen
+function stripCoords(text) {
+      // "hiked out to (12.3, -4.5) to weld" -> "hiked out to weld"; "placed it at (3, 4)." -> "placed it."
+      return String(text ?? '').replace(/(?:\s+(?:at|to|near|from|around|towards?|over|up to))?\s*\(\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*\)/gi, '');
+    }
+
 // Escape any user- or LLM-supplied text before it goes into an innerHTML template
+// (coordinates are stripped here too, so no list ever shows them)
 function escapeHtml(value) {
-      return String(value ?? '')
+      return stripCoords(value)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')

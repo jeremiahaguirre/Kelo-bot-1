@@ -25,7 +25,7 @@ function renderAllUI() {
 
       // Changed Lately & Equipped Tool Inventory Status
       const changedEl = document.getElementById('changedLatelyText');
-      if (changedEl) changedEl.textContent = state.changedLatelySummary;
+      if (changedEl) changedEl.textContent = stripCoords(state.changedLatelySummary);
       const queuePill = document.getElementById('unopenedQueuePill');
       if (queuePill) {
         queuePill.textContent = `Tools Equipped: ${state.toolInventory.length}`;
@@ -33,14 +33,14 @@ function renderAllUI() {
 
       // Header & Overhead 3D Bubble
       document.getElementById('headerEmotionBadge').innerHTML = `<span>${escapeHtml(state.moodEmoji)}</span> <span>${escapeHtml(state.moodTitle)}</span>`;
-      document.getElementById('headerObsessionText').textContent = state.currentObsession;
+      document.getElementById('headerObsessionText').textContent = stripCoords(state.currentObsession);
       const activePlaceLabel = currentPlaceLabel();
-      document.getElementById('liveActivityText').textContent = `${activePlaceLabel}: ${state.moodTitle} (${state.autonomyTag})`;
+      document.getElementById('liveActivityText').textContent = stripCoords(`${activePlaceLabel}: ${state.moodTitle} (${state.autonomyTag})`);
 
       document.getElementById('bubbleMoodEmoji').textContent = state.moodEmoji;
-      document.getElementById('bubbleMoodTitle').textContent = state.moodTitle;
+      document.getElementById('bubbleMoodTitle').textContent = stripCoords(state.moodTitle);
       document.getElementById('bubbleAutonomyTag').textContent = state.autonomyTag;
-      document.getElementById('bubbleSpeech').textContent = `"${state.speechBubble}"`;
+      document.getElementById('bubbleSpeech').textContent = `"${stripCoords(state.speechBubble)}"`;
 
       const ripe = state.gardenPlots.filter(p => p.growth >= 80).length;
       document.getElementById('gardenRipeBadge').textContent = `${ripe}/${state.gardenPlots.length}`;
@@ -379,7 +379,7 @@ function renderWebTastesTab() {
                 <i class="ph-fill ph-cube text-emerald-400"></i>
                 <span>${escapeHtml(c.title)}</span>
               </span>
-              <span class="text-[10px] font-mono text-slate-400">(${escapeHtml(c.x)}, ${escapeHtml(c.z)}) • ${escapeHtml(c.createdTime)}</span>
+              <span class="text-[10px] font-mono text-slate-400">${escapeHtml(c.createdTime)}</span>
             </div>
             <div class="text-[11px] text-amber-200 font-mono">${escapeHtml(c.actionVerb)}</div>
             <p class="text-[11px] text-slate-300 font-serif italic">"${escapeHtml(c.philosophy)}"</p>

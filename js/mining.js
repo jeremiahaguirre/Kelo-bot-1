@@ -395,7 +395,7 @@ function renderMiningUI() {
         return `
           <div class="p-2.5 rounded-xl bg-slate-900/90 border border-amber-700/40 text-xs space-y-1">
             <div class="flex items-center justify-between gap-2">
-              <span class="font-bold text-amber-200">⛏️ (${escapeHtml(s.x)}, ${escapeHtml(s.z)})</span>
+              <span class="font-bold text-amber-200">⛏️ ${s.z < -14 ? 'Mountain dig' : 'Valley dig'}</span>
               <span class="text-[10px] font-mono text-slate-400">${escapeHtml(s.sessions || 0)} sessions</span>
             </div>
             <div class="text-[10px] font-mono text-slate-300">Depth ${escapeHtml(s.depth.toFixed(1))} m (${s.depth >= ROCK_DEPTH ? 'bedrock' : 'soil'}) • Dirt pile ${escapeHtml(s.dirt.toFixed(1))}/${PILE_LIMIT}</div>

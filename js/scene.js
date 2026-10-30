@@ -60,7 +60,7 @@ function initDiorama3D() {
       scene.background = new THREE.Color(AMBIANCE_PRESETS[0].bg);
       scene.fog = new THREE.FogExp2(AMBIANCE_PRESETS[0].fog, AMBIANCE_PRESETS[0].fogDensity);
 
-      camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 400);
+      camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 900);
       camera.position.set(0, 18, 24);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -75,7 +75,7 @@ function initDiorama3D() {
       controls.dampingFactor = 0.06;
       controls.maxPolarAngle = Math.PI / 2 - 0.03;
       controls.minDistance = 4;
-      controls.maxDistance = 95;
+      controls.maxDistance = 160;
 
       clock = new THREE.Clock();
 
@@ -216,6 +216,7 @@ function buildAlpineTerrainAndMountains3D() {
       );
       groundMesh.receiveShadow = true;
       terrainSwapGroup.add(groundMesh);
+      buildOuterLands3D();
 
       // Okanagan Lake Water Surface in the South
       const lakeMesh = new THREE.Mesh(
@@ -224,7 +225,8 @@ function buildAlpineTerrainAndMountains3D() {
       );
       lakeMesh.rotation.x = -Math.PI / 2;
       lakeMesh.position.set(0, -0.18, 26);
-      scene.add(lakeMesh);
+      // The open sea (buildOuterLands3D) now covers the lake, so this plane stays out of the scene
+      void lakeMesh;
 
       // Conifer Forest (Douglas Firs around the foothills)
       const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8a5a2b, roughness: 0.9 });
@@ -560,7 +562,7 @@ let cloudGroup = null;
 function buildSkyAndClouds3D() {
       const preset = AMBIANCE_PRESETS[state.lightingIdx] || AMBIANCE_PRESETS[0];
       skyDome = new THREE.Mesh(
-        new THREE.SphereGeometry(180, 32, 16),
+        new THREE.SphereGeometry(420, 32, 16),
         new THREE.ShaderMaterial({
           side: THREE.BackSide,
           depthWrite: false,
@@ -589,6 +591,71 @@ function buildSkyAndClouds3D() {
         cloudGroup.add(cloud);
       }
       scene.add(cloudGroup);
+    }
+
+// --- The lands around the island, so there is never an edge to fall off -------------------
+const ISLAND_HALF_X = 48, ISLAND_HALF_Z = 43;
+
+// Height beyond the main terrain: the mountain's back side falls away into further ranges,
+// hills roll off east and west, and south of the shore the land drops into open water
+function outerTerrainHeight(x, z) {
+      const cx = Math.max(-ISLAND_HALF_X, Math.min(ISLAND_HALF_X, x));
+      const cz = Math.max(-ISLAND_HALF_Z, Math.min(ISLAND_HALF_Z, z));
+      const edge = getAnalyticalGroundHeight(cx, cz);
+      const d = Math.hypot(x - cx, z - cz);
+      if (d === 0) return edge - 0.4; // under the main terrain; never seen
+      const t = Math.min(1, d / 28);
+      const blend = t * t * (3 - 2 * t);
+      if (cz > 6) return edge + (-4 - edge) * blend; // open water south of the shore
+      const ridges = 5 + Math.max(0, Math.sin(x * 0.045) * Math.cos(z * 0.04)) * 26
+        + Math.abs(Math.sin(x * 0.11 + z * 0.07)) * 6 + Math.max(0, Math.sin(x * 0.021 - 1.3)) * 14;
+      const target = z < -20 ? ridges + 4 : ridges * 0.45 + 1.5;
+      return edge + (target - edge) * blend;
+    }
+
+function buildOuterLands3D() {
+      const size = 340, segs = 150;
+      const geo = new THREE.PlaneGeometry(size, size, segs, segs);
+      geo.rotateX(-Math.PI / 2);
+      const pos = geo.attributes.position;
+      const colors = [];
+      const c = new THREE.Color();
+      for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i), z = pos.getZ(i);
+        const inside = Math.abs(x) < ISLAND_HALF_X && Math.abs(z) < ISLAND_HALF_Z;
+        const y = inside ? getAnalyticalGroundHeight(x, z) - 0.4 : outerTerrainHeight(x, z);
+        pos.setY(i, y);
+        if (y > 26) c.setHex(0xf4f8ff); // snow only on the high peaks
+        else if (y > 7) c.setHex(0x6f7a8f).lerp(new THREE.Color(0x8b93a7), (y - 7) / 19);
+        else if (y < 0.2 && z > 0) c.setHex(0xf6e3a8);
+        else c.setHex(0x4cbf37).lerp(new THREE.Color(0x2f8f2a), Math.min(1, Math.max(0, y / 6)));
+        colors.push(c.r, c.g, c.b);
+      }
+      geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+      geo.computeVertexNormals();
+      const outer = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }));
+      outer.receiveShadow = true;
+      scene.add(outer);
+
+      // The lake opens into a wide sea to the south, east and west
+      const seaDepth = size / 2 + 10;
+      const sea = new THREE.Mesh(new THREE.PlaneGeometry(size, seaDepth),
+        new THREE.MeshStandardMaterial({ color: 0x0b5f99, roughness: 0.18, metalness: 0.2, transparent: true, opacity: 0.95 }));
+      sea.rotation.x = -Math.PI / 2;
+      sea.position.set(0, -0.18, 6 + seaDepth / 2); // starts at the shoreline, so it never shows through the valley
+      scene.add(sea);
+
+      // A few distant pines on the far hills
+      const pineMat = new THREE.MeshStandardMaterial({ color: 0x1f9a4b, roughness: 0.75 });
+      for (let k = 0; k < 140; k++) {
+        const x = (Math.random() - 0.5) * size * 0.9, z = (Math.random() - 0.5) * size * 0.9;
+        if (Math.abs(x) < ISLAND_HALF_X + 2 && Math.abs(z) < ISLAND_HALF_Z + 2) continue;
+        const y = outerTerrainHeight(x, z);
+        if (y < 0.5 || y > 13) continue;
+        const pine = new THREE.Mesh(new THREE.ConeGeometry(1.4, 4, 7), pineMat);
+        pine.position.set(x, y + 2, z);
+        scene.add(pine);
+      }
     }
 
 function updateClouds(dt) {
@@ -1486,8 +1553,9 @@ function animateDiorama() {
         camera.position.add(moveDelta);
 
         // Keep bird's-eye camera within island & mountain bounds
-        controls.target.x = Math.max(-48, Math.min(48, controls.target.x));
-        controls.target.z = Math.max(-52, Math.min(28, controls.target.z));
+        // Fly anywhere over the island and the lands around it
+        controls.target.x = Math.max(-140, Math.min(140, controls.target.x));
+        controls.target.z = Math.max(-150, Math.min(150, controls.target.z));
       }
 
       // 1. Walk Kelo-1 smoothly to Target Location while clamping strictly ON TOP of any terrain altitude!
@@ -1706,6 +1774,7 @@ function animateDiorama() {
       if (typeof updateHobbyProps === 'function') updateHobbyProps(t);
       if (typeof checkForGlints === 'function') checkForGlints();
       updateClouds(1 / 60);
+      if (skyDome) skyDome.position.copy(camera.position);
 
       // 2. Scale Garden Crops smoothly based on ripeness
       state.gardenPlots.forEach((plot, idx) => {

@@ -133,13 +133,31 @@ const ITEM_MODEL_RULES = [
   }],
   // Digging equipment (checked first so "jackhammer" isn't mistaken for a plain hammer)
   [/jack ?hammer|rock breaker/, () => {
-    const body = mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.45, 10), 0xf59e0b);
-    body.position.y = 0.5;
-    const handle = mesh(new THREE.BoxGeometry(0.4, 0.06, 0.06), 0x1f2937);
-    handle.position.y = 0.76;
-    const bit = mesh(new THREE.CylinderGeometry(0.025, 0.01, 0.35, 8), 0x94a3b8, { metalness: 0.8 });
-    bit.position.y = 0.12;
-    return group(body, handle, bit);
+    // Motor body, T-handle grips, hose, and a long chisel bit
+    const yellow = 0xfacc15;
+    const motor = mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.42, 16), yellow, { metalness: 0.3 });
+    motor.position.y = 0.62;
+    const cap = mesh(new THREE.CylinderGeometry(0.08, 0.11, 0.1, 16), 0x1f2937);
+    cap.position.y = 0.88;
+    const bar = mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.62, 10), 0x1f2937);
+    bar.rotation.z = Math.PI / 2;
+    bar.position.y = 0.94;
+    const grips = [-0.3, 0.3].map(x => {
+      const grip = mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.12, 10), 0x111827);
+      grip.rotation.z = Math.PI / 2;
+      grip.position.set(x, 0.94, 0);
+      return grip;
+    });
+    const collar = mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.1, 12), 0x475569, { metalness: 0.8 });
+    collar.position.y = 0.36;
+    const shank = mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.28, 8), 0xcbd5e1, { metalness: 0.9, roughness: 0.25 });
+    shank.position.y = 0.18;
+    const chisel = mesh(new THREE.ConeGeometry(0.035, 0.08, 4), 0xcbd5e1, { metalness: 0.9 });
+    chisel.rotation.x = Math.PI;
+    chisel.position.y = 0.02;
+    const hose = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0, 0.8, -0.12), new THREE.Vector3(0.1, 0.55, -0.35), new THREE.Vector3(0.3, 0.1, -0.4)]), 16, 0.025, 6), new THREE.MeshStandardMaterial({ color: 0x111827 }));
+    return group(motor, cap, bar, ...grips, collar, shank, chisel, hose);
   }],
   [/excavator|digger|backhoe/, () => {
     const base = mesh(new THREE.BoxGeometry(0.5, 0.12, 0.34), 0x1f2937);
@@ -168,18 +186,51 @@ const ITEM_MODEL_RULES = [
     return g;
   }],
   [/shovel|spade/, () => {
-    const handle = mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.7, 8), 0x8a5a2b);
-    handle.position.y = 0.45;
-    const blade = mesh(new THREE.BoxGeometry(0.2, 0.24, 0.03), 0x94a3b8, { metalness: 0.7 });
-    blade.position.y = 0.06;
-    return group(handle, blade);
+    // D-grip, wooden shaft, metal collar, and a pointed, slightly dished blade
+    const wood = 0xa16207;
+    const shaft = mesh(new THREE.CylinderGeometry(0.022, 0.026, 0.75, 10), wood);
+    shaft.position.y = 0.6;
+    const grip = mesh(new THREE.TorusGeometry(0.07, 0.016, 8, 16, Math.PI), 0x1f2937);
+    grip.position.y = 1.0;
+    const gripBar = mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.14, 8), 0x1f2937);
+    gripBar.rotation.z = Math.PI / 2;
+    gripBar.position.y = 1.0;
+    const collar = mesh(new THREE.CylinderGeometry(0.03, 0.035, 0.1, 10), 0x64748b, { metalness: 0.8 });
+    collar.position.y = 0.24;
+    const outline = new THREE.Shape();
+    outline.moveTo(-0.12, 0.2);
+    outline.lineTo(0.12, 0.2);
+    outline.quadraticCurveTo(0.14, 0.05, 0.0, -0.12);
+    outline.quadraticCurveTo(-0.14, 0.05, -0.12, 0.2);
+    const bladeGeo = new THREE.ExtrudeGeometry(outline, { depth: 0.012, bevelEnabled: false, curveSegments: 10 });
+    // Dish the blade a little so it reads as a scoop rather than a flat plate
+    const bp = bladeGeo.attributes.position;
+    for (let i = 0; i < bp.count; i++) bp.setZ(i, bp.getZ(i) + Math.pow(bp.getX(i) / 0.12, 2) * 0.03);
+    bladeGeo.computeVertexNormals();
+    const blade = mesh(bladeGeo, 0x94a3b8, { metalness: 0.75, roughness: 0.35, side: THREE.DoubleSide });
+    blade.position.y = 0.08;
+    return group(shaft, grip, gripBar, collar, blade);
   }],
-  [/pick ?axe|mattock/, () => {
-    const handle = mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.7, 8), 0x8a5a2b);
-    handle.position.y = 0.35;
-    const head = mesh(new THREE.BoxGeometry(0.5, 0.06, 0.06), 0x94a3b8, { metalness: 0.7 });
-    head.position.y = 0.68;
-    return group(handle, head);
+  [/pick ?ax(e)?|mattock/, () => {
+    // Long wooden haft with a grip, and a curved steel head: a sharp pick on one side, a chisel on the other
+    const haft = mesh(new THREE.CylinderGeometry(0.022, 0.03, 0.85, 10), 0xa16207);
+    haft.position.y = 0.43;
+    const wrap = mesh(new THREE.CylinderGeometry(0.033, 0.033, 0.18, 10), 0x1f2937);
+    wrap.position.y = 0.12;
+    const eye = mesh(new THREE.BoxGeometry(0.07, 0.09, 0.07), 0x475569, { metalness: 0.8 });
+    eye.position.y = 0.86;
+    const head = new THREE.Shape();
+    // Crescent: the top edge arcs up, the underside curves, tapering to a point (left) and a flat chisel (right)
+    head.moveTo(-0.34, 0.80);
+    head.quadraticCurveTo(-0.15, 0.93, 0.0, 0.92);
+    head.quadraticCurveTo(0.17, 0.93, 0.32, 0.84);
+    head.lineTo(0.33, 0.80);
+    head.quadraticCurveTo(0.16, 0.85, 0.0, 0.83);
+    head.quadraticCurveTo(-0.16, 0.85, -0.34, 0.80);
+    const headGeo = new THREE.ExtrudeGeometry(head, { depth: 0.05, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.008, bevelSegments: 2, curveSegments: 12 });
+    headGeo.translate(0, 0, -0.025);
+    const steel = mesh(headGeo, 0x94a3b8, { metalness: 0.85, roughness: 0.3 });
+    return group(haft, wrap, eye, steel);
   }],
   // Things he can dig up
   [/geode|amethyst|garnet/, () => {

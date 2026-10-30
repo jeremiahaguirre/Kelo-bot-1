@@ -1588,7 +1588,32 @@ function categorizeItem(name, hint) {
 
 const CATEGORY_ICONS = { food: '🍒', tool: '🛠️', toy: '🪀', place: '🏝️', vehicle: '🛶', companion: '🐐', material: '🧱', thing: '🎁' };
 
+// When someone says no, he makes do: finds an alternative, builds a stand-in, or lets it go
+function proceduralDeclinedDecision(item) {
+      const thing = String(item || 'it').replace(/^(an?|the|some)\s+/i, '');
+      const options = [
+        { title: `Weld a stand-in for the ${thing}`, speech: `That's okay. I'll weld my own version of a ${thing} out of scrap.`, build: true },
+        { title: `Make do without the ${thing}`, speech: `No ${thing}? Fair enough. I'll find another way to spend the afternoon.`, build: false },
+        { title: `Rethink why I wanted a ${thing}`, speech: `Hmm, maybe I didn't really need a ${thing}. Let me think about what I was after.`, build: false }
+      ];
+      const o = pick(options);
+      const parts = o.build ? randomSculptureParts() : null;
+      return {
+        thought: `"They said no to the ${thing}. ${o.build ? 'I can make something like it myself.' : 'That is allowed.'}"`,
+        actionTitle: o.title,
+        emoji: o.build ? '🔧' : '🤔',
+        speech: o.speech,
+        diary: `Dear Diary, I asked for a ${thing} and the answer was no. ${o.speech}`,
+        destination: 'stay',
+        build: parts ? { title: `Homemade ${thing}`, archetype: 'custom_weld', parts, colorHex: randomHex(), secondaryColorHex: randomHex() } : null,
+        motion: { headPitch: 0.25, headYawSpeed: 0.8, headTiltAmp: 0.3, armWaveAmp: 0.15, armRaiseOffset: -0.2, bodyBounceAmp: 0.02, spinSpeed: 0, sparkBurst: false },
+        vitalsDelta: { happiness: -4, calmLevel: 2, wonderLevel: 2, health: 0, fullness: 0 },
+        newOpinion: Math.random() < 0.4 ? { topic: 'On Hearing No', stance: pick(['No Is Information', 'Make Your Own', 'Wanting Is Fine Too']), reasoning: `Not getting a ${thing} showed me what I can do on my own.` } : null
+      };
+    }
+
 function generateProceduralDecision(context = {}) {
+      if (context.declined) return proceduralDeclinedDecision(context.focus);
       // When he is hungry he often (not always) decides to eat first
       if (!context.focus && state.fullness < 30 && Math.random() < 0.55) return proceduralMealDecision();
       const verb = context.focus ? pick(FOCUS_VERBS) : pick(FREE_VERBS);

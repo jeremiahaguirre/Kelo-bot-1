@@ -101,35 +101,53 @@ function renderRequestsTab() {
               <span>${escapeHtml(req.title)}</span>
             </span>
             <span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${req.fulfilled ? 'bg-emerald-500/20 text-emerald-300' : (req.isToolRequest ? 'bg-amber-500/25 text-amber-300 border border-amber-400/40' : 'bg-rose-500/20 text-rose-300')}">
-              ${req.fulfilled ? '✓ Delivered / Reflected' : escapeHtml(req.urgency)}
+              ${req.declined ? '✗ You said no' : (req.fulfilled ? (req.isToolRequest ? '📮 Sent to the post office' : '✓ Answered') : escapeHtml(req.urgency))}
             </span>
           </div>
           ${req.requestedGear ? `<div class="text-[11px] font-mono text-amber-300 bg-amber-950/30 border border-amber-500/30 px-2.5 py-1 rounded-lg">Wants: ${escapeHtml(req.requestedGear)}</div>` : ''}
           <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
-          ${!req.fulfilled ? `
+          ${!req.fulfilled ? (req.isToolRequest ? `
             <div class="space-y-2 pt-1">
-              <div class="text-[10px] font-mono uppercase text-slate-400">${req.isToolRequest ? 'Bring it, or describe what you are bringing instead:' : 'Share a perspective or write your own answer:'}</div>
-              <div class="flex flex-col gap-1.5">
-                ${(req.presets || []).map(preset => `
-                  <button data-req-id="${escapeHtml(req.id)}" data-answer="${escapeHtml(preset)}" class="preset-answer-btn text-left text-[11px] px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-amber-500/25 text-slate-200 hover:text-amber-200 border border-slate-800 hover:border-amber-500/40 transition">
-                    ${req.isToolRequest ? '📦' : '💬'} "${escapeHtml(preset)}"
-                  </button>
-                `).join('')}
-              </div>
-              <div class="flex gap-1.5 pt-1">
-                <input id="custom-ans-${escapeHtml(req.id)}" type="text" maxlength="140" placeholder="${req.isToolRequest ? 'Or describe what you are bringing...' : 'Or type your own honest answer to Kelo-1...'}"
-                  class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400" />
-                <button data-req-id="${escapeHtml(req.id)}" class="custom-answer-btn px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs shrink-0 transition">
-                  ${req.isToolRequest ? 'Deliver' : 'Answer'}
+              <input id="custom-ans-${escapeHtml(req.id)}" type="text" maxlength="140" placeholder="Optional note (or your reason for saying no)"
+                class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400" />
+              <div class="flex gap-1.5">
+                <button data-req-id="${escapeHtml(req.id)}" class="deliver-request-btn flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs transition">
+                  📦 Send ${escapeHtml(req.requestedGear)}
+                </button>
+                <button data-req-id="${escapeHtml(req.id)}" class="decline-request-btn px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-rose-500/20 border border-slate-700 hover:border-rose-400/50 text-slate-300 hover:text-rose-200 font-semibold text-xs transition">
+                  ✗ Say No
                 </button>
               </div>
             </div>
           ` : `
-            <div class="p-2.5 rounded-xl bg-emerald-950/25 border border-emerald-500/30 text-[11px] text-emerald-200 space-y-1">
-              <div class="font-mono text-[10px] text-emerald-400">${req.isToolRequest ? 'You delivered:' : 'Your Perspective Shared with Kelo-1:'}</div>
-              <div class="italic">"${escapeHtml(req.userAnswer)}"</div>
+            <div class="space-y-2 pt-1">
+              <div class="text-[10px] font-mono uppercase text-slate-400">Share a perspective or write your own answer:</div>
+              <div class="flex flex-col gap-1.5">
+                ${(req.presets || []).map(preset => `
+                  <button data-req-id="${escapeHtml(req.id)}" data-answer="${escapeHtml(preset)}" class="preset-answer-btn text-left text-[11px] px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-amber-500/25 text-slate-200 hover:text-amber-200 border border-slate-800 hover:border-amber-500/40 transition">
+                    💬 "${escapeHtml(preset)}"
+                  </button>
+                `).join('')}
+              </div>
+              <div class="flex gap-1.5 pt-1">
+                <input id="custom-ans-${escapeHtml(req.id)}" type="text" maxlength="140" placeholder="Or type your own honest answer to Kelo-1..."
+                  class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400" />
+                <button data-req-id="${escapeHtml(req.id)}" class="custom-answer-btn px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs shrink-0 transition">
+                  Answer
+                </button>
+              </div>
             </div>
-          `}
+          `) : (req.declined ? `
+            <div class="p-2.5 rounded-xl bg-rose-950/25 border border-rose-500/30 text-[11px] text-rose-200 space-y-1">
+              <div class="font-mono text-[10px] text-rose-300">You said no${req.userAnswer && req.userAnswer !== 'No' ? ':' : '.'}</div>
+              ${req.userAnswer && req.userAnswer !== 'No' ? `<div class="italic">"${escapeHtml(req.userAnswer)}"</div>` : ''}
+            </div>
+          ` : `
+            <div class="p-2.5 rounded-xl bg-emerald-950/25 border border-emerald-500/30 text-[11px] text-emerald-200 space-y-1">
+              <div class="font-mono text-[10px] text-emerald-400">${req.isToolRequest ? `You sent ${escapeHtml(req.requestedGear)} to the post office` : 'Your perspective, shared with Kelo-1:'}</div>
+              ${req.userAnswer && req.userAnswer !== req.requestedGear ? `<div class="italic">"${escapeHtml(req.userAnswer)}"</div>` : ''}
+            </div>
+          `)}
         </div>
       `).join('');
 
@@ -145,7 +163,7 @@ function renderRequestsTab() {
         // Something he asked for: deliver it, then he decides what to do with it
         if (req.isToolRequest && req.requestedGear) {
           // Deliveries go to the post office like any other mail; he picks them up when he chooses
-          postMail({ kind: 'request', from: visitor, name: req.requestedGear, category: req.category, emoji: req.icon, note: req.userAnswer });
+          postMail({ kind: 'request', from: visitor, name: req.requestedGear, category: req.category, emoji: req.icon, note: req.userAnswer === req.requestedGear ? '' : req.userAnswer });
           savePersistentBrainState();
           renderAllUI();
           return;
@@ -165,6 +183,38 @@ function renderRequestsTab() {
         recordVisitorMemory(visitor, `Answered my question "${req.title}".`);
         decideNextAction(`You asked visitors "${req.title}" and ${visitor} answered: "${req.userAnswer}". Think about it and decide what to do next; you may agree, disagree, or act on it.`, 'Shaped by Dialogue');
       };
+
+      // Deliver exactly what he asked for (an optional note rides along), or say no
+      list.querySelectorAll('.deliver-request-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const rId = btn.getAttribute('data-req-id');
+          const req = state.requestsToUser.find(r => r.id === rId);
+          if (!req) return;
+          const note = (document.getElementById(`custom-ans-${rId}`)?.value || '').trim();
+          submitPerspective(rId, note || req.requestedGear);
+        });
+      });
+      list.querySelectorAll('.decline-request-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const rId = btn.getAttribute('data-req-id');
+          const req = state.requestsToUser.find(r => r.id === rId);
+          if (!req || req.fulfilled) return;
+          const reason = (document.getElementById(`custom-ans-${rId}`)?.value || '').trim();
+          const visitor = (document.getElementById('visitorNameInput').value || 'curiousWanderer').trim();
+          req.fulfilled = true;
+          req.declined = true;
+          req.userAnswer = reason || 'No';
+          recordVisitorMemory(visitor, `Said no to my request for ${req.requestedGear}${reason ? ` ("${reason.slice(0, 60)}")` : ''}.`);
+          savePersistentBrainState();
+          renderAllUI();
+          showToast(`✗ You said no to "${req.requestedGear}"`);
+          decideNextAction(
+            `${visitor} said no to your request for ${req.requestedGear}${reason ? ` and explained: "${reason}"` : ''}. React however you honestly feel, and decide what to do instead. You could make do, build an alternative, ask for something else, or let it go.`,
+            'Request Declined',
+            { focus: req.requestedGear, declined: true }
+          );
+        });
+      });
 
       list.querySelectorAll('.preset-answer-btn').forEach(btn => {
         btn.addEventListener('click', () => {

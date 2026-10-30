@@ -286,7 +286,9 @@ const state = {
   },
   "lettersReceived": 0,
   "isBrowsing": false,
-  "concepts": []
+  "concepts": [],
+  "lastVisitorName": "",
+  "pendingBuilds": []
 };
 
 // Where Kelo-1's memory lives: browser storage on the website (about 5 MB), or files on disk in the
@@ -351,6 +353,11 @@ function clampNumber(value, min, max, fallback) {
     }
 
 function trimBrainState() {
+      if (state.visitorMemories.length > 50) state.visitorMemories.length = 50;
+      if (state.webHistory.length > 12) state.webHistory.length = 12;
+      if (state.giftLog.length > 30) state.giftLog.length = 30;
+      if (state.likes.length > 30) state.likes.length = 30;
+      if (state.dislikes.length > 30) state.dislikes.length = 30;
       // Older diary entries and opinions go to the long-term archive (js/memory.js), not the bin
       if (typeof stampDiaryEntries === 'function') stampDiaryEntries();
       const diaryOverflow = state.diaryEntries.splice(MAX_DIARY_ENTRIES);
@@ -1081,6 +1088,22 @@ function loadPersistentBrainState() {
         const raw = keloStore.getItem(BRAIN_KEY);
         if (!raw) return;
         const saved = JSON.parse(raw);
+        // Restore everything that was saved, as long as it has the same shape as today's state
+        Object.keys(saved).forEach(k => {
+          if (!(k in state) || TRANSIENT_STATE_KEYS.has(k)) return;
+          const cur = state[k], val = saved[k];
+          if (Array.isArray(cur) ? Array.isArray(val)
+            : (cur && typeof cur === 'object') ? (val && typeof val === 'object' && !Array.isArray(val))
+            : (typeof cur === typeof val || cur === null)) {
+            state[k] = val;
+          }
+        });
+        // Positions must be real coordinates; a half-finished pose shouldn't stick
+        ['botPos', 'targetPos'].forEach(k => {
+          if (!state[k] || !Number.isFinite(state[k].x) || !Number.isFinite(state[k].z)) state[k] = { x: -9.5, z: -4.6 };
+        });
+        if (state.microPose === 'digging') state.microPose = 'normal';
+        if (typeof saved.lastVisitorName === 'string') state.lastVisitorName = saved.lastVisitorName;
         if (saved.worldviewManifesto) state.worldviewManifesto = saved.worldviewManifesto;
         if (saved.worldviewEpoch) state.worldviewEpoch = saved.worldviewEpoch;
         if (saved.changedLatelySummary) state.changedLatelySummary = saved.changedLatelySummary;
@@ -1131,43 +1154,23 @@ function loadPersistentBrainState() {
       } catch (e) {}
     }
 
+// Moment-to-moment flags and things stored elsewhere; everything else in state is saved
+const TRANSIENT_STATE_KEYS = new Set(['isBusy', 'isWalking', 'isBuilding', 'isPracticing', 'isCollectingMail', 'isBrowsing',
+  'pendingImageAttachment', 'photoAlbum', 'rhythmPhaseText', 'unopenedNotesQueue']);
+
+// Save his whole self: memories, feelings, where he is, what he is doing, everything he owns
 function savePersistentBrainState() {
       trimBrainState();
       try {
-        const visitor = (document.getElementById('visitorNameInput')?.value || 'curiousWanderer').trim();
-        keloStore.setItem(BRAIN_KEY, JSON.stringify({
-          worldviewManifesto: state.worldviewManifesto,
-          worldviewEpoch: state.worldviewEpoch,
-          changedLatelySummary: state.changedLatelySummary,
-          opinions: state.opinions.slice(0, MAX_OPINIONS),
-          visitorMemories: state.visitorMemories.slice(0, 50),
-          inventedCreations: state.inventedCreations.slice(0, 12),
-          toolInventory: state.toolInventory.slice(0, 16),
-          diaryEntries: (state.diaryEntries || []).slice(0, MAX_DIARY_ENTRIES),
-          coreMemories: state.coreMemories.slice(0, 40),
-          hobbies: state.hobbies.slice(0, 12),
-          murals: state.murals.slice(0, 8),
-          plantings: state.plantings.slice(0, 24),
-          digSites: state.digSites.slice(0, 6),
-          knowsDigging: state.knowsDigging,
-          unstoredItems: state.unstoredItems.slice(0, 40),
-          itemDesigns: state.itemDesigns,
-          foundItems: state.foundItems.slice(0, 40),
-          life: state.life,
-          concepts: state.concepts.slice(0, MAX_CONCEPTS),
-          shapeLibrary: state.shapeLibrary.slice(0, MAX_SHAPES),
-          webHistory: state.webHistory.slice(0, 12),
-          curiosityQueue: state.curiosityQueue.slice(0, 10),
-          toys: state.toys.slice(0, 20),
-          belongings: state.belongings.slice(0, 20),
-          giftLog: state.giftLog.slice(0, 30).map(({ thumb, ...rest }) => rest),
-          requestsToUser: state.requestsToUser.slice(0, MAX_REQUESTS),
-          fullness: state.fullness,
-          mailbox: state.mailbox.slice(0, 20),
-          lettersReceived: state.lettersReceived,
-          lastVisitorName: visitor
-        }));
-      } catch (e) {}
+        const visitor = (document.getElementById('visitorNameInput')?.value || '').trim();
+        if (visitor) state.lastVisitorName = visitor;
+        const snapshot = { savedAt: Date.now() };
+        Object.keys(state).forEach(k => { if (!TRANSIENT_STATE_KEYS.has(k)) snapshot[k] = state[k]; });
+        snapshot.giftLog = state.giftLog.slice(0, 30).map(({ thumb, ...rest }) => rest);
+        keloStore.setItem(BRAIN_KEY, JSON.stringify(snapshot));
+      } catch (e) {
+        console.warn('Could not save Kelo-1\'s memory:', e);
+      }
       if (typeof maybeDistillCoreMemory === 'function') setTimeout(maybeDistillCoreMemory, 0);
     }
 

@@ -362,6 +362,82 @@ function buildHomesteadAndBuildings3D() {
       const cyberMesh = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.5, 3.0), new THREE.MeshStandardMaterial({ color: 0x4f46e5 }));
       cyberMesh.position.set(6.8, cyberY + 1.25, 2.2);
       scene.add(cyberMesh);
+
+      buildPostOffice3D();
+    }
+
+// A flat sign with text drawn on a canvas, readable from the front
+function makeSignMesh(text, { bg = '#1e293b', fg = '#f8fafc', width = 2.4, height = 0.5 } = {}) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = Math.round(512 * (height / width));
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = fg;
+      ctx.font = `bold ${Math.round(canvas.height * 0.58)}px Inter, Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 2, canvas.width - 24);
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.anisotropy = 4;
+      return new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial({ map: texture }));
+    }
+
+// The Okanagan Post Office, where mail for Kelo-1 waits and his letters go out
+function buildPostOffice3D() {
+      const cx = 12.5, cz = -3.0;
+      const gy = getAnalyticalGroundHeight(cx, cz);
+      const po = new THREE.Group();
+      po.position.set(cx, gy, cz);
+
+      const brick = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.85 });
+      const trim = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.6 });
+      const slate = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.7 });
+
+      const body = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.6, 3.2), brick);
+      body.position.y = 1.3;
+      body.castShadow = true;
+      body.receiveShadow = true;
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(3.3, 1.4, 4), slate);
+      roof.position.y = 3.3;
+      roof.rotation.y = Math.PI / 4;
+      roof.scale.set(1, 1, 0.78);
+      roof.castShadow = true;
+      const cornice = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.18, 3.4), trim);
+      cornice.position.y = 2.62;
+      const door = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.5, 0.08), new THREE.MeshStandardMaterial({ color: 0x1e3a8a }));
+      door.position.set(0, 0.75, 1.62);
+      const step = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.14, 0.6), trim);
+      step.position.set(0, 0.07, 1.85);
+      [-1.35, 1.35].forEach(wx => {
+        const win = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.7, 0.06), new THREE.MeshStandardMaterial({ color: 0xbfdbfe, emissive: 0x1e3a8a, emissiveIntensity: 0.2 }));
+        win.position.set(wx, 1.5, 1.62);
+        po.add(win);
+      });
+      const sign = makeSignMesh('POST OFFICE', { bg: '#f8fafc', fg: '#b91c1c', width: 2.6, height: 0.45 });
+      sign.position.set(0, 2.25, 1.63);
+
+      // Flagpole and a red street mailbox out front
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 4.2, 8), trim);
+      pole.position.set(2.5, 2.1, 1.6);
+      const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.55), new THREE.MeshStandardMaterial({ color: 0xdc2626, side: THREE.DoubleSide }));
+      flag.position.set(2.95, 3.85, 1.6);
+      flag.userData = { baseRotZ: 0, phase: 1.3 };
+      pennantFlags.push(flag);
+      const mailbox = new THREE.Group();
+      const boxBody = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.75, 0.5), new THREE.MeshStandardMaterial({ color: 0xdc2626, metalness: 0.3, roughness: 0.5 }));
+      boxBody.position.y = 0.75;
+      const boxTop = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.55, 12, 1, false, 0, Math.PI), boxBody.material);
+      boxTop.rotation.z = Math.PI / 2;
+      boxTop.position.y = 1.12;
+      const boxLeg = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.4, 0.12), slate);
+      boxLeg.position.y = 0.2;
+      mailbox.add(boxBody, boxTop, boxLeg);
+      mailbox.position.set(-1.9, 0, 2.1);
+
+      po.add(body, roof, cornice, door, step, sign, pole, flag, mailbox);
+      scene.add(po);
     }
 
 function buildKelo1Character3D() {

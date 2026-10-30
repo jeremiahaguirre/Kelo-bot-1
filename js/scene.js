@@ -10,6 +10,8 @@ let weldingSparks, miningDebrisParticles, emergentCreationsGroup;
 let sailboatGroup, ogopogoGroup, birdFlockGroup;
 let cutawayRoofMeshes = [], gardenCropGroups = [], pennantFlags = [];
 let poiDomElements = {};
+// Solid things Kelo-1 should walk around: { x, z, r } circles on the ground
+let worldObstacles = [];
 const downRaycaster = new THREE.Raycaster();
 
 function getAnalyticalGroundHeight(x, z) {
@@ -213,6 +215,7 @@ function buildAlpineTerrainAndMountains3D() {
         tree.add(trunk, cone1, cone2);
         tree.position.set(tx, ty, tz);
         scene.add(tree);
+        worldObstacles.push({ x: tx, z: tz, r: 0.6 });
       }
 
       // Sailboat & Ogopogo on Okanagan Lake
@@ -284,8 +287,15 @@ function buildHomesteadAndBuildings3D() {
       bench.position.y = 0.45;
       const argonTank = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 1.6, 12), new THREE.MeshStandardMaterial({ color: 0x0d9488, metalness: 0.6 }));
       argonTank.position.set(1.4, 0.8, 0);
-      forgeGroup.add(bench, argonTank);
+      const anvil = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.3), new THREE.MeshStandardMaterial({ color: 0x1f2937, metalness: 0.8, roughness: 0.3 }));
+      anvil.position.set(-0.6, 1.08, 0);
+      const forgeSign = makeSignMesh('WELDING STUDIO', { bg: '#0f172a', fg: '#38bdf8', width: 2.2, height: 0.4 });
+      forgeSign.position.set(0, 1.9, -0.75);
+      const signPost = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.4, 0.08), new THREE.MeshStandardMaterial({ color: 0x475569 }));
+      signPost.position.set(0, 1.0, -0.8);
+      forgeGroup.add(bench, argonTank, anvil, signPost, forgeSign);
       scene.add(forgeGroup);
+      worldObstacles.push({ x: -1.2, z: -8.2, r: 1.5 });
 
       // Welding Sparks Particle System
       const sparkGeo = new THREE.BufferGeometry();
@@ -331,37 +341,32 @@ function buildHomesteadAndBuildings3D() {
       miningDebrisParticles.visible = false;
       scene.add(miningDebrisParticles);
 
-      // 3. 4 Raised Bio-Garden Planters
+      // 3. 4 Raised Bio-Garden Planters, each growing a crop you can tell apart at a glance
       gardenCropGroups = [];
+      const cropBuilders = [buildPeachTree3D, buildTomatoVines3D, buildCarrotRow3D, buildBlueberryBushes3D];
+      const cropLabels = ['PEACHES', 'TOMATOES', 'CARROTS', 'BLUEBERRIES'];
       for (let p = 0; p < 4; p++) {
         const gx = -11.5 + (p % 2) * 2.4;
         const gz = 1.6 + Math.floor(p / 2) * 1.8;
         const gy = getAnalyticalGroundHeight(gx, gz);
-        const box = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.45, 1.2), new THREE.MeshStandardMaterial({ color: 0x92400e }));
+        const box = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.45, 1.2), new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.9 }));
         box.position.set(gx, gy + 0.22, gz);
-        scene.add(box);
-        const cropCluster = new THREE.Group();
-        cropCluster.position.set(gx, gy + 0.5, gz);
-        const fruitMat = new THREE.MeshStandardMaterial({ color: p % 2 === 0 ? 0xf97316 : 0xef4444 });
-        for (let c = -1; c <= 1; c++) {
-          const orb = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), fruitMat);
-          orb.position.x = c * 0.45;
-          cropCluster.add(orb);
-        }
+        box.castShadow = true;
+        const soil = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.05, 1.05), new THREE.MeshStandardMaterial({ color: 0x3f2a14, roughness: 1 }));
+        soil.position.set(gx, gy + 0.46, gz);
+        const label = makeSignMesh(cropLabels[p], { bg: '#fef3c7', fg: '#78350f', width: 0.9, height: 0.22 });
+        label.position.set(gx, gy + 0.3, gz + 0.61);
+        scene.add(box, soil, label);
+        worldObstacles.push({ x: gx, z: gz, r: 1.0 });
+        const cropCluster = cropBuilders[p]();
+        cropCluster.position.set(gx, gy + 0.48, gz);
         scene.add(cropCluster);
         gardenCropGroups.push(cropCluster);
       }
 
       // 4. Bean & Byte Espresso Cafe & NetNode Internet Cafe
-      const cafeY = getAnalyticalGroundHeight(-1.5, 3.5);
-      const cafeMesh = new THREE.Mesh(new THREE.BoxGeometry(3.8, 2.4, 2.8), new THREE.MeshStandardMaterial({ color: 0xea580c }));
-      cafeMesh.position.set(-1.5, cafeY + 1.2, 3.5);
-      scene.add(cafeMesh);
-
-      const cyberY = getAnalyticalGroundHeight(6.8, 2.2);
-      const cyberMesh = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.5, 3.0), new THREE.MeshStandardMaterial({ color: 0x4f46e5 }));
-      cyberMesh.position.set(6.8, cyberY + 1.25, 2.2);
-      scene.add(cyberMesh);
+      buildCafe3D();
+      buildNetNode3D();
 
       buildPostOffice3D();
     }
@@ -382,6 +387,170 @@ function makeSignMesh(text, { bg = '#1e293b', fg = '#f8fafc', width = 2.4, heigh
       const texture = new THREE.CanvasTexture(canvas);
       texture.anisotropy = 4;
       return new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial({ map: texture }));
+    }
+
+// --- Garden crops: each looks like what it is ---------------------------------
+function buildPeachTree3D() {
+      const g = new THREE.Group();
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.09, 0.7, 6), new THREE.MeshStandardMaterial({ color: 0x5b3a1e }));
+      trunk.position.y = 0.35;
+      const canopy = new THREE.Mesh(new THREE.SphereGeometry(0.55, 12, 10), new THREE.MeshStandardMaterial({ color: 0x3f7d2c, roughness: 0.8 }));
+      canopy.position.y = 0.95;
+      canopy.scale.set(1.2, 0.85, 0.9);
+      g.add(trunk, canopy);
+      const peachMat = new THREE.MeshStandardMaterial({ color: 0xffa36c, emissive: 0x7c2d12, emissiveIntensity: 0.12, roughness: 0.6 });
+      for (let i = 0; i < 6; i++) {
+        const peach = new THREE.Mesh(new THREE.SphereGeometry(0.11, 10, 8), peachMat);
+        const a = (i / 6) * Math.PI * 2;
+        peach.position.set(Math.cos(a) * 0.55, 0.8 + (i % 2) * 0.18, Math.sin(a) * 0.4);
+        g.add(peach);
+      }
+      return g;
+    }
+
+function buildTomatoVines3D() {
+      const g = new THREE.Group();
+      const stakeMat = new THREE.MeshStandardMaterial({ color: 0xc8a165 });
+      const vineMat = new THREE.MeshStandardMaterial({ color: 0x2f7d32, roughness: 0.8 });
+      const tomatoMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.35, metalness: 0.05 });
+      [-0.5, 0, 0.5].forEach((x, i) => {
+        const stake = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 1.1, 6), stakeMat);
+        stake.position.set(x, 0.55, 0);
+        const vine = new THREE.Mesh(new THREE.TorusKnotGeometry(0.1, 0.03, 40, 6, 2, 5), vineMat);
+        vine.position.set(x, 0.55, 0);
+        vine.scale.set(1, 3.2, 1);
+        g.add(stake, vine);
+        for (let t = 0; t < 3; t++) {
+          const tomato = new THREE.Mesh(new THREE.SphereGeometry(0.1 + (t % 2) * 0.03, 10, 8), tomatoMat);
+          tomato.position.set(x + (t % 2 ? 0.13 : -0.12), 0.3 + t * 0.25 + i * 0.03, 0.08);
+          tomato.scale.y = 0.85;
+          g.add(tomato);
+        }
+      });
+      return g;
+    }
+
+function buildCarrotRow3D() {
+      const g = new THREE.Group();
+      const carrotMat = new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.6 });
+      const leafMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.8 });
+      for (let i = 0; i < 6; i++) {
+        const x = -0.6 + (i % 3) * 0.6;
+        const z = i < 3 ? -0.25 : 0.25;
+        // Orange shoulder poking out of the soil, with a feathery green top
+        const carrot = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.32, 8), carrotMat);
+        carrot.rotation.x = Math.PI;
+        carrot.position.set(x, 0.05, z);
+        g.add(carrot);
+        for (let l = 0; l < 3; l++) {
+          const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.42, 4), leafMat);
+          leaf.position.set(x + (l - 1) * 0.05, 0.38, z);
+          leaf.rotation.z = (l - 1) * 0.35;
+          g.add(leaf);
+        }
+      }
+      return g;
+    }
+
+function buildBlueberryBushes3D() {
+      const g = new THREE.Group();
+      const bushMat = new THREE.MeshStandardMaterial({ color: 0x1f5135, roughness: 0.85, flatShading: true });
+      const berryMat = new THREE.MeshStandardMaterial({ color: 0x3b4cca, roughness: 0.3, emissive: 0x111a55, emissiveIntensity: 0.2 });
+      [-0.4, 0.4].forEach(x => {
+        const bush = new THREE.Mesh(new THREE.DodecahedronGeometry(0.38, 1), bushMat);
+        bush.position.set(x, 0.32, 0);
+        bush.scale.y = 0.8;
+        g.add(bush);
+        for (let b = 0; b < 9; b++) {
+          const berry = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 6), berryMat);
+          const a = b * 2.4;
+          berry.position.set(x + Math.cos(a) * 0.33, 0.2 + (b % 3) * 0.14, Math.sin(a) * 0.3);
+          g.add(berry);
+        }
+      });
+      return g;
+    }
+
+// --- Buildings ------------------------------------------------------------------
+function buildCafe3D() {
+      const cx = -1.5, cz = 3.5;
+      const gy = getAnalyticalGroundHeight(cx, cz);
+      const cafe = new THREE.Group();
+      cafe.position.set(cx, gy, cz);
+      const walls = new THREE.Mesh(new THREE.BoxGeometry(3.8, 2.4, 2.8), new THREE.MeshStandardMaterial({ color: 0xfde7c8, roughness: 0.8 }));
+      walls.position.y = 1.2;
+      walls.castShadow = true;
+      walls.receiveShadow = true;
+      const roof = new THREE.Mesh(new THREE.BoxGeometry(4.1, 0.25, 3.1), new THREE.MeshStandardMaterial({ color: 0x7c2d12 }));
+      roof.position.y = 2.52;
+      // Striped awning over the front
+      const awning = new THREE.Group();
+      for (let i = 0; i < 7; i++) {
+        const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.05, 0.9), new THREE.MeshStandardMaterial({ color: i % 2 ? 0xf8fafc : 0xea580c }));
+        stripe.position.set(-1.62 + i * 0.54, 0, 0);
+        awning.add(stripe);
+      }
+      awning.position.set(0, 1.95, 1.75);
+      awning.rotation.x = 0.35;
+      const door = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.4, 0.06), new THREE.MeshStandardMaterial({ color: 0x7c2d12 }));
+      door.position.set(0.9, 0.7, 1.42);
+      const windowMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xf59e0b, emissiveIntensity: 0.35 });
+      const shopWindow = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.9, 0.06), windowMat);
+      shopWindow.position.set(-0.7, 1.05, 1.42);
+      const sign = makeSignMesh('BEAN & BYTE CAFE', { bg: '#7c2d12', fg: '#fde68a', width: 2.8, height: 0.42 });
+      sign.position.set(0, 2.2, 1.43);
+      // Giant coffee cup on the roof so it reads from far away
+      const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.32, 0.6, 16), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+      cup.position.set(-1.1, 2.95, 0);
+      const coffee = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.02, 16), new THREE.MeshStandardMaterial({ color: 0x4a2c17 }));
+      coffee.position.set(-1.1, 3.24, 0);
+      const handle = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.05, 8, 16), cup.material);
+      handle.position.set(-0.6, 2.95, 0);
+      // Patio table with an umbrella
+      const table = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.06, 16), new THREE.MeshStandardMaterial({ color: 0xf8fafc }));
+      table.position.set(-1.3, 0.75, 2.5);
+      const tableLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.75, 6), new THREE.MeshStandardMaterial({ color: 0x334155 }));
+      tableLeg.position.set(-1.3, 0.37, 2.5);
+      const umbrella = new THREE.Mesh(new THREE.ConeGeometry(0.85, 0.35, 8), new THREE.MeshStandardMaterial({ color: 0xea580c }));
+      umbrella.position.set(-1.3, 1.85, 2.5);
+      const umbrellaPole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.1, 6), tableLeg.material);
+      umbrellaPole.position.set(-1.3, 1.3, 2.5);
+      cafe.add(walls, roof, awning, door, shopWindow, sign, cup, coffee, handle, table, tableLeg, umbrella, umbrellaPole);
+      scene.add(cafe);
+      worldObstacles.push({ x: cx, z: cz, r: 2.3 }, { x: cx - 1.3, z: cz + 2.5, r: 0.6 });
+    }
+
+function buildNetNode3D() {
+      const cx = 6.8, cz = 2.2;
+      const gy = getAnalyticalGroundHeight(cx, cz);
+      const net = new THREE.Group();
+      net.position.set(cx, gy, cz);
+      const body = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.5, 3.0), new THREE.MeshStandardMaterial({ color: 0x1e1b4b, metalness: 0.4, roughness: 0.4 }));
+      body.position.y = 1.25;
+      body.castShadow = true;
+      body.receiveShadow = true;
+      // Glowing glass front with screens behind it
+      const glass = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.3, 0.05), new THREE.MeshStandardMaterial({ color: 0x67e8f9, emissive: 0x0891b2, emissiveIntensity: 0.55, transparent: true, opacity: 0.85 }));
+      glass.position.set(0, 1.25, 1.52);
+      const screenMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee });
+      [-1.1, 0, 1.1].forEach(x => {
+        const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.4), screenMat);
+        screen.position.set(x, 1.15, 1.56);
+        net.add(screen);
+      });
+      const sign = makeSignMesh('NETNODE CYBER CAFE', { bg: '#0f172a', fg: '#22d3ee', width: 3.2, height: 0.42 });
+      sign.position.set(0, 2.25, 1.53);
+      // Satellite dish and antenna on the roof
+      const dish = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 8, 0, Math.PI * 2, 0, Math.PI / 3), new THREE.MeshStandardMaterial({ color: 0xe2e8f0, side: THREE.DoubleSide, metalness: 0.5 }));
+      dish.position.set(1.2, 2.75, -0.5);
+      dish.rotation.x = -0.9;
+      const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.4, 6), new THREE.MeshStandardMaterial({ color: 0x94a3b8 }));
+      antenna.position.set(-1.4, 3.2, -0.6);
+      const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), new THREE.MeshBasicMaterial({ color: 0xf43f5e }));
+      beacon.position.set(-1.4, 3.92, -0.6);
+      net.add(body, glass, sign, dish, antenna, beacon);
+      scene.add(net);
+      worldObstacles.push({ x: cx, z: cz, r: 2.5 });
     }
 
 // The Okanagan Post Office, where mail for Kelo-1 waits and his letters go out
@@ -438,6 +607,7 @@ function buildPostOffice3D() {
 
       po.add(body, roof, cornice, door, step, sign, pole, flag, mailbox);
       scene.add(po);
+      worldObstacles.push({ x: cx, z: cz, r: 2.5 }, { x: cx - 1.9, z: cz + 2.1, r: 0.4 });
     }
 
 function buildKelo1Character3D() {
@@ -593,6 +763,7 @@ function pruneEmergentCreations3D(maxCount) {
       while (emergentCreationsGroup.children.length > maxCount) {
         const oldest = emergentCreationsGroup.children[0];
         emergentCreationsGroup.remove(oldest);
+        worldObstacles = worldObstacles.filter(o => o !== oldest.userData.obstacle);
         oldest.traverse(obj => {
           if (obj.geometry) obj.geometry.dispose();
           if (obj.material) obj.material.dispose();
@@ -784,6 +955,9 @@ function spawnEmergent3DObjectInWorld(creation, skipPin = false) {
       const groundY = getIslandGroundHeight(creation.x, creation.z);
       g.position.set(creation.x, groundY, creation.z);
       emergentCreationsGroup.add(g);
+      const obstacle = { x: creation.x, z: creation.z, r: 1.0 };
+      worldObstacles.push(obstacle);
+      g.userData.obstacle = obstacle;
 
       // Also register a dynamic clickable 3D landmark pin if it's a newly discovered spot!
       const dynId = 'dyn_' + Math.round(creation.x * 10) + '_' + Math.round(creation.z * 10);
@@ -828,6 +1002,150 @@ function createPOILabelsDOM() {
         container.appendChild(el);
         poiDomElements[loc.id] = el;
       });
+    }
+
+// --- Walking around obstacles ----------------------------------------------------
+const KELO_RADIUS = 0.55;
+
+// Obstacles that contain the target (e.g. he is walking up to a building) don't block the approach
+function obstacleHoldsTarget(o, target) {
+      return Math.hypot(target.x - o.x, target.z - o.z) < o.r + KELO_RADIUS;
+    }
+
+// He has arrived when he is next to the target, or as close as a solid object allows
+function arrivalRadius(target) {
+      let r = 0.16;
+      for (const o of worldObstacles) {
+        if (obstacleHoldsTarget(o, target)) {
+          r = Math.max(r, o.r + KELO_RADIUS + 0.1 - Math.hypot(target.x - o.x, target.z - o.z));
+        }
+      }
+      return r;
+    }
+
+// --- Pathfinding: A* over a coarse grid, so he routes around buildings instead of getting stuck
+const PATH_CELL = 0.75;
+const PATH_MIN_X = -36, PATH_MAX_X = 36, PATH_MIN_Z = -36, PATH_MAX_Z = 14;
+const PATH_COLS = Math.ceil((PATH_MAX_X - PATH_MIN_X) / PATH_CELL);
+const PATH_ROWS = Math.ceil((PATH_MAX_Z - PATH_MIN_Z) / PATH_CELL);
+let currentPath = [];
+let currentPathKey = '';
+
+function pointBlocked(x, z, target) {
+      for (const o of worldObstacles) {
+        if (obstacleHoldsTarget(o, target)) continue;
+        if (Math.hypot(x - o.x, z - o.z) < o.r + KELO_RADIUS) return true;
+      }
+      return false;
+    }
+
+function segmentClear(ax, az, bx, bz, target) {
+      const steps = Math.ceil(Math.hypot(bx - ax, bz - az) / 0.3);
+      for (let i = 1; i <= steps; i++) {
+        const t = i / steps;
+        if (pointBlocked(ax + (bx - ax) * t, az + (bz - az) * t, target)) return false;
+      }
+      return true;
+    }
+
+function findPath(from, to) {
+      if (segmentClear(from.x, from.z, to.x, to.z, to)) return [{ x: to.x, z: to.z }];
+      const col = x => Math.max(0, Math.min(PATH_COLS - 1, Math.floor((x - PATH_MIN_X) / PATH_CELL)));
+      const row = z => Math.max(0, Math.min(PATH_ROWS - 1, Math.floor((z - PATH_MIN_Z) / PATH_CELL)));
+      const cx = c => PATH_MIN_X + (c + 0.5) * PATH_CELL;
+      const cz = r => PATH_MIN_Z + (r + 0.5) * PATH_CELL;
+      const start = row(from.z) * PATH_COLS + col(from.x);
+      const goal = row(to.z) * PATH_COLS + col(to.x);
+      const blocked = new Uint8Array(PATH_COLS * PATH_ROWS);
+      for (let r = 0; r < PATH_ROWS; r++) {
+        for (let c = 0; c < PATH_COLS; c++) {
+          if (pointBlocked(cx(c), cz(r), to)) blocked[r * PATH_COLS + c] = 1;
+        }
+      }
+      blocked[start] = 0;
+      blocked[goal] = 0;
+      const g = new Float32Array(PATH_COLS * PATH_ROWS).fill(Infinity);
+      const came = new Int32Array(PATH_COLS * PATH_ROWS).fill(-1);
+      const open = [start];
+      const inOpen = new Uint8Array(PATH_COLS * PATH_ROWS);
+      g[start] = 0;
+      inOpen[start] = 1;
+      const h = i => Math.hypot(cx(i % PATH_COLS) - to.x, cz(Math.floor(i / PATH_COLS)) - to.z);
+      let found = false;
+      for (let iter = 0; open.length > 0 && iter < 20000; iter++) {
+        let bi = 0;
+        for (let k = 1; k < open.length; k++) if (g[open[k]] + h(open[k]) < g[open[bi]] + h(open[bi])) bi = k;
+        const cur = open.splice(bi, 1)[0];
+        inOpen[cur] = 0;
+        if (cur === goal) { found = true; break; }
+        const cc = cur % PATH_COLS, cr = Math.floor(cur / PATH_COLS);
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (!dr && !dc) continue;
+            const nc = cc + dc, nr = cr + dr;
+            if (nc < 0 || nr < 0 || nc >= PATH_COLS || nr >= PATH_ROWS) continue;
+            const n = nr * PATH_COLS + nc;
+            if (blocked[n]) continue;
+            // No cutting corners between two blocked cells
+            if (dr && dc && (blocked[cr * PATH_COLS + nc] || blocked[nr * PATH_COLS + cc])) continue;
+            const cost = g[cur] + (dr && dc ? 1.414 : 1) * PATH_CELL;
+            if (cost < g[n]) {
+              g[n] = cost;
+              came[n] = cur;
+              if (!inOpen[n]) { open.push(n); inOpen[n] = 1; }
+            }
+          }
+        }
+      }
+      if (!found) return [{ x: to.x, z: to.z }];
+      const cells = [];
+      for (let c = goal; c !== -1 && c !== start; c = came[c]) cells.push({ x: cx(c % PATH_COLS), z: cz(Math.floor(c / PATH_COLS)) });
+      cells.reverse();
+      cells[cells.length - 1] = { x: to.x, z: to.z };
+      // Smooth the path: skip waypoints he can walk straight past
+      const smooth = [];
+      let anchor = { x: from.x, z: from.z };
+      for (let k = 0; k < cells.length; k++) {
+        const next = cells[k + 1];
+        if (next && segmentClear(anchor.x, anchor.z, next.x, next.z, to)) continue;
+        smooth.push(cells[k]);
+        anchor = cells[k];
+      }
+      return smooth;
+    }
+
+// Direction toward the next waypoint, recomputing the path when the target or the world changes
+function nextPathDirection(px, pz, target) {
+      const key = `${target.x.toFixed(2)},${target.z.toFixed(2)},${worldObstacles.length}`;
+      if (key !== currentPathKey) {
+        currentPath = findPath({ x: px, z: pz }, target);
+        currentPathKey = key;
+      }
+      while (currentPath.length > 1 && Math.hypot(currentPath[0].x - px, currentPath[0].z - pz) < 0.45) currentPath.shift();
+      const wp = currentPath[0] || target;
+      const dx = wp.x - px, dz = wp.z - pz;
+      const len = Math.hypot(dx, dz) || 1;
+      return [dx / len, dz / len];
+    }
+
+// Hard guarantee: never end a step inside something solid
+function pushOutOfObstacles(pos, target) {
+      for (const o of worldObstacles) {
+        if (obstacleHoldsTarget(o, target)) {
+          // Still keep him out of the building's footprint itself
+          const minD = o.r * 0.75;
+          const d = Math.hypot(pos.x - o.x, pos.z - o.z);
+          if (d < minD && d > 0) { pos.x = o.x + ((pos.x - o.x) / d) * minD; pos.z = o.z + ((pos.z - o.z) / d) * minD; }
+          continue;
+        }
+        const minD = o.r + KELO_RADIUS;
+        const d = Math.hypot(pos.x - o.x, pos.z - o.z);
+        if (d < minD) {
+          const nx = d > 0 ? (pos.x - o.x) / d : 1, nz = d > 0 ? (pos.z - o.z) / d : 0;
+          pos.x = o.x + nx * minD;
+          pos.z = o.z + nz * minD;
+        }
+      }
     }
 
 function animateDiorama() {
@@ -887,12 +1205,14 @@ function animateDiorama() {
         keloWeldTorchGroup.visible = !isMiningOrDrilling && isWeldingOrBuilding;
       }
 
-      if (dist > 0.16) {
+      if (dist > arrivalRadius(state.targetPos)) {
         state.isWalking = true;
         const step = dist > 14 ? 0.14 : 0.082;
-        state.botPos.x += (dx / dist) * step;
-        state.botPos.z += (dz / dist) * step;
-        state.botRotY = Math.atan2(dx, dz);
+        const [sx, sz] = nextPathDirection(state.botPos.x, state.botPos.z, state.targetPos);
+        state.botPos.x += sx * step;
+        state.botPos.z += sz * step;
+        pushOutOfObstacles(state.botPos, state.targetPos);
+        state.botRotY = Math.atan2(sx, sz);
 
         const groundY = getIslandGroundHeight(state.botPos.x, state.botPos.z);
         state.botAltitudeY = groundY;
@@ -1012,7 +1332,7 @@ function animateDiorama() {
           }
           posAttr.needsUpdate = true;
         } else if (state.currentLocKey === 'cyber') {
-          keloGroup.position.set(6.8, Math.max(groundY, 0.2), 2.2);
+          keloGroup.position.set(state.botPos.x, Math.max(groundY, 0.2), state.botPos.z);
           keloGroup.rotation.set(0, Math.PI, 0);
           const typingBurst = Math.sin(t * 1.5) > -0.2;
           keloLeftArm.rotation.x = typingBurst ? -0.8 + Math.sin(t * 16) * 0.14 : -0.4;

@@ -788,8 +788,8 @@ function applyLightingPreset(idx) {
       return preset;
     }
 
-function spawnEmergent3DObjectInWorld(creation, skipPin = false) {
-      if (!emergentCreationsGroup) return;
+// The 3D model of a creation (used when welding it, carrying it, and placing it in the world)
+function buildCreationGroup(creation) {
       const g = new THREE.Group();
       const col = new THREE.Color(creation.colorHex || '#38bdf8');
       const secCol = new THREE.Color(creation.secondaryColorHex || '#f59e0b');
@@ -952,6 +952,12 @@ function spawnEmergent3DObjectInWorld(creation, skipPin = false) {
         g.add(pedestal, spire, ring);
       }
 
+      return g;
+    }
+
+function spawnEmergent3DObjectInWorld(creation, skipPin = false) {
+      if (!emergentCreationsGroup) return;
+      const g = buildCreationGroup(creation);
       const groundY = getIslandGroundHeight(creation.x, creation.z);
       g.position.set(creation.x, groundY, creation.z);
       emergentCreationsGroup.add(g);

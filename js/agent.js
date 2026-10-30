@@ -12,7 +12,7 @@ const AMBIANCE_PRESETS = [
     "label": "Alpine Noon",
     "bg": 8900331,
     "fog": 9684477,
-    "fogDensity": 0.0085,
+    "fogDensity": 0.0035,
     "skyTop": 2450411,
     "skyHorizon": 14412542,
     "hemiSky": 14742270,

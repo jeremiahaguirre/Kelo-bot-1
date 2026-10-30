@@ -12,6 +12,7 @@ let cutawayRoofMeshes = [], gardenCropGroups = [], pennantFlags = [];
 let poiDomElements = {};
 // Solid things Kelo-1 should walk around: { x, z, r } circles on the ground
 let worldObstacles = [];
+let terrainGroundMesh = null;
 // Cursor position over the 3D view, used to reveal names on hover
 const hoverPointer = { x: 0, y: 0, active: false, touchUntil: 0 };
 const downRaycaster = new THREE.Raycaster();
@@ -33,7 +34,9 @@ function getAnalyticalGroundHeight(x, z) {
       if (x > 14 && z < -6) {
         h += (x - 14) * 0.28 * Math.max(0.2, Math.abs(z) / 14);
       }
-      return Math.max(-0.25, h);
+      const base = Math.max(-0.25, h);
+      // Holes Kelo-1 has dug (js/mining.js) lower the ground
+      return typeof digDepressionAt === 'function' ? base - digDepressionAt(x, z) : base;
     }
 
 function getIslandGroundHeight(x, z) {
@@ -181,7 +184,7 @@ function buildAlpineTerrainAndMountains3D() {
       scene.add(terrainSwapGroup);
 
       // Continuous Vertex-Displaced Valley + Alpine Mountain Mesh so Kelo-1 can walk seamlessly up the peaks!
-      const groundGeo = new THREE.PlaneGeometry(96, 86, 96, 86);
+      const groundGeo = new THREE.PlaneGeometry(96, 86, 160, 144); // fine enough for dig holes to look round
       groundGeo.rotateX(-Math.PI / 2);
       const pos = groundGeo.attributes.position;
       const colors = [];
@@ -205,7 +208,7 @@ function buildAlpineTerrainAndMountains3D() {
       groundGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
       groundGeo.computeVertexNormals();
 
-      const groundMesh = new THREE.Mesh(
+      const groundMesh = terrainGroundMesh = new THREE.Mesh(
         groundGeo,
         new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 })
       );
@@ -396,6 +399,28 @@ function buildHomesteadAndBuildings3D() {
       buildNetNode3D();
 
       buildPostOffice3D();
+    }
+
+// Re-shape the terrain around a point after digging, colouring freshly dug ground as dirt
+function refreshTerrainAround(cx, cz, radius) {
+      if (!terrainGroundMesh) return;
+      const geo = terrainGroundMesh.geometry;
+      const pos = geo.attributes.position;
+      const col = geo.attributes.color;
+      const dirt = new THREE.Color(0x7a4b2a), deep = new THREE.Color(0x4a2c17);
+      for (let i = 0; i < pos.count; i++) {
+        const vx = pos.getX(i), vz = pos.getZ(i);
+        if (Math.hypot(vx - cx, vz - cz) > radius) continue;
+        pos.setY(i, getAnalyticalGroundHeight(vx, vz));
+        const dug = typeof digDepressionAt === 'function' ? digDepressionAt(vx, vz) : 0;
+        if (dug > 0.05) {
+          const c = dirt.clone().lerp(deep, Math.min(1, dug / 3));
+          col.setXYZ(i, c.r, c.g, c.b);
+        }
+      }
+      pos.needsUpdate = true;
+      col.needsUpdate = true;
+      geo.computeVertexNormals();
     }
 
 // --- Stylized sky, clouds, round trees, flowers and rocks ---------------------------------------
@@ -1170,7 +1195,7 @@ function arrivalRadius(target) {
 
 // --- Pathfinding: A* over a coarse grid, so he routes around buildings instead of getting stuck
 const PATH_CELL = 0.75;
-const PATH_MIN_X = -36, PATH_MAX_X = 36, PATH_MIN_Z = -36, PATH_MAX_Z = 14;
+const PATH_MIN_X = -46, PATH_MAX_X = 46, PATH_MIN_Z = -42, PATH_MAX_Z = 14;
 const PATH_COLS = Math.ceil((PATH_MAX_X - PATH_MIN_X) / PATH_CELL);
 const PATH_ROWS = Math.ceil((PATH_MAX_Z - PATH_MIN_Z) / PATH_CELL);
 let currentPath = [];
@@ -1342,11 +1367,12 @@ function animateDiorama() {
 
       // Determine which 3D hand tool Kelo-1 is actively holding
       const textContext = `${state.moodTitle} ${state.speechBubble} ${state.customPlaceName || ''}`.toLowerCase();
-      const isMiningOrDrilling = state.currentLocKey === 'mountain_peak' || /drill|gold|mine|auger|ore|quarry|excavat|mycelium/i.test(textContext);
+      const isMiningOrDrilling = state.microPose === 'digging' || state.currentLocKey === 'mountain_peak' || /drill|gold|mine|dig|auger|ore|quarry|excavat|mycelium/i.test(textContext);
       const isWeldingOrBuilding = state.currentLocKey === 'weld' || Boolean(state.proceduralMotion?.sparkBurst) || /weld|forge|titanium|track|rail|sculpt|arch|spire/i.test(textContext);
 
       if (keloDrillToolGroup && keloWeldTorchGroup) {
-        keloDrillToolGroup.visible = isMiningOrDrilling;
+        // A carried tool (shovel, jackhammer...) replaces the built-in drill arm
+        keloDrillToolGroup.visible = isMiningOrDrilling && !(typeof carriedObject !== 'undefined' && carriedObject);
         keloWeldTorchGroup.visible = !isMiningOrDrilling && isWeldingOrBuilding;
       }
 

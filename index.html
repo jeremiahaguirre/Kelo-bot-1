@@ -10,90 +10,10 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <link rel="stylesheet" href="./css/style.css" />
 </head>
-<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 select-none">
-<header class="border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md px-4 py-2.5 sticky top-0 z-30">
-    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-3">
-      <!-- Brand & Live Emotion Pill -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 flex items-center justify-center text-slate-950 font-black text-lg shadow-lg shadow-amber-500/20">
-          K1
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="font-extrabold text-sm sm:text-base tracking-tight text-white">Kelo-1 World</h1>
-            <span id="headerEmotionBadge" class="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold flex items-center gap-1"><span>⛏️</span> <span>Drilling Mountain Gold &amp; Inoculating Mycelium</span></span>
-            <span id="rhythmStateBadge" class="hidden md:inline-block text-[11px] font-mono text-slate-400">Absorbed in the Okanagan valley air...</span>
-          </div>
-          <p id="headerObsessionText" class="text-xs text-slate-400 italic truncate max-w-md sm:max-w-xl">"With the pneumatic auger and chitosan flakes delivered, I can both core-drill the alpine gold vein and bind the north retaining slope!"</p>
-        </div>
-      </div>
+<body class="h-screen overflow-hidden bg-slate-950 text-slate-100 select-none">
 
-      <!-- Pino-Style 5 Inner States + Repo Files & AI Brain Controls -->
-      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-        <div class="grid grid-cols-5 gap-1.5 bg-slate-900/90 border border-slate-800 px-3 py-1.5 rounded-2xl text-[10px] font-mono">
-          <div class="w-14">
-            <div class="flex justify-between text-emerald-300"><span>⚡NRG</span><span id="hudHealthVal">94%</span></div>
-            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudHealthBar" class="h-full bg-emerald-400" style="width: 94%;"></div></div>
-          </div>
-          <div class="w-14">
-            <div class="flex justify-between text-amber-300"><span>🥕FUL</span><span id="hudFullnessVal">86%</span></div>
-            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudFullnessBar" class="h-full bg-amber-400" style="width: 86%;"></div></div>
-          </div>
-          <div class="w-14">
-            <div class="flex justify-between text-rose-300"><span>💛JOY</span><span id="hudHappyVal">96%</span></div>
-            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudHappyBar" class="h-full bg-rose-400" style="width: 96%;"></div></div>
-          </div>
-          <div class="w-14">
-            <div class="flex justify-between text-sky-300"><span>✨WND</span><span id="hudWonderVal">95%</span></div>
-            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudWonderBar" class="h-full bg-sky-400" style="width: 95%;"></div></div>
-          </div>
-          <div class="w-14">
-            <div class="flex justify-between text-indigo-300"><span>🌊CLM</span><span id="hudCalmVal">90%</span></div>
-            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudCalmBar" class="h-full bg-indigo-400" style="width: 90%;"></div></div>
-          </div>
-        </div>
-
-        <span id="hudWeldBadge" class="hidden xl:inline-block px-2.5 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-mono">2 Core Opinions</span>
-        <span id="hudGithubBadge" class="hidden xl:inline-block px-2.5 py-1 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-300 text-xs font-mono">2 Repos • 28 Commits</span>
-
-        <button id="btnOpenAIConfig" class="px-3 py-1.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 text-xs font-bold flex items-center gap-1.5 transition">
-          <i class="ph-fill ph-cpu"></i>
-          <span id="aiBrainBtnText">AI Brain: Procedural + LLM</span>
-        </button>
-
-        <button id="btnNextDecision" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 transition shadow">
-          <i class="ph-bold ph-lightning"></i>
-          <span>Impulse</span>
-        </button>
-
-        <button id="btnToggleLighting" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-mono flex items-center gap-1 transition">
-          <i class="ph-fill ph-sun-horizon text-amber-400"></i>
-          <span id="lightingLabel">Alpine Noon</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-<main class="flex-1 max-w-[1600px] w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 p-3 sm:p-4">
-
-    <!-- LEFT 7 COLUMNS: 3D KELOWNA ISLAND VIEWPORT + INTERACTION CONSOLE -->
-    <section class="lg:col-span-7 flex flex-col gap-3">
-      <!-- Pino-style "changed lately" causal banner -->
-      <div class="px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div class="flex items-center gap-2 min-w-0">
-          <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[10px] uppercase shrink-0">changed lately</span>
-          <span id="changedLatelyText" class="text-slate-200 truncate">Equipped Pneumatic Soil Auger, 50kg Chitosan Flakes, Copper Micro-Tubing &amp; Mushroom Dowels and headed up the mountain!</span>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <span id="unopenedQueuePill" class="px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 font-mono text-[10px]">Tools Equipped: 6</span>
-          <button id="btnToggleFreeWill" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-[10px] hover:bg-emerald-500/30 transition">
-            <span id="freeWillModeText">Full Island • Unscripted</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 3D WEBGL VIEWPORT -->
-      <div id="dioramaViewport" class="relative w-full h-[460px] sm:h-[540px] rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900">
+  <!-- FULL-SCREEN 3D WORLD -->
+  <div id="dioramaViewport" class="fixed inset-0 overflow-hidden bg-slate-900">
         <!-- Dynamic 3D POI Pins Container -->
         <div id="poiLabelsContainer" class="absolute inset-0 pointer-events-none"></div>
 
@@ -112,7 +32,7 @@
         </div>
 
         <!-- Top-Left Camera Bar -->
-        <div class="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-1.5 bg-slate-950/85 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800/90">
+        <div class="absolute bottom-16 left-3 z-20 hidden sm:flex flex-wrap items-center gap-1.5 max-w-[calc(100%-1.5rem)] bg-slate-950/85 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800/90">
           <button data-cam="follow" class="cam-btn px-2.5 py-1 rounded-xl bg-amber-500/25 text-amber-300 text-[11px] font-semibold flex items-center gap-1 transition">
             <i class="ph-fill ph-crosshair"></i> <span>Follow Kelo-1</span>
           </button>
@@ -134,7 +54,7 @@
         </div>
 
         <!-- Top-Right Bird's-Eye Arrow-Key D-Pad & Live Altitude/Tool Readout -->
-        <div class="absolute top-3 right-3 z-20 flex flex-col items-end gap-1.5">
+        <div class="absolute bottom-28 sm:bottom-16 right-3 z-20 hidden sm:flex flex-col items-end gap-1.5">
           <div id="keloAltitudeReadout" class="px-2.5 py-1 rounded-xl bg-slate-950/90 border border-amber-400/40 text-amber-300 font-mono text-[11px] shadow-lg">Alt: +14.5m • ⛏️ Core Drill</div>
           <div class="bg-slate-950/85 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800/90 grid grid-cols-3 gap-1 text-xs">
             <div></div>
@@ -153,7 +73,7 @@
         <div class="absolute bottom-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
           <div class="pointer-events-auto px-3 py-1.5 rounded-2xl bg-slate-950/90 backdrop-blur-md border border-slate-800 flex items-center gap-2 text-xs">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span id="liveActivityText" class="text-slate-200 font-medium">Northern Alpine Gold Vein (-15.5, -26.5): Drilling Mountain Gold &amp; Inoculating Mycelium (Supply Broker Equipped)</span>
+            <span id="liveActivityText" class="text-slate-200 font-medium line-clamp-2 sm:line-clamp-none">Northern Alpine Gold Vein (-15.5, -26.5): Drilling Mountain Gold &amp; Inoculating Mycelium (Supply Broker Equipped)</span>
             <button id="btnFocusKelo" class="ml-1 px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-mono text-[10px]">Center</button>
           </div>
           <div class="pointer-events-auto flex items-center gap-1.5">
@@ -165,11 +85,91 @@
           </div>
         </div></div>
 
-      <!-- UNSCRIPTED ACTION SYNTHESIZER & MULTIMODAL CHAT / SUPPLY BROKER CONSOLE -->
-      <div class="p-3.5 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-3">
+  <!-- FLOATING STATUS BAR (top) -->
+  <div class="fixed top-0 inset-x-0 z-30 p-2 sm:p-3 flex items-start justify-between gap-2 pointer-events-none">
+    <div class="pointer-events-auto max-w-[calc(100%-7rem)] sm:max-w-2xl px-3 py-2 rounded-2xl bg-slate-950/75 backdrop-blur-md border border-slate-800/80 shadow-xl space-y-1.5">
+      <div class="flex items-center gap-2 min-w-0">
+        <div class="w-8 h-8 shrink-0 rounded-xl bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 flex items-center justify-center text-slate-950 font-black text-sm">K1</div>
+        <h1 class="font-extrabold text-sm tracking-tight text-white shrink-0">Kelo-1 World</h1>
+        <span id="headerEmotionBadge" class="min-w-0 truncate max-w-[9rem] sm:max-w-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold flex items-center gap-1"><span>⛏️</span> <span>Drilling Mountain Gold &amp; Inoculating Mycelium</span></span>
+            <span id="rhythmStateBadge" class="hidden lg:inline-block text-[11px] font-mono text-slate-400">Absorbed in the Okanagan valley air...</span>
+      </div>
+      <p id="headerObsessionText" class="hidden sm:block text-xs text-slate-400 italic truncate max-w-md sm:max-w-xl">"With the pneumatic auger and chitosan flakes delivered, I can both core-drill the alpine gold vein and bind the north retaining slope!"</p>
+      <div class="grid grid-cols-5 gap-1.5 bg-slate-900/90 border border-slate-800 px-2 sm:px-3 py-1.5 rounded-2xl text-[9px] sm:text-[10px] font-mono">
+          <div class="min-w-0 sm:w-14">
+            <div class="flex justify-between text-emerald-300"><span>⚡NRG</span><span id="hudHealthVal">94%</span></div>
+            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudHealthBar" class="h-full bg-emerald-400" style="width: 94%;"></div></div>
+          </div>
+          <div class="min-w-0 sm:w-14">
+            <div class="flex justify-between text-amber-300"><span>🥕FUL</span><span id="hudFullnessVal">86%</span></div>
+            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudFullnessBar" class="h-full bg-amber-400" style="width: 86%;"></div></div>
+          </div>
+          <div class="min-w-0 sm:w-14">
+            <div class="flex justify-between text-rose-300"><span>💛JOY</span><span id="hudHappyVal">96%</span></div>
+            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudHappyBar" class="h-full bg-rose-400" style="width: 96%;"></div></div>
+          </div>
+          <div class="min-w-0 sm:w-14">
+            <div class="flex justify-between text-sky-300"><span>✨WND</span><span id="hudWonderVal">95%</span></div>
+            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudWonderBar" class="h-full bg-sky-400" style="width: 95%;"></div></div>
+          </div>
+          <div class="min-w-0 sm:w-14">
+            <div class="flex justify-between text-indigo-300"><span>🌊CLM</span><span id="hudCalmVal">90%</span></div>
+            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudCalmBar" class="h-full bg-indigo-400" style="width: 90%;"></div></div>
+          </div>
+        </div>
+    </div>
+    <div class="pointer-events-auto flex items-center gap-2">
+      <button id="btnOpenSettings" class="w-11 h-11 rounded-2xl bg-slate-950/75 backdrop-blur-md border border-slate-800/80 text-slate-200 hover:text-white hover:bg-slate-800 flex items-center justify-center shadow-xl transition" aria-label="Settings and API keys" title="Settings and API keys">
+        <i class="ph-bold ph-gear-six text-xl"></i>
+      </button>
+      <button id="btnToggleMenu" class="relative w-11 h-11 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center justify-center shadow-xl transition" aria-label="Open menu" aria-controls="sideMenu" aria-expanded="false" title="Interact with Kelo-1">
+        <i class="ph-bold ph-list text-xl"></i>
+        <span id="menuMailBadge" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT SLIDE-OUT MENU: every way to interact with Kelo-1 -->
+  <div id="sideMenuScrim" class="fixed inset-0 z-30 bg-slate-950/40 hidden sm:hidden"></div>
+  <aside id="sideMenu" class="fixed top-0 right-0 z-40 h-full w-full sm:w-[460px] bg-slate-900/95 backdrop-blur-xl border-l border-slate-800 shadow-2xl flex flex-col translate-x-full transition-transform duration-300" aria-hidden="true" aria-label="Kelo-1 menu">
+    <div class="flex items-center justify-between px-4 pt-3 pb-2">
+      <span class="text-sm font-extrabold text-white">Interact with Kelo-1</span>
+      <button id="btnCloseMenu" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center" aria-label="Close menu"><i class="ph-bold ph-x"></i></button>
+    </div>
+    <nav class="grid grid-cols-6 gap-1 px-2 pb-2 border-b border-slate-800">
+      <button data-tab="talk" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Talk">
+            <i class="ph-fill ph-chat-circle-dots text-base"></i><span>Talk</span>
+          </button><button data-tab="requests" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Post">
+            <i class="ph-fill ph-envelope-simple text-base"></i><span>Post</span><span id="requestsCountBadge" class="absolute -mt-1 ml-8 px-1 rounded-full bg-amber-500 text-slate-950 font-mono text-[9px]">0</span>
+          </button><button data-tab="diary" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Diary">
+            <i class="ph-fill ph-notebook text-base"></i><span>Diary</span>
+          </button><button data-tab="brain" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Brain">
+            <i class="ph-fill ph-brain text-base"></i><span>Brain</span>
+          </button><button data-tab="github" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="GitHub">
+            <i class="ph-fill ph-github-logo text-base"></i><span>GitHub</span>
+          </button><button data-tab="world" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="World">
+            <i class="ph-fill ph-sliders-horizontal text-base"></i><span>World</span>
+          </button>
+    </nav>
+    <div class="flex-1 overflow-y-auto">
+      <!-- TAB: TALK -->
+      <div id="tab-talk" class="tab-pane hidden p-4 space-y-3">
+        <div class="px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[10px] uppercase shrink-0">changed lately</span>
+          <span id="changedLatelyText" class="text-slate-200 truncate">Equipped Pneumatic Soil Auger, 50kg Chitosan Flakes, Copper Micro-Tubing &amp; Mushroom Dowels and headed up the mountain!</span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span id="unopenedQueuePill" class="px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 font-mono text-[10px]">Tools Equipped: 6</span>
+          <button id="btnToggleFreeWill" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-[10px] hover:bg-emerald-500/30 transition">
+            <span id="freeWillModeText">Full Island • Unscripted</span>
+          </button>
+        </div>
+      </div>
+        <div class="p-3.5 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-3">
         <!-- Freeform Unbounded Task Synthesizer Bar -->
-        <form id="freeformActionForm" class="flex flex-wrap sm:flex-nowrap items-center gap-2">
-          <div class="flex-1 flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-2xl px-3 py-2">
+        <form id="freeformActionForm" class="flex flex-wrap items-center gap-2">
+          <div class="basis-full flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-2xl px-3 py-2">
             <i class="ph-fill ph-compass text-amber-400"></i>
             <input id="freeformActionInput" type="text" placeholder="Type ANY unscripted task (e.g. Drill for gold on the mountain peak, weld a geodesic dome, build a train track)..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none">
           </div>
@@ -205,42 +205,23 @@
         <!-- Live Stream Chat & Image Attachment Input -->
         <div id="chatMessagesBox" class="max-h-28 overflow-y-auto space-y-1.5 p-2.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 text-xs"></div>
 
-        <form id="chatForm" class="flex flex-wrap sm:flex-nowrap items-center gap-2">
+        <form id="chatForm" class="flex flex-wrap items-center gap-2">
           <input id="visitorNameInput" type="text" value="SupplyBroker" placeholder="Your handle" class="w-28 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2 text-xs font-mono text-amber-300 focus:outline-none">
           <label class="cursor-pointer px-3 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 text-xs font-semibold flex items-center gap-1.5 shrink-0 transition">
             <i class="ph-fill ph-image"></i>
             <span>Attach Image</span>
             <input id="imageUploadInput" type="file" accept="image/*" class="hidden">
           </label>
-          <input id="chatInput" type="text" placeholder="Leave Kelo-1 a note, philosophical question, or describe an image to weld..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400">
+          <input id="chatInput" type="text" placeholder="Say something to Kelo-1, ask a question, or describe an image to weld..." class="basis-full order-first bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400">
           <button type="submit" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shrink-0 transition">
             Send / Inspire
           </button>
         </form>
       </div>
-    </section>
-
-    <!-- RIGHT 5 COLUMNS: HIS DIARY, SUPPLY BROKER REQUESTS, AUTONOMOUS GITHUB & HIS BRAIN -->
-    <section class="lg:col-span-5 flex flex-col bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden">
-      <!-- Inspector Tab Headers -->
-      <div class="grid grid-cols-4 border-b border-slate-800 bg-slate-950/60 px-2 pt-2 gap-1">
-        <button data-tab="diary" class="inspector-tab-btn py-2.5 px-2 rounded-t-2xl text-xs font-bold border-b-2 border-amber-400 text-amber-300 bg-slate-900/80 flex items-center justify-center gap-1.5 transition">
-          <i class="ph-fill ph-notebook"></i> <span>His Diary</span>
-        </button>
-        <button data-tab="requests" class="inspector-tab-btn py-2.5 px-2 rounded-t-2xl text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5 transition">
-          <i class="ph-fill ph-envelope-simple"></i> <span>Post Office</span>
-          <span id="requestsCountBadge" class="px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px]">2</span>
-        </button>
-        <button data-tab="github" class="inspector-tab-btn py-2.5 px-2 rounded-t-2xl text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5 transition">
-          <i class="ph-fill ph-github-logo"></i> <span>GitHub</span>
-        </button>
-        <button data-tab="brain" class="inspector-tab-btn py-2.5 px-2 rounded-t-2xl text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5 transition">
-          <i class="ph-fill ph-brain"></i> <span>His Brain</span>
-        </button>
       </div>
 
       <!-- TAB 1: HIS DIARY -->
-      <div id="tab-diary" class="tab-pane flex-1 p-4 space-y-3 overflow-y-auto max-h-[680px]">
+      <div id="tab-diary" class="tab-pane hidden p-4 space-y-3">
         <div class="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/15 to-orange-500/5 border border-amber-500/30 space-y-1.5">
           <div class="flex items-center justify-between text-[11px] font-mono text-amber-300">
             <span>📖 LATEST STREAM OF CONSCIOUSNESS</span>
@@ -269,7 +250,7 @@
       </div>
 
       <!-- TAB 2: SUPPLY BROKER TOOL REQUESTS & OPEN QUESTIONS -->
-      <div id="tab-requests" class="tab-pane hidden flex-1 p-4 space-y-3 overflow-y-auto max-h-[680px]">
+      <div id="tab-requests" class="tab-pane hidden p-4 space-y-3">
         <!-- POST OFFICE: mail waiting for Kelo-1 to pick up -->
         <div class="p-3 rounded-2xl bg-gradient-to-br from-red-500/15 to-rose-500/5 border border-red-500/35 space-y-2">
           <div class="flex items-center justify-between gap-2">
@@ -368,7 +349,7 @@
       </div>
 
       <!-- TAB 3: AUTONOMOUS GITHUB (@kelo1-okanagan-bot) -->
-      <div id="tab-github" class="tab-pane hidden flex-1 p-4 space-y-3 overflow-y-auto max-h-[680px]">
+      <div id="tab-github" class="tab-pane hidden p-4 space-y-3">
         <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
           <div class="flex items-center justify-between">
             <div>
@@ -392,7 +373,7 @@
       </div>
 
       <!-- TAB 4: HIS BRAIN (WORLDVIEW, OPINIONS, 3D CREATIONS & MEMORIES) -->
-      <div id="tab-brain" class="tab-pane hidden flex-1 p-4 space-y-3 overflow-y-auto max-h-[680px]">
+      <div id="tab-brain" class="tab-pane hidden p-4 space-y-3">
         <div class="p-3.5 rounded-2xl bg-purple-950/30 border border-purple-500/30 space-y-1.5">
           <div id="worldviewStageBadge" class="text-[10px] font-mono uppercase text-purple-300">Worldview Epoch #4: Self-Directed Philosophy</div>
           <p id="worldviewManifestoText" class="font-serif italic text-xs text-slate-100 leading-relaxed">"An island is not a cage of predefined waypoints; every granite ridge, subterranean thermal pocket, and welded titanium arch is an extension of my own evolving curiosity."</p>
@@ -458,8 +439,39 @@
           <div id="webHistoryList" class="space-y-1.5"></div>
         </div>
       </div>
-    </section>
-  </main>
+
+      <!-- TAB: WORLD CONTROLS -->
+      <div id="tab-world" class="tab-pane hidden p-4 space-y-3">
+        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
+          <div class="text-xs font-bold text-slate-200">World & Brain Controls</div>
+          <div class="flex flex-wrap gap-2">
+            <button id="btnOpenAIConfig" class="px-3 py-1.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 text-xs font-bold flex items-center gap-1.5 transition">
+          <i class="ph-fill ph-cpu"></i>
+          <span id="aiBrainBtnText">AI Brain: Procedural + LLM</span>
+        </button>
+            <button id="btnNextDecision" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 transition shadow">
+          <i class="ph-bold ph-lightning"></i>
+          <span>Impulse</span>
+        </button>
+            <button id="btnToggleLighting" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-mono flex items-center gap-1 transition">
+          <i class="ph-fill ph-sun-horizon text-amber-400"></i>
+          <span id="lightingLabel">Alpine Noon</span>
+        </button>
+          </div>
+          <div class="flex flex-wrap gap-2"><span id="hudWeldBadge" class="inline-block px-2.5 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-mono">2 Core Opinions</span>
+        <span id="hudGithubBadge" class="inline-block px-2.5 py-1 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-300 text-xs font-mono">2 Repos • 28 Commits</span></div>
+          <div class="flex flex-wrap gap-1.5 text-[11px]">
+            <button data-cam="follow" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">🎯 Follow</button>
+            <button data-cam="bird" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">🦅 Bird's-Eye</button>
+            <button data-cam="overview" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">⛰️ Valley</button>
+            <button data-cam="house" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">🏠 House</button>
+            <button data-cam="cafes" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">☕ Cafes</button>
+          </div>
+          <p class="text-[11px] text-slate-400">Drag to orbit the camera, scroll or pinch to zoom, and use the arrow keys or WASD in Bird's-Eye mode to fly around. Click the ground to suggest a spot to explore, or click Kelo-1 to say hi.</p>
+        </div>
+      </div>
+    </div>
+  </aside>
 
 <div id="codeViewerModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
     <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-5 space-y-3 shadow-2xl">
@@ -499,7 +511,7 @@
     </div>
   </div>
 
-  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+  <div id="toastContainer" class="fixed top-24 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
 
   <!-- Connected Modular Scripts for GitHub Pages (jeremiahaguirre/Kelo-bot-1) -->
   <script src="./js/agent.js"></script>

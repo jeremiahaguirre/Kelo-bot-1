@@ -94,6 +94,12 @@ async function pickUpMail(originLabel = 'Checking the Mail') {
         renderAllUI();
         showToast(`📬 Kelo-1 picked up ${parcels.length} item${parcels.length > 1 ? 's' : ''} from the post office`);
         for (const parcel of parcels) {
+          // He picks up the actual item and carries it; food gets eaten, so he only holds it briefly
+          if (typeof setCarriedObject === 'function') {
+            const isFood = categorizeItem(parcel.name, parcel.category) === 'food';
+            setCarriedObject(buildItemModel3D(parcel.kind === 'message' ? 'Letter' : parcel.name, { kind: parcel.kind, thumb: parcel.thumbs && parcel.thumbs[0] }),
+              parcel.kind === 'message' || isFood ? 4000 : 30000);
+          }
           await openParcel(parcel);
         }
         savePersistentBrainState();

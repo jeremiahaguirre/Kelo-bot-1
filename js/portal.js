@@ -99,6 +99,7 @@ function renderMailbox() {
 
 function renderPortal() {
       renderMailbox();
+      if (typeof renderPostOfficeParcels3D === 'function') renderPostOfficeParcels3D();
       // Everything he owns
       const owned = [
         ...state.toolInventory.map(name => ({ name, emoji: '🛠️' })),

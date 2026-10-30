@@ -1401,6 +1401,8 @@ function animateDiorama() {
         altReadout.textContent = `Alt: +${state.botAltitudeY.toFixed(1)}m • ${activeToolLabel}`;
       }
 
+      if (typeof updateCarriedObject === 'function') updateCarriedObject(t);
+
       // 2. Scale Garden Crops smoothly based on ripeness
       state.gardenPlots.forEach((plot, idx) => {
         const cluster = gardenCropGroups[idx];

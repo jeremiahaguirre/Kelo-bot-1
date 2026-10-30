@@ -358,8 +358,13 @@
         <button id="btnCloseAIConfigModal" class="px-2.5 py-1 rounded-xl bg-slate-800 text-xs text-slate-300">Close</button>
       </div>
       <div class="space-y-1.5">
-        <label class="text-xs text-slate-300 font-semibold">Optional Gemini API Key (for live LLM + Vision 3D Synthesis):</label>
-        <input id="geminiApiKeyInput" type="password" placeholder="AIzaSy... (Leave blank to use built-in Procedural Neural Synthesizer)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white">
+        <label class="text-xs text-slate-300 font-semibold">Optional Gemini API Key (tried first):</label>
+        <input id="geminiApiKeyInput" type="password" placeholder="Gemini key from Google AI Studio (optional)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white">
+      </div>
+      <div class="space-y-1.5">
+        <label class="text-xs text-slate-300 font-semibold">Optional Anthropic (Claude) API Key, used if Gemini is unavailable:</label>
+        <input id="anthropicApiKeyInput" type="password" placeholder="sk-ant-... (optional)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white">
+        <p class="text-[11px] text-slate-400">Order: Gemini → Claude → built-in procedural brain (always available). Keys stay in this browser only and are sent only to Google or Anthropic.</p>
       </div>
       <div class="space-y-1">
         <div class="text-[11px] font-mono text-amber-300">Latest Autonomous Agent State Tick:</div>

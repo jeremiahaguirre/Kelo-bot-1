@@ -534,26 +534,33 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnCloseCodeModal')?.addEventListener('click', () => closeModal('codeViewerModal'));
   document.getElementById('btnCloseAIConfigModal')?.addEventListener('click', () => closeModal('aiConfigModal'));
 
-  // AI Brain settings: optional Gemini key, kept only in this browser's localStorage
+  // AI Brain settings: optional Gemini and Anthropic keys, kept only in this browser's localStorage
   const updateBrainButtonText = () => {
     const t = document.getElementById('aiBrainBtnText');
-    if (t) t.textContent = apiKey ? 'AI Brain: Gemini LLM' : 'AI Brain: Procedural';
+    const providers = [apiKey && 'Gemini', claudeApiKey && 'Claude'].filter(Boolean);
+    if (t) t.textContent = providers.length ? `AI Brain: ${providers.join(' + ')}` : 'AI Brain: Procedural';
   };
   updateBrainButtonText();
   document.getElementById('btnOpenAIConfig')?.addEventListener('click', () => {
     document.getElementById('geminiApiKeyInput').value = apiKey;
+    document.getElementById('anthropicApiKeyInput').value = claudeApiKey;
     document.getElementById('lastAgentStructuredOutput').textContent = state.lastStructuredTick || '';
     openModal('aiConfigModal');
   });
+  const storeKey = (name, value) => {
+    try {
+      if (value) localStorage.setItem(name, value);
+      else localStorage.removeItem(name);
+    } catch (e) {}
+  };
   document.getElementById('btnSaveAIConfig')?.addEventListener('click', () => {
     apiKey = document.getElementById('geminiApiKeyInput').value.trim();
-    try {
-      if (apiKey) localStorage.setItem('kelo1_gemini_api_key', apiKey);
-      else localStorage.removeItem('kelo1_gemini_api_key');
-    } catch (e) {}
+    claudeApiKey = document.getElementById('anthropicApiKeyInput').value.trim();
+    storeKey('kelo1_gemini_api_key', apiKey);
+    storeKey('kelo1_anthropic_api_key', claudeApiKey);
     updateBrainButtonText();
     closeModal('aiConfigModal');
-    showToast(apiKey ? '🧠 Gemini key saved in this browser.' : '🧠 Using the built-in procedural brain.');
+    showToast(hasLLMKey() ? '🧠 AI keys saved in this browser.' : '🧠 Using the built-in procedural brain.');
   });
 
   // Image attachment for image-to-weld synthesis

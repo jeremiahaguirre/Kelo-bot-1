@@ -50,6 +50,7 @@ function renderAllUI() {
       renderRequestsTab();
       renderGitHubTab();
       renderWebTastesTab();
+      if (typeof renderPortal === 'function') renderPortal();
     }
 
 function renderChatBox() {
@@ -89,17 +90,7 @@ function renderRequestsTab() {
       const pendingCount = state.requestsToUser.filter(r => !r.fulfilled).length;
       document.getElementById('requestsCountBadge').textContent = pendingCount;
 
-      // Render Equipped Tools & Raw Materials Inventory Pills
-      const invCountEl = document.getElementById('inventoryCountLabel');
-      if (invCountEl) invCountEl.textContent = `${state.toolInventory.length} Items Equipped`;
-      const invPillsEl = document.getElementById('toolInventoryPills');
-      if (invPillsEl) {
-        invPillsEl.innerHTML = state.toolInventory.map(item => `
-          <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-[10px] font-mono flex items-center gap-1">
-            <i class="ph-fill ph-check-circle text-emerald-400"></i> ${escapeHtml(item)}
-          </span>
-        `).join('');
-      }
+      // The inventory pills are rendered by renderPortal() in js/portal.js
 
       const list = document.getElementById('requestsInboxList');
       list.innerHTML = state.requestsToUser.map(req => `

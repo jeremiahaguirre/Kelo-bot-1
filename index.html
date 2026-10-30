@@ -253,15 +253,86 @@
 
       <!-- TAB 2: SUPPLY BROKER TOOL REQUESTS & OPEN QUESTIONS -->
       <div id="tab-requests" class="tab-pane hidden flex-1 p-4 space-y-3 overflow-y-auto max-h-[680px]">
+        <!-- SEND KELO-1 SOMETHING: messages, tools & toys, photos -->
+        <div class="p-3 rounded-2xl bg-gradient-to-br from-sky-500/10 to-indigo-500/5 border border-sky-500/30 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-sky-200 flex items-center gap-1.5"><i class="ph-fill ph-gift"></i> Send Kelo-1 Something</span>
+            <div class="flex gap-1 text-[11px] font-semibold" role="tablist">
+              <button data-portal-mode="message" class="portal-mode-btn px-2.5 py-1 rounded-lg">✉️ Message</button>
+              <button data-portal-mode="gift" class="portal-mode-btn px-2.5 py-1 rounded-lg">🧸 Tool or Toy</button>
+              <button data-portal-mode="photo" class="portal-mode-btn px-2.5 py-1 rounded-lg">📷 Photo</button>
+            </div>
+          </div>
+
+          <form id="portalMessageForm" data-portal-pane="message" class="portal-pane space-y-2">
+            <textarea id="portalMessageInput" rows="3" maxlength="500" placeholder="Write Kelo-1 a note, a question, an idea, or a story..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400 resize-y"></textarea>
+            <div class="flex items-center justify-between gap-2">
+              <span id="portalMessageCount" class="text-[10px] font-mono text-slate-500">0 / 500</span>
+              <button type="submit" class="px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition">Send Message</button>
+            </div>
+          </form>
+
+          <form id="portalGiftForm" data-portal-pane="gift" class="portal-pane hidden space-y-2">
+            <div id="portalGiftCatalog" class="flex flex-wrap gap-1.5"></div>
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-1.5">
+              <input id="portalGiftName" type="text" maxlength="80" placeholder="Or name anything: a harmonica, a slice of pizza, a canoe..." class="sm:col-span-7 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400">
+              <select id="portalGiftKind" class="sm:col-span-5 bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-200 focus:outline-none">
+                <option value="">Kind: let Kelo-1 guess</option>
+                <option value="tool">🛠️ Tool</option>
+                <option value="toy">🪀 Toy</option>
+                <option value="food">🍒 Food</option>
+                <option value="material">🧱 Material</option>
+                <option value="vehicle">🛶 Vehicle</option>
+                <option value="place">🏝️ Place</option>
+                <option value="thing">🎁 Something else</option>
+              </select>
+            </div>
+            <div class="flex gap-1.5">
+              <input id="portalGiftNote" type="text" maxlength="200" placeholder="Optional note to go with it" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400">
+              <button type="submit" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs shrink-0 transition">Send Gift</button>
+            </div>
+          </form>
+
+          <form id="portalPhotoForm" data-portal-pane="photo" class="portal-pane hidden space-y-2">
+            <label class="flex items-center justify-center gap-2 px-3 py-4 rounded-xl border border-dashed border-sky-500/40 bg-slate-950/70 hover:bg-slate-900 text-xs text-sky-200 cursor-pointer transition">
+              <i class="ph-fill ph-image-square text-lg"></i>
+              <span>Choose up to 4 photos (each under 8 MB)</span>
+              <input id="portalPhotoInput" type="file" accept="image/*" multiple class="hidden">
+            </label>
+            <div id="portalPhotoPreview" class="flex flex-wrap gap-1.5"></div>
+            <div class="flex gap-1.5">
+              <input id="portalPhotoCaption" type="text" maxlength="200" placeholder="Optional caption: what is this?" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400">
+              <button type="submit" class="px-3.5 py-1.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-slate-950 font-bold text-xs shrink-0 transition">Send Photos</button>
+            </div>
+          </form>
+
+          <p class="text-[10px] text-slate-400">Kelo-1 decides for himself what to do with everything you send. He might use it, play with it, build from it, or set it aside.</p>
+        </div>
+
+        <!-- What you've sent and how he reacted -->
         <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
           <div class="flex items-center justify-between text-xs">
-            <span class="font-bold text-amber-300 flex items-center gap-1.5"><i class="ph-fill ph-backpack"></i> Equipped Island Tools &amp; Raw Materials</span>
+            <span class="font-bold text-rose-300 flex items-center gap-1.5"><i class="ph-fill ph-clock-counter-clockwise"></i> Sent to Kelo-1</span>
+            <span id="giftLogCount" class="font-mono text-[10px] text-slate-400">0 items</span>
+          </div>
+          <div id="giftLogList" class="space-y-1.5 max-h-56 overflow-y-auto"></div>
+        </div>
+
+        <!-- Photo wall -->
+        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+          <div class="text-xs font-bold text-indigo-300 flex items-center gap-1.5"><i class="ph-fill ph-images"></i> Kelo-1's Photo Wall</div>
+          <div id="photoWallGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5"></div>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-amber-300 flex items-center gap-1.5"><i class="ph-fill ph-backpack"></i> His Tools, Toys &amp; Belongings</span>
             <span id="inventoryCountLabel" class="font-mono text-[10px] text-slate-400">6 Items Equipped</span>
           </div>
           <div id="toolInventoryPills" class="flex flex-wrap gap-1.5"></div>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-slate-300">Active Tool Requisitions &amp; Philosophical Questions</span>
+          <span class="text-xs font-bold text-slate-300">Things He Wants &amp; Questions He's Asking</span>
           <button id="btnGenerateNewRequest" class="px-2.5 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-[11px] font-semibold transition">+ New Question</button>
         </div>
         <div id="requestsInboxList" class="space-y-3"></div>
@@ -400,5 +471,6 @@
   <script src="./js/netnode.js"></script>
   <script src="./js/scene.js"></script>
   <script src="./js/main.js"></script>
+  <script src="./js/portal.js"></script>
 </body>
 </html>

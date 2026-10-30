@@ -699,11 +699,11 @@ function sanitizeParts(parts) {
           if (!part.profile || part.profile.length < 2) return;
           part.profile.forEach(pt => { pt[1] = clampNumber(pt[1], 0, 4, 0); });
         } else if (part.shape === 'extrude') {
-          part.outline = sanitizePoints(p.outline, 2, -2.5, 2.5, 48);
+          part.outline = sanitizePoints(p.outline, 2, -2.5, 5, 48);
           if (!part.outline || part.outline.length < 3) return;
           part.depth = clampNumber(p.depth, 0.02, 1.5, 0.2);
         } else if (part.shape === 'tube') {
-          part.path = sanitizePoints(p.path, 3, -2.5, 4, 24);
+          part.path = sanitizePoints(p.path, 3, -2.5, 5, 24);
           if (!part.path || part.path.length < 2) return;
           part.radius = clampNumber(p.radius, 0.02, 0.5, 0.08);
         }
@@ -905,6 +905,8 @@ async function analyzeUploadedImage(file) {
 
 function generateProcedural3DWeldParts(promptText = '', primaryHex = '#38bdf8', secondaryHex = '#f59e0b') {
       const lower = (promptText || '').toLowerCase();
+      const form = typeof formForText === 'function' ? formForText(lower, { main: primaryHex, accent: secondaryHex }) : null;
+      if (form && form.parts) return form.parts;
       const parts = [];
 
       if (/arch|bridge|gate|portal/i.test(lower)) {
@@ -1709,12 +1711,15 @@ function generateProceduralDecision(context = {}) {
             const saved = pick(state.shapeLibrary);
             return { title: `${saved.name} No. ${(saved.uses || 0) + 2}`, archetype: 'custom_weld', useShape: saved.name, colorHex: randomHex(), secondaryColorHex: randomHex() };
           }
-          let parts = randomSculptureParts();
-          if (context.image && parts) {
+          // If the idea names something (a heron, a lighthouse...), weld something that looks like it
+          const palette = context.image ? { main: context.image.primaryHex, accent: context.image.secondaryHex } : {};
+          const form = typeof formForText === 'function' ? formForText(`${title} ${subject}`, palette) : null;
+          let parts = form ? form.parts : randomSculptureParts();
+          if (!form && context.image && parts) {
             parts = parts.map((pt, i) => ({ ...pt, color: i % 2 ? context.image.secondaryHex : context.image.primaryHex }));
           }
           return {
-            title: `${title} (Kelo-1 Original)`,
+            title: form ? `Welded ${form.name}: ${subject.replace(/^(an?|the)\s+/i, '')}` : `Abstract study of ${subject.replace(/^(an?|the)\s+/i, '')}`,
             archetype: parts ? 'custom_weld' : pick(VALID_ARCHETYPES),
             colorHex: randomHex(),
             secondaryColorHex: randomHex(),
@@ -1807,7 +1812,8 @@ Free-form shapes let you invent ANY form:
 - {"shape":"lathe","profile":[[radius,height],...]} spins a profile around the vertical axis (vases, towers, bells, mushrooms, bottles)
 - {"shape":"extrude","outline":[[x,y],...],"depth":0.2} gives a flat outline thickness (stars, letters, leaves, animal silhouettes)
 - {"shape":"tube","path":[[x,y,z],...],"radius":0.08} traces a pipe along a path (coils, arches, wire drawings, handwriting)
-Coordinates stay within about -2.5..2.5. Combine parts freely to build anything you can imagine or anything you have seen.`;
+Coordinates stay within about -2.5..2.5 (heights up to 5). Combine parts freely to build anything you can imagine or anything you have seen.
+IMPORTANT: if you build something, its parts must clearly look like what its title names (a heron should have a long neck, beak and legs; a lighthouse a striped tower and a lamp). Give abstract pieces abstract titles.`;
       const parts = [{ text: prompt }];
       if (image && image.base64) parts.push({ inlineData: { mimeType: image.mimeType, data: image.base64 } });
       return callLLMJSON(parts);
@@ -1878,7 +1884,9 @@ function applyDecision(decision, originLabel) {
           creation.parts = savedShape.parts;
           savedShape.uses = (savedShape.uses || 0) + 1;
         } else {
-          creation.parts = sanitizeParts(b.parts);
+          creation.parts = sanitizeParts(b.parts)
+            || (typeof formForText === 'function' ? (formForText(`${creation.title} ${title}`, { main: creation.colorHex, accent: creation.secondaryColorHex }) || {}).parts : null)
+            || null;
           const designed = creation.parts && str(b.saveAsShape, 50)
             ? addShapeDesign({ name: str(b.saveAsShape, 50), emoji, parts: creation.parts }, `Invented while: ${title}`)
             : null;

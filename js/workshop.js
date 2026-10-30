@@ -53,6 +53,9 @@ async function runWeldJob(creation, destLabel) {
       const dest = { x: clampNumber(creation.x, WORLD_MIN_X, WORLD_MAX_X, 0), z: clampNumber(creation.z, WORLD_MIN_Z, WORLD_MAX_Z, 0) };
       const bench = TOWN_LOCATIONS.weld;
       try {
+        // Sketch the design while walking: with an AI brain, design exactly what he means
+        const designing = (!creation.parts && typeof designCreationWithAI === 'function') ? designCreationWithAI(title) : null;
+
         // 1. Walk to the welding table
         state.currentLocKey = 'custom';
         state.customPlaceName = bench.building;
@@ -62,6 +65,10 @@ async function runWeldJob(creation, destLabel) {
         state.changedLatelySummary = `Going to the welding table to build "${title}"`;
         renderAllUI();
         await waitForArrival(45000);
+        if (designing) {
+          const parts = await designing;
+          if (parts) creation.parts = parts;
+        }
 
         // 2. Weld it; the piece grows on the bench while the sparks fly
         state.currentLocKey = 'weld';

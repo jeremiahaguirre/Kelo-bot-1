@@ -1,8 +1,48 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": null,
-  "runs": 0,
-  "curiosities": [],
-  "entries": []
+  "updatedAt": "2026-10-30T19:12:54.620Z",
+  "runs": 1,
+  "curiosities": [
+    "Acidic paper"
+  ],
+  "entries": [
+    {
+      "id": "dream-1793387574620",
+      "at": 1793387574620,
+      "brain": "procedural",
+      "topic": "Origami",
+      "title": "Dreaming of Box",
+      "text": "Dear Diary, while nobody was around I looked up \"Origami\" and drifted from Origami to Aluminium foil to Box. A box is a container with rigid sides used for the storage or transportation of its contents. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Origami",
+          "url": "https://en.wikipedia.org/wiki/Origami",
+          "extract": "Origami  is the art and technique of folding paper. It also refers to the two- and three-dimensional forms created in the process. The use of the term has been extended in modern times to include other materials such as metal, textiles, and it is also used in the biological scien"
+        },
+        {
+          "title": "Aluminium foil",
+          "url": "https://en.wikipedia.org/wiki/Aluminium_foil",
+          "extract": "Aluminium foil is aluminium prepared in thin metal leaves. The foil is pliable and can be readily bent or wrapped around objects. Thin foils are fragile and are sometimes laminated with other materials such as plastics or paper to make them stronger and more useful."
+        },
+        {
+          "title": "Box",
+          "url": "https://en.wikipedia.org/wiki/Box",
+          "extract": "A box is a container with rigid sides used for the storage or transportation of its contents. Most boxes have flat, parallel, rectangular sides. Boxes can be very small or very large and can be used for a variety of purposes, from functional to decorative."
+        }
+      ],
+      "concept": {
+        "name": "Origami Wonder Rhythm",
+        "emoji": "🌙",
+        "definition": "The idea that origami and box share a hidden pattern.",
+        "builtFrom": [
+          "Origami",
+          "Box"
+        ]
+      },
+      "shapeFrom": "Box",
+      "nextCuriosity": "Acidic paper",
+      "coreMemory": null
+    }
+  ]
 }

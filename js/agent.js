@@ -47,6 +47,16 @@ const AMBIANCE_PRESETS = [
 ];
 
 const TOWN_LOCATIONS = {
+  "post_office": {
+    "id": "post_office",
+    "name": "Post Office",
+    "building": "Okanagan Post Office",
+    "icon": "📮",
+    "x": 12.5,
+    "z": 0.2,
+    "showPin": true,
+    "pinColor": "from-red-500/90 to-rose-600/90"
+  },
   "bed": {
     "id": "bed",
     "name": "Cozy Quilt Bed",
@@ -428,6 +438,9 @@ const state = {
   "belongings": [],
   "giftLog": [],
   "photoAlbum": [],
+  "mailbox": [],
+  "isCollectingMail": false,
+  "lettersReceived": 0,
   "isBrowsing": false,
   "concepts": [
     {
@@ -1228,6 +1241,8 @@ function loadPersistentBrainState() {
         if (Array.isArray(saved.toys)) state.toys = saved.toys;
         if (Array.isArray(saved.belongings)) state.belongings = saved.belongings;
         if (Array.isArray(saved.giftLog)) state.giftLog = saved.giftLog;
+        if (Array.isArray(saved.mailbox)) state.mailbox = saved.mailbox.filter(m => m && m.id && m.kind);
+        if (typeof saved.lettersReceived === 'number') state.lettersReceived = saved.lettersReceived;
         if (Array.isArray(saved.requestsToUser) && saved.requestsToUser.length > 0) state.requestsToUser = saved.requestsToUser;
         if (typeof saved.fullness === 'number') state.fullness = clampNumber(saved.fullness, 5, 100, state.fullness);
         if (Array.isArray(saved.shapeLibrary)) {
@@ -1268,6 +1283,8 @@ function savePersistentBrainState() {
           giftLog: state.giftLog.slice(0, 30).map(({ thumb, ...rest }) => rest),
           requestsToUser: state.requestsToUser.slice(0, MAX_REQUESTS),
           fullness: state.fullness,
+          mailbox: state.mailbox.slice(0, 20),
+          lettersReceived: state.lettersReceived,
           lastVisitorName: visitor
         }));
       } catch (e) {}
@@ -1669,6 +1686,7 @@ Current state:
 - Worldview: "${state.worldviewManifesto}"
 - Recent diary: ${recentDiary}
 - Known places: ${places}
+- Mail waiting for you at the post office: ${state.mailbox.length ? state.mailbox.map(m => `${m.kind} from ${m.from}`).join(', ') : 'none'}
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
 - World bounds: x from -32 to 32, z from -32 to 10 (z below -14 is mountains, z above 8 is the lake shore)
@@ -1695,7 +1713,8 @@ Return ONLY JSON:
   "webQuery": null OR "a topic you want to look up at the NetNode cafe",
   "usedConcept": null OR "name of one of your existing concepts this decision builds on",
   "newConcept": null OR {"name": "2-4 word name for a brand-new idea you just invented", "emoji": "one emoji", "definition": "1 sentence", "builtFrom": ["ideas or things it grew out of"]},
-  "updatedWorldview": null OR "1-2 sentences if your philosophy shifted"
+  "updatedWorldview": null OR "1-2 sentences if your philosophy shifted",
+  "checkMail": true OR false (whether you feel like walking to the post office to pick up your mail after this)
 }
 
 SHAPES: every part has "shape", position "x","y","z" (y is height above ground, 0-5), rotation "rx","ry","rz", "color" "#rrggbb", "spin", "emissive".
@@ -1850,6 +1869,10 @@ function applyDecision(decision, originLabel) {
         state.worldviewEpoch++;
       }
 
+      if (decision.checkMail === true && state.mailbox.length > 0 && typeof pickUpMail === 'function') {
+        setTimeout(() => pickUpMail('Decided to Check the Mail'), 3000);
+      }
+
       state.lastStructuredTick = JSON.stringify(decision, null, 2).slice(0, 4000);
 
       state.diaryEntries.unshift({
@@ -1952,6 +1975,11 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will', conte
 function runAutonomousLifeTick() {
       // Most of the time Kelo-1 makes a fully open-ended decision. Otherwise he falls back
       // into one of his familiar routines (which are also his own choice).
+      // Mail waiting at the post office? He may (or may not) feel like picking it up now
+      if (typeof pickUpMail === 'function' && Math.random() < mailPickupChance()) {
+        pickUpMail('Checking the Mail');
+        return;
+      }
       // Sometimes he goes online to chase something he has been wondering about
       if (typeof browseInternet === 'function' && Math.random() < (state.curiosityQueue.length > 0 ? 0.2 : 0.08)) {
         browseInternet(null, 'Own Curiosity');

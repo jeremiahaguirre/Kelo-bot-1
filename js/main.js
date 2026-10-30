@@ -659,12 +659,21 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Lighting: cycle through the ambiance presets
   const lightingLabel = document.getElementById('lightingLabel');
-  if (lightingLabel) lightingLabel.textContent = applyLightingPreset(state.lightingIdx).label;
+  if (lightingLabel) lightingLabel.textContent = state.lightingMode === 'manual' ? applyLightingPreset(state.lightingIdx).label : 'Auto: Day & Night';
+  // Auto follows his 12-hour day; clicking cycles through fixed looks and back to Auto
   document.getElementById('btnToggleLighting')?.addEventListener('click', () => {
-    state.lightingIdx = (state.lightingIdx + 1) % AMBIANCE_PRESETS.length;
-    const preset = applyLightingPreset(state.lightingIdx);
-    if (lightingLabel) lightingLabel.textContent = preset.label;
-    showToast(`🌄 Lighting: ${preset.label}`);
+    if (state.lightingMode !== 'manual') {
+      state.lightingMode = 'manual';
+      state.lightingIdx = 0;
+    } else if (state.lightingIdx + 1 >= AMBIANCE_PRESETS.length) {
+      state.lightingMode = 'auto';
+    } else {
+      state.lightingIdx += 1;
+    }
+    const label = state.lightingMode === 'manual' ? applyLightingPreset(state.lightingIdx).label : 'Auto: Day & Night';
+    if (state.lightingMode === 'auto' && typeof applyTimeOfDay === 'function') applyTimeOfDay();
+    if (lightingLabel) lightingLabel.textContent = label;
+    showToast(`🌄 Lighting: ${label}`);
   });
 
   // Modals: open/close helpers, close on backdrop click or Escape

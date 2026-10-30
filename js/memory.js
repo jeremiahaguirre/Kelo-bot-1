@@ -63,8 +63,9 @@ function bumpLifeStat(key, by = 1) {
       state.life[key] = (state.life[key] || 0) + by;
     }
 
+// His age in his own days (12 real hours each; see js/worldclock.js)
 function daysAlive() {
-      return Math.max(1, Math.floor((Date.now() - (state.life.bornAt || Date.now())) / 86400000) + 1);
+      return typeof worldNow === 'function' ? worldNow().day : 1;
     }
 
 // --- Core memories ---------------------------------------------------------------

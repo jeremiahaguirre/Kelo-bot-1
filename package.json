@@ -1,0 +1,46 @@
+{
+  "name": "kelo-1-world",
+  "productName": "Kelo-1 World",
+  "version": "1.0.0",
+  "description": "An autonomous AI robot living on a 3D island near Kelowna, BC.",
+  "main": "desktop/main.js",
+  "author": "jeremiahaguirre",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win --publish never"
+  },
+  "devDependencies": {
+    "electron": "44.7.2",
+    "electron-builder": "26.17.0"
+  },
+  "build": {
+    "appId": "io.github.jeremiahaguirre.kelo1world",
+    "productName": "Kelo-1 World",
+    "directories": { "output": "dist" },
+    "files": [
+      "index.html",
+      "css/**",
+      "js/**",
+      "brain/**",
+      "desktop/**",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "artifactName": "Kelo-1-World-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "Kelo-1-World-Portable-${version}.${ext}"
+    }
+  }
+}

@@ -10,8 +10,11 @@ let benchWorkpiece = null;
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Queue a creation; he works through builds one at a time
-function weldAndPlace(creation, placeLabel = state.customPlaceName) {
-      buildQueue.push({ creation, placeLabel: placeLabel || `(${creation.x}, ${creation.z})` });
+function weldAndPlace(creation, placeLabel = state.customPlaceName, resuming = false) {
+      const job = { creation, placeLabel: placeLabel || `(${creation.x}, ${creation.z})` };
+      buildQueue.push(job);
+      // Remember unfinished builds so a page refresh doesn't lose them
+      if (!resuming) state.pendingBuilds.push(job);
       if (!workshopRunning) runWorkshop();
     }
 
@@ -107,6 +110,7 @@ async function runWeldJob(creation, destLabel) {
         creation.x = Math.round(clampNumber(state.botPos.x + Math.sin(state.botRotY) * 1.7, WORLD_MIN_X, WORLD_MAX_X, dest.x) * 10) / 10;
         creation.z = Math.round(clampNumber(state.botPos.z + Math.cos(state.botRotY) * 1.7, WORLD_MIN_Z, WORLD_MAX_Z + 1, dest.z) * 10) / 10;
         creation.createdTime = 'Welded & placed';
+        state.pendingBuilds = state.pendingBuilds.filter(j => j.creation !== creation && j.creation.title !== creation.title);
         state.inventedCreations.unshift(creation);
         if (typeof bumpLifeStat === 'function') bumpLifeStat('builds');
         spawnEmergent3DObjectInWorld(creation, false);
@@ -124,3 +128,11 @@ async function runWeldJob(creation, destLabel) {
         state.isBuilding = false;
       }
     }
+
+window.addEventListener('DOMContentLoaded', () => {
+  // After his state loads: pick up any builds he hadn't finished before the page closed
+  setTimeout(() => {
+    state.pendingBuilds = (state.pendingBuilds || []).filter(j => j && j.creation && j.creation.title).slice(0, 5);
+    state.pendingBuilds.forEach(j => weldAndPlace(j.creation, j.placeLabel, true));
+  }, 1500);
+});

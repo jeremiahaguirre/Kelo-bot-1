@@ -28,7 +28,8 @@ function storedItems() {
         ...state.belongings.map(b => ({ name: b.name, kind: b.category || 'thing' }))
       ].reverse();
       // Vehicles are parked outside (js/vehicles.js), not kept on shelves
-      return all.filter(i => i.name && !unstored.has(i.name.toLowerCase()) && !(typeof vehicleTypeFor === 'function' && vehicleTypeFor(i.name)));
+      return all.filter(i => i.name && !unstored.has(i.name.toLowerCase()) && !(typeof vehicleTypeFor === 'function' && vehicleTypeFor(i.name))
+        && !(typeof wreckPieceAtCrash === 'function' && wreckPieceAtCrash(i.name)));
     }
 
 function buildStorehouse3D() {

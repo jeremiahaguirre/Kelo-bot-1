@@ -207,7 +207,7 @@ function updateVehicles(t) {
       const type = vehicleTypeFor(v.name);
       let y = getIslandGroundHeight(state.botPos.x, state.botPos.z);
       if (type.mode === 'water') y = Math.max(y, WATER_LEVEL) + Math.sin(t * 2.2) * 0.04;
-      if (type.mode === 'air') y += 6 + Math.sin(t * 1.3) * 0.3;
+      if (type.mode === 'air') y += airAltitude(m, v, t);
       m.position.set(state.botPos.x, y, state.botPos.z);
       m.rotation.y = state.botRotY - Math.PI / 2;
       // Sit him in the seat: the seat offset turns with the vehicle
@@ -225,6 +225,38 @@ function updateVehicles(t) {
       keloRightLeg.rotation.x = -1.2;
       keloLeftArm.rotation.x = -0.9;
       keloRightArm.rotation.x = -0.9;
+    }
+
+// Aircraft climb smoothly to cruising height, hold there, and come gently down when `landing` is set.
+// A balloon rises well above the trees with its burner roaring; a helicopter climbs faster and lower.
+// `lift` (0..1) lets a crash in strong wind drop it out of the sky (js/wind.js).
+const CRUISE_ALTITUDE = { balloon: 16, helicopter: 11 };
+function airAltitude(m, v, t) {
+      const u = m.userData, balloon = /balloon/i.test(v.name);
+      // Real seconds since the last frame, so slow computers climb just as fast
+      const now = performance.now() / 1000;
+      const dt = Math.min(0.5, Math.max(0, now - (u.lastT ?? now)));
+      u.lastT = now;
+      const want = u.landing ? 0 : (balloon ? CRUISE_ALTITUDE.balloon : CRUISE_ALTITUDE.helicopter);
+      const alt = u.alt || 0, rate = balloon ? 1.6 : 3.2; // units per second
+      u.alt = alt < want ? Math.min(want, alt + rate * dt) : Math.max(want, alt - rate * 0.8 * dt);
+      // The burner flares while the balloon climbs, and idles once it is up
+      if (u.flame) {
+        const roar = u.alt < want - 0.2 ? 2.4 : u.alt > 0.5 ? 1.2 : 0.6;
+        u.flame.scale.set(1, roar + Math.sin(t * 23) * 0.25 * roar, 1);
+      }
+      const bob = u.alt > 1 ? Math.sin(t * (balloon ? 0.8 : 1.3)) * (balloon ? 0.45 : 0.3) * Math.min(1, u.alt / 4) : 0;
+      return (u.lift ?? 1) * (u.alt + bob);
+    }
+
+// Wait (up to `ms`) until an aircraft has climbed to `atLeast` or come down below `atMost`
+async function waitForAltitude(v, test, ms = 25000) {
+      const started = Date.now();
+      while (Date.now() - started < ms) {
+        const m = vehicleMeshes[v.id];
+        if (!m || test(m.userData.alt || 0)) return;
+        await new Promise(r => setTimeout(r, 150));
+      }
     }
 
 // Where he climbs aboard: the dock for a boat, otherwise beside the driver's door
@@ -247,11 +279,28 @@ async function driveVehicle(v, target, label) {
       state.ridingSpeed = type.speed;
       state.ridingMode = type.mode;
       state.botPos = { x: v.x, z: v.z };
-      state.moodEmoji = type.kind === 'boat' ? '🛶' : type.kind === 'air' ? '🚁' : '🚚';
+      state.moodEmoji = type.kind === 'boat' ? '🛶' : type.kind === 'air' ? (/balloon/i.test(v.name) ? '🎈' : '🚁') : '🚚';
       state.moodTitle = label || `Driving the ${v.name.replace(/^(an?|the)\s+/i, '')}`;
       renderAllUI();
+      const air = type.mode === 'air', mesh = vehicleMeshes[v.id];
+      if (air && mesh) {
+        // Lift off first: climb most of the way up before heading anywhere
+        Object.assign(mesh.userData, { alt: 0, landing: false, lift: 1 });
+        mesh.rotation.z = 0;
+        state.targetPos = { ...state.botPos };
+        state.speechBubble = /balloon/i.test(v.name) ? 'Burner on... and up we go!' : 'Lifting off!';
+        renderAllUI();
+        await waitForAltitude(v, a => a > (/balloon/i.test(v.name) ? CRUISE_ALTITUDE.balloon : CRUISE_ALTITUDE.helicopter) * 0.75);
+      }
+      // A balloon in strong wind is blown off course and comes down in pieces (js/wind.js)
+      if (typeof windWillCrash === 'function' && windWillCrash(v)) return crashInWind(v, target);
       state.targetPos = { x: target.x, z: target.z };
       await waitForArrival(90000);
+      if (air && mesh) {
+        // A gentle descent onto the spot
+        mesh.userData.landing = true;
+        await waitForAltitude(v, a => a < 0.05);
+      }
       if (typeof burnFuel === 'function') burnFuel(v, Math.hypot(state.botPos.x - v.x, state.botPos.z - v.z));
       v.x = Math.round(state.botPos.x * 10) / 10;
       v.z = Math.round(state.botPos.z * 10) / 10;
@@ -271,7 +320,7 @@ async function driveVehicle(v, target, label) {
 async function travelTo(target, label) {
       const dist = Math.hypot(target.x - state.botPos.x, target.z - state.botPos.z);
       // Only something he knows how to use and that has fuel in it (otherwise he walks)
-      const usable = v => typeof readyToOperate !== 'function' || readyToOperate(v.name, v, { quiet: true });
+      const usable = v => (typeof readyToOperate !== 'function' || readyToOperate(v.name, v, { quiet: true })) && (typeof safeToFly !== 'function' || safeToFly(v));
       const ride = dist > 14 && (state.vehicles.find(v => v.kind === 'air' && usable(v)) || state.vehicles.find(v => v.kind === 'bike' && usable(v))
         || (typeof inSnow === 'function' && inSnow(target) ? state.vehicles.find(v => v.kind === 'snowmobile' && usable(v)) : null));
       if (ride) {

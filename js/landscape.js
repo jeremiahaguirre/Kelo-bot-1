@@ -35,6 +35,7 @@ function offLimits(x, z, pad = 0) {
       const building = Object.values(TOWN_LOCATIONS).find(l => !String(l.id).startsWith('dyn_') && Math.hypot(x - l.x, z - l.z) < 3.4 + pad);
       if (building) return building.name;
       if (Math.hypot(x - STOREHOUSE.x, z - STOREHOUSE.z) < 3.6 + pad) return 'the Storehouse';
+      if (typeof HOUSE !== 'undefined' && Math.abs(x - HOUSE.x) < HOUSE.w / 2 + 1.5 + pad && Math.abs(z - HOUSE.z) < HOUSE.d / 2 + 2.5 + pad) return 'my house';
       if (typeof MUSEUM !== 'undefined' && Math.abs(x - MUSEUM.x) < MUSEUM.w / 2 + 1 + pad && Math.abs(z - MUSEUM.z) < MUSEUM.d / 2 + 2.6 + pad) return 'the Museum';
       if (typeof inTown === 'function' && inTown(x, z)) return 'town';
       if (typeof BALLOON_SLOTS !== 'undefined' && BALLOON_SLOTS.some(([bx, bz]) => Math.hypot(x - bx, z - bz) < PAD_RADIUS + pad)) return 'the balloon field';

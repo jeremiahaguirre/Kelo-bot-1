@@ -307,29 +307,8 @@ function buildAlpineTerrainAndMountains3D() {
     }
 
 function buildHomesteadAndBuildings3D() {
-      // 1. Kelo-1 Cutaway House (with 3D Bed & Couch)
-      const houseGroup = new THREE.Group();
-      const hy = getAnalyticalGroundHeight(-9.5, -7.8);
-      houseGroup.position.set(-9.5, hy, -7.8);
-      const floor = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.25, 5.2), new THREE.MeshStandardMaterial({ color: 0x78350f }));
-      const backWall = new THREE.Mesh(new THREE.BoxGeometry(6.4, 2.8, 0.25), new THREE.MeshStandardMaterial({ color: 0xfef3c7 }));
-      backWall.position.set(0, 1.4, -2.5);
-      // 3D Bed
-      const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.45, 1.5), new THREE.MeshStandardMaterial({ color: 0x10b981 }));
-      bedFrame.position.set(-1.8, 0.35, -1.2);
-      // 3D Couch
-      const couchMesh = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.65, 1.1), new THREE.MeshStandardMaterial({ color: 0xf59e0b }));
-      couchMesh.position.set(1.5, 0.45, 0.8);
-      // Cutaway Roof
-      const roof = new THREE.Mesh(
-        new THREE.ConeGeometry(4.8, 2.0, 4),
-        new THREE.MeshStandardMaterial({ color: 0xb45309, transparent: true, opacity: 0.18 })
-      );
-      roof.position.set(0, 3.6, 0);
-      roof.rotation.y = Math.PI / 4;
-      cutawayRoofMeshes.push(roof);
-      houseGroup.add(floor, backWall, bedFrame, couchMesh, roof);
-      scene.add(houseGroup);
+      // 1. Kelo-1's house, with his bed and couch inside (js/house.js)
+      if (typeof buildKeloHouse3D === 'function') buildKeloHouse3D();
 
       // 2. Outdoor TIG Welding Forge + Spark & Mining Debris Particle Systems
       const forgeGroup = new THREE.Group();

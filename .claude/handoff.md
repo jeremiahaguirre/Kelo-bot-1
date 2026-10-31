@@ -12,6 +12,12 @@ Everything he gets (tools, vehicles, seeds, materials) arrives **only** through 
 He may change the world freely. He can never move or change the buildings, and he can't build new ones.
 
 ## Recently shipped (on `main`, pushed)
+- **Detailed vehicles and tools** (`js/gearmodels.js`).
+  - Vehicles are built at real size around Kelo-1 (about 2.8 units tall, sitting 0.3 above his feet). `miniature()` wraps them for the counter, and vehicles.js sets `userData.mini` back to scale 1.
+  - `userData.seat` is where he sits, `boardingSpot()` is the driver's door, and the truck's `bed` tips. The excavator's `house` and `boom` swing, and the helicopter `rotor` spins.
+  - Parking: the gravel yard east of the Post Office (`VEHICLE_YARD`, `YARD_SLOTS`), a helipad (`AIR_SLOTS`), the balloon field in the West Meadow (`BALLOON_SLOTS`), and the dock (`DOCK_SLOTS`, bow out). `reparkOldVehicles` migrates old saves.
+- **Proportions.** `lifeSize(model, maxSize)` in items3d.js shows `realSize` models (built in metres) at 1.6× and older display-size models at 1×. Carrying, the shelves and the counter all use it.
+- **UI pass (#25, first round).** Mobile vitals grid, the header badge hidden on phones, plain wording in the Talk tab, quick gifts removed, the place shown in the bottom panel (which shifts when the menu opens), and empty states in the Brain tab.
 - **Disposal Pit (#27).** `js/disposal.js`, loaded after vehicles.js. It replaces the spoil heap.
   - The pit is a real terrain hole at (20, -9) (`pitDepressionAt`, summed with dig holes in `groundDugAt` in scene.js), with a stone rim, a sign and a pin (`TOWN_LOCATIONS.disposal_pit`).
   - `disposeItem(name, why)` carries the item (or drives the vehicle) there and drops it in. `forgetItem` removes one copy from toolInventory, toys, belongings, unstoredItems and vehicles.
@@ -65,8 +71,10 @@ He may change the world freely. He can never move or change the buildings, and h
 - Check that every test run finishes with no page errors.
 
 ## Exact next steps (open tasks)
-1. **Detailed models for vehicles and tools** (user request). Stop using basic shapes for vehicles and tools in `items3d.js`; make recognizable models.
-2. **Size objects in proportion to Kelo-1** (user request). Kelo-1 is about 2.8 units tall (head at y 2.35). Check carried, shelved, parked and thrown items against him.
+1. **More #25 polish.** The user asked not to forget graphics and UI/UX.
+   - Ideas: icons on the tab buttons, the long Brain tab (collapse sections), the GitHub tab's relevance, and the World tab chips ("0 Core Opinions").
+   - Graphics: more of the old basic-shape items (food, toys, instruments) as real-size models marked with `realSize`.
+2. *(this slot was the vehicle and tool models, now done)*
 3. **#26 Tools work only as intended.**
    - Each tool or vehicle needs a "how to use it" note learned by researching at the NetNode before he can use it.
    - He must climb in and operate a vehicle before it does anything.

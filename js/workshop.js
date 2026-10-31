@@ -53,7 +53,13 @@ async function runWeldJob(creation, destLabel) {
       for (let i = 0; i < 120 && state.isPracticing; i++) await sleep(250);
       state.isBuilding = true;
       const title = creation.title || 'something new';
-      const dest = { x: clampNumber(creation.x, WORLD_MIN_X, WORLD_MAX_X, 0), z: clampNumber(creation.z, WORLD_MIN_Z, WORLD_MAX_Z, 0) };
+      let dest = { x: clampNumber(creation.x, WORLD_MIN_X, WORLD_MAX_X, 0), z: clampNumber(creation.z, WORLD_MIN_Z, WORLD_MAX_Z, 0) };
+      // The town isn't his to build in: a piece meant for town goes to his Museum instead
+      if (typeof inTown === 'function' && inTown(dest.x, dest.z) && typeof MUSEUM_DOOR !== 'undefined') {
+        creation.inMuseum = true;
+        dest = { ...MUSEUM_DOOR };
+        destLabel = 'his Museum';
+      }
       const bench = TOWN_LOCATIONS.weld;
       try {
         // Sketch the design while walking: with an AI brain, design exactly what he means
@@ -109,11 +115,12 @@ async function runWeldJob(creation, destLabel) {
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
         creation.x = Math.round(clampNumber(state.botPos.x + Math.sin(state.botRotY) * 1.7, WORLD_MIN_X, WORLD_MAX_X, dest.x) * 10) / 10;
         creation.z = Math.round(clampNumber(state.botPos.z + Math.cos(state.botRotY) * 1.7, WORLD_MIN_Z, WORLD_MAX_Z + 1, dest.z) * 10) / 10;
-        creation.createdTime = 'Welded & placed';
+        creation.createdTime = creation.inMuseum ? 'On display in the Museum' : 'Welded & placed';
         state.pendingBuilds = state.pendingBuilds.filter(j => j.creation !== creation && j.creation.title !== creation.title);
         state.inventedCreations.unshift(creation);
         if (typeof bumpLifeStat === 'function') bumpLifeStat('builds');
         spawnEmergent3DObjectInWorld(creation, false);
+        if (creation.inMuseum && typeof renderMuseum3D === 'function') renderMuseum3D();
         state.microPose = 'procedural_custom';
         state.moodTitle = `Placed ${title}`.slice(0, 80);
         state.speechBubble = `There. "${title}" is standing at ${destLabel} now.`;

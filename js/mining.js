@@ -131,6 +131,12 @@ async function digAt(x, z, originLabel = 'Digging') {
       if (state.isBusy || state.isBuilding || state.isPracticing) return 'busy';
       x = Math.round(clampNumber(x, WORLD_MIN_X + 1, WORLD_MAX_X - 1, 0) * 10) / 10;
       z = Math.round(clampNumber(z, WORLD_MIN_Z + 1, 7, -20) * 10) / 10;
+      // Town isn't his to dig up
+      if (typeof inTown === 'function' && inTown(x, z)) {
+        state.speechBubble = "That's in town. I'll dig out on the mountain instead.";
+        renderAllUI();
+        return 'town';
+      }
       // Not inside buildings or on top of other things
       if (typeof pointBlocked === 'function' && pointBlocked(x, z, { x: 999, z: 999 })) {
         state.speechBubble = 'Something is already standing there. I will dig somewhere else.';
@@ -275,7 +281,7 @@ function chooseDigSpot() {
       const unfinished = state.digSites.filter(s => s.depth < MAX_DEPTH);
       if (unfinished.length && Math.random() < 0.6) return pick(unfinished);
       const x = Math.round(randRange(WORLD_MIN_X + 6, WORLD_MAX_X - 6) * 10) / 10;
-      const z = Math.round(randRange(-36, -10) * 10) / 10;
+      const z = Math.round(randRange(-36, TOWN.minZ - 0.5) * 10) / 10;
       return { x, z };
     }
 

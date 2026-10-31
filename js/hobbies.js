@@ -23,14 +23,6 @@ const HOBBY_RULES = [
   [/book|novel|comic/, { name: 'Reading', emoji: '📚', style: 'other', description: 'Reading under a tree and arguing with the author.' }]
 ];
 
-// Walls he can paint, with where to stand. Positions match the buildings in scene.js.
-const MURAL_WALLS = [
-  { id: 'cafe_east', x: 0.43, y: 1.2, z: 3.5, rotY: Math.PI / 2, w: 2.5, h: 1.7, standX: 1.9, standZ: 3.5, label: 'the side of Bean & Byte Cafe' },
-  { id: 'post_west', x: 10.37, y: 1.3, z: -3.0, rotY: -Math.PI / 2, w: 2.8, h: 1.9, standX: 9.2, standZ: -3.0, label: 'the post office wall' },
-  { id: 'netnode_back', x: 6.8, y: 1.25, z: 0.67, rotY: Math.PI, w: 3.4, h: 1.9, standX: 6.8, standZ: -1.0, label: 'the back of NetNode' },
-  { id: 'house_back', x: -9.5, y: 1.4, z: -10.45, rotY: Math.PI, w: 5.0, h: 2.2, standX: -9.5, standZ: -11.7, label: 'the back wall of his house' }
-];
-
 const muralMeshes = {};
 let hobbyProps = null;   // temporary 3D props while practising (kite, notes, easel)
 let hobbyPropUpdate = null;
@@ -183,24 +175,9 @@ function paintMuralCanvas({ text, palette, skill, seed }) {
       return c;
     }
 
-function placeMural3D(mural) {
-      const wall = MURAL_WALLS.find(w => w.id === mural.wallId);
-      if (!wall || !scene) return;
-      if (muralMeshes[wall.id]) {
-        scene.remove(muralMeshes[wall.id]);
-        muralMeshes[wall.id].material.map.dispose();
-        muralMeshes[wall.id].geometry.dispose();
-      }
-      const texture = new THREE.CanvasTexture(paintMuralCanvas(mural));
-      const meshMural = new THREE.Mesh(
-        new THREE.PlaneGeometry(wall.w, wall.h),
-        new THREE.MeshStandardMaterial({ map: texture, transparent: true, roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -2 })
-      );
-      const gy = getAnalyticalGroundHeight(wall.x, wall.z);
-      meshMural.position.set(wall.x, gy + wall.y, wall.z);
-      meshMural.rotation.y = wall.rotY;
-      scene.add(meshMural);
-      muralMeshes[wall.id] = meshMural;
+// Paintings hang in the Museum (js/museum.js); the town's walls stay as they are
+function placeMural3D() {
+      if (typeof renderMuseum3D === 'function') renderMuseum3D();
     }
 
 // --- Temporary props while practising -------------------------------------------------
@@ -322,15 +299,15 @@ async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
         let spot = null, wall = null;
         if (hobby.style === 'mural') {
           // Prefer a wall he hasn't painted yet, otherwise repaint his oldest one
-          const painted = new Set(state.murals.map(m => m.wallId));
-          wall = MURAL_WALLS.find(w => !painted.has(w.id)) || MURAL_WALLS.find(w => w.id === state.murals[state.murals.length - 1]?.wallId) || pick(MURAL_WALLS);
-          spot = { x: wall.standX, z: wall.standZ, label: wall.label };
+          // He paints on canvas and hangs it in his Museum: the town's walls aren't his to change
+          wall = { id: 'canvas-' + Date.now().toString(36), label: 'a canvas for his Museum' };
+          spot = { x: MUSEUM_DOOR.x + 1.5, z: MUSEUM_DOOR.z, label: 'his Museum' };
         } else if (hobby.style === 'kite') {
           spot = pick([{ x: -16, z: -1.5, label: 'the West Island Meadow' }, { x: 2, z: 8.6, label: 'the beach' }]);
         } else if (hobby.style === 'plant') {
-          spot = { x: -12.5 + Math.random() * 5, z: 6 + Math.random() * 1.2, label: 'the garden' };
+          spot = { x: -22 - Math.random() * 6, z: 3 + Math.random() * 3, label: 'the wildflower patch west of town' };
         } else if (hobby.style === 'easel') {
-          spot = pick([{ x: 3, z: 8.4, label: 'the lakeshore' }, { x: -14, z: -9.5, label: 'the foot of the mountains' }]);
+          spot = pick([{ x: 3, z: 8.4, label: 'the lakeshore' }, { x: -20, z: -12, label: 'the foot of the mountains' }]);
         } else {
           spot = pick([{ x: -16, z: -1.5, label: 'the meadow' }, { x: 4.2, z: 9.6, label: 'the lake edge' }, { x: -4, z: -2, label: 'the valley' }]);
         }
@@ -369,15 +346,15 @@ async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
           const palette = [randomHex(), randomHex(), randomHex(), randomHex()];
           const words = ['KELO', 'K1', 'OKANAGAN', 'HELLO', 'WONDER', 'SPARK', 'GROW', ...state.concepts.slice(0, 3).map(c => conceptKeyword(c.name))];
           const mural = { wallId: wall.id, text: pick(words), palette, skill: hobby.skill, seed: `${wall.id}-${Date.now()}`, at: Date.now() };
-          state.murals = [mural, ...state.murals.filter(m => m.wallId !== wall.id)].slice(0, MAX_MURALS);
+          state.murals = [mural, ...state.murals].slice(0, MAX_MURALS);
           placeMural3D(mural);
-          result = `I sprayed "${mural.text}" across ${wall.label}. ${hobby.skill > 50 ? 'The letters finally look like mine.' : 'The drips got away from me, but I love it.'}`;
+          result = `I painted "${mural.text}" on a canvas and hung it in my Museum. ${hobby.skill > 50 ? 'The letters finally look like mine.' : 'The drips got away from me, but I love it.'}`;
         } else if (hobby.style === 'plant') {
           const planting = { x: state.botPos.x + 0.6, z: state.botPos.z + 0.4, color: randomHex(), at: Date.now() };
           state.plantings.unshift(planting);
           if (state.plantings.length > MAX_PLANTINGS) state.plantings.length = MAX_PLANTINGS;
           placePlanting3D(planting);
-          result = 'I planted something new by the garden. I will check on it every day.';
+          result = 'I planted something new in my wildflower patch west of town. I will check on it every day.';
         } else if (hobby.style === 'easel') {
           const painting = paintLandscape(hobby.skill, `${Date.now()}`);
           const easel = hobbyProps && hobbyProps.userData.easel;

@@ -87,12 +87,14 @@ Kelo-bot-1/
 │   ├── gearmodels.js    # Detailed vehicles and tools, sized against Kelo-1
 │   ├── everydaymodels.js # Food, toys, instruments and books at real size
 │   ├── storehouse.js    # The Storehouse shelves where everything he owns is kept
+│   ├── museum.js        # His Museum of Art & Ideas: sculptures on plinths, paintings in frames
 │   ├── vehicles.js      # The vehicle yard, helipad and dock; driving, boating, hauling dirt
 │   ├── disposal.js      # The Disposal Pit: whatever he throws in is gone for good
 │   ├── knowhow.js       # Learning how tools work, fuel, and stargazing at night
 │   ├── seasons.js       # Seasonal colours, snow, snowfall, and getting stuck in deep snow
 │   ├── landscape.js     # Chopping trees, planting, roads and hills, and undoing them
 │   ├── projects.js      # Real builds: finding plans online, asking for materials, building them
+│   ├── town.js          # Keeps the town free of his builds (the beach is fine)
 │   ├── main.js          # UI wiring
 │   └── portal.js        # Send-him-something panel
 ├── brain/growth.json    # His dreams, written by the scheduled Action

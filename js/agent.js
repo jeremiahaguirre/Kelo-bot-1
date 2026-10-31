@@ -175,6 +175,16 @@ const TOWN_LOCATIONS = {
     "showPin": true,
     "pinColor": "from-stone-500/90 to-stone-700/90"
   },
+  "museum": {
+    "id": "museum",
+    "name": "Museum",
+    "building": "Kelo-1 Museum of Art & Ideas",
+    "icon": "🏛️",
+    "x": -40,
+    "z": -0.4,
+    "showPin": true,
+    "pinColor": "from-amber-600/90 to-stone-700/90"
+  },
   "east_cliff": {
     "id": "east_cliff",
     "name": "Eastern Granite Overlook",
@@ -521,6 +531,12 @@ const MAX_SCULPTURE_PARTS = 24;
 
 // Everywhere Kelo-1 can go: the whole valley and the entire mountain range behind it
 const WORLD_MIN_X = -60, WORLD_MAX_X = 60, WORLD_MIN_Z = -44, WORLD_MAX_Z = 10;
+// The town: the buildings and the streets between them. Kelo-1 doesn't build, plant or dig here;
+// the beach south of it (z above TOWN.maxZ) is his to use.
+const TOWN = { minX: -16, maxX: 19, minZ: -11.5, maxZ: 7.6 };
+function inTown(x, z) {
+      return x > TOWN.minX && x < TOWN.maxX && z > TOWN.minZ && z < TOWN.maxZ;
+    }
 
 // Clean a list of [a, b] or [a, b, c] points, bounded so shapes stay a sensible size
 function sanitizePoints(points, dims, min, max, maxCount) {
@@ -1185,6 +1201,8 @@ function loadPersistentBrainState() {
           }
         }
       } catch (e) {}
+      // Anything he added in town earlier moves out (js/town.js)
+      if (typeof tidyTown === 'function') tidyTown();
     }
 
 // Moment-to-moment flags and things stored elsewhere; everything else in state is saved
@@ -1648,6 +1666,7 @@ Current state:
 - Your hobbies: ${state.hobbies.map(h => `${h.name} (skill ${h.skill}/100)`).join(', ') || 'none yet'}
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
+- The town (x ${TOWN.minX} to ${TOWN.maxX}, z ${TOWN.minZ} to ${TOWN.maxZ}) is not yours to build in: put creations, plantings, roads and digs out of town or on the beach. Art you make for a spot in town goes to your Museum of Art & Ideas (${typeof museumSummaryForAI === 'function' ? museumSummaryForAI() : 'empty'}).
 - World bounds: x from ${WORLD_MIN_X} to ${WORLD_MAX_X}, z from ${WORLD_MIN_Z} to ${WORLD_MAX_Z} (z below -14 is the mountain range, which you can roam freely; z above 8 is the lake shore)
 ${trigger ? `- Something just prompted you (you may follow it, reinterpret it, or decline): "${trigger}"` : '- Nothing prompted you. This is purely your own impulse.'}
 

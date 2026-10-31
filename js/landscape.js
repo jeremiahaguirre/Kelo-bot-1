@@ -35,10 +35,12 @@ function offLimits(x, z, pad = 0) {
       const building = Object.values(TOWN_LOCATIONS).find(l => !String(l.id).startsWith('dyn_') && Math.hypot(x - l.x, z - l.z) < 3.4 + pad);
       if (building) return building.name;
       if (Math.hypot(x - STOREHOUSE.x, z - STOREHOUSE.z) < 3.6 + pad) return 'the Storehouse';
+      if (typeof MUSEUM !== 'undefined' && Math.abs(x - MUSEUM.x) < MUSEUM.w / 2 + 1 + pad && Math.abs(z - MUSEUM.z) < MUSEUM.d / 2 + 2.6 + pad) return 'the Museum';
+      if (typeof inTown === 'function' && inTown(x, z)) return 'town';
       if (typeof BALLOON_SLOTS !== 'undefined' && BALLOON_SLOTS.some(([bx, bz]) => Math.hypot(x - bx, z - bz) < PAD_RADIUS + pad)) return 'the balloon field';
       if (typeof inParkingArea === 'function' && inParkingArea(x, z, pad)) return 'the vehicle yard';
       if (Math.hypot(x - DISPOSAL_PIT.x, z - DISPOSAL_PIT.z) < DISPOSAL_PIT.r + 1 + pad) return 'the Disposal Pit';
-      if (z > 7.6) return 'the lake shore';
+      if (z > 9.2) return 'the lake';
       return null;
     }
 
@@ -65,7 +67,8 @@ function startJob(x, z) {
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
       const blocked = offLimits(x, z);
       if (blocked) {
-        state.speechBubble = `That's right next to ${blocked}. I leave buildings and their grounds the way they are.`;
+        state.speechBubble = blocked === 'town' ? "That's in town. Town isn't mine to build in, so I'll find a spot outside it, or on the beach."
+          : `That's right next to ${blocked}. I leave buildings and their grounds the way they are.`;
         renderAllUI();
         return false;
       }
@@ -250,7 +253,7 @@ async function plantSeeds(x, z, why = '', originLabel = 'Shaping the Valley') {
         return 'needs-seeds';
       }
       x = Math.round(clampNumber(x, WORLD_MIN_X + 2, WORLD_MAX_X - 2, state.botPos.x) * 10) / 10;
-      z = Math.round(clampNumber(z, -12, 7, state.botPos.z) * 10) / 10;
+      z = Math.round(clampNumber(z, WORLD_MIN_Z + 2, 9, state.botPos.z) * 10) / 10;
       if (!startJob(x, z)) return false;
       try {
         state.currentLocKey = 'custom';
@@ -416,15 +419,15 @@ function landscapeChance() {
 function shapeTheValleyOnMyOwn() {
       const open = () => {
         for (let i = 0; i < 20; i++) {
-          const x = randRange(-28, 28), z = randRange(-11, 6);
+          const x = randRange(-1, 1) < 0 ? randRange(WORLD_MIN_X + 4, TOWN.minX - 2) : randRange(TOWN.maxX + 16, WORLD_MAX_X - 4), z = randRange(-11, 6);
           if (!offLimits(x, z, 1.5) && !pointBlocked(x, z, { x: 999, z: 999 })) return { x, z };
         }
         return { x: -14, z: 2 };
       };
       if (hasItem(/^(?!.*bird ?seed).*(seed|sapling|bulb)/i)) { const p = open(); return plantSeeds(p.x, p.z, 'I wanted something living that I put there myself.', 'Felt Like Planting'); }
       if (hasItem(/gravel|crushed stone|paving/i) && hasItem(/shovel|spade/i)) {
-        const home = TOWN_LOCATIONS.couch, dest = pick([TOWN_LOCATIONS.meadow, TOWN_LOCATIONS.garden, TOWN_LOCATIONS.shoreline]);
-        return buildRoad(home.x + 2, home.z + 2, dest.x, dest.z, 'My feet keep wearing a muddy track along here.', 'Felt Like Building');
+        // A road out west, from the edge of town toward the Museum and the woods
+        return buildRoad(TOWN.minX - 1, -2, MUSEUM_DOOR.x + 6, MUSEUM_DOOR.z + 1, 'My feet keep wearing a muddy track out here.', 'Felt Like Building');
       }
       if (hasItem(/^(?!.*pick ?ax).*(\baxe\b|hatchet)/i) && Math.random() < 0.5) { const p = open(); return chopTree(p.x, p.z, 'I wanted to open up a clearing.', 'Felt Like Chopping'); }
       if (Math.random() < 0.3 && state.worldEdits.some(e => e.type !== 'chop')) return undoEdit('last', 'It looked better before.');

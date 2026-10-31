@@ -111,6 +111,7 @@ function initDiorama3D() {
       buildHomesteadAndBuildings3D();
       if (typeof renderPostOfficeParcels3D === 'function') renderPostOfficeParcels3D();
       if (typeof buildStorehouse3D === 'function') buildStorehouse3D();
+      if (typeof buildMuseum3D === 'function') buildMuseum3D();
       // Scenery goes last so trees and rocks keep clear of every building
       buildValleyScenery3D();
       buildKelo1Character3D();
@@ -1364,6 +1365,7 @@ function buildCreationGroup(creation) {
     }
 
 function spawnEmergent3DObjectInWorld(creation, skipPin = false) {
+      if (creation.inMuseum) return; // shown in the Museum instead (js/museum.js)
       if (!emergentCreationsGroup) return;
       const g = buildCreationGroup(creation);
       const groundY = getIslandGroundHeight(creation.x, creation.z);

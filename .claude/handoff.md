@@ -12,6 +12,18 @@ Everything he gets (tools, vehicles, seeds, materials) arrives **only** through 
 He may change the world freely. He can never move or change the buildings, and he can't build new ones.
 
 ## Recently shipped (on `main`, pushed)
+- **#21 Seasons and snow** (`js/seasons.js`).
+  - `inSnow(p)` uses `SNOW_LINE` per season (all land in winter, the high mountain otherwise). `snowWalkFactor`/`snowSink` slow him and sink him in `scene.js`.
+  - `checkSnowStuck` → `getStuckInSnow` → `researchSnowTravel` asks for snowshoes, skis and a snowmobile.
+  - `applySeasonLook()` recolours the terrain from saved base colours, recolours leaves and needles (materials tagged `userData.seasonal`), and switches the winter snowfall on and off.
+- **#23 Shape the world** (`js/landscape.js`).
+  - The jobs: `chopTree` (needs an axe and its know-how), `plantSeeds` (grows over `GROW_DAYS`), `buildRoad` (a shovel plus gravel), `raiseHill` (`landscapeRaiseAt` feeds `getAnalyticalGroundHeight`) and `undoEdit` (anything except a chop).
+  - Changes are saved in `state.worldEdits`; `offLimits()` protects the buildings, the yard, the balloon field, the pit and the shore.
+  - Valley trees are now seeded (`valleyTrees` with ids).
+- **#24 Real builds** (`js/projects.js`).
+  - `BUILD_PLANS` (6 real items, each with its materials, tools and a real-size model). `startProject` is a NetNode visit followed by requests.
+  - An 8-second check calls `buildProject` once everything has arrived: it builds at the bench, uses up the materials, and places the item (`state.projects`).
+  - Reading at NetNode can spark a project (`maybeProjectFromReading`), and the AI can choose one with `buildProject`.
 - **#26 Tools work only as intended** (`js/knowhow.js`).
   - `GEAR_KNOWHOW` lists each tool and vehicle with its Wikipedia page, a how-to line and its fuel. `state.knowHow[key]` is set by `learnToUse()` (a NetNode trip).
   - `readyToOperate(name, v)` gates digging, hauling, boating and long rides; `{ quiet: true }` checks without fixing anything.
@@ -77,13 +89,9 @@ He may change the world freely. He can never move or change the buildings, and h
 - Check that every test run finishes with no page errors.
 
 ## Exact next steps (open tasks)
-1. **#21 Seasons and snow.** (snowshoe, ski, snowmobile and helicopter models already exist in gearmodels.js; `inSnow` is referenced in vehicles.js but not defined yet)
-   - Show seasonal visuals, including snow cover in winter.
-   - In snow he sinks and gets stuck, then works it out: research leads to a request, and the visitor gifts the solution (snowshoes, skis, snowmobile or helicopter).
-2. **#23 Shape the world.** (the axe model exists)
-   - Chop trees with an axe, plant seeds he has requested, build roads and terraform.
-   - He can undo or remove anything he has added. Buildings stay untouchable.
-3. **#24 Real builds.** He requests the materials needed to build real items he finds online.
-4. **#25 Polish (ongoing).** Three rounds are done; keep improving graphics and UI/UX as features land.
+All the planned tasks (#21 to #27) are done. Ideas for what could come next:
+1. More `BUILD_PLANS` (a doghouse, a kayak rack, a treehouse platform), and letting him use firewood logs from chopping as lumber.
+2. Rain in spring, and ice on the lake in winter (he could walk on it once he has learned it is safe).
+3. More polish (#25 is ongoing): icons for the tabs, and a way for the visitor to see a map of everything he has changed.
 
 Make sure everything looks right when it is built, removed or invented. Check each change with a screenshot.

@@ -1738,6 +1738,7 @@ Return ONLY JSON:
   "shape": null OR {"action": "chop" | "plant" | "road" | "hill" | "undo", "x": number, "z": number, "toX": number, "toZ": number, "id": "an id from your list, for undo", "why": "1 sentence"} (change the valley yourself: chop a tree with an axe, plant seeds you have, lay a gravel road, raise a hill, or undo something you added; buildings are never touched),
   "buildProject": null OR "one of the real things you know how to build" (look it up and ask for the materials it takes; one project at a time),
   "expandLand": null OR {"x": number, "why": "1 sentence"} (from now on, tip the dirt you dig into the lake off the beach near x to make new land, instead of the Disposal Pit; deeper water needs more dirt),
+  "emote": null OR "wave" | "cheer" | "dance" | "think" | "stretch" | "shiver" | "sit" | "celebrate" (a gesture you make right now to show how you feel),
   "checkMail": true OR false (whether you feel like walking to the post office to pick up your mail after this),
 ${state.knowsDigging ? `  "dig": null OR {"x": number, "z": number} (dig or mine at that spot; you need a shovel or pickaxe, a jackhammer once you hit rock, and a dump truck plus excavator once the dirt pile is big; if you lack them you will ask for them),
 ` : ''}
@@ -1922,6 +1923,8 @@ function applyDecision(decision, originLabel) {
         const hobby = addHobby(decision.startHobby, `Own idea while: ${title}`);
         if (hobby && isNew) practiceWhenFree(hobby, 'Trying a New Hobby');
       }
+
+      if (typeof decision.emote === 'string' && typeof playEmote === 'function') playEmote(decision.emote);
 
       if (decision.checkMail === true && state.mailbox.length > 0 && typeof pickUpMail === 'function') {
         setTimeout(() => pickUpMail('Decided to Check the Mail'), 3000);

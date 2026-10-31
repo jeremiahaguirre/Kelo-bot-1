@@ -136,6 +136,7 @@ function sayToVisitor(text, visitor) {
 async function respondToVisitor(visitor, message) {
       const kind = classifyMessage(message);
       const unknown = unknownWords(message);
+      if (kind === 'greeting' && typeof playEmote === 'function') playEmote('wave');
 
       // With an AI brain: answer the actual message, with his situation and vocabulary as context
       if (hasLLMKey()) {

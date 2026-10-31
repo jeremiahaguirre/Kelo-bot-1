@@ -336,7 +336,8 @@ const state = {
   "lightingMode": "auto",
   "pendingBuilds": [],
   "codeWishes": [],
-  "shop": { "listings": [], "sold": [], "earnings": 0, "builtAt": null }
+  "shop": { "listings": [], "sold": [], "earnings": 0, "builtAt": null },
+  "printer": { "setUp": false, "skill": 0, "prints": 0, "fails": 0, "spools": [], "loadedSpoolId": null, "lessons": {}, "history": [], "designs": {}, "welcomeSent": false }
 };
 
 // Where Kelo-1's memory lives: browser storage on the website (about 5 MB), or files on disk in the
@@ -1716,6 +1717,7 @@ Current state:
 - Thrown into your Disposal Pit (gone forever): ${typeof disposalSummaryForAI === 'function' ? disposalSummaryForAI() : 'nothing yet'}
 - Your shop website, where real people can buy your things: ${typeof shopSummaryForAI === 'function' ? shopSummaryForAI() : 'none'}
 - Your sense of taste: ${typeof tastesSummaryForAI === 'function' ? tastesSummaryForAI() : 'unknown'}
+- Your 3D printer: ${typeof printerSummaryForAI === 'function' ? printerSummaryForAI() : 'none'}
 - Your hobbies: ${state.hobbies.map(h => `${h.name} (skill ${h.skill}/100)`).join(', ') || 'none yet'}
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
@@ -1743,6 +1745,7 @@ Return ONLY JSON:
   "codeProject": null OR {"name": "repo-name", "desc": "..."},
   "codeRequest": null OR {"feature": "something your world can't do yet that you wish the person who codes it would add (e.g. a way to fish)", "why": "1 sentence"},
   "sellItem": null OR {"item": "exact name of something you own or art you made", "price": number in Canadian dollars, "description": "1-2 sentences you write for buyers"} (put it in your shop website at the NetNode cafe; real people may buy it),
+  "print": null OR {"what": "something small to make on your 3D printer: a useful thing, a toy, or a shape or idea of yours as a sculpture", "why": "1 sentence"} (only if you have a 3D printer and filament),
   "webQuery": null OR "a topic you want to look up at the NetNode cafe",
   "usedConcept": null OR "name of one of your existing concepts this decision builds on",
   "newConcept": null OR {"name": "2-4 word name for a brand-new idea you just invented", "emoji": "one emoji", "definition": "1 sentence", "builtFrom": ["ideas or things it grew out of"]},
@@ -1902,6 +1905,7 @@ function applyDecision(decision, originLabel) {
       const cr = decision.codeRequest;
       if (cr && typeof cr === 'object' && typeof addCodeRequest === 'function') addCodeRequest(cr.feature, cr.why, title);
       if (decision.sellItem && typeof sellItemDecision === 'function') sellItemDecision(decision.sellItem);
+      if (decision.print && typeof printDecision === 'function') printDecision(decision.print);
 
       const used = findConcept(decision.usedConcept);
       if (used) used.uses = (used.uses || 0) + 1;
@@ -2045,6 +2049,7 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
       }
       if (typeof registerVehicle === 'function' && vehicleTypeFor(item)) registerVehicle(item);
       if (typeof receiveFuel === 'function') receiveFuel(item);
+      if (typeof receivePrinterThing === 'function') receivePrinterThing(item);
       state.giftLog.unshift(entry);
       if (state.giftLog.length > 30) state.giftLog.length = 30;
       if (typeof bumpLifeStat === 'function') bumpLifeStat('gifts');
@@ -2121,6 +2126,7 @@ function runAutonomousLifeTick() {
       if (typeof startProject === 'function' && Math.random() < projectChance()) { startProject(pickNewProject()); return; }
       // Now and then he puts something in his shop, or wishes his world could do something new
       if (typeof tendShop === 'function' && Math.random() < shopChance()) { tendShop(); return; }
+      if (typeof printOnMyOwn === 'function' && Math.random() < printChance()) { printOnMyOwn(); return; }
       if (typeof wishForCode === 'function' && Math.random() < codeWishChance()) { wishForCode(); return; }
       // Now and then he reshapes a bit of the valley
       if (typeof shapeTheValleyOnMyOwn === 'function' && Math.random() < landscapeChance()) { shapeTheValleyOnMyOwn(); return; }

@@ -85,6 +85,7 @@ Kelo-bot-1/
 │   ├── scene.js         # Three.js world, pathfinding, terrain
 │   ├── items3d.js       # 3D models of items, the pick-up counter, carrying
 │   ├── gearmodels.js    # Detailed vehicles and tools, sized against Kelo-1
+│   ├── everydaymodels.js # Food, toys, instruments and books at real size
 │   ├── storehouse.js    # The Storehouse shelves where everything he owns is kept
 │   ├── vehicles.js      # The vehicle yard, helipad and dock; driving, boating, hauling dirt
 │   ├── disposal.js      # The Disposal Pit: whatever he throws in is gone for good

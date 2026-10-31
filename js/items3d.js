@@ -81,7 +81,7 @@ const ITEM_MODEL_RULES = [
     rim.position.y = 0.19;
     return group(lens, rim);
   }],
-  [/tank|canister|cylinder|bottle|jar|flask|thermos|gas refill|argon|propane|oxygen/, (lower) => {
+  [/tank|canister|cylinder|bottle|jar|flask|gas refill|argon|propane|oxygen/, (lower) => {
     const color = /argon|gas|oxygen/.test(lower) ? 0x0d9488 : /glass|jar|bottle/.test(lower) ? 0xbae6fd : 0x64748b;
     const body = mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.45, 14), color, { transparent: /glass|jar|bottle/.test(lower), opacity: 0.85, metalness: 0.4 });
     body.position.y = 0.23;
@@ -106,31 +106,9 @@ const ITEM_MODEL_RULES = [
     stand.position.y = 0.1;
     return group(panel, stand);
   }],
-  [/seed packet|seeds?\b/, () => {
-    const g = group();
-    [0xf472b6, 0x4ade80, 0xfacc15].forEach((c, i) => {
-      const packet = mesh(new THREE.BoxGeometry(0.16, 0.22, 0.02), c);
-      packet.position.set((i - 1) * 0.12, 0.11, i * 0.02);
-      packet.rotation.y = (i - 1) * 0.2;
-      g.add(packet);
-    });
-    return g;
-  }],
-  [/book|novel|journal|notebook|manual/, () => {
-    const book = mesh(new THREE.BoxGeometry(0.3, 0.06, 0.22), 0x7c3aed);
-    book.position.y = 0.03;
-    const pages = mesh(new THREE.BoxGeometry(0.28, 0.05, 0.2), 0xfef3c7);
-    pages.position.set(0.01, 0.03, 0);
-    return group(book, pages);
-  }],
-  [/guitar|ukulele|violin/, () => {
-    const body = mesh(new THREE.SphereGeometry(0.16, 14, 10), 0xb45309);
-    body.scale.set(1, 1.2, 0.35);
-    body.position.y = 0.18;
-    const neck = mesh(new THREE.BoxGeometry(0.05, 0.4, 0.03), 0x78350f);
-    neck.position.y = 0.5;
-    return group(body, neck);
-  }],
+  [/seed packet|seeds?\b/, (lower) => realSize(seedPacketsModel())],
+  [/book|novel|journal|notebook|manual/, (lower) => realSize(bookModel(lower))],
+  [/guitar|ukulele|violin/, (lower) => realSize(guitarModel(lower))],
   // Digging equipment (checked first so "jackhammer" isn't mistaken for a plain hammer)
   [/jack ?hammer|rock breaker/, () => {
     // Motor body, T-handle grips, hose, and a long chisel bit
@@ -256,83 +234,17 @@ const ITEM_MODEL_RULES = [
   [/apple/, () => fruitBasket(0xdc2626, 0.04, 9)],
   [/peach|apricot/, () => fruitBasket(0xffa36c, 0.038, 9)],
   [/blueberr|grape/, () => fruitBasket(0x3b4cca, 0.009, 60)],
-  [/bread|loaf|sourdough|baguette|bun|croissant/, () => {
-    const loaf = mesh(new THREE.SphereGeometry(0.3, 14, 10), 0xd6a35c);
-    loaf.scale.set(1.5, 0.75, 0.9);
-    loaf.position.y = 0.22;
-    return group(loaf);
-  }],
-  [/tart|pie|cobbler|cake|cookie/, () => {
-    const base = mesh(new THREE.CylinderGeometry(0.34, 0.3, 0.16, 18), 0xe9b872);
-    base.position.y = 0.08;
-    const top = mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.04, 18), 0x9a3412);
-    top.position.y = 0.17;
-    return group(base, top);
-  }],
-  [/ramen|noodle|soup|stew|bowl/, () => {
-    const bowl = mesh(new THREE.SphereGeometry(0.32, 16, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), 0xf8fafc, { side: THREE.DoubleSide });
-    bowl.position.y = 0.32;
-    const broth = mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.02, 16), 0xf59e0b);
-    broth.position.y = 0.3;
-    const egg = mesh(new THREE.SphereGeometry(0.07, 8, 8), 0xfef08a);
-    egg.position.set(0.1, 0.33, 0.05);
-    return group(bowl, broth, egg);
-  }],
-  [/cheese|cheddar/, () => {
-    const wedge = extruded([[0, 0], [0.6, 0], [0, 0.35]], 0.35, 0xfacc15);
-    return group(wedge);
-  }],
-  [/pizza/, () => group(extruded([[0, 0], [0.6, 0.18], [0.6, -0.18]], 0.05, 0xf59e0b))],
-  [/fudge|chocolate|brownie/, () => {
-    const g = group();
-    for (let i = 0; i < 4; i++) {
-      const b = mesh(new THREE.BoxGeometry(0.18, 0.12, 0.18), 0x5b3a1e);
-      b.position.set((i % 2) * 0.2 - 0.1, 0.06 + Math.floor(i / 2) * 0.12, 0);
-      g.add(b);
-    }
-    return g;
-  }],
-  [/cocoa|coffee|tea|thermos|juice|milk/, () => {
-    const cup = mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.4, 14), 0x0ea5e9);
-    cup.position.y = 0.2;
-    const lid = mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.06, 14), 0x1e293b);
-    lid.position.y = 0.43;
-    return group(cup, lid);
-  }],
-  [/salmon|fish/, () => {
-    const body = mesh(new THREE.SphereGeometry(0.2, 14, 10), 0xfb7185);
-    body.scale.set(2, 0.7, 0.6);
-    body.position.y = 0.16;
-    const tail = mesh(new THREE.ConeGeometry(0.14, 0.2, 4), 0xfb7185);
-    tail.rotation.z = Math.PI / 2;
-    tail.position.set(-0.46, 0.16, 0);
-    return group(body, tail);
-  }],
-  [/carrot/, () => {
-    const c = mesh(new THREE.ConeGeometry(0.08, 0.45, 8), 0xf97316);
-    c.rotation.z = Math.PI / 2;
-    c.position.y = 0.1;
-    const leaf = mesh(new THREE.ConeGeometry(0.06, 0.2, 4), 0x4ade80);
-    leaf.rotation.z = -Math.PI / 2;
-    leaf.position.set(0.3, 0.1, 0);
-    return group(c, leaf);
-  }],
-  [/kite/, () => {
-    const sail = extruded([[0, 0.5], [0.3, 0], [0, -0.5], [-0.3, 0]], 0.02, 0xef4444);
-    sail.rotation.x = -Math.PI / 2.4;
-    sail.position.y = 0.45;
-    const tail = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0, 0.1, 0.15), new THREE.Vector3(0.15, 0.05, 0.35), new THREE.Vector3(-0.1, 0.02, 0.55)]), 12, 0.015, 5), new THREE.MeshStandardMaterial({ color: 0xfacc15 }));
-    return group(sail, tail);
-  }],
-  [/yo-?yo/, () => {
-    const a = mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.06, 18), 0x22c55e);
-    a.rotation.x = Math.PI / 2;
-    a.position.set(0, 0.17, 0.05);
-    const b = a.clone();
-    b.position.z = -0.05;
-    return group(a, b);
-  }],
+  [/bread|loaf|sourdough|baguette|\bbun\b|croissant/, (lower) => realSize(loafModel(lower))],
+  [/tart|pie|cobbler|cake|cookie/, (lower) => realSize(bakedModel(lower))],
+  [/ramen|noodle|soup|stew|bowl/, (lower) => realSize(noodleBowlModel())],
+  [/cheese|cheddar/, (lower) => realSize(cheeseModel())],
+  [/pizza/, (lower) => realSize(pizzaModel())],
+  [/fudge|chocolate|brownie/, (lower) => realSize(chocolateModel())],
+  [/cocoa|coffee|\btea\b|thermos|juice|milk/, (lower) => realSize(drinkModel(lower))],
+  [/salmon|fish|trout/, (lower) => realSize(fishModel())],
+  [/carrot/, (lower) => realSize(carrotModel())],
+  [/kite/, (lower) => realSize(kiteModel())],
+  [/yo-?yo/, (lower) => realSize(yoyoModel())],
   [/telescope/, () => realSize(telescopeModel())],
   [/kaleidoscope|spyglass/, () => {
     const tube = mesh(new THREE.CylinderGeometry(0.07, 0.1, 0.6, 12), 0xa855f7, { metalness: 0.5 });
@@ -340,48 +252,12 @@ const ITEM_MODEL_RULES = [
     tube.position.y = 0.2;
     return group(tube);
   }],
-  [/ball|juggl|marble/, () => fruitBunch(0xf43f5e, 0.1, 3, [0x22c55e, 0x3b82f6, 0xf43f5e])],
-  [/duck/, () => {
-    const body = mesh(new THREE.SphereGeometry(0.2, 12, 10), 0xfacc15);
-    body.position.y = 0.18;
-    const head = mesh(new THREE.SphereGeometry(0.12, 12, 10), 0xfacc15);
-    head.position.set(0.15, 0.38, 0);
-    const beak = mesh(new THREE.ConeGeometry(0.04, 0.1, 6), 0xf97316);
-    beak.rotation.z = -Math.PI / 2;
-    beak.position.set(0.3, 0.37, 0);
-    return group(body, head, beak);
-  }],
-  [/spinning top|\btop\b/, () => {
-    const top = mesh(new THREE.ConeGeometry(0.2, 0.3, 14), 0x06b6d4);
-    top.rotation.x = Math.PI;
-    top.position.y = 0.2;
-    return group(top);
-  }],
-  [/frog/, () => {
-    const body = mesh(new THREE.SphereGeometry(0.18, 12, 10), 0x16a34a);
-    body.scale.set(1.2, 0.8, 1);
-    body.position.y = 0.14;
-    const e1 = mesh(new THREE.SphereGeometry(0.06, 8, 8), 0x16a34a);
-    e1.position.set(0.1, 0.27, 0.08);
-    const e2 = e1.clone();
-    e2.position.z = -0.08;
-    return group(body, e1, e2);
-  }],
-  [/puzzle|cube|block|lego/, () => {
-    const g = group();
-    const colors = [0xef4444, 0x22c55e, 0x3b82f6, 0xfacc15];
-    for (let i = 0; i < 8; i++) {
-      const c = mesh(new THREE.BoxGeometry(0.14, 0.14, 0.14), colors[i % 4]);
-      c.position.set((i % 2) * 0.15 - 0.075, 0.08 + Math.floor(i / 4) * 0.15, (Math.floor(i / 2) % 2) * 0.15 - 0.075);
-      g.add(c);
-    }
-    return g;
-  }],
-  [/harmonica/, () => {
-    const body = mesh(new THREE.BoxGeometry(0.45, 0.08, 0.12), 0xcbd5e1, { metalness: 0.8 });
-    body.position.y = 0.05;
-    return group(body);
-  }],
+  [/ball|juggl|marble/, (lower) => realSize(ballModel(lower))],
+  [/duck/, (lower) => realSize(duckModel())],
+  [/spinning top|\btop\b/, (lower) => realSize(spinningTopModel())],
+  [/frog/, (lower) => realSize(frogModel())],
+  [/puzzle|cube|block|lego/, (lower) => realSize(blocksModel())],
+  [/harmonica/, (lower) => realSize(harmonicaModel())],
   [/drill/, () => realSize(cordlessDrillModel())],
   [/rope|cable|wire/, (lower) => {
     const coil = mesh(new THREE.TorusGeometry(0.22, 0.05, 8, 24), /wire|copper/.test(lower) ? 0xb45309 : 0xd6a35c);
@@ -581,23 +457,6 @@ function fruitBasket(color, radius, count) {
         g.add(fruit);
       }
       return realSize(g);
-    }
-
-function fruitBunch(color, radius, count, palette = null) {
-      const g = group();
-      for (let i = 0; i < count; i++) {
-        const fruit = mesh(new THREE.SphereGeometry(radius, 12, 10), palette ? palette[i % palette.length] : color);
-        const a = (i / count) * Math.PI * 2;
-        const ring = count > 3 ? radius * 1.6 : radius * 1.1;
-        fruit.position.set(Math.cos(a) * ring, radius + (i % 2) * radius * 0.6, Math.sin(a) * ring);
-        g.add(fruit);
-      }
-      if (!palette) {
-        const stem = mesh(new THREE.CylinderGeometry(0.01, 0.01, radius * 1.4, 4), 0x3f6212);
-        stem.position.y = radius * 2.4;
-        g.add(stem);
-      }
-      return g;
     }
 
 function giftBox() {

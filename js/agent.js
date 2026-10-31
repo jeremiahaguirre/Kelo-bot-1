@@ -328,6 +328,7 @@ const state = {
   "knowsLakeDanger": false,
   "disposedItems": [],
   "dirtDisposed": 0,
+  "tastes": { "palate": null, "profile": {}, "eaten": [] },
   "lightingMode": "auto",
   "pendingBuilds": []
 };
@@ -1705,6 +1706,7 @@ Current state:
 - Things you know how to use: ${typeof knowHowSummaryForAI === 'function' ? knowHowSummaryForAI() : 'nothing yet'}
 - In your Storehouse: ${typeof storehouseSummaryForAI === 'function' ? storehouseSummaryForAI() : 'empty'}
 - Thrown into your Disposal Pit (gone forever): ${typeof disposalSummaryForAI === 'function' ? disposalSummaryForAI() : 'nothing yet'}
+- Your sense of taste: ${typeof tastesSummaryForAI === 'function' ? tastesSummaryForAI() : 'unknown'}
 - Your hobbies: ${state.hobbies.map(h => `${h.name} (skill ${h.skill}/100)`).join(', ') || 'none yet'}
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
@@ -1991,7 +1993,11 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
         reaction: ''
       };
 
+      let taste = null;
       if (cat === 'food') {
+        // What it really tastes like, and whether he likes it (js/materials.js)
+        taste = typeof tasteFood === 'function' ? tasteFood(item) : null;
+        if (taste) state.chatLog.push({ sender: 'Kelo-1', text: taste.text, time: 'Just now', isBot: true });
         const hungryBefore = state.fullness < 45;
         state.fullness = Math.min(100, state.fullness + 25);
         if (hungryBefore && typeof discoverNeed === 'function') discoverNeed('food', `I ate the ${item} ${giver} sent and the fog in my head lifted.`);
@@ -2016,7 +2022,7 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
       recordVisitorMemory(giver, `Gave me ${item}${entry.note ? ` ("${entry.note.slice(0, 60)}")` : ''}.`);
       state.chatLog.push({ sender: giver, text: `🎁 Gave Kelo-1: ${item}${entry.note ? ` — "${entry.note}"` : ''}`, time: 'Just now', isBot: false });
 
-      const howFood = cat === 'food' ? ' You just ate some of it, so you feel fuller.' : '';
+      const howFood = cat === 'food' ? ` You just ate some of it, so you feel fuller.${taste ? ` It tasted ${taste.flavour.note} (you ${taste.liked === 'neutral' ? 'felt neutral about' : taste.liked === 'likes' ? 'liked' : 'disliked'} it); describe that real taste.` : ''}` : '';
       await decideNextAction(
         `${giver} just gave you ${item} (${cat}).${entry.note ? ` Their note: "${entry.note}".` : ''}${howFood} Decide for yourself what to do with it: use it, play with it, build with it, share it, save it for later, or ignore it for now.`,
         `Gift from ${giver}`,

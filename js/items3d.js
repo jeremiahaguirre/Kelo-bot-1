@@ -602,6 +602,8 @@ function buildItemModel3D(name, { kind = 'gift', thumb = null, label = true } = 
         } else {
           model = singleItemModel(lower);
         }
+        // Wood grain, brushed metal, see-through glass... (js/materials.js)
+        if (typeof applyMaterialLook === 'function') applyMaterialLook(model, name);
       }
       if (label && name) {
         const text = String(name).replace(/^(an?|the|some)\s+/i, '').slice(0, 22).toUpperCase();

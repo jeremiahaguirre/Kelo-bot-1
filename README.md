@@ -87,6 +87,7 @@ Kelo-bot-1/
 │   ├── items3d.js       # 3D models of items, the pick-up counter, carrying
 │   ├── gearmodels.js    # Detailed vehicles and tools, sized against Kelo-1
 │   ├── everydaymodels.js # Food, toys, instruments and books at real size
+│   ├── materials.js     # What things are made of, how they look, bend, snap or shatter; food flavours and his tastes
 │   ├── storehouse.js    # The Storehouse shelves where everything he owns is kept
 │   ├── viewer.js        # Click the Storehouse, the Museum or a photo to look through them
 │   ├── museum.js        # His Museum of Art & Ideas: sculptures on plinths, paintings in frames

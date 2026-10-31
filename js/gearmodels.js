@@ -263,6 +263,25 @@ function rowboatModel() {
       const transom = mesh(new THREE.ShapeGeometry(new THREE.Shape(stern)), 0xf8fafc, { side: THREE.DoubleSide });
       transom.rotation.y = Math.PI / 2;
       b.add(at(transom, -len / 2, lift, 0));
+      // Floorboards just above the waterline, cut to the hull's shape, so the lake doesn't show inside the boat
+      // (the boat sits 0.05 below the water surface, so the surface is at y = 0.05 here)
+      const floorY = 0.13, side = [];
+      for (let i = 0; i <= nx; i++) {
+        const t = (i / nx) * 2 - 1, k = (i * (nu + 1)) * 3;
+        const top = pos[k + 1] + lift;                       // gunwale height at this station
+        const halfBeam = Math.abs(pos[k + 2]);               // hull half-width at the gunwale
+        const d = depth * (1 - 0.35 * Math.pow(Math.abs(t), 3));
+        const below = (top - floorY) / d;                    // how far down the U the floor sits
+        if (below >= 1) continue;
+        side.push([(t * len) / 2, halfBeam * Math.sqrt(1 - below * below) * 0.97]);
+      }
+      if (side.length > 2) {
+        const outline = new THREE.Shape([...side.map(([x, w]) => new THREE.Vector2(x, w)), ...side.slice().reverse().map(([x, w]) => new THREE.Vector2(x, -w))]);
+        const floor = mesh(new THREE.ShapeGeometry(outline), 0x9a6b3f, { side: THREE.DoubleSide, roughness: 0.85 });
+        floor.rotation.x = -Math.PI / 2;
+        b.add(at(floor, 0, floorY, 0));
+        for (let k = -2; k <= 2; k++) b.add(at(mesh(new THREE.BoxGeometry(len * 0.7, 0.012, 0.025), 0x7c5230), 0, floorY + 0.007, k * 0.12));
+      }
       // Thwarts (seats), oarlocks and a pair of oars
       [[-0.9, 1.3], [0.5, 1.45]].forEach(([x, w]) => b.add(at(mesh(new THREE.BoxGeometry(0.32, 0.07, w), 0xa16207), x, 0.05 + lift * 0.2, 0)));
       [-1, 1].forEach(s => {

@@ -147,7 +147,7 @@ function applySeasonLook(season = currentSeason()) {
         const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
         // Leave dug holes and the paved yard and helipad as they are (the balloon field is just grass)
         const paved = typeof inParkingArea === 'function' && inParkingArea(x, z) && !BALLOON_SLOTS.some(([bx, bz]) => Math.hypot(x - bx, z - bz) < PAD_RADIUS);
-        if ((typeof groundDugAt === 'function' && groundDugAt(x, z) > 0.05) || paved) continue;
+        if ((typeof groundDugAt === 'function' && groundDugAt(x, z) > 0.05) || (typeof dirtPileRaiseAt === 'function' && dirtPileRaiseAt(x, z) > 0.03) || paved) continue;
         c.setRGB(terrainBaseColors[i * 3], terrainBaseColors[i * 3 + 1], terrainBaseColors[i * 3 + 2]);
         if (z < 7.8 && y > line) {
           // A soft edge where the snow thins out

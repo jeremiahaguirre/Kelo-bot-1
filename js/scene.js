@@ -42,7 +42,8 @@ function getAnalyticalGroundHeight(x, z) {
       const base = z > 7.5 ? h : Math.max(-0.25, h);
       // Holes Kelo-1 has dug (js/mining.js) and the Disposal Pit (js/disposal.js) lower the ground;
       // hills he has raised (js/landscape.js) lift it
-      return base - groundDugAt(x, z) + (typeof landscapeRaiseAt === 'function' ? landscapeRaiseAt(x, z) : 0);
+      return base - groundDugAt(x, z) + (typeof landscapeRaiseAt === 'function' ? landscapeRaiseAt(x, z) : 0)
+        + (typeof dirtPileRaiseAt === 'function' ? dirtPileRaiseAt(x, z) : 0);
     }
 
 function groundDugAt(x, z) {
@@ -420,7 +421,7 @@ function refreshTerrainAround(cx, cz, radius) {
       const geo = terrainGroundMesh.geometry;
       const pos = geo.attributes.position;
       const col = geo.attributes.color;
-      const dirt = new THREE.Color(0x7a4b2a), deep = new THREE.Color(0x4a2c17);
+      const dirt = new THREE.Color(0x7a4b2a), deep = new THREE.Color(0x4a2c17), loose = new THREE.Color(0x8a5a33);
       for (let i = 0; i < pos.count; i++) {
         const vx = pos.getX(i), vz = pos.getZ(i);
         if (Math.hypot(vx - cx, vz - cz) > radius) continue;
@@ -429,6 +430,9 @@ function refreshTerrainAround(cx, cz, radius) {
         if (dug > 0.05) {
           const c = dirt.clone().lerp(deep, Math.min(1, dug / 3));
           col.setXYZ(i, c.r, c.g, c.b);
+        } else if (typeof dirtPileRaiseAt === 'function' && dirtPileRaiseAt(vx, vz) > 0.03) {
+          // Fresh loose dirt on the piles: a little lighter than the hole
+          col.setXYZ(i, loose.r, loose.g, loose.b);
         }
       }
       pos.needsUpdate = true;

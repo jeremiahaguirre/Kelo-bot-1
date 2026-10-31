@@ -64,8 +64,37 @@ function siteNear(x, z) {
       return state.digSites.find(s => Math.hypot(s.x - x, s.z - z) < 2.5) || null;
     }
 
+// The spoil pile sits beside the hole, far enough out that it doesn't slide back in
 function pileOffset(site) {
-      return { x: site.x + 2.4, z: site.z + 0.6 };
+      return { x: site.x + 4.2, z: site.z + 0.8 };
+    }
+
+// Loose dirt heaps up at its angle of repose (about 35°), so the pile's shape follows from how much
+// was dug: a cone of height h has radius h / tan 35° and volume about 2.14 h³. Dug soil fluffs up,
+// so each unit of site.dirt is about 2.7 cubic units of loose dirt.
+const PILE_FLUFF = 2.7;
+const REPOSE_SLOPE = Math.tan(35 * Math.PI / 180);
+
+function pileShape(site) {
+      const volume = Math.max(0, site.dirt || 0) * PILE_FLUFF;
+      const h = Math.cbrt(volume / 2.14);
+      return { h, r: h / REPOSE_SLOPE };
+    }
+
+// How much the dirt piles raise the ground here (used by getAnalyticalGroundHeight), so a pile
+// settles onto slopes, fills dips and grows with every shovelful
+function dirtPileRaiseAt(x, z) {
+      let total = 0;
+      for (const site of state.digSites) {
+        if (!(site.dirt > 0)) continue;
+        const { h, r } = pileShape(site);
+        if (r <= 0) continue;
+        const p = pileOffset(site);
+        const t = Math.hypot(x - p.x, z - p.z) / r;
+        // A cone with a softly rounded top and toe
+        if (t < 1) total += h * (1 - t) * (1 + 0.35 * t) * (t > 0.85 ? (1 - t) / 0.15 * 0.5 + 0.5 : 1);
+      }
+      return total;
     }
 
 function updateDirtPile3D(site) {
@@ -74,31 +103,28 @@ function updateDirtPile3D(site) {
       if (old) {
         scene.remove(old);
         old.traverse(o => { if (o.geometry) o.geometry.dispose(); });
-        worldObstacles = worldObstacles.filter(o => o !== old.userData.obstacle);
       }
-      if (site.dirt <= 0) return;
-      const { x, z } = pileOffset(site);
-      const pile = new THREE.Group();
-      const mat = new THREE.MeshStandardMaterial({ color: 0x8a5a33, roughness: 1, flatShading: true });
-      const size = 0.45 + Math.sqrt(site.dirt) * 0.45;
-      const mound = new THREE.Mesh(new THREE.ConeGeometry(size, size * 0.9, 9), mat);
-      mound.position.y = size * 0.42;
-      mound.castShadow = true;
-      pile.add(mound);
-      // Clods and rocks on the pile; more as it grows
-      const rng = makeRng(`${site.id}-${Math.floor(site.dirt)}`);
-      for (let i = 0; i < Math.min(14, 3 + site.dirt * 2); i++) {
-        const clod = new THREE.Mesh(new THREE.DodecahedronGeometry(0.08 + rng() * 0.14, 0), rng() < 0.3 ? new THREE.MeshStandardMaterial({ color: 0x8a8f9c }) : mat);
-        const a = rng() * Math.PI * 2, rr = rng() * size * 0.9;
-        clod.position.set(Math.cos(a) * rr, 0.05 + rng() * 0.15, Math.sin(a) * rr);
-        pile.add(clod);
+      const p = pileOffset(site);
+      // The pile is the ground itself: reshape the terrain around it (wide enough to cover it shrinking too)
+      refreshTerrainAround(p.x, p.z, Math.max(4.5, pileShape(site).r + 1));
+      if (!(site.dirt > 0)) return;
+      // A few clods and stones resting on the slope of the pile
+      const { r } = pileShape(site);
+      const clods = new THREE.Group();
+      const dirtMat = new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 1, flatShading: true });
+      const stoneMat = new THREE.MeshStandardMaterial({ color: 0x8a8f9c, roughness: 0.9, flatShading: true });
+      const rng = makeRng(`${site.id}-clods`);
+      for (let i = 0; i < Math.min(16, 4 + Math.floor(site.dirt * 2)); i++) {
+        const a = rng() * Math.PI * 2, rr = Math.sqrt(rng()) * r * 0.85;
+        const cx = p.x + Math.cos(a) * rr, cz = p.z + Math.sin(a) * rr;
+        const clod = new THREE.Mesh(new THREE.DodecahedronGeometry(0.07 + rng() * 0.12, 0), rng() < 0.3 ? stoneMat : dirtMat);
+        clod.position.set(cx, getAnalyticalGroundHeight(cx, cz) + 0.04, cz);
+        clod.rotation.set(rng() * 3, rng() * 3, 0);
+        clod.castShadow = true;
+        clods.add(clod);
       }
-      pile.position.set(x, getAnalyticalGroundHeight(x, z), z);
-      scene.add(pile);
-      const obstacle = { x, z, r: size * 0.9 };
-      worldObstacles.push(obstacle);
-      pile.userData.obstacle = obstacle;
-      dirtPileMeshes[site.id] = pile;
+      scene.add(clods);
+      dirtPileMeshes[site.id] = clods;
     }
 
 // Ask for missing equipment once (no duplicate letters)

@@ -6,7 +6,7 @@
 
 const STOREHOUSE = { x: 5.5, z: -6.5, w: 5.2, d: 3.6, wallH: 2.6 };
 const SHELF_SLOT = 0.68;
-const ITEM_FIT = 0.5; // largest dimension of an item on a shelf
+const ITEM_FIT = 0.62; // the most an item can measure and still fit on a shelf
 
 let storehouseGroup = null;
 let shelfItemsGroup = null;
@@ -113,13 +113,10 @@ function buildStorehouse3D() {
       renderStorehouseShelves3D();
     }
 
-// Scale a model so its largest side fits on a shelf, and sit it on the plank
+// Life size on the shelf (a screwdriver stays small, a toolbox big) unless it's too big to fit,
+// then sit it on the plank
 function fitOnShelf(model) {
-      const box = new THREE.Box3().setFromObject(model);
-      const size = new THREE.Vector3();
-      box.getSize(size);
-      const biggest = Math.max(size.x, size.y, size.z) || 1;
-      model.scale.multiplyScalar(ITEM_FIT / biggest);
+      lifeSize(model, ITEM_FIT);
       const fitted = new THREE.Box3().setFromObject(model);
       model.position.y -= fitted.min.y;
       return model;
@@ -242,9 +239,7 @@ async function fetchFromStorehouse(matchName) {
       await waitForArrival(60000);
       await new Promise(r => setTimeout(r, 1200));
       if (typeof setCarriedObject === 'function') {
-        const tool = buildItemModel3D(item.name, { label: false });
-        tool.scale.setScalar(1.6);
-        setCarriedObject(tool);
+        setCarriedObject(buildItemModel3D(item.name, { label: false }));
       }
       return item;
     }

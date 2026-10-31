@@ -180,9 +180,7 @@ async function digAt(x, z, originLabel = 'Digging') {
 
         // Dig: tool in hand, debris flying, hole deepening in steps
         if (typeof setCarriedObject === 'function') {
-          const tool = buildItemModel3D(digToolModelName(site), { label: false });
-          tool.scale.setScalar(1.6);
-          setCarriedObject(tool);
+          setCarriedObject(buildItemModel3D(digToolModelName(site), { label: false }));
         }
         state.botRotY = Math.atan2(site.x - state.botPos.x, site.z - state.botPos.z);
         state.moodTitle = site.depth >= ROCK_DEPTH ? 'Jackhammering through rock' : 'Digging into the mountain';

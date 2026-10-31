@@ -157,17 +157,17 @@ const ITEM_MODEL_RULES = [
     chisel.position.y = 0.02;
     const hose = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
       new THREE.Vector3(0, 0.8, -0.12), new THREE.Vector3(0.1, 0.55, -0.35), new THREE.Vector3(0.3, 0.1, -0.4)]), 16, 0.025, 6), new THREE.MeshStandardMaterial({ color: 0x111827 }));
-    return group(motor, cap, bar, ...grips, collar, shank, chisel, hose);
+    return realSize(group(motor, cap, bar, ...grips, collar, shank, chisel, hose));
   }],
   [/excavator|digger|backhoe/, () => excavatorModel()],
   [/dump ?truck|truck/, () => dumpTruckModel()],
   [/hot.?air balloon|balloon basket/, () => hotAirBalloonModel()],
   [/snowmobile|snow ?machine/, () => snowmobileModel()],
   [/helicopter|gyrocopter/, () => helicopterModel()],
-  [/\bskis?\b/, () => skisModel()],
-  [/snow ?shoes?/, () => snowshoesModel()],
-  [/\bkeys?\b/, () => keysModel()],
-  [/^(?!.*pick ?ax).*(\baxe\b|hatchet)/, () => axeModel()],
+  [/\bskis?\b/, () => realSize(skisModel())],
+  [/snow ?shoes?/, () => realSize(snowshoesModel())],
+  [/\bkeys?\b/, () => realSize(keysModel())],
+  [/^(?!.*pick ?ax).*(\baxe\b|hatchet)/, () => realSize(axeModel())],
   [/shovel|spade/, () => {
     // D-grip, wooden shaft, metal collar, and a pointed, slightly dished blade
     const wood = 0xa16207;
@@ -192,7 +192,7 @@ const ITEM_MODEL_RULES = [
     bladeGeo.computeVertexNormals();
     const blade = mesh(bladeGeo, 0x94a3b8, { metalness: 0.75, roughness: 0.35, side: THREE.DoubleSide });
     blade.position.y = 0.08;
-    return group(shaft, grip, gripBar, collar, blade);
+    return realSize(group(shaft, grip, gripBar, collar, blade));
   }],
   [/pick ?ax(e)?|mattock/, () => {
     // Long wooden haft with a grip, and a curved steel head: a sharp pick on one side, a chisel on the other
@@ -213,7 +213,7 @@ const ITEM_MODEL_RULES = [
     const headGeo = new THREE.ExtrudeGeometry(head, { depth: 0.05, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.008, bevelSegments: 2, curveSegments: 12 });
     headGeo.translate(0, 0, -0.025);
     const steel = mesh(headGeo, 0x94a3b8, { metalness: 0.85, roughness: 0.3 });
-    return group(haft, wrap, eye, steel);
+    return realSize(group(haft, wrap, eye, steel));
   }],
   // Things he can dig up
   [/geode|amethyst|garnet/, () => {
@@ -252,10 +252,10 @@ const ITEM_MODEL_RULES = [
     m.position.y = 0.14;
     return group(m);
   }],
-  [/cherr/, () => fruitBunch(0xb91c1c, 0.12, 5)],
-  [/apple/, () => fruitBunch(0xdc2626, 0.17, 3)],
-  [/peach|apricot/, () => fruitBunch(0xffa36c, 0.17, 3)],
-  [/blueberr|grape/, () => fruitBunch(0x3b4cca, 0.08, 9)],
+  [/cherr/, () => fruitBasket(0xb91c1c, 0.013, 30)],
+  [/apple/, () => fruitBasket(0xdc2626, 0.04, 9)],
+  [/peach|apricot/, () => fruitBasket(0xffa36c, 0.038, 9)],
+  [/blueberr|grape/, () => fruitBasket(0x3b4cca, 0.009, 60)],
   [/bread|loaf|sourdough|baguette|bun|croissant/, () => {
     const loaf = mesh(new THREE.SphereGeometry(0.3, 14, 10), 0xd6a35c);
     loaf.scale.set(1.5, 0.75, 0.9);
@@ -333,7 +333,7 @@ const ITEM_MODEL_RULES = [
     b.position.z = -0.05;
     return group(a, b);
   }],
-  [/telescope/, () => telescopeModel()],
+  [/telescope/, () => realSize(telescopeModel())],
   [/kaleidoscope|spyglass/, () => {
     const tube = mesh(new THREE.CylinderGeometry(0.07, 0.1, 0.6, 12), 0xa855f7, { metalness: 0.5 });
     tube.rotation.z = Math.PI / 2.6;
@@ -382,7 +382,7 @@ const ITEM_MODEL_RULES = [
     body.position.y = 0.05;
     return group(body);
   }],
-  [/drill/, () => cordlessDrillModel()],
+  [/drill/, () => realSize(cordlessDrillModel())],
   [/rope|cable|wire/, (lower) => {
     const coil = mesh(new THREE.TorusGeometry(0.22, 0.05, 8, 24), /wire|copper/.test(lower) ? 0xb45309 : 0xd6a35c);
     coil.rotation.x = Math.PI / 2;
@@ -432,13 +432,13 @@ const ITEM_MODEL_RULES = [
     glow.position.y = 0.24;
     return group(lamp, glow);
   }],
-  [/hammer|mallet/, () => clawHammerModel()],
-  [/wrench|spanner/, () => wrenchModel()],
-  [/pliers/, () => pliersModel()],
-  [/screwdriver/, () => screwdriverModel()],
-  [/knife/, () => knifeModel()],
-  [/\bsaw\b|handsaw/, () => handSawModel()],
-  [/multitool|iron|tool/, () => toolboxModel()],
+  [/hammer|mallet/, () => realSize(clawHammerModel())],
+  [/wrench|spanner/, () => realSize(wrenchModel())],
+  [/pliers/, () => realSize(pliersModel())],
+  [/screwdriver/, () => realSize(screwdriverModel())],
+  [/knife/, () => realSize(knifeModel())],
+  [/\bsaw\b|handsaw/, () => realSize(handSawModel())],
+  [/multitool|iron|tool/, () => realSize(toolboxModel())],
   [/canoe|kayak|boat|raft|paddle ?board/, () => rowboatModel()],
   [/bike|bicycle|scooter/, () => bicycleModel()],
   [/submarine/, () => {
@@ -518,6 +518,34 @@ const ITEM_MODEL_RULES = [
   }]
 ];
 
+// Models marked realSize (the tools in this file and js/gearmodels.js) are built in metres.
+// Kelo-1 is 2.8 units tall (about 1.75 m), so at life size they are scaled up by this much.
+// Older models (food, toys...) were drawn at a display size and stay at scale 1.
+const ITEM_LIFE_SCALE = 1.6;
+
+function realSize(model) {
+      model.userData.realSize = true;
+      return model;
+    }
+
+// Largest side of an item model, ignoring its hover label
+function itemModelSize(model) {
+      model.updateMatrixWorld(true);
+      const box = new THREE.Box3();
+      model.traverse(o => { if (o.isMesh && !(o.userData && o.userData.isLabel)) box.expandByObject(o); });
+      if (box.isEmpty()) return 1;
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      return Math.max(size.x, size.y, size.z) / (model.scale.x || 1) || 1;
+    }
+
+// Show an item at its real size next to Kelo-1, shrunk only if it won't fit in `maxSize`
+function lifeSize(model, maxSize = Infinity) {
+      const life = model.userData.realSize ? ITEM_LIFE_SCALE : 1;
+      model.scale.setScalar(Math.min(life, maxSize / itemModelSize(model)));
+      return model;
+    }
+
 function mesh(geometry, color, extra = {}) {
       const m = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color, roughness: 0.55, ...extra }));
       m.castShadow = true;
@@ -538,6 +566,21 @@ function extruded(points, depth, color) {
       m.rotation.x = -Math.PI / 2;
       m.position.y = depth / 2;
       return m;
+    }
+
+// Real-size fruit heaped in a small woven basket (built in metres)
+function fruitBasket(color, radius, count) {
+      const wicker = mesh(new THREE.LatheGeometry([[0, 0], [0.09, 0], [0.13, 0.03], [0.15, 0.09], [0.145, 0.09], [0.125, 0.032], [0, 0.006]].map(([r, y]) => new THREE.Vector2(r, y)), 18), 0xb7793e, { roughness: 1, side: THREE.DoubleSide });
+      const handle = mesh(new THREE.TorusGeometry(0.14, 0.008, 6, 20, Math.PI), 0x8a5a2b);
+      handle.position.y = 0.09;
+      const g = group(wicker, handle);
+      for (let i = 0; i < count; i++) {
+        const a = i * 2.4, ring = Math.sqrt(i / count) * (0.12 - radius);
+        const fruit = mesh(new THREE.SphereGeometry(radius, 10, 8), color, { roughness: 0.4 });
+        fruit.position.set(Math.cos(a) * ring, 0.07 + radius + (1 - i / count) * radius * 1.4, Math.sin(a) * ring);
+        g.add(fruit);
+      }
+      return realSize(g);
     }
 
 function fruitBunch(color, radius, count, palette = null) {
@@ -771,7 +814,7 @@ function renderPostOfficeParcels3D() {
       state.mailbox.slice(0, 6).forEach((m, i) => {
         const model = buildItemModel3D(m.kind === 'message' ? 'Letter' : m.name, { kind: m.kind, thumb: m.thumbs && m.thumbs[0] });
         model.position.set(-0.9 + (i % 3) * 0.9, 0, i < 3 ? 0.15 : -0.3);
-        model.scale.setScalar(0.85);
+        lifeSize(model, 0.8);
         parcelDisplayGroup.add(model);
       });
     }
@@ -800,6 +843,8 @@ function setCarriedObject(object3d, holdMs = 0) {
         carriedObject.traverse(o => { if (o.geometry) o.geometry.dispose(); });
       }
       carriedObject = object3d || null;
+      // Anything not already sized is held at life size, up to an armful
+      if (carriedObject && carriedObject.scale.x === 1) lifeSize(carriedObject, 1.4);
       carriedUntil = holdMs > 0 ? Date.now() + holdMs : 0;
       if (carriedObject && keloGroup) {
         carriedObject.traverse(o => { if (o.userData && o.userData.isLabel) o.visible = false; });

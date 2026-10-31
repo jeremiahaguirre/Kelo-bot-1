@@ -152,7 +152,7 @@ async function disposeItem(name, why = '', originLabel = 'Clearing Things Out') 
           renderAllUI();
           if (typeof setCarriedObject === 'function') setCarriedObject(null);
           const thrown = buildItemModel3D(item, { label: false });
-          thrown.scale.setScalar(1.6);
+          lifeSize(thrown, 1.4);
           await dropIntoPit(thrown, { x: state.botPos.x + Math.sin(state.botRotY) * 0.6, y: getIslandGroundHeight(state.botPos.x, state.botPos.z) + 1.1, z: state.botPos.z + Math.cos(state.botRotY) * 0.6 });
         }
         forgetItem(item);

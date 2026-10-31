@@ -39,7 +39,8 @@ function renderAllUI() {
 
       document.getElementById('bubbleMoodEmoji').textContent = state.moodEmoji;
       document.getElementById('bubbleMoodTitle').textContent = stripCoords(state.moodTitle);
-      document.getElementById('bubbleAutonomyTag').textContent = state.autonomyTag;
+      // Where he is right now (the reason he came is in the title and speech)
+      document.getElementById('bubbleAutonomyTag').textContent = `📍 ${stripCoords(activePlaceLabel)}`.slice(0, 40);
       document.getElementById('bubbleSpeech').textContent = `"${stripCoords(state.speechBubble)}"`;
 
       const ripe = state.gardenPlots.filter(p => p.growth >= 80).length;
@@ -369,7 +370,7 @@ function renderWebTastesTab() {
 
       // Emergent Unscripted Actions & 3D Creations Invented by Kelo-1
       const invBadge = document.getElementById('inventedCountBadge');
-      if (invBadge) invBadge.textContent = `${state.inventedCreations.length} Created in 3D`;
+      if (invBadge) invBadge.textContent = `${state.inventedCreations.length} built`;
       const invEl = document.getElementById('inventedActionsContainer');
       if (invEl) {
         invEl.innerHTML = state.inventedCreations.map((c, idx) => `
@@ -591,15 +592,6 @@ window.addEventListener('DOMContentLoaded', () => {
     e.currentTarget.querySelector('span').textContent = state.roofCutaway ? 'Roofs: Cutaway' : 'Roofs: Solid';
   });
 
-  // Quick gifts go through the post office like everything else; he picks them up when he chooses
-  document.querySelectorAll('.quick-gift-pill').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const gift = btn.getAttribute('data-gift');
-      const from = (document.getElementById('visitorNameInput').value || 'curiousWanderer').trim();
-      postMail({ kind: 'gift', from, name: gift, category: categorizeItem(gift), note: '' });
-    });
-  });
-
   // Right-hand menu: tabs (remembered between visits), open/close, Esc to close
   const TAB_ACTIVE = 'inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold bg-amber-500/20 text-amber-200 transition';
   const TAB_IDLE = 'inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition';
@@ -624,6 +616,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const scrim = document.getElementById('sideMenuScrim');
   const setMenuOpen = (open) => {
     sideMenu.classList.toggle('translate-x-full', !open);
+    document.body.classList.toggle('menu-open', open);
     sideMenu.setAttribute('aria-hidden', String(!open));
     menuButton.setAttribute('aria-expanded', String(open));
     scrim.classList.toggle('hidden', !open);

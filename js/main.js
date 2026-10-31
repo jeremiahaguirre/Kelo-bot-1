@@ -440,7 +440,13 @@ function renderWebTastesTab() {
           ? `Wants to look up: ${state.curiosityQueue.slice(0, 4).join(' • ')}`
           : 'No list right now; he will follow whatever catches his interest.';
       }
-      const safeWikiUrl = (url) => (typeof url === 'string' && url.startsWith('https://en.wikipedia.org/wiki/')) ? url : null;
+      // Links only to the reference sites he reads, over https (never javascript: or anything else)
+      const safeWikiUrl = (url) => {
+        try {
+          const u = new URL(url);
+          return u.protocol === 'https:' && ['en.wikipedia.org', 'en.wiktionary.org', 'duckduckgo.com'].includes(u.hostname) ? u.href : null;
+        } catch (e) { return null; }
+      };
       document.getElementById('webHistoryList').innerHTML = state.webHistory.map(w => `
         <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
           <div class="flex justify-between gap-2 font-mono text-[10px] text-sky-300">

@@ -3,9 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Security: the page may only run scripts from these CDNs and its own files, and only talk to the AI
+       and lookup services it uses (GitHub Pages can't send headers, so the policy lives here) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file: https://cdn.tailwindcss.com https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' file: 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' file: data: https://unpkg.com https://cdn.jsdelivr.net https://fonts.gstatic.com; img-src 'self' file: data: blob:; connect-src 'self' file: https://generativelanguage.googleapis.com https://api.anthropic.com https://en.wikipedia.org https://en.wiktionary.org https://api.duckduckgo.com https://jeremiahaguirre.github.io https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <title>Kelo-1 — Autonomous 3D Kelowna Island & AI Agent</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <link rel="stylesheet" href="./css/style.css" />

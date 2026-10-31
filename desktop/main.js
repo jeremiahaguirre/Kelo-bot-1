@@ -2,9 +2,31 @@
 // Loads the same web files the GitHub Pages site uses, adds a native Settings menu,
 // and keeps API keys encrypted with the operating system's protection (Windows DPAPI).
 
-const { app, BrowserWindow, Menu, ipcMain, safeStorage, shell } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, safeStorage, shell, session } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { pathToFileURL } = require('url');
+
+// The app's own pages (index.html, shop.html...) live in this folder; nothing else is trusted
+const APP_DIR = path.join(__dirname, '..');
+const APP_URL_PREFIX = pathToFileURL(APP_DIR + path.sep).href;
+const MAX_MEMORY_ITEM_BYTES = 256 * 1024 * 1024;
+
+// Only answer requests that come from the app's own page in its own window
+function fromAppPage(event) {
+  const url = event.senderFrame ? event.senderFrame.url : '';
+  return typeof url === 'string' && url.startsWith(APP_URL_PREFIX);
+}
+
+// Only https links leave the app, and only to the normal browser
+function openExternalSafely(url) {
+  try {
+    if (new URL(url).protocol === 'https:') shell.openExternal(url);
+  } catch (e) {}
+}
+
+// One copy of the app at a time, so two windows never write his memory at once
+if (!app.requestSingleInstanceLock()) app.quit();
 
 const KEYS_FILE = () => path.join(app.getPath('userData'), 'api-keys.bin');
 
@@ -35,13 +57,15 @@ function memoryUsage() {
 }
 
 ipcMain.on('kelo:memory-get', (event, key) => {
+  if (!fromAppPage(event)) { event.returnValue = null; return; }
   const file = memoryFile(key);
   try { event.returnValue = file && fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null; } catch (e) { event.returnValue = null; }
 });
 
 ipcMain.on('kelo:memory-set', (event, key, value) => {
-  const file = memoryFile(key);
+  const file = fromAppPage(event) ? memoryFile(key) : null;
   if (!file || typeof value !== 'string') { event.returnValue = { ok: false, error: 'invalid' }; return; }
+  if (Buffer.byteLength(value, 'utf8') > MAX_MEMORY_ITEM_BYTES) { event.returnValue = { ok: false, error: 'too-large' }; return; }
   const name = path.basename(file);
   const bytes = Buffer.byteLength(value, 'utf8');
   if (memoryUsage() - (memorySizes.get(name) || 0) + bytes > MEMORY_QUOTA_BYTES) {
@@ -60,24 +84,30 @@ ipcMain.on('kelo:memory-set', (event, key, value) => {
 });
 
 ipcMain.on('kelo:memory-remove', (event, key) => {
-  const file = memoryFile(key);
+  const file = fromAppPage(event) ? memoryFile(key) : null;
   try { if (file && fs.existsSync(file)) fs.unlinkSync(file); memorySizes.delete(path.basename(file || '')); } catch (e) {}
   event.returnValue = true;
 });
 
 ipcMain.on('kelo:memory-keys', (event) => {
+  if (!fromAppPage(event)) { event.returnValue = []; return; }
   event.returnValue = [...memorySizes.keys()].map(n => n.replace(/\.json$/, ''));
 });
 
 ipcMain.on('kelo:memory-usage', (event) => {
+  if (!fromAppPage(event)) { event.returnValue = null; return; }
   event.returnValue = { used: memoryUsage(), quota: MEMORY_QUOTA_BYTES };
 });
 const ALLOWED_KEYS = ['gemini', 'anthropic'];
+// If the system can't encrypt (rare), keys are kept in memory for this session only, never written in plain text
+let sessionOnlyKeys = null;
 
 function readKeys() {
+  if (sessionOnlyKeys) return { ...sessionOnlyKeys };
   try {
+    if (!safeStorage.isEncryptionAvailable()) return { gemini: '', anthropic: '' };
     const raw = fs.readFileSync(KEYS_FILE());
-    const json = safeStorage.isEncryptionAvailable() ? safeStorage.decryptString(raw) : raw.toString('utf8');
+    const json = safeStorage.decryptString(raw);
     const parsed = JSON.parse(json);
     return Object.fromEntries(ALLOWED_KEYS.map(k => [k, typeof parsed[k] === 'string' ? parsed[k] : '']));
   } catch (e) {
@@ -87,9 +117,18 @@ function readKeys() {
 
 function writeKeys(keys) {
   const clean = Object.fromEntries(ALLOWED_KEYS.map(k => [k, typeof keys?.[k] === 'string' ? keys[k].trim().slice(0, 300) : '']));
-  const json = JSON.stringify(clean);
-  const data = safeStorage.isEncryptionAvailable() ? safeStorage.encryptString(json) : Buffer.from(json, 'utf8');
-  fs.writeFileSync(KEYS_FILE(), data, { mode: 0o600 });
+  if (!safeStorage.isEncryptionAvailable()) {
+    sessionOnlyKeys = clean;
+    try { fs.unlinkSync(KEYS_FILE()); } catch (e) {}
+    return true;
+  }
+  const empty = ALLOWED_KEYS.every(k => !clean[k]);
+  if (empty) {
+    // Removing every key deletes the key file altogether
+    try { fs.unlinkSync(KEYS_FILE()); } catch (e) {}
+    return true;
+  }
+  fs.writeFileSync(KEYS_FILE(), safeStorage.encryptString(JSON.stringify(clean)), { mode: 0o600 });
   return true;
 }
 
@@ -106,21 +145,27 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true
+      sandbox: true,
+      webviewTag: false,
+      spellcheck: false
     }
   });
 
   // Links (Wikipedia articles, GitHub) open in the normal browser, never inside the app
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (/^https:\/\//.test(url)) shell.openExternal(url);
+    // His own shop page opens in a window of its own; everything else goes to the normal browser
+    if (url.startsWith(APP_URL_PREFIX)) return { action: 'allow', overrideBrowserWindowOptions: { webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true } } };
+    openExternalSafely(url);
     return { action: 'deny' };
   });
   win.webContents.on('will-navigate', (event, url) => {
-    if (!url.startsWith('file://')) {
+    // Only the app's own files may load in the window
+    if (!url.startsWith(APP_URL_PREFIX)) {
       event.preventDefault();
-      if (/^https:\/\//.test(url)) shell.openExternal(url);
+      openExternalSafely(url);
     }
   });
+  win.webContents.on('will-attach-webview', (event) => event.preventDefault());
 
   const menu = Menu.buildFromTemplate([
     {
@@ -152,10 +197,18 @@ function createWindow() {
   win.loadFile(path.join(__dirname, '..', 'index.html'));
 }
 
-ipcMain.handle('kelo:get-keys', () => readKeys());
-ipcMain.handle('kelo:set-keys', (_event, keys) => writeKeys(keys));
+ipcMain.handle('kelo:get-keys', (event) => (fromAppPage(event) ? readKeys() : { gemini: '', anthropic: '' }));
+ipcMain.handle('kelo:set-keys', (event, keys) => (fromAppPage(event) ? writeKeys(keys) : false));
+
+app.on('second-instance', () => {
+  const win = BrowserWindow.getAllWindows()[0];
+  if (win) { if (win.isMinimized()) win.restore(); win.focus(); }
+});
 
 app.whenReady().then(() => {
+  // The game never needs the camera, microphone, location or notifications: refuse every request
+  session.defaultSession.setPermissionRequestHandler((_wc, _permission, callback) => callback(false));
+  session.defaultSession.setPermissionCheckHandler(() => false);
   loadMemorySizes();
   createWindow();
   app.on('activate', () => {

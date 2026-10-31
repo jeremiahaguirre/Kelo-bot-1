@@ -1147,7 +1147,8 @@ function loadPersistentBrainState() {
         const saved = JSON.parse(raw);
         // Restore everything that was saved, as long as it has the same shape as today's state
         Object.keys(saved).forEach(k => {
-          if (!(k in state) || TRANSIENT_STATE_KEYS.has(k)) return;
+          // Only his own fields (never inherited names like __proto__), and never the moment-to-moment ones
+          if (!Object.prototype.hasOwnProperty.call(state, k) || TRANSIENT_STATE_KEYS.has(k)) return;
           const cur = state[k], val = saved[k];
           if (Array.isArray(cur) ? Array.isArray(val)
             : (cur && typeof cur === 'object') ? (val && typeof val === 'object' && !Array.isArray(val))

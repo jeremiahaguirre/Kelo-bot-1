@@ -1079,6 +1079,8 @@ Return ONLY valid JSON matching this schema:
 
 async function directKeloToActivity(locKey, customReason = '', originLabel = 'Suggested Whim') {
     if (state.isBusy || state.isBuilding || state.isPracticing) return;
+    // Mid mail run he finishes opening his parcels before wandering off (a pin, a note, a repo idea)
+    if (state.isCollectingMail && locKey !== 'post_office') return;
     const loc = TOWN_LOCATIONS[locKey];
     if (!loc) return;
 
@@ -1764,7 +1766,8 @@ function applyDecision(decision, originLabel) {
       if (dest && typeof dest === 'object' && Number(dest.z) > 9.5 && typeof wadeIntoLake === 'function') {
         // Somewhere out on the lake: by boat if he has one, otherwise he finds out about deep water
         doWhenFree(() => wadeIntoLake('Wanted to Go Out on the Lake'));
-      } else if (dest && typeof dest === 'object') {
+      } else if (dest && typeof dest === 'object' && !state.isCollectingMail) {
+        // (Reacting to a parcel mid mail run, he stays at the post office until it's all opened)
         const x = Math.round(clampNumber(dest.x, WORLD_MIN_X, WORLD_MAX_X, state.botPos.x) * 10) / 10;
         const z = Math.round(clampNumber(dest.z, WORLD_MIN_Z, WORLD_MAX_Z, state.botPos.z) * 10) / 10;
         state.targetPos = { x, z };

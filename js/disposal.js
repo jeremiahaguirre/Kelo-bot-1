@@ -75,6 +75,12 @@ function forgetItem(name) {
       drop(state.unstoredItems, n => n === name);
       drop(state.vehicles, v => v.name === name);
       state.hobbies.forEach(h => { if (h.tool === name) delete h.tool; });
+      // Gone from every list on screen too: the opened-gifts log, his finds, and the letters he wrote for it
+      // (finds keep their id so he never digs the same one up twice)
+      drop(state.giftLog, g => g.name === name);
+      const find = state.foundItems.find(f => f.name === name && !f.disposed);
+      if (find) find.disposed = true;
+      drop(state.requestsToUser, r => r.fulfilled && !r.declined && r.requestedGear === name);
       if (typeof renderStorehouseShelves3D === 'function') renderStorehouseShelves3D();
       if (typeof renderVehicles3D === 'function') renderVehicles3D();
     }

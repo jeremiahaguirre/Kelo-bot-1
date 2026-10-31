@@ -389,7 +389,7 @@ function renderMiningUI() {
             ${missing ? `<div class="text-[10px] text-rose-300">Needs ${escapeHtml(TOOL_NEEDS[missing].ask.toLowerCase())} to continue</div>` : ''}
           </div>`;
       }).join('');
-      const finds = state.foundItems.map(f => `<span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-100 text-[10px]">${escapeHtml(f.emoji)} ${escapeHtml(f.name)}</span>`).join('');
+      const finds = state.foundItems.filter(f => !f.disposed).map(f => `<span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-100 text-[10px]">${escapeHtml(f.emoji)} ${escapeHtml(f.name)}</span>`).join('');
       const gear = ['dig', 'rock', 'truck', 'excavator'].map(k => `<span class="px-2 py-0.5 rounded-lg text-[10px] font-mono ${hasEquipment(k) ? 'bg-emerald-500/15 text-emerald-200' : 'bg-slate-800 text-slate-500'}">${hasEquipment(k) ? '✓' : '✗'} ${escapeHtml(TOOL_NEEDS[k].ask.replace(/^an? (sturdy )?/i, ''))}</span>`).join('');
       el.innerHTML = `
         <div class="flex flex-wrap gap-1">${gear}</div>

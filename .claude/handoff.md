@@ -12,6 +12,12 @@ Everything he gets (tools, vehicles, seeds, materials) arrives **only** through 
 He may change the world freely. He can never move or change the buildings, and he can't build new ones.
 
 ## Recently shipped (on `main`, pushed)
+- **#26 Tools work only as intended** (`js/knowhow.js`).
+  - `GEAR_KNOWHOW` lists each tool and vehicle with its Wikipedia page, a how-to line and its fuel. `state.knowHow[key]` is set by `learnToUse()` (a NetNode trip).
+  - `readyToOperate(name, v)` gates digging, hauling, boating and long rides; `{ quiet: true }` checks without fixing anything.
+  - Fuel: new vehicles have `fuel: 0` (older saves count as full), `burnFuel()` runs after each drive, `requestFuel()` asks for the right kind, and `receiveFuel()`/`refuelWith()` handle a delivery.
+  - Telescope: `stargaze()` shows stars only at night.
+- **#25 graphics and UI/UX, rounds 2 and 3.** Collapsible Brain tab sections, plainer labels, and real-size food, toys and instruments (`js/everydaymodels.js`).
 - **Detailed vehicles and tools** (`js/gearmodels.js`).
   - Vehicles are built at real size around Kelo-1 (about 2.8 units tall, sitting 0.3 above his feet). `miniature()` wraps them for the counter, and vehicles.js sets `userData.mini` back to scale 1.
   - `userData.seat` is where he sits, `boardingSpot()` is the driver's door, and the truck's `bed` tips. The excavator's `house` and `boom` swing, and the helicopter `rotor` spins.
@@ -71,17 +77,6 @@ He may change the world freely. He can never move or change the buildings, and h
 - Check that every test run finishes with no page errors.
 
 ## Exact next steps (open tasks)
-1. **More #25 polish.** The user asked not to forget graphics and UI/UX.
-   - Ideas: icons on the tab buttons, the long Brain tab (collapse sections), the GitHub tab's relevance, and the World tab chips ("0 Core Opinions").
-   - Graphics: more of the old basic-shape items (food, toys, instruments) as real-size models marked with `realSize`.
-2. *(this slot was the vehicle and tool models, now done)*
-3. **#26 Tools work only as intended.**
-   - Each tool or vehicle needs a "how to use it" note learned by researching at the NetNode before he can use it.
-   - He must climb in and operate a vehicle before it does anything.
-   - Add prerequisites:
-     - telescope: stars only, and only at night
-     - hot-air balloon: fill the propane tank first
-     - vehicles: need fuel
 4. **#21 Seasons and snow.**
    - Show seasonal visuals, including snow cover in winter.
    - In snow he sinks and gets stuck, then works it out: research leads to a request, and the visitor gifts the solution (snowshoes, skis, snowmobile or helicopter).

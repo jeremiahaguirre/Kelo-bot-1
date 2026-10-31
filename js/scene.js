@@ -416,10 +416,13 @@ function refreshTerrainAround(cx, cz, radius) {
         const dug = groundDugAt(vx, vz);
         if (dug > 0.05) {
           const c = dirt.clone().lerp(deep, Math.min(1, dug / 3));
+          if (typeof mottleGround === 'function') mottleGround(c, vx, vz);
           col.setXYZ(i, c.r, c.g, c.b);
         } else if (typeof dirtPileRaiseAt === 'function' && dirtPileRaiseAt(vx, vz) > 0.03) {
           // Fresh loose dirt on the piles: a little lighter than the hole
-          col.setXYZ(i, loose.r, loose.g, loose.b);
+          const c = loose.clone();
+          if (typeof mottleGround === 'function') mottleGround(c, vx, vz, 0.1);
+          col.setXYZ(i, c.r, c.g, c.b);
         }
       }
       pos.needsUpdate = true;
@@ -1246,13 +1249,14 @@ function buildCreationGroup(creation) {
           m.rotation.set(p.rx || 0, p.ry || 0, p.rz || 0);
           m.castShadow = true;
           if (p.spin) m.userData.spin = true;
+          m.userData.part = p; // read by finishCreationLook (js/materials.js)
           g.add(m);
         });
       } else if (archetype === 'gold_drill_rig') {
         // Autonomous Mountain Gold Drilling Derrick & Extracted Gold Nuggets!
         const frameMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.75, roughness: 0.28 });
         const steelMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.85, roughness: 0.2 });
-        const derrick = new THREE.Mesh(new THREE.ConeGeometry(0.65, 2.2, 4), frameMat);
+        const derrick = withPaint(new THREE.Mesh(new THREE.ConeGeometry(0.65, 2.2, 4), frameMat), 'painted');
         derrick.position.y = 1.1;
         const drillBit = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.03, 1.9, 8), steelMat);
         drillBit.position.y = 0.95;
@@ -1261,7 +1265,7 @@ function buildCreationGroup(creation) {
         // Gleaming gold ore nuggets unearthed around the drill hole
         const goldMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.95, roughness: 0.12, emissive: 0xca8a04, emissiveIntensity: 0.25 });
         for (let n = 0; n < 5; n++) {
-          const nugget = new THREE.Mesh(new THREE.DodecahedronGeometry(0.18 + (n % 2) * 0.07, 0), goldMat);
+          const nugget = withPaint(new THREE.Mesh(new THREE.DodecahedronGeometry(0.18 + (n % 2) * 0.07, 0), goldMat), 'nugget');
           const ang = (n / 5) * Math.PI * 2;
           nugget.position.set(Math.cos(ang) * 0.72, 0.16, Math.sin(ang) * 0.72);
           nugget.castShadow = true;
@@ -1272,7 +1276,7 @@ function buildCreationGroup(creation) {
         const tieMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.9 });
         const railMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.85, roughness: 0.2 });
         for (let t = -3; t <= 3; t++) {
-          const tie = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.08, 0.18), tieMat);
+          const tie = withPaint(new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.08, 0.18), tieMat), 'wood');
           tie.position.set(0, 0.05, t * 0.36);
           g.add(tie);
         }
@@ -1282,13 +1286,17 @@ function buildCreationGroup(creation) {
         railR.position.set(0.36, 0.12, 0);
         const cart = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.45, 0.85), new THREE.MeshStandardMaterial({ color: col, metalness: 0.6 }));
         cart.position.set(0, 0.42, 0);
-        g.add(railL, railR, cart);
+        // A bed of gravel ballast under the ties
+        const ballast = withPaint(new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.04, 2.7), new THREE.MeshStandardMaterial({ color: 0xffffff })), 'gravel');
+        ballast.position.y = 0.01;
+        g.add(railL, railR, cart, ballast);
       } else if (archetype === 'mycelium_dome') {
         // Self-healing fungal mycelium & copper thermal chamber
         const dome = new THREE.Mesh(
           new THREE.SphereGeometry(0.85, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.6),
           new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.85 })
         );
+        dome.userData.finish = 'mycelium';
         dome.position.y = 0.05;
         const copperCoil = new THREE.Mesh(
           new THREE.TorusGeometry(0.65, 0.06, 10, 24),
@@ -1298,12 +1306,15 @@ function buildCreationGroup(creation) {
         copperCoil.position.y = 0.45;
         g.add(dome, copperCoil);
       } else if (archetype === 'cairn') {
-        // Stacked balanced river stones
+        // Stacked balanced river stones, each its own shade of real rock (the top one in his chosen colour)
+        const rockShades = [0x9a948a, 0x7d7a74, 0xa89f91];
         for (let i = 0; i < 4; i++) {
-          const stone = new THREE.Mesh(
-            new THREE.DodecahedronGeometry(0.36 - i * 0.06, 1),
-            new THREE.MeshStandardMaterial({ color: i === 3 ? col : 0x94a3b8, roughness: 0.75, flatShading: true })
-          );
+          const geo = new THREE.DodecahedronGeometry(0.36 - i * 0.06, 1);
+          if (typeof roughenGeometry === 'function') roughenGeometry(geo, 0.08, i + 1);
+          const stone = withPaint(new THREE.Mesh(
+            geo,
+            new THREE.MeshStandardMaterial({ color: i === 3 ? col : rockShades[i], roughness: 0.75 })
+          ), 'riverstone');
           stone.position.y = 0.2 + i * 0.34;
           stone.scale.set(1.2, 0.65, 1.0);
           stone.castShadow = true;
@@ -1313,13 +1324,15 @@ function buildCreationGroup(creation) {
         // Warm glowing ember ring or lantern beacon
         const base = new THREE.Mesh(
           new THREE.CylinderGeometry(0.48, 0.58, 0.18, 8),
-          new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.85 })
+          new THREE.MeshStandardMaterial({ color: 0x8a8580, roughness: 0.85 })
         );
+        base.userData.finish = 'stone';
         base.position.y = 0.1;
         const crystal = new THREE.Mesh(
           new THREE.OctahedronGeometry(0.32, 0),
           new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.65, roughness: 0.2 })
         );
+        crystal.userData.finish = 'glow';
         crystal.position.y = 0.65;
         crystal.userData.spin = true;
         const light = new THREE.PointLight(col, 0.9, 6);
@@ -1331,20 +1344,31 @@ function buildCreationGroup(creation) {
           new THREE.CylinderGeometry(0.09, 0.14, 1.4, 7),
           new THREE.MeshStandardMaterial({ color: 0x5c4033, roughness: 0.9 })
         );
+        stem.userData.finish = 'bark';
         stem.position.y = 0.7;
         const bloom = new THREE.Mesh(
           new THREE.TorusKnotGeometry(0.26, 0.07, 36, 8),
           new THREE.MeshStandardMaterial({ color: col, roughness: 0.4 })
         );
+        bloom.userData.finish = 'petal';
         bloom.position.y = 1.5;
         bloom.userData.spin = true;
         g.add(stem, bloom);
+        // Two leaves sprouting from the stem
+        [-1, 1].forEach(s => {
+          const leaf = withPaint(new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 6), new THREE.MeshStandardMaterial({ color: 0x3f9b35 })), 'leaf');
+          leaf.scale.set(1, 0.18, 0.45);
+          leaf.position.set(s * 0.2, 0.75 + (s > 0 ? 0.25 : 0), 0);
+          leaf.rotation.z = s * 0.5;
+          g.add(leaf);
+        });
       } else {
         // 'kinetic_spire' — improvised titanium/scrap sculpture that catches the wind
         const pedestal = new THREE.Mesh(
           new THREE.CylinderGeometry(0.35, 0.42, 0.3, 8),
           new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.6, roughness: 0.4 })
         );
+        pedestal.userData.finish = 'iron';
         pedestal.position.y = 0.15;
         const spire = new THREE.Mesh(
           new THREE.TorusKnotGeometry(0.28, 0.06, 48, 8, 2, 3),
@@ -1361,7 +1385,16 @@ function buildCreationGroup(creation) {
         g.add(pedestal, spire, ring);
       }
 
+      // Real materials: brushed or weathered metal, wood grain, stone, glowing glass, leaves (js/materials.js).
+      // Item designs built from parts (no title or archetype) get their look from applyMaterialLook instead.
+      if ((creation.title || creation.archetype || creation.printed) && typeof finishCreationLook === 'function') finishCreationLook(g, creation);
       return g;
+    }
+
+// Tag a mesh with the finish finishCreationLook should give it
+function withPaint(m, finish) {
+      m.userData.finish = finish;
+      return m;
     }
 
 function spawnEmergent3DObjectInWorld(creation, skipPin = false) {

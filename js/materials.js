@@ -577,3 +577,382 @@ function tastesSummaryForAI() {
       return `you like ${likes.join(' and ') || 'nothing in particular yet'} flavours${dislikes.length ? `, you are not keen on ${dislikes.join(' or ')}` : ''}`
         + `${fav.length ? `; favourites so far: ${fav.join(', ')}` : ''}; last thing you ate: ${last.food} (${last.note})`;
     }
+
+// --- Realistic looks for everything he builds or changes ---------------------------------------
+// The textures above shade an item's own colour. These looks go further for his own work: welded
+// sculptures, real builds, roads, stumps, plantings, prints and dirt. Each "finish" is one surface:
+// how rough and metallic it is, a small shared texture (used for colour and for bumps), and for
+// shiny things the sky reflection. Textures and geometry helpers are made once and shared.
+const FINISHES = {
+  steel:     { roughness: 0.36, metalness: 0.85, texture: 'patina', bump: 0.012, reflect: 1 },
+  iron:      { roughness: 0.62, metalness: 0.7, texture: 'patina', bump: 0.02, reflect: 0.7 },
+  rust:      { roughness: 0.85, metalness: 0.3, texture: 'rust', bump: 0.03, reflect: 0.3 },
+  copper:    { roughness: 0.3, metalness: 0.9, texture: 'brushed', bump: 0.006, reflect: 1 },
+  brass:     { roughness: 0.28, metalness: 0.9, texture: 'brushed', bump: 0.006, reflect: 1 },
+  gold:      { roughness: 0.22, metalness: 0.95, texture: 'brushed', bump: 0.004, reflect: 1.1 },
+  nugget:    { roughness: 0.35, metalness: 0.9, texture: 'stone', bump: 0.05, reflect: 1 },
+  painted:   { roughness: 0.42, metalness: 0.25, texture: 'patina', bump: 0.006, reflect: 0.6 }, // powder-coated steel
+  weld:      { roughness: 0.55, metalness: 0.75, texture: 'bead', bump: 0.05, reflect: 0.8 },
+  wood:      { roughness: 0.72, metalness: 0, texture: 'wood', bump: 0.02 },
+  paintedwood: { roughness: 0.6, metalness: 0, texture: 'wood', bump: 0.012 },
+  bark:      { roughness: 0.95, metalness: 0, texture: 'bark', bump: 0.06 },
+  rings:     { roughness: 0.85, metalness: 0, texture: 'rings', bump: 0.02 },
+  stone:     { roughness: 0.9, metalness: 0, texture: 'stone', bump: 0.05, smooth: true },
+  riverstone: { roughness: 0.62, metalness: 0, texture: 'stone', bump: 0.025, smooth: true },
+  marble:    { roughness: 0.32, metalness: 0, texture: 'marble', bump: 0.004, reflect: 0.35 },
+  glow:      { roughness: 0.12, metalness: 0.05, reflect: 1.2, glow: 0.9 }, // lantern glass lit from inside
+  leaf:      { roughness: 0.7, metalness: 0, texture: 'leaf', bump: 0.04 },
+  petal:     { roughness: 0.55, metalness: 0, texture: 'leaf', bump: 0.01 },
+  mycelium:  { roughness: 0.9, metalness: 0, texture: 'fibres', bump: 0.04 },
+  soil:      { roughness: 1, metalness: 0, texture: 'soil', bump: 0.07, smooth: true },
+  seed:      { roughness: 0.8, metalness: 0, texture: 'soil', bump: 0.05 },
+  gravel:    { roughness: 0.95, metalness: 0, texture: 'gravel', bump: 0.06 },
+  printed:   { roughness: 0.48, metalness: 0.02, texture: 'layers', bump: 0.006 },
+  nylon:     { roughness: 0.6, metalness: 0, texture: 'weave', bump: 0.01 },
+  wicker:    { roughness: 0.9, metalness: 0, texture: 'wicker', bump: 0.05 }
+};
+
+// More textures: same rules as above (near-white, made once, 64-128px)
+function finishTexture(kind) {
+      const key = 'f-' + kind;
+      if (MATERIAL_TEXTURES[key]) return MATERIAL_TEXTURES[key];
+      if (/^(wood|wood-v|brushed|weave)$/.test(kind)) return materialTexture(kind);
+      const size = 128;
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      let seed = 11 + kind.length * 31;
+      const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+      const grey = (g, a = 1) => `rgba(${g},${g},${g},${a})`;
+      // Soft blotches that wrap around the edges, so the texture tiles without seams
+      const blotches = (n, rMin, rMax, gMin, gMax, alpha) => {
+        for (let i = 0; i < n; i++) {
+          const x = rnd() * size, y = rnd() * size, r = rMin + rnd() * (rMax - rMin), g = gMin + Math.floor(rnd() * (gMax - gMin));
+          [-size, 0, size].forEach(ox => [-size, 0, size].forEach(oy => {
+            const grad = ctx.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, r);
+            grad.addColorStop(0, grey(g, alpha));
+            grad.addColorStop(1, grey(g, 0));
+            ctx.fillStyle = grad;
+            ctx.fillRect(x + ox - r, y + oy - r, r * 2, r * 2);
+          }));
+        }
+      };
+      const specks = (n, gMin, gMax, sMax) => {
+        for (let i = 0; i < n; i++) {
+          ctx.fillStyle = grey(gMin + Math.floor(rnd() * (gMax - gMin)));
+          const s = 0.6 + rnd() * sMax;
+          ctx.fillRect(rnd() * size, rnd() * size, s, s);
+        }
+      };
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+      if (kind === 'patina') {
+        // Brushed steel with soft heat marks and handling smudges
+        ctx.drawImage(materialTexture('brushed').image, 0, 0);
+        blotches(14, 10, 30, 175, 215, 0.35);
+      } else if (kind === 'rust') {
+        // Weathered steel: blotchy, pitted and flaky
+        ctx.fillStyle = grey(225);
+        ctx.fillRect(0, 0, size, size);
+        blotches(30, 6, 24, 150, 255, 0.5);
+        specks(900, 120, 200, 1.6);
+      } else if (kind === 'bead') {
+        // A weld bead: overlapping ripples like a row of fish scales
+        for (let y = 0; y < size + 8; y += 6) {
+          for (let x = -8; x < size + 8; x += 10) {
+            ctx.strokeStyle = grey(150 + Math.floor(rnd() * 50));
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(x + (y / 6 % 2) * 5, y, 6, 0.2, Math.PI - 0.2);
+            ctx.stroke();
+          }
+        }
+      } else if (kind === 'stone') {
+        // Mottled rock with mineral flecks and a few hairline cracks
+        blotches(26, 8, 30, 190, 245, 0.45);
+        specks(700, 170, 255, 1.6);
+        specks(120, 130, 170, 1.2);
+        ctx.strokeStyle = grey(170, 0.5);
+        ctx.lineWidth = 0.8;
+        for (let i = 0; i < 4; i++) {
+          let x = rnd() * size, y = rnd() * size;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          for (let k = 0; k < 6; k++) { x += (rnd() - 0.5) * 30; y += rnd() * 14; ctx.lineTo(x, y); }
+          ctx.stroke();
+        }
+      } else if (kind === 'marble') {
+        // Soft grey veins wandering through white stone
+        blotches(10, 20, 40, 228, 248, 0.35);
+        for (let i = 0; i < 5; i++) {
+          ctx.strokeStyle = grey(195 + Math.floor(rnd() * 35), 0.5);
+          ctx.lineWidth = 0.5 + rnd() * 1.2;
+          let x = rnd() * size, y = -4, dx = (rnd() - 0.5) * 4;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          while (y < size + 4) { dx += (rnd() - 0.5) * 3; x += dx; y += 10 + rnd() * 8; ctx.quadraticCurveTo(x - dx, y - 6, x, y); }
+          ctx.stroke();
+        }
+      } else if (kind === 'bark') {
+        // Deep furrows running up the trunk, broken into plates
+        ctx.fillStyle = grey(215);
+        ctx.fillRect(0, 0, size, size);
+        for (let i = 0; i < 22; i++) {
+          let x = rnd() * size, y = -10;
+          ctx.strokeStyle = grey(70 + Math.floor(rnd() * 60));
+          ctx.lineWidth = 1.5 + rnd() * 3;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          while (y < size + 10) { x += (rnd() - 0.5) * 8; y += 8 + rnd() * 12; ctx.lineTo(x, y); }
+          ctx.stroke();
+        }
+        specks(300, 150, 255, 2);
+      } else if (kind === 'rings') {
+        // End grain on a cut log: growth rings around the heart, and radial checks
+        const c = size / 2;
+        for (let r = 2; r < c; r += 2.5 + rnd() * 3) {
+          ctx.strokeStyle = grey(150 + Math.floor(rnd() * 60));
+          ctx.lineWidth = 0.8 + rnd();
+          ctx.beginPath();
+          ctx.ellipse(c, c, r, r * (0.95 + rnd() * 0.1), 0, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.strokeStyle = grey(110);
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 4; i++) {
+          const a = rnd() * Math.PI * 2;
+          ctx.beginPath();
+          ctx.moveTo(c + Math.cos(a) * 20, c + Math.sin(a) * 20);
+          ctx.lineTo(c + Math.cos(a) * 62, c + Math.sin(a) * 62);
+          ctx.stroke();
+        }
+      } else if (kind === 'leaf') {
+        // Dappled leaves: light and shade in small clumps
+        blotches(60, 4, 12, 185, 255, 0.5);
+        specks(150, 150, 200, 1.5);
+      } else if (kind === 'fibres') {
+        // Mycelium: a felt of fine white threads
+        for (let i = 0; i < 400; i++) {
+          ctx.strokeStyle = grey(170 + Math.floor(rnd() * 80), 0.7);
+          ctx.lineWidth = 0.5;
+          let x = rnd() * size, y = rnd() * size;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          for (let k = 0; k < 3; k++) { x += (rnd() - 0.5) * 16; y += (rnd() - 0.5) * 16; ctx.lineTo(x, y); }
+          ctx.stroke();
+        }
+      } else if (kind === 'soil') {
+        // Crumbly earth: dark gaps between clods, small pale grit
+        blotches(50, 3, 10, 120, 210, 0.6);
+        specks(1400, 90, 255, 1.8);
+      } else if (kind === 'gravel') {
+        // Packed road gravel: pebbles in warm and cool greys, in colour (the road's material is white)
+        ctx.fillStyle = '#8f8a84';
+        ctx.fillRect(0, 0, size, size);
+        const tones = [[176, 170, 160], [150, 146, 140], [196, 188, 172], [128, 122, 116], [168, 150, 128], [140, 146, 152]];
+        for (let i = 0; i < 520; i++) {
+          const t = tones[Math.floor(rnd() * tones.length)], v = 0.85 + rnd() * 0.3;
+          const x = rnd() * size, y = rnd() * size, r = 1.5 + rnd() * 3.2;
+          ctx.fillStyle = `rgb(${Math.min(255, t[0] * v) | 0},${Math.min(255, t[1] * v) | 0},${Math.min(255, t[2] * v) | 0})`;
+          ctx.beginPath();
+          ctx.ellipse(x, y, r, r * (0.6 + rnd() * 0.4), rnd() * 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,0.25)';
+          ctx.fillRect(x - r * 0.4, y - r * 0.5, r * 0.5, r * 0.35);
+        }
+      } else if (kind === 'layers') {
+        // 3D-print layer lines: a fine ridge every few pixels, all the way up
+        for (let y = 0; y < size; y += 4) {
+          ctx.fillStyle = grey(222);
+          ctx.fillRect(0, y, size, 1);
+          ctx.fillStyle = grey(242);
+          ctx.fillRect(0, y + 1, size, 1);
+        }
+      } else if (kind === 'wicker') {
+        // Woven cane: thick strands over and under, with dark gaps between
+        ctx.fillStyle = grey(90);
+        ctx.fillRect(0, 0, size, size);
+        const step = 16;
+        for (let y = 0; y < size; y += step) {
+          for (let x = 0; x < size; x += step) {
+            const over = ((x + y) / step) % 2 === 0;
+            ctx.fillStyle = grey(over ? 235 : 200);
+            if (over) ctx.fillRect(x, y + 2, step, step - 4);
+            else ctx.fillRect(x + 2, y, step - 4, step);
+          }
+        }
+      }
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      MATERIAL_TEXTURES[key] = tex;
+      return tex;
+    }
+
+// The same texture tiled `repeat` times (one copy per repeat, shared)
+function finishTextureTiled(kind, repeat) {
+      if (!repeat || repeat === 1) return finishTexture(kind);
+      const key = 'f-' + kind + '@' + repeat;
+      if (MATERIAL_TEXTURES[key]) return MATERIAL_TEXTURES[key];
+      const tex = finishTexture(kind).clone();
+      tex.repeat.set(repeat, repeat);
+      tex.needsUpdate = true;
+      MATERIAL_TEXTURES[key] = tex;
+      return tex;
+    }
+
+// A small, steady colour shift (seeded, so a model looks the same every time it's rebuilt)
+function varyColor(color, seed, amount = 0.04) {
+      const s = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+      const r = (s - Math.floor(s)) * 2 - 1;
+      color.offsetHSL(r * amount * 0.08, r * amount * 0.3, r * amount);
+      return color;
+    }
+
+// Give one material a finish. Its colour stays its own (a little varied with `opts.seed`).
+// opts: { seed, repeat, texture (override), keepGlow }
+function finishMaterial(mat, key, opts = {}) {
+      const f = FINISHES[key];
+      if (!f || !mat || !mat.isMeshStandardMaterial) return mat;
+      mat.roughness = f.roughness;
+      mat.metalness = f.metalness;
+      const kind = opts.texture || f.texture;
+      if (kind) {
+        const tex = finishTextureTiled(kind, opts.repeat);
+        mat.map = tex;
+        if (f.bump) { mat.bumpMap = tex; mat.bumpScale = f.bump; }
+      }
+      if (f.reflect) { mat.envMap = materialReflections(); mat.envMapIntensity = f.reflect; }
+      if (f.smooth) mat.flatShading = false;
+      if (f.glow) {
+        // Lit from inside: it keeps glowing in its own colour
+        mat.emissive.copy(mat.color);
+        mat.emissiveIntensity = Math.max(mat.emissiveIntensity || 0, f.glow);
+      }
+      if (typeof opts.seed === 'number') varyColor(mat.color, opts.seed, key === 'gold' || key === 'glow' ? 0.015 : 0.035);
+      mat.userData.finish = key;
+      mat.needsUpdate = true;
+      return mat;
+    }
+
+// Give every mesh under `root` a finish (or the one each mesh was tagged with: userData.finish)
+function applyFinish(root, key, opts = {}) {
+      if (!root) return root;
+      let n = 0;
+      root.traverse(o => {
+        if (!o.isMesh || !o.material || (o.userData && o.userData.isLabel)) return;
+        const k = (o.userData && o.userData.finish) || key;
+        if (!k) return;
+        let wood = null;
+        if (k === 'wood' || k === 'paintedwood') wood = woodTextureFor(o.geometry);
+        finishMaterial(o.material, k, { ...opts, texture: wood || opts.texture, seed: typeof opts.seed === 'number' ? opts.seed + n++ : undefined });
+      });
+      return root;
+    }
+
+// Tag a mesh (or every mesh in a group) with the finish it should get later
+function withFinish(obj, key) {
+      if (obj) obj.traverse(o => { if (o.isMesh) o.userData.finish = key; });
+      return obj;
+    }
+
+// Make a smooth shape lumpy (a stone, a clod, a leafy crown). Points that share a spot move
+// together, so faces never split apart.
+function roughenGeometry(geo, amount = 0.15, seed = 1) {
+      const pos = geo.attributes.position;
+      const v = new THREE.Vector3();
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i);
+        const h = Math.sin(v.x * 17.1 + v.y * 31.7 + v.z * 12.3 + seed * 7.7) * 43758.5453;
+        const k = 1 + ((h - Math.floor(h)) * 2 - 1) * amount;
+        pos.setXYZ(i, v.x * k, v.y * k, v.z * k);
+      }
+      geo.computeVertexNormals();
+      return geo;
+    }
+
+// A gentle brightness wobble for the ground's own vertex colours (sand, dug dirt), so it isn't flat
+function mottleGround(color, x, z, amount = 0.08) {
+      const h = Math.sin(x * 3.13 + z * 7.71) * 43758.5453 + Math.sin(x * 0.71 - z * 0.53) * 0.5;
+      const k = 1 + ((h - Math.floor(h)) * 2 - 1) * amount;
+      color.r = Math.min(1, color.r * k); color.g = Math.min(1, color.g * k); color.b = Math.min(1, color.b * k);
+      return color;
+    }
+
+// What one welded part is really made of, from its colour and shape and the sculpture's title
+const ORGANIC_WORDS = /botan|flower|bloom|tree|leaf|leaves|plant|garden|fern|moss|vine|blossom|petal|grove|forest|cactus|mushroom|willow/;
+function creationPartFinish(mat, part, title) {
+      if (part && part.emissive) return 'glow';
+      const hsl = {};
+      mat.color.getHSL(hsl);
+      const hue = hsl.h * 360, s = hsl.s, l = hsl.l;
+      const named = namedMaterials(title);
+      const woodTitle = named.some(k => MATERIALS[k].family === 'wood') || /\b(wood|wooden|driftwood|timber|log|branch)\b/.test(title);
+      const stoneTitle = named.includes('stone') || /\b(stone|rock|granite|boulder|pebble|cairn|marble|basalt)\b/.test(title);
+      const woody = hue >= 15 && hue <= 45 && s >= 0.25 && l >= 0.1 && l <= 0.5;
+      if (woodTitle && woody) return 'wood';
+      if (stoneTitle && s < 0.3) return /marble/.test(title) && l > 0.7 ? 'marble' : 'stone';
+      const green = hue >= 70 && hue <= 170 && s > 0.25;
+      if (green && (ORGANIC_WORDS.test(title) || woodTitle)) return 'leaf';
+      if (/\b(rust|rusty|corten|weathered)\b/.test(title) && woody) return 'rust';
+      // Metal by colour: warm oranges are copper, yellows brass or gold, greys steel or iron
+      if (s > 0.45 && hue >= 14 && hue < 38) return l < 0.33 ? 'rust' : 'copper';
+      if (s > 0.45 && hue >= 38 && hue <= 62) return /gold|sun/.test(title) || (l > 0.5 && s > 0.75) ? 'gold' : 'brass';
+      if (s < 0.28 || l < 0.12) return l < 0.22 ? 'iron' : 'steel';
+      if (named.includes('copper') && woody) return 'copper';
+      return 'painted'; // any other bright colour is powder-coated or painted steel: the colour stays bright
+    }
+
+// Small weld beads where welded parts meet (only between parts that touch but don't swallow each other)
+function addWeldBeads(g, partMeshes) {
+      const boxes = partMeshes.map(m => {
+        m.updateMatrix();
+        if (!m.geometry.boundingBox) m.geometry.computeBoundingBox();
+        return m.geometry.boundingBox.clone().applyMatrix4(m.matrix);
+      });
+      const beadGeo = new THREE.SphereGeometry(1, 10, 6);
+      const beadMat = finishMaterial(new THREE.MeshStandardMaterial({ color: 0x9a948c }), 'weld');
+      const size = new THREE.Vector3(), centre = new THREE.Vector3(), sa = new THREE.Vector3(), sb = new THREE.Vector3();
+      let beads = 0;
+      for (let i = 0; i < boxes.length && beads < 12; i++) {
+        for (let j = i + 1; j < boxes.length && beads < 12; j++) {
+          if (partMeshes[i].userData.spin || partMeshes[j].userData.spin) continue;
+          if (!boxes[i].intersectsBox(boxes[j])) continue;
+          const o = boxes[i].clone().intersect(boxes[j]);
+          o.getSize(size);
+          boxes[i].getSize(sa);
+          boxes[j].getSize(sb);
+          const vol = size.x * size.y * size.z, small = Math.min(sa.x * sa.y * sa.z, sb.x * sb.y * sb.z);
+          if (small <= 0 || vol > small * 0.5) continue; // one part sits inside the other: no seam shows
+          o.getCenter(centre);
+          const r = Math.max(0.035, Math.min(0.09, Math.max(size.x, size.y, size.z) * 0.32));
+          const bead = new THREE.Mesh(beadGeo, beadMat);
+          bead.position.copy(centre);
+          // Flatten the bead along the thinnest side of the overlap, like a fillet around the joint
+          const thin = size.x <= size.y && size.x <= size.z ? 'x' : size.y <= size.z ? 'y' : 'z';
+          bead.scale.set(r, r, r);
+          bead.scale[thin] = r * 0.45;
+          bead.userData.weldBead = true;
+          g.add(bead);
+          beads++;
+        }
+      }
+      return beads;
+    }
+
+// The finishing pass for a creation's model (buildCreationGroup): every part gets a real material
+function finishCreationLook(g, creation) {
+      const title = String((creation && (creation.title + ' ' + (creation.actionVerb || ''))) || '').toLowerCase();
+      const printed = Boolean(creation && creation.printed);
+      const partMeshes = [];
+      let n = 0;
+      g.children.forEach(o => {
+        if (!o.isMesh || !o.material || !o.material.isMeshStandardMaterial) return;
+        const part = o.userData.part;
+        const key = printed ? 'printed' : (o.userData.finish || creationPartFinish(o.material, part, title));
+        const wood = key === 'wood' ? woodTextureFor(o.geometry) : null;
+        finishMaterial(o.material, key, { seed: n++ * 1.7 + title.length, texture: wood || undefined });
+        if (part && !printed && FINISHES[key].metalness >= 0.25) partMeshes.push(o);
+      });
+      if (partMeshes.length > 1) addWeldBeads(g, partMeshes);
+      return g;
+    }

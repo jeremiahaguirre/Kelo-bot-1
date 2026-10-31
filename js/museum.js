@@ -20,6 +20,8 @@ function buildMuseum3D() {
       const marble = new THREE.MeshStandardMaterial({ color: 0xf5f1e8, roughness: 0.55 });
       const stone = new THREE.MeshStandardMaterial({ color: 0xd6d0c4, roughness: 0.8 });
       const floorMat = new THREE.MeshStandardMaterial({ color: 0xcbbfa8, roughness: 0.4 });
+      // Real veined marble and cut stone (js/materials.js)
+      if (typeof finishMaterial === 'function') { finishMaterial(marble, 'marble'); finishMaterial(stone, 'stone', { repeat: 3 }); finishMaterial(floorMat, 'marble', { repeat: 4 }); }
       // Plinth base and floor, raised on steps
       const base = new THREE.Mesh(new THREE.BoxGeometry(w + 1, 0.5, d + 1), stone);
       base.position.y = 0.25;

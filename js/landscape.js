@@ -80,39 +80,83 @@ function startJob(x, z) {
 // --- Meshes for each kind of change ----------------------------------------------------------------
 function stumpMesh(e) {
       const g = new THREE.Group();
-      const stump = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.3, 10), new THREE.MeshStandardMaterial({ color: 0x8a5a2b, roughness: 0.9 }));
+      // Bark round the sides and growth rings on the cut top (js/materials.js)
+      const stump = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.3, 14), new THREE.MeshStandardMaterial({ color: 0x6b4a2e, roughness: 0.9 }));
       stump.position.y = 0.15;
-      const rings = new THREE.Mesh(new THREE.CircleGeometry(0.19, 14), new THREE.MeshStandardMaterial({ color: 0xe0b77a }));
+      const rings = new THREE.Mesh(new THREE.CircleGeometry(0.19, 18), new THREE.MeshStandardMaterial({ color: 0xe0b77a }));
       rings.rotation.x = -Math.PI / 2;
       rings.position.y = 0.301;
       g.add(stump, rings);
+      if (typeof finishMaterial === 'function') {
+        finishMaterial(stump.material, 'bark');
+        finishMaterial(rings.material, 'rings');
+        // A few chips of fresh wood from the axe
+        const chipMat = finishMaterial(new THREE.MeshStandardMaterial({ color: 0xe8c48c }), 'wood');
+        const rng = makeRng(e.id || 'chips');
+        for (let i = 0; i < 6; i++) {
+          const chip = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.012, 0.04), chipMat);
+          const a = rng() * Math.PI * 2, r = 0.32 + rng() * 0.3;
+          chip.position.set(Math.cos(a) * r, 0.01, Math.sin(a) * r);
+          chip.rotation.set(0, rng() * 3, (rng() - 0.5) * 0.4);
+          g.add(chip);
+        }
+      }
       g.position.set(e.x, getIslandGroundHeight(e.x, e.z), e.z);
       return g;
     }
 
 function plantingMesh(e) {
       const g = new THREE.Group();
+      const real = typeof finishMaterial === 'function';
       if (e.kind === 'tree') {
-        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 1.4, 8), new THREE.MeshStandardMaterial({ color: 0x8a5a2b, roughness: 0.9 }));
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 1.4, 10), new THREE.MeshStandardMaterial({ color: 0x7a5232, roughness: 0.9 }));
         trunk.position.y = 0.7;
         const leafMat = new THREE.MeshStandardMaterial({ color: 0x4cc93b, roughness: 0.8 });
         leafMat.userData.seasonal = 'leaf';
-        const crown = new THREE.Mesh(new THREE.SphereGeometry(0.85, 14, 12), leafMat);
+        // A lumpy, leafy crown rather than a perfect ball
+        const crownGeo = new THREE.SphereGeometry(0.85, 16, 12);
+        if (real) roughenGeometry(crownGeo, 0.05, 3);
+        const crown = new THREE.Mesh(crownGeo, leafMat);
         crown.position.y = 1.75;
         g.add(trunk, crown);
+        [[0.45, 1.5, 0.2, 0.45], [-0.4, 1.6, -0.25, 0.5]].forEach(([x, y, z, r]) => {
+          const clump = new THREE.Mesh(crownGeo, leafMat);
+          clump.position.set(x, y, z);
+          clump.scale.setScalar(r / 0.85);
+          g.add(clump);
+        });
+        if (real) {
+          finishMaterial(trunk.material, 'bark');
+          finishMaterial(leafMat, 'leaf');
+        }
       } else {
         const colors = [0xff5d8f, 0xffd23f, 0xffffff, 0xa78bfa, 0xff8c42];
+        const stemMat = new THREE.MeshStandardMaterial({ color: 0x2f9e44 });
+        const heartMat = new THREE.MeshStandardMaterial({ color: 0xf2b705, roughness: 0.9 });
+        if (real) { finishMaterial(stemMat, 'leaf'); finishMaterial(heartMat, 'seed'); }
+        const leafGeo = new THREE.SphereGeometry(0.06, 8, 4);
         for (let i = 0; i < 9; i++) {
           const a = i * 2.4, r = 0.15 + (i % 3) * 0.2;
-          const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.35, 4), new THREE.MeshStandardMaterial({ color: 0x2f9e44 }));
+          const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.35, 4), stemMat);
           stem.position.set(Math.cos(a) * r, 0.17, Math.sin(a) * r);
-          const bloom = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 6), new THREE.MeshStandardMaterial({ color: colors[i % colors.length], emissive: colors[i % colors.length], emissiveIntensity: 0.15 }));
+          const bloomMat = new THREE.MeshStandardMaterial({ color: colors[i % colors.length], emissive: colors[i % colors.length], emissiveIntensity: 0.15 });
+          if (real) finishMaterial(bloomMat, 'petal', { seed: i });
+          // An open flower: a flat ring of petals around a seed-heavy middle
+          const bloom = new THREE.Mesh(new THREE.SphereGeometry(0.075, 10, 6), bloomMat);
+          bloom.scale.set(1, 0.35, 1);
           bloom.position.set(stem.position.x, 0.36, stem.position.z);
-          g.add(stem, bloom);
+          const heart = new THREE.Mesh(new THREE.SphereGeometry(0.025, 6, 4), heartMat);
+          heart.position.set(stem.position.x, 0.375, stem.position.z);
+          const leaf = new THREE.Mesh(leafGeo, stemMat);
+          leaf.scale.set(1, 0.2, 0.4);
+          leaf.position.set(stem.position.x + 0.04, 0.1, stem.position.z);
+          leaf.rotation.z = 0.5;
+          g.add(stem, bloom, heart, leaf);
         }
       }
       // A little ring of turned soil around it
       const soil = new THREE.Mesh(new THREE.CircleGeometry(e.kind === 'tree' ? 0.45 : 0.75, 16), new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 1 }));
+      if (real) finishMaterial(soil.material, 'soil');
       soil.rotation.x = -Math.PI / 2;
       soil.position.y = 0.02;
       g.add(soil);
@@ -128,10 +172,21 @@ function growthOf(e) {
 
 function roadMesh(e) {
       const g = new THREE.Group();
-      const gravel = new THREE.MeshStandardMaterial({ color: 0xa8a29e, roughness: 1 });
-      const edge = new THREE.MeshStandardMaterial({ color: 0x78716c, roughness: 1 });
+      const real = typeof finishMaterial === 'function';
+      // Packed gravel (the texture carries the pebbles' colours) edged with rough fieldstones
+      const gravel = new THREE.MeshStandardMaterial({ color: real ? 0xffffff : 0xa8a29e, roughness: 1 });
+      if (real) finishMaterial(gravel, 'gravel');
+      const edges = [0x8a8580, 0x78716c, 0x9c9488].map((c, i) => {
+        const m = new THREE.MeshStandardMaterial({ color: c, roughness: 1 });
+        return real ? finishMaterial(m, 'stone', { seed: i }) : m;
+      });
+      const stoneGeos = [1, 2, 3].map(k => {
+        const geo = new THREE.DodecahedronGeometry(0.1, 0);
+        return real ? roughenGeometry(geo, 0.25, k) : geo;
+      });
       const len = Math.hypot(e.toX - e.x, e.toZ - e.z);
       const ang = Math.atan2(e.toX - e.x, e.toZ - e.z);
+      let n = 0;
       for (let d = 0; d < len; d += 0.6) {
         const x = e.x + Math.sin(ang) * d, z = e.z + Math.cos(ang) * d;
         if (offLimits(x, z, -0.6)) continue; // the road stops short of buildings
@@ -142,10 +197,18 @@ function roadMesh(e) {
         slab.receiveShadow = true;
         g.add(slab);
         [-0.8, 0.8].forEach(side => {
-          const stone = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.09, 0.6), edge);
-          stone.position.set(x + Math.cos(ang) * side, y + 0.02, z - Math.sin(ang) * side);
-          stone.rotation.y = ang;
-          g.add(stone);
+          // Two or three stones of different sizes along each edge
+          [-0.2, 0.05, 0.25].forEach((along, k) => {
+            n++;
+            if ((n * 7) % 5 === 0) return;
+            const stone = new THREE.Mesh(stoneGeos[n % 3], edges[(n * 5) % 3]);
+            const s = 0.8 + ((n * 37) % 10) / 20;
+            stone.scale.set(s * 1.2, s * 0.75, s);
+            stone.position.set(x + Math.cos(ang) * side + Math.sin(ang) * along, y + 0.02, z - Math.sin(ang) * side + Math.cos(ang) * along);
+            stone.rotation.y = ang + n;
+            stone.castShadow = true;
+            g.add(stone);
+          });
         });
       }
       return g;

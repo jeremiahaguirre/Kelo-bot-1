@@ -336,7 +336,7 @@ function printedWhistle() {
 // Any design (a shape from his library, a form for a word) shrunk to a print that fits the bed
 function printedDesign(parts, color) {
       if (typeof buildCreationGroup !== 'function' || !parts) return printedRobot();
-      return buildCreationGroup({ archetype: 'custom_weld', colorHex: color, secondaryColorHex: color, parts });
+      return buildCreationGroup({ archetype: 'custom_weld', colorHex: color, secondaryColorHex: color, parts, printed: true });
     }
 
 // Shrink or grow a model so its biggest side is `size` metres, centred and standing on y = 0
@@ -367,6 +367,8 @@ function paintPrint(model, color, clipPlane = null) {
       model.traverse(o => {
         if (!o.isMesh) return;
         o.material = new THREE.MeshStandardMaterial({ color: new THREE.Color(color), roughness: 0.45, metalness: 0.05, side: THREE.DoubleSide, clippingPlanes: clipPlane ? [clipPlane] : null });
+        // Plastic with fine layer lines (js/materials.js); a print is small, so the lines repeat closely
+        if (typeof finishMaterial === 'function') finishMaterial(o.material, 'printed', { repeat: 3 });
         o.castShadow = true;
       });
       return model;

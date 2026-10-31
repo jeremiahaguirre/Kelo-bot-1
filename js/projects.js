@@ -127,6 +127,7 @@ function placeProjectMesh(p) {
       m.position.set(p.x, getIslandGroundHeight(p.x, p.z), p.z);
       m.rotation.y = p.rotY || 0;
       m.traverse(o => { if (o.isMesh) o.castShadow = true; });
+      finishBuildModel(m, plan);
       scene.add(m);
       projectMeshes[p.id] = m;
       const obstacle = { x: p.x, z: p.z, r: p.key === 'picnic' ? 1.6 : p.key === 'bench' || p.key === 'raisedbed' ? 1.2 : 0.6 };
@@ -158,7 +159,7 @@ async function buildProject(id, originLabel = 'Building Something Real') {
         await waitForArrival(60000);
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
         // Saw, then fix, then finish: the piece takes shape on the bench
-        const wip = lifeSize(realSize(plan.build()));
+        const wip = finishBuildModel(lifeSize(realSize(plan.build())), plan);
         wip.position.set(bench.x, getIslandGroundHeight(bench.x, bench.z) + 0.8, bench.z - 1.4);
         scene.add(wip);
         const steps = [['Sawing the pieces to length', 'Zzzt, zzzt, zzzt...'], ['Putting it together', 'Tap, tap... it holds!'], ['Finishing it off', 'Smooth edges, square corners.']];
@@ -179,7 +180,7 @@ async function buildProject(id, originLabel = 'Building Something Real') {
         });
         // Carry it out and set it down
         const spot = buildSpot();
-        if (typeof setCarriedObject === 'function') setCarriedObject(lifeSize(realSize(plan.build()), 1.4));
+        if (typeof setCarriedObject === 'function') setCarriedObject(finishBuildModel(lifeSize(realSize(plan.build()), 1.4), plan));
         state.currentLocKey = 'custom';
         state.customPlaceName = `a spot for the ${plan.name.toLowerCase()}`;
         state.targetPos = { x: spot.x - 1.3, z: spot.z };
@@ -259,16 +260,28 @@ function renderProjectsList() {
       }).join('');
     }
 
+// Real materials for a finished build: the parts tagged with a finish get it, the rest are worked out
+// from their colours and what the plan is made of (cedar boards, copper pipes...)
+function finishBuildModel(m, plan) {
+      if (typeof applyFinish !== 'function') return m;
+      m.traverse(o => { if (o.isMesh && o.userData.finish) finishMaterial(o.material, o.userData.finish, { texture: /wood/.test(o.userData.finish) ? woodTextureFor(o.geometry) : undefined }); });
+      applyMaterialLook(m, `${plan.materials.map(x => x.ask).join(' ')} ${plan.name}`);
+      // Wood from the same stack still differs a little board to board
+      let n = 0;
+      m.traverse(o => { if (o.isMesh && o.material.userData.material && MATERIALS[o.material.userData.material].family === 'wood') varyColor(o.material.color, n++, 0.04); });
+      return m;
+    }
+
 // --- Models of the finished builds (real size, metres) --------------------------------------------
 function birdhouseModel() {
       const wood = 0xc8955a, roof = 0x9a3412;
       const house = group(
         at(mesh(new THREE.BoxGeometry(0.16, 0.2, 0.16), wood), 0, 0.1, 0),
-        at(mesh(new THREE.CircleGeometry(0.025, 14), 0x1f2937), 0, 0.13, 0.081),
+        withFinish(at(mesh(new THREE.CircleGeometry(0.025, 14), 0x1f2937, { roughness: 1 }), 0, 0.13, 0.081), 'soil'),
         rod([0, 0.08, 0.08], [0, 0.08, 0.13], 0.005, 0x8a5a2b)
       );
       [-1, 1].forEach(s => {
-        const panel = at(mesh(new THREE.BoxGeometry(0.13, 0.012, 0.22), roof), s * 0.055, 0.235, 0);
+        const panel = withFinish(at(mesh(new THREE.BoxGeometry(0.13, 0.012, 0.22), roof), s * 0.055, 0.235, 0), 'paintedwood');
         panel.rotation.z = -s * 0.7;
         house.add(panel);
       });
@@ -299,7 +312,7 @@ function gardenBenchModel() {
         g.add(back);
       }
       [-0.7, 0.7].forEach(x => {
-        g.add(slab([[-0.25, 0], [-0.22, 0.45], [-0.3, 0.9], [-0.26, 0.9], [-0.18, 0.45], [0.2, 0.45], [0.22, 0.62], [0.26, 0.62], [0.25, 0.42], [0.25, 0], [0.2, 0], [0.2, 0.4], [-0.2, 0.4], [-0.2, 0]], 0.05, metal, { metalness: 0.6, roughness: 0.4 }));
+        g.add(withFinish(slab([[-0.25, 0], [-0.22, 0.45], [-0.3, 0.9], [-0.26, 0.9], [-0.18, 0.45], [0.2, 0.45], [0.22, 0.62], [0.26, 0.62], [0.25, 0.42], [0.25, 0], [0.2, 0], [0.2, 0.4], [-0.2, 0.4], [-0.2, 0]], 0.05, metal, { metalness: 0.6, roughness: 0.4 }), 'iron'));
         g.children[g.children.length - 1].rotation.y = Math.PI / 2;
         g.children[g.children.length - 1].position.x = x;
       });
@@ -308,13 +321,13 @@ function gardenBenchModel() {
 
 function raisedBedModel() {
       const wood = 0xc8955a;
-      const g = group(at(mesh(new THREE.BoxGeometry(1.16, 0.26, 0.56), 0x4a2c17, { roughness: 1 }), 0, 0.14, 0));
+      const g = group(withFinish(at(mesh(new THREE.BoxGeometry(1.16, 0.26, 0.56), 0x5a3a20, { roughness: 1 }), 0, 0.14, 0), 'soil'));
       [-1, 1].forEach(s => {
         g.add(at(mesh(new THREE.BoxGeometry(1.24, 0.3, 0.04), wood), 0, 0.15, s * 0.3));
         g.add(at(mesh(new THREE.BoxGeometry(0.04, 0.3, 0.6), wood), s * 0.6, 0.15, 0));
       });
       for (let i = 0; i < 6; i++) {
-        const sprout = at(mesh(new THREE.ConeGeometry(0.04, 0.12, 5), 0x22c55e), -0.45 + i * 0.18, 0.33, (i % 2 ? 0.1 : -0.1));
+        const sprout = withFinish(at(mesh(new THREE.ConeGeometry(0.04, 0.12, 5), 0x22c55e), -0.45 + i * 0.18, 0.33, (i % 2 ? 0.1 : -0.1)), 'leaf');
         g.add(sprout);
       }
       return g;
@@ -324,11 +337,11 @@ function birdFeederModel() {
       const wood = 0xc8955a;
       const feeder = group(
         at(mesh(new THREE.BoxGeometry(0.3, 0.02, 0.3), wood), 0, 0, 0),
-        at(mesh(new THREE.BoxGeometry(0.22, 0.03, 0.22), 0xd9a441), 0, 0.02, 0)
+        withFinish(at(mesh(new THREE.BoxGeometry(0.22, 0.03, 0.22), 0xd9a441), 0, 0.02, 0), 'seed')
       );
       [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => feeder.add(rod([a * 0.13, 0, b * 0.13], [a * 0.13, 0.18, b * 0.13], 0.008, wood)));
       [-1, 1].forEach(s => {
-        const panel = at(mesh(new THREE.BoxGeometry(0.2, 0.012, 0.36), 0x15803d), s * 0.085, 0.23, 0);
+        const panel = withFinish(at(mesh(new THREE.BoxGeometry(0.2, 0.012, 0.36), 0x15803d), s * 0.085, 0.23, 0), 'paintedwood');
         panel.rotation.z = -s * 0.55;
         feeder.add(panel);
       });
@@ -338,8 +351,8 @@ function birdFeederModel() {
 function windChimeModel() {
       const g = group();
       // A shepherd's-hook stand with the chime hanging from the hook
-      g.add(rod([0, 0, 0], [0, 1.8, 0], 0.012, 0x1f2937, { metalness: 0.6 }));
-      g.add(new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.012, 6, 16, Math.PI), new THREE.MeshStandardMaterial({ color: 0x1f2937, metalness: 0.6 })));
+      g.add(withFinish(rod([0, 0, 0], [0, 1.8, 0], 0.012, 0x1f2937, { metalness: 0.6 }), 'iron'));
+      g.add(withFinish(new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.012, 6, 16, Math.PI), new THREE.MeshStandardMaterial({ color: 0x1f2937, metalness: 0.6 })), 'iron'));
       g.children[1].position.set(0.12, 1.8, 0);
       const chime = group(at(mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.015, 16), 0xa16207), 0, 0, 0));
       for (let i = 0; i < 5; i++) {

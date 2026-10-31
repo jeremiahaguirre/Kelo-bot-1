@@ -312,6 +312,14 @@ function buildWreckPile() {
         bit.rotation.y = rng() * Math.PI;
         g.add(bit);
       }
+      // Real materials: ripstop nylon, woven wicker, a steel frame (js/materials.js)
+      if (typeof applyFinish === 'function') {
+        applyFinish(envelope, 'nylon', { repeat: 10 });
+        applyFinish(flap, 'nylon', { repeat: 10 });
+        applyFinish(basket, 'wicker', { repeat: 2 });
+        applyMaterialLook(frame, 'steel burner frame');
+        g.children.forEach(o => { if (o.isMesh && !o.material.map) applyFinish(o, o.geometry.type === 'TubeGeometry' ? 'nylon' : 'wicker'); });
+      }
       return g;
     }
 

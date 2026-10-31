@@ -114,11 +114,15 @@ function updateDirtPile3D(site) {
       const clods = new THREE.Group();
       const dirtMat = new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 1, flatShading: true });
       const stoneMat = new THREE.MeshStandardMaterial({ color: 0x8a8f9c, roughness: 0.9, flatShading: true });
+      // Crumbly soil and real rock (js/materials.js)
+      if (typeof finishMaterial === 'function') { finishMaterial(dirtMat, 'soil'); finishMaterial(stoneMat, 'stone'); }
       const rng = makeRng(`${site.id}-clods`);
       for (let i = 0; i < Math.min(16, 4 + Math.floor(site.dirt * 2)); i++) {
         const a = rng() * Math.PI * 2, rr = Math.sqrt(rng()) * r * 0.85;
         const cx = p.x + Math.cos(a) * rr, cz = p.z + Math.sin(a) * rr;
-        const clod = new THREE.Mesh(new THREE.DodecahedronGeometry(0.07 + rng() * 0.12, 0), rng() < 0.3 ? stoneMat : dirtMat);
+        const clodGeo = new THREE.DodecahedronGeometry(0.07 + rng() * 0.12, 1);
+        if (typeof roughenGeometry === 'function') roughenGeometry(clodGeo, 0.22, i + 1);
+        const clod = new THREE.Mesh(clodGeo, rng() < 0.3 ? stoneMat : dirtMat);
         clod.position.set(cx, getAnalyticalGroundHeight(cx, cz) + 0.04, cz);
         clod.rotation.set(rng() * 3, rng() * 3, 0);
         clod.castShadow = true;

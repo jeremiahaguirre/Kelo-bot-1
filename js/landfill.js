@@ -121,6 +121,7 @@ async function dumpIntoLake(truck, amount) {
       // A splash of dirt into the water, then the bed settles
       if (tMesh) {
         const clump = new THREE.Mesh(new THREE.DodecahedronGeometry(0.9, 0), new THREE.MeshStandardMaterial({ color: 0x7a4b2a, roughness: 1, flatShading: true }));
+        if (typeof finishMaterial === 'function') finishMaterial(clump.material, 'soil');
         clump.scale.set(1.4, 0.7, 1.0);
         clump.position.set(tMesh.position.x - Math.cos(truck.rotY) * 3.6, tMesh.position.y + 1.4, tMesh.position.z + Math.sin(truck.rotY) * 3.6);
         scene.add(clump);
@@ -171,7 +172,9 @@ function refreshTerrainColors(f) {
         if (Math.hypot(x - f.x, z - f.z) > f.r + 7) continue;
         const ground = bedWithoutFills(x, z);
         if (landFillRaiseAt(x, z, ground) <= 0.02) continue;
-        const c = pos.getY(i) > WATER_LEVEL + 0.05 ? sand : mud;
+        const c = (pos.getY(i) > WATER_LEVEL + 0.05 ? sand : mud).clone();
+        // Sand isn't one flat colour: drier and wetter patches, darker grains
+        if (typeof mottleGround === 'function') mottleGround(c, x, z, 0.07);
         col.setXYZ(i, c.r, c.g, c.b);
       }
       col.needsUpdate = true;

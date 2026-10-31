@@ -274,7 +274,7 @@ async function digAt(x, z, originLabel = 'Digging') {
 function chooseDigSpot() {
       const unfinished = state.digSites.filter(s => s.depth < MAX_DEPTH);
       if (unfinished.length && Math.random() < 0.6) return pick(unfinished);
-      const x = Math.round(randRange(-38, 38) * 10) / 10;
+      const x = Math.round(randRange(WORLD_MIN_X + 6, WORLD_MAX_X - 6) * 10) / 10;
       const z = Math.round(randRange(-36, -10) * 10) / 10;
       return { x, z };
     }

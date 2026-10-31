@@ -95,10 +95,10 @@ function initDiorama3D() {
       sunLight.castShadow = true;
       sunLight.shadow.mapSize.width = 2048;
       sunLight.shadow.mapSize.height = 2048;
-      sunLight.shadow.camera.left = -45;
-      sunLight.shadow.camera.right = 45;
-      sunLight.shadow.camera.top = 45;
-      sunLight.shadow.camera.bottom = -45;
+      sunLight.shadow.camera.left = -62;
+      sunLight.shadow.camera.right = 62;
+      sunLight.shadow.camera.top = 62;
+      sunLight.shadow.camera.bottom = -62;
       sunLight.shadow.bias = -0.0006;
       sunLight.shadow.normalBias = 0.02;
       scene.add(sunLight);
@@ -194,7 +194,7 @@ function buildAlpineTerrainAndMountains3D() {
       scene.add(terrainSwapGroup);
 
       // Continuous Vertex-Displaced Valley + Alpine Mountain Mesh so Kelo-1 can walk seamlessly up the peaks!
-      const groundGeo = new THREE.PlaneGeometry(96, 86, 160, 144); // fine enough for dig holes to look round
+      const groundGeo = new THREE.PlaneGeometry(ISLAND_HALF_X * 2, ISLAND_HALF_Z * 2, 214, 160); // fine enough for dig holes to look round
       groundGeo.rotateX(-Math.PI / 2);
       const pos = groundGeo.attributes.position;
       const colors = [];
@@ -604,7 +604,7 @@ function buildSkyAndClouds3D() {
     }
 
 // --- The lands around the island, so there is never an edge to fall off -------------------
-const ISLAND_HALF_X = 48, ISLAND_HALF_Z = 43;
+const ISLAND_HALF_X = 64, ISLAND_HALF_Z = 48;
 
 // Height beyond the main terrain: the mountain's back side falls away into further ranges,
 // hills roll off east and west, and south of the shore the land drops into open water
@@ -714,6 +714,35 @@ function buildValleyScenery3D() {
         worldObstacles.push(obstacle);
         valleyTrees.push({ id: 'tree-' + placed, x, z, group: tree, obstacle });
         placed++;
+      }
+      // The wider valley east and west has its own woods (separate ids, so older saves keep their chopped trees)
+      const outerRng = makeRng('kelo1-outer-valley-trees');
+      let outer = 0;
+      for (let i = 0; i < 120 && outer < 22; i++) {
+        const side = outerRng() < 0.5 ? -1 : 1;
+        const x = Math.round(side * (34 + outerRng() * 24) * 10) / 10;
+        const z = Math.round((-11 + outerRng() * 18) * 10) / 10;
+        if (!clearOf(x, z, 1.4)) continue;
+        const tree = new THREE.Group();
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.24, 1.4, 8), trunkMat);
+        trunk.position.y = 0.7;
+        trunk.castShadow = true;
+        const leafMat = new THREE.MeshStandardMaterial({ color: leafColors[outer % leafColors.length], roughness: 0.8 });
+        leafMat.userData.seasonal = 'leaf';
+        tree.add(trunk);
+        [[0, 1.9, 0, 1.05], [0.55, 1.6, 0.2, 0.7], [-0.5, 1.65, -0.15, 0.75]].forEach(([lx, ly, lz, r]) => {
+          const blob = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 12), leafMat);
+          blob.position.set(lx, ly, lz);
+          blob.castShadow = true;
+          tree.add(blob);
+        });
+        tree.position.set(x, getAnalyticalGroundHeight(x, z), z);
+        tree.rotation.y = outerRng() * Math.PI;
+        scene.add(tree);
+        const obstacle = { x, z, r: 0.75 };
+        worldObstacles.push(obstacle);
+        valleyTrees.push({ id: 'tree-o' + outer, x, z, group: tree, obstacle });
+        outer++;
       }
 
       // Little flower patches and smooth boulders (decor only, small enough to walk past)
@@ -1410,7 +1439,7 @@ function arrivalRadius(target) {
 
 // --- Pathfinding: A* over a coarse grid, so he routes around buildings instead of getting stuck
 const PATH_CELL = 0.75;
-const PATH_MIN_X = -46, PATH_MAX_X = 46, PATH_MIN_Z = -42, PATH_MAX_Z = 14;
+const PATH_MIN_X = -62, PATH_MAX_X = 62, PATH_MIN_Z = -46, PATH_MAX_Z = 14;
 const PATH_COLS = Math.ceil((PATH_MAX_X - PATH_MIN_X) / PATH_CELL);
 const PATH_ROWS = Math.ceil((PATH_MAX_Z - PATH_MIN_Z) / PATH_CELL);
 let currentPath = [];

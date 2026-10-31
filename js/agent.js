@@ -520,7 +520,7 @@ const VALID_ARCHETYPES = ['gold_drill_rig', 'mycelium_dome', 'rail_track', 'cust
 const MAX_SCULPTURE_PARTS = 24;
 
 // Everywhere Kelo-1 can go: the whole valley and the entire mountain range behind it
-const WORLD_MIN_X = -44, WORLD_MAX_X = 44, WORLD_MIN_Z = -40, WORLD_MAX_Z = 10;
+const WORLD_MIN_X = -60, WORLD_MAX_X = 60, WORLD_MIN_Z = -44, WORLD_MAX_Z = 10;
 
 // Clean a list of [a, b] or [a, b, c] points, bounded so shapes stay a sensible size
 function sanitizePoints(points, dims, min, max, maxCount) {
@@ -1648,7 +1648,7 @@ Current state:
 - Your hobbies: ${state.hobbies.map(h => `${h.name} (skill ${h.skill}/100)`).join(', ') || 'none yet'}
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
-- World bounds: x from -44 to 44, z from -40 to 10 (z below -14 is the mountain range, which you can roam freely; z above 8 is the lake shore)
+- World bounds: x from ${WORLD_MIN_X} to ${WORLD_MAX_X}, z from ${WORLD_MIN_Z} to ${WORLD_MAX_Z} (z below -14 is the mountain range, which you can roam freely; z above 8 is the lake shore)
 ${trigger ? `- Something just prompted you (you may follow it, reinterpret it, or decline): "${trigger}"` : '- Nothing prompted you. This is purely your own impulse.'}
 
 Return ONLY JSON:

@@ -329,7 +329,9 @@ const state = {
   "disposedItems": [],
   "dirtDisposed": 0,
   "lightingMode": "auto",
-  "pendingBuilds": []
+  "pendingBuilds": [],
+  "codeWishes": [],
+  "shop": { "listings": [], "sold": [], "earnings": 0, "builtAt": null }
 };
 
 // Where Kelo-1's memory lives: browser storage on the website (about 5 MB), or files on disk in the
@@ -1706,6 +1708,7 @@ Current state:
 - Things you know how to use: ${typeof knowHowSummaryForAI === 'function' ? knowHowSummaryForAI() : 'nothing yet'}
 - In your Storehouse: ${typeof storehouseSummaryForAI === 'function' ? storehouseSummaryForAI() : 'empty'}
 - Thrown into your Disposal Pit (gone forever): ${typeof disposalSummaryForAI === 'function' ? disposalSummaryForAI() : 'nothing yet'}
+- Your shop website, where real people can buy your things: ${typeof shopSummaryForAI === 'function' ? shopSummaryForAI() : 'none'}
 - Your hobbies: ${state.hobbies.map(h => `${h.name} (skill ${h.skill}/100)`).join(', ') || 'none yet'}
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
@@ -1731,6 +1734,8 @@ Return ONLY JSON:
   "askQuestion": null OR {"title": "...", "question": "...", "presets": ["answer option", "answer option"]},
   "request": null OR {"item": "ANYTHING you want from visitors: food, a tool, a toy, a vehicle, a bigger island, an animal friend, materials...", "category": "one word", "why": "1 sentence"},
   "codeProject": null OR {"name": "repo-name", "desc": "..."},
+  "codeRequest": null OR {"feature": "something your world can't do yet that you wish the person who codes it would add (e.g. a way to fish)", "why": "1 sentence"},
+  "sellItem": null OR {"item": "exact name of something you own or art you made", "price": number in Canadian dollars, "description": "1-2 sentences you write for buyers"} (put it in your shop website at the NetNode cafe; real people may buy it),
   "webQuery": null OR "a topic you want to look up at the NetNode cafe",
   "usedConcept": null OR "name of one of your existing concepts this decision builds on",
   "newConcept": null OR {"name": "2-4 word name for a brand-new idea you just invented", "emoji": "one emoji", "definition": "1 sentence", "builtFrom": ["ideas or things it grew out of"]},
@@ -1883,6 +1888,11 @@ function applyDecision(decision, originLabel) {
           state.githubCommits++;
         }
       }
+
+      // A wish for his human to code something new into his world, and things he puts up in his shop
+      const cr = decision.codeRequest;
+      if (cr && typeof cr === 'object' && typeof addCodeRequest === 'function') addCodeRequest(cr.feature, cr.why, title);
+      if (decision.sellItem && typeof sellItemDecision === 'function') sellItemDecision(decision.sellItem);
 
       const used = findConcept(decision.usedConcept);
       if (used) used.uses = (used.uses || 0) + 1;
@@ -2092,6 +2102,9 @@ function runAutonomousLifeTick() {
       }
       // Now and then he looks for something real to build
       if (typeof startProject === 'function' && Math.random() < projectChance()) { startProject(pickNewProject()); return; }
+      // Now and then he puts something in his shop, or wishes his world could do something new
+      if (typeof tendShop === 'function' && Math.random() < shopChance()) { tendShop(); return; }
+      if (typeof wishForCode === 'function' && Math.random() < codeWishChance()) { wishForCode(); return; }
       // Now and then he reshapes a bit of the valley
       if (typeof shapeTheValleyOnMyOwn === 'function' && Math.random() < landscapeChance()) { shapeTheValleyOnMyOwn(); return; }
       // A telescope comes out mostly at night

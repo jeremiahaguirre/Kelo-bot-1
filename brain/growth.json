@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-10-30T19:12:54.620Z",
-  "runs": 1,
+  "updatedAt": "2026-10-31T05:56:00.882Z",
+  "runs": 2,
   "curiosities": [
-    "Acidic paper"
+    "Blueprint"
   ],
   "entries": [
     {
@@ -42,6 +42,38 @@
       },
       "shapeFrom": "Box",
       "nextCuriosity": "Acidic paper",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1793426160882",
+      "at": 1793426160882,
+      "brain": "procedural",
+      "topic": "Acidic paper",
+      "title": "Dreaming of Charles Fenerty",
+      "text": "Dear Diary, while nobody was around I looked up \"Acidic paper\" and drifted from Acidic paper to Charles Fenerty. Charles Fenerty was a Canadian inventor who invented the wood pulp process for papermaking, which was first adapted into the production of newsprint. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Acidic paper",
+          "url": "https://en.wikipedia.org/wiki/Acidic_paper",
+          "extract": "Acidic paper is paper which was manufactured using acidic substances. Widely used since the mid-nineteenth century, its pages become yellow within years, extremely brittle over decades, and eventually unreadable in the library and archive collections intended to preserve them. Th"
+        },
+        {
+          "title": "Charles Fenerty",
+          "url": "https://en.wikipedia.org/wiki/Charles_Fenerty",
+          "extract": "Charles Fenerty was a Canadian inventor who invented the wood pulp process for papermaking, which was first adapted into the production of newsprint. Fenerty was also a poet, writing over 32 known poems."
+        }
+      ],
+      "concept": {
+        "name": "Acidic Charles Loop",
+        "emoji": "🌀",
+        "definition": "The idea that acidic paper and charles fenerty share a hidden pattern.",
+        "builtFrom": [
+          "Acidic paper",
+          "Charles Fenerty"
+        ]
+      },
+      "shapeFrom": "Charles Fenerty",
+      "nextCuriosity": "Blueprint",
       "coreMemory": null
     }
   ]

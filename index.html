@@ -542,9 +542,10 @@
         <div class="text-xs font-bold text-slate-200">AI brain (optional)</div>
         <p class="text-[11px] text-slate-400">Without a key Kelo-1 thinks with his built-in brain. With a key he uses Gemini first, then Claude. Keys stay on this device.</p>
         <label class="block text-[11px] text-slate-300 font-semibold" for="geminiApiKeyInput">Gemini API key</label>
-        <input id="geminiApiKeyInput" type="password" autocomplete="off" placeholder="From Google AI Studio" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-indigo-400">
+        <div class="flex gap-2"><input id="geminiApiKeyInput" type="password" autocomplete="off" placeholder="From Google AI Studio" class="flex-1 min-w-0 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-indigo-400"><button type="button" data-remove-key="gemini" class="px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 text-xs font-semibold shrink-0">Remove</button></div>
         <label class="block text-[11px] text-slate-300 font-semibold" for="anthropicApiKeyInput">Anthropic (Claude) API key</label>
-        <input id="anthropicApiKeyInput" type="password" autocomplete="off" placeholder="sk-ant-..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-indigo-400">
+        <div class="flex gap-2"><input id="anthropicApiKeyInput" type="password" autocomplete="off" placeholder="sk-ant-..." class="flex-1 min-w-0 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-indigo-400"><button type="button" data-remove-key="anthropic" class="px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 text-xs font-semibold shrink-0">Remove</button></div>
+        <p id="aiKeyStatus" class="text-[11px] text-slate-400"></p>
       </section>
       <details class="p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
         <summary class="text-xs font-semibold text-slate-300 cursor-pointer">His last decision (details)</summary>

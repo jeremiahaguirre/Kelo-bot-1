@@ -712,6 +712,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('geminiApiKeyInput').value = apiKey;
     document.getElementById('anthropicApiKeyInput').value = claudeApiKey;
     document.getElementById('lastAgentStructuredOutput').textContent = state.lastStructuredTick || '';
+    updateKeyStatus();
     openModal('aiConfigModal');
   });
   const storeKey = (name, value) => {
@@ -735,8 +736,56 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     updateBrainButtonText();
     closeModal('aiConfigModal');
-    showToast(hasLLMKey() ? '🧠 AI keys saved in this browser.' : '🧠 Using the built-in procedural brain.');
+    showToast(hasLLMKey() ? '🧠 AI keys saved on this device. He starts thinking with the AI now.' : '🧠 Using the built-in procedural brain.');
+    if (hasLLMKey()) switchToAIThinking();
   });
+
+  // Remove a key: cleared from the box and from storage straight away
+  document.querySelectorAll('[data-remove-key]').forEach(btn => btn.addEventListener('click', () => {
+    const which = btn.getAttribute('data-remove-key');
+    if (which === 'gemini') { apiKey = ''; document.getElementById('geminiApiKeyInput').value = ''; storeKey('kelo1_gemini_api_key', ''); }
+    else { claudeApiKey = ''; document.getElementById('anthropicApiKeyInput').value = ''; storeKey('kelo1_anthropic_api_key', ''); }
+    if (desktop) desktop.setKeys({ gemini: apiKey, anthropic: claudeApiKey });
+    updateBrainButtonText();
+    updateKeyStatus();
+    showToast(`🗑️ ${which === 'gemini' ? 'Gemini' : 'Claude'} key removed. ${hasLLMKey() ? '' : 'He keeps everything he learned with the AI.'}`);
+  }));
+
+  // Look for a newly added key every 5 minutes (and whenever another tab changes it): with one, he
+  // switches to AI thinking straight away
+  const updateKeyStatus = () => {
+    const el = document.getElementById('aiKeyStatus');
+    if (!el) return;
+    el.textContent = !hasLLMKey() ? `Built-in brain${state.aiLearned.length ? `, drawing on ${state.aiLearned.length} ${state.aiLearned.length === 1 ? 'thing' : 'things'} he learned with the AI` : ''}.`
+      : state.aiOffline ? "Key saved, but the AI isn't answering right now; he's using what he already learned." : 'Thinking with the AI.';
+  };
+  const switchToAIThinking = () => {
+    state.aiOffline = false;
+    updateKeyStatus();
+    if (typeof decideNextAction === 'function') decideNextAction('You can think more clearly now.', 'Thinking with the AI');
+  };
+  const recheckKeys = async () => {
+    const hadKey = hasLLMKey();
+    try {
+      if (desktop) {
+        const keys = await desktop.getKeys();
+        apiKey = keys.gemini || '';
+        claudeApiKey = keys.anthropic || '';
+      } else {
+        apiKey = localStorage.getItem('kelo1_gemini_api_key') || '';
+        claudeApiKey = localStorage.getItem('kelo1_anthropic_api_key') || '';
+      }
+    } catch (e) {}
+    updateBrainButtonText();
+    updateKeyStatus();
+    if (!hadKey && hasLLMKey()) {
+      showToast('🧠 Found an AI key: Kelo-1 is switching to AI thinking.');
+      switchToAIThinking();
+    }
+  };
+  setInterval(recheckKeys, 5 * 60 * 1000);
+  window.addEventListener('storage', (e) => { if (/^kelo1_(gemini|anthropic)_api_key$/.test(e.key || '')) recheckKeys(); });
+  updateKeyStatus();
 
   // Image attachment for image-to-weld synthesis
   const previewBar = document.getElementById('attachedImagePreviewBar');

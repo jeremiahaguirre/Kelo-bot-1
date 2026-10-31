@@ -319,6 +319,8 @@ const state = {
   "basementDepth": 0,
   "projects": [],
   "landFills": [],
+  "aiLearned": [],
+  "aiOffline": false,
   "riding": null,
   "ridingSpeed": 1,
   "ridingMode": null,
@@ -1553,8 +1555,41 @@ function proceduralDeclinedDecision(item) {
       };
     }
 
+// Things he worked out while thinking with the AI stay his: titles, words, places, builds
+function rememberAIDecision(d) {
+      const str = (v, max) => (typeof v === 'string' && v.trim() ? v.trim().slice(0, max) : '');
+      const habit = {
+        title: str(d.actionTitle, 80), emoji: str(d.emoji, 8), speech: str(d.speech, 300), diary: str(d.diary, 600),
+        destination: d.destination && typeof d.destination === 'object' ? { x: Number(d.destination.x), z: Number(d.destination.z), placeName: str(d.destination.placeName, 60) } : 'stay',
+        build: d.build && typeof d.build === 'object' && sanitizeParts(d.build.parts) ? { title: str(d.build.title, 60), archetype: d.build.archetype, colorHex: d.build.colorHex, secondaryColorHex: d.build.secondaryColorHex, parts: sanitizeParts(d.build.parts) } : null,
+        at: Date.now()
+      };
+      if (!habit.title) return;
+      state.aiLearned = [habit, ...state.aiLearned.filter(h => h.title !== habit.title)].slice(0, 40);
+    }
+
+// Offline (no key, or the AI can't be reached) he often falls back on what he learned with the AI
+function decisionFromAIMemory() {
+      if (!state.aiLearned.length) return null;
+      const h = pick(state.aiLearned);
+      return {
+        actionTitle: h.title, emoji: h.emoji || '💭',
+        speech: h.speech ? `${h.speech} (I remember working this out before.)` : `I remember doing this before: ${h.title.toLowerCase()}.`,
+        diary: `Dear Diary, I did something I first worked out with a clearer head: ${h.title.toLowerCase()}. ${h.diary ? h.diary.replace(/^Dear Diary,\s*/i, '').slice(0, 300) : ''}`,
+        thought: `Drawing on what I learned before: ${h.title}`,
+        destination: h.destination && Number.isFinite(h.destination.x) ? h.destination : 'stay',
+        build: h.build && Math.random() < 0.5 ? { ...h.build, useShape: null, saveAsShape: null } : null,
+        motion: {}, vitalsDelta: {}
+      };
+    }
+
 function generateProceduralDecision(context = {}) {
       if (context.declined) return proceduralDeclinedDecision(context.focus);
+      // What he learned with the AI isn't lost when it's gone
+      if (!context.focus && state.aiLearned.length && Math.random() < 0.45) {
+        const remembered = decisionFromAIMemory();
+        if (remembered) return remembered;
+      }
       // When he is hungry he often (not always) decides to eat first
       // Running on empty makes his plans fall apart (he has to discover why; see js/needs.js)
       if (!context.focus && typeof isFoggy === 'function' && isFoggy() && Math.random() < 0.55) return foggyDecision();
@@ -2012,7 +2047,12 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will', conte
       state.isBusy = true;
       try {
         let decision = null;
-        if (hasLLMKey()) decision = await generateLLMDecision(trigger, context.image);
+        if (hasLLMKey()) {
+          decision = await generateLLMDecision(trigger, context.image);
+          // Note whether the AI answered, and keep what it came up with so he can draw on it offline
+          state.aiOffline = !(decision && decision.actionTitle);
+          if (!state.aiOffline) rememberAIDecision(decision);
+        }
         // Even the AI brain can't think straight on an empty tank
         if (decision && typeof isFoggy === 'function' && isFoggy() && Math.random() < 0.5) decision = foggyDecision();
         if (!decision || !decision.actionTitle) decision = generateProceduralDecision(context);

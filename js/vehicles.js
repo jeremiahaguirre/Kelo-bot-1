@@ -57,7 +57,8 @@ function registerVehicle(name) {
       const slots = parkingSlotsFor(type, name);
       const used = new Set(state.vehicles.map(v => `${v.x},${v.z}`));
       const [x, z] = slots.find(([sx, sz]) => !used.has(`${sx},${sz}`)) || slots[0];
-      const v = { id: 'veh-' + Date.now() + '-' + Math.floor(Math.random() * 1000), name, kind: type.kind, x, z, rotY: type.mode === 'water' ? BOAT_ROT_Y : 0, load: 0 };
+      // New vehicles arrive with an empty tank (js/knowhow.js)
+      const v = { id: 'veh-' + Date.now() + '-' + Math.floor(Math.random() * 1000), name, kind: type.kind, x, z, rotY: type.mode === 'water' ? BOAT_ROT_Y : 0, load: 0, fuel: 0 };
       state.vehicles.push(v);
       state.unstoredItems = state.unstoredItems.filter(n => n !== name);
       renderVehicles3D();
@@ -251,6 +252,7 @@ async function driveVehicle(v, target, label) {
       renderAllUI();
       state.targetPos = { x: target.x, z: target.z };
       await waitForArrival(90000);
+      if (typeof burnFuel === 'function') burnFuel(v, Math.hypot(state.botPos.x - v.x, state.botPos.z - v.z));
       v.x = Math.round(state.botPos.x * 10) / 10;
       v.z = Math.round(state.botPos.z * 10) / 10;
       v.rotY = state.botRotY - Math.PI / 2;
@@ -268,8 +270,10 @@ async function driveVehicle(v, target, label) {
 // Long trips: if he has a land vehicle (or an aircraft), he rides instead of walking
 async function travelTo(target, label) {
       const dist = Math.hypot(target.x - state.botPos.x, target.z - state.botPos.z);
-      const ride = dist > 14 && (state.vehicles.find(v => v.kind === 'air') || state.vehicles.find(v => v.kind === 'bike')
-        || (typeof inSnow === 'function' && inSnow(target) ? state.vehicles.find(v => v.kind === 'snowmobile') : null));
+      // Only something he knows how to use and that has fuel in it (otherwise he walks)
+      const usable = v => typeof readyToOperate !== 'function' || readyToOperate(v.name, v, { quiet: true });
+      const ride = dist > 14 && (state.vehicles.find(v => v.kind === 'air' && usable(v)) || state.vehicles.find(v => v.kind === 'bike' && usable(v))
+        || (typeof inSnow === 'function' && inSnow(target) ? state.vehicles.find(v => v.kind === 'snowmobile' && usable(v)) : null));
       if (ride) {
         await driveVehicle(ride, target, label);
         state.targetPos = { x: state.botPos.x, z: state.botPos.z };
@@ -285,6 +289,8 @@ async function haulDirt(site) {
       const truck = findVehicle('truck');
       const excavator = findVehicle('excavator');
       if (!truck || !excavator) return 0;
+      // Both machines need know-how and fuel before they'll do anything
+      if (typeof readyToOperate === 'function' && !(readyToOperate(truck.name, truck) && readyToOperate(excavator.name, excavator))) return 0;
       const pile = typeof pileOffset === 'function' ? pileOffset(site) : { x: site.x + 2.4, z: site.z };
       // 1. Bring the excavator to the pile if it isn't there yet
       if (Math.hypot(excavator.x - pile.x, excavator.z - pile.z) > 4) {
@@ -328,6 +334,7 @@ async function haulDirt(site) {
 async function goBoating(originLabel = 'Out on the Lake') {
       const boat = findVehicle('boat');
       if (!boat || state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
+      if (typeof readyToOperate === 'function' && !readyToOperate(boat.name, boat)) return false;
       state.isPracticing = true;
       try {
         const spots = Array.from({ length: 3 }, () => ({ x: randRange(-20, 20), z: randRange(14, 32) }));

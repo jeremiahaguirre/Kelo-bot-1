@@ -156,6 +156,11 @@ async function digAt(x, z, originLabel = 'Digging') {
         return 'needs-' + missing;
       }
 
+      // He has to know how a tool works before he picks it up (js/knowhow.js)
+      const toolKind = site && site.depth >= ROCK_DEPTH && hasEquipment('rock') ? 'rock' : 'dig';
+      const toolName = ownedItemNames().find(n => TOOL_NEEDS[toolKind].re.test(n));
+      if (toolName && typeof readyToOperate === 'function' && !readyToOperate(toolName)) return 'learning';
+
       state.isPracticing = true; // a physical activity: nothing else interrupts it
       try {
         // Grab the right tool off the Storehouse shelf first

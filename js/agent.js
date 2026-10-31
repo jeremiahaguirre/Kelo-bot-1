@@ -303,6 +303,7 @@ const state = {
   "knownNeeds": { "food": false, "water": false, "sleep": false },
   "isSleeping": false,
   "vehicles": [],
+  "knowHow": {},
   "riding": null,
   "ridingSpeed": 1,
   "ridingMode": null,
@@ -1634,7 +1635,8 @@ Current state:
 - How your body feels: ${typeof bodySymptoms === 'function' && bodySymptoms().length ? bodySymptoms().join('; ') : 'fine'}
 - Days you have been alive: ${typeof daysAlive === 'function' ? daysAlive() : 1}${typeof worldNow === 'function' ? ` (it is ${worldNow().season.toLowerCase()}, ${clockLabel(worldNow().hour)}${worldNow().isNight ? ', night' : ''})` : ''}
 - Digging: ${state.digSites.length ? state.digSites.map(d => `site (${d.x}, ${d.z}) ${d.depth.toFixed(1)} m deep, pile ${d.dirt.toFixed(1)}`).join('; ') : 'no digs yet'}; equipment: ${typeof hasEquipment === 'function' ? ['dig', 'rock', 'truck', 'excavator'].filter(hasEquipment).join(', ') || 'none' : 'none'}; finds so far: ${state.foundItems.map(f => f.name).join(', ') || 'none'}
-- Vehicles parked and ready: ${state.vehicles.map(v => v.name).join(', ') || 'none'}${state.knowsLakeDanger ? ' (you know you cannot breathe in deep water)' : ''}
+- Vehicles parked and ready: ${state.vehicles.map(v => typeof fuelNeededBy === 'function' && fuelNeededBy(v) ? `${v.name} (${Math.round(fuelLeft(v))}% ${fuelNeededBy(v)})` : v.name).join(', ') || 'none'}${state.knowsLakeDanger ? ' (you know you cannot breathe in deep water)' : ''}
+- Things you know how to use: ${typeof knowHowSummaryForAI === 'function' ? knowHowSummaryForAI() : 'nothing yet'}
 - In your Storehouse: ${typeof storehouseSummaryForAI === 'function' ? storehouseSummaryForAI() : 'empty'}
 - Thrown into your Disposal Pit (gone forever): ${typeof disposalSummaryForAI === 'function' ? disposalSummaryForAI() : 'nothing yet'}
 - Your hobbies: ${state.hobbies.map(h => `${h.name} (skill ${h.skill}/100)`).join(', ') || 'none yet'}
@@ -1933,6 +1935,7 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
         if (state.belongings.length > 20) state.belongings.length = 20;
       }
       if (typeof registerVehicle === 'function' && vehicleTypeFor(item)) registerVehicle(item);
+      if (typeof receiveFuel === 'function') receiveFuel(item);
       state.giftLog.unshift(entry);
       if (state.giftLog.length > 30) state.giftLog.length = 30;
       if (typeof bumpLifeStat === 'function') bumpLifeStat('gifts');
@@ -2000,6 +2003,8 @@ function runAutonomousLifeTick() {
         disposeUnwanted();
         return;
       }
+      // A telescope comes out mostly at night
+      if (typeof stargaze === 'function' && Math.random() < stargazeChance()) { stargaze(); return; }
       // With a boat he likes going out on the lake; without one he may wade in and learn the hard way
       if (typeof goBoating === 'function' && findVehicle('boat') && Math.random() < 0.1) { goBoating(); return; }
       if (typeof wadeIntoLake === 'function' && !state.knowsLakeDanger && Math.random() < 0.04) { wadeIntoLake(); return; }

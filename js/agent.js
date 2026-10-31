@@ -1738,6 +1738,7 @@ Return ONLY JSON:
   "shape": null OR {"action": "chop" | "plant" | "road" | "hill" | "undo", "x": number, "z": number, "toX": number, "toZ": number, "id": "an id from your list, for undo", "why": "1 sentence"} (change the valley yourself: chop a tree with an axe, plant seeds you have, lay a gravel road, raise a hill, or undo something you added; buildings are never touched),
   "buildProject": null OR "one of the real things you know how to build" (look it up and ask for the materials it takes; one project at a time),
   "expandLand": null OR {"x": number, "why": "1 sentence"} (from now on, tip the dirt you dig into the lake off the beach near x to make new land, instead of the Disposal Pit; deeper water needs more dirt),
+  "takeOut": null OR {"item": "something in your Storehouse or a piece in your Museum", "purpose": "use" | "display"} (fetch it: use a stored thing, or stand a Museum piece out in the valley again; to throw something out use "discard"),
   "checkMail": true OR false (whether you feel like walking to the post office to pick up your mail after this),
 ${state.knowsDigging ? `  "dig": null OR {"x": number, "z": number} (dig or mine at that spot; you need a shovel or pickaxe, a jackhammer once you hit rock, and a dump truck plus excavator once the dirt pile is big; if you lack them you will ask for them),
 ` : ''}
@@ -1907,13 +1908,19 @@ function applyDecision(decision, originLabel) {
       }
 
       if (decision.shape && typeof applyShapeDecision === 'function') applyShapeDecision(decision.shape);
+      const to = decision.takeOut;
+      if (to && typeof to === 'object' && typeof takeOutOfMuseum === 'function') {
+        const what = str(to.item, 120);
+        if (findMuseumPiece(what)) doWhenFree(() => takeOutOfMuseum(what, 'display', '', 'Decided to Rearrange'));
+        else if (findOwnedName(what)) doWhenFree(() => takeOutToUse(what));
+      }
       if (decision.expandLand && typeof startLandFill === 'function') startLandFill(decision.expandLand.x, str(decision.expandLand.why, 160));
       if (typeof startProject === 'function' && typeof decision.buildProject === 'string' && planFor(decision.buildProject.toLowerCase().trim())) {
         doWhenFree(() => startProject(decision.buildProject.toLowerCase().trim(), 'Decided to Build Something Real'));
       }
 
       const dc = decision.discard;
-      if (dc && typeof dc === 'object' && typeof disposeItem === 'function' && findOwnedName(dc.item)) {
+      if (dc && typeof dc === 'object' && typeof disposeItem === 'function' && (findOwnedName(dc.item) || (typeof findMuseumPiece === 'function' && findMuseumPiece(dc.item)))) {
         doWhenFree(() => disposeItem(dc.item, str(dc.why, 200), 'Decided to Throw Something Away'));
       }
 

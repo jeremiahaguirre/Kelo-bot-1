@@ -46,7 +46,7 @@ function modelThumbnail(key, buildModel) {
 
 function storehouseViewerItems() {
       return storedItems().map((it, i) => ({
-        label: it.name, floor: shelfSlots.length ? Math.floor(i / shelfSlots.length) : 0,
+        label: it.name, name: it.name, floor: shelfSlots.length ? Math.floor(i / shelfSlots.length) : 0,
         image: () => modelThumbnail('item:' + it.name, () => buildItemModel3D(it.name, { label: false }))
       }));
     }
@@ -54,11 +54,11 @@ function storehouseViewerItems() {
 function museumViewerItems() {
       const perFloor = MUSEUM_PLINTHS.length || 8, perWall = MUSEUM_FRAMES.length || 8;
       const sculptures = allMuseumSculptures().map((c, i) => ({
-        label: c.title || 'Untitled', floor: Math.floor(i / perFloor), sub: 'Sculpture',
+        label: c.title || 'Untitled', name: c.title, floor: Math.floor(i / perFloor), sub: 'Sculpture',
         image: () => modelThumbnail('art:' + c.title + (c.createdTime || ''), () => buildCreationGroup(c))
       }));
       const paintings = allMuseumPaintings().map((m, i) => ({
-        label: `"${m.text}"`, floor: Math.floor(i / perWall), sub: 'Painting',
+        label: `"${m.text}"`, name: m.text, floor: Math.floor(i / perWall), sub: 'Painting',
         image: () => {
           const key = 'paint:' + m.seed;
           if (!thumbCache.has(key)) thumbCache.set(key, paintMuralCanvas(m).toDataURL('image/jpeg', 0.85));
@@ -138,6 +138,10 @@ function renderViewer() {
           <figure class="flex flex-col items-center justify-end gap-1 min-w-0">
             <img src="${escapeHtml(it.image())}" alt="" class="w-full max-w-[110px] aspect-square object-contain drop-shadow-lg">
             <figcaption class="w-full text-center text-[10px] leading-tight text-amber-50 bg-black/40 rounded px-1 py-0.5 truncate" title="${escapeHtml(it.label)}">${escapeHtml(it.label)}${it.sub ? ` <span class="text-amber-300/80">· ${escapeHtml(it.sub)}</span>` : ''}</figcaption>
+            <div class="flex gap-1">
+              ${it.sub === 'Painting' ? '' : `<button data-take="${which === 'museum' ? 'display' : 'use'}" data-name="${escapeHtml(it.name || '')}" class="px-1.5 py-0.5 rounded bg-emerald-700/80 hover:bg-emerald-600 text-[9px] text-white">${which === 'museum' ? 'Put outside' : 'Use it'}</button>`}
+              <button data-take="dispose" data-name="${escapeHtml(it.name || '')}" class="px-1.5 py-0.5 rounded bg-rose-800/80 hover:bg-rose-700 text-[9px] text-white">Throw out</button>
+            </div>
           </figure>` : '<div></div>';
         const rows = [0, 1, 2].map(r => `
           <div class="relative grid grid-cols-4 gap-2 px-3 pt-3 pb-4">
@@ -158,6 +162,17 @@ function renderViewer() {
       el.querySelector('[data-viewer="prev"]').onclick = () => turnViewerPage(-1);
       el.querySelector('[data-viewer="next"]').onclick = () => turnViewerPage(1);
       el.querySelector('[data-viewer="exit"]').onclick = closeViewer;
+      // Suggest he takes something out: he does it as soon as he's free (js/takeout.js)
+      el.querySelectorAll('[data-take]').forEach(btn => btn.addEventListener('click', () => {
+        const name = btn.getAttribute('data-name'), what = btn.getAttribute('data-take');
+        const job = what === 'dispose' ? () => disposeItem(name, 'A visitor suggested it.', 'A Visitor Suggested It')
+          : what === 'display' ? () => takeOutOfMuseum(name, 'display', 'A visitor suggested it.', 'A Visitor Suggested It')
+          : () => takeOutToUse(name, 'a visitor suggested it');
+        doWhenFree(job);
+        showToast(what === 'dispose' ? `🗑️ Kelo-1 will throw out ${name} when he's free.` : `👍 Kelo-1 will take ${name} out when he's free.`);
+        btn.disabled = true;
+        btn.textContent = 'Asked ✓';
+      }));
     }
 
 // Clicking a building in the world (called from scene.js before the click is treated as ground)

@@ -129,6 +129,8 @@ async function sinkVehicleIntoPit(v) {
 // Kelo-1 decides something has to go. `why` is his own reason, in his words.
 async function disposeItem(name, why = '', originLabel = 'Clearing Things Out') {
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
+      // A sculpture or painting in his Museum is fetched from there first (js/takeout.js)
+      if (!findOwnedName(name) && typeof findMuseumPiece === 'function' && findMuseumPiece(name)) return takeOutOfMuseum(name, 'dispose', why, originLabel);
       const item = findOwnedName(name);
       if (!item) return false;
       state.isPracticing = true;

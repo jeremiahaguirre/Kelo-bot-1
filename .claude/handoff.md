@@ -77,14 +77,13 @@ He may change the world freely. He can never move or change the buildings, and h
 - Check that every test run finishes with no page errors.
 
 ## Exact next steps (open tasks)
-4. **#21 Seasons and snow.**
+1. **#21 Seasons and snow.** (snowshoe, ski, snowmobile and helicopter models already exist in gearmodels.js; `inSnow` is referenced in vehicles.js but not defined yet)
    - Show seasonal visuals, including snow cover in winter.
    - In snow he sinks and gets stuck, then works it out: research leads to a request, and the visitor gifts the solution (snowshoes, skis, snowmobile or helicopter).
-5. **#23 Shape the world.**
+2. **#23 Shape the world.** (the axe model exists)
    - Chop trees with an axe, plant seeds he has requested, build roads and terraform.
    - He can undo or remove anything he has added. Buildings stay untouchable.
-6. **#24 Real builds.** He requests the materials needed to build real items he finds online.
-7. **#25 Polish.** Improve the graphics and the UI/UX of interactions.
-   - On mobile the vitals grid in the top-left card is cramped (labels overlap).
+3. **#24 Real builds.** He requests the materials needed to build real items he finds online.
+4. **#25 Polish (ongoing).** Three rounds are done; keep improving graphics and UI/UX as features land.
 
 Make sure everything looks right when it is built, removed or invented. Check each change with a screenshot.

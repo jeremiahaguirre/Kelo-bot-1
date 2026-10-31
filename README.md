@@ -69,6 +69,7 @@ Open the **☰ menu** (top right):
 ```text
 Kelo-bot-1/
 ├── index.html           # The app (also the GitHub Pages entry point)
+├── shop.html            # Kelo-1's shop website (reads his save, or shop-data.json once you export and commit it)
 ├── css/style.css
 ├── js/
 │   ├── agent.js         # State, decision engine, AI providers, requests (loaded first)
@@ -99,6 +100,9 @@ Kelo-bot-1/
 │   ├── landscape.js     # Chopping trees, planting, roads and hills, and undoing them
 │   ├── projects.js      # Real builds: finding plans online, asking for materials, building them
 │   ├── town.js          # Keeps the town free of his builds (the beach is fine)
+│   ├── coderequests.js  # Code requests: features he asks his human to code into his world
+│   ├── shopkeeping.js   # His shop in the game: listing things for sale, "Sold", earnings, Export shop
+│   ├── shop.js          # The shop website itself (shop.html)
 │   ├── main.js          # UI wiring
 │   └── portal.js        # Send-him-something panel
 ├── brain/growth.json    # His dreams, written by the scheduled Action

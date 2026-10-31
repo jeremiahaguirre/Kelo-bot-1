@@ -105,13 +105,16 @@ function renderRequestsTab() {
       }
 
       // The inventory pills are rendered by renderPortal() in js/portal.js
+      // His shop card and the code wishlist button (js/shopkeeping.js, js/coderequests.js)
+      if (typeof renderShopPanel === 'function') renderShopPanel();
+      if (typeof renderCodeWishlistButton === 'function') renderCodeWishlistButton();
 
       const list = document.getElementById('requestsInboxList');
       // Only rebuild the letters when they actually change, so a note you are typing isn't wiped
       const requestsKey = JSON.stringify(state.requestsToUser.map(r => [r.id, r.fulfilled, r.declined, r.userAnswer]));
       if (list.dataset.renderKey === requestsKey) return;
       list.dataset.renderKey = requestsKey;
-      list.innerHTML = state.requestsToUser.map(req => `
+      list.innerHTML = state.requestsToUser.map(req => req.category === 'code' && typeof codeRequestCardHtml === 'function' ? codeRequestCardHtml(req) : `
         <div class="p-4 rounded-2xl border ${req.fulfilled ? 'bg-slate-950/60 border-emerald-500/30' : (req.isToolRequest ? 'bg-slate-950 border-amber-500/50 shadow-lg' : 'bg-slate-950 border-rose-500/40 shadow-lg')} space-y-2.5">
           <div class="flex items-center justify-between gap-2">
             <span class="text-xs font-bold text-white flex items-center gap-1.5">
@@ -168,6 +171,8 @@ function renderRequestsTab() {
           `)}
         </div>
       `).join('');
+
+      if (typeof bindCodeRequestButtons === 'function') bindCodeRequestButtons(list);
 
       const submitPerspective = (reqId, answerText) => {
         const req = state.requestsToUser.find(r => r.id === reqId);

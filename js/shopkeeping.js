@@ -65,7 +65,11 @@ function sellableCandidates() {
       const counts = {};
       names.forEach(n => { counts[n] = (counts[n] || 0) + 1; });
       Object.entries(counts).forEach(([name, n]) => {
-        if (n > 1 && !isVehicleName(name) && listedCount('item', name) < n - 1) out.push({ kind: 'item', ref: name, name });
+        const supply = typeof isPrinterSupply === 'function' && isPrinterSupply(name);
+        if (n > 1 && !isVehicleName(name) && !supply && listedCount('item', name) < n - 1) out.push({ kind: 'item', ref: name, name });
+        // Things he 3D-printed himself are made to sell, even the only one
+        const printed = state.belongings.some(b => b.name === name && b.category === 'printed');
+        if (printed && n === 1 && !listedCount('item', name)) out.push({ kind: 'item', ref: name, name });
       });
       state.inventedCreations.filter(c => c.inMuseum && !c.shopId).forEach(c => out.push({ kind: 'sculpture', creation: c, name: c.title || 'Untitled sculpture' }));
       state.murals.filter(m => !listedCount('painting', m.seed)).forEach(m => out.push({ kind: 'painting', ref: m.seed, mural: m, name: `"${m.text}" (painting)` }));

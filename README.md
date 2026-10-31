@@ -103,6 +103,7 @@ Kelo-bot-1/
 │   ├── coderequests.js  # Code requests: features he asks his human to code into his world
 │   ├── shopkeeping.js   # His shop in the game: listing things for sale, "Sold", earnings, Export shop
 │   ├── shop.js          # The shop website itself (shop.html)
+│   ├── printer.js       # His 3D printer: setting it up, learning it, filament spools, prints that fail and succeed
 │   ├── main.js          # UI wiring
 │   └── portal.js        # Send-him-something panel
 ├── brain/growth.json    # His dreams, written by the scheduled Action

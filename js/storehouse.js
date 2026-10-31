@@ -7,9 +7,11 @@
 const STOREHOUSE = { x: 5.5, z: -6.5, w: 5.2, d: 3.6, wallH: 2.6 };
 const SHELF_SLOT = 0.68;
 const ITEM_FIT = 0.62; // the most an item can measure and still fit on a shelf
-// The hatch and stairs down to the basements, inside by the right-hand wall (local to the Storehouse)
-const STOREHOUSE_HATCH_LOCAL = { x: 1.35, z: 0.75 };
-const BASEMENT_LEVEL_DEPTH = 2.6;
+// The stairwell down to the basements, in the middle of the floor (local to the Storehouse).
+// The spiral stairs themselves and the rooms below are built in js/basements.js while he uses them.
+const STOREHOUSE_HATCH_LOCAL = { x: 0, z: 0.55 };
+const STAIRWELL_R = 0.8;          // the round hole in each floor the spiral stairs go down through
+const BASEMENT_LEVEL_DEPTH = 3.4; // floor to floor, tall enough for him to stand up in
 
 let storehouseGroup = null;
 let shelfItemsGroup = null;
@@ -45,8 +47,7 @@ function buildStorehouse3D() {
       const woodFloor = new THREE.MeshStandardMaterial({ color: 0x8a5a2b, roughness: 0.9 });
       const shelfWood = new THREE.MeshStandardMaterial({ color: 0xc8955a, roughness: 0.8 });
 
-      const floor = new THREE.Mesh(new THREE.BoxGeometry(w, 0.15, d), woodFloor);
-      floor.position.y = 0.075;
+      const floor = new THREE.Mesh(floorWithStairwell(w, d, 0.15, STOREHOUSE_HATCH_LOCAL), woodFloor);
       floor.receiveShadow = true;
       const back = new THREE.Mesh(new THREE.BoxGeometry(w, wallH, 0.15), barnRed);
       back.position.set(0, wallH / 2, -d / 2);
@@ -111,7 +112,7 @@ function buildStorehouse3D() {
       addRack(-w / 2 + 0.35, -0.15, 'z', d - 1.3, Math.PI / 2);
       addRack(w / 2 - 0.35, -0.15, 'z', d - 1.3, -Math.PI / 2);
 
-      storehouseGroup.add(buildBasementHatch(STOREHOUSE_HATCH_LOCAL, 0.155));
+      storehouseGroup.add(buildBasementHatch(STOREHOUSE_HATCH_LOCAL, 0.15, Math.PI));
       shelfItemsGroup = new THREE.Group();
       overflowGroup = new THREE.Group();
       storehouseGroup.add(shelfItemsGroup, overflowGroup);
@@ -120,24 +121,43 @@ function buildStorehouse3D() {
       renderStorehouseShelves3D();
     }
 
-// A trapdoor with the top of a staircase going down: used by the Storehouse and the Museum
-function buildBasementHatch(at, floorY) {
+// A floor slab (sitting on y = 0, `thick` high) with the round stairwell hole cut through it
+function floorWithStairwell(w, d, thick, hole) {
+      const shape = new THREE.Shape([
+        new THREE.Vector2(-w / 2, -d / 2), new THREE.Vector2(w / 2, -d / 2), new THREE.Vector2(w / 2, d / 2), new THREE.Vector2(-w / 2, d / 2)
+      ]);
+      const ring = new THREE.Path();
+      ring.absarc(hole.x, -hole.z, STAIRWELL_R, 0, Math.PI * 2, true);
+      shape.holes.push(ring);
+      const geo = new THREE.ExtrudeGeometry(shape, { depth: thick, bevelEnabled: false, curveSegments: 20 });
+      geo.rotateX(-Math.PI / 2);
+      return geo;
+    }
+
+// The top of the stairwell: a railing around the hole with a gap where he steps on (entryAngle,
+// measured in the floor plane like Math.atan2(z, x)), and a dark floor down the hole while
+// nobody is using it. Used by the Storehouse and the Museum.
+function buildBasementHatch(at, floorY, entryAngle = 0) {
       const g = new THREE.Group();
-      const dark = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.02, 1.3), new THREE.MeshStandardMaterial({ color: 0x0b0f17 }));
-      dark.position.y = floorY + 0.005;
+      const dark = new THREE.Mesh(new THREE.CircleGeometry(STAIRWELL_R, 24), new THREE.MeshStandardMaterial({ color: 0x0b0f17 }));
+      dark.rotation.x = -Math.PI / 2;
+      dark.position.y = Math.max(0.02, floorY - 0.05);
+      dark.userData.stairwellDark = true;
       g.add(dark);
-      const wood = new THREE.MeshStandardMaterial({ color: 0x8a5a2b, roughness: 0.9 });
-      for (let i = 0; i < 3; i++) {
-        const step = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.06, 0.28), wood);
-        step.position.set(0, floorY - 0.12 - i * 0.22, -0.45 + i * 0.3);
-        g.add(step);
+      const steel = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.6, roughness: 0.4 });
+      const r = STAIRWELL_R + 0.06, gap = 0.55;
+      const arc = [];
+      for (let k = 0; k <= 24; k++) {
+        const a = entryAngle + gap + (Math.PI * 2 - gap * 2) * (k / 24);
+        arc.push(new THREE.Vector3(Math.cos(a) * r, floorY + 0.85, Math.sin(a) * r));
       }
-      const lid = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.05, 1.3), wood);
-      lid.position.set(-0.55, floorY + 0.6, 0);
-      lid.rotation.z = Math.PI / 2.2;
-      const rail = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.9, 0.05), new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.6 }));
-      rail.position.set(0.52, floorY + 0.45, -0.6);
-      g.add(lid, rail);
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(arc), 48, 0.03, 6, false), steel));
+      for (let k = 0; k <= 6; k++) {
+        const a = entryAngle + gap + (Math.PI * 2 - gap * 2) * (k / 6);
+        const post = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.85, 0.05), steel);
+        post.position.set(Math.cos(a) * r, floorY + 0.425, Math.sin(a) * r);
+        g.add(post);
+      }
       g.position.set(at.x, 0, at.z);
       return g;
     }
@@ -152,25 +172,12 @@ function storehouseLevelOf(name) {
       return i < 0 || !shelfSlots.length ? 0 : Math.floor(i / shelfSlots.length);
     }
 
-// Down the stairs to a basement level and back up again (the Storehouse and the Museum both use it)
+// Down the stairs to a basement level and back up again (the Storehouse and the Museum both use it).
+// The real walk is in js/basements.js; this only goes in if he is really at the building.
 async function visitBasement(hatch, level, what) {
-      if (!level) return;
-      state.targetPos = { x: hatch.x, z: hatch.z };
-      renderAllUI();
-      await waitForArrival(30000);
-      state.moodEmoji = '🪜';
-      state.moodTitle = `Going down to basement B${level}`;
-      state.speechBubble = `${what} is down on B${level}. Down the stairs I go.`;
-      renderAllUI();
-      const deep = level * BASEMENT_LEVEL_DEPTH;
-      for (let d = 0; d <= deep; d += 0.13) { state.basementDepth = d; await new Promise(r => setTimeout(r, 40)); }
-      state.moodTitle = `Down on basement B${level}`;
-      renderAllUI();
-      await new Promise(r => setTimeout(r, 1600));
-      state.moodTitle = 'Climbing back up the stairs';
-      renderAllUI();
-      for (let d = deep; d >= 0; d -= 0.13) { state.basementDepth = d; await new Promise(r => setTimeout(r, 40)); }
-      state.basementDepth = 0;
+      if (!level || typeof goIndoors !== 'function') return false;
+      const key = Math.hypot(hatch.x - MUSEUM.x, hatch.z - MUSEUM.z) < Math.hypot(hatch.x - STOREHOUSE.x, hatch.z - STOREHOUSE.z) ? 'museum' : 'storehouse';
+      return goIndoors(key, [{ mode: 'look', level, what }]);
     }
 
 function storehouseHatchWorld() {
@@ -212,7 +219,7 @@ function renderStorehouseShelves3D() {
       const levels = storehouseBasementLevels();
       if (levels > 0) {
         const sign = makeSignMesh(levels === 1 ? 'BASEMENT B1' : `BASEMENTS B1-B${levels}`, { bg: '#1e293b', fg: '#fbbf24', width: 1.3, height: 0.24 });
-        sign.position.set(STOREHOUSE_HATCH_LOCAL.x, 1.25, STOREHOUSE_HATCH_LOCAL.z - 0.45);
+        sign.position.set(0, 2.3, -STOREHOUSE.d / 2 + 0.1);
         overflowGroup.add(sign);
       }
     }
@@ -247,7 +254,29 @@ function storehouseDoor() {
       return { x: TOWN_LOCATIONS.storehouse.x, z: TOWN_LOCATIONS.storehouse.z };
     }
 
-// Carry new things to the Storehouse and put them on the shelves
+// Where a thing goes: its floor, its shelf slot (local to the Storehouse, as on the ground floor)
+// and where he stands to reach it. index is its place in storedItems().
+function storehouseSlotFor(index) {
+      if (index < 0 || !shelfSlots.length) return null;
+      const slot = shelfSlots[index % shelfSlots.length];
+      return {
+        level: Math.floor(index / shelfSlots.length), slot,
+        stand: { x: slot.x + Math.sin(slot.rotY) * 0.72, z: slot.z + Math.cos(slot.rotY) * 0.72 }
+      };
+    }
+
+// The model as it sits on a shelf, in its slot
+function shelfHolderFor(name, slot) {
+      const holder = new THREE.Group();
+      holder.add(fitOnShelf(buildItemModel3D(name, { label: false })));
+      holder.position.set(slot.x, slot.y, slot.z);
+      holder.rotation.y = slot.rotY;
+      holder.userData.itemName = name;
+      return holder;
+    }
+
+// Carry new things to the Storehouse and put them on the shelves: he walks in, goes to each
+// one's own shelf (down the stairs if it belongs in a basement) and sets it there
 async function putAwayItems() {
       if (state.unstoredItems.length === 0 || state.isBusy || state.isBuilding || state.isPracticing) return false;
       state.isPracticing = true;
@@ -256,18 +285,33 @@ async function putAwayItems() {
         if (typeof setCarriedObject === 'function') setCarriedObject(buildItemModel3D(items[0], { label: false }));
         state.currentLocKey = 'custom';
         state.customPlaceName = 'his Storehouse';
-        state.targetPos = storehouseDoor();
         state.microPose = 'normal';
         state.moodEmoji = '📦';
         state.moodTitle = `Putting away ${items.length > 1 ? `${items.length} things` : items[0]}`.slice(0, 80);
         state.speechBubble = `Taking ${items.length > 1 ? 'my new things' : items[0]} to the Storehouse.`;
         renderAllUI();
-        await waitForArrival(60000);
-        await new Promise(r => setTimeout(r, Math.min(6000, 1500 + items.length * 900)));
+        // Where each one will sit once they are all put away (in shelf order, so nothing shifts)
+        const keep = state.unstoredItems;
+        state.unstoredItems = keep.filter(n => !items.includes(n));
+        const order = storedItems();
+        state.unstoredItems = keep;
+        const placed = items.map(name => ({ name, index: order.findIndex(it => it.name === name) }))
+          .sort((p, q) => p.index - q.index)
+          .map(p => ({ name: p.name, at: storehouseSlotFor(p.index) }));
+        const shelve = name => () => {
+          state.unstoredItems = state.unstoredItems.filter(n => n !== name);
+          renderStorehouseShelves3D();
+          return true;
+        };
+        // He walks each of the first few to its shelf; the rest go on the shelves next to them
+        const jobs = placed.map(({ name, at }, k) => (at && k < 4 ? {
+          mode: 'place', level: at.level, slot: at.slot, stand: at.stand, what: name,
+          carry: () => buildItemModel3D(name, { label: false }),
+          landing: () => shelfHolderFor(name, at.slot),
+          onPlaced: shelve(name)
+        } : { mode: 'bookkeeping', onPlaced: shelve(name) }));
+        if (typeof goIndoors === 'function') await goIndoors('storehouse', jobs);
         state.unstoredItems = state.unstoredItems.filter(n => !items.includes(n));
-        // The shelves upstairs are full? Then the new things go down to a basement
-        const deepest = Math.max(0, ...items.map(storehouseLevelOf));
-        if (deepest > 0) await visitBasement(storehouseHatchWorld(), deepest, items.length > 1 ? 'Room for these' : `Room for the ${items[0]}`);
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
         renderStorehouseShelves3D();
         const listText = items.length > 3 ? `${items.slice(0, 3).join(', ')} and ${items.length - 3} more` : items.join(', ');
@@ -286,25 +330,29 @@ async function putAwayItems() {
       }
     }
 
-// Before a job that needs a tool, he walks over and takes it off the shelf.
+// Before a job that needs a tool, he walks over, goes in to its shelf and takes it down.
 // Called from inside another activity, so it doesn't change the activity flags itself.
 async function fetchFromStorehouse(matchName) {
-      const item = storedItems().find(i => (matchName instanceof RegExp ? matchName.test(i.name) : i.name.toLowerCase() === String(matchName).toLowerCase()));
-      if (!item) return null;
+      const list = storedItems();
+      const index = list.findIndex(i => (matchName instanceof RegExp ? matchName.test(i.name) : i.name.toLowerCase() === String(matchName).toLowerCase()));
+      if (index < 0) return null;
+      const item = list[index];
+      const plain = item.name.replace(/^(an?|the)\s+/i, '');
       state.currentLocKey = 'custom';
       state.customPlaceName = 'his Storehouse';
-      state.targetPos = storehouseDoor();
       state.microPose = 'normal';
       state.moodEmoji = '📦';
-      state.moodTitle = `Grabbing the ${item.name.replace(/^(an?|the)\s+/i, '')} from the Storehouse`.slice(0, 80);
+      state.moodTitle = `Grabbing the ${plain} from the Storehouse`.slice(0, 80);
       renderAllUI();
-      await waitForArrival(60000);
-      const level = storehouseLevelOf(item.name);
-      if (level > 0) await visitBasement(storehouseHatchWorld(), level, `The ${item.name.replace(/^(an?|the)\s+/i, '')}`);
-      await new Promise(r => setTimeout(r, 1200));
-      if (typeof setCarriedObject === 'function') {
-        setCarriedObject(buildItemModel3D(item.name, { label: false }));
+      const at = storehouseSlotFor(index);
+      const carry = () => buildItemModel3D(item.name, { label: false });
+      if (typeof goIndoors === 'function' && at) {
+        await goIndoors('storehouse', [{
+          mode: 'take', level: at.level, slot: at.slot, stand: at.stand, what: `The ${plain}`,
+          match: o => o.userData && o.userData.itemName === item.name, carried: carry
+        }]);
       }
+      if (typeof setCarriedObject === 'function' && (typeof carriedObject === 'undefined' || !carriedObject)) setCarriedObject(carry());
       return item;
     }
 

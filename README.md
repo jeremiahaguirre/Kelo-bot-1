@@ -95,6 +95,7 @@ Kelo-bot-1/
 │   ├── viewer.js        # Click the Storehouse, the Museum or a photo to look through them
 │   ├── takeout.js       # Taking things back out of the Museum and Storehouse to use or throw out
 │   ├── museum.js        # His Museum of Art & Ideas: sculptures on plinths, paintings in frames
+│   ├── basements.js     # Walking into the Storehouse and Museum: shelves, spiral stairs, lit basements seen through a cutaway
 │   ├── vehicles.js      # The vehicle yard, helipad and dock; driving, boating, hauling dirt
 │   ├── landfill.js      # Tipping dug dirt into the lake to make new land
 │   ├── disposal.js      # The Disposal Pit: whatever he throws in is gone for good

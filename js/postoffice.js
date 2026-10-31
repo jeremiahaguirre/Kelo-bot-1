@@ -43,7 +43,9 @@ function waitForArrival(timeoutMs = 15000) {
         const started = Date.now();
         const check = () => {
           const d = Math.hypot(state.targetPos.x - state.botPos.x, state.targetPos.z - state.botPos.z);
-          if (d < 0.6 || Date.now() - started > timeoutMs) resolve();
+          // A target inside a building's footprint is reached at its edge (arrivalRadius in scene.js)
+          const near = Math.max(0.6, typeof arrivalRadius === 'function' ? arrivalRadius(state.targetPos) + 0.15 : 0);
+          if (d < near || Date.now() - started > timeoutMs) resolve();
           else setTimeout(check, 250);
         };
         check();

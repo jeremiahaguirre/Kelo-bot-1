@@ -37,10 +37,16 @@ async function takeOutOfMuseum(name, purpose = 'display', why = '', originLabel 
         state.moodTitle = `Fetching ${found.label} from the Museum`.slice(0, 80);
         renderAllUI();
         await waitForArrival(90000);
-        const floor = museumFloorOf(found);
-        if (floor > 0) await visitBasement(museumHatchWorld(), floor, found.label);
-        // Off its plinth or wall and into his arms
+        // In to its plinth or wall (down the stairs if it's on a lower floor) and into his arms
         const carried = found.kind === 'sculpture' ? buildCreationGroup(found.piece) : null;
+        if (typeof takeFromMuseum === 'function') {
+          await takeFromMuseum(found, () => {
+            if (found.kind === 'sculpture') return lifeSize(buildCreationGroup(found.piece), 1.4);
+            const frame = buildMuseumFrame(found.piece);
+            frame.scale.setScalar(0.55);
+            return frame;
+          });
+        }
         if (found.kind === 'sculpture') {
           state.inventedCreations = state.inventedCreations.filter(c => c !== found.piece);
         } else {

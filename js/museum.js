@@ -5,7 +5,7 @@
 
 const MUSEUM = { x: -40, z: -5, w: 12, d: 8, wallH: 3.8 };
 const MUSEUM_DOOR = { x: MUSEUM.x, z: MUSEUM.z + MUSEUM.d / 2 + 1.6 };
-const MUSEUM_HATCH_LOCAL = { x: MUSEUM.w / 2 - 1.0, z: -MUSEUM.d / 2 + 1.2 }; // stairs down to the lower galleries
+const MUSEUM_HATCH_LOCAL = { x: 0, z: -2.6 }; // the spiral stairs down to the lower galleries, between the back plinths
 const MUSEUM_PLINTHS = [];   // filled by buildMuseum3D: where sculptures stand
 const MUSEUM_FRAMES = [];    // where paintings hang
 let museumGroup = null;
@@ -23,11 +23,11 @@ function buildMuseum3D() {
       // Real veined marble and cut stone (js/materials.js)
       if (typeof finishMaterial === 'function') { finishMaterial(marble, 'marble'); finishMaterial(stone, 'stone', { repeat: 3 }); finishMaterial(floorMat, 'marble', { repeat: 4 }); }
       // Plinth base and floor, raised on steps
-      const base = new THREE.Mesh(new THREE.BoxGeometry(w + 1, 0.5, d + 1), stone);
-      base.position.y = 0.25;
+      // (both with the round stairwell cut through them)
+      const base = new THREE.Mesh(floorWithStairwell(w + 1, d + 1, 0.5, MUSEUM_HATCH_LOCAL), stone);
       base.receiveShadow = true;
-      const floor = new THREE.Mesh(new THREE.BoxGeometry(w, 0.06, d), floorMat);
-      floor.position.y = 0.53;
+      const floor = new THREE.Mesh(floorWithStairwell(w, d, 0.06, MUSEUM_HATCH_LOCAL), floorMat);
+      floor.position.y = 0.5;
       floor.receiveShadow = true;
       for (let i = 0; i < 3; i++) {
         const step = new THREE.Mesh(new THREE.BoxGeometry(5 - i * 0.4, 0.17, 0.5), stone);
@@ -80,7 +80,7 @@ function buildMuseum3D() {
       MUSEUM_FRAMES.length = 0;
       for (let i = 0; i < 4; i++) MUSEUM_FRAMES.push({ x: -w / 2 + 1.6 + i * ((w - 3.2) / 3), y: 2.6, z: -d / 2 + 0.12, rotY: 0 });
       [-1, 1].forEach(s => [-1.6, 1.4].forEach(fz => MUSEUM_FRAMES.push({ x: s * (w / 2 - 0.12), y: 2.6, z: fz, rotY: -s * Math.PI / 2 })));
-      if (typeof buildBasementHatch === 'function') museumGroup.add(buildBasementHatch(MUSEUM_HATCH_LOCAL, 0.565));
+      if (typeof buildBasementHatch === 'function') museumGroup.add(buildBasementHatch(MUSEUM_HATCH_LOCAL, 0.56, Math.PI / 2));
       museumArtGroup = new THREE.Group();
       museumGroup.add(museumArtGroup);
       scene.add(museumGroup);
@@ -145,7 +145,7 @@ function renderMuseum3D() {
       }
       if (levels > 0) {
         const sign = makeSignMesh(levels === 1 ? 'GALLERY B1 BELOW' : `GALLERIES B1-B${levels} BELOW`, { bg: '#1c1917', fg: '#fbbf24', width: 1.7, height: 0.26 });
-        sign.position.set(MUSEUM_HATCH_LOCAL.x, 1.9, MUSEUM_HATCH_LOCAL.z - 0.6);
+        sign.position.set(MUSEUM_HATCH_LOCAL.x, 3.4, -MUSEUM.d / 2 + 0.12);
         museumArtGroup.add(sign);
       }
       sculptures.forEach((c, i) => {
@@ -163,15 +163,22 @@ function renderMuseum3D() {
       paintings.forEach((m, i) => {
         if (typeof paintMuralCanvas !== 'function') return;
         const slot = MUSEUM_FRAMES[i];
-        const frame = new THREE.Group();
-        const border = new THREE.Mesh(new THREE.BoxGeometry(1.75, 1.2, 0.06), new THREE.MeshStandardMaterial({ color: 0xb8860b, metalness: 0.6, roughness: 0.35 }));
-        const canvas = new THREE.Mesh(new THREE.PlaneGeometry(1.55, 1.0), new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(paintMuralCanvas(m)), roughness: 0.9 }));
-        canvas.position.z = 0.035;
-        frame.add(border, canvas);
+        const frame = buildMuseumFrame(m);
         frame.position.set(slot.x, slot.y, slot.z);
         frame.rotation.y = slot.rotY;
         museumArtGroup.add(frame);
       });
+    }
+
+// A painting in its gilded frame (the frame's back is at z = 0)
+function buildMuseumFrame(m) {
+      const frame = new THREE.Group();
+      const border = new THREE.Mesh(new THREE.BoxGeometry(1.75, 1.2, 0.06), new THREE.MeshStandardMaterial({ color: 0xb8860b, metalness: 0.6, roughness: 0.35 }));
+      const canvas = new THREE.Mesh(new THREE.PlaneGeometry(1.55, 1.0), new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(paintMuralCanvas(m)), roughness: 0.9 }));
+      canvas.position.z = 0.035;
+      frame.add(border, canvas);
+      frame.userData.muralSeed = m.seed;
+      return frame;
     }
 
 function museumSummaryForAI() {

@@ -349,9 +349,9 @@ async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
           const palette = [randomHex(), randomHex(), randomHex(), randomHex()];
           const words = ['KELO', 'K1', 'OKANAGAN', 'HELLO', 'WONDER', 'SPARK', 'GROW', ...state.concepts.slice(0, 3).map(c => conceptKeyword(c.name))];
           const mural = { wallId: wall.id, text: pick(words), palette, skill: hobby.skill, seed: `${wall.id}-${Date.now()}`, at: Date.now() };
-          const level = typeof museumLevelForNext === 'function' ? museumLevelForNext('painting') : 0;
-          state.murals = [mural, ...state.murals]; // every painting is kept: the Museum has basements
-          if (level > 0) await visitBasement(museumHatchWorld(), level, 'Wall space for this painting');
+          // He carries it into the Museum and hangs it (every painting is kept: the Museum has basements)
+          if (typeof carryIntoMuseum === 'function') await carryIntoMuseum('painting', mural, `the "${mural.text}" painting`);
+          state.murals = [mural, ...state.murals];
           placeMural3D(mural);
           result = `I painted "${mural.text}" on a canvas and hung it in my Museum. ${hobby.skill > 50 ? 'The letters finally look like mine.' : 'The drips got away from me, but I love it.'}`;
         } else if (hobby.style === 'plant') {

@@ -111,11 +111,8 @@ async function runWeldJob(creation, destLabel) {
         renderAllUI();
         await waitForArrival(60000);
 
-        // A full Museum floor? The new piece goes down to the next gallery below
-        if (creation.inMuseum && typeof museumLevelForNext === 'function') {
-          const level = museumLevelForNext('sculpture');
-          if (level > 0) await visitBasement(museumHatchWorld(), level, `Room for "${title}"`);
-        }
+        // Into the Museum and onto its plinth (down to a lower gallery if the floors above are full)
+        if (creation.inMuseum && typeof carryIntoMuseum === 'function') await carryIntoMuseum('sculpture', creation, `"${title}"`);
 
         // 4. Set it down just in front of him so he isn't standing inside it
         if (typeof setCarriedObject === 'function') setCarriedObject(null);

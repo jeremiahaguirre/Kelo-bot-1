@@ -1664,7 +1664,12 @@ function animateDiorama() {
         keloWeldTorchGroup.visible = !isMiningOrDrilling && isWeldingOrBuilding;
       }
 
-      if (dist > arrivalRadius(state.targetPos)) {
+      if (typeof updateIndoorTrip === 'function' && updateIndoorTrip(t)) {
+        // Inside the Storehouse or the Museum (js/basements.js): his walk in, the stairs and the shelves are scripted there
+        weldingSparks.visible = false;
+        if (miningDebrisParticles) miningDebrisParticles.visible = false;
+        forgeArcLight.intensity = 0;
+      } else if (dist > arrivalRadius(state.targetPos)) {
         state.isWalking = true;
         // Speed eases up as he sets off, settles as he arrives, and stretches into a stride on long trips
         const step = Math.min(dist, keloWalkStep(dist, dt) * (state.ridingSpeed || 1) * (typeof snowWalkFactor === 'function' ? snowWalkFactor(state.botPos) : 1));
@@ -1906,11 +1911,10 @@ function animateDiorama() {
         flag.rotation.z = flag.userData.baseRotZ + Math.sin(t * 4.2 + flag.userData.phase) * 0.18;
       });
 
-      // Down in a basement (js/storehouse.js): he is below the floor, out of sight
-      if (state.basementDepth) keloGroup.position.y -= state.basementDepth;
-
-      // 4. Camera Follow & Bird's-Eye Modes
-      if (state.cameraMode === 'follow') {
+      // 4. Camera Follow & Bird's-Eye Modes (inside a building, js/basements.js looks in through the cutaway)
+      if (typeof basementCameraUpdate === 'function' && basementCameraUpdate()) {
+        // moved there
+      } else if (state.cameraMode === 'follow') {
         controls.target.lerp(new THREE.Vector3(keloGroup.position.x, keloGroup.position.y + 1.6, keloGroup.position.z), 0.08);
       } else if (state.cameraMode === 'bird') {
         // Keep target clamped to terrain elevation while allowing free Arrow-Key / WASD exploration

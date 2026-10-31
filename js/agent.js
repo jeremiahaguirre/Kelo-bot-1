@@ -419,6 +419,9 @@ function trimBrainState() {
       if (state.giftLog.length > 30) state.giftLog.length = 30;
       if (state.likes.length > 30) state.likes.length = 30;
       if (state.dislikes.length > 30) state.dislikes.length = 30;
+      // Logs that only ever grew: the newest are kept (nothing in the world depends on the old ones)
+      if (state.githubRepos.length > 40) state.githubRepos.length = 40;
+      if (state.disposedItems.length > 60) state.disposedItems.length = 60;
       // Older diary entries and opinions go to the long-term archive (js/memory.js), not the bin
       if (typeof stampDiaryEntries === 'function') stampDiaryEntries();
       const diaryOverflow = state.diaryEntries.splice(MAX_DIARY_ENTRIES);
@@ -1174,21 +1177,8 @@ function loadPersistentBrainState() {
           if (!state[k] || !Number.isFinite(state[k].x) || !Number.isFinite(state[k].z)) state[k] = { x: -9.5, z: -4.6 };
         });
         if (state.microPose === 'digging') state.microPose = 'normal';
-        if (typeof saved.lastVisitorName === 'string') state.lastVisitorName = saved.lastVisitorName;
-        if (saved.worldviewManifesto) state.worldviewManifesto = saved.worldviewManifesto;
-        if (saved.worldviewEpoch) state.worldviewEpoch = saved.worldviewEpoch;
-        if (saved.changedLatelySummary) state.changedLatelySummary = saved.changedLatelySummary;
-        if (Array.isArray(saved.opinions) && saved.opinions.length > 0) state.opinions = saved.opinions;
-        if (Array.isArray(saved.visitorMemories) && saved.visitorMemories.length > 0) state.visitorMemories = saved.visitorMemories;
-        if (Array.isArray(saved.inventedCreations) && saved.inventedCreations.length > 0) state.inventedCreations = saved.inventedCreations;
-        if (Array.isArray(saved.diaryEntries) && saved.diaryEntries.length > 0) state.diaryEntries = saved.diaryEntries;
-        if (Array.isArray(saved.toolInventory) && saved.toolInventory.length > 0) state.toolInventory = saved.toolInventory;
-        if (Array.isArray(saved.concepts) && saved.concepts.length > 0) state.concepts = saved.concepts;
-        if (Array.isArray(saved.webHistory) && saved.webHistory.length > 0) state.webHistory = saved.webHistory;
+        // The loop above restores every field; these also clean out entries from older or damaged saves
         if (Array.isArray(saved.curiosityQueue)) state.curiosityQueue = saved.curiosityQueue.filter(q => typeof q === 'string');
-        if (Array.isArray(saved.toys)) state.toys = saved.toys;
-        if (Array.isArray(saved.belongings)) state.belongings = saved.belongings;
-        if (Array.isArray(saved.giftLog)) state.giftLog = saved.giftLog;
         if (Array.isArray(saved.mailbox)) state.mailbox = saved.mailbox.filter(m => m && m.id && m.kind);
         if (Array.isArray(saved.hobbies)) state.hobbies = saved.hobbies.filter(h => h && typeof h.name === 'string');
         if (Array.isArray(saved.murals)) state.murals = saved.murals.filter(m => m && typeof m.wallId === 'string');
@@ -1200,14 +1190,10 @@ function loadPersistentBrainState() {
             if (parts) state.itemDesigns[String(k).slice(0, 120)] = { parts, at: Number(v.at) || 0 };
           });
         }
-        if (saved.knowsDigging === true) state.knowsDigging = true;
         if (Array.isArray(saved.unstoredItems)) state.unstoredItems = saved.unstoredItems.filter(n => typeof n === 'string');
         if (Array.isArray(saved.digSites)) state.digSites = saved.digSites.filter(d => d && Number.isFinite(d.x) && Number.isFinite(d.z) && Number.isFinite(d.depth));
         if (Array.isArray(saved.foundItems)) state.foundItems = saved.foundItems.filter(f => f && typeof f.id === 'string');
         if (Array.isArray(saved.coreMemories)) state.coreMemories = saved.coreMemories.filter(m => m && typeof m.text === 'string');
-        if (saved.life && typeof saved.life === 'object') state.life = { ...state.life, ...saved.life };
-        if (typeof saved.lettersReceived === 'number') state.lettersReceived = saved.lettersReceived;
-        if (Array.isArray(saved.requestsToUser) && saved.requestsToUser.length > 0) state.requestsToUser = saved.requestsToUser;
         if (typeof saved.fullness === 'number') state.fullness = clampNumber(saved.fullness, 5, 100, state.fullness);
         if (Array.isArray(saved.shapeLibrary)) {
           state.shapeLibrary = saved.shapeLibrary.filter(sh => sh && sh.name && sanitizeParts(sh.parts))
@@ -1289,14 +1275,20 @@ function scheduleNextOrganicImpulse() {
       if (badge) badge.textContent = state.rhythmPhaseText;
 
       organicTimeoutId = setTimeout(async () => {
-        if (!state.isBusy) {
-          if (state.unopenedNotesQueue.length > 0) {
-            await processNextUnopenedVisitorNote();
-          } else {
-            runAutonomousLifeTick();
+        // Always schedule the next one, even if this one fails, or his life would stop here
+        try {
+          if (!state.isBusy) {
+            if (state.unopenedNotesQueue.length > 0) {
+              await processNextUnopenedVisitorNote();
+            } else {
+              runAutonomousLifeTick();
+            }
           }
+        } catch (err) {
+          console.warn('Life tick failed:', err);
+        } finally {
+          scheduleNextOrganicImpulse();
         }
-        scheduleNextOrganicImpulse();
       }, organicDelayMs);
     }
 
@@ -2089,8 +2081,8 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will', conte
     }
 
 function runAutonomousLifeTick() {
-      // Finish the current build or mail run before starting something new
-      if (state.isBuilding || state.isCollectingMail || state.isPracticing || state.isSleeping) return;
+      // Finish the current thought, build or mail run before starting something new
+      if (state.isBusy || state.isBuilding || state.isCollectingMail || state.isPracticing || state.isSleeping) return;
       // Tidy first: new things he is still holding go to the Storehouse
       if (state.unstoredItems.length && typeof putAwayItems === 'function') {
         putAwayItems();

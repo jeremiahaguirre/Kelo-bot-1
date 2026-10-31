@@ -58,7 +58,8 @@ He may change the world freely. He can never move or change the buildings, and h
 
 ## Architecture decisions
 - **No build step.** The page uses plain global-script JS loaded in order from `index.html`:
-  agent → memory → worldclock → needs → forms → netnode → postoffice → workshop → hobbies → mining → growth → scene → items3d → storehouse → vehicles → main → portal.
+  agent → memory → worldclock → needs → forms → netnode → conversation → postoffice → workshop → hobbies → mining → growth → scene → house → animations → items3d → gearmodels → everydaymodels → materials → storehouse → museum → basements → viewer → takeout → vehicles → landfill → disposal → knowhow → seasons → wind → landscape → projects → town → coderequests → shopkeeping → printer → main → portal.
+  (`js/shop.js` is loaded only by `shop.html`.) A later file silently replaces a same-named function from an earlier one, so keep top-level names unique.
   Three.js r128, Tailwind and Phosphor all load from CDN. Other languages are allowed if they help.
 - **State and persistence.**
   - One global `state` object.
@@ -73,7 +74,7 @@ He may change the world freely. He can never move or change the buildings, and h
 - **Vehicles.**
   - `VEHICLE_TYPES` covers truck, excavator, boat, bike, snowmobile and air.
   - Vehicles park in `YARD_SLOTS` or `DOCK_SLOTS` and are excluded from the storehouse shelves.
-  - The spoil heap is at (20, -9).
+  - The Disposal Pit (which replaced the spoil heap) is at (20, -9).
 - **Cloud dreams.** `.github/workflows/dream.yml` runs every 6h and writes `brain/growth.json`. `desktop.yml` builds the Windows app.
 - **Commits.**
   - Author every commit as `jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>`.

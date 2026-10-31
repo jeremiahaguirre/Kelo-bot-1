@@ -71,7 +71,7 @@ Kelo-bot-1/
 ├── index.html           # The app (also the GitHub Pages entry point)
 ├── shop.html            # Kelo-1's shop website (reads his save, or shop-data.json once you export and commit it)
 ├── css/style.css
-├── js/
+├── js/                # Listed in the order index.html loads them
 │   ├── agent.js         # State, decision engine, AI providers, requests (loaded first)
 │   ├── memory.js        # Long-term memory, core memories, backups
 │   ├── worldclock.js    # His calendar: 12-hour days, 365-day years, seasons
@@ -92,10 +92,10 @@ Kelo-bot-1/
 │   ├── everydaymodels.js # Food, toys, instruments and books at real size
 │   ├── materials.js     # What things are made of, how they look, bend, snap or shatter; food flavours and his tastes
 │   ├── storehouse.js    # The Storehouse shelves where everything he owns is kept
-│   ├── viewer.js        # Click the Storehouse, the Museum or a photo to look through them
-│   ├── takeout.js       # Taking things back out of the Museum and Storehouse to use or throw out
 │   ├── museum.js        # His Museum of Art & Ideas: sculptures on plinths, paintings in frames
 │   ├── basements.js     # Walking into the Storehouse and Museum: shelves, spiral stairs, lit basements seen through a cutaway
+│   ├── viewer.js        # Click the Storehouse, the Museum or a photo to look through them
+│   ├── takeout.js       # Taking things back out of the Museum and Storehouse to use or throw out
 │   ├── vehicles.js      # The vehicle yard, helipad and dock; driving, boating, hauling dirt
 │   ├── landfill.js      # Tipping dug dirt into the lake to make new land
 │   ├── disposal.js      # The Disposal Pit: whatever he throws in is gone for good
@@ -107,10 +107,10 @@ Kelo-bot-1/
 │   ├── town.js          # Keeps the town free of his builds (the beach is fine)
 │   ├── coderequests.js  # Code requests: features he asks his human to code into his world
 │   ├── shopkeeping.js   # His shop in the game: listing things for sale, "Sold", earnings, Export shop
-│   ├── shop.js          # The shop website itself (shop.html)
 │   ├── printer.js       # His 3D printer: setting it up, learning it, filament spools, prints that fail and succeed
 │   ├── main.js          # UI wiring
-│   └── portal.js        # Send-him-something panel
+│   ├── portal.js        # Send-him-something panel
+│   └── shop.js          # The shop website itself (shop.html)
 ├── brain/growth.json    # His dreams, written by the scheduled Action
 ├── scripts/dream.mjs    # The dreaming script
 ├── desktop/             # Windows app (Electron): main process + preload bridge

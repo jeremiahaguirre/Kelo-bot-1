@@ -377,6 +377,48 @@ async function goBoating(originLabel = 'Out on the Lake') {
       }
     }
 
+// --- Deep water: he can wade, but once it's over his head he can't breathe -------------------
+const HEAD_UNDER_DEPTH = 2.2; // water this deep reaches over Kelo-1's head (he is about 2.8 tall)
+let lastNearDrowning = 0;
+
+function waterDepthAt(p) {
+      return WATER_LEVEL - getAnalyticalGroundHeight(p.x, p.z);
+    }
+
+// Checked a few times a second: walking (not riding a boat) into water over his head
+function checkDeepWater() {
+      if (state.riding || state.isSleeping || state.wadingTest) return;
+      if (waterDepthAt(state.botPos) < HEAD_UNDER_DEPTH || Date.now() - lastNearDrowning < 8000) return;
+      lastNearDrowning = Date.now();
+      nearlyDrown();
+    }
+
+function nearlyDrown() {
+      const firstTime = !state.knowsLakeDanger;
+      // Turn straight back to the nearest dry sand
+      state.targetPos = { x: state.botPos.x, z: 8.3 };
+      state.currentLocKey = 'custom';
+      state.customPlaceName = 'the lake shore';
+      state.moodEmoji = '😨';
+      state.moodTitle = "Can't breathe!";
+      state.speechBubble = "Blub! The water's over my head. I CAN'T BREATHE! Back, back, back!";
+      state.wonderLevel = Math.max(5, state.wonderLevel - 8);
+      state.calmLevel = Math.max(5, state.calmLevel - 25);
+      state.health = Math.max(5, state.health - 6);
+      if (firstTime) {
+        state.knowsLakeDanger = true;
+        state.diaryEntries.unshift({
+          time: 'Nearly Drowned', location: 'the lake', mood: "😨 I can't breathe underwater",
+          vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
+          text: "Dear Diary, I walked out into the lake and the bottom just dropped away. The water closed over my head and I couldn't breathe. I scrambled back to the sand. Deep water is not for walking: I need something that floats."
+        });
+        addConcept({ name: 'Water Over My Head', emoji: '🌊', definition: 'Deep water is not for walking; I need something that floats to go out on the lake.', builtFrom: ['nearly drowning'] }, 'Learned the hard way');
+      }
+      if (!findVehicle('boat')) addItemRequest('A small rowboat', 'vehicle', 'I tried walking into the lake and nearly drowned. I would love to go out on the water safely.', '');
+      savePersistentBrainState();
+      renderAllUI();
+    }
+
 // Without a boat he wades in... and finds out the hard way that he can't breathe underwater
 async function wadeIntoLake(originLabel = 'Curious About the Water') {
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
@@ -394,27 +436,13 @@ async function wadeIntoLake(originLabel = 'Curious About the Water') {
         if (state.knowsLakeDanger) {
           state.speechBubble = 'I know better than to go in deeper. I need a boat.';
         } else {
+          // Walk on in: once the water is over his head the deep-water watcher (checkDeepWater)
+          // turns him back to the sand, and he learns about deep water there
           state.targetPos = { x, z: 13.2 };
           state.speechBubble = 'The water is getting deeper...';
           renderAllUI();
           await waitForArrival(20000);
-          state.moodEmoji = '😨';
-          state.moodTitle = "Can't breathe!";
-          state.speechBubble = "Blub! I CAN'T BREATHE! Back, back, back!";
-          state.wonderLevel = Math.max(0, state.wonderLevel - 10);
-          state.calmLevel = Math.max(0, state.calmLevel - 25);
-          renderAllUI();
-          await new Promise(r => setTimeout(r, 1200));
-          state.targetPos = { x, z: 8.4 };
           await waitForArrival(20000);
-          state.knowsLakeDanger = true;
-          state.diaryEntries.unshift({
-            time: originLabel, location: 'the lake shore', mood: "😨 I can't breathe underwater",
-            vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
-            text: "Dear Diary, I walked into the lake to see what was out there. The water closed over my head and I couldn't breathe. I scrambled back out. If I want to go out on the water I need something that floats."
-          });
-          addConcept({ name: 'Water Over My Head', emoji: '🌊', definition: 'Deep water is not for walking; I need something that floats to go out on the lake.', builtFrom: ['nearly drowning'] }, 'Learned the hard way');
-          addItemRequest('A small rowboat', 'vehicle', 'I tried walking into the lake and nearly drowned. I would love to go out on the water safely.', '');
         }
         savePersistentBrainState();
         renderAllUI();
@@ -431,6 +459,7 @@ window.addEventListener('DOMContentLoaded', () => {
       .filter(n => vehicleTypeFor(n) && !state.vehicles.some(v => v.name === n))
       .forEach(registerVehicle);
     reparkOldVehicles();
+    setInterval(checkDeepWater, 300);
     state.riding = null;
     state.ridingSpeed = 1;
     buildVehicleYard3D();

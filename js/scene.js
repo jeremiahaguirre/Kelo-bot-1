@@ -24,6 +24,8 @@ function getAnalyticalGroundHeight(x, z) {
       // Gently slope down toward Okanagan Lake shoreline in the south (z > 7)
       if (z > 7.5) {
         h -= (z - 7.5) * 0.12;
+        // Past the beach the lake bed drops away: deep water a few steps out (water is at -0.18)
+        if (z > 9.2) h -= Math.min(5.5, (z - 9.2) * 0.75);
       }
       // Northern & Eastern Alpine Mountain Massif elevation (z < -12)
       if (z < -12) {
@@ -36,7 +38,8 @@ function getAnalyticalGroundHeight(x, z) {
       if (x > 14 && z < -6) {
         h += (x - 14) * 0.28 * Math.max(0.2, Math.abs(z) / 14);
       }
-      const base = Math.max(-0.25, h);
+      // The valley floor never dips below the waterline; the lake bed does
+      const base = z > 7.5 ? h : Math.max(-0.25, h);
       // Holes Kelo-1 has dug (js/mining.js) and the Disposal Pit (js/disposal.js) lower the ground;
       // hills he has raised (js/landscape.js) lift it
       return base - groundDugAt(x, z) + (typeof landscapeRaiseAt === 'function' ? landscapeRaiseAt(x, z) : 0);

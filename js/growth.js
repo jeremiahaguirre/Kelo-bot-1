@@ -57,7 +57,7 @@ function mergeDream(entry) {
       }
       if (entry.coreMemory && str(entry.coreMemory.text, 300)) {
         state.coreMemories.unshift({ text: str(entry.coreMemory.text, 300), emoji: str(entry.coreMemory.emoji, 8) || '🌙', at, day: daysAlive() });
-        if (state.coreMemories.length > 40) state.coreMemories.length = 40;
+        if (state.coreMemories.length > MAX_CORE_MEMORIES) state.coreMemories.length = MAX_CORE_MEMORIES;
       }
       if (str(entry.nextCuriosity, 100) && typeof queueCuriosity === 'function') queueCuriosity(entry.nextCuriosity);
     }

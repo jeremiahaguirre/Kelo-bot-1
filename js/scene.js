@@ -1855,13 +1855,6 @@ function animateDiorama() {
         }
       }
 
-      // Update live altitude & tool readout in the Bird's-Eye HUD
-      const altReadout = document.getElementById('keloAltitudeReadout');
-      if (altReadout) {
-        const activeToolLabel = isMiningOrDrilling ? '⛏️ Core Drill' : (isWeldingOrBuilding ? '⚡ TIG Welder' : '🎒 Explorer Pack');
-        altReadout.textContent = `Alt: ${state.botAltitudeY >= 0 ? "+" : ""}${state.botAltitudeY.toFixed(1)}m • ${activeToolLabel}`;
-      }
-
       if (typeof updateCarriedObject === 'function') updateCarriedObject(t);
       if (typeof updateHobbyProps === 'function') updateHobbyProps(t);
       if (typeof updateVehicles === 'function') updateVehicles(t);

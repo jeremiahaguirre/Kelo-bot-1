@@ -91,6 +91,7 @@ Kelo-bot-1/
 │   ├── disposal.js      # The Disposal Pit: whatever he throws in is gone for good
 │   ├── knowhow.js       # Learning how tools work, fuel, and stargazing at night
 │   ├── seasons.js       # Seasonal colours, snow, snowfall, and getting stuck in deep snow
+│   ├── landscape.js     # Chopping trees, planting, roads and hills, and undoing them
 │   ├── main.js          # UI wiring
 │   └── portal.js        # Send-him-something panel
 ├── brain/growth.json    # His dreams, written by the scheduled Action

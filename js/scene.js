@@ -12,6 +12,8 @@ let cutawayRoofMeshes = [], gardenCropGroups = [], pennantFlags = [];
 let poiDomElements = {};
 // Solid things Kelo-1 should walk around: { x, z, r } circles on the ground
 let worldObstacles = [];
+// The valley's deciduous trees, by id, so Kelo-1 can chop them (js/landscape.js)
+const valleyTrees = [];
 let terrainGroundMesh = null;
 // Cursor position over the 3D view, used to reveal names on hover
 const hoverPointer = { x: 0, y: 0, active: false, touchUntil: 0 };
@@ -35,8 +37,9 @@ function getAnalyticalGroundHeight(x, z) {
         h += (x - 14) * 0.28 * Math.max(0.2, Math.abs(z) / 14);
       }
       const base = Math.max(-0.25, h);
-      // Holes Kelo-1 has dug (js/mining.js) and the Disposal Pit (js/disposal.js) lower the ground
-      return base - groundDugAt(x, z);
+      // Holes Kelo-1 has dug (js/mining.js) and the Disposal Pit (js/disposal.js) lower the ground;
+      // hills he has raised (js/landscape.js) lift it
+      return base - groundDugAt(x, z) + (typeof landscapeRaiseAt === 'function' ? landscapeRaiseAt(x, z) : 0);
     }
 
 function groundDugAt(x, z) {
@@ -683,10 +686,12 @@ function buildValleyScenery3D() {
         && !Object.values(TOWN_LOCATIONS).some(l => Math.hypot(x - l.x, z - l.z) < r + 2.2)
         && !(typeof inParkingArea === 'function' && inParkingArea(x, z, r))
         && Math.abs(x + 2) > 3 && z < 7.5;
+      // Seeded, so every tree is in the same place each visit and can be chopped for good (js/landscape.js)
+      const treeRng = makeRng('kelo1-valley-trees');
       let placed = 0;
       for (let i = 0; i < 140 && placed < 26; i++) {
-        const x = (Math.random() - 0.5) * 64;
-        const z = -11 + Math.random() * 18;
+        const x = Math.round((treeRng() - 0.5) * 64 * 10) / 10;
+        const z = Math.round((-11 + treeRng() * 18) * 10) / 10;
         if (!clearOf(x, z, 1.4) || Math.hypot(x + 9.5, z + 7.8) < 5) continue;
         const gy = getAnalyticalGroundHeight(x, z);
         const tree = new THREE.Group();
@@ -703,9 +708,11 @@ function buildValleyScenery3D() {
           tree.add(blob);
         });
         tree.position.set(x, gy, z);
-        tree.rotation.y = Math.random() * Math.PI;
+        tree.rotation.y = treeRng() * Math.PI;
         scene.add(tree);
-        worldObstacles.push({ x, z, r: 0.75 });
+        const obstacle = { x, z, r: 0.75 };
+        worldObstacles.push(obstacle);
+        valleyTrees.push({ id: 'tree-' + placed, x, z, group: tree, obstacle });
         placed++;
       }
 

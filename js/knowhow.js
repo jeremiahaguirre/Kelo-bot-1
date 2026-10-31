@@ -25,6 +25,8 @@ const GEAR_KNOWHOW = [
     how: 'The collective lifts you, the cyclic tilts you, and the pedals turn the tail.' },
   { key: 'balloon', re: /hot.?air balloon/i, label: 'a hot-air balloon', wiki: 'Hot air balloon', fuel: 'propane',
     how: 'Fill the propane tank, light the burner, and heat the air in the envelope to rise.' },
+  { key: 'axe', re: /^(?!.*pick ?ax).*(\baxe\b|hatchet)/i, label: 'an axe', wiki: 'Axe',
+    how: 'Plant your feet, swing from the shoulder, and cut a notch on the side you want the tree to fall toward.' },
   { key: 'telescope', re: /telescope/i, label: 'a telescope', wiki: 'Telescope',
     how: 'Point it at the night sky and focus slowly: it only shows the stars when it is dark.' }
 ];

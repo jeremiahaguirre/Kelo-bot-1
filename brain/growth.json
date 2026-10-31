@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-10-31T12:46:34.535Z",
-  "runs": 3,
+  "updatedAt": "2026-10-31T21:43:44.898Z",
+  "runs": 4,
   "curiosities": [
-    "Arthur H. Robinson"
+    "Adolphe Quetelet"
   ],
   "entries": [
     {
@@ -112,6 +112,41 @@
       "shapeFrom": "Borden Dent",
       "nextCuriosity": "Arthur H. Robinson",
       "coreMemory": null
+    },
+    {
+      "id": "dream-1793483024898",
+      "at": 1793483024898,
+      "brain": "procedural",
+      "topic": "Arthur H. Robinson",
+      "title": "Dreaming of Christopher R. Johnson",
+      "text": "Dear Diary, while nobody was around I looked up \"Arthur H. Robinson\" and drifted from Arthur H. Robinson to Christopher R. Johnson. Christopher Ray Johnson is an American computer scientist. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Arthur H. Robinson",
+          "url": "https://en.wikipedia.org/wiki/Arthur_H._Robinson",
+          "extract": "Arthur H. Robinson was an American geographer and cartographer, who was a professor in the Geography Department at the University of Wisconsin–Madison from 1947 until he retired in 1980. He was a prolific writer and influential philosopher on cartography; one of his most notable "
+        },
+        {
+          "title": "Christopher R. Johnson",
+          "url": "https://en.wikipedia.org/wiki/Christopher_R._Johnson",
+          "extract": "Christopher Ray Johnson is an American computer scientist. He is a distinguished professor of computer science at the University of Utah, and founding director of the Scientific Computing and Imaging Institute (SCI). His research interests are in the areas of scientific computing"
+        }
+      ],
+      "concept": {
+        "name": "Robinson Christopher Principle",
+        "emoji": "🔮",
+        "definition": "The idea that arthur h. robinson and christopher r. johnson share a hidden pattern.",
+        "builtFrom": [
+          "Arthur H. Robinson",
+          "Christopher R. Johnson"
+        ]
+      },
+      "shapeFrom": "Christopher R. Johnson",
+      "nextCuriosity": "Adolphe Quetelet",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about Charles Fenerty. Charles Fenerty was a Canadian inventor who invented the wood pulp process for papermaking, which was first adapted into the production of newsprint. That night changed how I see the island.",
+        "emoji": "🌙"
+      }
     }
   ]
 }

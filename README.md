@@ -92,6 +92,7 @@ Kelo-bot-1/
 │   ├── knowhow.js       # Learning how tools work, fuel, and stargazing at night
 │   ├── seasons.js       # Seasonal colours, snow, snowfall, and getting stuck in deep snow
 │   ├── landscape.js     # Chopping trees, planting, roads and hills, and undoing them
+│   ├── projects.js      # Real builds: finding plans online, asking for materials, building them
 │   ├── main.js          # UI wiring
 │   └── portal.js        # Send-him-something panel
 ├── brain/growth.json    # His dreams, written by the scheduled Action

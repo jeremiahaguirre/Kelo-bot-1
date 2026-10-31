@@ -242,7 +242,7 @@ async function chopTree(x = state.botPos.x, z = state.botPos.z, why = '', origin
     }
 
 async function plantSeeds(x, z, why = '', originLabel = 'Shaping the Valley') {
-      const seeds = hasItem(/seed|sapling|bulb/i);
+      const seeds = hasItem(/^(?!.*bird ?seed).*(seed|sapling|bulb)/i);
       if (!seeds) {
         addItemRequest('A packet of tree seeds', 'material', 'I want to plant something and watch it grow, but I have no seeds.', 'Shaping the valley');
         state.speechBubble = "I'd love to plant something, but I have no seeds. I asked for some.";
@@ -407,7 +407,7 @@ async function undoEdit(id, why = '', originLabel = 'Changing His Mind') {
 
 // --- How he decides to shape things on his own -----------------------------------------------------
 function landscapeChance() {
-      if (hasItem(/seed|sapling|bulb/i)) return 0.12;
+      if (hasItem(/^(?!.*bird ?seed).*(seed|sapling|bulb)/i)) return 0.12;
       if (hasItem(/gravel|crushed stone|paving/i) && hasItem(/shovel|spade/i)) return 0.08;
       if (hasItem(/^(?!.*pick ?ax).*(\baxe\b|hatchet)/i)) return 0.04;
       return 0.01;
@@ -421,7 +421,7 @@ function shapeTheValleyOnMyOwn() {
         }
         return { x: -14, z: 2 };
       };
-      if (hasItem(/seed|sapling|bulb/i)) { const p = open(); return plantSeeds(p.x, p.z, 'I wanted something living that I put there myself.', 'Felt Like Planting'); }
+      if (hasItem(/^(?!.*bird ?seed).*(seed|sapling|bulb)/i)) { const p = open(); return plantSeeds(p.x, p.z, 'I wanted something living that I put there myself.', 'Felt Like Planting'); }
       if (hasItem(/gravel|crushed stone|paving/i) && hasItem(/shovel|spade/i)) {
         const home = TOWN_LOCATIONS.couch, dest = pick([TOWN_LOCATIONS.meadow, TOWN_LOCATIONS.garden, TOWN_LOCATIONS.shoreline]);
         return buildRoad(home.x + 2, home.z + 2, dest.x, dest.z, 'My feet keep wearing a muddy track along here.', 'Felt Like Building');

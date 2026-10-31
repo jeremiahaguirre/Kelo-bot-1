@@ -557,6 +557,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
     if (tag === 'input' || tag === 'textarea') return;
     if (typeof arrowKeyState !== 'undefined' && e.code in arrowKeyState) {
+      if (document.getElementById('keloViewer')) return; // the arrows page through the viewer instead
       arrowKeyState[e.code] = true;
       if (e.code.startsWith('Arrow')) e.preventDefault();
     }

@@ -139,10 +139,15 @@ function renderPortal() {
         wall.innerHTML = state.photoAlbum.length === 0
           ? '<p class="col-span-full text-[11px] text-slate-500 italic">No photos yet.</p>'
           : state.photoAlbum.map(ph => `
-          <figure class="rounded-xl overflow-hidden border border-indigo-500/30 bg-slate-900" title="${escapeHtml(ph.reaction || '')}">
+          <figure data-photo-idx="${state.photoAlbum.indexOf(ph)}" role="button" tabindex="0" aria-label="View photo" class="rounded-xl overflow-hidden border border-indigo-500/30 bg-slate-900 cursor-pointer hover:border-indigo-300 transition" title="${escapeHtml(ph.reaction || 'Click to view')}">
             <img src="${escapeHtml(ph.thumb)}" alt="${escapeHtml(ph.caption || 'Photo for Kelo-1')}" class="w-full h-20 object-cover">
             <figcaption class="px-1.5 py-1 text-[10px] text-slate-300 truncate">${escapeHtml(ph.caption || `from ${ph.from}`)}</figcaption>
           </figure>`).join('');
+        wall.querySelectorAll('[data-photo-idx]').forEach(fig => {
+          const open = () => typeof openPhotoViewer === 'function' && openPhotoViewer(Number(fig.getAttribute('data-photo-idx')));
+          fig.addEventListener('click', open);
+          fig.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+        });
       }
     }
 

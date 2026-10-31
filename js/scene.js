@@ -157,6 +157,12 @@ function initDiorama3D() {
         const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(mouse, camera);
 
+        // Clicking the Storehouse or the Museum opens a look at everything inside (js/viewer.js)
+        const building = typeof buildingAtClick === 'function' ? buildingAtClick(raycaster) : null;
+        if (building) {
+          openBuildingViewer(building);
+          return;
+        }
         if (keloGroup) {
           const hitBot = raycaster.intersectObjects(keloGroup.children, true);
           if (hitBot.length > 0) {

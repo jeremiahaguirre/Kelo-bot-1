@@ -87,6 +87,7 @@ Kelo-bot-1/
 │   ├── gearmodels.js    # Detailed vehicles and tools, sized against Kelo-1
 │   ├── everydaymodels.js # Food, toys, instruments and books at real size
 │   ├── storehouse.js    # The Storehouse shelves where everything he owns is kept
+│   ├── viewer.js        # Click the Storehouse, the Museum or a photo to look through them
 │   ├── museum.js        # His Museum of Art & Ideas: sculptures on plinths, paintings in frames
 │   ├── vehicles.js      # The vehicle yard, helipad and dock; driving, boating, hauling dirt
 │   ├── landfill.js      # Tipping dug dirt into the lake to make new land

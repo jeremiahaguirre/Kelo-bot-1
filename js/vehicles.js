@@ -442,7 +442,7 @@ function waterDepthAt(p) {
 
 // Checked a few times a second: walking (not riding a boat) into water over his head
 function checkDeepWater() {
-      if (state.riding || state.isSleeping || state.wadingTest) return;
+      if (state.riding || state.isSleeping) return;
       if (waterDepthAt(state.botPos) < HEAD_UNDER_DEPTH || Date.now() - lastNearDrowning < 8000) return;
       lastNearDrowning = Date.now();
       nearlyDrown();

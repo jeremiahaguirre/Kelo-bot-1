@@ -1,7 +1,7 @@
 // Kelo-bot-1 — js/hobbies.js
 // Loaded after workshop.js. Things people give Kelo-1 can spark lasting hobbies he practises on
-// his own and gets better at over time. Spray paint becomes graffiti murals painted onto real
-// walls; a kite gets flown; an instrument becomes music; seeds become new plants; a paint set
+// his own and gets better at over time. Spray paint becomes murals painted on canvas and hung in
+// his Museum; a kite gets flown; an instrument becomes music; seeds become new plants; a paint set
 // becomes landscape paintings. With an AI brain he can invent a hobby for anything.
 
 const MAX_HOBBIES = 12;
@@ -11,7 +11,7 @@ const MAX_PLANTINGS = 24;
 const HOBBY_STYLES = ['mural', 'kite', 'music', 'plant', 'easel', 'tricks', 'other'];
 
 const HOBBY_RULES = [
-  [/spray ?paint|aerosol|graffiti|paint marker|chalk/, { name: 'Graffiti & Murals', emoji: '🎨', style: 'mural', description: 'Painting tags and murals on the island walls.' }],
+  [/spray ?paint|aerosol|graffiti|paint marker|chalk/, { name: 'Graffiti & Murals', emoji: '🎨', style: 'mural', description: 'Painting tags and murals on canvas for his Museum.' }],
   [/kite/, { name: 'Kite Flying', emoji: '🪁', style: 'kite', description: 'Reading the wind and flying kites over the meadow.' }],
   [/harmonica|guitar|ukulele|flute|drum|violin|piano|keyboard|instrument|kazoo|ocarina/, { name: 'Making Music', emoji: '🎵', style: 'music', description: 'Composing little songs about the valley.' }],
   [/seed|sapling|bulb|seedling|cutting/, { name: 'Gardening', emoji: '🌱', style: 'plant', description: 'Planting things and watching them grow.' }],
@@ -189,6 +189,8 @@ function clearHobbyProps() {
       }
       hobbyProps = null;
       hobbyPropUpdate = null;
+      // Ends a kite session too, so its run-back-and-forth timer stops (js/wind.js)
+      if (typeof kiteSession !== 'undefined') kiteSession = null;
     }
 
 function noteSprite(symbol, color) {
@@ -300,7 +302,6 @@ async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
         const skillBefore = hobby.skill;
         let spot = null, wall = null;
         if (hobby.style === 'mural') {
-          // Prefer a wall he hasn't painted yet, otherwise repaint his oldest one
           // He paints on canvas and hangs it in his Museum: the town's walls aren't his to change
           wall = { id: 'canvas-' + Date.now().toString(36), label: 'a canvas for his Museum' };
           spot = { x: MUSEUM_DOOR.x + 1.5, z: MUSEUM_DOOR.z, label: 'his Museum' };
@@ -326,8 +327,6 @@ async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
         renderAllUI();
         await waitForArrival(45000);
 
-        // Face the wall when painting
-        if (wall) state.botRotY = wall.rotY + Math.PI;
         state.microPose = 'procedural_custom';
         state.proceduralMotion = {
           headPitch: hobby.style === 'kite' ? -0.35 : 0.1, headYawSpeed: 1.2, headTiltAmp: 0.2,

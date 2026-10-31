@@ -89,6 +89,7 @@ Kelo-bot-1/
 │   ├── storehouse.js    # The Storehouse shelves where everything he owns is kept
 │   ├── museum.js        # His Museum of Art & Ideas: sculptures on plinths, paintings in frames
 │   ├── vehicles.js      # The vehicle yard, helipad and dock; driving, boating, hauling dirt
+│   ├── landfill.js      # Tipping dug dirt into the lake to make new land
 │   ├── disposal.js      # The Disposal Pit: whatever he throws in is gone for good
 │   ├── knowhow.js       # Learning how tools work, fuel, and stargazing at night
 │   ├── seasons.js       # Seasonal colours, snow, snowfall, and getting stuck in deep snow

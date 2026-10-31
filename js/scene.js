@@ -42,8 +42,10 @@ function getAnalyticalGroundHeight(x, z) {
       const base = z > 7.5 ? h : Math.max(-0.25, h);
       // Holes Kelo-1 has dug (js/mining.js) and the Disposal Pit (js/disposal.js) lower the ground;
       // hills he has raised (js/landscape.js) lift it
-      return base - groundDugAt(x, z) + (typeof landscapeRaiseAt === 'function' ? landscapeRaiseAt(x, z) : 0)
+      const ground = base - groundDugAt(x, z) + (typeof landscapeRaiseAt === 'function' ? landscapeRaiseAt(x, z) : 0)
         + (typeof dirtPileRaiseAt === 'function' ? dirtPileRaiseAt(x, z) : 0);
+      // Dirt he has dumped into the lake builds up on the bed below it (js/landfill.js)
+      return typeof landFillRaiseAt === 'function' && z > 7.5 ? ground + landFillRaiseAt(x, z, ground) : ground;
     }
 
 function groundDugAt(x, z) {

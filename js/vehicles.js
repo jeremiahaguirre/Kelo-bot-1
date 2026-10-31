@@ -321,7 +321,13 @@ async function haulDirt(site) {
         exMesh.userData.house.rotation.y = 0;
         exMesh.userData.boom.rotation.z = 0.75;
       } else if (exMesh) exMesh.rotation.y = excavator.rotY || 0;
-      // 4. Drive the full truck to the Disposal Pit and tip it over the rim (js/disposal.js)
+      // 4. Where does the dirt go? Into the lake if he is making new land (js/landfill.js), otherwise the Disposal Pit
+      // Now and then, rather than throw good dirt away, he decides to build land with it
+      if (typeof startLandFill === 'function' && !activeLandFill() && Math.random() < 0.25) startLandFill(null, 'It seemed a waste to throw good dirt in a pit.');
+      if (typeof dumpIntoLake === 'function' && activeLandFill()) {
+        await dumpIntoLake(truck, amount);
+        return amount;
+      }
       await driveVehicle(truck, { x: DISPOSAL_PIT.x - DISPOSAL_PIT.r - 4.4, z: DISPOSAL_PIT.z + 1.0 }, 'Driving the loaded dump truck to the Disposal Pit');
       await tipDirtIntoPit(truck);
       renderVehicles3D();

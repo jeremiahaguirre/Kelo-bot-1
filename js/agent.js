@@ -327,6 +327,9 @@ const state = {
   "ridingSpeed": 1,
   "ridingMode": null,
   "knowsLakeDanger": false,
+  "knowsKiteWind": false,
+  "knowsWindDanger": false,
+  "balloonWreck": null,
   "disposedItems": [],
   "dirtDisposed": 0,
   "tastes": { "palate": null, "profile": {}, "eaten": [] },
@@ -1704,6 +1707,7 @@ Current state:
 - Digging: ${state.digSites.length ? state.digSites.map(d => `site (${d.x}, ${d.z}) ${d.depth.toFixed(1)} m deep, pile ${d.dirt.toFixed(1)}`).join('; ') : 'no digs yet'}; equipment: ${typeof hasEquipment === 'function' ? ['dig', 'rock', 'truck', 'excavator'].filter(hasEquipment).join(', ') || 'none' : 'none'}; finds so far: ${state.foundItems.map(f => f.name).join(', ') || 'none'}
 - Vehicles parked and ready: ${state.vehicles.map(v => typeof fuelNeededBy === 'function' && fuelNeededBy(v) ? `${v.name} (${Math.round(fuelLeft(v))}% ${fuelNeededBy(v)})` : v.name).join(', ') || 'none'}${state.knowsLakeDanger ? ' (you know you cannot breathe in deep water)' : ''}
 - The season: ${typeof seasonSummaryForAI === 'function' ? seasonSummaryForAI() : 'unknown'}
+- The wind: ${typeof windSummaryForAI === 'function' ? windSummaryForAI() : 'unknown'}
 - New land in the lake: ${typeof landFillSummaryForAI === 'function' ? landFillSummaryForAI() : 'none'}
 - Real things you are building from plans: ${typeof projectsSummaryForAI === 'function' ? projectsSummaryForAI() : 'none'}
 - How you have shaped the valley (you can undo anything but a chopped tree): ${typeof landscapeSummaryForAI === 'function' ? landscapeSummaryForAI() : 'nothing yet'}
@@ -1749,7 +1753,8 @@ Return ONLY JSON:
   "expandLand": null OR {"x": number, "why": "1 sentence"} (from now on, tip the dirt you dig into the lake off the beach near x to make new land, instead of the Disposal Pit; deeper water needs more dirt),
   "takeOut": null OR {"item": "something in your Storehouse or a piece in your Museum", "purpose": "use" | "display"} (fetch it: use a stored thing, or stand a Museum piece out in the valley again; to throw something out use "discard"),
   "checkMail": true OR false (whether you feel like walking to the post office to pick up your mail after this),
-${state.knowsDigging ? `  "dig": null OR {"x": number, "z": number} (dig or mine at that spot; you need a shovel or pickaxe, a jackhammer once you hit rock, and a dump truck plus excavator once the dirt pile is big; if you lack them you will ask for them),
+${state.balloonWreck ? `  "repairBalloon": true OR false (gather the pieces of your crashed hot-air balloon and weld it back together at the welding table),
+` : ''}${state.knowsDigging ? `  "dig": null OR {"x": number, "z": number} (dig or mine at that spot; you need a shovel or pickaxe, a jackhammer once you hit rock, and a dump truck plus excavator once the dirt pile is big; if you lack them you will ask for them),
 ` : ''}
   "startHobby": null OR {"name": "a hobby you want to take up because of something you have or saw", "emoji": "one emoji", "description": "1 sentence", "style": "mural|kite|music|plant|easel|tricks|other"}
 }
@@ -1932,6 +1937,8 @@ function applyDecision(decision, originLabel) {
       if (typeof startProject === 'function' && typeof decision.buildProject === 'string' && planFor(decision.buildProject.toLowerCase().trim())) {
         doWhenFree(() => startProject(decision.buildProject.toLowerCase().trim(), 'Decided to Build Something Real'));
       }
+
+      if (decision.repairBalloon === true && state.balloonWreck && typeof repairBalloon === 'function') doWhenFree(() => repairBalloon('Decided to Fix the Balloon'));
 
       const dc = decision.discard;
       if (dc && typeof dc === 'object' && typeof disposeItem === 'function' && (findOwnedName(dc.item) || (typeof findMuseumPiece === 'function' && findMuseumPiece(dc.item)))) {
@@ -2119,6 +2126,9 @@ function runAutonomousLifeTick() {
       // With a boat he likes going out on the lake; without one he may wade in and learn the hard way
       if (typeof goBoating === 'function' && findVehicle('boat') && Math.random() < 0.1) { goBoating(); return; }
       if (typeof wadeIntoLake === 'function' && !state.knowsLakeDanger && Math.random() < 0.04) { wadeIntoLake(); return; }
+      // A crashed balloon in pieces: now and then he sets about welding it back together (js/wind.js)
+      if (typeof repairBalloon === 'function' && Math.random() < repairChance()) { repairBalloon(); return; }
+      if (typeof flyBalloon === 'function' && Math.random() < balloonFlightChance()) { flyBalloon(); return; }
       // Sometimes he just wants to spend time on one of his hobbies
       if (typeof practiceHobby === 'function' && Math.random() < hobbyPracticeChance()) {
         practiceHobby(pickHobbyToPractise(), 'Practising a Hobby');

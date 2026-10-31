@@ -223,6 +223,8 @@ function startPracticeProps(hobby) {
           kite.rotation.z = Math.sin(t * 1.7) * 0.4;
           line.geometry.setFromPoints([new THREE.Vector3(state.botPos.x, state.botAltitudeY + 1.4, state.botPos.z), new THREE.Vector3(kx, ky, kz)]);
         };
+        // How it really flies depends on the wind (js/wind.js)
+        if (typeof windKiteProps === 'function') hobbyPropUpdate = windKiteProps(kite, line);
       } else if (hobby.style === 'music') {
         const notes = [];
         for (let i = 0; i < 6; i++) {
@@ -292,6 +294,8 @@ function paintLandscape(skill, seed) {
 // Kelo-1 practises a hobby: goes somewhere fitting, does it for a while, and gets a bit better
 async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
       if (!hobby || state.isBusy || state.isBuilding || state.isPracticing) return false;
+      // No kite, or (once he knows) no wind for it (js/wind.js)
+      if (hobby.style === 'kite' && typeof kiteWontFlyToday === 'function' && kiteWontFlyToday(hobby)) return false;
       state.isPracticing = true;
       try {
         const skillBefore = hobby.skill;
@@ -368,7 +372,8 @@ async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
           const title = `${pick(['Ballad', 'Song', 'Blues', 'Lullaby', 'Jig'])} for ${pick(['the Lake', 'Ogopogo', 'the Post Office', 'Rusty Servos', 'the Night Peaks', 'My Visitors'])}`;
           result = `I composed "${title}" on my ${hobby.tool || 'instrument'}.`;
         } else if (hobby.style === 'kite') {
-          result = hobby.skill > 40 ? 'The kite held steady for ages. I am learning to read the wind.' : 'The kite crashed twice, then flew. Worth it.';
+          result = typeof kiteSessionResult === 'function' ? kiteSessionResult(hobby, skillBefore)
+            : hobby.skill > 40 ? 'The kite held steady for ages. I am learning to read the wind.' : 'The kite crashed twice, then flew. Worth it.';
         } else {
           result = `I spent a while on ${hobby.name.toLowerCase()}. I'm getting better at it.`;
         }

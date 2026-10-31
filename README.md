@@ -99,6 +99,7 @@ Kelo-bot-1/
 │   ├── disposal.js      # The Disposal Pit: whatever he throws in is gone for good
 │   ├── knowhow.js       # Learning how tools work, fuel, and stargazing at night
 │   ├── seasons.js       # Seasonal colours, snow, snowfall, and getting stuck in deep snow
+│   ├── wind.js          # Wind over his days: kites need it, balloons crash in it and get welded back
 │   ├── landscape.js     # Chopping trees, planting, roads and hills, and undoing them
 │   ├── projects.js      # Real builds: finding plans online, asking for materials, building them
 │   ├── town.js          # Keeps the town free of his builds (the beach is fine)

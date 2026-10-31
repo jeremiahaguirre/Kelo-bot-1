@@ -107,8 +107,11 @@ async function eatSomething(originLabel = 'Hungry') {
         await new Promise(r => setTimeout(r, 5000));
         if (atGarden) state.gardenPlots.forEach(p => { if (p.name === food) p.growth = Math.max(5, p.growth - 35); });
         state.fullness = Math.min(100, state.fullness + 40);
-        state.speechBubble = knows('food') ? `That ${food} hit the spot.` : `I tried ${food}. It tasted... warm?`;
-        if (!knows('food') && before < 45) discoverNeed('food', `I ate ${food} and the fog in my head started to clear.`);
+        // What it really tastes like, remembered as a taste he likes or dislikes (js/materials.js)
+        const taste = typeof tasteFood === 'function' ? tasteFood(food) : null;
+        state.speechBubble = taste ? (knows('food') ? taste.text : `I tried ${food}. It was ${taste.flavour.note}... so this is tasting?`)
+          : knows('food') ? `That ${food} hit the spot.` : `I tried ${food}. It tasted... warm?`;
+        if (!knows('food') && before < 45) discoverNeed('food', `I ate ${food}${taste ? `, ${taste.flavour.note},` : ''} and the fog in my head started to clear.`);
         savePersistentBrainState();
         renderAllUI();
         return true;

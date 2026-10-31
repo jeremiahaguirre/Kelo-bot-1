@@ -45,7 +45,8 @@ function ownedItemNames() {
     }
 
 function hasEquipment(kind) {
-      return ownedItemNames().some(n => TOOL_NEEDS[kind].re.test(n));
+      // A snapped or bent tool doesn't count (js/materials.js)
+      return ownedItemNames().some(n => TOOL_NEEDS[kind].re.test(n) && !(typeof isBrokenItem === 'function' && isBrokenItem(n)));
     }
 
 // Depth of the ground lowered by all dig sites at a point (used by getAnalyticalGroundHeight)
@@ -190,7 +191,7 @@ async function digAt(x, z, originLabel = 'Digging') {
 
       // He has to know how a tool works before he picks it up (js/knowhow.js)
       const toolKind = site && site.depth >= ROCK_DEPTH && hasEquipment('rock') ? 'rock' : 'dig';
-      const toolName = ownedItemNames().find(n => TOOL_NEEDS[toolKind].re.test(n));
+      const toolName = ownedItemNames().find(n => TOOL_NEEDS[toolKind].re.test(n) && !(typeof isBrokenItem === 'function' && isBrokenItem(n)));
       if (toolName && typeof readyToOperate === 'function' && !readyToOperate(toolName)) return 'learning';
 
       state.isPracticing = true; // a physical activity: nothing else interrupts it
@@ -227,6 +228,7 @@ async function digAt(x, z, originLabel = 'Digging') {
         const machines = hasEquipment('excavator');
         const stepDepth = (site.depth >= ROCK_DEPTH ? 0.12 : 0.2) * (machines ? 1.6 : 1);
         const steps = 5;
+        let rockStrike = null;
         for (let i = 0; i < steps && site.depth < MAX_DEPTH; i++) {
           await new Promise(r => setTimeout(r, 1800));
           site.depth = Math.round(Math.min(MAX_DEPTH, site.depth + stepDepth) * 100) / 100;
@@ -235,7 +237,11 @@ async function digAt(x, z, originLabel = 'Digging') {
           updateDirtPile3D(site);
           // Stand in the hole as it deepens
           state.botAltitudeY = getIslandGroundHeight(state.botPos.x, state.botPos.z);
-          if (site.depth >= ROCK_DEPTH && !hasEquipment('rock')) break;
+          if (site.depth >= ROCK_DEPTH && !hasEquipment('rock')) {
+            // He forces the tool against the bedrock anyway: a wooden handle can snap (js/materials.js)
+            if (typeof forceToolOnRock === 'function') rockStrike = forceToolOnRock(toolName);
+            break;
+          }
         }
 
         // Haul the pile away if he has both machines
@@ -266,6 +272,7 @@ async function digAt(x, z, originLabel = 'Digging') {
         if (typeof bumpLifeStat === 'function') bumpLifeStat('digSessions');
         const layer = site.depth >= ROCK_DEPTH ? 'bedrock' : 'soil';
         let result = `Dug down to ${site.depth.toFixed(1)} m (${layer}). The dirt pile is ${site.dirt.toFixed(1)} high.`;
+        if (rockStrike && rockStrike.broken) result += ` ${rockStrike.text}`;
         if (hauled) result += ` The excavator loaded ${hauled.toFixed(1)} into the dump truck and I hauled it off.`;
         if (found.length) result += ` I FOUND ${found.map(f => `${f.emoji} ${f.name}`).join(' and ')}!`;
         else if (pebble) result += ` Only found ${pebble}, but I kept it.`;

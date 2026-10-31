@@ -85,8 +85,9 @@ function forgetItem(name) {
       if (typeof renderVehicles3D === 'function') renderVehicles3D();
     }
 
-// Something tumbles from (x, y, z) over the rim and down to the bottom, then vanishes
-async function dropIntoPit(object3d, from) {
+// Something tumbles from (x, y, z) over the rim and down to the bottom, then vanishes.
+// Given the item's name, it hits the bottom as what it's made of (js/materials.js) and returns what happened.
+async function dropIntoPit(object3d, from, itemName = null) {
       const { x, z, depth } = DISPOSAL_PIT;
       const bottom = getAnalyticalGroundHeight(x, z) - depth + 0.2;
       const tx = x + randRange(-0.6, 0.6), tz = z + randRange(-0.6, 0.6);
@@ -106,9 +107,11 @@ async function dropIntoPit(object3d, from) {
         object3d.rotation.z += 0.2;
         await new Promise(r => setTimeout(r, 55));
       }
-      await new Promise(r => setTimeout(r, 400));
+      const impact = itemName && typeof pitImpact === 'function' ? pitImpact(itemName, object3d, from.y - bottom) : null;
+      await new Promise(r => setTimeout(r, impact && impact.outcome === 'shatters' ? 1800 : 400));
       scene.remove(object3d);
       object3d.traverse(o => { if (o.geometry) o.geometry.dispose(); });
+      return impact;
     }
 
 // A vehicle he no longer wants: he drives it to the edge and it rolls over the rim
@@ -144,6 +147,7 @@ async function disposeItem(name, why = '', originLabel = 'Clearing Things Out') 
         state.speechBubble = why || `I don't need the ${plain} any more.`;
         renderAllUI();
         const vehicle = state.vehicles.find(v => v.name === item);
+        let impact = null;
         if (vehicle) {
           await sinkVehicleIntoPit(vehicle);
         } else {
@@ -161,18 +165,19 @@ async function disposeItem(name, why = '', originLabel = 'Clearing Things Out') 
           if (typeof setCarriedObject === 'function') setCarriedObject(null);
           const thrown = buildItemModel3D(item, { label: false });
           lifeSize(thrown, 1.4);
-          await dropIntoPit(thrown, { x: state.botPos.x + Math.sin(state.botRotY) * 0.6, y: getIslandGroundHeight(state.botPos.x, state.botPos.z) + 1.1, z: state.botPos.z + Math.cos(state.botRotY) * 0.6 });
+          impact = await dropIntoPit(thrown, { x: state.botPos.x + Math.sin(state.botRotY) * 0.6, y: getIslandGroundHeight(state.botPos.x, state.botPos.z) + 1.1, z: state.botPos.z + Math.cos(state.botRotY) * 0.6 }, item);
         }
         forgetItem(item);
         state.disposedItems.unshift({ name: item, at: Date.now(), why: String(why || '').slice(0, 160) });
-        state.speechBubble = pick([`Down it goes. Goodbye, ${plain}.`, `The ${plain} is gone for good. That feels lighter.`, `No more ${plain}. There's room for something new.`]);
+        const landed = impact && impact.text ? impact.text + ' ' : '';
+        state.speechBubble = landed + pick([`Down it goes. Goodbye, ${plain}.`, `The ${plain} is gone for good. That feels lighter.`, `No more ${plain}. There's room for something new.`]);
         state.moodTitle = `Threw away the ${plain}`.slice(0, 80);
         state.changedLatelySummary = `Threw the ${plain} into the Disposal Pit.`;
         state.calmLevel = Math.min(100, state.calmLevel + 5);
         state.diaryEntries.unshift({
           time: originLabel, location: 'the Disposal Pit', mood: `🗑️ Let go of the ${plain}`.slice(0, 80),
           vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
-          text: `Dear Diary, I threw the ${plain} into the Disposal Pit. ${why ? why + ' ' : ''}Once something goes down there, it never comes back.`
+          text: `Dear Diary, I threw the ${plain} into the Disposal Pit. ${why ? why + ' ' : ''}${landed}Once something goes down there, it never comes back.`
         });
         showToast(`🗑️ Kelo-1 threw away: ${plain}`);
         savePersistentBrainState();

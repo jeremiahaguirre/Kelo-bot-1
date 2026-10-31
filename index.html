@@ -364,85 +364,110 @@
       <!-- TAB 4: HIS BRAIN (WORLDVIEW, OPINIONS, 3D CREATIONS & MEMORIES) -->
       <div id="tab-brain" class="tab-pane hidden p-4 space-y-3">
         <div class="p-3.5 rounded-2xl bg-purple-950/30 border border-purple-500/30 space-y-1.5">
-          <div id="worldviewStageBadge" class="text-[10px] font-mono uppercase text-purple-300">Worldview Epoch #1: Self-Directed Philosophy</div>
+          <div id="worldviewStageBadge" class="text-[10px] font-mono uppercase text-purple-300">His outlook</div>
           <p id="worldviewManifestoText" class="font-serif italic text-xs text-slate-100 leading-relaxed">"I don't know anything yet. I want to find out what everything is."</p>
         </div>
 
-        <div class="space-y-2">
-          <div class="flex items-center justify-between text-xs font-bold text-emerald-300">
-            <span>🏗️ Things He Has Built</span>
+        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="built" open>
+          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-emerald-300">
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🏗️ Things He Has Built</span></span>
             <span id="inventedCountBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20">0 built</span>
+          </summary>
+          <div class="pt-2 space-y-2">
+            <div id="inventedActionsContainer" class="space-y-2"></div>
           </div>
-          <div id="inventedActionsContainer" class="space-y-2"></div>
-        </div>
-
-        <div class="space-y-2">
-          <div class="text-xs font-bold text-amber-300">⛏️ Digging, Equipment &amp; Finds</div>
-          <div id="digSitesContainer" class="space-y-1.5"></div>
-        </div>
-
-        <div class="space-y-2">
-          <div class="text-xs font-bold text-orange-300">🎨 Hobbies</div>
-          <div id="hobbiesContainer" class="space-y-1.5"></div>
-        </div>
-
-        <div class="space-y-2">
-          <div class="text-xs font-bold text-pink-300">🧠 Core Memories</div>
-          <p id="lifeStatsText" class="text-[10px] font-mono text-slate-400"></p>
-          <div id="coreMemoriesContainer" class="space-y-1.5"></div>
-        </div>
-
-        <div class="space-y-2">
-          <div class="flex items-center justify-between text-xs font-bold text-yellow-300">
-            <span>💡 Concepts He Invented</span>
+        </details>
+        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="digging" open>
+          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-amber-300">
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>⛏️ Digging, Equipment &amp; Finds</span></span>
+          </summary>
+          <div class="pt-2 space-y-2">
+            <div id="digSitesContainer" class="space-y-1.5"></div>
+          </div>
+        </details>
+        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="hobbies" open>
+          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-orange-300">
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🎨 Hobbies</span></span>
+          </summary>
+          <div class="pt-2 space-y-2">
+            <div id="hobbiesContainer" class="space-y-1.5"></div>
+          </div>
+        </details>
+        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="memories" open>
+          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-pink-300">
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🧠 Core Memories</span></span>
+          </summary>
+          <div class="pt-2 space-y-2">
+            <p id="lifeStatsText" class="text-[10px] font-mono text-slate-400"></p>
+            <div id="coreMemoriesContainer" class="space-y-1.5"></div>
+          </div>
+        </details>
+        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="concepts">
+          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-yellow-300">
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>💡 Concepts He Invented</span></span>
             <span id="conceptsCountBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-yellow-500/20">0 Concepts</span>
+          </summary>
+          <div class="pt-2 space-y-2">
+            <div id="conceptsListContainer" class="space-y-2"></div>
           </div>
-          <div id="conceptsListContainer" class="space-y-2"></div>
-        </div>
-
-        <div class="space-y-2">
-          <div class="flex items-center justify-between text-xs font-bold text-cyan-300">
-            <span>📐 Shapes He Designed or Discovered</span>
+        </details>
+        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="shapes">
+          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-cyan-300">
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>📐 Shapes He Designed or Discovered</span></span>
             <span id="shapesCountBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20">0 Shapes</span>
+          </summary>
+          <div class="pt-2 space-y-2">
+            <div id="shapeLibraryContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
           </div>
-          <div id="shapeLibraryContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
-        </div>
-
-        <div class="space-y-2">
-          <div class="text-xs font-bold text-purple-300">🧠 Independent Opinions &amp; Convictions</div>
-          <div id="opinionsListContainer" class="space-y-2"></div>
-        </div>
-
-        <div class="space-y-2">
-          <div class="text-xs font-bold text-amber-300">👥 Persistent Memories of Visitors</div>
-          <div id="visitorMemoriesContainer" class="space-y-1.5"></div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div class="space-y-1.5">
-            <div class="text-[11px] font-bold text-indigo-300">✨ Fascinations &amp; Nuances</div>
+        </details>
+        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="opinions">
+          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-purple-300">
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🧠 Opinions</span></span>
+          </summary>
+          <div class="pt-2 space-y-2">
+            <div id="opinionsListContainer" class="space-y-2"></div>
+          </div>
+        </details>
+        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="visitors">
+          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-amber-300">
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>👥 Visitors He Remembers</span></span>
+          </summary>
+          <div class="pt-2 space-y-2">
+            <div id="visitorMemoriesContainer" class="space-y-1.5"></div>
+          </div>
+        </details>
+        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="likes">
+          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-indigo-300">
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>✨ Things That Fascinate Him</span></span>
+          </summary>
+          <div class="pt-2 space-y-2">
             <div id="likesListContainer" class="space-y-1.5"></div>
           </div>
-          <div class="space-y-1.5">
-            <div class="text-[11px] font-bold text-amber-300">⚖️ Paradoxes &amp; Tensions</div>
+        </details>
+        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="dislikes">
+          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-amber-300">
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>⚖️ Things That Puzzle Him</span></span>
+          </summary>
+          <div class="pt-2 space-y-2">
             <div id="dislikesListContainer" class="space-y-1.5"></div>
           </div>
-        </div>
-
-        <div class="space-y-1.5">
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-sky-300">🌐 NetNode Cyber Cafe Browsing History</span>
-            <button id="btnBrowseWebNow" class="text-[10px] font-mono text-sky-400 hover:underline">Browse Now</button>
+        </details>
+        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="web">
+          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-sky-300">
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🌐 What He Read at NetNode</span></span>
+            <button id="btnBrowseWebNow" class="text-[10px] font-mono text-sky-400 hover:underline">Browse now</button>
+          </summary>
+          <div class="pt-2 space-y-2">
+            <p id="curiosityQueueText" class="text-[10px] font-mono text-slate-400"></p>
+            <div id="webHistoryList" class="space-y-1.5"></div>
           </div>
-          <p id="curiosityQueueText" class="text-[10px] font-mono text-slate-400"></p>
-          <div id="webHistoryList" class="space-y-1.5"></div>
-        </div>
+        </details>
       </div>
 
       <!-- TAB: WORLD CONTROLS -->
       <div id="tab-world" class="tab-pane hidden p-4 space-y-3">
         <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
-          <div class="text-xs font-bold text-slate-200">World & Brain Controls</div>
+          <div class="text-xs font-bold text-slate-200">World</div>
           <div class="flex flex-wrap gap-2">
             <button id="btnOpenAIConfig" class="px-3 py-1.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 text-xs font-bold flex items-center gap-1.5 transition">
           <i class="ph-fill ph-cpu"></i>
@@ -457,7 +482,7 @@
           <span id="lightingLabel">Alpine Noon</span>
         </button>
           </div>
-          <div class="flex flex-wrap gap-2"><span id="hudWeldBadge" class="inline-block px-2.5 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-mono">2 Core Opinions</span>
+          <div class="hidden"><span id="hudWeldBadge" class="inline-block px-2.5 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-mono">2 Core Opinions</span>
         <span id="hudGithubBadge" class="inline-block px-2.5 py-1 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-300 text-xs font-mono">2 Repos • 28 Commits</span></div>
           <div class="flex flex-wrap gap-1.5 text-[11px]">
             <button data-cam="follow" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">🎯 Follow</button>
@@ -469,7 +494,7 @@
           </div>
           <div class="flex flex-wrap gap-2"><button id="btnWaterGarden" class="px-3 py-1.5 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 text-xs font-semibold flex items-center gap-1.5 shadow-lg transition">
               <i class="ph-fill ph-drop"></i>
-              <span>Water Bio-Garden</span>
+              <span>Water the garden</span>
               <span id="gardenRipeBadge" class="px-1.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 font-mono text-[10px]">4/4</span>
             </button></div>
           <p class="text-[11px] text-slate-400">Drag to orbit the camera, scroll or pinch to zoom, and use the arrow keys or WASD in Bird's-Eye mode to fly around. Click the ground to suggest a spot to explore, or click Kelo-1 to say hi.</p>

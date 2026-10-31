@@ -48,3 +48,7 @@ body {
   #keloOverheadHUD { transition: left 0.3s ease; }
   body.menu-open #keloOverheadHUD { left: calc((100% - 460px) / 2); width: min(560px, calc(100% - 460px - 1.5rem)); }
 }
+
+/* Brain tab sections fold open and closed */
+.brain-section > summary::-webkit-details-marker { display: none; }
+.brain-section[open] .brain-caret { transform: rotate(90deg); }

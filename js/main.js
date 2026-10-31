@@ -304,11 +304,11 @@ function renderWebTastesTab() {
       const manifestoEl = document.getElementById('worldviewManifestoText');
       if (manifestoEl) manifestoEl.textContent = `"${state.worldviewManifesto}"`;
       const epochEl = document.getElementById('worldviewStageBadge');
-      if (epochEl) epochEl.textContent = `Worldview Epoch #${state.worldviewEpoch}: Self-Directed Philosophy`;
+      if (epochEl) epochEl.textContent = state.worldviewEpoch > 1 ? `His outlook (changed ${state.worldviewEpoch - 1}×)` : 'His outlook';
 
       // Concepts Kelo-1 invented; clicking one asks him to explore it further (he may take it anywhere)
       const conceptsBadge = document.getElementById('conceptsCountBadge');
-      if (conceptsBadge) conceptsBadge.textContent = `${state.concepts.length} Concepts`;
+      if (conceptsBadge) conceptsBadge.textContent = `${state.concepts.length} ${state.concepts.length === 1 ? 'idea' : 'ideas'}`;
       const conceptsEl = document.getElementById('conceptsListContainer');
       if (conceptsEl) {
         conceptsEl.innerHTML = state.concepts.map((c, idx) => `
@@ -332,7 +332,7 @@ function renderWebTastesTab() {
 
       // Shape library; clicking a shape asks Kelo-1 to weld it again (or remix it)
       const shapesBadge = document.getElementById('shapesCountBadge');
-      if (shapesBadge) shapesBadge.textContent = `${state.shapeLibrary.length} Shapes`;
+      if (shapesBadge) shapesBadge.textContent = `${state.shapeLibrary.length} ${state.shapeLibrary.length === 1 ? 'shape' : 'shapes'}`;
       const shapesEl = document.getElementById('shapeLibraryContainer');
       if (shapesEl) {
         shapesEl.innerHTML = state.shapeLibrary.length === 0
@@ -591,6 +591,18 @@ window.addEventListener('DOMContentLoaded', () => {
     cutawayRoofMeshes.forEach(r => { r.material.opacity = state.roofCutaway ? 0.18 : 0.95; });
     e.currentTarget.querySelector('span').textContent = state.roofCutaway ? 'Roofs: Cutaway' : 'Roofs: Solid';
   });
+
+  // Brain tab sections remember whether you left them open or closed
+  document.querySelectorAll('.brain-section').forEach(sec => {
+    const key = 'kelo1_brain_section_' + sec.dataset.section;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved !== null) sec.open = saved === '1';
+    } catch (e) {}
+    sec.addEventListener('toggle', () => { try { localStorage.setItem(key, sec.open ? '1' : '0'); } catch (e) {} });
+  });
+  // The Browse button sits in a section heading: don't fold the section when it's pressed
+  document.getElementById('btnBrowseWebNow')?.addEventListener('click', e => e.preventDefault(), true);
 
   // Right-hand menu: tabs (remembered between visits), open/close, Esc to close
   const TAB_ACTIVE = 'inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold bg-amber-500/20 text-amber-200 transition';

@@ -236,6 +236,7 @@ function buildAlpineTerrainAndMountains3D() {
       // Conifer Forest (Douglas Firs around the foothills)
       const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8a5a2b, roughness: 0.9 });
       const needleMat = new THREE.MeshStandardMaterial({ color: 0x1f9a4b, roughness: 0.75 });
+      needleMat.userData.seasonal = 'needle'; // js/seasons.js frosts it in winter
       for (let i = 0; i < 38; i++) {
         const tx = (Math.random() - 0.5) * 68;
         const tz = -11 - Math.random() * 24;
@@ -694,6 +695,7 @@ function buildValleyScenery3D() {
         trunk.castShadow = true;
         tree.add(trunk);
         const leafMat = new THREE.MeshStandardMaterial({ color: leafColors[placed % leafColors.length], roughness: 0.8 });
+        leafMat.userData.seasonal = 'leaf'; // js/seasons.js turns it with the seasons
         [[0, 1.9, 0, 1.05], [0.55, 1.6, 0.2, 0.7], [-0.5, 1.65, -0.15, 0.75]].forEach(([lx, ly, lz, r]) => {
           const blob = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 12), leafMat);
           blob.position.set(lx, ly, lz);
@@ -1590,7 +1592,7 @@ function animateDiorama() {
 
       if (dist > arrivalRadius(state.targetPos)) {
         state.isWalking = true;
-        const step = (dist > 14 ? 0.14 : 0.082) * (state.ridingSpeed || 1);
+        const step = (dist > 14 ? 0.14 : 0.082) * (state.ridingSpeed || 1) * (typeof snowWalkFactor === 'function' ? snowWalkFactor(state.botPos) : 1);
         const [sx, sz] = nextPathDirection(state.botPos.x, state.botPos.z, state.targetPos);
         state.botPos.x += sx * step;
         state.botPos.z += sz * step;
@@ -1601,7 +1603,9 @@ function animateDiorama() {
         state.botAltitudeY = groundY;
         // Always stay strictly >= groundY (never sink below the mountain or valley floor!)
         const strideHop = Math.abs(Math.sin(t * 9.5)) * 0.12;
-        keloGroup.position.set(state.botPos.x, groundY + strideHop, state.botPos.z);
+        // In deep snow without snowshoes he sinks in up to his knees (js/seasons.js)
+        const sink = typeof snowSink === 'function' ? snowSink(state.botPos) : 0;
+        keloGroup.position.set(state.botPos.x, groundY + strideHop - sink, state.botPos.z);
         keloGroup.rotation.set(0, state.botRotY, 0);
         // Exhausted legs give way now and then (js/needs.js); he stops while he picks himself up
         if (typeof maybeStumble === 'function' && maybeStumble(t)) {

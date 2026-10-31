@@ -86,10 +86,16 @@ async function dropIntoPit(object3d, from) {
       const tx = x + randRange(-0.6, 0.6), tz = z + randRange(-0.6, 0.6);
       object3d.position.set(from.x, from.y, from.z);
       scene.add(object3d);
+      // Anything wider than the pit (a truck, say) is swallowed: it shrinks as it drops into the dark
+      const size = new THREE.Vector3();
+      new THREE.Box3().setFromObject(object3d).getSize(size);
+      const startScale = object3d.scale.x;
+      const endScale = startScale * Math.min(1, (DISPOSAL_PIT.r * 1.2) / Math.max(size.x, size.z, 0.01));
       const steps = 18;
       for (let i = 1; i <= steps; i++) {
         const t = i / steps;
         object3d.position.set(from.x + (tx - from.x) * t, from.y + (bottom - from.y) * t + Math.sin(t * Math.PI) * 1.2, from.z + (tz - from.z) * t);
+        object3d.scale.setScalar(startScale + (endScale - startScale) * Math.min(1, t * 1.6));
         object3d.rotation.x += 0.35;
         object3d.rotation.z += 0.2;
         await new Promise(r => setTimeout(r, 55));
@@ -101,8 +107,9 @@ async function dropIntoPit(object3d, from) {
 
 // A vehicle he no longer wants: he drives it to the edge and it rolls over the rim
 async function sinkVehicleIntoPit(v) {
-      await driveVehicle(v, { x: PIT_EDGE.x - 0.8, z: PIT_EDGE.z }, `Driving the ${v.name.replace(/^(an?|the)\s+/i, '')} to the Disposal Pit`);
-      state.targetPos = { x: PIT_EDGE.x - 2.2, z: PIT_EDGE.z + 1.4 };
+      await driveVehicle(v, { x: PIT_EDGE.x - 3.4, z: PIT_EDGE.z }, `Driving the ${v.name.replace(/^(an?|the)\s+/i, '')} to the Disposal Pit`);
+      // He climbs out and stands well back before giving it a push
+      state.targetPos = { x: PIT_EDGE.x - 3.4, z: PIT_EDGE.z + 3.2 };
       await waitForArrival(20000);
       const m = vehicleMeshes[v.id];
       if (m) {
@@ -172,16 +179,21 @@ async function disposeItem(name, why = '', originLabel = 'Clearing Things Out') 
 // The dump truck tips its load over the rim: the dirt is gone, the pit stays a pit
 async function tipDirtIntoPit(truck) {
       const tMesh = vehicleMeshes[truck.id];
-      if (tMesh) {
-        for (let a = 0; a <= 10; a++) { tMesh.rotation.z = -a * 0.04; await new Promise(r => setTimeout(r, 80)); }
-      }
+      const bed = tMesh && tMesh.userData.bed;
+      // Back up to the rim: turn the truck so its tailgate faces the pit
+      truck.rotY = Math.atan2(DISPOSAL_PIT.z - truck.z, -(DISPOSAL_PIT.x - truck.x));
+      if (tMesh) tMesh.rotation.y = truck.rotY;
+      const tip = (a) => { if (bed) bed.rotation.z = a; else if (tMesh) tMesh.rotation.z = -a * 0.4; };
+      for (let a = 0; a <= 12; a++) { tip(a * 0.07); await new Promise(r => setTimeout(r, 90)); }
       const load = truck.load || 0;
       truck.load = 0;
       renderVehicles3D();
       if (tMesh) {
-        const clump = new THREE.Mesh(new THREE.DodecahedronGeometry(0.45, 0), new THREE.MeshStandardMaterial({ color: 0x7a4b2a, roughness: 1, flatShading: true }));
-        await dropIntoPit(clump, { x: tMesh.position.x + 0.8, y: tMesh.position.y + 1.0, z: tMesh.position.z });
-        tMesh.rotation.z = 0;
+        const clump = new THREE.Mesh(new THREE.DodecahedronGeometry(0.9, 0), new THREE.MeshStandardMaterial({ color: 0x7a4b2a, roughness: 1, flatShading: true }));
+        clump.scale.set(1.4, 0.7, 1.0);
+        const back = 3.6; // the tailgate, behind the truck's middle
+        await dropIntoPit(clump, { x: tMesh.position.x - Math.cos(truck.rotY) * back, y: tMesh.position.y + 1.4, z: tMesh.position.z + Math.sin(truck.rotY) * back });
+        for (let a = 12; a >= 0; a--) { tip(a * 0.07); await new Promise(r => setTimeout(r, 60)); }
       }
       state.dirtDisposed = Math.round(((state.dirtDisposed || 0) + load) * 10) / 10;
       return load;

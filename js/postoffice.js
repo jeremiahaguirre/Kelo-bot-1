@@ -101,7 +101,9 @@ async function pickUpMail(originLabel = 'Checking the Mail') {
           // He picks up the actual item and carries it; food gets eaten, so he only holds it briefly
           if (typeof setCarriedObject === 'function') {
             const isFood = categorizeItem(parcel.name, parcel.category) === 'food';
-            setCarriedObject(buildItemModel3D(parcel.kind === 'message' ? 'Letter' : parcel.name, { kind: parcel.kind, thumb: parcel.thumbs && parcel.thumbs[0] }),
+            // A vehicle is too big to carry: it gets parked, and he walks home with the keys
+            const carried = parcel.kind !== 'message' && typeof vehicleTypeFor === 'function' && vehicleTypeFor(parcel.name) ? 'keys' : parcel.name;
+            setCarriedObject(buildItemModel3D(parcel.kind === 'message' ? 'Letter' : carried, { kind: parcel.kind, thumb: parcel.thumbs && parcel.thumbs[0] }),
               parcel.kind === 'message' || isFood ? 4000 : 30000);
           }
           await openParcel(parcel);

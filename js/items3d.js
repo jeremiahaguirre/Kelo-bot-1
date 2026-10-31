@@ -159,32 +159,15 @@ const ITEM_MODEL_RULES = [
       new THREE.Vector3(0, 0.8, -0.12), new THREE.Vector3(0.1, 0.55, -0.35), new THREE.Vector3(0.3, 0.1, -0.4)]), 16, 0.025, 6), new THREE.MeshStandardMaterial({ color: 0x111827 }));
     return group(motor, cap, bar, ...grips, collar, shank, chisel, hose);
   }],
-  [/excavator|digger|backhoe/, () => {
-    const base = mesh(new THREE.BoxGeometry(0.5, 0.12, 0.34), 0x1f2937);
-    base.position.y = 0.06;
-    const cab = mesh(new THREE.BoxGeometry(0.3, 0.26, 0.28), 0xfacc15);
-    cab.position.set(-0.05, 0.25, 0);
-    const boom = mesh(new THREE.BoxGeometry(0.42, 0.06, 0.06), 0xfacc15);
-    boom.position.set(0.28, 0.38, 0);
-    boom.rotation.z = -0.5;
-    const bucket = mesh(new THREE.BoxGeometry(0.12, 0.12, 0.16), 0x475569);
-    bucket.position.set(0.48, 0.2, 0);
-    return group(base, cab, boom, bucket);
-  }],
-  [/dump ?truck|truck/, () => {
-    const cab = mesh(new THREE.BoxGeometry(0.18, 0.2, 0.26), 0xef4444);
-    cab.position.set(0.24, 0.18, 0);
-    const bed = mesh(new THREE.BoxGeometry(0.36, 0.16, 0.3), 0xfacc15);
-    bed.position.set(-0.06, 0.2, 0);
-    const g = group(cab, bed);
-    [[-0.18, 0.15], [-0.18, -0.15], [0.24, 0.15], [0.24, -0.15]].forEach(([x, z]) => {
-      const wheel = mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.04, 12), 0x111827);
-      wheel.rotation.x = Math.PI / 2;
-      wheel.position.set(x, 0.06, z);
-      g.add(wheel);
-    });
-    return g;
-  }],
+  [/excavator|digger|backhoe/, () => excavatorModel()],
+  [/dump ?truck|truck/, () => dumpTruckModel()],
+  [/hot.?air balloon|balloon basket/, () => hotAirBalloonModel()],
+  [/snowmobile|snow ?machine/, () => snowmobileModel()],
+  [/helicopter|gyrocopter/, () => helicopterModel()],
+  [/\bskis?\b/, () => skisModel()],
+  [/snow ?shoes?/, () => snowshoesModel()],
+  [/\bkeys?\b/, () => keysModel()],
+  [/^(?!.*pick ?ax).*(\baxe\b|hatchet)/, () => axeModel()],
   [/shovel|spade/, () => {
     // D-grip, wooden shaft, metal collar, and a pointed, slightly dished blade
     const wood = 0xa16207;
@@ -350,7 +333,8 @@ const ITEM_MODEL_RULES = [
     b.position.z = -0.05;
     return group(a, b);
   }],
-  [/kaleidoscope|telescope|spyglass/, () => {
+  [/telescope/, () => telescopeModel()],
+  [/kaleidoscope|spyglass/, () => {
     const tube = mesh(new THREE.CylinderGeometry(0.07, 0.1, 0.6, 12), 0xa855f7, { metalness: 0.5 });
     tube.rotation.z = Math.PI / 2.6;
     tube.position.y = 0.2;
@@ -398,17 +382,7 @@ const ITEM_MODEL_RULES = [
     body.position.y = 0.05;
     return group(body);
   }],
-  [/drill/, () => {
-    const body = mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.4, 12), 0xf59e0b);
-    body.rotation.z = Math.PI / 2;
-    body.position.y = 0.3;
-    const bit = mesh(new THREE.ConeGeometry(0.06, 0.3, 8), 0x94a3b8, { metalness: 0.8 });
-    bit.rotation.z = -Math.PI / 2;
-    bit.position.set(0.35, 0.3, 0);
-    const grip = mesh(new THREE.BoxGeometry(0.1, 0.28, 0.1), 0x1f2937);
-    grip.position.set(-0.05, 0.13, 0);
-    return group(body, bit, grip);
-  }],
+  [/drill/, () => cordlessDrillModel()],
   [/rope|cable|wire/, (lower) => {
     const coil = mesh(new THREE.TorusGeometry(0.22, 0.05, 8, 24), /wire|copper/.test(lower) ? 0xb45309 : 0xd6a35c);
     coil.rotation.x = Math.PI / 2;
@@ -458,36 +432,15 @@ const ITEM_MODEL_RULES = [
     glow.position.y = 0.24;
     return group(lamp, glow);
   }],
-  [/hammer|wrench|multitool|pliers|knife|saw|iron|tool/, () => {
-    const handle = mesh(new THREE.BoxGeometry(0.06, 0.4, 0.06), 0x7c2d12);
-    handle.position.y = 0.2;
-    const head = mesh(new THREE.BoxGeometry(0.25, 0.1, 0.1), 0x94a3b8, { metalness: 0.8 });
-    head.position.y = 0.42;
-    return group(handle, head);
-  }],
-  [/canoe|kayak|boat/, () => {
-    const hull = mesh(new THREE.SphereGeometry(0.25, 16, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), 0xb45309, { side: THREE.DoubleSide });
-    hull.scale.set(3, 0.8, 0.9);
-    hull.position.y = 0.2;
-    return group(hull);
-  }],
-  [/balloon/, () => {
-    const env = mesh(new THREE.SphereGeometry(0.3, 16, 12), 0xef4444);
-    env.scale.y = 1.2;
-    env.position.y = 0.7;
-    const basket = mesh(new THREE.BoxGeometry(0.18, 0.14, 0.18), 0x92400e);
-    basket.position.y = 0.1;
-    return group(env, basket);
-  }],
-  [/bike|bicycle/, () => {
-    const w1 = mesh(new THREE.TorusGeometry(0.16, 0.03, 8, 20), 0x1f2937);
-    w1.position.set(-0.22, 0.17, 0);
-    const w2 = w1.clone();
-    w2.position.x = 0.22;
-    const frame = mesh(new THREE.BoxGeometry(0.44, 0.04, 0.04), 0x0ea5e9);
-    frame.position.y = 0.3;
-    return group(w1, w2, frame);
-  }],
+  [/hammer|mallet/, () => clawHammerModel()],
+  [/wrench|spanner/, () => wrenchModel()],
+  [/pliers/, () => pliersModel()],
+  [/screwdriver/, () => screwdriverModel()],
+  [/knife/, () => knifeModel()],
+  [/\bsaw\b|handsaw/, () => handSawModel()],
+  [/multitool|iron|tool/, () => toolboxModel()],
+  [/canoe|kayak|boat|raft|paddle ?board/, () => rowboatModel()],
+  [/bike|bicycle|scooter/, () => bicycleModel()],
   [/submarine/, () => {
     const hull = mesh(new THREE.SphereGeometry(0.2, 14, 10), 0xfacc15);
     hull.scale.set(2.2, 1, 1);

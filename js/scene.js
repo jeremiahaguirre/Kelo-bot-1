@@ -680,6 +680,7 @@ function buildValleyScenery3D() {
       const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8a5a2b, roughness: 0.9 });
       const clearOf = (x, z, r) => !worldObstacles.some(o => Math.hypot(x - o.x, z - o.z) < o.r + r)
         && !Object.values(TOWN_LOCATIONS).some(l => Math.hypot(x - l.x, z - l.z) < r + 2.2)
+        && !(typeof inParkingArea === 'function' && inParkingArea(x, z, r))
         && Math.abs(x + 2) > 3 && z < 7.5;
       let placed = 0;
       for (let i = 0; i < 140 && placed < 26; i++) {

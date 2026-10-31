@@ -1,20 +1,42 @@
 // Kelo-bot-1 — js/vehicles.js
 // Loaded after storehouse.js. Things like a dump truck or a canoe are used, not carried:
-// they are parked (land vehicles in a yard beside the Storehouse, boats at a dock on the shore),
+// they are parked (land vehicles in a gravel yard east of the Post Office, boats off the dock),
 // and Kelo-1 walks to them, climbs in and drives. With a dump truck and an excavator he really
 // hauls dirt: the excavator scoops it into the truck and he drives the load to the Disposal Pit.
 // Without a boat, wading into the lake teaches him he can't breathe underwater.
 
+// Models come from js/gearmodels.js at full size; `scale` and `seatY` are only for anything without one
 const VEHICLE_TYPES = [
   { kind: 'truck', re: /dump ?truck/i, mode: 'land', speed: 2.0, scale: 3.2, seatY: 1.1 },
   { kind: 'excavator', re: /excavator|digger|backhoe/i, mode: 'land', speed: 1.1, scale: 3.2, seatY: 1.0 },
   { kind: 'boat', re: /\b(boat|canoe|kayak|raft|rowboat|sailboat|paddle ?board)\b/i, mode: 'water', speed: 1.6, scale: 2.6, seatY: 0.25 },
   { kind: 'bike', re: /\b(bike|bicycle|scooter|skateboard)\b/i, mode: 'land', speed: 1.8, scale: 2.2, seatY: 0.3 },
   { kind: 'snowmobile', re: /snowmobile|snow ?machine/i, mode: 'snow', speed: 2.2, scale: 2.6, seatY: 0.6 },
-  { kind: 'air', re: /helicopter|hot air balloon|glider|gyrocopter/i, mode: 'air', speed: 2.8, scale: 2.8, seatY: 0.6 }
+  { kind: 'air', re: /helicopter|hot.?air balloon|glider|gyrocopter/i, mode: 'air', speed: 2.8, scale: 2.8, seatY: 0.6 }
 ];
-const YARD_SLOTS = [[9.4, -5.4], [9.4, -8.2], [1.8, -5.2], [1.8, -8.4], [9.6, -10.6], [1.6, -10.8]];
-const DOCK_SLOTS = [[2.2, 9.6], [5.6, 9.8], [-1.4, 9.4]];
+// The vehicle yard: a gravel lot east of the Post Office, two columns of three bays (vehicles face +x)
+const VEHICLE_YARD = { minX: 17.4, maxX: 32.2, minZ: -6.2, maxZ: 3.8 };
+const YARD_SLOTS = [[21.4, -4.6], [21.4, -1.2], [21.4, 2.2], [28.4, -4.6], [28.4, -1.2], [28.4, 2.2]];
+// Helicopters need room for their rotors: a helipad past the yard. Balloons launch from the meadow.
+const AIR_SLOTS = [[38.5, -2.0]];
+const BALLOON_SLOTS = [[-24.0, -2.5]];
+const PAD_RADIUS = 4.8;
+// Boats tie up off the end of the dock, bow out toward the lake
+const DOCK_SLOTS = [[2.2, 11.6], [5.4, 11.6], [-1.0, 11.6]];
+const BOAT_ROT_Y = -Math.PI / 2;
+
+// Keep trees and rocks off the yard (js/scene.js asks before placing scenery)
+function inParkingArea(x, z, r = 0) {
+      const y = VEHICLE_YARD;
+      return (x > y.minX - r && x < y.maxX + r && z > y.minZ - r && z < y.maxZ + r)
+        || [...AIR_SLOTS, ...BALLOON_SLOTS].some(([px, pz]) => Math.hypot(x - px, z - pz) < PAD_RADIUS + r);
+    }
+
+function parkingSlotsFor(type, name = '') {
+      if (type.mode === 'water') return DOCK_SLOTS;
+      if (type.mode === 'air') return /balloon/i.test(name) ? BALLOON_SLOTS : AIR_SLOTS;
+      return YARD_SLOTS;
+    }
 const WATER_LEVEL = -0.18;
 
 const vehicleMeshes = {};
@@ -32,10 +54,10 @@ function findVehicle(kind) {
 function registerVehicle(name) {
       const type = vehicleTypeFor(name);
       if (!type || state.vehicles.some(v => v.name === name)) return null;
-      const slots = type.mode === 'water' ? DOCK_SLOTS : YARD_SLOTS;
+      const slots = parkingSlotsFor(type, name);
       const used = new Set(state.vehicles.map(v => `${v.x},${v.z}`));
       const [x, z] = slots.find(([sx, sz]) => !used.has(`${sx},${sz}`)) || slots[0];
-      const v = { id: 'veh-' + Date.now() + '-' + Math.floor(Math.random() * 1000), name, kind: type.kind, x, z, rotY: type.mode === 'water' ? Math.PI / 2 : 0, load: 0 };
+      const v = { id: 'veh-' + Date.now() + '-' + Math.floor(Math.random() * 1000), name, kind: type.kind, x, z, rotY: type.mode === 'water' ? BOAT_ROT_Y : 0, load: 0 };
       state.vehicles.push(v);
       state.unstoredItems = state.unstoredItems.filter(n => n !== name);
       renderVehicles3D();
@@ -52,6 +74,13 @@ function buildVehicleMesh(v) {
       const type = vehicleTypeFor(v.name);
       const g = new THREE.Group();
       const model = buildItemModel3D(v.name, { label: false });
+      if (model.userData.fullSize) {
+        // Built at real size: just undo the miniature, and keep the moving parts handy
+        model.userData.mini.scale.setScalar(1);
+        g.add(model);
+        Object.assign(g.userData, model.userData);
+        return g;
+      }
       model.scale.setScalar(type ? type.scale : 2.5);
       g.add(model);
       if (v.kind === 'truck') {
@@ -90,6 +119,70 @@ function renderVehicles3D() {
       if (!dockGroup && state.vehicles.some(v => v.kind === 'boat')) buildDock3D();
     }
 
+// Gravel ground, painted bay lines and a sign for the yard
+function buildVehicleYard3D() {
+      if (!terrainGroundMesh) return;
+      const y = VEHICLE_YARD;
+      const geo = terrainGroundMesh.geometry, pos = geo.attributes.position, col = geo.attributes.color;
+      const gravel = new THREE.Color(0x9ca3af), dark = new THREE.Color(0x7c838f), pad = new THREE.Color(0x4b5563);
+      for (let i = 0; i < pos.count; i++) {
+        const vx = pos.getX(i), vz = pos.getZ(i);
+        if (!inParkingArea(vx, vz) || BALLOON_SLOTS.some(([px, pz]) => Math.hypot(vx - px, vz - pz) < PAD_RADIUS)) continue;
+        const onPad = AIR_SLOTS.some(([px, pz]) => Math.hypot(vx - px, vz - pz) < PAD_RADIUS);
+        const c = onPad ? pad : gravel.clone().lerp(dark, (Math.sin(vx * 3.1) * Math.cos(vz * 2.7) + 1) / 4);
+        col.setXYZ(i, c.r, c.g, c.b);
+      }
+      col.needsUpdate = true;
+      const paint = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9 });
+      const lines = new THREE.Group();
+      // Lines between the bays, laid in short pieces so they follow the ground
+      [-6.3, -2.9, 0.5, 3.9].forEach(z => [[18.0, 24.8], [25.0, 31.8]].forEach(([x0, x1]) => {
+        for (let x = x0; x < x1; x += 0.6) {
+          const seg = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.02, 0.12), paint);
+          seg.position.set(x + 0.3, getAnalyticalGroundHeight(x + 0.3, z) + 0.03, z);
+          lines.add(seg);
+        }
+      }));
+      // Each helipad gets a painted ring and a big H
+      const yellow = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.9 });
+      AIR_SLOTS.forEach(([px, pz]) => {
+        for (let k = 0; k < 28; k++) {
+          const a = (k / 28) * Math.PI * 2, rx = px + Math.cos(a) * (PAD_RADIUS - 0.5), rz = pz + Math.sin(a) * (PAD_RADIUS - 0.5);
+          const seg = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.02, 0.16), paint);
+          seg.position.set(rx, getAnalyticalGroundHeight(rx, rz) + 0.03, rz);
+          seg.rotation.y = -a + Math.PI / 2;
+          lines.add(seg);
+        }
+        [[-0.9, 0, 0.3, 3.0], [0.9, 0, 0.3, 3.0], [0, 0, 1.5, 0.3]].forEach(([ox, oz, w, d]) => {
+          const bar = new THREE.Mesh(new THREE.BoxGeometry(w, 0.02, d), yellow);
+          bar.position.set(px + ox, getAnalyticalGroundHeight(px + ox, pz + oz) + 0.04, pz + oz);
+          lines.add(bar);
+        });
+      });
+      const sx = y.minX + 0.3, sz = y.maxZ + 0.6, sy = getAnalyticalGroundHeight(sx, sz);
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 2.4, 6), new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.5 }));
+      post.position.set(sx, sy + 1.2, sz);
+      const sign = makeSignMesh('VEHICLE YARD', { bg: '#1e3a8a', fg: '#f8fafc', width: 1.9, height: 0.38 });
+      sign.position.set(sx, sy + 2.15, sz + 0.08);
+      lines.add(post, sign);
+      scene.add(lines);
+    }
+
+// Vehicles saved in the old yard beside the Storehouse, or at the old dock spots, move to the new ones
+function reparkOldVehicles() {
+      state.vehicles.forEach(v => {
+        const type = vehicleTypeFor(v.name);
+        if (!type) return;
+        const water = type.mode === 'water';
+        const stale = water ? v.z < 10.5 && v.z > 8.5 : Math.hypot(v.x - STOREHOUSE.x, v.z - STOREHOUSE.z) < 7;
+        if (!stale) return;
+        const slots = parkingSlotsFor(type, v.name);
+        const used = new Set(state.vehicles.filter(o => o !== v).map(o => `${o.x},${o.z}`));
+        const [x, z] = slots.find(([sx, sz]) => !used.has(`${sx},${sz}`)) || slots[0];
+        Object.assign(v, { x, z, rotY: water ? BOAT_ROT_Y : 0 });
+      });
+    }
+
 function buildDock3D() {
       dockGroup = new THREE.Group();
       const wood = new THREE.MeshStandardMaterial({ color: 0x9a6b3f, roughness: 0.9 });
@@ -116,18 +209,36 @@ function updateVehicles(t) {
       if (type.mode === 'air') y += 6 + Math.sin(t * 1.3) * 0.3;
       m.position.set(state.botPos.x, y, state.botPos.z);
       m.rotation.y = state.botRotY - Math.PI / 2;
-      keloGroup.position.set(state.botPos.x, y + type.seatY, state.botPos.z);
+      // Sit him in the seat: the seat offset turns with the vehicle
+      const seat = m.userData.seat;
+      if (seat) {
+        const a = m.rotation.y;
+        keloGroup.position.set(state.botPos.x + Math.cos(a) * seat.x + Math.sin(a) * seat.z, y + seat.y, state.botPos.z - Math.sin(a) * seat.x + Math.cos(a) * seat.z);
+      } else {
+        keloGroup.position.set(state.botPos.x, y + type.seatY, state.botPos.z);
+      }
       keloGroup.rotation.set(0, state.botRotY, 0);
+      if (m.userData.rotor) m.userData.rotor.rotation.y = t * 14;
+      if (m.userData.tailRotor) m.userData.tailRotor.rotation.z = t * 20;
       keloLeftLeg.rotation.x = -1.2;
       keloRightLeg.rotation.x = -1.2;
       keloLeftArm.rotation.x = -0.9;
       keloRightArm.rotation.x = -0.9;
     }
 
+// Where he climbs aboard: the dock for a boat, otherwise beside the driver's door
+function boardingSpot(v) {
+      if (vehicleTypeFor(v.name)?.mode === 'water') return { x: v.x, z: 8.6 };
+      const m = vehicleMeshes[v.id];
+      const seat = (m && m.userData.seat) || { x: 0, z: 0 };
+      const a = v.rotY || 0, sideZ = seat.z - 1.9;
+      return { x: v.x + Math.cos(a) * seat.x + Math.sin(a) * sideZ, z: v.z - Math.sin(a) * seat.x + Math.cos(a) * sideZ };
+    }
+
 // Walk to a vehicle, climb in, drive to a target, and park there
 async function driveVehicle(v, target, label) {
       const type = vehicleTypeFor(v.name);
-      state.targetPos = { x: v.x - 1.2, z: v.z };
+      state.targetPos = boardingSpot(v);
       state.moodTitle = `Walking to the ${v.name.replace(/^(an?|the)\s+/i, '')}`;
       renderAllUI();
       await waitForArrival(60000);
@@ -147,6 +258,11 @@ async function driveVehicle(v, target, label) {
       state.ridingSpeed = 1;
       state.ridingMode = null;
       renderVehicles3D();
+      // Climb out beside the driver's door rather than standing where the vehicle is
+      if (type.mode !== 'water') {
+        state.botPos = boardingSpot(v);
+        state.targetPos = { ...state.botPos };
+      }
     }
 
 // Long trips: if he has a land vehicle (or an aircraft), he rides instead of walking
@@ -172,10 +288,10 @@ async function haulDirt(site) {
       const pile = typeof pileOffset === 'function' ? pileOffset(site) : { x: site.x + 2.4, z: site.z };
       // 1. Bring the excavator to the pile if it isn't there yet
       if (Math.hypot(excavator.x - pile.x, excavator.z - pile.z) > 4) {
-        await driveVehicle(excavator, { x: pile.x - 2.4, z: pile.z + 1.6 }, 'Driving the excavator to the dig');
+        await driveVehicle(excavator, { x: pile.x - 4.2, z: pile.z + 0.4 }, 'Driving the excavator to the dig');
       }
       // 2. Drive the truck alongside the pile
-      await driveVehicle(truck, { x: pile.x + 0.5, z: pile.z + 2.6 }, 'Driving the dump truck to the dirt pile');
+      await driveVehicle(truck, { x: pile.x - 1.5, z: pile.z + 5.0 }, 'Driving the dump truck to the dirt pile');
       // 3. Climb into the excavator and load the truck: the boom swings between pile and truck bed
       state.moodEmoji = '🏗️';
       state.moodTitle = 'Loading dirt into the dump truck';
@@ -184,16 +300,23 @@ async function haulDirt(site) {
       const exMesh = vehicleMeshes[excavator.id];
       const amount = Math.min(site.dirt - 1, 4);
       for (let i = 0; i < 4; i++) {
-        if (exMesh) exMesh.rotation.y = (excavator.rotY || 0) + (i % 2 ? 0.9 : -0.6);
+        if (exMesh && exMesh.userData.house) {
+          // Turn the house toward the pile, dip the boom, then swing over the truck bed
+          exMesh.userData.house.rotation.y = i % 2 ? 1.2 : -0.3;
+          exMesh.userData.boom.rotation.z = i % 2 ? 0.95 : 0.35;
+        } else if (exMesh) exMesh.rotation.y = (excavator.rotY || 0) + (i % 2 ? 0.9 : -0.6);
         await new Promise(r => setTimeout(r, 1100));
         site.dirt = Math.max(1, Math.round((site.dirt - amount / 4) * 100) / 100);
         truck.load = (truck.load || 0) + amount / 4;
         if (typeof updateDirtPile3D === 'function') updateDirtPile3D(site);
         renderVehicles3D();
       }
-      if (exMesh) exMesh.rotation.y = excavator.rotY || 0;
+      if (exMesh && exMesh.userData.house) {
+        exMesh.userData.house.rotation.y = 0;
+        exMesh.userData.boom.rotation.z = 0.75;
+      } else if (exMesh) exMesh.rotation.y = excavator.rotY || 0;
       // 4. Drive the full truck to the Disposal Pit and tip it over the rim (js/disposal.js)
-      await driveVehicle(truck, { x: DISPOSAL_PIT.x - DISPOSAL_PIT.r - 2.0, z: DISPOSAL_PIT.z + 1.2 }, 'Driving the loaded dump truck to the Disposal Pit');
+      await driveVehicle(truck, { x: DISPOSAL_PIT.x - DISPOSAL_PIT.r - 4.4, z: DISPOSAL_PIT.z + 1.0 }, 'Driving the loaded dump truck to the Disposal Pit');
       await tipDirtIntoPit(truck);
       renderVehicles3D();
       state.speechBubble = `Tipped ${amount.toFixed(1)} loads of dirt into the Disposal Pit.`;
@@ -219,15 +342,15 @@ async function goBoating(originLabel = 'Out on the Lake') {
         state.speechBubble = pick(['The island looks so small from out here.', 'I can see Ogopogo\'s ripples!', 'The water is so calm today.']);
         renderAllUI();
         const dock = DOCK_SLOTS[0];
-        state.targetPos = { x: dock[0], z: dock[1] + 0.6 };
+        state.targetPos = { x: dock[0], z: dock[1] };
         await waitForArrival(60000);
         boat.x = dock[0];
         boat.z = dock[1];
-        boat.rotY = Math.PI / 2;
+        boat.rotY = BOAT_ROT_Y;
         state.riding = null;
         state.ridingSpeed = 1;
         state.ridingMode = null;
-        state.botPos = { x: dock[0], z: dock[1] - 1.3 };
+        state.botPos = { x: dock[0], z: 8.6 };
         state.targetPos = { ...state.botPos };
         renderVehicles3D();
         state.diaryEntries.unshift({
@@ -300,8 +423,10 @@ window.addEventListener('DOMContentLoaded', () => {
     [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)]
       .filter(n => vehicleTypeFor(n) && !state.vehicles.some(v => v.name === n))
       .forEach(registerVehicle);
+    reparkOldVehicles();
     state.riding = null;
     state.ridingSpeed = 1;
+    buildVehicleYard3D();
     renderVehicles3D();
   }, 0);
 });

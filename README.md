@@ -84,8 +84,9 @@ Kelo-bot-1/
 │   ├── growth.js        # Merges what he dreamt while you were away
 │   ├── scene.js         # Three.js world, pathfinding, terrain
 │   ├── items3d.js       # 3D models of items, the pick-up counter, carrying
+│   ├── gearmodels.js    # Detailed vehicles and tools, sized against Kelo-1
 │   ├── storehouse.js    # The Storehouse shelves where everything he owns is kept
-│   ├── vehicles.js      # Parked vehicles he drives, boating, hauling dirt
+│   ├── vehicles.js      # The vehicle yard, helipad and dock; driving, boating, hauling dirt
 │   ├── disposal.js      # The Disposal Pit: whatever he throws in is gone for good
 │   ├── main.js          # UI wiring
 │   └── portal.js        # Send-him-something panel

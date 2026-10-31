@@ -28,8 +28,9 @@ function postMail(parcel) {
       }
       state.mailbox.push(entry);
       // Let the AI brain (if any) design a model of the exact item while it waits at the post office
-      if ((entry.kind === 'gift' || entry.kind === 'request') && typeof designItemModelWithAI === 'function') {
-        (splitItemList(entry.name) || [entry.name]).forEach(n => designItemModelWithAI(n));
+      // and look up anything that has no model yet, so it never turns up as a plain box
+      if ((entry.kind === 'gift' || entry.kind === 'request') && typeof lookUpItemModel === 'function') {
+        (splitItemList(entry.name) || [entry.name]).forEach(n => lookUpItemModel(n));
       }
       savePersistentBrainState();
       renderAllUI();
@@ -103,8 +104,18 @@ async function pickUpMail(originLabel = 'Checking the Mail') {
             const isFood = categorizeItem(parcel.name, parcel.category) === 'food';
             // A vehicle is too big to carry: it gets parked, and he walks home with the keys
             const carried = parcel.kind !== 'message' && typeof vehicleTypeFor === 'function' && vehicleTypeFor(parcel.name) ? 'keys' : parcel.name;
-            setCarriedObject(buildItemModel3D(parcel.kind === 'message' ? 'Letter' : carried, { kind: parcel.kind, thumb: parcel.thumbs && parcel.thumbs[0] }),
-              parcel.kind === 'message' || isFood ? 4000 : 30000);
+            const model = buildItemModel3D(parcel.kind === 'message' ? 'Letter' : carried, { kind: parcel.kind, thumb: parcel.thumbs && parcel.thumbs[0], label: false });
+            if (parcel.kind === 'gift' && typeof unboxInHands === 'function') {
+              // Gifts come wrapped: he opens the box and takes the real thing out
+              state.moodEmoji = '🎁';
+              state.moodTitle = `Unwrapping ${String(parcel.name).replace(/^(an?|the)\s+/i, '')}`.slice(0, 80);
+              renderAllUI();
+              lifeSize(model, 1.4);
+              await unboxInHands(model);
+              if (isFood) setTimeout(() => setCarriedObject(null), 4000);
+            } else {
+              setCarriedObject(model, parcel.kind === 'message' || isFood ? 4000 : 30000);
+            }
           }
           await openParcel(parcel);
         }

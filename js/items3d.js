@@ -569,12 +569,109 @@ function aiDesignedItemModel(lower) {
       return g;
     }
 
+// The real thing, never left in its wrapping: a built-in model first (a dump truck is always a dump
+// truck), then one the AI designed for things nobody has a model for, then a guess from the name's
+// words and shapes he knows. A plain box only if all of that comes up empty.
 function singleItemModel(lower) {
-      const designed = aiDesignedItemModel(lower);
-      if (designed) return designed;
       const rule = ITEM_MODEL_RULES.find(([re]) => re.test(lower));
       if (rule) return rule[1](lower);
-      return inferredItemModel(lower) || giftBox();
+      const designed = aiDesignedItemModel(lower);
+      if (designed) return designed;
+      // He looked up what it is (lookUpItemModel): model it as the closest thing he knows
+      const lookedUp = state.itemLookups && state.itemLookups[lower];
+      const kindRule = lookedUp && lookedUp.like ? ITEM_MODEL_RULES.find(([re]) => re.test(lookedUp.like)) : null;
+      if (kindRule) return kindRule[1](lookedUp.like);
+      const inferred = inferredItemModel(lower);
+      if (inferred) return inferred;
+      const form = typeof formForText === 'function' ? formForText(lower) : null;
+      if (form && form.parts && typeof buildCreationGroup === 'function') {
+        const g = buildCreationGroup({ parts: form.parts, colorHex: '#94a3b8', secondaryColorHex: '#475569' });
+        g.scale.setScalar(0.28);
+        return g;
+      }
+      return categoryItemModel(lower);
+    }
+
+// Does this name already have a real model (rule, AI design, lookup, or a guess from its words)?
+function hasRealItemModel(lower) {
+      return ITEM_MODEL_RULES.some(([re]) => re.test(lower)) || Boolean(state.itemDesigns && state.itemDesigns[lower])
+        || Boolean(state.itemLookups && state.itemLookups[lower] && state.itemLookups[lower].like)
+        || Boolean(inferredItemModel(lower)) || Boolean(typeof formForText === 'function' && formForText(lower));
+    }
+
+// Last resort, by what kind of thing it is: still a thing, never a wrapped box
+function categoryItemModel(lower) {
+      const cat = typeof categorizeItem === 'function' ? categorizeItem(lower) : 'thing';
+      const stand = { food: 'pie', toy: 'ball', tool: 'toolbox', vehicle: 'dump truck', place: 'cabin', companion: 'duck' }[cat];
+      const rule = stand && ITEM_MODEL_RULES.find(([re]) => re.test(stand));
+      if (rule) return rule[1](stand);
+      // Anything else: a small object on a stand, in a colour from its name
+      const tone = COLOR_WORDS.find(([re]) => re.test(lower));
+      const color = tone ? tone[1] : 0x94a3b8;
+      const body = mesh(new THREE.IcosahedronGeometry(0.16, 1), color, { flatShading: true, metalness: tone && tone[2] ? tone[2] : 0.2 });
+      body.position.y = 0.3;
+      const base = mesh(new THREE.CylinderGeometry(0.14, 0.17, 0.12, 16), 0x475569);
+      base.position.y = 0.06;
+      return group(body, base);
+    }
+
+// What words in a description point to a kind of thing he has a model for
+const LOOKUP_KINDS = [
+  [/musical instrument|string instrument|stringed/, 'guitar'], [/wind instrument|flute|whistle|reed/, 'harmonica'], [/percussion|drum/, 'drum'],
+  [/hand tool|cutting tool|blade/, 'knife'], [/power tool/, 'cordless drill'], [/striking tool|mallet|hammer/, 'hammer'],
+  [/vehicle|automobile|truck|tractor|car\b/, 'dump truck'], [/watercraft|boat|ship|canoe/, 'boat'], [/aircraft|airplane|helicopter/, 'helicopter'], [/bicycle|cycle/, 'bike'],
+  [/fruit|berry/, 'apples'], [/vegetable|root/, 'carrots'], [/bread|baked|pastry/, 'loaf'], [/dessert|cake|sweet/, 'cake'], [/cheese/, 'cheese'], [/drink|beverage|coffee|tea/, 'coffee'], [/dish|soup|noodle|food/, 'ramen'],
+  [/\btoy\b|game|puzzle/, 'puzzle'], [/ball/, 'ball'], [/book|publication|novel/, 'book'], [/lamp|light/, 'lantern'], [/optical|telescope|lens/, 'telescope'],
+  [/container|vessel|jar|bottle/, 'jar'], [/rope|cord|string/, 'rope'], [/plant|flower|seed/, 'seed packet'], [/mineral|crystal|gem|rock|stone/, 'quartz crystal'],
+  [/bird/, 'bird'], [/animal|mammal|pet/, 'goat'], [/building|house|structure/, 'cabin']
+];
+
+// Before a gift reaches him: if nothing models it yet, find out what it is so it can look like itself
+async function lookUpItemModel(name) {
+      const lower = String(name || '').toLowerCase().trim();
+      if (!lower || hasRealItemModel(lower)) return;
+      state.itemLookups = state.itemLookups || {};
+      if (state.itemLookups[lower]) return;
+      // With an AI key, the AI designs the exact thing
+      if (typeof hasLLMKey === 'function' && hasLLMKey() && typeof designItemModelWithAI === 'function') {
+        await designItemModelWithAI(name);
+        if (state.itemDesigns && state.itemDesigns[lower]) return;
+      }
+      // Otherwise read about it (Wikipedia, then the dictionary and DuckDuckGo) and match its description
+      const core = lower.replace(/^(an?|the|some|my|a pair of|a set of|a box of|a bag of)\s+/, '').replace(/[^a-z0-9 -]/g, '').trim();
+      let found = null;
+      try { found = typeof lookUpAnywhere === 'function' ? await lookUpAnywhere(core) : null; } catch (e) {}
+      const text = found ? found.extract.toLowerCase() : '';
+      const kind = LOOKUP_KINDS.find(([re]) => re.test(text));
+      state.itemLookups[lower] = { like: kind ? kind[1] : null, from: found ? found.title : null, at: Date.now() };
+      parcelDisplayKey = null; // redraw the post office counter with the new model
+      if (typeof renderPostOfficeParcels3D === 'function') renderPostOfficeParcels3D();
+      savePersistentBrainState();
+    }
+
+// Opening a parcel: the wrapped box he carries pops its lid and the real item rises out of it
+async function unboxInHands(itemModel) {
+      if (typeof setCarriedObject !== 'function') return;
+      const wrapper = new THREE.Group();
+      const box = giftBox();
+      wrapper.add(box);
+      setCarriedObject(wrapper);
+      wrapper.scale.setScalar(1); // only the box is scaled up, so the item keeps its own life size
+      box.scale.setScalar(1.4);
+      await new Promise(r => setTimeout(r, 900));
+      itemModel.userData.unboxBase = itemModel.scale.x;
+      itemModel.scale.setScalar(itemModel.userData.unboxBase * 0.01);
+      wrapper.add(itemModel);
+      for (let i = 1; i <= 12; i++) {
+        const t = i / 12;
+        box.scale.setScalar(Math.max(0.01, 1.4 * (1 - t)));
+        box.position.y = -t * 0.3;
+        box.rotation.z = t * 0.6;
+        itemModel.scale.setScalar(itemModel.userData.unboxBase * (0.01 + 0.99 * t));
+        itemModel.position.y = 0.25 * Math.sin(t * Math.PI);
+        await new Promise(r => setTimeout(r, 45));
+      }
+      wrapper.remove(box);
     }
 
 // "A crucible, borax flux & a graphite mold" -> three separate things side by side
@@ -721,3 +818,16 @@ function updateCarriedObject(t) {
       }
       carriedObject.position.y = 1.05 + (state.isWalking ? Math.abs(Math.sin(t * 9.5)) * 0.05 : 0);
     }
+
+// When the page opens: anything he owns or that waits at the post office with no model yet gets looked up,
+// one at a time so the reference sites aren't flooded
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(async () => {
+    const names = [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name), ...state.mailbox.filter(m => m.kind === 'gift').map(m => m.name)];
+    for (const n of [...new Set(names)]) {
+      if (hasRealItemModel(String(n).toLowerCase())) continue;
+      await lookUpItemModel(n);
+      await new Promise(r => setTimeout(r, 1500));
+    }
+  }, 4000);
+});

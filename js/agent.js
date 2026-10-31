@@ -321,6 +321,7 @@ const state = {
   "landFills": [],
   "aiLearned": [],
   "vocabulary": {},
+  "itemLookups": {},
   "aiOffline": false,
   "riding": null,
   "ridingSpeed": 1,

@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-10-31T05:56:00.882Z",
-  "runs": 2,
+  "updatedAt": "2026-10-31T12:46:34.535Z",
+  "runs": 3,
   "curiosities": [
-    "Blueprint"
+    "Arthur H. Robinson"
   ],
   "entries": [
     {
@@ -74,6 +74,43 @@
       },
       "shapeFrom": "Charles Fenerty",
       "nextCuriosity": "Blueprint",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1793450794535",
+      "at": 1793450794535,
+      "brain": "procedural",
+      "topic": "Blueprint",
+      "title": "Dreaming of Borden Dent",
+      "text": "Dear Diary, while nobody was around I looked up \"Blueprint\" and drifted from Blueprint to Chartjunk to Borden Dent. Borden D. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Blueprint",
+          "url": "https://en.wikipedia.org/wiki/Blueprint",
+          "extract": "A blueprint is a reproduction of a technical drawing or engineering drawing using a contact print process on light-sensitive sheets introduced by Sir John Herschel in 1842. The traditional white-on-blue appearance of blueprints is a result of the cyanotype process, which allowed "
+        },
+        {
+          "title": "Chartjunk",
+          "url": "https://en.wikipedia.org/wiki/Chartjunk",
+          "extract": "Chartjunk consists of all visual elements in charts and graphs that are not necessary to comprehend the information represented on the graph, or that distract the viewer from this information."
+        },
+        {
+          "title": "Borden Dent",
+          "url": "https://en.wikipedia.org/wiki/Borden_Dent",
+          "extract": "Borden D. Dent (1938–2000) was an American geographer and cartographer who served as professor emeritus and chairman of the Department of Geography and Anthropology at Georgia State University. His textbook, Cartography: Thematic Map Design, has been one of the seminal texts in t"
+        }
+      ],
+      "concept": {
+        "name": "Blueprint Borden Theory",
+        "emoji": "🧩",
+        "definition": "The idea that blueprint and borden dent share a hidden pattern.",
+        "builtFrom": [
+          "Blueprint",
+          "Borden Dent"
+        ]
+      },
+      "shapeFrom": "Borden Dent",
+      "nextCuriosity": "Arthur H. Robinson",
       "coreMemory": null
     }
   ]

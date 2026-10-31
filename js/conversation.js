@@ -103,6 +103,13 @@ async function lookUpWord(word) {
 
 async function walkToNetNodeAndLookUp(words, visitor) {
       for (let i = 0; i < 240 && (state.isBusy || state.isBuilding || state.isPracticing); i++) await new Promise(r => setTimeout(r, 250));
+      // Still in the middle of something after a minute: look the words up from where he is
+      // rather than walking off mid-job (and clearing that job's busy flag when done)
+      if (state.isBusy || state.isBuilding || state.isPracticing) {
+        const found = [];
+        for (const w of words.slice(0, 2)) found.push([w, await lookUpWord(w)]);
+        return found;
+      }
       state.isBusy = true;
       state.isBrowsing = true;
       try {

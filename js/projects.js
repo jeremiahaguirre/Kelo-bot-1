@@ -32,7 +32,7 @@ const BUILD_TOOLS = {
 };
 
 const projectMeshes = {};
-const buildsQueued = new Set(); // projects already waiting for him to be free
+const buildsQueued = new Map(); // project id -> when it was queued to wait for him to be free
 
 function planFor(key) {
       return BUILD_PLANS.find(p => p.key === key) || null;
@@ -139,6 +139,7 @@ async function buildProject(id, originLabel = 'Building Something Real') {
       if (miss.materials.length || miss.tools.length) return false;
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
       state.isPracticing = true;
+      let wip = null;
       try {
         // Pick the materials up from the Storehouse, then over to the bench
         const owned = ownedItemNames();
@@ -155,7 +156,7 @@ async function buildProject(id, originLabel = 'Building Something Real') {
         await waitForArrival(60000);
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
         // Saw, then fix, then finish: the piece takes shape on the bench
-        const wip = finishBuildModel(lifeSize(realSize(plan.build())), plan);
+        wip = finishBuildModel(lifeSize(realSize(plan.build())), plan);
         wip.position.set(bench.x, getIslandGroundHeight(bench.x, bench.z) + 0.8, bench.z - 1.4);
         scene.add(wip);
         const steps = [['Sawing the pieces to length', 'Zzzt, zzzt, zzzt...'], ['Putting it together', 'Tap, tap... it holds!'], ['Finishing it off', 'Smooth edges, square corners.']];
@@ -169,6 +170,7 @@ async function buildProject(id, originLabel = 'Building Something Real') {
           await new Promise(r => setTimeout(r, 2200));
         }
         scene.remove(wip);
+        wip = null;
         // The materials are used up
         plan.materials.forEach(m => {
           const name = ownedItemNames().find(n => m.re.test(n));
@@ -203,6 +205,7 @@ async function buildProject(id, originLabel = 'Building Something Real') {
         renderAllUI();
         return true;
       } finally {
+        if (wip) scene.remove(wip); // half-built piece left on the bench if something went wrong
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
         state.isPracticing = false;
       }
@@ -369,11 +372,15 @@ window.addEventListener('DOMContentLoaded', () => {
     setInterval(() => {
       renderProjectsList();
       const p = activeProject();
-      if (p && !buildsQueued.has(p.id)) {
-        const miss = missingFor(planFor(p.key));
+      const plan = p && planFor(p.key);
+      // doWhenFree gives up after about 3 minutes, so an older entry is queued again
+      if (plan && Date.now() - (buildsQueued.get(p.id) || 0) > 240000) {
+        const miss = missingFor(plan);
         if (!miss.materials.length && !miss.tools.length) {
-          buildsQueued.add(p.id);
-          doWhenFree(async () => { await buildProject(p.id); buildsQueued.delete(p.id); });
+          buildsQueued.set(p.id, Date.now());
+          doWhenFree(async () => {
+            try { await buildProject(p.id); } finally { buildsQueued.delete(p.id); }
+          });
         }
       }
     }, 8000);

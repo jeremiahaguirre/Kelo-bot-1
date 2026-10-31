@@ -23,7 +23,11 @@ async function runWorkshop() {
       try {
         while (buildQueue.length > 0) {
           const job = buildQueue.shift();
-          await runWeldJob(job.creation, job.placeLabel);
+          // Still busy with something else after a long wait: try this one again later
+          if (!(await runWeldJob(job.creation, job.placeLabel))) {
+            buildQueue.push(job);
+            await sleep(15000);
+          }
         }
       } finally {
         workshopRunning = false;
@@ -48,9 +52,13 @@ function clearBenchWorkpiece() {
       benchWorkpiece = null;
     }
 
+// Returns false (without starting) if he is still busy with another job after waiting a while
 async function runWeldJob(creation, destLabel) {
-      // Let him finish a hobby session before heading to the bench
-      for (let i = 0; i < 120 && state.isPracticing; i++) await sleep(250);
+      // Let him finish a hobby, errand, sleep or mail run before heading to the bench. (isBusy alone
+      // is fine: a build is queued from inside his own decision, which ends straight after.)
+      const occupied = () => state.isPracticing || state.isSleeping || state.isCollectingMail || state.isBrowsing;
+      for (let i = 0; i < 360 && occupied(); i++) await sleep(250);
+      if (occupied()) return false;
       state.isBuilding = true;
       const title = creation.title || 'something new';
       let dest = { x: clampNumber(creation.x, WORLD_MIN_X, WORLD_MAX_X, 0), z: clampNumber(creation.z, WORLD_MIN_Z, WORLD_MAX_Z, 0) };
@@ -130,10 +138,12 @@ async function runWeldJob(creation, destLabel) {
         savePersistentBrainState();
         renderAllUI();
         showToast(`🏗️ Kelo-1 welded and placed "${title}"`);
+        return true;
       } catch (err) {
         console.warn('Workshop job failed:', err);
         clearBenchWorkpiece();
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
+        return true; // a failed job is dropped, not retried
       } finally {
         state.isBuilding = false;
       }

@@ -41,7 +41,7 @@ function knowsWord(word) {
       // Anything from his own world: places, things he owns, his concepts and hobbies
       const world = [
         ...Object.values(TOWN_LOCATIONS).map(l => `${l.name} ${l.building}`),
-        ...[...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)],
+        ...ownedItemNames(),
         ...state.concepts.map(c => c.name), ...state.hobbies.map(h => h.name), ...state.webHistory.map(h => h.query)
       ].join(' ').toLowerCase();
       return new RegExp(`\\b${w.replace(/[^a-z0-9]/g, '')}\\b`).test(world);
@@ -68,7 +68,7 @@ function classifyMessage(msg) {
 // Answers to questions about himself, from what is really going on
 function answerAboutHimself(msg) {
       const m = msg.toLowerCase();
-      const owned = [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)];
+      const owned = ownedItemNames();
       if (/how are you|how do you feel|how('| a)re you (doing|feeling)|you ok/.test(m)) {
         const low = [['energy', state.health], ['fullness', state.fullness], ['calm', state.calmLevel]].filter(([, v]) => v < 40).map(([k]) => k);
         return low.length ? `Honestly? A bit low on ${low.join(' and ')} right now. But I'm curious as ever.` : `I feel good! Energy ${state.health}%, and my wonder is at ${state.wonderLevel}%.`;
@@ -143,7 +143,7 @@ async function respondToVisitor(visitor, message) {
         const prompt = `You are Kelo-1, a curious robot living in a valley near Kelowna. A visitor named ${visitor} just said to you: "${message}".
 Answer what they actually said: if it's a question, answer it; if it's a request, say whether and how you'll do it; if it's news, react to it. Speak in first person, 1-3 sentences, warm and curious.
 Your situation: at ${currentPlaceLabel()}, doing "${state.moodTitle}". Energy ${state.health}%, fullness ${state.fullness}%, calm ${state.calmLevel}%.
-You own: ${[...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)].slice(0, 15).join(', ') || 'nothing yet'}.
+You own: ${ownedItemNames().slice(0, 15).join(', ') || 'nothing yet'}.
 Your outlook: "${state.worldviewManifesto}".
 Words you learned recently: ${Object.keys(state.vocabulary).slice(-15).join(', ') || 'none'}.
 Return ONLY JSON: {"reply": "...", "unknownWords": [words in their message you genuinely don't understand and want to look up, usually none], "wantsToAct": null OR "a short description of something you decide to go and do because of this"}`;

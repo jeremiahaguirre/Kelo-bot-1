@@ -32,7 +32,7 @@ const CODE_WISHES = [
 const MAX_OPEN_CODE_REQUESTS = 4;
 
 function ownsSomething(re) {
-      return [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)].some(n => re.test(String(n || '')));
+      return ownedItemNames().some(n => re.test(String(n || '')));
     }
 
 function daysOld() {

@@ -434,16 +434,6 @@ function group(...children) {
       return g;
     }
 
-function extruded(points, depth, color) {
-      const shape = new THREE.Shape(points.map(([x, y]) => new THREE.Vector2(x, y)));
-      const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false });
-      geo.translate(0, 0, -depth / 2);
-      const m = mesh(geo, color);
-      m.rotation.x = -Math.PI / 2;
-      m.position.y = depth / 2;
-      return m;
-    }
-
 // Real-size fruit heaped in a small woven basket (built in metres)
 function fruitBasket(color, radius, count) {
       const wicker = mesh(new THREE.LatheGeometry([[0, 0], [0.09, 0], [0.13, 0.03], [0.15, 0.09], [0.145, 0.09], [0.125, 0.032], [0, 0.006]].map(([r, y]) => new THREE.Vector2(r, y)), 18), 0xb7793e, { roughness: 1, side: THREE.DoubleSide });

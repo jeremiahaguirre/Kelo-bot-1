@@ -3,7 +3,7 @@
 // continuous mountain/valley altitude raycasting, 3D mining/welding tools, and Bird's-Eye flight.
 
 let scene, camera, renderer, controls, clock;
-let hemiLight, sunLight, forgeArcLight, skyUniforms;
+let hemiLight, sunLight, forgeArcLight;
 let terrainSwapGroup, keloGroup, keloHead, keloLeftEye, keloRightEye, keloLeftArm, keloRightArm, keloLeftLeg, keloRightLeg;
 let keloDrillToolGroup, keloDrillBitMesh, keloWeldTorchGroup, keloWeldTipGlow;
 let weldingSparks, miningDebrisParticles, emergentCreationsGroup;

@@ -46,10 +46,6 @@ function formatCAD(n) {
     }
 
 // --- What he could sell ------------------------------------------------------------------------
-function ownedItemNames() {
-      return [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)].filter(Boolean);
-    }
-
 function listedCount(kind, ref) {
       return ensureShop().listings.filter(l => l.kind === kind && l.ref === ref).length;
     }

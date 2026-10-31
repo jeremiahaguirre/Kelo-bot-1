@@ -40,10 +40,6 @@ const HIDDEN_FINDS = (() => {
 
 const dirtPileMeshes = {};
 
-function ownedItemNames() {
-      return [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)];
-    }
-
 function hasEquipment(kind) {
       // A snapped or bent tool doesn't count (js/materials.js)
       return ownedItemNames().some(n => TOOL_NEEDS[kind].re.test(n) && !(typeof isBrokenItem === 'function' && isBrokenItem(n)));

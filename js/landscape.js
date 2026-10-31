@@ -13,7 +13,7 @@ const editMeshes = {};
 let landscapeGroup = null;
 
 function hasItem(re) {
-      return [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)].find(n => re.test(n)) || null;
+      return ownedItemNames().find(n => re.test(n)) || null;
     }
 
 // Hills he has raised lift the ground here (used by getAnalyticalGroundHeight)

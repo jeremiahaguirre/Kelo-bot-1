@@ -344,17 +344,13 @@ function wreckPieceAtCrash(name) {
     }
 
 // --- Kite flying --------------------------------------------------------------------------------
-function ownedNames() {
-      return [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)];
-    }
-
 function workingKite() {
-      return ownedNames().find(n => /kite/i.test(n) && !/broken|snapped|torn/i.test(n)) || null;
+      return ownedItemNames().find(n => /kite/i.test(n) && !/broken|snapped|torn/i.test(n)) || null;
     }
 
 // Before heading out with the kite: is there a kite, and (once he knows) is there any wind?
 function kiteWontFlyToday(hobby) {
-      if (!workingKite() && (hobby.tool || ownedNames().some(n => /broken kite/i.test(n)))) {
+      if (!workingKite() && (hobby.tool || ownedItemNames().some(n => /broken kite/i.test(n)))) {
         state.speechBubble = 'My kite is broken: the gale snapped its string. I have asked for a new one.';
         addItemRequest('A new kite', 'toy', 'A gale snapped the string on my last kite and wrecked it.', 'Kite Flying');
         renderAllUI();
@@ -472,7 +468,7 @@ function kiteSessionResult(hobby, skillBefore) {
 
 // The kite he was flying becomes a broken one he carries home
 function breakKite(hobby) {
-      const name = hobby.tool && ownedNames().includes(hobby.tool) ? hobby.tool : workingKite();
+      const name = hobby.tool && ownedItemNames().includes(hobby.tool) ? hobby.tool : workingKite();
       if (name) {
         const drop = (arr, match) => { const i = arr.findIndex(match); if (i >= 0) arr.splice(i, 1); return i >= 0; };
         drop(state.toolInventory, n => n === name) || drop(state.toys, t => t.name === name) || drop(state.belongings, b => b.name === name);

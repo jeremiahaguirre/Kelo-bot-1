@@ -277,10 +277,6 @@ function playEmote(name, durationMs) {
       return true;
     }
 
-function stopEmote() {
-      if (keloEmote) keloEmote.dur = Math.min(keloEmote.dur, (keloAnim.lastT || 0) - keloEmote.start);
-    }
-
 // --- The blend, every frame -----------------------------------------------------------------
 
 const _keloHandL = new THREE.Vector3(), _keloHandR = new THREE.Vector3(), _keloGrip = new THREE.Vector3();

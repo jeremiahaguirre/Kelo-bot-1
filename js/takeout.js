@@ -16,13 +16,6 @@ function findMuseumPiece(name) {
       return null;
     }
 
-// Which floor of the Museum a piece is on (0 is the ground floor)
-function museumFloorOf(found) {
-      const list = found.kind === 'sculpture' ? allMuseumSculptures() : allMuseumPaintings();
-      const per = (found.kind === 'sculpture' ? MUSEUM_PLINTHS.length : MUSEUM_FRAMES.length) || 8;
-      return Math.floor(list.indexOf(found.piece) / per);
-    }
-
 // purpose: 'display' (stand it out in the valley again) or 'dispose' (throw it in the pit)
 async function takeOutOfMuseum(name, purpose = 'display', why = '', originLabel = 'Rearranging the Museum') {
       const found = findMuseumPiece(name);

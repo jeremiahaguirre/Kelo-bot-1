@@ -22,7 +22,6 @@ const HOBBY_RULES = [
   [/book|novel|comic/, { name: 'Reading', emoji: '📚', style: 'other', description: 'Reading under a tree and arguing with the author.' }]
 ];
 
-const muralMeshes = {};
 let hobbyProps = null;   // temporary 3D props while practising (kite, notes, easel)
 let hobbyPropUpdate = null;
 

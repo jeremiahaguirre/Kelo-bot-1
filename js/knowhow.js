@@ -43,11 +43,6 @@ function knowHowRule(name) {
       return GEAR_KNOWHOW.find(r => r.re.test(String(name || ''))) || null;
     }
 
-function knowsHowToUse(name) {
-      const rule = knowHowRule(name);
-      return !rule || Boolean(state.knowHow[rule.key]);
-    }
-
 function fuelLeft(v) {
       // Vehicles saved before fuel existed are treated as full
       return typeof v.fuel === 'number' ? v.fuel : 100;

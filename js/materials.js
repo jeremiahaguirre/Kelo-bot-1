@@ -67,10 +67,6 @@ const KIND_MATERIALS = [
   [/truck|excavator|snowmobile|helicopter|tractor|toolbox|telescope|motor|engine/, ['steel']]
 ];
 
-function materialInfo(key) {
-      return MATERIALS[key] || null;
-    }
-
 // Materials the name says outright ("cedar", "glass", "rubber")
 function namedMaterials(itemName) {
       const lower = String(itemName || '').toLowerCase();
@@ -95,11 +91,6 @@ function inferMaterials(itemName) {
       // "All-steel" means no wooden handle
       if (/all[- ](steel|metal)/.test(lower)) return out.filter(k => MATERIALS[k].family !== 'wood');
       return out;
-    }
-
-function materialsSummary(itemName) {
-      const mats = inferMaterials(itemName);
-      return mats.length ? mats.map(k => MATERIALS[k].name).join(' and ') : 'something I can\'t name';
     }
 
 // --- Procedural textures (small canvases, made once and shared) ---------------------------------
@@ -438,7 +429,7 @@ function shatterAt(pos, count, key = 'glass') {
 async function straightenAtBench(name) {
       const bent = String(name || '');
       if (!/^bent\s+/i.test(bent)) return false;
-      const owned = [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)];
+      const owned = ownedItemNames();
       if (!owned.includes(bent)) return false;
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
       const straight = bent.replace(/^bent\s+/i, '');

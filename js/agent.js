@@ -403,6 +403,11 @@ function currentPlaceLabel() {
       return state.customPlaceName || TOWN_LOCATIONS[state.currentLocKey]?.building || 'Okanagan Valley';
     }
 
+// Every name he owns: tools, toys and belongings (duplicates kept, one per copy)
+function ownedItemNames() {
+      return [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)].filter(Boolean);
+    }
+
 function clampNumber(value, min, max, fallback) {
       const n = Number(value);
       return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
@@ -1496,26 +1501,6 @@ const REQUEST_IDEAS = {
   companion: ['A friendly goat', 'A pair of homing pigeons', 'A tank of glowing jellyfish'],
   material: ['100 m of copper wire', 'Sheets of stained glass', 'A crate of reclaimed cedar', 'A bag of river clay']
 };
-
-function proceduralMealDecision() {
-      const ripe = state.gardenPlots.filter(p => p.growth >= 60);
-      const atGarden = ripe.length > 0 && Math.random() < 0.6;
-      const loc = TOWN_LOCATIONS[atGarden ? 'garden' : 'cafe'];
-      const food = atGarden ? pick(ripe).name : pick(['a hazelnut croissant', 'a bowl of soup', 'a toasted bagel', 'a slice of peach pie']);
-      if (atGarden) state.gardenPlots.forEach(p => { if (p.name === food) p.growth = Math.max(10, p.growth - 40); });
-      return {
-        thought: `"My fullness sensor is low. ${atGarden ? 'The garden should have something ripe.' : 'The cafe smells good from here.'}"`,
-        actionTitle: `Eat ${food}`,
-        emoji: atGarden ? '🍑' : '🥐',
-        speech: `Time for a snack: ${food}. Thinking is easier on a full battery.`,
-        diary: `Dear Diary, I was running on empty, so I chose to eat ${food} at ${loc.building}.`,
-        destination: { x: loc.x, z: loc.z, placeName: loc.building },
-        build: null,
-        motion: { headPitch: 0.2, headYawSpeed: 1, headTiltAmp: 0.15, armWaveAmp: 0.3, armRaiseOffset: -0.9, bodyBounceAmp: 0.04, spinSpeed: 0, sparkBurst: false },
-        vitalsDelta: { fullness: 20, happiness: 6, health: 4, wonderLevel: 0, calmLevel: 5 },
-        request: Math.random() < 0.3 ? { item: pick(REQUEST_IDEAS.food), category: 'food', why: 'The garden can only do so much.' } : null
-      };
-    }
 
 function pickProceduralRequest() {
       // A hungry robot asks for food more often, but it's still his call

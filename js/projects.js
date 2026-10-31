@@ -34,10 +34,6 @@ const BUILD_TOOLS = {
 const projectMeshes = {};
 const buildsQueued = new Set(); // projects already waiting for him to be free
 
-function ownedNames() {
-      return [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)];
-    }
-
 function planFor(key) {
       return BUILD_PLANS.find(p => p.key === key) || null;
     }
@@ -48,7 +44,7 @@ function activeProject() {
 
 // What is still missing for a plan: materials and tools he doesn't have yet
 function missingFor(plan) {
-      const owned = ownedNames();
+      const owned = ownedItemNames();
       return {
         materials: plan.materials.filter(m => !owned.some(n => m.re.test(n))),
         tools: plan.tools.filter(t => !owned.some(n => BUILD_TOOLS[t].re.test(n)))
@@ -145,7 +141,7 @@ async function buildProject(id, originLabel = 'Building Something Real') {
       state.isPracticing = true;
       try {
         // Pick the materials up from the Storehouse, then over to the bench
-        const owned = ownedNames();
+        const owned = ownedItemNames();
         const material = owned.find(n => plan.materials[0].re.test(n));
         if (typeof fetchFromStorehouse === 'function' && material) await fetchFromStorehouse(material);
         const bench = TOWN_LOCATIONS.weld;
@@ -175,7 +171,7 @@ async function buildProject(id, originLabel = 'Building Something Real') {
         scene.remove(wip);
         // The materials are used up
         plan.materials.forEach(m => {
-          const name = ownedNames().find(n => m.re.test(n));
+          const name = ownedItemNames().find(n => m.re.test(n));
           if (name && typeof forgetItem === 'function') forgetItem(name);
         });
         // Carry it out and set it down
@@ -247,7 +243,7 @@ function projectsSummaryForAI() {
 function renderProjectsList() {
       const el = document.getElementById('projectsListContainer');
       if (!el) return;
-      const owned = ownedNames();
+      const owned = ownedItemNames();
       el.innerHTML = state.projects.slice(0, 8).map(p => {
         const plan = planFor(p.key);
         if (!plan) return '';

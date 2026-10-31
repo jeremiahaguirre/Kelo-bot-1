@@ -510,7 +510,7 @@ async function wadeIntoLake(originLabel = 'Curious About the Water') {
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     // Anything vehicle-like he already owns gets a parking spot
-    [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)]
+    ownedItemNames()
       .filter(n => vehicleTypeFor(n) && !state.vehicles.some(v => v.name === n))
       .forEach(registerVehicle);
     reparkOldVehicles();

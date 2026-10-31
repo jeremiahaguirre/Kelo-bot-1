@@ -75,12 +75,8 @@ function printerState() {
       return p;
     }
 
-function allOwnedNames() {
-      return [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)].filter(Boolean);
-    }
-
 function printerName() {
-      return allOwnedNames().find(n => PRINTER_RE.test(n)) || null;
+      return ownedItemNames().find(n => PRINTER_RE.test(n)) || null;
     }
 
 function isPrinterName(name) {
@@ -113,7 +109,7 @@ function filamentColor(name) {
 function pruneSpools() {
       const p = printerState();
       const counts = {};
-      allOwnedNames().forEach(n => { counts[n] = (counts[n] || 0) + 1; });
+      ownedItemNames().forEach(n => { counts[n] = (counts[n] || 0) + 1; });
       p.spools = p.spools.filter(s => (counts[s.name] = (counts[s.name] || 0) - 1) >= 0 && s.grams > 0);
       if (p.loadedSpoolId && !p.spools.some(s => s.id === p.loadedSpoolId)) p.loadedSpoolId = null;
       // Spool items he owns that aren't tracked yet (from an older save) start full

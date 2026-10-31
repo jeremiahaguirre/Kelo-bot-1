@@ -172,18 +172,6 @@ function storehouseLevelOf(name) {
       return i < 0 || !shelfSlots.length ? 0 : Math.floor(i / shelfSlots.length);
     }
 
-// Down the stairs to a basement level and back up again (the Storehouse and the Museum both use it).
-// The real walk is in js/basements.js; this only goes in if he is really at the building.
-async function visitBasement(hatch, level, what) {
-      if (!level || typeof goIndoors !== 'function') return false;
-      const key = Math.hypot(hatch.x - MUSEUM.x, hatch.z - MUSEUM.z) < Math.hypot(hatch.x - STOREHOUSE.x, hatch.z - STOREHOUSE.z) ? 'museum' : 'storehouse';
-      return goIndoors(key, [{ mode: 'look', level, what }]);
-    }
-
-function storehouseHatchWorld() {
-      return { x: STOREHOUSE.x + STOREHOUSE_HATCH_LOCAL.x, z: STOREHOUSE.z + STOREHOUSE_HATCH_LOCAL.z };
-    }
-
 // Life size on the shelf (a screwdriver stays small, a toolbox big) unless it's too big to fit,
 // then sit it on the plank
 function fitOnShelf(model) {
@@ -250,10 +238,6 @@ function setHoveredStoreLabel(raycaster) {
     }
 
 // --- Errands ---------------------------------------------------------------------------------
-function storehouseDoor() {
-      return { x: TOWN_LOCATIONS.storehouse.x, z: TOWN_LOCATIONS.storehouse.z };
-    }
-
 // Where a thing goes: its floor, its shelf slot (local to the Storehouse, as on the ground floor)
 // and where he stands to reach it. index is its place in storedItems().
 function storehouseSlotFor(index) {

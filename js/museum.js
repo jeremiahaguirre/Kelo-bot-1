@@ -122,16 +122,6 @@ function museumBasementLevels() {
       return Math.max(0, Math.ceil(allMuseumSculptures().length / perFloor) - 1, Math.ceil(allMuseumPaintings().length / (MUSEUM_FRAMES.length || 8)) - 1);
     }
 
-// The floor the next sculpture or painting will go on
-function museumLevelForNext(kind) {
-      const n = kind === 'painting' ? allMuseumPaintings().length : allMuseumSculptures().length;
-      return Math.floor(n / ((kind === 'painting' ? MUSEUM_FRAMES.length : MUSEUM_PLINTHS.length) || 8));
-    }
-
-function museumHatchWorld() {
-      return { x: MUSEUM.x + MUSEUM_HATCH_LOCAL.x, z: MUSEUM.z + MUSEUM_HATCH_LOCAL.z };
-    }
-
 function renderMuseum3D() {
       if (!museumArtGroup) return;
       const sculptures = museumSculptures(), paintings = museumPaintings();

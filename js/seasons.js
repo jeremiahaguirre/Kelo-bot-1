@@ -27,7 +27,7 @@ function inSnow(p) {
     }
 
 function ownsGear(re) {
-      return [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)].some(n => re.test(n));
+      return ownedItemNames().some(n => re.test(n));
     }
 
 function snowGear() {

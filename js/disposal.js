@@ -48,15 +48,10 @@ function buildDisposalPit3D() {
       worldObstacles.push({ x, z, r: r + 0.2 });
     }
 
-// Everything he owns that could go in the pit (vehicles included)
-function disposableNames() {
-      return [...state.toolInventory, ...state.toys.map(t => t.name), ...state.belongings.map(b => b.name)].filter(Boolean);
-    }
-
 function findOwnedName(name) {
       const want = String(name || '').trim().toLowerCase().replace(/^(an?|the|my)\s+/, '');
       if (!want) return null;
-      const names = disposableNames();
+      const names = ownedItemNames();
       return names.find(n => n.toLowerCase() === String(name).trim().toLowerCase())
         || names.find(n => n.toLowerCase().replace(/^(an?|the|my)\s+/, '') === want)
         || null;
@@ -214,7 +209,7 @@ async function tipDirtIntoPit(truck) {
 
 // Things he'd happily part with: junk from digging, and second copies of the same thing
 function unwantedItem() {
-      const names = disposableNames();
+      const names = ownedItemNames();
       const junk = state.belongings.find(b => b.category === 'junk');
       if (junk) return junk.name;
       const dupe = names.find((n, i) => names.indexOf(n) !== i && !vehicleTypeFor(n) && !(typeof isPrinterSupply === 'function' && isPrinterSupply(n)));

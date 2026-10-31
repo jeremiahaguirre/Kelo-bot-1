@@ -86,6 +86,7 @@ Kelo-bot-1/
 │   ├── growth.js        # Merges what he dreamt while you were away
 │   ├── scene.js         # Three.js world, pathfinding, terrain
 │   ├── house.js         # Kelo-1's cottage: walls, windows, porch, roof, furniture, night lights
+│   ├── animations.js    # Kelo-1's body animation: smooth pose blending, walk cycle, idle life, emotes
 │   ├── items3d.js       # 3D models of items, the pick-up counter, carrying
 │   ├── gearmodels.js    # Detailed vehicles and tools, sized against Kelo-1
 │   ├── everydaymodels.js # Food, toys, instruments and books at real size

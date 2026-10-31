@@ -296,6 +296,7 @@ async function digAt(x, z, originLabel = 'Digging') {
         });
         if (found.length) {
           found.forEach(f => showToast(`${f.emoji} Kelo-1 dug up: ${f.name}!`));
+          if (typeof playEmote === 'function') playEmote('celebrate');
           if (Math.random() < 0.7) addConcept(blendNewConcept(found[0].name, pick(state.concepts)?.name || 'the mountain'), `Dug up: ${found[0].name}`);
         }
         savePersistentBrainState();

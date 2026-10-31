@@ -150,6 +150,7 @@ async function dumpIntoLake(truck, amount) {
           text: `Dear Diary, after ${f.loads + 1} truckloads the dirt finally rose above the water. I can stand where the lake used to be. Next time I'll keep going further out.`
         });
         showToast('🏝️ Kelo-1 made new land in the lake!');
+        if (typeof playEmote === 'function') playEmote('cheer');
       } else {
         const truckloads = Math.ceil((needed - f.volume) / (4 * PILE_FLUFF));
         state.speechBubble = `Splash! The dirt sinks under the water. That patch is ${pct}% filled: about ${truckloads} more truckload${truckloads === 1 ? '' : 's'} before it breaks the surface.`;

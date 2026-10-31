@@ -67,6 +67,7 @@ async function getStuckInSnow() {
         ? "My legs sink right in! Every step I take, I go deeper. I'm stuck!"
         : "Snow again. Without snowshoes I'm just wading in up to my knees.";
       state.calmLevel = Math.max(5, state.calmLevel - (firstTime ? 15 : 5));
+      if (typeof playEmote === 'function') playEmote('shiver', 3500);
       renderAllUI();
       await new Promise(r => setTimeout(r, 3500));
       if (firstTime) {

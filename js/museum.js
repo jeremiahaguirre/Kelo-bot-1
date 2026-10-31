@@ -5,6 +5,7 @@
 
 const MUSEUM = { x: -40, z: -5, w: 12, d: 8, wallH: 3.8 };
 const MUSEUM_DOOR = { x: MUSEUM.x, z: MUSEUM.z + MUSEUM.d / 2 + 1.6 };
+const MUSEUM_HATCH_LOCAL = { x: MUSEUM.w / 2 - 1.0, z: -MUSEUM.d / 2 + 1.2 }; // stairs down to the lower galleries
 const MUSEUM_PLINTHS = [];   // filled by buildMuseum3D: where sculptures stand
 const MUSEUM_FRAMES = [];    // where paintings hang
 let museumGroup = null;
@@ -77,6 +78,7 @@ function buildMuseum3D() {
       MUSEUM_FRAMES.length = 0;
       for (let i = 0; i < 4; i++) MUSEUM_FRAMES.push({ x: -w / 2 + 1.6 + i * ((w - 3.2) / 3), y: 2.6, z: -d / 2 + 0.12, rotY: 0 });
       [-1, 1].forEach(s => [-1.6, 1.4].forEach(fz => MUSEUM_FRAMES.push({ x: s * (w / 2 - 0.12), y: 2.6, z: fz, rotY: -s * Math.PI / 2 })));
+      if (typeof buildBasementHatch === 'function') museumGroup.add(buildBasementHatch(MUSEUM_HATCH_LOCAL, 0.565));
       museumArtGroup = new THREE.Group();
       museumGroup.add(museumArtGroup);
       scene.add(museumGroup);
@@ -95,23 +97,54 @@ function fitInside(model, maxSize) {
       return model;
     }
 
+// Oldest first: the ground floor keeps the first pieces, newer ones go down to the lower galleries
+function allMuseumSculptures() {
+      return state.inventedCreations.filter(c => c.inMuseum).slice().reverse();
+    }
+
+function allMuseumPaintings() {
+      return state.murals.slice().reverse();
+    }
+
 function museumSculptures() {
-      return state.inventedCreations.filter(c => c.inMuseum).slice(0, MUSEUM_PLINTHS.length);
+      return allMuseumSculptures().slice(0, MUSEUM_PLINTHS.length || 8);
     }
 
 function museumPaintings() {
-      return state.murals.slice(0, MUSEUM_FRAMES.length);
+      return allMuseumPaintings().slice(0, MUSEUM_FRAMES.length || 8);
+    }
+
+// How many lower galleries there are (each holds a floor's worth of plinths and frames)
+function museumBasementLevels() {
+      const perFloor = MUSEUM_PLINTHS.length || 8;
+      return Math.max(0, Math.ceil(allMuseumSculptures().length / perFloor) - 1, Math.ceil(allMuseumPaintings().length / (MUSEUM_FRAMES.length || 8)) - 1);
+    }
+
+// The floor the next sculpture or painting will go on
+function museumLevelForNext(kind) {
+      const n = kind === 'painting' ? allMuseumPaintings().length : allMuseumSculptures().length;
+      return Math.floor(n / ((kind === 'painting' ? MUSEUM_FRAMES.length : MUSEUM_PLINTHS.length) || 8));
+    }
+
+function museumHatchWorld() {
+      return { x: MUSEUM.x + MUSEUM_HATCH_LOCAL.x, z: MUSEUM.z + MUSEUM_HATCH_LOCAL.z };
     }
 
 function renderMuseum3D() {
       if (!museumArtGroup) return;
       const sculptures = museumSculptures(), paintings = museumPaintings();
-      const key = sculptures.map(c => `${c.title}${c.createdTime}`).join('|') + '#' + paintings.map(m => m.seed).join('|');
+      const levels = museumBasementLevels();
+      const key = sculptures.map(c => `${c.title}${c.createdTime}`).join('|') + '#' + paintings.map(m => m.seed).join('|') + '#' + levels;
       if (key === museumRenderKey) return;
       museumRenderKey = key;
       while (museumArtGroup.children.length) {
         const old = museumArtGroup.children.pop();
         old.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material && o.material.map) o.material.map.dispose(); });
+      }
+      if (levels > 0) {
+        const sign = makeSignMesh(levels === 1 ? 'GALLERY B1 BELOW' : `GALLERIES B1-B${levels} BELOW`, { bg: '#1c1917', fg: '#fbbf24', width: 1.7, height: 0.26 });
+        sign.position.set(MUSEUM_HATCH_LOCAL.x, 1.9, MUSEUM_HATCH_LOCAL.z - 0.6);
+        museumArtGroup.add(sign);
       }
       sculptures.forEach((c, i) => {
         if (typeof buildCreationGroup !== 'function') return;
@@ -140,5 +173,6 @@ function renderMuseum3D() {
     }
 
 function museumSummaryForAI() {
-      return `${museumSculptures().length} sculptures and ${museumPaintings().length} paintings on display`;
+      const levels = museumBasementLevels();
+      return `${allMuseumSculptures().length} sculptures and ${allMuseumPaintings().length} paintings${levels ? `, over ${levels + 1} floors` : ''}`;
     }

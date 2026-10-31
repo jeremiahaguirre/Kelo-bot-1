@@ -316,6 +316,7 @@ const state = {
   "knowHow": {},
   "knowsSnow": false,
   "worldEdits": [],
+  "basementDepth": 0,
   "projects": [],
   "riding": null,
   "ridingSpeed": 1,
@@ -413,9 +414,12 @@ function trimBrainState() {
         const done = state.requestsToUser.filter(r => r.fulfilled);
         state.requestsToUser = [...open, ...done].slice(0, MAX_REQUESTS);
       }
-      if (state.inventedCreations.length > MAX_CREATIONS) {
-        state.inventedCreations.length = MAX_CREATIONS;
+      // Too many pieces standing around the valley? The oldest move into his Museum: nothing is thrown away
+      const outdoors = state.inventedCreations.filter(c => !c.inMuseum);
+      if (outdoors.length > MAX_CREATIONS) {
+        outdoors.slice(MAX_CREATIONS).forEach(c => { c.inMuseum = true; });
         if (typeof pruneEmergentCreations3D === 'function') pruneEmergentCreations3D(MAX_CREATIONS);
+        if (typeof renderMuseum3D === 'function') renderMuseum3D();
       }
     }
 
@@ -1207,7 +1211,7 @@ function loadPersistentBrainState() {
 
 // Moment-to-moment flags and things stored elsewhere; everything else in state is saved
 const TRANSIENT_STATE_KEYS = new Set(['riding', 'ridingSpeed', 'ridingMode', 'isSleeping', 'isBusy', 'isWalking', 'isBuilding', 'isPracticing', 'isCollectingMail', 'isBrowsing',
-  'pendingImageAttachment', 'photoAlbum', 'rhythmPhaseText', 'unopenedNotesQueue']);
+  'pendingImageAttachment', 'photoAlbum', 'rhythmPhaseText', 'unopenedNotesQueue', 'basementDepth']);
 
 // Save his whole self: memories, feelings, where he is, what he is doing, everything he owns
 function savePersistentBrainState() {
@@ -1959,12 +1963,10 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
         }
       } else if (cat === 'toy') {
         state.toys.unshift({ name: item, emoji: entry.emoji, from: giver });
-        if (state.toys.length > 20) state.toys.length = 20;
         state.unstoredItems.push(item);
       } else {
         state.belongings.unshift({ name: item, category: cat, emoji: entry.emoji, from: giver });
         state.unstoredItems.push(item);
-        if (state.belongings.length > 20) state.belongings.length = 20;
       }
       if (typeof registerVehicle === 'function' && vehicleTypeFor(item)) registerVehicle(item);
       if (typeof receiveFuel === 'function') receiveFuel(item);

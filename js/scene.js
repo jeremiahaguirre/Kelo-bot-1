@@ -1886,6 +1886,9 @@ function animateDiorama() {
         flag.rotation.z = flag.userData.baseRotZ + Math.sin(t * 4.2 + flag.userData.phase) * 0.18;
       });
 
+      // Down in a basement (js/storehouse.js): he is below the floor, out of sight
+      if (state.basementDepth) keloGroup.position.y -= state.basementDepth;
+
       // 4. Camera Follow & Bird's-Eye Modes
       if (state.cameraMode === 'follow') {
         controls.target.lerp(new THREE.Vector3(keloGroup.position.x, keloGroup.position.y + 1.6, keloGroup.position.z), 0.08);

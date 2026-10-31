@@ -77,6 +77,7 @@ Kelo-bot-1/
 │   ├── needs.js         # Food, water and sleep, which he has to discover
 │   ├── forms.js         # Shapes for things he builds
 │   ├── netnode.js       # Real Wikipedia browsing at the NetNode cafe
+│   ├── conversation.js  # Understanding what visitors say; looking up words he doesn't know
 │   ├── postoffice.js    # Mail he picks up when he chooses
 │   ├── workshop.js      # Everything is welded at the workshop, carried and placed
 │   ├── hobbies.js       # Hobbies sparked by items (murals, kites, music...)

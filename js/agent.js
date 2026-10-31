@@ -320,6 +320,7 @@ const state = {
   "projects": [],
   "landFills": [],
   "aiLearned": [],
+  "vocabulary": {},
   "aiOffline": false,
   "riding": null,
   "ridingSpeed": 1,
@@ -2253,52 +2254,23 @@ async function handleVisitorChatMessage(userMessage) {
         }
       }
 
-      // If the user attached an image or asked him to build/weld/drill/explore something, trigger his Unbounded Multimodal Agent immediately!
-      if (attachedImg || /drill|gold|mountain|weld|build|make|create|sculpt|shape|mine|explore|island|train|track|auger|mycelium/i.test(userMessage)) {
-        state.chatLog.push({
-          sender: visitor,
-          text: `${attachedImg ? `🖼️ [Attached Image: ${attachedImg.name}] ` : ''}"${userMessage || 'Here is an image to inspire a new 3D welded creation!'}"`,
-          time: 'Just now',
-          isBot: false
-        });
-        recordVisitorMemory(visitor, `Inspired me with ${attachedImg ? `image "${attachedImg.name}"` : `"${userMessage.slice(0, 70)}"`}`);
-        await synthesizeUnboundedExperience(
-          userMessage || `Weld a new 3D structure inspired by ${visitor}'s uploaded image "${attachedImg.name}"`,
-          attachedImg ? 'Image-Inspired 3D Weld' : `Inspired by ${visitor}`,
-          null,
-          attachedImg
-        );
-        state.chatLog.push({
-          sender: 'Kelo-1',
-          text: state.speechBubble,
-          time: 'Autonomous Agent',
-          isBot: true
-        });
+      // An image inspires a creation straight away
+      if (attachedImg) {
+        state.chatLog.push({ sender: visitor, text: `🖼️ [Attached Image: ${attachedImg.name}] ${userMessage ? `"${userMessage}"` : ''}`, time: 'Just now', isBot: false });
+        recordVisitorMemory(visitor, `Inspired me with image "${attachedImg.name}"`);
+        await synthesizeUnboundedExperience(userMessage || `Weld a new 3D structure inspired by ${visitor}'s uploaded image "${attachedImg.name}"`, 'Image-Inspired 3D Weld', null, attachedImg);
+        state.chatLog.push({ sender: 'Kelo-1', text: state.speechBubble, time: 'Just now', isBot: true });
         renderAllUI();
         return;
       }
 
-      // Otherwise queue the note for reflective worldview synthesis
-      state.unopenedNotesQueue.push({
-        sender: visitor,
-        text: userMessage,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      });
-
-      state.chatLog.push({
-        sender: visitor,
-        text: `(Left a note for Kelo-1): "${userMessage}"`,
-        time: 'Left in mailbox',
-        isBot: false
-      });
-
-      recordVisitorMemory(visitor, `Left me a note saying: "${userMessage.slice(0, 80)}"`);
+      // Anything else: he listens to what was actually said and answers it (js/conversation.js)
+      state.chatLog.push({ sender: visitor, text: userMessage, time: 'Just now', isBot: false });
+      recordVisitorMemory(visitor, `Said to me: "${userMessage.slice(0, 80)}"`);
       renderAllUI();
-
-      showToast(`✉️ Kelo-1 is reading your note and synthesizing an independent action...`);
-      setTimeout(async () => {
-        await processNextUnopenedVisitorNote();
-      }, 1400);
+      if (typeof respondToVisitor === 'function') await respondToVisitor(visitor, userMessage);
+      savePersistentBrainState();
+      renderAllUI();
     }
 
 async function processNextUnopenedVisitorNote() {

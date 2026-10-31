@@ -58,6 +58,38 @@ async function wikiSearch(query) {
       return (d?.query?.search || []).map(r => String(r.title || '')).filter(Boolean);
     }
 
+// --- More of the real internet, no key needed ------------------------------------------------
+// Wiktionary: what a single word means
+async function wiktionaryDefinition(word) {
+      const res = await fetch(`https://en.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(String(word).toLowerCase())}`);
+      if (!res.ok) return null;
+      const d = await res.json();
+      const sense = (d && d.en || []).flatMap(p => (p.definitions || []).map(def => ({ pos: p.partOfSpeech, text: def.definition })))[0];
+      if (!sense) return null;
+      // Definitions come as a little HTML; keep just the words
+      const text = new DOMParser().parseFromString(sense.text, 'text/html').body.textContent.trim();
+      return text ? { title: word, extract: `${word} (${String(sense.pos || '').toLowerCase()}): ${text}`.slice(0, 400), url: `https://en.wiktionary.org/wiki/${encodeURIComponent(word)}` } : null;
+    }
+
+// DuckDuckGo Instant Answers: a short answer from across the web
+async function duckDuckGoAnswer(query) {
+      const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`);
+      if (!res.ok) return null;
+      const d = await res.json();
+      const text = (d && (d.AbstractText || d.Answer || d.Definition || (d.RelatedTopics && d.RelatedTopics[0] && d.RelatedTopics[0].Text))) || '';
+      return text ? { title: d.Heading || query, extract: String(text).slice(0, 600), url: d.AbstractURL || `https://duckduckgo.com/?q=${encodeURIComponent(query)}` } : null;
+    }
+
+// Look anything up: Wikipedia first, then the dictionary, then DuckDuckGo
+async function lookUpAnywhere(query) {
+      const tries = [() => wikiSummary(query), () => wiktionaryDefinition(query), () => duckDuckGoAnswer(query),
+        async () => { const t = await wikiSearch(query); return t[0] ? wikiSummary(t[0]) : null; }];
+      for (const attempt of tries) {
+        try { const r = await attempt(); if (r && r.extract) return r; } catch (e) {}
+      }
+      return null;
+    }
+
 async function wikiSummary(title) {
       const d = await wikiFetchJSON(WIKI_SUMMARY + encodeURIComponent(String(title).replace(/ /g, '_')));
       const extract = typeof d?.extract === 'string' ? d.extract.trim() : '';
@@ -184,6 +216,11 @@ async function searchOnce(query, originLabel) {
           hops = await readRabbitHole(query, Math.random() < 0.5 ? 3 : 2);
         } catch (err) {
           console.warn('NetNode browsing failed:', err);
+        }
+        // Nothing on Wikipedia? Try the dictionary and DuckDuckGo before giving up
+        if (hops.length === 0) {
+          const other = await lookUpAnywhere(query).catch(() => null);
+          if (other) hops = [{ title: other.title, url: other.url, extract: other.extract }];
         }
 
         if (hops.length === 0) {

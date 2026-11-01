@@ -152,7 +152,8 @@ function keloDigPose(t) {
         const k = smoothstep((u - 0.85) / 0.15);
         arm = -1.45 + 0.45 * k; lean = 0.22 - 0.16 * k;
       }
-      keloRightArm.rotation.x = arm;
+      // the drill runs along his forearm, angled down into the ground in front of him
+      keloRightArm.rotation.x = arm * 0.55;
       keloRightElbow.rotation.x = -0.3;
       keloRightHand.userData.grip = 1;
       // the other hand braces on top of the drill
@@ -210,10 +211,10 @@ const KELO_EMOTES = {
     pose(e) {
       const up = smoothstep(e / 0.3);
       const swing = smoothstep((e - 0.25) / 0.3) * Math.sin(e * 9);
-      // Arm up and out, elbow a little bent, open palm turned to face you, waving from the elbow
+      // Upper arm out to the side, forearm up, open palm turned to face you, waving from the elbow
       return {
-        rArmX: -0.25, rArmY: 0, rArmZ: 2.45 + swing * 0.18, rElbowX: -0.45 * up, rElbowZ: swing * 0.3,
-        rHandY: 1.45 * up, rHandZ: swing * 0.12, rGrip: 0,
+        rArmX: -0.2, rArmY: 0, rArmZ: 1.3 * up, rElbowX: 0.1 * up, rElbowZ: (1.3 + swing * 0.32) * up,
+        rHandY: 1.5 * up, rHandZ: swing * 0.15, rGrip: 0,
         lArmZ: -0.08, headX: -0.08, headZ: -0.12 + swing * 0.04, bodyZ: 0.05
       };
     }
@@ -266,8 +267,8 @@ const KELO_EMOTES = {
       const tap = smoothstep((e - 1.0) / 0.4) * Math.sin(e * 5) * 0.05;
       // Right hand up to his chin, the other arm folded across his middle under that elbow
       return {
-        rArmX: -0.55, rArmY: 0, rArmZ: -0.42, rElbowX: -2.15 + tap, rHandX: 0.2, rHandY: 0.5, rGrip: 0.65,
-        lArmX: -0.25, lArmZ: 0.2, lElbowX: -1.55, lHandY: -0.3, lGrip: 0.5,
+        rArmX: -0.8, rArmY: 0, rArmZ: -1.45, rElbowX: -1.84 + tap, rHandX: 0.2, rHandY: 0.4, rGrip: 0.65,
+        lArmX: -0.15, lArmY: 1.0, lArmZ: 0.15, lElbowX: -1.5, lHandY: -0.3, lGrip: 0.5,
         headX: -0.12, headZ: 0.14, headY: 0.15 + Math.sin(e * 0.8) * 0.12, bodyZ: 0.02, bodyX: -0.03
       };
     }
@@ -291,7 +292,7 @@ const KELO_EMOTES = {
       const rub = Math.sin(e * 9) * 0.1;
       // Arms wrapped around himself, rubbing his upper arms
       return {
-        lArmX: -0.75 + rub, lArmZ: 0.45, rArmX: -0.75 - rub, rArmZ: -0.45,
+        lArmX: -0.75 + rub, lArmY: 0.6, lArmZ: 0.45, rArmX: -0.75 - rub, rArmY: -0.6, rArmZ: -0.45,
         lElbowX: -1.75, rElbowX: -1.75, lHandY: 0.4, rHandY: -0.4, lGrip: 0.45, rGrip: 0.45,
         bodyZ: tremble * 0.035, bodyX: 0.1, bodyLift: -0.04, headX: 0.22, headY: tremble * 0.05,
         lLegZ: 0.06, rLegZ: -0.06, lKneeX: 0.12, rKneeX: 0.12

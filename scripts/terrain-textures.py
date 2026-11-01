@@ -25,7 +25,9 @@ def col(c): return np.array(c, dtype=float)[None, None, :] / 255
 base = noise(1.6) * 0.6 + noise(1.0, 20) * 0.25
 ridge = 1 - np.abs(noise(1.3, 4, 120))
 cracks = np.clip((ridge - 0.85) * 6, 0, 1)
-v = 0.5 + base * 0.13 - cracks * 0.25 + noise(0.2, 120) * 0.04
+yy0 = np.arange(N)[:, None] / N
+strata = np.sin(2 * np.pi * (yy0 * 6 + noise(2.0, 0, 8) * 0.35)) * 0.06
+v = 0.5 + base * 0.11 + strata - cracks * 0.28 + noise(0.2, 120) * 0.06 + noise(0.8, 40, 160) * 0.05
 tint = noise(1.8, 0, 30)
 rgb = col([118, 113, 104]) * (v[..., None] / 0.5) + tint[..., None] * col([6, 4, 0]) 
 save('rock', np.clip(rgb, 0, 1))
@@ -77,9 +79,9 @@ rgb[sp] *= 0.7
 save('sand', np.clip(rgb, 0, 1))
 
 # Snow: soft drifts, faint blue shadows in the hollows, a few glints
-v = 0.5 + noise(1.8) * 0.05 + noise(0.8, 30) * 0.015
+v = 0.5 + noise(1.8) * 0.022 + noise(0.8, 30) * 0.012
 rgb = col([234, 238, 244]) * (v[..., None] / 0.5)
-rgb += (noise(1.8, 0, 20)[..., None] < -0.8) * col([-10, -6, 0])
+rgb += np.clip(-noise(1.8, 0, 20) - 0.6, 0, 1)[..., None] * col([-8, -5, 0])
 gl = np.random.default_rng(9).random((N, N)) > 0.996
 rgb[gl] = 1
 save('snow', np.clip(rgb, 0, 1))

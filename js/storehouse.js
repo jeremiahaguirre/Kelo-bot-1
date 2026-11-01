@@ -116,6 +116,8 @@ function buildStorehouse3D() {
       shelfItemsGroup = new THREE.Group();
       overflowGroup = new THREE.Group();
       storehouseGroup.add(shelfItemsGroup, overflowGroup);
+      // Real board siding, painted trim and a steel roof (js/materials.js)
+      if (typeof dressBuilding === 'function') dressBuilding(storehouseGroup, [[barnRed, 'siding', 2], [trim, 'paintedwood'], [roofMat, 'metalroof', 2], [woodFloor, 'wood']]);
       scene.add(storehouseGroup);
       worldObstacles.push({ x: cx, z: cz, r: 3.0 });
       renderStorehouseShelves3D();

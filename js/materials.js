@@ -600,7 +600,15 @@ const FINISHES = {
   gravel:    { roughness: 0.95, metalness: 0, texture: 'gravel', bump: 0.06 },
   printed:   { roughness: 0.48, metalness: 0.02, texture: 'layers', bump: 0.006 },
   nylon:     { roughness: 0.6, metalness: 0, texture: 'weave', bump: 0.01 },
-  wicker:    { roughness: 0.9, metalness: 0, texture: 'wicker', bump: 0.05 }
+  wicker:    { roughness: 0.9, metalness: 0, texture: 'wicker', bump: 0.05 },
+  // Building surfaces (dressBuilding below lays them out at real size)
+  siding:    { roughness: 0.78, metalness: 0, texture: 'siding', bump: 0.03 },    // painted lap boards
+  brick:     { roughness: 0.9, metalness: 0, texture: 'brick', bump: 0.04 },
+  plaster:   { roughness: 0.92, metalness: 0, texture: 'plaster', bump: 0.02 },   // stucco
+  shingles:  { roughness: 0.88, metalness: 0, texture: 'shingles', bump: 0.04 },  // asphalt roof shingles
+  metalroof: { roughness: 0.42, metalness: 0.65, texture: 'metalroof', bump: 0.02, reflect: 0.8 }, // standing-seam steel
+  cladding:  { roughness: 0.5, metalness: 0.45, texture: 'panel', bump: 0.015, reflect: 0.6 },   // modern metal panels
+  windowglass: { roughness: 0.04, metalness: 0.1, reflect: 1.2 }
 };
 
 // More textures: same rules as above (near-white, made once, 64-128px)
@@ -608,7 +616,7 @@ function finishTexture(kind) {
       const key = 'f-' + kind;
       if (MATERIAL_TEXTURES[key]) return MATERIAL_TEXTURES[key];
       if (/^(wood|wood-v|brushed|weave)$/.test(kind)) return materialTexture(kind);
-      const size = 128;
+      const size = /^(brick|siding|shingles|plaster)$/.test(kind) ? 256 : 128;
       const canvas = document.createElement('canvas');
       canvas.width = canvas.height = size;
       const ctx = canvas.getContext('2d');
@@ -759,6 +767,75 @@ function finishTexture(kind) {
           ctx.fillStyle = grey(242);
           ctx.fillRect(0, y + 1, size, 1);
         }
+      } else if (kind === 'siding') {
+        // Lap siding: eight boards per tile, each with a shadow line under its lower edge and faint grain
+        blotches(20, 10, 40, 225, 250, 0.3);
+        for (let b = 0; b < 8; b++) {
+          const y = b * size / 8;
+          const g = ctx.createLinearGradient(0, y, 0, y + size / 8);
+          g.addColorStop(0, grey(205, 0.9));
+          g.addColorStop(0.12, grey(250, 0));
+          g.addColorStop(0.85, grey(240, 0));
+          g.addColorStop(1, grey(225, 0.6));
+          ctx.fillStyle = g;
+          ctx.fillRect(0, y, size, size / 8);
+          ctx.fillStyle = grey(150, 0.9);
+          ctx.fillRect(0, y, size, 1.5);
+        }
+        for (let i = 0; i < 60; i++) { ctx.fillStyle = grey(225 + Math.floor(rnd() * 25), 0.4); ctx.fillRect(rnd() * size, rnd() * size, 10 + rnd() * 50, 1); }
+      } else if (kind === 'brick') {
+        // Running-bond brick: 16 courses, each brick a slightly different shade, pale mortar between
+        ctx.fillStyle = grey(235);
+        ctx.fillRect(0, 0, size, size);
+        const rows = 16, bw = size / 4, bh = size / rows;
+        for (let r = 0; r < rows; r++) {
+          for (let c = -1; c < 5; c++) {
+            const x = c * bw + (r % 2 ? bw / 2 : 0);
+            const g = 150 + Math.floor(rnd() * 70);
+            ctx.fillStyle = `rgb(${g},${Math.floor(g * (0.9 + rnd() * 0.06))},${Math.floor(g * (0.86 + rnd() * 0.08))})`;
+            ctx.fillRect(x + 1.5, r * bh + 1.5, bw - 3, bh - 3);
+          }
+        }
+        specks(1200, 110, 200, 1.4);
+      } else if (kind === 'plaster') {
+        // Stucco: fine, uneven grit and soft patches
+        blotches(30, 12, 50, 215, 250, 0.35);
+        specks(3000, 190, 255, 1.3);
+        specks(500, 160, 200, 1);
+      } else if (kind === 'shingles') {
+        // Asphalt shingles: staggered tabs in rows, gritty, with dark gaps between tabs
+        ctx.fillStyle = grey(200);
+        ctx.fillRect(0, 0, size, size);
+        const rows = 10, tw = size / 6, th = size / rows;
+        for (let r = 0; r < rows; r++) {
+          for (let c = -1; c < 7; c++) {
+            const x = c * tw + (r % 2 ? tw / 2 : 0);
+            ctx.fillStyle = grey(175 + Math.floor(rnd() * 70));
+            ctx.fillRect(x + 1, r * th, tw - 2, th - 1);
+            ctx.fillStyle = grey(110, 0.8);
+            ctx.fillRect(x, r * th + th - 2, tw, 2);
+          }
+        }
+        specks(2500, 120, 255, 1.4);
+      } else if (kind === 'metalroof') {
+        // Standing-seam steel: a raised seam every quarter tile, faint streaks running down
+        ctx.fillStyle = grey(225);
+        ctx.fillRect(0, 0, size, size);
+        for (let i = 0; i < 4; i++) {
+          const x = i * size / 4;
+          ctx.fillStyle = grey(255);
+          ctx.fillRect(x, 0, 2, size);
+          ctx.fillStyle = grey(150);
+          ctx.fillRect(x + 2, 0, 2, size);
+        }
+        for (let i = 0; i < 40; i++) { ctx.fillStyle = grey(200 + Math.floor(rnd() * 40), 0.35); ctx.fillRect(rnd() * size, 0, 1, size); }
+      } else if (kind === 'panel') {
+        // Large metal wall panels with thin joints
+        blotches(8, 20, 40, 230, 250, 0.3);
+        ctx.fillStyle = grey(140);
+        ctx.fillRect(0, 0, size, 1.5);
+        ctx.fillRect(0, size / 2, size, 1.5);
+        ctx.fillRect(0, 0, 1.5, size);
       } else if (kind === 'wicker') {
         // Woven cane: thick strands over and under, with dark gaps between
         ctx.fillStyle = grey(90);
@@ -946,4 +1023,44 @@ function finishCreationLook(g, creation) {
       });
       if (partMeshes.length > 1) addWeldBeads(g, partMeshes);
       return g;
+    }
+
+// --- Buildings at real size ------------------------------------------------------------------------
+// Box faces normally get a whole texture each, so a small box and a big wall look different. These
+// give every face texture coordinates from its real size (one tile = `tile` world units), so bricks,
+// boards and shingles are the same size everywhere.
+function worldScaleUVs(geo, tile = 1) {
+      if (!geo || !geo.attributes.position || !geo.attributes.normal || !geo.attributes.uv || geo.userData.worldUVs === tile) return geo;
+      const p = geo.attributes.position, n = geo.attributes.normal, uv = geo.attributes.uv;
+      for (let i = 0; i < p.count; i++) {
+        const ax = Math.abs(n.getX(i)), ay = Math.abs(n.getY(i)), az = Math.abs(n.getZ(i));
+        let u, v;
+        if (ay >= ax && ay >= az && ay > 0.75) { u = p.getX(i); v = p.getZ(i); }       // floors and flat roofs
+        else if (ax >= az) { u = p.getZ(i); v = p.getY(i) / Math.max(0.35, 1 - ay * 0.6); } // walls facing east or west (and roof slopes)
+        else { u = p.getX(i); v = p.getY(i) / Math.max(0.35, 1 - ay * 0.6); }            // walls facing north or south
+        uv.setXY(i, u / tile, v / tile);
+      }
+      uv.needsUpdate = true;
+      geo.userData.worldUVs = tile;
+      return geo;
+    }
+
+// Dress a building: pairs of [material, finish, tile size]. Each material gets the finish (keeping its
+// own colour), and every mesh using it gets real-size texture coordinates.
+function dressBuilding(root, pairs) {
+      if (!root) return root;
+      const looks = new Map(pairs.map(([m, key, tile]) => [m, { key, tile: tile || 1 }]));
+      looks.forEach((look, m) => {
+        if (!m || !m.isMeshStandardMaterial) return;
+        const keepOpacity = m.opacity, keepTransparent = m.transparent;
+        finishMaterial(m, look.key);
+        m.opacity = keepOpacity;
+        m.transparent = keepTransparent;
+      });
+      root.traverse(o => {
+        if (!o.isMesh) return;
+        const look = looks.get(o.material);
+        if (look && look.key !== 'windowglass') worldScaleUVs(o.geometry, look.tile);
+      });
+      return root;
     }

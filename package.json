@@ -9,28 +9,67 @@
   "private": true,
   "scripts": {
     "start": "electron .",
-    "dist:win": "electron-builder --win --publish never"
+    "dist:win": "electron-builder --win --publish never",
+    "build:web": "node scripts/build-web.mjs",
+    "cap:sync": "npm run build:web && cap sync",
+    "android:open": "npm run cap:sync && cap open android",
+    "ios:open": "npm run cap:sync && cap open ios",
+    "android:build": "npm run cap:sync && cd android && ./gradlew assembleDebug",
+    "android:release": "npm run cap:sync && cd android && ./gradlew bundleRelease",
+    "ios:build": "npm run cap:sync && xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -sdk iphoneos -destination generic/platform=iOS -derivedDataPath ios/build CODE_SIGNING_ALLOWED=NO build"
   },
   "devDependencies": {
+    "@aparajita/capacitor-secure-storage": "8.0.1",
+    "@capacitor-community/keep-awake": "8.0.1",
+    "@capacitor/android": "8.6.0",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/cli": "8.6.0",
+    "@capacitor/core": "8.6.0",
+    "@capacitor/filesystem": "8.1.5",
+    "@capacitor/haptics": "8.0.2",
+    "@capacitor/ios": "8.6.0",
+    "@capacitor/splash-screen": "8.0.2",
+    "@fontsource/inter": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@fontsource/newsreader": "5.3.0",
+    "@phosphor-icons/web": "2.1.1",
     "electron": "44.7.2",
-    "electron-builder": "26.17.0"
+    "electron-builder": "26.17.0",
+    "tailwindcss": "3.4.17",
+    "three": "0.128.0"
   },
   "build": {
     "appId": "io.github.jeremiahaguirre.kelo1world",
     "productName": "Kelo-1 World",
-    "directories": { "output": "dist" },
+    "directories": {
+      "output": "dist"
+    },
     "files": [
       "index.html",
+      "shop.html",
+      "privacy.html",
       "css/**",
       "js/**",
       "brain/**",
+      "assets/**",
       "desktop/**",
-      "package.json"
+      "package.json",
+      "!**/*.map"
     ],
     "win": {
       "target": [
-        { "target": "nsis", "arch": ["x64"] },
-        { "target": "portable", "arch": ["x64"] }
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
     },
     "nsis": {

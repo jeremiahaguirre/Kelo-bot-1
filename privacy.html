@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- A plain page: no scripts at all, nothing loaded from anywhere else -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Kelo-1 World — Privacy Policy</title>
+  <meta name="description" content="How Kelo-1 World handles your data: everything stays on your device, with no accounts, ads or tracking." />
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; background: #020617; color: #e2e8f0; font: 16px/1.6 -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif; }
+    main { max-width: 46rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    h1 { color: #fde68a; font-size: 1.75rem; line-height: 1.2; margin: 0 0 0.25rem; }
+    h2 { color: #fbbf24; font-size: 1.15rem; margin: 2rem 0 0.5rem; }
+    p, li { color: #cbd5e1; }
+    ul { padding-left: 1.25rem; }
+    li { margin: 0.35rem 0; }
+    strong { color: #f8fafc; }
+    a { color: #7dd3fc; }
+    .muted { color: #94a3b8; font-size: 0.9rem; }
+    .box { background: #0f172a; border: 1px solid #1e293b; border-radius: 1rem; padding: 1rem 1.25rem; margin-top: 1.25rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Privacy Policy</h1>
+    <p class="muted">Kelo-1 World (website, Windows app, iPhone/iPad app and Android app) · Last updated 1 November 2026</p>
+
+    <div class="box">
+      <p><strong>In short:</strong> there are no accounts, no ads, no analytics and no tracking. Kelo-1's memory and
+      your optional AI keys stay on your device. The game only talks to the internet to look things up for
+      him, and to the AI service you choose if you add your own key.</p>
+    </div>
+
+    <h2>What is stored, and where</h2>
+    <ul>
+      <li><strong>Kelo-1's memory</strong> (his diary, what he has learned, his belongings, the world he has changed,
+        the name you give as a visitor, your chat with him and the photos you show him) is saved only on your device:
+        in the app's private storage on a phone, on disk in the Windows app, or in your browser's storage on the website.
+        It is never uploaded to us. Deleting the app (or clearing the site's data) deletes it.</li>
+      <li><strong>AI keys</strong> (Google Gemini or Anthropic Claude) are optional. If you add one, it is kept only on
+        your device: in the iOS Keychain or Android Keystore in the phone apps, encrypted by Windows in the desktop app,
+        or in your browser's storage on the website. Keys are never included in brain backups.</li>
+      <li><strong>Backups</strong> you export are files you save yourself (the Files app on iPhone, Documents on Android,
+        or your Downloads folder). They contain his memory but never your keys.</li>
+    </ul>
+
+    <h2>What is sent over the internet</h2>
+    <ul>
+      <li><strong>The AI service you choose, only if you add a key.</strong> To let Kelo-1 think, the game sends his
+        current situation, recent memories and what you type to him (and any photo you choose to show him) to
+        Google's Gemini API (<code>generativelanguage.googleapis.com</code>) or Anthropic's Claude API
+        (<code>api.anthropic.com</code>), using your own key. Those services handle that data under their own
+        privacy policies: <a href="https://policies.google.com/privacy" rel="noopener noreferrer" target="_blank">Google</a>,
+        <a href="https://www.anthropic.com/legal/privacy" rel="noopener noreferrer" target="_blank">Anthropic</a>.
+        Without a key, nothing is sent to any AI service; he uses his built-in brain.</li>
+      <li><strong>Lookups.</strong> When Kelo-1 reads about something, the word or topic he is curious about is sent to
+        Wikipedia (<code>en.wikipedia.org</code>), Wiktionary (<code>en.wiktionary.org</code>) or DuckDuckGo
+        (<code>api.duckduckgo.com</code>). Nothing about you is included.</li>
+      <li><strong>His "dreams".</strong> The apps download a small public file (<code>brain/growth.json</code>) from this
+        website on GitHub Pages to catch up on what he did while you were away.</li>
+      <li><strong>The website only:</strong> the web version loads its 3D engine, icons, styles and fonts from public
+        CDNs (cdnjs, jsDelivr, unpkg, Tailwind and Google Fonts), which see your IP address like any website you
+        visit. The phone apps include these files and do not contact those CDNs.</li>
+    </ul>
+    <p>Like any internet service, the sites above can see your device's IP address when it connects to them.
+      We do not run a server that receives any of this.</p>
+
+    <h2>What we don't do</h2>
+    <ul>
+      <li>No sign-up, accounts or logins.</li>
+      <li>No advertising, analytics, crash reporting or tracking of any kind, and no data is sold or shared.</li>
+      <li>No location, contacts, microphone or background access. The camera or photo library is only used when you
+        choose a photo to show Kelo-1.</li>
+    </ul>
+
+    <h2>Children</h2>
+    <p>The game has no chat with other people and collects nothing about its players. If a child adds an AI key, what
+      they type to Kelo-1 is sent to that AI service as described above, so a parent should add the key.</p>
+
+    <h2>Your choices</h2>
+    <ul>
+      <li>Remove an AI key at any time in Settings; nothing is sent to that service afterwards.</li>
+      <li>Delete his memory by deleting the app, or clearing the website's data in your browser.</li>
+    </ul>
+
+    <h2>Contact</h2>
+    <p>Questions about privacy: open an issue at
+      <a href="https://github.com/jeremiahaguirre/Kelo-bot-1/issues" rel="noopener noreferrer" target="_blank">github.com/jeremiahaguirre/Kelo-bot-1</a>.
+      If this policy changes, the new version will be posted on this page.</p>
+  </main>
+</body>
+</html>

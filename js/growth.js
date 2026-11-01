@@ -8,8 +8,8 @@
 const GROWTH_SOURCES = (() => {
   const local = './brain/growth.json';
   const published = 'https://jeremiahaguirre.github.io/Kelo-bot-1/brain/growth.json';
-  // The desktop app ships with an old copy, so it asks the published site first
-  return /^(file|app):/.test(window.location.protocol) || window.keloDesktop ? [published, local] : [local, published];
+  // The desktop and phone apps ship with an old copy, so they ask the published site first
+  return /^(file|app):/.test(window.location.protocol) || window.keloDesktop || window.keloNative ? [published, local] : [local, published];
 })();
 const MAX_DREAMS_PER_VISIT = 20;
 

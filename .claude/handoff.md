@@ -12,6 +12,10 @@ Everything he gets (tools, vehicles, seeds, materials) arrives **only** through 
 He may change the world freely. He can never move or change the buildings, and he can't build new ones.
 
 ## Recently shipped (on `main`, pushed)
+- **Humanoid robot body** (`js/kelo-body.js`, loaded before scene.js). Kelo-1 is a procedural humanoid robot about 2.8 units tall (teal shell panels, dark slate covers, brushed actuators, amber trim, glass visor with eye lights, "K-1" badges), about 19.5k triangles.
+  - Rig: `keloBody` hangs at `KELO_HIP_Y` (1.44); shoulders `keloLeftArm/RightArm` → `keloLeftElbow/RightElbow` → `keloLeftHand/RightHand` (wrists); hips `keloLeftLeg/RightLeg` (at `KELO_LEG_Y`) → `keloLeftKnee/RightKnee` → `keloLeftFoot/RightFoot`. Elbows bend with negative x, knees with positive x.
+  - Fingers: write `hand.userData.grip` (0 open, 1 fist) during the frame; `finishKeloPose` eases it and calls `setKeloGrip`. Feet level themselves automatically.
+  - Helpers in animations.js: `keloSquat(drop)` and `keloSitPose(seatAbove)` (vehicles.js uses it with `KELO_SIT_OFFSET`). Carried things sit between his palms (`keloPalmLocal`). The drill and torch are held in his right fist.
 - **#21 Seasons and snow** (`js/seasons.js`).
   - `inSnow(p)` uses `SNOW_LINE` per season (all land in winter, the high mountain otherwise). `snowWalkFactor`/`snowSink` slow him and sink him in `scene.js`.
   - `checkSnowStuck` → `getStuckInSnow` → `researchSnowTravel` asks for snowshoes, skis and a snowmobile.
@@ -58,7 +62,7 @@ He may change the world freely. He can never move or change the buildings, and h
 
 ## Architecture decisions
 - **No build step.** The page uses plain global-script JS loaded in order from `index.html`:
-  agent → memory → worldclock → needs → forms → netnode → conversation → postoffice → workshop → hobbies → mining → growth → scene → house → animations → items3d → gearmodels → everydaymodels → materials → storehouse → museum → basements → viewer → takeout → vehicles → landfill → disposal → knowhow → seasons → wind → landscape → projects → town → coderequests → shopkeeping → printer → main → portal.
+  agent → memory → worldclock → needs → forms → netnode → conversation → postoffice → workshop → hobbies → mining → growth → kelo-body → scene → house → animations → items3d → gearmodels → everydaymodels → materials → storehouse → museum → basements → viewer → takeout → vehicles → landfill → disposal → knowhow → seasons → wind → landscape → projects → town → coderequests → shopkeeping → printer → main → portal.
   (`js/shop.js` is loaded only by `shop.html`.) A later file silently replaces a same-named function from an earlier one, so keep top-level names unique.
   Three.js r128, Tailwind and Phosphor all load from CDN. Other languages are allowed if they help.
 - **State and persistence.**

@@ -321,6 +321,7 @@ async function fetchFromStorehouse(matchName) {
       const index = list.findIndex(i => (matchName instanceof RegExp ? matchName.test(i.name) : i.name.toLowerCase() === String(matchName).toLowerCase()));
       if (index < 0) return null;
       const item = list[index];
+      if (typeof noteItemUsed === 'function') noteItemUsed(item.name);
       const plain = item.name.replace(/^(an?|the)\s+/i, '');
       state.currentLocKey = 'custom';
       state.customPlaceName = 'his Storehouse';

@@ -322,6 +322,8 @@ const state = {
   "aiLearned": [],
   "vocabulary": {},
   "itemLookups": {},
+  "itemUse": {},
+  "lastTidyAt": 0,
   "aiOffline": false,
   "riding": null,
   "ridingSpeed": 1,
@@ -1693,6 +1695,7 @@ Current state:
 - How you have shaped the valley (you can undo anything but a chopped tree): ${typeof landscapeSummaryForAI === 'function' ? landscapeSummaryForAI() : 'nothing yet'}
 - Things you know how to use: ${typeof knowHowSummaryForAI === 'function' ? knowHowSummaryForAI() : 'nothing yet'}
 - In your Storehouse: ${typeof storehouseSummaryForAI === 'function' ? storehouseSummaryForAI() : 'empty'}
+- Tidying up: ${typeof tidySummaryForAI === 'function' ? tidySummaryForAI() : 'nothing to tidy'}
 - Thrown into your Disposal Pit (gone forever): ${typeof disposalSummaryForAI === 'function' ? disposalSummaryForAI() : 'nothing yet'}
 - Your shop website, where real people can buy your things: ${typeof shopSummaryForAI === 'function' ? shopSummaryForAI() : 'none'}
 - Your sense of taste: ${typeof tastesSummaryForAI === 'function' ? tastesSummaryForAI() : 'unknown'}
@@ -2098,6 +2101,8 @@ function runAutonomousLifeTick() {
         return;
       }
       // Now and then he clears out junk and spare copies into the Disposal Pit
+      // Every half hour he's reminded to go through his Storehouse and Museum (js/tidyup.js)
+      if (typeof tidyUpDue === 'function' && tidyUpDue()) { startTidyUp(); return; }
       if (typeof disposeItem === 'function' && Math.random() < disposalChance()) {
         disposeUnwanted();
         return;

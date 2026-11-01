@@ -13,6 +13,15 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="./js/vendor/GLTFLoader.js"></script>
+  <!-- three.js r128 add-ons for the realistic sky, HDR lighting and glow, kept in the repo (js/vendor) -->
+  <script src="./js/vendor/RGBELoader.js"></script>
+  <script src="./js/vendor/Sky.js"></script>
+  <script src="./js/vendor/CopyShader.js"></script>
+  <script src="./js/vendor/LuminosityHighPassShader.js"></script>
+  <script src="./js/vendor/EffectComposer.js"></script>
+  <script src="./js/vendor/RenderPass.js"></script>
+  <script src="./js/vendor/ShaderPass.js"></script>
+  <script src="./js/vendor/UnrealBloomPass.js"></script>
   <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body class="h-screen overflow-hidden bg-slate-950 text-slate-100 select-none">
@@ -558,6 +567,15 @@
         <p id="aiKeyStatus" class="text-[11px] text-slate-400"></p>
       </section>
       <section class="space-y-2 p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
+        <label class="block text-xs font-bold text-slate-200" for="graphicsLevelSelect">🖥️ Graphics</label>
+        <p class="text-[11px] text-slate-400">High adds soft glow and the sharpest shadows. Balanced suits most computers. Fast is for phones and older machines. Saved on this device.</p>
+        <select id="graphicsLevelSelect" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400">
+          <option value="high">High</option>
+          <option value="balanced">Balanced</option>
+          <option value="fast">Fast</option>
+        </select>
+      </section>
+      <section class="space-y-2 p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
         <div class="text-xs font-bold text-slate-200">🛒 His shop</div>
         <p class="text-[11px] text-slate-400">Where buyers reach you about his shop. No payments go through the shop; you handle each order. Saved only on this device, and included when you export the shop.</p>
         <label class="block text-[11px] text-slate-300 font-semibold" for="shopContactInput">Shop contact (email or link)</label>
@@ -590,6 +608,7 @@
   <script src="./js/mining.js"></script>
   <script src="./js/growth.js"></script>
   <script src="./js/scene.js"></script>
+  <script src="./js/realism.js"></script>
   <script src="./js/house.js"></script>
   <script src="./js/animations.js"></script>
   <script src="./js/items3d.js"></script>

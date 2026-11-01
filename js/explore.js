@@ -282,7 +282,8 @@ function exploreCameraUpdate() {
 
       // Optional: drift back to Kelo-1 after a while with nobody touching anything
       if (exploreCam.prefs.autoReturn && state.cameraMode === 'explore' && !exploreCam.fly
-        && Date.now() - exploreCam.lastInput > EXPLORE_IDLE_MS && !document.getElementById('keloViewer')) {
+        && Date.now() - exploreCam.lastInput > EXPLORE_IDLE_MS && !document.getElementById('keloViewer')
+        && !document.body.classList.contains('menu-open')) {
         exploreFlyToKelo();
       }
       return true;
@@ -597,8 +598,9 @@ function explorePlaces() {
       (state.vehicles || []).forEach(v => add('Vehicles', 'veh-' + v.id, '🚙', v.name, v.x, v.z, { dist: 14 }));
       fromLoc('Nature', 'shoreline', { dist: 20 });
       fromLoc('Nature', 'meadow', { dist: 22 });
-      fromLoc('Nature', 'mountain_peak', { dist: 30, pitch: 0.5 });
-      fromLoc('Nature', 'east_cliff', { dist: 30, pitch: 0.5 });
+      // High places are framed from above the clouds (they drift at heights 26 to 38)
+      fromLoc('Nature', 'mountain_peak', { dist: 55, pitch: 0.62 });
+      fromLoc('Nature', 'east_cliff', { dist: 50, pitch: 0.62 });
       // His own marks on the world
       const known = new Set(['storehouse', 'post_office', 'bed', 'couch', 'weld', 'garden', 'cafe', 'cyber', 'shoreline', 'meadow', 'mountain_peak', 'disposal_pit', 'museum', 'east_cliff']);
       Object.values(TOWN_LOCATIONS).forEach(l => { if (!known.has(l.id) && l.showPin !== false) add('His spots', l.id, l.icon || '📍', l.name, l.x, l.z, { dist: 18 }); });
@@ -726,8 +728,11 @@ function exploreBindButtons() {
         if (place) exploreGoToPlace(place);
       }, true);
 
-      // Click anywhere else closes the Places list and the spot menu
+      // Click anywhere else closes the Places list and the spot menu. Any click or key counts as
+      // someone being here, so the idle "go back to Kelo-1" waits
+      document.addEventListener('keydown', () => { exploreCam.lastInput = Date.now(); }, true);
       document.addEventListener('pointerdown', (e) => {
+        exploreCam.lastInput = Date.now();
         const t = e.target;
         if (!t.closest) return;
         if (!t.closest('#explorePlaces, #btnPlaces')) exploreTogglePlaces(false);

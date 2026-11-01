@@ -230,10 +230,10 @@ const ITEM_MODEL_RULES = [
     m.position.y = 0.14;
     return group(m);
   }],
-  [/cherr/, () => fruitBasket(0xb91c1c, 0.013, 30)],
-  [/apple/, () => fruitBasket(0xdc2626, 0.04, 9)],
-  [/peach|apricot/, () => fruitBasket(0xffa36c, 0.038, 9)],
-  [/blueberr|grape/, () => fruitBasket(0x3b4cca, 0.009, 60)],
+  [/^(?!.*(pie|tart|cobbler|cake|jam|muffin)).*cherr/, () => fruitBasket(0xb91c1c, 0.013, 30, 'cherry')],
+  [/^(?!.*(pie|tart|cobbler|cake|crumble|juice|sauce|cider)).*apple/, () => fruitBasket(0xdc2626, 0.04, 9, 'apple')],
+  [/^(?!.*(pie|tart|cobbler|cake|jam)).*(peach|apricot)/, () => fruitBasket(0xffa36c, 0.038, 9, 'peach')],
+  [/^(?!.*(pie|tart|cobbler|cake|jam|muffin|juice)).*(blueberr|grape)/, () => fruitBasket(0x3b4cca, 0.009, 60, 'berry')],
   [/bread|loaf|sourdough|baguette|\bbun\b|croissant/, (lower) => realSize(loafModel(lower))],
   [/tart|pie|cobbler|cake|cookie/, (lower) => realSize(bakedModel(lower))],
   [/ramen|noodle|soup|stew|bowl/, (lower) => realSize(noodleBowlModel())],
@@ -434,16 +434,25 @@ function group(...children) {
       return g;
     }
 
-// Real-size fruit heaped in a small woven basket (built in metres)
-function fruitBasket(color, radius, count) {
-      const wicker = mesh(new THREE.LatheGeometry([[0, 0], [0.09, 0], [0.13, 0.03], [0.15, 0.09], [0.145, 0.09], [0.125, 0.032], [0, 0.006]].map(([r, y]) => new THREE.Vector2(r, y)), 18), 0xb7793e, { roughness: 1, side: THREE.DoubleSide });
+// Real-size fruit heaped in a small woven basket (built in metres). `kind` picks the fruit's own
+// shape and skin from everydaymodels.js (apple, peach, cherry, berry) when it is loaded.
+function fruitBasket(color, radius, count, kind = 'berry') {
+      const profile = [[0, 0], [0.09, 0], [0.13, 0.03], [0.15, 0.09], [0.145, 0.09], [0.125, 0.032], [0, 0.006]].map(([r, y]) => new THREE.Vector2(r, y));
+      const woven = typeof surfaceTexture === 'function';
+      const wicker = woven
+        ? surfaced(new THREE.LatheGeometry(profile, 32), 'wicker', { roughness: 0.95, bumpScale: 0.003, side: THREE.DoubleSide })
+        : mesh(new THREE.LatheGeometry(profile, 18), 0xb7793e, { roughness: 1, side: THREE.DoubleSide });
       const handle = mesh(new THREE.TorusGeometry(0.14, 0.008, 6, 20, Math.PI), 0x8a5a2b);
       handle.position.y = 0.09;
-      const g = group(wicker, handle);
+      const rim = mesh(new THREE.TorusGeometry(0.148, 0.007, 6, 36), 0x9a6332, { roughness: 0.9 });
+      rim.rotation.x = Math.PI / 2;
+      rim.position.y = 0.09;
+      const g = group(wicker, handle, rim);
       for (let i = 0; i < count; i++) {
         const a = i * 2.4, ring = Math.sqrt(i / count) * (0.12 - radius);
-        const fruit = mesh(new THREE.SphereGeometry(radius, 10, 8), color, { roughness: 0.4 });
+        const fruit = typeof fruitPiece === 'function' ? fruitPiece(kind, color, radius) : mesh(new THREE.SphereGeometry(radius, 10, 8), color, { roughness: 0.4 });
         fruit.position.set(Math.cos(a) * ring, 0.07 + radius + (1 - i / count) * radius * 1.4, Math.sin(a) * ring);
+        fruit.rotation.set((i % 3) * 0.4, a, (i % 2) * 0.3);
         g.add(fruit);
       }
       return realSize(g);

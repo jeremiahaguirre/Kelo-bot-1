@@ -100,6 +100,7 @@ Kelo-bot-1/
 │   ├── mining.js        # Digging, equipment needs, hidden finds
 │   ├── growth.js        # Merges what he dreamt while you were away
 │   ├── scene.js         # Three.js world, pathfinding, terrain
+│   ├── realism.js       # Realistic look: real colours, filmic tone mapping, sky and sun from his clock, HDR lighting, lake, textured ground, trees, Graphics setting
 │   ├── house.js         # Kelo-1's cottage: walls, windows, porch, roof, furniture, night lights
 │   ├── animations.js    # Kelo-1's body animation: smooth pose blending, walk cycle, idle life, emotes
 │   ├── items3d.js       # 3D models of items, the pick-up counter, carrying
@@ -127,12 +128,16 @@ Kelo-bot-1/
 │   ├── printer.js       # His 3D printer: setting it up, learning it, filament spools, prints that fail and succeed
 │   ├── main.js          # UI wiring
 │   ├── portal.js        # Send-him-something panel
-│   └── shop.js          # The shop website itself (shop.html)
+│   ├── shop.js          # The shop website itself (shop.html)
+│   └── vendor/          # three.js r128 add-ons (glTF loader, Sky, RGBELoader, bloom post-processing), kept in the repo
 ├── assets/
 │   ├── models/          # Real-world 3D models (.glb) of everyday things
-│   └── LICENSES.md      # Where each model came from, its author and licence
+│   ├── hdri/            # HDR sky photos that light the world by day, at sunset and at night
+│   ├── textures/        # Lake ripples and the tiling ground textures (grass, dirt, rock, sand, snow)
+│   └── LICENSES.md      # Where each model, photo and texture came from, its author and licence
 ├── brain/growth.json    # His dreams, written by the scheduled Action
 ├── scripts/dream.mjs    # The dreaming script
+├── scripts/terrain-textures.py # Makes the tiling ground textures in assets/textures/terrain
 ├── desktop/             # Windows app (Electron): main process + preload bridge
 ├── android/, ios/       # Phone app projects (Capacitor); open them in Android Studio / Xcode
 ├── capacitor.config.json # Phone app settings (app id, splash screen, status bar)

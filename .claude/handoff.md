@@ -12,6 +12,14 @@ Everything he gets (tools, vehicles, seeds, materials) arrives **only** through 
 He may change the world freely. He can never move or change the buildings, and he can't build new ones.
 
 ## Recently shipped (on `main`, pushed)
+- **Realistic rendering** (`js/realism.js`, branch `agent/render`).
+  - Colours: the built-in shaders are patched so every hex colour, vertex colour and colour texture is read as sRGB; output is sRGB with ACES filmic tone mapping and `physicallyCorrectLights` (point lights are scaled up to match). glTF materials can opt out with `defines: { KELO_LINEAR_COLORS: '' }`.
+  - Sky: `THREE.Sky` (js/vendor) driven by `applySkyForHour(hour, dayOfYear)`, with the real sun position for Kelowna (49.9° N). `applyTimeOfDay` and `applyLightingPreset` both go through it. Fog colour is the sky's own horizon colour, worked out in JS each few frames. Stars, a moon and sprite clouds.
+  - Lighting: three CC0 HDR photos (`assets/hdri`) blended by time of day and rendered to `scene.environment` with PMREM (re-rendered only when the light changes). `materialReflections()` now returns null so shiny things use it.
+  - Water: the sea keeps its plane at -0.18; its material has moving ripples, sky reflections, a baked depth map (`bakeSeaDepth`, re-baked when landfill changes) for clear shallows and foam.
+  - Ground: the terrain and outer lands share one textured material that reads the vertex colours to choose grass, dirt, rock, sand or snow textures (`assets/textures/terrain`, made by `scripts/terrain-textures.py`). Keep using natural colours when recolouring the ground.
+  - Trees: `buildNaturalFir`, `buildNaturalLeafyTree` (same ids and spots; leaves drop in winter), an instanced forest on the far hills. Buildings get real-size siding, brick, shingles, stucco and steel via `dressBuilding` in materials.js.
+  - Settings → Graphics (High / Balanced / Fast) in localStorage `kelo-graphics`; it steps down by itself if the frame rate stays under ~32. High adds bloom.
 - **#21 Seasons and snow** (`js/seasons.js`).
   - `inSnow(p)` uses `SNOW_LINE` per season (all land in winter, the high mountain otherwise). `snowWalkFactor`/`snowSink` slow him and sink him in `scene.js`.
   - `checkSnowStuck` → `getStuckInSnow` → `researchSnowTravel` asks for snowshoes, skis and a snowmobile.
@@ -60,7 +68,7 @@ He may change the world freely. He can never move or change the buildings, and h
 - **No build step.** The page uses plain global-script JS loaded in order from `index.html`:
   agent → memory → worldclock → needs → forms → netnode → conversation → postoffice → workshop → hobbies → mining → growth → scene → house → animations → items3d → gearmodels → everydaymodels → materials → realmodels → storehouse → museum → basements → viewer → takeout → vehicles → landfill → disposal → knowhow → seasons → wind → landscape → projects → town → coderequests → shopkeeping → printer → main → portal.
   (`js/shop.js` is loaded only by `shop.html`.) A later file silently replaces a same-named function from an earlier one, so keep top-level names unique.
-  Three.js r128, Tailwind and Phosphor all load from CDN. Other languages are allowed if they help.
+  Three.js r128, Tailwind and Phosphor all load from CDN; three.js add-ons are vendored in `js/vendor` and assets live in `assets/` (served from 'self'). Other languages are allowed if they help.
 - **State and persistence.**
   - One global `state` object.
   - `keloStore` wraps localStorage on the web and a 10 GB disk store in Electron (`desktop/`).

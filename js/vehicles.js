@@ -210,21 +210,24 @@ function updateVehicles(t) {
       if (type.mode === 'air') y += airAltitude(m, v, t);
       m.position.set(state.botPos.x, y, state.botPos.z);
       m.rotation.y = state.botRotY - Math.PI / 2;
-      // Sit him in the seat: the seat offset turns with the vehicle
+      // Sit him in the seat: the seat offset turns with the vehicle. Seats are KELO_SIT_OFFSET
+      // above where his feet would be; keloSitPose (js/animations.js) bends him to sit on it.
       const seat = m.userData.seat;
+      const drop = keloSitPose(typeof KELO_SIT_OFFSET === 'number' ? KELO_SIT_OFFSET : 0.3, 1.3);
       if (seat) {
         const a = m.rotation.y;
-        keloGroup.position.set(state.botPos.x + Math.cos(a) * seat.x + Math.sin(a) * seat.z, y + seat.y, state.botPos.z - Math.sin(a) * seat.x + Math.cos(a) * seat.z);
+        keloGroup.position.set(state.botPos.x + Math.cos(a) * seat.x + Math.sin(a) * seat.z, y + seat.y - drop, state.botPos.z - Math.sin(a) * seat.x + Math.cos(a) * seat.z);
       } else {
-        keloGroup.position.set(state.botPos.x, y + type.seatY, state.botPos.z);
+        keloGroup.position.set(state.botPos.x, y + type.seatY - drop, state.botPos.z);
       }
       keloGroup.rotation.set(0, state.botRotY, 0);
       if (m.userData.rotor) m.userData.rotor.rotation.y = t * 14;
       if (m.userData.tailRotor) m.userData.tailRotor.rotation.z = t * 20;
-      keloLeftLeg.rotation.x = -1.2;
-      keloRightLeg.rotation.x = -1.2;
-      keloLeftArm.rotation.x = -0.9;
-      keloRightArm.rotation.x = -0.9;
+      // Hands forward on the wheel or the handlebars
+      keloLeftArm.rotation.set(-0.6, 0, 0.05);
+      keloRightArm.rotation.set(-0.6, 0, -0.05);
+      keloLeftElbow.rotation.x = keloRightElbow.rotation.x = -0.7;
+      keloLeftHand.userData.grip = keloRightHand.userData.grip = 0.85;
     }
 
 // Aircraft climb smoothly to cruising height, hold there, and come gently down when `landing` is set.

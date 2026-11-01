@@ -172,18 +172,20 @@ function tripFace(p) {
       indoorTrip.rotY = Math.atan2(p.x - indoorTrip.pos.x, p.z - indoorTrip.pos.z);
     }
 
-// Reaching for something h above his feet: arms up for a high shelf, a crouch for a low one
+// Reaching for something h above his feet: arms up for a high shelf, a squat for a low one
 function reachPose(h) {
-      const crouch = h < 0.85 ? Math.min(0.42, 0.85 - h) : 0;
+      const crouch = h < 1.1 ? Math.min(0.6, 1.1 - h) : 0;
       indoorTrip.crouchTarget = crouch;
-      const rel = (1.7 - crouch - (h + 0.12)) / 0.78;
+      const reach = KELO_UPPER_ARM + KELO_FOREARM + KELO_PALM;
+      const rel = (KELO_SHOULDER.y - crouch - (h + 0.12)) / reach;
       const arm = -Math.acos(Math.max(-1, Math.min(1, rel)));
       keloLeftArm.rotation.set(arm, 0, 0.12);
       keloRightArm.rotation.set(arm, 0, -0.12);
-      keloBody.rotation.x = crouch ? 0.3 : h > 1.6 ? -0.08 : 0.06;
-      keloLeftLeg.rotation.x = -crouch * 2.2;
-      keloRightLeg.rotation.x = -crouch * 2.2;
-      keloHead.rotation.x = Math.max(-0.5, Math.min(0.5, -(h - 1.9) * 0.35));
+      keloLeftElbow.rotation.x = keloRightElbow.rotation.x = 0.1;
+      keloLeftHand.userData.grip = keloRightHand.userData.grip = 0.15;
+      keloBody.rotation.x = crouch ? 0.35 : h > 1.6 ? -0.08 : 0.06;
+      if (crouch) keloSquat(crouch);
+      keloHead.rotation.x = Math.max(-0.5, Math.min(0.5, -(h - 2.3) * 0.35));
     }
 
 // The spiral stairs as a walking path, from one floor down (or up) to another
@@ -528,7 +530,9 @@ function basementCameraUpdate() {
 // --- Moving a thing between his hands and its place ------------------------------------------
 function handsWorldPosition() {
       keloGroup.updateMatrixWorld(true);
-      return keloGroup.localToWorld(new THREE.Vector3(0, 1.1 - indoorTrip.crouch, 0.62));
+      // halfway between his palms
+      const l = keloPalmLocal(keloLeftHand, new THREE.Vector3()), r = keloPalmLocal(keloRightHand, new THREE.Vector3());
+      return keloGroup.localToWorld(l.add(r).multiplyScalar(0.5));
     }
 
 // Fly an object (already in the building's group) from one local position to another over ms,

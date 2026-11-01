@@ -149,6 +149,8 @@ function initDiorama3D() {
       });
       renderer.domElement.addEventListener('pointerup', (e) => {
         if (Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y) > 6) return;
+        // Not the end of a drag, pinch or right-click (js/explore.js)
+        if (typeof exploreSwallowClick === 'function' && exploreSwallowClick(e)) return;
         const rect = renderer.domElement.getBoundingClientRect();
         const mouse = new THREE.Vector2(
           ((e.clientX - rect.left) / rect.width) * 2 - 1,
@@ -180,6 +182,8 @@ function initDiorama3D() {
               splashOgopogo();
               return;
             }
+            // A click on the ground offers Fly here / Send Kelo-1 here / What's this? (js/explore.js)
+            if (typeof showExploreSpotMenu === 'function') return showExploreSpotMenu(e, pt);
             const isMountain = rz < -13 || pt.y > 2.2;
             synthesizeUnboundedExperience(
               isMountain
@@ -1905,7 +1909,9 @@ function animateDiorama() {
       });
 
       // 4. Camera Follow & Bird's-Eye Modes (inside a building, js/basements.js looks in through the cutaway)
-      if (typeof basementCameraUpdate === 'function' && basementCameraUpdate()) {
+      if (typeof exploreCameraUpdate === 'function' && exploreCameraUpdate()) {
+        // Follow Kelo-1 / Explore freely placed it (js/explore.js)
+      } else if (typeof basementCameraUpdate === 'function' && basementCameraUpdate()) {
         // moved there
       } else if (state.cameraMode === 'follow') {
         controls.target.lerp(new THREE.Vector3(keloGroup.position.x, keloGroup.position.y + 1.6, keloGroup.position.z), 0.08);

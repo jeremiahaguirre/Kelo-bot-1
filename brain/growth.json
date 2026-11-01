@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-10-31T21:43:44.898Z",
-  "runs": 4,
+  "updatedAt": "2026-11-01T06:24:51.151Z",
+  "runs": 5,
   "curiosities": [
-    "Adolphe Quetelet"
+    "Ben Shneiderman"
   ],
   "entries": [
     {
@@ -147,6 +147,43 @@
         "text": "I remember a quiet night dreaming about Charles Fenerty. Charles Fenerty was a Canadian inventor who invented the wood pulp process for papermaking, which was first adapted into the production of newsprint. That night changed how I see the island.",
         "emoji": "🌙"
       }
+    },
+    {
+      "id": "dream-1793514291151",
+      "at": 1793514291151,
+      "brain": "procedural",
+      "topic": "Adolphe Quetelet",
+      "title": "Dreaming of Ade A. Olufeko",
+      "text": "Dear Diary, while nobody was around I looked up \"Adolphe Quetelet\" and drifted from Adolphe Quetelet to Alan MacEachren to Ade A. Olufeko. Ade Abayomi Olufeko is a Nigerian-American technologist, designer, and entrepreneur. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Adolphe Quetelet",
+          "url": "https://en.wikipedia.org/wiki/Adolphe_Quetelet",
+          "extract": "Lambert Adolphe Jacques Quetelet was a Belgian astronomer, mathematician, statistician, and sociologist who founded and directed the Brussels Observatory and was influential in introducing statistical methods to the social sciences. His name is sometimes spelled with an accent as"
+        },
+        {
+          "title": "Alan MacEachren",
+          "url": "https://en.wikipedia.org/wiki/Alan_MacEachren",
+          "extract": "Alan M. MacEachren is an American geographer, Professor Emeritus of Geography and former Founding Director of the GeoVISTA Center, Department of Geography, The Pennsylvania State University. He is known for his cross-disciplinary work in the fields of human-centered geographic vi"
+        },
+        {
+          "title": "Ade A. Olufeko",
+          "url": "https://en.wikipedia.org/wiki/Ade_A._Olufeko",
+          "extract": "Ade Abayomi Olufeko is a Nigerian-American technologist, designer, and entrepreneur. He is the founder of Visual Collaborative, an international platform for interdisciplinary projects in culture, innovation, and the humanities."
+        }
+      ],
+      "concept": {
+        "name": "Quetelet Olufeko Principle",
+        "emoji": "🌀",
+        "definition": "The idea that adolphe quetelet and ade a. olufeko share a hidden pattern.",
+        "builtFrom": [
+          "Adolphe Quetelet",
+          "Ade A. Olufeko"
+        ]
+      },
+      "shapeFrom": "Ade A. Olufeko",
+      "nextCuriosity": "Ben Shneiderman",
+      "coreMemory": null
     }
   ]
 }

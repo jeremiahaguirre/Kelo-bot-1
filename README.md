@@ -4,7 +4,7 @@ Live GitHub Pages URL: **https://jeremiahaguirre.github.io/Kelo-bot-1/**
 
 An autonomous, open-world 3D AI robot simulation set on an island and alpine mountain range in **Kelowna, BC**, inspired by *Pino's World*. Kelo-1 decides what to do on his own: he explores the whole island and mountain, welds sculptures at his workshop, digs for hidden treasures, reads real Wikipedia articles at the NetNode cafe, picks up hobbies, and writes letters asking visitors for things he wants.
 
-Play it in the browser, or install the **Windows app** (below).
+Play it in the browser, install the **Windows app** (below), or build the **iPhone/iPad and Android apps** ([docs/MOBILE.md](docs/MOBILE.md)).
 
 ## 💻 Install on Windows
 
@@ -41,6 +41,17 @@ npm run dist:win
 ```
 `npm start` runs the app; `npm run dist:win` builds the installer and portable .exe into `dist/` (run it on Windows).
 
+## 📱 iPhone, iPad and Android apps
+The same game, wrapped as real phone apps with [Capacitor](https://capacitorjs.com/). They work offline (three.js, icons, fonts and styles are built in), keep his memory in the app's own storage, keep AI keys in the iOS Keychain / Android Keystore, respect the notch, and close menus with Android's back button.
+
+```bash
+npm install
+npm run cap:sync        # builds www/ (the offline copy of the game) and copies it into android/ and ios/
+npm run android:open    # opens Android Studio
+npm run ios:open        # opens Xcode (Mac only)
+```
+GitHub Actions builds them too (**Actions → Build phone apps**). Everything about running them on a phone, signing and publishing to the App Store and Google Play is in **[docs/MOBILE.md](docs/MOBILE.md)**. Privacy policy: [privacy.html](privacy.html).
+
 ## 🧠 Kelo-1's Brain
 Kelo-1 decides what to do on his own. He isn't limited to a list of actions: each decision can send him anywhere on the island or mountain, weld a sculpture of any shape (always at his welding table first), dig or mine, take up hobbies, form opinions and concepts, ask you questions, request anything he wants, start code projects, research topics and update his worldview.
 
@@ -55,7 +66,7 @@ On the website, keys are saved only in your own browser and sent only to Google 
 > ⚠️ Never commit an API key to this repository. The site is public, so anyone could copy a key from the code.
 
 ## 🌙 He keeps growing while you're away
-A scheduled GitHub Action (`.github/workflows/dream.yml`) runs every 6 hours: Kelo-1 reads about his curiosities on Wikipedia, reflects, invents concepts and forms core memories, saving them to `brain/growth.json`. The website and the Windows app merge these "dreams" the next time they open.
+A scheduled GitHub Action (`.github/workflows/dream.yml`) runs every 6 hours: Kelo-1 reads about his curiosities on Wikipedia, reflects, invents concepts and forms core memories, saving them to `brain/growth.json`. The website, the Windows app and the phone apps merge these "dreams" the next time they open.
 To give his dreams an AI brain, add `GEMINI_API_KEY` and/or `ANTHROPIC_API_KEY` under **Settings → Secrets and variables → Actions** in the repository.
 
 ## 📮 Talking to him
@@ -70,8 +81,11 @@ Open the **☰ menu** (top right):
 Kelo-bot-1/
 ├── index.html           # The app (also the GitHub Pages entry point)
 ├── shop.html            # Kelo-1's shop website (reads his save, or shop-data.json once you export and commit it)
+├── privacy.html         # Privacy policy (for the app stores, too)
 ├── css/style.css
+├── css/native.css       # Phone apps only: keeps the UI clear of the notch and home bar
 ├── js/                # Listed in the order index.html loads them
+│   ├── native.js        # Phone apps only (added by the www build before agent.js): device storage, secure keys, back button
 │   ├── agent.js         # State, decision engine, AI providers, requests (loaded first)
 │   ├── memory.js        # Long-term memory, core memories, backups
 │   ├── worldclock.js    # His calendar: 12-hour days, 365-day years, seasons
@@ -114,8 +128,14 @@ Kelo-bot-1/
 ├── brain/growth.json    # His dreams, written by the scheduled Action
 ├── scripts/dream.mjs    # The dreaming script
 ├── desktop/             # Windows app (Electron): main process + preload bridge
-├── package.json         # Desktop app build configuration
-└── .github/workflows/   # dream.yml (dreams) and desktop.yml (Windows build)
+├── android/, ios/       # Phone app projects (Capacitor); open them in Android Studio / Xcode
+├── capacitor.config.json # Phone app settings (app id, splash screen, status bar)
+├── scripts/build-web.mjs # Builds www/, the offline copy of the game inside the phone apps (not committed)
+├── scripts/make-icons.mjs # Makes the app icon and splash from resources/icon.svg
+├── resources/           # App icon and splash screen sources
+├── docs/MOBILE.md       # Phone apps: running, signing, publishing
+├── package.json         # Desktop and phone app build configuration
+└── .github/workflows/   # dream.yml (dreams), desktop.yml (Windows build), mobile.yml (Android and iOS builds)
 ```
 
 ## 🚀 Going Live on GitHub Pages

@@ -129,7 +129,7 @@ Kelo-bot-1/
 │   ├── main.js          # UI wiring
 │   ├── portal.js        # Send-him-something panel
 │   ├── shop.js          # The shop website itself (shop.html)
-│   └── vendor/          # three.js r128 add-ons (glTF loader, Sky, RGBELoader, bloom post-processing), kept in the repo
+│   └── vendor/          # The other three.js r128 add-ons (Sky, RGBELoader, bloom post-processing), kept in the repo
 ├── assets/
 │   ├── models/          # Real-world 3D models (.glb) of everyday things
 │   ├── hdri/            # HDR sky photos that light the world by day, at sunset and at night

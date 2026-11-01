@@ -106,6 +106,10 @@ function matchRendererEncoding(material) {
       if (want === THREE.LinearEncoding) {
         if (material.color) material.color.convertLinearToSRGB();
         if (material.emissive) material.emissive.convertLinearToSRGB();
+      } else if (typeof realisticEnvironmentOn !== 'undefined' && realisticEnvironmentOn) {
+        // js/realism.js reads every colour as sRGB; glTF colours are already linear, so they opt out
+        material.defines = Object.assign({}, material.defines, { KELO_LINEAR_COLORS: '' });
+        material.needsUpdate = true;
       }
       ['map', 'emissiveMap'].forEach(k => {
         const tex = material[k];

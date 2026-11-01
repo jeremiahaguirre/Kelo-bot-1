@@ -52,7 +52,6 @@
       "js/**",
       "assets/**",
       "brain/**",
-      "assets/**",
       "desktop/**",
       "package.json",
       "!**/*.map"

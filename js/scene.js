@@ -1676,14 +1676,18 @@ function animateDiorama() {
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
           forgeArcLight.intensity = 0;
         } else if (state.currentLocKey === 'shoreline' && Math.hypot(state.botPos.x - 4.2, state.botPos.z - 10.2) < 2.2) {
-          // Sitting right on the flat shoreline stones above the water surface, feet swinging
-          const seatDrop = keloSitPose(0.55, 1.25);
-          keloGroup.position.set(state.botPos.x, Math.max(groundY, 0.05) - seatDrop, state.botPos.z);
+          // Sitting on the flat shoreline stones, knees up, leaning back on his hands, feet tapping
+          keloGroup.position.set(state.botPos.x, Math.max(groundY, 0.05) - (KELO_LEG_Y - 0.2), state.botPos.z);
           keloGroup.rotation.set(0, 0, 0);
-          keloLeftKnee.rotation.x += Math.sin(t * 2.4) * 0.3;
-          keloRightKnee.rotation.x -= Math.sin(t * 2.4) * 0.3;
-          keloLeftArm.rotation.set(0.2, 0, -0.18);
-          keloRightArm.rotation.set(0.2, 0, 0.18);
+          keloLeftLeg.rotation.set(-2.0, 0, -0.1);
+          keloRightLeg.rotation.set(-2.0, 0, 0.1);
+          keloLeftKnee.rotation.x = 1.45 + Math.max(0, Math.sin(t * 2.4)) * 0.25;
+          keloRightKnee.rotation.x = 1.45 + Math.max(0, -Math.sin(t * 2.4)) * 0.25;
+          keloBody.rotation.x = -0.2;
+          keloLeftArm.rotation.set(0.55, 0, -0.25);
+          keloRightArm.rotation.set(0.55, 0, 0.25);
+          keloLeftElbow.rotation.x = keloRightElbow.rotation.x = 0.1;
+          keloLeftHand.userData.grip = keloRightHand.userData.grip = 0.1;
           keloHead.rotation.z = Math.sin(t * 1.1) * 0.22;
           keloHead.rotation.x = -0.1 + Math.sin(t * 0.8) * 0.1;
           weldingSparks.visible = false;

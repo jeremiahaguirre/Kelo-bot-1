@@ -105,6 +105,7 @@ Kelo-bot-1/
 │   ├── hobbies.js       # Hobbies sparked by items (murals, kites, music...)
 │   ├── mining.js        # Digging, equipment needs, hidden finds
 │   ├── growth.js        # Merges what he dreamt while you were away
+│   ├── kelo-body.js     # Kelo-1's humanoid robot body and rig: head, visor, jointed arms, hands with fingers, legs and feet
 │   ├── scene.js         # Three.js world, pathfinding, terrain
 │   ├── house.js         # Kelo-1's cottage: walls, windows, porch, roof, furniture, night lights
 │   ├── animations.js    # Kelo-1's body animation: smooth pose blending, walk cycle, idle life, emotes

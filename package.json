@@ -23,6 +23,7 @@
       "index.html",
       "css/**",
       "js/**",
+      "assets/**",
       "brain/**",
       "desktop/**",
       "package.json"

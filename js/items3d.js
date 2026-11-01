@@ -563,6 +563,12 @@ function aiDesignedItemModel(lower) {
 // truck), then one the AI designed for things nobody has a model for, then a guess from the name's
 // words and shapes he knows. A plain box only if all of that comes up empty.
 function singleItemModel(lower) {
+      const drawn = drawnItemModel(lower);
+      // A real 3D model of the thing takes the drawn one's place once it has loaded (js/realmodels.js)
+      return typeof withRealModel === 'function' ? withRealModel(lower, drawn) : drawn;
+    }
+
+function drawnItemModel(lower) {
       const rule = ITEM_MODEL_RULES.find(([re]) => re.test(lower));
       if (rule) return rule[1](lower);
       const designed = aiDesignedItemModel(lower);
@@ -585,6 +591,7 @@ function singleItemModel(lower) {
 // Does this name already have a real model (rule, AI design, lookup, or a guess from its words)?
 function hasRealItemModel(lower) {
       return ITEM_MODEL_RULES.some(([re]) => re.test(lower)) || Boolean(state.itemDesigns && state.itemDesigns[lower])
+        || Boolean(typeof realModelEntry === 'function' && realModelEntry(lower))
         || Boolean(state.itemLookups && state.itemLookups[lower] && state.itemLookups[lower].like)
         || Boolean(inferredItemModel(lower)) || Boolean(typeof formForText === 'function' && formForText(lower));
     }

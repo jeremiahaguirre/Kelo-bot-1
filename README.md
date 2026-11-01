@@ -72,6 +72,7 @@ Kelo-bot-1/
 ├── shop.html            # Kelo-1's shop website (reads his save, or shop-data.json once you export and commit it)
 ├── css/style.css
 ├── js/                # Listed in the order index.html loads them
+│   ├── vendor/GLTFLoader.js # three.js r128's glTF loader (loaded right after three.js)
 │   ├── agent.js         # State, decision engine, AI providers, requests (loaded first)
 │   ├── memory.js        # Long-term memory, core memories, backups
 │   ├── worldclock.js    # His calendar: 12-hour days, 365-day years, seasons
@@ -91,6 +92,7 @@ Kelo-bot-1/
 │   ├── gearmodels.js    # Detailed vehicles and tools, sized against Kelo-1
 │   ├── everydaymodels.js # Food, toys, instruments and books at real size
 │   ├── materials.js     # What things are made of, how they look, bend, snap or shatter; food flavours and his tastes
+│   ├── realmodels.js    # Real 3D models (glTF files in assets/models/) that replace the drawn ones once loaded
 │   ├── storehouse.js    # The Storehouse shelves where everything he owns is kept
 │   ├── museum.js        # His Museum of Art & Ideas: sculptures on plinths, paintings in frames
 │   ├── basements.js     # Walking into the Storehouse and Museum: shelves, spiral stairs, lit basements seen through a cutaway
@@ -111,6 +113,9 @@ Kelo-bot-1/
 │   ├── main.js          # UI wiring
 │   ├── portal.js        # Send-him-something panel
 │   └── shop.js          # The shop website itself (shop.html)
+├── assets/
+│   ├── models/          # Real-world 3D models (.glb) of everyday things
+│   └── LICENSES.md      # Where each model came from, its author and licence
 ├── brain/growth.json    # His dreams, written by the scheduled Action
 ├── scripts/dream.mjs    # The dreaming script
 ├── desktop/             # Windows app (Electron): main process + preload bridge

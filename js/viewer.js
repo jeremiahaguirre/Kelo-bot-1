@@ -9,6 +9,7 @@ const SHELF_PAGE = 12;
 const thumbCache = new Map();
 let thumbRenderer = null, thumbScene = null, thumbCamera = null;
 let viewerState = null;
+let thumbRedrawTimer = null;
 
 // Render a 3D model to a small picture (one shared offscreen renderer)
 function modelThumbnail(key, buildModel) {
@@ -16,6 +17,7 @@ function modelThumbnail(key, buildModel) {
       if (!thumbRenderer) {
         thumbRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
         thumbRenderer.setSize(192, 192);
+        if (typeof renderer !== 'undefined' && renderer) thumbRenderer.outputEncoding = renderer.outputEncoding;
         thumbScene = new THREE.Scene();
         thumbScene.add(new THREE.HemisphereLight(0xffffff, 0x8a6a4a, 1.0));
         const sun = new THREE.DirectionalLight(0xffffff, 0.9);
@@ -23,9 +25,11 @@ function modelThumbnail(key, buildModel) {
         thumbScene.add(sun);
         thumbCamera = new THREE.PerspectiveCamera(32, 1, 0.01, 100);
       }
-      let url = '';
+      let url = '', waiting = null;
       try {
         const model = buildModel();
+        // A real model still loading: draw what's there now, then redraw once it arrives
+        waiting = typeof realModelsPending === 'function' ? realModelsPending(model) : null;
         const box = new THREE.Box3().setFromObject(model);
         const size = new THREE.Vector3(), center = new THREE.Vector3();
         box.getSize(size);
@@ -38,9 +42,17 @@ function modelThumbnail(key, buildModel) {
         thumbRenderer.render(thumbScene, thumbCamera);
         url = thumbRenderer.domElement.toDataURL('image/png');
         thumbScene.remove(model);
-        model.traverse(o => { if (o.geometry) o.geometry.dispose(); });
+        model.traverse(o => { if (o.geometry && !o.userData.sharedGeometry) o.geometry.dispose(); });
       } catch (e) {}
       thumbCache.set(key, url);
+      if (waiting) {
+        // Keep the drawn model's picture until the real one arrives, then redraw the shelves once
+        waiting.then(() => {
+          thumbCache.delete(key);
+          clearTimeout(thumbRedrawTimer);
+          thumbRedrawTimer = setTimeout(() => { if (viewerState && viewerState.kind === 'shelves') renderViewer(); }, 250);
+        });
+      }
       return url;
     }
 

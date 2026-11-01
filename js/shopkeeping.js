@@ -168,7 +168,11 @@ async function shopPicture(c) {
         let src = '';
         if (c.kind === 'sculpture') src = modelThumbnail('shop-art:' + Date.now(), () => buildCreationGroup(c.creation));
         else if (c.kind === 'build') src = modelThumbnail('shop-build:' + c.project.key, () => planFor(c.project.key).build());
-        else src = modelThumbnail('item:' + c.name, () => buildItemModel3D(c.name, { label: false }));
+        else {
+          // The listing photo is taken once, so wait for the item's real 3D model first (js/realmodels.js)
+          if (typeof preloadRealModel === 'function') await preloadRealModel(c.name);
+          src = modelThumbnail('item:' + c.name, () => buildItemModel3D(c.name, { label: false }));
+        }
         const img = await loadImage(src);
         if (!img) return emojiPicture(c.kind === 'build' ? '🪵' : '🎁');
         ctx.drawImage(img, 0, 0, S, S);

@@ -231,7 +231,7 @@ function applyMaterialLook(model, itemName) {
       const explicit = namedMaterials(itemName);
       const nameSaysMetal = MATERIAL_WORDS.some(([re, key]) => MATERIALS[key].family === 'metal' && re.test(String(itemName || '').toLowerCase()));
       model.traverse(o => {
-        if (!o.isMesh || !o.material || !o.material.isMeshStandardMaterial || o.material.map || (o.userData && o.userData.isLabel)) return;
+        if (!o.isMesh || !o.material || !o.material.isMeshStandardMaterial || o.material.map || (o.userData && (o.userData.isLabel || o.userData.realModel))) return;
         const mat = o.material;
         const key = guessPartMaterial(mat, named, explicit);
         if (!key) return;

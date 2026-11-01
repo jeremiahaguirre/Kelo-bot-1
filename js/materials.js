@@ -168,6 +168,8 @@ function materialTexture(kind) {
 
 // A soft sky-and-ground reflection, so polished metal and glass have something to mirror
 function materialReflections() {
+      // With the real sky and HDR lighting (js/realism.js) shiny things reflect the scene's own environment
+      if (typeof realisticEnvironmentOn !== 'undefined' && realisticEnvironmentOn) return null;
       if (MATERIAL_TEXTURES.sky) return MATERIAL_TEXTURES.sky;
       const canvas = document.createElement('canvas');
       canvas.width = 128;
@@ -607,7 +609,7 @@ const FINISHES = {
   plaster:   { roughness: 0.92, metalness: 0, texture: 'plaster', bump: 0.02 },   // stucco
   shingles:  { roughness: 0.88, metalness: 0, texture: 'shingles', bump: 0.04 },  // asphalt roof shingles
   metalroof: { roughness: 0.42, metalness: 0.65, texture: 'metalroof', bump: 0.02, reflect: 0.8 }, // standing-seam steel
-  cladding:  { roughness: 0.5, metalness: 0.45, texture: 'panel', bump: 0.015, reflect: 0.6 },   // modern metal panels
+  cladding:  { roughness: 0.55, metalness: 0.2, texture: 'panel', bump: 0.015, reflect: 0.6 },   // modern metal panels
   windowglass: { roughness: 0.04, metalness: 0.1, reflect: 1.2 }
 };
 

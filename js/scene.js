@@ -961,7 +961,7 @@ function buildNetNode3D() {
       const gy = getAnalyticalGroundHeight(cx, cz);
       const net = new THREE.Group();
       net.position.set(cx, gy, cz);
-      const body = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.5, 3.0), new THREE.MeshStandardMaterial({ color: 0x4a505c, metalness: 0.4, roughness: 0.4 }));
+      const body = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.5, 3.0), new THREE.MeshStandardMaterial({ color: 0x6b717c, metalness: 0.4, roughness: 0.4 }));
       body.position.y = 1.25;
       body.castShadow = true;
       body.receiveShadow = true;

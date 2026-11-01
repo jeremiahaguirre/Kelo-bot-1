@@ -328,7 +328,9 @@ function updateEnvironment() {
         u.duskMap.value = envPhotoTextures.dusk;
         u.nightMap.value = envPhotoTextures.night;
         u.weights.value.set(s.day * (1 - s.dusk), s.dusk, s.night);
-        u.gains.value.set(0.9, 1.1, 3.5);
+        // Measured: the photos' skies average about 1.16 (day), 0.82 (sunset) and 0.28 (night). These
+        // gains make the sky light about a fifth of direct sun by day, and starlight dim at night.
+        u.gains.value.set(0.55, 0.5, 0.12);
         const old = envTarget;
         envTarget = pmremGenerator.fromScene(envScene, 0, 0.1, 200);
         if (old) old.dispose();
@@ -354,9 +356,9 @@ function applySkyForHour(hour, dayOfYear) {
       // Sky shader: clearer air at noon, more haze and colour when the sun is low
       const u = skyMesh.material.uniforms;
       u.sunPosition.value.copy(s.sunDir);
-      u.turbidity.value = 2.6 + 3.5 * s.dusk;
-      u.rayleigh.value = 1.2 + 1.6 * s.dusk;
-      u.mieCoefficient.value = 0.004 + 0.004 * s.dusk;
+      u.turbidity.value = 2.2 + 3.5 * s.dusk;
+      u.rayleigh.value = 2.2 + 1.0 * s.dusk;
+      u.mieCoefficient.value = 0.003 + 0.004 * s.dusk;
       u.mieDirectionalG.value = 0.82;
       u.skyGain.value = 1.0;
       u.skyTint.value.setRGB(0.004, 0.007, 0.018).multiplyScalar(s.night);
@@ -370,18 +372,18 @@ function applySkyForHour(hour, dayOfYear) {
         // Low sun shines through more air: warmer and weaker
         const high = sm(0.0, 0.5, s.sinElev);
         sunLight.color.setRGB(1.0, 0.62 + 0.34 * high, 0.36 + 0.55 * high);
-        sunLight.intensity = 3.2 * sunUp * (0.35 + 0.65 * high);
+        sunLight.intensity = 4.6 * sunUp * (0.3 + 0.7 * high);
       } else {
         s.lightDir.copy(MOON_DIR);
         sunLight.color.setRGB(0.55, 0.65, 0.95);
-        sunLight.intensity = 0.32 * s.night;
+        sunLight.intensity = 0.28 * s.night;
       }
       // Sky light from above and bounce from the grass below (the HDR environment does most of this)
       hemiLight.color.setRGB(0.55, 0.68, 0.9);
       hemiLight.groundColor.setRGB(0.22, 0.2, 0.14);
-      hemiLight.intensity = 0.05 + 0.25 * s.day + 0.03 * s.night;
+      hemiLight.intensity = 0.02 + 0.12 * s.day + 0.02 * s.night;
       // Exposure: the eye adapts a little to the dark
-      renderer.toneMappingExposure = 0.6 + 0.25 * s.night + 0.1 * s.dusk;
+      renderer.toneMappingExposure = 0.6 + 0.5 * s.night + 0.1 * s.dusk;
 
       // Haze: denser in the evening and at night
       scene.fog.density = 0.0042 + 0.0022 * s.dusk + 0.002 * s.night;
@@ -441,6 +443,7 @@ function skyColourToward(dx, dy, dz, out) {
 // --- 6. Soft clouds ---------------------------------------------------------------------------------
 // Each cloud is a cluster of soft, noisy puffs (sprites) with lit tops and shaded bottoms
 let cloudTopMat = null, cloudBaseMat = null;
+const CLOUD_WHITE = new THREE.Color(1, 1, 1), CLOUD_SHADE = new THREE.Color(0.62, 0.68, 0.78);
 
 function cloudPuffTexture() {
       const size = 128, c = document.createElement('canvas');
@@ -498,7 +501,9 @@ function updateCloudLight() {
       const sun = sunLight.color;
       const lit = 0.35 + 0.75 * s.day;
       cloudTopMat.color.setRGB(Math.min(1, sun.r * lit + 0.08), Math.min(1, sun.g * lit + 0.1), Math.min(1, sun.b * lit + 0.14));
-      cloudBaseMat.color.copy(cloudTopMat.color).multiplyScalar(0.72).lerp(new THREE.Color(0.55, 0.6, 0.7), 0.25 * s.day);
+      cloudTopMat.color.lerp(CLOUD_WHITE, 0.35 * s.day * (1 - s.dusk));
+      // Undersides take the blue-grey of the sky around them
+      cloudBaseMat.color.copy(cloudTopMat.color).multiplyScalar(0.78).lerp(CLOUD_SHADE, 0.45 * s.day);
       if (s.night > 0.5) { cloudTopMat.color.setRGB(0.16, 0.18, 0.24); cloudBaseMat.color.setRGB(0.1, 0.11, 0.15); }
       cloudTopMat.opacity = 0.95 - 0.35 * s.night;
       cloudBaseMat.opacity = 0.9 - 0.35 * s.night;

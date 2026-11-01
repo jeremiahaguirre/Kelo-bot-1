@@ -10,7 +10,7 @@ const ITEM_FIT = 0.62; // the most an item can measure and still fit on a shelf
 // The stairwell down to the basements, in the middle of the floor (local to the Storehouse).
 // The spiral stairs themselves and the rooms below are built in js/basements.js while he uses them.
 const STOREHOUSE_HATCH_LOCAL = { x: 0, z: 0.55 };
-const STAIRWELL_R = 0.8;          // the round hole in each floor the spiral stairs go down through
+const STAIRWELL_R = 0.8;          // the round shaft in each floor the glass elevator rides through
 const BASEMENT_LEVEL_DEPTH = 3.4; // floor to floor, tall enough for him to stand up in
 
 let storehouseGroup = null;

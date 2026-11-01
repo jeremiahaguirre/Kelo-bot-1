@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-01T06:24:51.151Z",
-  "runs": 5,
+  "updatedAt": "2026-11-01T17:58:38.927Z",
+  "runs": 6,
   "curiosities": [
-    "Ben Shneiderman"
+    "Bruce H. McCormick"
   ],
   "entries": [
     {
@@ -183,6 +183,43 @@
       },
       "shapeFrom": "Ade A. Olufeko",
       "nextCuriosity": "Ben Shneiderman",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1793555918927",
+      "at": 1793555918927,
+      "brain": "procedural",
+      "topic": "Ben Shneiderman",
+      "title": "Dreaming of Biological data visualization",
+      "text": "Dear Diary, while nobody was around I looked up \"Ben Shneiderman\" and drifted from Ben Shneiderman to Borden Dent to Biological data visualization. Biological data visualization is a branch of bioinformatics concerned with the application of computer graphics, scientific visualization, and information visualization to different areas of the life sciences. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Ben Shneiderman",
+          "url": "https://en.wikipedia.org/wiki/Ben_Shneiderman",
+          "extract": "Ben Shneiderman is an American computer scientist, a Distinguished University Professor in the University of Maryland Department of Computer Science, which is part of the University of Maryland College of Computer, Mathematical, and Natural Sciences at the University of Maryland,"
+        },
+        {
+          "title": "Borden Dent",
+          "url": "https://en.wikipedia.org/wiki/Borden_Dent",
+          "extract": "Borden D. Dent (1938–2000) was an American geographer and cartographer who served as professor emeritus and chairman of the Department of Geography and Anthropology at Georgia State University. His textbook, Cartography: Thematic Map Design, has been one of the seminal texts in t"
+        },
+        {
+          "title": "Biological data visualization",
+          "url": "https://en.wikipedia.org/wiki/Biological_data_visualization",
+          "extract": "Biological data visualization is a branch of bioinformatics concerned with the application of computer graphics, scientific visualization, and information visualization to different areas of the life sciences. This includes visualization of sequences, genomes, alignments, phyloge"
+        }
+      ],
+      "concept": {
+        "name": "Shneiderman Visualization Theory",
+        "emoji": "🌙",
+        "definition": "The idea that ben shneiderman and biological data visualization share a hidden pattern.",
+        "builtFrom": [
+          "Ben Shneiderman",
+          "Biological data visualization"
+        ]
+      },
+      "shapeFrom": "Biological data visualization",
+      "nextCuriosity": "Bruce H. McCormick",
       "coreMemory": null
     }
   ]

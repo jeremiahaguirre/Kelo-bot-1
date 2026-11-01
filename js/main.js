@@ -657,9 +657,12 @@ window.addEventListener('DOMContentLoaded', () => {
   // The gear icon opens the same settings as the AI Brain button
   document.getElementById('btnOpenSettings')?.addEventListener('click', () => document.getElementById('btnOpenAIConfig')?.click());
 
-  // Desktop app: load keys from the encrypted store and respond to the native menu
-  if (window.keloDesktop && window.keloDesktop.isDesktop) {
-    window.keloDesktop.getKeys().then(keys => {
+  // Desktop and phone apps keep the keys in the system's secure store (Windows encryption, the iOS
+  // Keychain or the Android Keystore) instead of browser storage
+  const secureKeys = window.keloDesktop && window.keloDesktop.isDesktop ? window.keloDesktop
+    : window.keloNative && window.keloNative.isNative ? window.keloNative : null;
+  if (secureKeys) {
+    secureKeys.getKeys().then(keys => {
       apiKey = keys.gemini || '';
       claudeApiKey = keys.anthropic || '';
       try {
@@ -667,7 +670,10 @@ window.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('kelo1_anthropic_api_key');
       } catch (e) {}
       updateBrainButtonText();
-    });
+    }).catch(() => {});
+  }
+  // Desktop app: respond to the native menu
+  if (window.keloDesktop && window.keloDesktop.isDesktop) {
     window.keloDesktop.onOpenSettings(() => document.getElementById('btnOpenAIConfig')?.click());
     window.keloDesktop.onToggleMenu(() => document.getElementById('btnToggleMenu')?.click());
   }
@@ -733,13 +739,12 @@ window.addEventListener('DOMContentLoaded', () => {
       else localStorage.removeItem(name);
     } catch (e) {}
   };
-  const desktop = window.keloDesktop && window.keloDesktop.isDesktop ? window.keloDesktop : null;
   document.getElementById('btnSaveAIConfig')?.addEventListener('click', () => {
     apiKey = document.getElementById('geminiApiKeyInput').value.trim();
     claudeApiKey = document.getElementById('anthropicApiKeyInput').value.trim();
-    if (desktop) {
-      // Desktop app: keys are encrypted by Windows, never kept in browser storage
-      desktop.setKeys({ gemini: apiKey, anthropic: claudeApiKey });
+    if (secureKeys) {
+      // Desktop and phone apps: keys go to the system's secure store, never to browser storage
+      secureKeys.setKeys({ gemini: apiKey, anthropic: claudeApiKey });
       storeKey('kelo1_gemini_api_key', '');
       storeKey('kelo1_anthropic_api_key', '');
     } else {
@@ -757,7 +762,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const which = btn.getAttribute('data-remove-key');
     if (which === 'gemini') { apiKey = ''; document.getElementById('geminiApiKeyInput').value = ''; storeKey('kelo1_gemini_api_key', ''); }
     else { claudeApiKey = ''; document.getElementById('anthropicApiKeyInput').value = ''; storeKey('kelo1_anthropic_api_key', ''); }
-    if (desktop) desktop.setKeys({ gemini: apiKey, anthropic: claudeApiKey });
+    if (secureKeys) secureKeys.setKeys({ gemini: apiKey, anthropic: claudeApiKey });
     updateBrainButtonText();
     updateKeyStatus();
     showToast(`🗑️ ${which === 'gemini' ? 'Gemini' : 'Claude'} key removed. ${hasLLMKey() ? '' : 'He keeps everything he learned with the AI.'}`);
@@ -779,8 +784,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const recheckKeys = async () => {
     const hadKey = hasLLMKey();
     try {
-      if (desktop) {
-        const keys = await desktop.getKeys();
+      if (secureKeys) {
+        const keys = await secureKeys.getKeys();
         apiKey = keys.gemini || '';
         claudeApiKey = keys.anthropic || '';
       } else {

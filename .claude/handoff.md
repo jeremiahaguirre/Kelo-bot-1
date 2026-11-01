@@ -75,6 +75,7 @@ He may change the world freely. He can never move or change the buildings, and h
   - `VEHICLE_TYPES` covers truck, excavator, boat, bike, snowmobile and air.
   - Vehicles park in `YARD_SLOTS` or `DOCK_SLOTS` and are excluded from the storehouse shelves.
   - The Disposal Pit (which replaced the spoil heap) is at (20, -9).
+- **Phone apps (Capacitor 8).** `npm run cap:sync` builds `www/` (git-ignored) with `scripts/build-web.mjs`: local three/Phosphor/fonts, compiled Tailwind, an app-only CSP, and `js/native.js` + `css/native.css` injected before agent.js. `native.js` exposes `window.keloNative` (memory files loaded into a cache before any DOMContentLoaded handler runs, write-through saves; Keychain/Keystore keys with the same getKeys/setKeys shape as `keloDesktop`). Native projects in `android/` and `ios/`; CI in `mobile.yml`; owner guide in `docs/MOBILE.md`. If you add a CDN script to index.html, add its local copy to build-web.mjs (the build fails loudly otherwise).
 - **Cloud dreams.** `.github/workflows/dream.yml` runs every 6h and writes `brain/growth.json`. `desktop.yml` builds the Windows app.
 - **Commits.**
   - Author every commit as `jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>`.

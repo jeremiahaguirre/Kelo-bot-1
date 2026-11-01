@@ -196,7 +196,9 @@ function renderMemoryUI() {
       const usageEl = document.getElementById('memoryUsageText');
       const usage = keloStore.usage();
       if (usageEl) {
-        usageEl.textContent = usage
+        usageEl.textContent = keloStore.isNative
+          ? `Memory on this device: ${(usage.used / 1048576).toFixed(1)} MB, kept in the app's own storage.`
+          : usage
           ? `Memory on this computer: ${(usage.used / 1048576).toFixed(1)} MB of ${(usage.quota / 1073741824).toFixed(0)} GB`
           : 'Memory is kept in this browser (about 5 MB). The Windows app can keep up to 10 GB.';
       }

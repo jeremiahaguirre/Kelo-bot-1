@@ -342,12 +342,16 @@ const state = {
   "printer": { "setUp": false, "skill": 0, "prints": 0, "fails": 0, "spools": [], "loadedSpoolId": null, "lessons": {}, "history": [], "designs": {}, "welcomeSent": false }
 };
 
-// Where Kelo-1's memory lives: browser storage on the website (about 5 MB), or files on disk in the
-// Windows app (up to 10 GB, see desktop/main.js). Same interface either way.
+// Where Kelo-1's memory lives: browser storage on the website (about 5 MB), files on disk in the
+// Windows app (up to 10 GB, see desktop/main.js), or files in the phone app's private storage
+// (js/native.js, loaded before this file). Same interface either way.
 const keloStore = (() => {
-  const disk = window.keloDesktop && window.keloDesktop.memory;
+  const desktopDisk = window.keloDesktop && window.keloDesktop.memory;
+  const phoneDisk = window.keloNative && window.keloNative.memory;
+  const disk = desktopDisk || phoneDisk;
   return {
-    isDesktop: Boolean(disk),
+    isDesktop: Boolean(desktopDisk),
+    isNative: Boolean(phoneDisk),
     getItem: (k) => (disk ? disk.getItem(k) : localStorage.getItem(k)),
     setItem: (k, v) => (disk ? disk.setItem(k, v) : localStorage.setItem(k, v)),
     removeItem: (k) => (disk ? disk.removeItem(k) : localStorage.removeItem(k)),

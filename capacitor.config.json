@@ -1,0 +1,33 @@
+{
+  "appId": "io.github.jeremiahaguirre.kelo1world",
+  "appName": "Kelo-1 World",
+  "webDir": "www",
+  "backgroundColor": "#020617",
+  "loggingBehavior": "debug",
+  "android": {
+    "backgroundColor": "#020617",
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "ios": {
+    "backgroundColor": "#020617",
+    "contentInset": "never",
+    "scrollEnabled": false,
+    "limitsNavigationsToAppBoundDomains": false
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DARK",
+      "initialViewportFitValueHint": "cover"
+    },
+    "SplashScreen": {
+      "launchAutoHide": false,
+      "backgroundColor": "#020617",
+      "showSpinner": false,
+      "androidScaleType": "CENTER_CROP",
+      "splashFullScreen": false,
+      "splashImmersive": false
+    }
+  }
+}

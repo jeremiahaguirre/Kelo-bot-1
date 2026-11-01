@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Kelo-1 World app icon: Kelo-1's head in front of an Okanagan sunset. Rendered to PNG by
+       scripts/make-icons.mjs; keep the important parts inside the middle 70% (Android crops to a circle). -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1026"/>
+      <stop offset="0.45" stop-color="#3b1d5a"/>
+      <stop offset="0.72" stop-color="#f97316"/>
+      <stop offset="0.86" stop-color="#fbbf24"/>
+    </linearGradient>
+    <linearGradient id="lake" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e7490"/>
+      <stop offset="1" stop-color="#082f49"/>
+    </linearGradient>
+    <linearGradient id="head" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset="0.35" stop-color="#fbbf24"/>
+      <stop offset="1" stop-color="#d97706"/>
+    </linearGradient>
+    <radialGradient id="eye" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#e0f2fe"/>
+      <stop offset="0.45" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff7ed"/>
+      <stop offset="0.5" stop-color="#fde68a" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#fbbf24" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bulb" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff1f2"/>
+      <stop offset="0.5" stop-color="#fb7185"/>
+      <stop offset="1" stop-color="#fb7185" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#sky)"/>
+  <!-- a few stars -->
+  <g fill="#fef3c7" opacity="0.8">
+    <circle cx="150" cy="140" r="5"/><circle cx="300" cy="90" r="3.5"/><circle cx="820" cy="120" r="5"/>
+    <circle cx="905" cy="250" r="3.5"/><circle cx="95" cy="300" r="3"/><circle cx="700" cy="70" r="3"/>
+  </g>
+  <circle cx="512" cy="700" r="230" fill="url(#sun)"/>
+  <!-- the valley: far hills, near hills, the lake -->
+  <path d="M0 690 L140 560 L250 640 L380 520 L520 650 L650 540 L800 640 L900 570 L1024 650 L1024 760 L0 760 Z" fill="#4c1d95" opacity="0.85"/>
+  <path d="M0 740 L170 640 L330 720 L470 660 L600 735 L760 650 L900 720 L1024 680 L1024 800 L0 800 Z" fill="#14532d"/>
+  <rect y="780" width="1024" height="244" fill="url(#lake)"/>
+  <g stroke="#fbbf24" stroke-linecap="round" opacity="0.55">
+    <line x1="400" y1="830" x2="624" y2="830" stroke-width="10"/>
+    <line x1="440" y1="875" x2="584" y2="875" stroke-width="8"/>
+    <line x1="470" y1="915" x2="554" y2="915" stroke-width="6"/>
+  </g>
+
+  <!-- Kelo-1's head -->
+  <g id="kelo-head">
+    <rect x="497" y="168" width="30" height="120" rx="12" fill="#94a3b8"/>
+    <circle cx="512" cy="160" r="70" fill="url(#bulb)"/>
+    <circle cx="512" cy="160" r="30" fill="#fb7185"/>
+    <circle cx="502" cy="150" r="10" fill="#fff1f2" opacity="0.9"/>
+    <rect x="232" y="290" width="560" height="440" rx="96" fill="#000" opacity="0.28" transform="translate(0 22)"/>
+    <rect x="232" y="290" width="560" height="440" rx="96" fill="url(#head)"/>
+    <rect x="244" y="300" width="536" height="60" rx="30" fill="#fff" opacity="0.18"/>
+    <rect x="292" y="390" width="440" height="250" rx="70" fill="#0f172a"/>
+    <rect x="292" y="390" width="440" height="250" rx="70" fill="none" stroke="#78350f" stroke-width="10" opacity="0.5"/>
+    <circle cx="410" cy="510" r="88" fill="url(#eye)"/>
+    <circle cx="614" cy="510" r="88" fill="url(#eye)"/>
+    <circle cx="410" cy="510" r="44" fill="#38bdf8"/>
+    <circle cx="614" cy="510" r="44" fill="#38bdf8"/>
+    <circle cx="396" cy="494" r="14" fill="#f0f9ff"/>
+    <circle cx="600" cy="494" r="14" fill="#f0f9ff"/>
+    <path d="M452 585 Q512 620 572 585" fill="none" stroke="#38bdf8" stroke-width="14" stroke-linecap="round" opacity="0.85"/>
+    <rect x="196" y="440" width="44" height="140" rx="20" fill="#b45309"/>
+    <rect x="784" y="440" width="44" height="140" rx="20" fill="#b45309"/>
+  </g>
+</svg>

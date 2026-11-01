@@ -64,6 +64,12 @@ Open the **☰ menu** (top right):
 - **Post**: send letters, tools, toys, anything you can name, and photos. Everything waits at the post office until he chooses to pick it up. His own requests arrive as letters; you can send what he asked for or say no.
 - **Diary**, **Brain**, **GitHub**, **World**: his thoughts, memories, concepts, hobbies, digs, finds and world controls.
 
+## 🧭 Looking around
+- **🎯 Follow Kelo-1** keeps him in view; **🧭 Explore** lets you fly anywhere. Drag the ground to slide the map, right-drag (or twist two fingers) to turn, scroll (or pinch) to zoom, WASD or the arrow keys to move, Q/E to turn, K to fly back to him.
+- Double-click a spot to fly there. A single click opens a small menu: **Fly here**, **Send Kelo-1 here**, **What's this?**
+- The **map** (bottom left) shows him, his vehicles, digs and builds; click it to fly there. **📍 Places** jumps to any building, dig or project. **?** shows all the controls.
+- The menu's **World → Try it** panel previews winter, night or a gale (only for this visit) and sends him sample gifts.
+
 ## 📁 Files
 
 ```text
@@ -110,6 +116,9 @@ Kelo-bot-1/
 │   ├── printer.js       # His 3D printer: setting it up, learning it, filament spools, prints that fail and succeed
 │   ├── main.js          # UI wiring
 │   ├── portal.js        # Send-him-something panel
+│   ├── explore.js       # Looking around: Follow Kelo-1 or Explore freely, Places, the click menu, help card, touch joystick
+│   ├── minimap.js       # The live minimap: terrain, buildings, his vehicles, digs and builds, Kelo-1 and the camera's view
+│   ├── tryit.js         # The World tab's Try it panel: preview seasons, night and wind, send sample gifts
 │   └── shop.js          # The shop website itself (shop.html)
 ├── brain/growth.json    # His dreams, written by the scheduled Action
 ├── scripts/dream.mjs    # The dreaming script

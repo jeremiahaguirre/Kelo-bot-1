@@ -12,6 +12,12 @@ Everything he gets (tools, vehicles, seeds, materials) arrives **only** through 
 He may change the world freely. He can never move or change the buildings, and he can't build new ones.
 
 ## Recently shipped (on `main`, pushed)
+- **Easier exploring** (`js/explore.js`, `js/minimap.js`, `js/tryit.js`).
+  - The camera is driven by `exploreCameraUpdate()` (hooked first in the animate loop's camera chain). `state.cameraMode` is `'follow'` or `'explore'`; other values (`'none'` in tests, the old presets) leave it alone. OrbitControls stays only to aim the camera: `controls.enabled = false`.
+  - `exploreFlyTo({ x, z, dist, pitch, yaw, follow })` flies smoothly; `explorePlaces()` lists every place with its framing. The old `data-cam` buttons and the HUD Follow button are intercepted and fly instead. WASD/arrows are caught in the capture phase, so `arrowKeyState` stays false.
+  - A ground click calls `showExploreSpotMenu` (Fly here / Send Kelo-1 here / What's this?) instead of sending him; `exploreSwallowClick` ignores clicks that end a drag or pinch.
+  - Try it: `tryit.js` wraps `worldNow()` to apply `previewSeason`/`previewHour` (module variables, never saved) and sets `windOverride`. Sample gifts are real `postMail` parcels.
+  - The help card is skipped when `navigator.webdriver` is set, so test clicks aren't covered.
 - **#21 Seasons and snow** (`js/seasons.js`).
   - `inSnow(p)` uses `SNOW_LINE` per season (all land in winter, the high mountain otherwise). `snowWalkFactor`/`snowSink` slow him and sink him in `scene.js`.
   - `checkSnowStuck` → `getStuckInSnow` → `researchSnowTravel` asks for snowshoes, skis and a snowmobile.
@@ -58,7 +64,7 @@ He may change the world freely. He can never move or change the buildings, and h
 
 ## Architecture decisions
 - **No build step.** The page uses plain global-script JS loaded in order from `index.html`:
-  agent → memory → worldclock → needs → forms → netnode → conversation → postoffice → workshop → hobbies → mining → growth → scene → house → animations → items3d → gearmodels → everydaymodels → materials → storehouse → museum → basements → viewer → takeout → vehicles → landfill → disposal → knowhow → seasons → wind → landscape → projects → town → coderequests → shopkeeping → printer → main → portal.
+  agent → memory → worldclock → needs → forms → netnode → conversation → postoffice → workshop → hobbies → mining → growth → scene → house → animations → items3d → gearmodels → everydaymodels → materials → storehouse → museum → basements → viewer → takeout → vehicles → landfill → disposal → knowhow → seasons → wind → landscape → projects → town → coderequests → shopkeeping → printer → main → portal → explore → minimap → tryit.
   (`js/shop.js` is loaded only by `shop.html`.) A later file silently replaces a same-named function from an earlier one, so keep top-level names unique.
   Three.js r128, Tailwind and Phosphor all load from CDN. Other languages are allowed if they help.
 - **State and persistence.**

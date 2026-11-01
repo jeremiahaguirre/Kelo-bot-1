@@ -302,7 +302,7 @@ function exploreApplyHeldInput(dt) {
       const len = Math.hypot(fwd, side);
       if (len > 1) { fwd /= len; side /= len; }
       // Faster when zoomed out, slower close up
-      const speed = (8 + g.dist * 0.75) * dt;
+      const speed = (6 + g.dist * 0.6) * dt;
       const sy = Math.sin(g.yaw), cy = Math.cos(g.yaw);
       g.target.x += (-sy * fwd + cy * side) * speed;
       g.target.z += (-cy * fwd - sy * side) * speed;
@@ -548,7 +548,7 @@ function exploreDescribeSpot(pt, short) {
       let ground;
       if (z > 7.5 && h < water) ground = `Okanagan Lake, about ${Math.max(1, Math.round(water - h))} m deep here`;
       else if (z > 8.2 && h < 0.6) ground = 'the sandy beach';
-      else if (h > 2.6 || z < -12) ground = `the mountain, ${Math.round(h * 10)} m up`;
+      else if (h > 2.6 || z < -12) ground = `the mountain, ${Math.round(h)} m up`;
       else if (x > 14 && z < -6) ground = 'the rise toward the Eastern Overlook';
       else ground = 'the valley meadow';
       if (short) return near ? `${near.l.icon || '📍'} Near ${near.l.name}` : `📍 On ${ground}`;
@@ -599,8 +599,8 @@ function explorePlaces() {
       fromLoc('Nature', 'shoreline', { dist: 20 });
       fromLoc('Nature', 'meadow', { dist: 22 });
       // High places are framed from above the clouds (they drift at heights 26 to 38)
-      fromLoc('Nature', 'mountain_peak', { dist: 55, pitch: 0.62 });
-      fromLoc('Nature', 'east_cliff', { dist: 50, pitch: 0.62 });
+      fromLoc('Nature', 'mountain_peak', { dist: 55, pitch: 0.95 });
+      fromLoc('Nature', 'east_cliff', { dist: 50, pitch: 0.95 });
       // His own marks on the world
       const known = new Set(['storehouse', 'post_office', 'bed', 'couch', 'weld', 'garden', 'cafe', 'cyber', 'shoreline', 'meadow', 'mountain_peak', 'disposal_pit', 'museum', 'east_cliff']);
       Object.values(TOWN_LOCATIONS).forEach(l => { if (!known.has(l.id) && l.showPin !== false) add('His spots', l.id, l.icon || '📍', l.name, l.x, l.z, { dist: 18 }); });

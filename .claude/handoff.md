@@ -12,7 +12,12 @@ Everything he gets (tools, vehicles, seeds, materials) arrives **only** through 
 He may change the world freely. He can never move or change the buildings, and he can't build new ones.
 
 ## Recently shipped (on `main`, pushed)
-  agent → memory → worldclock → needs → forms → netnode → conversation → postoffice → workshop → hobbies → mining → growth → kelo-body → scene → house → animations → items3d → gearmodels → everydaymodels → materials → realmodels → storehouse → museum → basements → viewer → takeout → tidyup → vehicles → landfill → disposal → knowhow → seasons → wind → landscape → projects → town → coderequests → shopkeeping → printer → main → portal → explore → minimap → tryit.
+- **Code requests that really switch things on** (branch `agent/wishes`).
+  - `js/wishfeatures.js`: `WISH_FEATURES` (key, `words` regexes, `ready()`, `build()`, `run()`, `chance()`, an AI `pastime` name). `wishFeatureFor(req)` maps built-in `CODE_WISHES` by key (`friends` → `friend`) and free-form requests by their feature text first, then the reason.
+  - `markCodeRequest` (coderequests.js) only says "Done" for a ready feature: `enableWishFeature()` saves it in `state.unlockedFeatures`, builds it, and he goes to try it. Otherwise the card says "Needs new code" with "I'll code it" (`promiseToCode`, stays open as a to-do) and "Not now". `migrateCodedInWishes()` runs on load and switches on old "Coded in" answers that match.
+  - Features: `wildlife` (wildlife.js: birds that flock, perch and peck; mule deer that graze and stot away; `studyWildlife()` with a Wikipedia fact), `friend` and `pet` (companions.js: they follow his trail and only read `keloGroup` position/rotation), `fishing`, `cooking`, `music` (WebAudio, `state.soundMuted`, `#btnSoundToggle`), `swimming` (`canSwim()` skips `checkDeepWater` after a lesson), `campfire`, `stars` (pastimes.js). `rain` is ready only once a rain function exists (`rainHook()` looks for `startRain` and similar from the weather branch).
+  - Hooks: scene.js calls `updateWishFeatures(t)` after `finishKeloPose`; the life tick calls `wishFeatureActivity()`; the AI prompt gets `codeRequestHintForAI()`, `wishFeaturesPromptLines()` (a `pastime` field) and `applyWishFeatureDecision()`.
+  agent → memory → worldclock → needs → forms → netnode → conversation → postoffice → workshop → hobbies → mining → growth → kelo-body → scene → house → animations → items3d → gearmodels → everydaymodels → materials → realmodels → storehouse → museum → basements → viewer → takeout → tidyup → vehicles → landfill → disposal → knowhow → seasons → wind → landscape → projects → town → coderequests → wishfeatures → wildlife → companions → pastimes → shopkeeping → printer → main → portal → explore → minimap → tryit.
 - **#21 Seasons and snow** (`js/seasons.js`).
   - `inSnow(p)` uses `SNOW_LINE` per season (all land in winter, the high mountain otherwise). `snowWalkFactor`/`snowSink` slow him and sink him in `scene.js`.
   - `checkSnowStuck` → `getStuckInSnow` → `researchSnowTravel` asks for snowshoes, skis and a snowmobile.
@@ -59,7 +64,7 @@ He may change the world freely. He can never move or change the buildings, and h
 
 ## Architecture decisions
 - **No build step.** The page uses plain global-script JS loaded in order from `index.html`:
-  agent → memory → worldclock → needs → forms → netnode → conversation → postoffice → workshop → hobbies → mining → growth → kelo-body → scene → house → animations → items3d → gearmodels → everydaymodels → materials → realmodels → storehouse → museum → basements → viewer → takeout → tidyup → vehicles → landfill → disposal → knowhow → seasons → wind → landscape → projects → town → coderequests → shopkeeping → printer → main → portal → explore → minimap → tryit.
+  agent → memory → worldclock → needs → forms → netnode → conversation → postoffice → workshop → hobbies → mining → growth → kelo-body → scene → house → animations → items3d → gearmodels → everydaymodels → materials → realmodels → storehouse → museum → basements → viewer → takeout → tidyup → vehicles → landfill → disposal → knowhow → seasons → wind → landscape → projects → town → coderequests → wishfeatures → wildlife → companions → pastimes → shopkeeping → printer → main → portal → explore → minimap → tryit.
   (`js/shop.js` is loaded only by `shop.html`.) A later file silently replaces a same-named function from an earlier one, so keep top-level names unique.
   Three.js r128, Tailwind and Phosphor all load from CDN. Other languages are allowed if they help.
 - **State and persistence.**

@@ -1745,6 +1745,8 @@ function animateDiorama() {
       if (typeof updateHobbyProps === 'function') updateHobbyProps(t);
       if (typeof updateVehicles === 'function') updateVehicles(t);
       finishKeloPose(t);
+      // Animals, his friend and pet, the campfire, swimming: things his human switched on (js/wishfeatures.js)
+      if (typeof updateWishFeatures === 'function') updateWishFeatures(t);
       if (typeof checkForGlints === 'function') checkForGlints();
       updateClouds(1 / 60);
       if (skyDome) skyDome.position.copy(camera.position);

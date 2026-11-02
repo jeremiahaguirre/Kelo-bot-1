@@ -67,6 +67,7 @@ function addCodeRequest(feature, why, context, wishKey) {
         isToolRequest: false,
         codeFeature: f,
         codeWhy: reason,
+        wishKey: wishKey || null,
         title: `Code request: ${f.slice(0, 60)}`,
         question: `${reason ? reason + ' ' : ''}${context ? `(I thought of it while "${clean(context, 80)}".) ` : ''}Could you code in ${lower}?`,
         presets: [],
@@ -112,9 +113,17 @@ function wishForCode(originLabel = 'Wished for Something New') {
     }
 
 // --- The owner's answer ----------------------------------------------------------------------
+// "Done" only counts when the feature really exists in this build (js/wishfeatures.js): then it is
+// switched on for good and he goes to try it. If it needs new code, "Done" becomes "I'll code it":
+// the request stays open as a to-do and he is told honestly that it isn't in his world yet.
 function markCodeRequest(id, done) {
       const req = state.requestsToUser.find(r => r.id === id && r.category === 'code');
       if (!req || req.fulfilled) return;
+      const match = done && typeof wishCardStatus === 'function' ? wishCardStatus(req) : null;
+      if (done && (!match || match.status === 'needs-code')) {
+        if (typeof promiseToCode === 'function') promiseToCode(id);
+        return;
+      }
       req.fulfilled = true;
       req.declined = !done;
       req.userAnswer = done ? 'Coded in' : 'Not now';
@@ -127,16 +136,17 @@ function markCodeRequest(id, done) {
         state.wonderLevel = Math.min(100, state.wonderLevel + 15);
         state.moodEmoji = '🎉';
         state.moodTitle = 'Someone coded in his wish!';
-        state.speechBubble = pick([`It's real now? ${req.codeFeature}! Thank you, thank you!`, `You coded in ${feature}! My world just got bigger.`, `I can't believe it. ${req.codeFeature}. I have to go try it!`]);
+        state.speechBubble = pick([`It's real now? ${req.codeFeature}! Thank you, thank you!`, `You switched on ${feature}! My world just got bigger.`, `I can't believe it. ${req.codeFeature}. I have to go try it!`]);
         state.microPose = 'procedural_custom';
         state.proceduralMotion = { headPitch: 0.25, headYawSpeed: 2.2, headTiltAmp: 0.3, armWaveAmp: 0.9, armRaiseOffset: 0.1, bodyBounceAmp: 0.14, spinSpeed: 1.2, crouchOffset: 0, sparkBurst: true };
         state.chatLog.push({ sender: 'Kelo-1', text: state.speechBubble, time: 'Just now', isBot: true });
         state.diaryEntries.unshift({
           time: 'A Wish Came True', location: currentPlaceLabel(), mood: '🎉 A wish came true',
           vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
-          text: `Dear Diary, I asked my human to code in ${feature}, and today they told me it's done. Somebody changed the whole world just because I asked. I feel very lucky.`
+          text: `Dear Diary, I asked my human to code in ${feature}, and today they switched it on. Somebody changed the whole world just because I asked. I feel very lucky.`
         });
-        showToast(`🎉 Kelo-1 is overjoyed: ${req.codeFeature} is coded in!`);
+        enableWishFeature(match.feature.key, { req });
+        showToast(`🎉 ${match.feature.emoji} Switched on: ${match.feature.label}. Kelo-1 is going to try it!`);
       } else {
         state.speechBubble = pick(['That\'s okay. Maybe someday.', 'Not now is not never. I can wait.', 'Alright! I\'ll find something else to do in the meantime.']);
         showToast(`💻 You said "not now" to: ${req.codeFeature}`);
@@ -149,7 +159,11 @@ function markCodeRequest(id, done) {
 function codeWishlistMarkdown() {
       const open = openCodeRequests();
       if (!open.length) return '';
-      return ['## Kelo-1\'s code wishlist', '', ...open.map(r => `- [ ] **${r.codeFeature.replace(/[*_`]/g, '')}**${r.codeWhy ? ` — ${r.codeWhy}` : ''}`)].join('\n');
+      const tag = r => {
+        const st = typeof wishCardStatus === 'function' ? wishCardStatus(r).status : 'needs-code';
+        return st === 'needs-code' ? ` _(needs new code${r.willCode ? ', you said you\'d code it' : ''})_` : ' _(already built: switch it on in the game)_';
+      };
+      return ['## Kelo-1\'s code wishlist', '', ...open.map(r => `- [ ] **${r.codeFeature.replace(/[*_`]/g, '')}**${r.codeWhy ? ` — ${r.codeWhy}` : ''}${tag(r)}`)].join('\n');
     }
 
 async function copyCodeWishlist() {
@@ -177,13 +191,36 @@ async function copyCodeWishlist() {
     }
 
 // --- The letter card in the Post tab (main.js renderRequestsTab uses this for category 'code') ---
+// Open letters say whether they are "Ready to switch on" (the feature is built) or "Need new code".
 function codeRequestCardHtml(req) {
-      const status = req.fulfilled
-        ? (req.declined ? '<span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 bg-slate-700/60 text-slate-300">Not now</span>'
-          : '<span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 bg-emerald-500/20 text-emerald-300">✓ Coded in</span>')
-        : '<span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 bg-violet-500/25 text-violet-200 border border-violet-400/40">💻 Code request</span>';
+      const match = typeof wishCardStatus === 'function' ? wishCardStatus(req) : { status: 'needs-code', feature: null };
+      const pill = (cls, text) => `<span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${cls}">${text}</span>`;
+      let status;
+      if (req.fulfilled) {
+        status = req.declined ? pill('bg-slate-700/60 text-slate-300', 'Not now')
+          : req.notBuilt ? pill('bg-amber-500/20 text-amber-200 border border-amber-400/40', '⚠ Not in his world yet')
+          : pill('bg-emerald-500/20 text-emerald-300', `✓ Switched on${match.feature ? ' ' + match.feature.emoji : ''}`);
+      } else if (match.status === 'needs-code') {
+        status = pill('bg-amber-500/20 text-amber-200 border border-amber-400/40', req.willCode ? '🛠️ On your to-do list' : '🛠️ Needs new code');
+      } else {
+        status = pill('bg-emerald-500/20 text-emerald-200 border border-emerald-400/40', '⚡ Ready to switch on');
+      }
+      const note = req.fulfilled
+        ? (req.notBuilt ? '<p class="text-[11px] text-amber-200/90">You answered "coded in", but nothing in this version of his world matches it yet, so it still needs new code.</p>' : '')
+        : match.status === 'needs-code'
+          ? `<p class="text-[11px] text-amber-200/90">${req.willCode ? 'You said you\'d code this. It stays here (and in the copied wishlist) until it\'s built.' : 'Nothing in this version of his world can do this yet. It needs new code.'}</p>`
+          : `<p class="text-[11px] text-emerald-200/90">Already built: ${escapeHtml(match.feature.label)}. Answering "Done" switches it on for good.</p>`;
+      const buttons = req.fulfilled ? '' : match.status === 'needs-code' ? `
+            <div class="flex gap-1.5 pt-1">
+              ${req.willCode ? '' : `<button data-code-req-id="${escapeHtml(req.id)}" data-code-done="1" class="code-request-btn flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-300 to-orange-400 hover:from-amber-200 hover:to-orange-300 text-slate-950 font-bold text-xs transition">🛠️ I'll code it</button>`}
+              <button data-code-req-id="${escapeHtml(req.id)}" data-code-done="0" class="code-request-btn ${req.willCode ? 'flex-1 ' : ''}px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-xs transition">Not now</button>
+            </div>` : `
+            <div class="flex gap-1.5 pt-1">
+              <button data-code-req-id="${escapeHtml(req.id)}" data-code-done="1" class="code-request-btn flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-violet-400 to-fuchsia-500 hover:from-violet-300 hover:to-fuchsia-400 text-slate-950 font-bold text-xs transition">✓ Done — switch it on</button>
+              <button data-code-req-id="${escapeHtml(req.id)}" data-code-done="0" class="code-request-btn px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-xs transition">Not now</button>
+            </div>`;
       return `
-        <div class="p-4 rounded-2xl border ${req.fulfilled ? 'bg-slate-950/60 border-violet-500/20' : 'bg-gradient-to-br from-violet-950/60 to-slate-950 border-violet-400/50 shadow-lg'} space-y-2.5">
+        <div data-code-card="${escapeHtml(req.id)}" data-code-status="${req.fulfilled ? (req.declined ? 'declined' : req.notBuilt ? 'not-built' : 'on') : match.status}" class="p-4 rounded-2xl border ${req.fulfilled ? 'bg-slate-950/60 border-violet-500/20' : 'bg-gradient-to-br from-violet-950/60 to-slate-950 border-violet-400/50 shadow-lg'} space-y-2.5">
           <div class="flex items-center justify-between gap-2">
             <span class="text-xs font-bold text-white flex items-center gap-1.5 min-w-0">
               <span class="text-lg">💻</span>
@@ -193,11 +230,7 @@ function codeRequestCardHtml(req) {
           </div>
           <div class="text-[11px] font-mono text-violet-200 bg-violet-950/50 border border-violet-500/30 px-2.5 py-1.5 rounded-lg">feature: ${escapeHtml(req.codeFeature)}</div>
           <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
-          ${!req.fulfilled ? `
-            <div class="flex gap-1.5 pt-1">
-              <button data-code-req-id="${escapeHtml(req.id)}" data-code-done="1" class="code-request-btn flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-violet-400 to-fuchsia-500 hover:from-violet-300 hover:to-fuchsia-400 text-slate-950 font-bold text-xs transition">✓ Done — it's coded in</button>
-              <button data-code-req-id="${escapeHtml(req.id)}" data-code-done="0" class="code-request-btn px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-xs transition">Not now</button>
-            </div>` : ''}
+          ${note}${buttons}
         </div>`;
     }
 
@@ -214,6 +247,14 @@ function renderCodeWishlistButton() {
       const n = openCodeRequests().length;
       btn.classList.toggle('hidden', n === 0);
       btn.textContent = `📋 Copy wishlist (${n})`;
+      // How many of his open letters are already built, and how many need new code
+      const summary = document.getElementById('codeWishSummary');
+      if (summary) {
+        const open = openCodeRequests();
+        const ready = typeof wishCardStatus === 'function' ? open.filter(r => wishCardStatus(r).status !== 'needs-code').length : 0;
+        summary.classList.toggle('hidden', open.length === 0);
+        summary.innerHTML = `<span class="text-emerald-300">⚡ Ready to switch on: ${ready}</span> <span class="text-slate-500">·</span> <span class="text-amber-200">🛠️ Need new code: ${open.length - ready}</span>`;
+      }
     }
 
 window.addEventListener('DOMContentLoaded', () => {

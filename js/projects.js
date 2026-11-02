@@ -106,9 +106,10 @@ async function startProject(key, originLabel = 'Found Something to Build') {
 // Somewhere open near home to set a finished build down
 function buildSpot() {
       for (let i = 0; i < 40; i++) {
-        // Out of town: west toward the Museum, or along the beach
-        const beach = Math.random() < 0.3;
-        const x = Math.round((beach ? randRange(-30, 30) : randRange(WORLD_MIN_X + 5, TOWN.minX - 2)) * 10) / 10, z = Math.round((beach ? randRange(8.0, 8.8) : randRange(-10, 6)) * 10) / 10;
+        // Anywhere outside town: the meadows, woods, mountain slopes, along the beach, or land he made
+        const beach = Math.random() < 0.25;
+        const free = !beach && typeof openGroundSpot === 'function' ? openGroundSpot(1.2, Math.random() < 0.5 ? state.botPos : null) : null;
+        const x = free ? free.x : Math.round(randRange(-30, 30) * 10) / 10, z = free ? free.z : Math.round(randRange(8.0, 8.8) * 10) / 10;
         if (typeof offLimits === 'function' && offLimits(x, z, 1.2)) continue;
         if (pointBlocked(x, z, { x: 999, z: 999 }) || worldObstacles.some(o => Math.hypot(o.x - x, o.z - z) < o.r + 1.4)) continue;
         return { x, z };

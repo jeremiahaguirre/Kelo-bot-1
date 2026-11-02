@@ -119,6 +119,14 @@ function buildStorehouse3D() {
       scene.add(storehouseGroup);
       worldObstacles.push({ x: cx, z: cz, r: 3.0 });
       renderStorehouseShelves3D();
+      if (typeof perfWatchBuilding === 'function') {
+        perfWatchBuilding({
+          key: 'storehouse', radius: 4,
+          center: () => storehouseGroup.position.clone().setY(storehouseGroup.position.y + 1.2),
+          forced: storehouseInUse,
+          show: showStorehouseModels, tick: storehouseModelsTick
+        });
+      } else showStorehouseModels(true);
     }
 
 // A floor slab (sitting on y = 0, `thick` high) with the round stairwell hole cut through it
@@ -181,28 +189,46 @@ function fitOnShelf(model) {
       return model;
     }
 
+// The shelves fill in only while the camera can see them (js/perf.js watches): far away each thing
+// is a small coloured box, and its real model is built a few at a time as the camera comes close.
+let shelfModelsWanted = false;
+let shelfStandIns = null;
+let shelfBuildQueue = [];
+
 function renderStorehouseShelves3D() {
       if (!shelfItemsGroup) return;
       const items = storedItems();
-      const key = items.map(i => i.name).join('|');
+      const onShelf = items.slice(0, shelfSlots.length);
+      const key = (shelfModelsWanted ? 'models:' : 'boxes:') + onShelf.map(i => i.name).join('|') + '#' + storehouseBasementLevels();
       if (key === shelfRenderKey) return;
       shelfRenderKey = key;
-      [shelfItemsGroup, overflowGroup].forEach(g => {
-        while (g.children.length) {
-          const old = g.children.pop();
-          old.traverse(o => { if (o.geometry) o.geometry.dispose(); });
-        }
-      });
-      items.slice(0, shelfSlots.length).forEach((item, i) => {
+      // Models already on the right shelf with the right thing stay where they are
+      const keep = new Map();
+      while (shelfItemsGroup.children.length) {
+        const old = shelfItemsGroup.children.pop();
+        const k = `${old.userData.slotIndex}:${old.userData.itemName}`;
+        if (shelfModelsWanted && onShelf[old.userData.slotIndex] && onShelf[old.userData.slotIndex].name === old.userData.itemName && !keep.has(k)) {
+          old.visible = true; // (a model he took down during a trip is shown again)
+          keep.set(k, old);
+        } else disposeShelfHolder(old);
+      }
+      while (overflowGroup.children.length) disposeShelfHolder(overflowGroup.children.pop());
+      disposePerfStandIns(shelfStandIns);
+      shelfStandIns = null;
+      shelfBuildQueue = [];
+      // Stand-ins everywhere a model isn't built yet
+      const spots = [];
+      onShelf.forEach((item, i) => {
+        const held = keep.get(`${i}:${item.name}`);
+        if (held) { shelfItemsGroup.add(held); return; }
         const slot = shelfSlots[i];
-        const holder = new THREE.Group();
-        const model = fitOnShelf(buildItemModel3D(item.name, { label: false }));
-        holder.add(model);
-        holder.position.set(slot.x, slot.y, slot.z);
-        holder.rotation.y = slot.rotY;
-        holder.userData.itemName = item.name;
-        shelfItemsGroup.add(holder);
+        spots.push({ x: slot.x, y: slot.y, z: slot.z, w: 0.34, h: 0.3, d: 0.3, rotY: slot.rotY, color: perfColorFor(item.name), index: i });
+        if (shelfModelsWanted) shelfBuildQueue.push({ name: item.name, index: i, spot: spots.length - 1 });
       });
+      if (spots.length) {
+        shelfStandIns = perfStandIns(spots);
+        overflowGroup.add(shelfStandIns);
+      }
       // More than the shelves hold: the rest is down in the basements, one floor's worth each
       const levels = storehouseBasementLevels();
       if (levels > 0) {
@@ -210,6 +236,47 @@ function renderStorehouseShelves3D() {
         sign.position.set(0, 2.3, -STOREHOUSE.d / 2 + 0.1);
         overflowGroup.add(sign);
       }
+      // While he is in there putting things away, they appear on the shelf straight away
+      if (shelfModelsWanted && storehouseInUse()) buildQueuedShelfModels(Infinity);
+    }
+
+function disposeShelfHolder(obj) {
+      obj.traverse(o => { if (o.geometry && !(o.userData && o.userData.sharedGeometry)) o.geometry.dispose(); });
+    }
+
+function storehouseInUse() {
+      return typeof indoorTrip !== 'undefined' && indoorTrip.active && indoorTrip.site && indoorTrip.site.key === 'storehouse';
+    }
+
+// Build waiting shelf models: up to `count`, and for no more than about 8 ms per frame,
+// so coming close never stalls the game
+function buildQueuedShelfModels(count) {
+      let built = 0;
+      const until = performance.now() + 8;
+      while (shelfBuildQueue.length && built < count && (count === Infinity || !built || performance.now() < until)) {
+        const job = shelfBuildQueue.shift();
+        const holder = shelfHolderFor(job.name, shelfSlots[job.index]);
+        holder.userData.slotIndex = job.index;
+        // Under the barn roof their own shadows hardly show, and real models would double their cost
+        holder.traverse(o => { if (o.isMesh) o.castShadow = false; });
+        shelfItemsGroup.add(holder);
+        if (shelfStandIns) {
+          shelfStandIns.setMatrixAt(job.spot, new THREE.Matrix4().makeScale(0, 0, 0));
+          shelfStandIns.instanceMatrix.needsUpdate = true;
+        }
+        built++;
+      }
+    }
+
+// Called by the perf watcher: near is true while the camera can see in (or he is inside)
+function showStorehouseModels(near) {
+      shelfModelsWanted = near;
+      renderStorehouseShelves3D();
+    }
+
+// Every frame while it is watched: build a few more
+function storehouseModelsTick(near) {
+      if (near && shelfBuildQueue.length) buildQueuedShelfModels(12);
     }
 
 // Name tag for whatever shelf item the cursor is over

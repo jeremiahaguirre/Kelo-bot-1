@@ -152,6 +152,8 @@ function initDiorama3D() {
       });
       renderer.domElement.addEventListener('pointerup', (e) => {
         if (Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y) > 6) return;
+        // Not the end of a drag, pinch or right-click (js/explore.js)
+        if (typeof exploreSwallowClick === 'function' && exploreSwallowClick(e)) return;
         const rect = renderer.domElement.getBoundingClientRect();
         const mouse = new THREE.Vector2(
           ((e.clientX - rect.left) / rect.width) * 2 - 1,
@@ -183,6 +185,8 @@ function initDiorama3D() {
               splashOgopogo();
               return;
             }
+            // A click on the ground offers Fly here / Send Kelo-1 here / What's this? (js/explore.js)
+            if (typeof showExploreSpotMenu === 'function') return showExploreSpotMenu(e, pt);
             const isMountain = rz < -13 || pt.y > 2.2;
             synthesizeUnboundedExperience(
               isMountain
@@ -1050,148 +1054,7 @@ function buildPostOffice3D() {
       worldObstacles.push({ x: cx, z: cz, r: 2.5 }, { x: cx - 1.9, z: cz + 2.1, r: 0.4 });
     }
 
-// The upper body (torso, pack, head, arms) hangs from his hips so js/animations.js can lean,
-// sway and bob it. Arms and legs are pivot groups at the shoulder and hip, so they swing from there.
-let keloBody;
-const KELO_HIP_Y = 0.78;
-
-function buildKelo1Character3D() {
-      keloGroup = new THREE.Group();
-      keloBody = new THREE.Group();
-      keloBody.position.set(0, KELO_HIP_Y, 0);
-      keloGroup.add(keloBody);
-
-      // Chassis & Supply Backpack with Argon Cylinder & Gold Ore Pouch
-      const torso = new THREE.Mesh(
-        new THREE.BoxGeometry(1.1, 1.15, 0.78),
-        new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.45, roughness: 0.28 })
-      );
-      torso.position.set(0, 1.32 - KELO_HIP_Y, 0);
-      torso.castShadow = true;
-      keloBody.add(torso);
-
-      const backpack = new THREE.Mesh(
-        new THREE.BoxGeometry(0.82, 0.85, 0.42),
-        new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.5 })
-      );
-      backpack.position.set(0, 1.36 - KELO_HIP_Y, -0.55);
-      keloBody.add(backpack);
-
-      // Head & Glowing Eyes
-      keloHead = new THREE.Group();
-      keloHead.position.set(0, 2.35 - KELO_HIP_Y, 0);
-      const headMesh = new THREE.Mesh(
-        new THREE.BoxGeometry(0.96, 0.74, 0.76),
-        new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 0.35, roughness: 0.25 })
-      );
-      headMesh.castShadow = true;
-      keloHead.add(headMesh);
-
-      // Visor Faceplate
-      const visor = new THREE.Mesh(
-        new THREE.BoxGeometry(0.82, 0.44, 0.08),
-        new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.2 })
-      );
-      visor.position.set(0, 0.02, 0.36);
-      keloHead.add(visor);
-
-      // Expressive LED Eyes
-      const eyeGeo = new THREE.SphereGeometry(0.09, 12, 12);
-      const eyeMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
-      keloLeftEye = new THREE.Mesh(eyeGeo, eyeMat);
-      keloLeftEye.position.set(-0.2, 0.04, 0.41);
-      keloRightEye = new THREE.Mesh(eyeGeo, eyeMat);
-      keloRightEye.position.set(0.2, 0.04, 0.41);
-      keloHead.add(keloLeftEye, keloRightEye);
-
-      // Antenna on Top of Head
-      const antennaStem = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.03, 0.03, 0.38, 8),
-        new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8 })
-      );
-      antennaStem.position.set(0, 0.52, 0);
-      const antennaBulb = new THREE.Mesh(
-        new THREE.SphereGeometry(0.09, 10, 10),
-        new THREE.MeshBasicMaterial({ color: 0x34d399 })
-      );
-      antennaBulb.position.set(0, 0.72, 0);
-      keloHead.add(antennaStem, antennaBulb);
-      keloBody.add(keloHead);
-
-      // Articulated Arms
-      const limbMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.6, roughness: 0.35 });
-      const armGeo = new THREE.BoxGeometry(0.26, 0.85, 0.26);
-      // Each arm is a pivot at the shoulder with the arm hanging below it
-      const makeLimb = (geo, x, pivotY, hang, parent) => {
-        const pivot = new THREE.Group();
-        pivot.position.set(x, pivotY, 0);
-        const mesh = new THREE.Mesh(geo, limbMat);
-        mesh.position.y = -hang;
-        mesh.castShadow = true;
-        pivot.add(mesh);
-        parent.add(pivot);
-        return pivot;
-      };
-      keloLeftArm = makeLimb(armGeo, -0.7, 1.7 - KELO_HIP_Y, 0.35, keloBody);
-      keloRightArm = makeLimb(armGeo, 0.7, 1.7 - KELO_HIP_Y, 0.35, keloBody);
-
-      // 1) 3D Pneumatic Mountain Core Drill & Soil Auger mounted to Kelo-1's Right Hand
-      keloDrillToolGroup = new THREE.Group();
-      keloDrillToolGroup.position.set(0, -0.8, 0.25);
-      const drillHousing = new THREE.Mesh(
-        new THREE.BoxGeometry(0.34, 0.34, 0.58),
-        new THREE.MeshStandardMaterial({ color: 0xeab308, metalness: 0.7, roughness: 0.25 })
-      );
-      keloDrillBitMesh = new THREE.Group();
-      const coneBit = new THREE.Mesh(
-        new THREE.ConeGeometry(0.18, 0.78, 8),
-        new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.92, roughness: 0.15 })
-      );
-      coneBit.rotation.x = Math.PI / 2;
-      coneBit.position.z = 0.62;
-      const spiralFlute = new THREE.Mesh(
-        new THREE.TorusGeometry(0.13, 0.035, 8, 16),
-        new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.95, roughness: 0.1 })
-      );
-      spiralFlute.position.z = 0.45;
-      keloDrillBitMesh.add(coneBit, spiralFlute);
-      keloDrillToolGroup.add(drillHousing, keloDrillBitMesh);
-      keloDrillToolGroup.visible = false;
-      keloRightArm.add(keloDrillToolGroup);
-
-      // 2) 3D TIG Welding Torch & Plasma Arc Lance mounted to Kelo-1's Right Hand
-      keloWeldTorchGroup = new THREE.Group();
-      keloWeldTorchGroup.position.set(0, -0.77, 0.24);
-      const torchHandle = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.07, 0.09, 0.52, 8),
-        new THREE.MeshStandardMaterial({ color: 0xef4444, metalness: 0.5, roughness: 0.3 })
-      );
-      torchHandle.rotation.x = Math.PI / 2;
-      const torchNozzle = new THREE.Mesh(
-        new THREE.ConeGeometry(0.06, 0.28, 8),
-        new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.85, roughness: 0.2 })
-      );
-      torchNozzle.rotation.x = Math.PI / 2;
-      torchNozzle.position.z = 0.36;
-      keloWeldTipGlow = new THREE.Mesh(
-        new THREE.SphereGeometry(0.11, 10, 10),
-        new THREE.MeshBasicMaterial({ color: 0x7dd3fc })
-      );
-      keloWeldTipGlow.position.z = 0.5;
-      keloWeldTorchGroup.add(torchHandle, torchNozzle, keloWeldTipGlow);
-      keloWeldTorchGroup.visible = false;
-      keloRightArm.add(keloWeldTorchGroup);
-
-      // Articulated Legs
-      const legGeo = new THREE.BoxGeometry(0.32, 0.78, 0.36);
-      keloLeftLeg = makeLimb(legGeo, -0.28, 0.76, 0.36, keloGroup);
-      keloRightLeg = makeLimb(legGeo, 0.28, 0.76, 0.36, keloGroup);
-
-      const startGroundY = getIslandGroundHeight(state.botPos.x, state.botPos.z);
-      state.botAltitudeY = startGroundY;
-      keloGroup.position.set(state.botPos.x, startGroundY, state.botPos.z);
-      scene.add(keloGroup);
-    }
+// Kelo-1's body and rig are built by buildKelo1Character3D() in js/kelo-body.js
 
 function initEmergentCreationsLayer3D() {
       emergentCreationsGroup = new THREE.Group();
@@ -1735,7 +1598,12 @@ function animateDiorama() {
         }
         // The walk cycle itself (legs, arm swing, bob, lean) is layered on in animations.js
         keloAnim.mode = 'walk';
-        if (isMiningOrDrilling || isWeldingOrBuilding) keloRightArm.rotation.x = -0.65;
+        if (isMiningOrDrilling || isWeldingOrBuilding) {
+          // carrying the drill or torch forward in his right fist
+          keloRightArm.rotation.x = -0.45;
+          keloRightElbow.rotation.x = -0.75;
+          keloRightHand.userData.grip = 1;
+        }
 
         if (keloDrillBitMesh && isMiningOrDrilling) keloDrillBitMesh.rotation.z = t * 18;
         weldingSparks.visible = false;
@@ -1841,19 +1709,32 @@ function animateDiorama() {
           keloGroup.position.set(state.botPos.x, Math.max(groundY, 0.2), state.botPos.z);
           keloGroup.rotation.set(0, Math.PI, 0);
           const typingBurst = Math.sin(t * 1.5) > -0.2;
-          keloLeftArm.rotation.x = typingBurst ? -0.8 + Math.sin(t * 16) * 0.14 : -0.4;
-          keloRightArm.rotation.x = typingBurst ? -0.8 + Math.cos(t * 16) * 0.14 : -1.1;
+          // forearms out over the keyboard, fingers tapping; between bursts a hand goes up to his chin
+          keloLeftArm.rotation.x = typingBurst ? -0.4 + Math.sin(t * 16) * 0.06 : -0.25;
+          keloRightArm.rotation.x = typingBurst ? -0.4 + Math.cos(t * 16) * 0.06 : -0.5;
+          keloLeftElbow.rotation.x = typingBurst ? -1.1 : -0.9;
+          keloRightElbow.rotation.x = typingBurst ? -1.1 : -2.1;
+          keloLeftHand.rotation.x = keloRightHand.rotation.x = typingBurst ? -0.4 : 0;
+          keloLeftHand.userData.grip = typingBurst ? 0.2 + 0.25 * Math.max(0, Math.sin(t * 22)) : 0.4;
+          keloRightHand.userData.grip = typingBurst ? 0.2 + 0.25 * Math.max(0, Math.cos(t * 22)) : 0.6;
           keloHead.rotation.z = typingBurst ? 0.05 : 0.24;
           keloHead.rotation.y = Math.sin(t * 0.9) * 0.2;
           weldingSparks.visible = false;
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
           forgeArcLight.intensity = 0;
         } else if (state.currentLocKey === 'shoreline' && Math.hypot(state.botPos.x - 4.2, state.botPos.z - 10.2) < 2.2) {
-          // Sitting right on the flat shoreline stones above the water surface
-          keloGroup.position.set(state.botPos.x, Math.max(groundY, 0.05), state.botPos.z);
+          // Sitting on the flat shoreline stones, knees up, leaning back on his hands, feet tapping
+          keloGroup.position.set(state.botPos.x, Math.max(groundY, 0.05) - (KELO_LEG_Y - 0.2), state.botPos.z);
           keloGroup.rotation.set(0, 0, 0);
-          keloLeftLeg.rotation.x = -Math.PI / 2.3 + Math.sin(t * 2.4) * 0.18;
-          keloRightLeg.rotation.x = -Math.PI / 2.3 - Math.sin(t * 2.4) * 0.18;
+          keloLeftLeg.rotation.set(-2.0, 0, -0.1);
+          keloRightLeg.rotation.set(-2.0, 0, 0.1);
+          keloLeftKnee.rotation.x = 1.45 + Math.max(0, Math.sin(t * 2.4)) * 0.25;
+          keloRightKnee.rotation.x = 1.45 + Math.max(0, -Math.sin(t * 2.4)) * 0.25;
+          keloBody.rotation.x = -0.2;
+          keloLeftArm.rotation.set(0.55, 0, -0.25);
+          keloRightArm.rotation.set(0.55, 0, 0.25);
+          keloLeftElbow.rotation.x = keloRightElbow.rotation.x = 0.1;
+          keloLeftHand.userData.grip = keloRightHand.userData.grip = 0.1;
           keloHead.rotation.z = Math.sin(t * 1.1) * 0.22;
           keloHead.rotation.x = -0.1 + Math.sin(t * 0.8) * 0.1;
           weldingSparks.visible = false;
@@ -1861,10 +1742,15 @@ function animateDiorama() {
           forgeArcLight.intensity = 0;
         } else if (state.currentLocKey === 'meadow' || state.microPose === 'crouch_inspect') {
           // Crouching on top of the terrain without sinking below groundY!
-          keloGroup.position.set(state.botPos.x, groundY + Math.abs(Math.sin(t * 2)) * 0.03, state.botPos.z);
-          keloLeftLeg.rotation.x = 0.35;
-          keloRightLeg.rotation.x = 0.35;
+          // a deep squat, leaning in, one hand reaching down to look closely at something
+          keloSquat(0.55);
+          keloGroup.position.set(state.botPos.x, groundY - 0.55 + Math.abs(Math.sin(t * 2)) * 0.03, state.botPos.z);
+          keloBody.rotation.x = 0.4;
           keloRightArm.rotation.x = -0.75 + Math.sin(t * 3) * 0.1;
+          keloRightElbow.rotation.x = -0.3;
+          keloRightHand.userData.grip = 0.1;
+          keloLeftArm.rotation.set(-0.5, 0, 0.1);
+          keloLeftElbow.rotation.x = -0.9;
           keloHead.rotation.x = 0.35;
           keloHead.rotation.z = 0.28 * Math.sin(t * 1.3);
           weldingSparks.visible = false;
@@ -1948,7 +1834,9 @@ function animateDiorama() {
       });
 
       // 4. Camera Follow & Bird's-Eye Modes (inside a building, js/basements.js looks in through the cutaway)
-      if (typeof basementCameraUpdate === 'function' && basementCameraUpdate()) {
+      if (typeof exploreCameraUpdate === 'function' && exploreCameraUpdate()) {
+        // Follow Kelo-1 / Explore freely placed it (js/explore.js)
+      } else if (typeof basementCameraUpdate === 'function' && basementCameraUpdate()) {
         // moved there
       } else if (state.cameraMode === 'follow') {
         controls.target.lerp(new THREE.Vector3(keloGroup.position.x, keloGroup.position.y + 1.6, keloGroup.position.z), 0.08);

@@ -36,13 +36,20 @@ const keloAnim = {
 // The emote playing now, if any: { name, start, dur, w }
 let keloEmote = null;
 
+// Shoulders, hips, head and upper body, then the joints further down each limb (js/kelo-body.js).
+// Elbows and knees bend about x (an elbow forward with a negative angle, a knee back with a positive
+// one); hands and feet turn at the wrist and ankle. Feet level themselves unless a pose says otherwise.
 const KELO_JOINTS = [
   ['lArm', () => keloLeftArm], ['rArm', () => keloRightArm],
   ['lLeg', () => keloLeftLeg], ['rLeg', () => keloRightLeg],
-  ['head', () => keloHead], ['body', () => keloBody]
+  ['head', () => keloHead], ['body', () => keloBody],
+  ['lElbow', () => keloLeftElbow], ['rElbow', () => keloRightElbow],
+  ['lHand', () => keloLeftHand], ['rHand', () => keloRightHand],
+  ['lKnee', () => keloLeftKnee], ['rKnee', () => keloRightKnee],
+  ['lFoot', () => keloLeftFoot], ['rFoot', () => keloRightFoot]
 ];
 // Channels an emote may still move while he walks or rides (his legs are busy)
-const KELO_UPPER_CHANNELS = /^(lArm|rArm|head)/;
+const KELO_UPPER_CHANNELS = /^(lArm|rArm|head|lElbow|rElbow|lHand|rHand|lGrip|rGrip)/;
 
 const clamp01 = x => Math.max(0, Math.min(1, x));
 const smoothstep = x => { x = clamp01(x); return x * x * (3 - 2 * x); };
@@ -60,8 +67,27 @@ function beginKeloPose(t) {
       if (keloBody) {
         KELO_JOINTS.forEach(([, get]) => get().rotation.set(0, 0, 0));
         keloBody.position.set(0, KELO_HIP_Y, 0);
+        keloLeftHand.userData.grip = KELO_REST_GRIP;
+        keloRightHand.userData.grip = KELO_REST_GRIP;
       }
       return keloAnim.dt;
+    }
+
+// Bend his knees into a squat that lowers his hips by `drop`, feet staying under him. Returns the
+// hip angle; the caller lowers keloGroup by the same drop.
+function keloSquat(drop, lean = 0) {
+      const a = Math.acos(Math.max(0.2, 1 - Math.max(0, drop) / (KELO_THIGH + KELO_SHIN)));
+      keloLeftLeg.rotation.x = keloRightLeg.rotation.x = -a - lean;
+      keloLeftKnee.rotation.x = keloRightKnee.rotation.x = 2 * a;
+      return a;
+    }
+
+// Sit with his thighs level and his shins hanging down (vehicle seats, a ledge). Returns how far
+// to lower keloGroup so the underside of his thighs rests `seatAbove` above where his feet would be.
+function keloSitPose(seatAbove, kneeBend = 1.35) {
+      keloLeftLeg.rotation.x = keloRightLeg.rotation.x = -1.45;
+      keloLeftKnee.rotation.x = keloRightKnee.rotation.x = kneeBend;
+      return KELO_LEG_Y - KELO_THIGH_R - seatAbove;
     }
 
 // How far he walks this frame (before vehicle and snow speed): he eases up to speed as he sets
@@ -100,10 +126,16 @@ function keloDigPose(t) {
         }
         keloLeftArm.rotation.set(arm, 0, 0.2);
         keloRightArm.rotation.set(arm, 0, -0.2);
+        // Elbows bend more as the tool comes up, and straighten into the strike
+        keloLeftElbow.rotation.x = keloRightElbow.rotation.x = -0.25 + 0.3 * (arm + 0.5);
+        keloLeftHand.userData.grip = keloRightHand.userData.grip = 1;
         keloBody.rotation.x = lean;
         keloHead.rotation.x = head;
-        keloLeftLeg.rotation.x = -0.18;
+        // One foot forward, front knee bent to take his weight as he drives it down
+        keloLeftLeg.rotation.x = -0.18 - lean * 0.5;
+        keloLeftKnee.rotation.x = 0.15 + lean;
         keloRightLeg.rotation.x = 0.18;
+        keloRightKnee.rotation.x = 0.1;
         return;
       }
       const u = (t % 1.3) / 1.3;
@@ -120,11 +152,18 @@ function keloDigPose(t) {
         const k = smoothstep((u - 0.85) / 0.15);
         arm = -1.45 + 0.45 * k; lean = 0.22 - 0.16 * k;
       }
-      keloRightArm.rotation.x = arm;
-      keloLeftArm.rotation.set(-0.7, 0, 0.25);
+      // the drill runs along his forearm, angled down into the ground in front of him
+      keloRightArm.rotation.x = arm * 0.55;
+      keloRightElbow.rotation.x = -0.3;
+      keloRightHand.userData.grip = 1;
+      // the other hand braces on top of the drill
+      keloLeftArm.rotation.set(-0.75, 0, 0.3);
+      keloLeftElbow.rotation.x = -0.75;
+      keloLeftHand.userData.grip = 0.6;
       keloBody.rotation.x = lean;
       keloHead.rotation.set(0.3, 0, Math.sin(t * 4) * 0.08);
-      keloLeftLeg.rotation.x = -0.15;
+      keloLeftLeg.rotation.x = -0.15 - lean * 0.6;
+      keloLeftKnee.rotation.x = 0.1 + lean * 1.2;
       keloRightLeg.rotation.x = 0.15;
     }
 
@@ -136,18 +175,25 @@ function keloWeldPose(t) {
       keloAnim.rate = 1.5;
       const u = (t % 5.5) / 5.5;
       const inspecting = u > 0.78;
+      keloRightHand.userData.grip = 1;
       if (inspecting) {
         keloRightArm.rotation.set(-0.75, 0, 0.1);
+        keloRightElbow.rotation.x = -0.9;
         keloLeftArm.rotation.set(-0.3, 0, 0.1);
+        keloLeftElbow.rotation.x = -0.4;
         keloBody.rotation.x = -0.02;
         keloHead.rotation.set(0.12, 0.25, -0.15);
       } else {
         keloRightArm.rotation.set(-Math.PI / 2.4 + Math.sin(t * 3) * 0.06 + Math.sin(t * 31) * 0.015, 0, -0.12 + Math.cos(t * 3) * 0.05);
+        keloRightElbow.rotation.x = -0.45;
         keloLeftArm.rotation.set(-0.85, 0, 0.3);
+        keloLeftElbow.rotation.x = -0.6;
+        keloLeftHand.userData.grip = 0.15;
         keloBody.rotation.x = 0.16;
         keloHead.rotation.set(0.28, 0, 0.1 * Math.sin(t * 1.5));
       }
       keloLeftLeg.rotation.x = -0.12;
+      keloLeftKnee.rotation.x = 0.12;
       keloRightLeg.rotation.x = 0.12;
       return !inspecting;
     }
@@ -156,29 +202,40 @@ function keloWeldPose(t) {
 // Each one returns the channels it moves, given seconds since it started (e) and seconds left (r).
 // Channels: <joint>X/Y/Z for lArm, rArm, lLeg, rLeg, head, body; bodyLift and bodyShift move his
 // upper body; lift raises his whole body; yaw turns him around.
+// Hip angle for a squat that lowers him by `drop` (the knee bends twice as far)
+const squatAngle = drop => Math.acos(Math.max(0.2, 1 - Math.max(0, drop) / (KELO_THIGH + KELO_SHIN)));
+
 const KELO_EMOTES = {
   wave: {
     ms: 2400,
     pose(e) {
+      const up = smoothstep(e / 0.3);
       const swing = smoothstep((e - 0.25) / 0.3) * Math.sin(e * 9);
-      return { rArmX: -0.25, rArmY: 0, rArmZ: 2.55 + swing * 0.35, lArmZ: -0.08, headX: -0.08, headZ: -0.12 + swing * 0.04, bodyZ: 0.05 };
+      // Upper arm out to the side, forearm up, open palm turned to face you, waving from the elbow
+      return {
+        rArmX: -0.2, rArmY: 0, rArmZ: 1.3 * up, rElbowX: 0.1 * up, rElbowZ: (1.3 + swing * 0.32) * up,
+        rHandY: 1.5 * up, rHandZ: swing * 0.15, rGrip: 0,
+        lArmZ: -0.08, headX: -0.08, headZ: -0.12 + swing * 0.04, bodyZ: 0.05
+      };
     }
   },
   cheer: {
     ms: 2600,
     pose(e) {
-      const p = { lArmZ: -2.85, rArmZ: 2.85, lArmX: 0, rArmX: 0, headX: -0.2 };
+      const p = { lArmZ: -2.85, rArmZ: 2.85, lArmX: 0, rArmX: 0, lElbowX: -0.15, rElbowX: -0.15, lGrip: 1, rGrip: 1, headX: -0.2 };
       if (e < 2.0) {
         const u = e % 1.0;   // each jump starts in a crouch
         if (u < 0.3) {
-          const k = smoothstep(u / 0.3);
-          Object.assign(p, { lift: -0.12 * k, bodyX: 0.22 * k, lArmZ: -0.3, rArmZ: 0.3, lArmX: 0.45 * k, rArmX: 0.45 * k, lLegX: -0.25 * k, rLegX: -0.25 * k, headX: 0.1 });
+          const k = smoothstep(u / 0.3), a = squatAngle(0.14 * k);
+          Object.assign(p, { lift: -0.14 * k, bodyX: 0.22 * k, lArmZ: -0.3, rArmZ: 0.3, lArmX: 0.45 * k, rArmX: 0.45 * k, lElbowX: -0.5 * k, rElbowX: -0.5 * k,
+            lLegX: -a, rLegX: -a, lKneeX: 2 * a, rKneeX: 2 * a, headX: 0.1 });
         } else if (u < 0.75) {
           const k = (u - 0.3) / 0.45;
-          Object.assign(p, { lift: 0.75 * Math.sin(Math.PI * k), bodyX: -0.08, lLegX: -0.35, rLegX: 0.15 });
+          // in the air his knees tuck up a little and his toes point down
+          Object.assign(p, { lift: 0.75 * Math.sin(Math.PI * k), bodyX: -0.08, lLegX: -0.35, rLegX: 0.15, lKneeX: 0.7, rKneeX: 0.35, lFootX: 0.5, rFootX: 0.4 });
         } else {
-          const k = (u - 0.75) / 0.25;
-          Object.assign(p, { lift: -0.1 * Math.sin(Math.PI * k), bodyX: 0.12 * Math.sin(Math.PI * k) });
+          const k = (u - 0.75) / 0.25, a = squatAngle(0.1 * Math.sin(Math.PI * k));
+          Object.assign(p, { lift: -0.1 * Math.sin(Math.PI * k), bodyX: 0.12 * Math.sin(Math.PI * k), lLegX: -a, rLegX: -a, lKneeX: 2 * a, rKneeX: 2 * a });
         }
       } else {
         p.lArmZ += Math.sin(e * 16) * 0.12;
@@ -192,10 +249,14 @@ const KELO_EMOTES = {
     pose(e) {
       const ph = e * Math.PI * 2 * 1.1;
       const s = Math.sin(ph);
+      const bob = Math.abs(s);
+      const a = squatAngle(0.1 * (1 - bob));
       return {
-        bodyZ: s * 0.14, bodyY: Math.sin(ph * 0.5) * 0.35, bodyShift: s * 0.08, lift: Math.abs(s) * 0.12,
-        lArmX: -1.2 + s * 0.6, rArmX: -1.2 - s * 0.6, lArmZ: -0.45 + Math.cos(ph) * 0.25, rArmZ: 0.45 + Math.cos(ph) * 0.25,
-        lLegX: Math.max(0, s) * -0.45, rLegX: Math.max(0, -s) * -0.45,
+        bodyZ: s * 0.14, bodyY: Math.sin(ph * 0.5) * 0.35, bodyShift: s * 0.08, lift: bob * 0.12 - 0.1 * (1 - bob),
+        lArmX: -0.7 + s * 0.45, rArmX: -0.7 - s * 0.45, lArmZ: -0.45 + Math.cos(ph) * 0.25, rArmZ: 0.45 + Math.cos(ph) * 0.25,
+        lElbowX: -1.2 - s * 0.3, rElbowX: -1.2 + s * 0.3, lGrip: 0.8, rGrip: 0.8,
+        lLegX: -a + Math.max(0, s) * -0.45, rLegX: -a + Math.max(0, -s) * -0.45,
+        lKneeX: 2 * a + Math.max(0, s) * 0.7, rKneeX: 2 * a + Math.max(0, -s) * 0.7,
         headZ: -s * 0.15, headX: Math.sin(ph * 2) * 0.1, headY: Math.sin(ph * 0.5) * -0.2
       };
     }
@@ -204,9 +265,11 @@ const KELO_EMOTES = {
     ms: 4000,
     pose(e) {
       const tap = smoothstep((e - 1.0) / 0.4) * Math.sin(e * 5) * 0.05;
+      // Right hand up to his chin, the other arm folded across his middle under that elbow
       return {
-        rArmX: -2.0 + tap, rArmY: 0, rArmZ: -0.6, lArmX: -0.55, lArmZ: 0.55,
-        headX: -0.15, headZ: 0.18, headY: 0.15 + Math.sin(e * 0.8) * 0.12, bodyZ: 0.02, bodyX: -0.03
+        rArmX: -0.8, rArmY: 0, rArmZ: -1.45, rElbowX: -1.84 + tap, rHandX: 0.2, rHandY: 0.4, rGrip: 0.65,
+        lArmX: -0.15, lArmY: 1.0, lArmZ: 0.15, lElbowX: -1.5, lHandY: -0.3, lGrip: 0.5,
+        headX: -0.12, headZ: 0.14, headY: 0.15 + Math.sin(e * 0.8) * 0.12, bodyZ: 0.02, bodyX: -0.03
       };
     }
   },
@@ -217,7 +280,8 @@ const KELO_EMOTES = {
       const side = e > 1.2 && e < 2.7 ? Math.sin((e - 1.2) / 1.5 * Math.PI * 2) * 0.25 : 0;
       return {
         lArmZ: -2.95 * up - 0.15, rArmZ: 2.95 * up + 0.15, lArmX: 0, rArmX: 0,
-        bodyX: -0.16 * up, bodyZ: side, lift: 0.05 * up, headX: -0.3 * up, headZ: -side * 0.5
+        lElbowX: 0.1 * up, rElbowX: 0.1 * up, lGrip: 0.3 - 0.3 * up, rGrip: 0.3 - 0.3 * up, lHandZ: -0.4 * up, rHandZ: 0.4 * up,
+        bodyX: -0.16 * up, bodyZ: side, lift: 0.05 * up, lFootX: 0.25 * up, rFootX: 0.25 * up, headX: -0.3 * up, headZ: -side * 0.5
       };
     }
   },
@@ -225,11 +289,13 @@ const KELO_EMOTES = {
     ms: 3500,
     pose(e) {
       const tremble = Math.sin(e * 48);
-      const rub = Math.sin(e * 9) * 0.12;
+      const rub = Math.sin(e * 9) * 0.1;
+      // Arms wrapped around himself, rubbing his upper arms
       return {
-        lArmX: -1.15 + rub, lArmZ: 0.65, rArmX: -1.15 - rub, rArmZ: -0.65,
+        lArmX: -0.75 + rub, lArmY: 0.6, lArmZ: 0.45, rArmX: -0.75 - rub, rArmY: -0.6, rArmZ: -0.45,
+        lElbowX: -1.75, rElbowX: -1.75, lHandY: 0.4, rHandY: -0.4, lGrip: 0.45, rGrip: 0.45,
         bodyZ: tremble * 0.035, bodyX: 0.1, bodyLift: -0.04, headX: 0.22, headY: tremble * 0.05,
-        lLegZ: 0.06, rLegZ: -0.06
+        lLegZ: 0.06, rLegZ: -0.06, lKneeX: 0.12, rKneeX: 0.12
       };
     }
   },
@@ -237,11 +303,13 @@ const KELO_EMOTES = {
     ms: 8000,
     pose(e, r) {
       const s = smoothstep(Math.min(e, r) / 0.9);   // sitting down at the start, getting up at the end
-      const lean = 0.35 * Math.sin(Math.PI * s) - 0.12 * s;  // leans forward on the way down and up
+      const lean = 0.35 * Math.sin(Math.PI * s) + 0.12 * s;  // leans forward on the way down and up
+      // Down on the ground, knees up, forearms resting on his knees
       return {
-        lift: -0.6 * s, lLegX: -1.45 * s, rLegX: -1.45 * s, lLegZ: -0.08 * s, rLegZ: 0.08 * s,
-        bodyX: lean, lArmX: 0.45 * s, rArmX: 0.45 * s, lArmZ: -0.25 * s, rArmZ: 0.25 * s,
-        headY: Math.sin(e * 0.6) * 0.3 * s, headX: -0.05 * s
+        lift: -(KELO_LEG_Y - 0.22) * s, lLegX: -2.15 * s, rLegX: -2.15 * s, lLegZ: -0.12 * s, rLegZ: 0.12 * s,
+        lKneeX: 1.7 * s, rKneeX: 1.7 * s,
+        bodyX: lean, lArmX: -0.75 * s, rArmX: -0.75 * s, lArmZ: -0.12 * s, rArmZ: 0.12 * s, lElbowX: -0.5 * s, rElbowX: -0.5 * s,
+        headY: Math.sin(e * 0.6) * 0.3 * s, headX: -0.15 * s
       };
     }
   },
@@ -249,17 +317,19 @@ const KELO_EMOTES = {
     ms: 3500,
     pose(e) {
       if (e < 0.25) {
-        const k = smoothstep(e / 0.25);
-        return { lift: -0.1 * k, bodyX: 0.2 * k, lArmX: 0.4 * k, rArmX: 0.4 * k, lLegX: -0.2 * k, rLegX: -0.2 * k };
+        const k = smoothstep(e / 0.25), a = squatAngle(0.12 * k);
+        return { lift: -0.12 * k, bodyX: 0.2 * k, lArmX: 0.4 * k, rArmX: 0.4 * k, lElbowX: -0.6 * k, rElbowX: -0.6 * k, lLegX: -a, rLegX: -a, lKneeX: 2 * a, rKneeX: 2 * a, lGrip: 1, rGrip: 1 };
       }
       if (e < 0.85) {
         const k = (e - 0.25) / 0.6;
-        return { lift: 0.65 * Math.sin(Math.PI * k), yaw: Math.PI * 2 * smoothstep(k), lArmZ: -2.8, rArmZ: 2.8, lArmX: 0, rArmX: 0, lLegX: -0.3, rLegX: 0.1, headX: -0.2 };
+        return { lift: 0.65 * Math.sin(Math.PI * k), yaw: Math.PI * 2 * smoothstep(k), lArmZ: -2.8, rArmZ: 2.8, lArmX: 0, rArmX: 0, lGrip: 0, rGrip: 0,
+          lLegX: -0.3, rLegX: 0.1, lKneeX: 0.8, rKneeX: 0.3, lFootX: 0.4, rFootX: 0.4, headX: -0.2 };
       }
       const pump = Math.sin(e * 9);
       return {
         lift: Math.abs(Math.sin(e * 4.5)) * 0.08, bodyZ: Math.sin(e * 4.5) * 0.05, headX: -0.2,
-        rArmX: -0.1, rArmZ: 2.5 + Math.max(0, pump) * 0.4, lArmX: -0.1, lArmZ: -2.5 - Math.max(0, -pump) * 0.4
+        rArmX: -0.1, rArmZ: 2.5 + Math.max(0, pump) * 0.4, lArmX: -0.1, lArmZ: -2.5 - Math.max(0, -pump) * 0.4,
+        rElbowX: -0.3 - Math.max(0, -pump) * 0.6, lElbowX: -0.3 - Math.max(0, pump) * 0.6, lGrip: 1, rGrip: 1
       };
     }
   }
@@ -281,6 +351,20 @@ function playEmote(name, durationMs) {
 
 const _keloHandL = new THREE.Vector3(), _keloHandR = new THREE.Vector3(), _keloGrip = new THREE.Vector3();
 
+// How big a carried thing is, measured once in its own upright position (keloGroup's turn aside)
+function keloCarrySize(obj) {
+      if (obj.userData.carrySize) return obj.userData.carrySize;
+      const r = keloGroup.rotation.clone();
+      keloGroup.rotation.set(0, 0, 0);
+      keloGroup.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(obj);
+      keloGroup.rotation.copy(r);
+      keloGroup.updateMatrixWorld(true);
+      const size = box.isEmpty() ? new THREE.Vector3(0.4, 0.4, 0.4) : box.getSize(new THREE.Vector3());
+      obj.userData.carrySize = size;
+      return size;
+    }
+
 function finishKeloPose(t) {
       if (!keloBody) return;
       const a = keloAnim, dt = a.dt;
@@ -290,10 +374,14 @@ function finishKeloPose(t) {
       const holding = typeof carriedObject !== 'undefined' && carriedObject && carriedObject.parent === keloGroup;
       if (!state.isWalking) a.ramp = 0;
 
-      // Carrying something: both hands stay up under it
+      // Carrying something: forearms out in front, hands gripping it from the sides
       if (holding && !riding && (a.mode === 'walk' || a.mode === 'idle')) {
-        keloLeftArm.rotation.set(-0.95, 0, 0.15);
-        keloRightArm.rotation.set(-0.95, 0, -0.15);
+        const size = keloCarrySize(carriedObject);
+        const reach = Math.max(-0.35, Math.min(0.12, (Math.min(size.x, 0.9) / 2 + 0.03 - KELO_SHOULDER.x) / 0.62));
+        keloLeftArm.rotation.set(-0.38, 0, -Math.asin(reach));
+        keloRightArm.rotation.set(-0.38, 0, Math.asin(reach));
+        keloLeftElbow.rotation.x = keloRightElbow.rotation.x = -1.05;
+        keloLeftHand.userData.grip = keloRightHand.userData.grip = 0.75;
       }
 
       // Read what was written as the target and ease toward it
@@ -302,12 +390,18 @@ function finishKeloPose(t) {
         const r = get().rotation;
         target[name + 'X'] = r.x; target[name + 'Y'] = r.y; target[name + 'Z'] = r.z;
       });
+      target.lGrip = keloLeftHand.userData.grip;
+      target.rGrip = keloRightHand.userData.grip;
       target.bodyLift = keloBody.position.y - KELO_HIP_Y;
       target.bodyShift = keloBody.position.x;
+      // Relaxed joints are never quite straight: elbows and knees a touch bent, arms clear of his sides
+      target.lElbowX -= 0.16; target.rElbowX -= 0.16;
+      target.lArmZ -= 0.05; target.rArmZ += 0.05;
+      target.lKneeX += 0.04; target.rKneeX += 0.04;
       if (!a.base) a.base = { ...target };
       const out = {};
       for (const ch in target) {
-        const rate = (/^(lLeg|rLeg)/.test(ch) ? 12 : /^body/.test(ch) ? 8 : 10) * a.rate;
+        const rate = (/^(lLeg|rLeg|lKnee|rKnee|lFoot|rFoot)/.test(ch) ? 12 : /^body/.test(ch) ? 8 : 10) * a.rate;
         a.base[ch] = dampTo(a.base[ch], target[ch], rate, dt);
         out[ch] = a.base[ch];
       }
@@ -342,8 +436,18 @@ function finishKeloPose(t) {
         const armL = holding ? 0.1 : 1, armR = holding ? 0.1 : holdingTool ? 0.3 : 1;
         out.lLegX += k * legA * s;
         out.rLegX -= k * legA * s;
+        // Each knee folds as its leg swings through, and gives a little as the foot lands
+        const swingL = Math.max(0, -c), swingR = Math.max(0, c);
+        out.lKneeX += k * (0.1 + (0.85 + 0.45 * run) * swingL * swingL + 0.12 * Math.max(0, -s) * (1 - swingL));
+        out.rKneeX += k * (0.1 + (0.85 + 0.45 * run) * swingR * swingR + 0.12 * Math.max(0, s) * (1 - swingR));
+        // Heel strikes with the toes up; the back foot rolls onto its toes as it pushes off
+        out.lFootX += k * (-0.18 * Math.max(0, -s) + 0.3 * Math.max(0, s) * (1 - swingL));
+        out.rFootX += k * (-0.18 * Math.max(0, s) + 0.3 * Math.max(0, -s) * (1 - swingR));
         out.lArmX -= k * armA * armS * armL;
         out.rArmX += k * armA * armS * armR;
+        // Elbows bend more as each arm swings forward
+        out.lElbowX -= k * (0.12 + 0.3 * Math.max(0, armS) + 0.25 * run) * armL;
+        out.rElbowX -= k * (0.12 + 0.3 * Math.max(0, -armS) + 0.25 * run) * armR;
         out.lArmZ -= k * 0.06 * armL;
         out.rArmZ += k * 0.06 * armR;
         // Up at the passing step, down as each foot lands; lean into the walk, more when running
@@ -430,8 +534,18 @@ function finishKeloPose(t) {
         }
       }
 
+      // --- Feet stay level with the ground under him (on top of any heel-and-toe roll)
+      if (!resting) {
+        out.lFootX -= out.lLegX + out.lKneeX;
+        out.rFootX -= out.rLegX + out.rKneeX;
+        out.lFootZ -= out.lLegZ;
+        out.rFootZ -= out.rLegZ;
+      }
+
       // --- Write it all back
       KELO_JOINTS.forEach(([name, get]) => get().rotation.set(out[name + 'X'], out[name + 'Y'], out[name + 'Z']));
+      setKeloGrip(keloLeftHand, out.lGrip);
+      setKeloGrip(keloRightHand, out.rGrip);
       keloBody.position.set(out.bodyShift, KELO_HIP_Y + out.bodyLift, 0);
       keloGroup.position.y += out.lift;
       keloGroup.rotation.set(a.groupX, a.yaw + out.yaw, a.groupZ);
@@ -439,7 +553,7 @@ function finishKeloPose(t) {
       if (holding) keloHoldInHands(riding || resting ? null : a.mode);
     }
 
-// Whatever he carries sits in his hands: under them while carrying, and gripped like a tool while digging
+// Whatever he carries sits in his hands: held between them while carrying, and gripped like a tool while digging
 function keloHoldInHands(mode) {
       const obj = carriedObject;
       if (mode !== 'dig' && mode !== 'walk' && mode !== 'idle') {
@@ -449,22 +563,19 @@ function keloHoldInHands(mode) {
         return;
       }
       keloGroup.updateMatrixWorld(true);
-      _keloHandL.set(0, -0.75, 0);
-      _keloHandR.set(0, -0.75, 0);
-      keloGroup.worldToLocal(keloLeftArm.localToWorld(_keloHandL));
-      keloGroup.worldToLocal(keloRightArm.localToWorld(_keloHandR));
+      keloPalmLocal(keloLeftHand, _keloHandL);
+      keloPalmLocal(keloRightHand, _keloHandR);
       _keloHandL.add(_keloHandR).multiplyScalar(0.5);
       if (mode === 'dig') {
         // Grip it near the top: the handle sits in his hands and the business end points down
-        if (!obj.userData.gripHeight) {
-          const box = new THREE.Box3().setFromObject(obj);
-          obj.userData.gripHeight = Math.max(0.2, (box.max.y - box.min.y) * 0.8);
-        }
+        if (!obj.userData.gripHeight) obj.userData.gripHeight = Math.max(0.2, keloCarrySize(obj).y * 0.8);
         obj.rotation.x = -0.2;
         _keloGrip.set(0, obj.userData.gripHeight, 0).applyAxisAngle(new THREE.Vector3(1, 0, 0), obj.rotation.x);
         obj.position.copy(_keloHandL).sub(_keloGrip);
       } else {
+        // Something small or wide sits between his palms; something tall is held a third of the way up
+        const h = keloCarrySize(obj).y;
         obj.rotation.x = 0;
-        obj.position.set(_keloHandL.x, _keloHandL.y - 0.22, _keloHandL.z + 0.02);
+        obj.position.set(_keloHandL.x, _keloHandL.y - Math.min(h * 0.45, h > 0.9 ? h * 0.33 : 0.3), _keloHandL.z);
       }
     }

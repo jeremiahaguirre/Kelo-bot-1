@@ -54,3 +54,59 @@ body {
 /* Brain tab sections fold open and closed */
 .brain-section > summary::-webkit-details-marker { display: none; }
 .brain-section[open] .brain-caret { transform: rotate(90deg); }
+
+/* --- Exploring the world (js/explore.js, js/minimap.js, js/tryit.js) --- */
+:root { --explore-top: 160px; --explore-above-panel: 12px; }
+#exploreBar { top: var(--explore-top); }
+#explorePreviewChip { top: calc(var(--explore-top) + 46px); }
+#explorePlaces { top: calc(var(--explore-top) + 46px); max-height: calc(100% - var(--explore-top) - 60px - var(--explore-above-panel)); }
+.explore-mode-btn { display: flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #cbd5e1; transition: background 0.15s, color 0.15s; min-height: 32px; }
+.explore-mode-btn:hover { background: rgba(51, 65, 85, 0.8); color: #fff; }
+.explore-mode-btn.explore-mode-on { background: rgba(245, 158, 11, 0.9); color: #0f172a; }
+.explore-bar-btn { display: flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; color: #e2e8f0; background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(71, 85, 105, 0.7); min-height: 34px; }
+.explore-bar-btn:hover, .explore-bar-btn[aria-expanded="true"] { background: rgba(245, 158, 11, 0.2); border-color: rgba(251, 191, 36, 0.6); color: #fde68a; }
+.explore-round { width: 34px; justify-content: center; padding: 0; font-weight: 800; }
+.explore-x { width: 26px; height: 26px; flex-shrink: 0; border-radius: 9px; background: #1e293b; color: #cbd5e1; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+.explore-x:hover { background: #334155; color: #fff; }
+.explore-spot-btn { display: flex; align-items: center; gap: 6px; width: 100%; padding: 7px 9px; border-radius: 11px; background: #0f172a; border: 1px solid #334155; color: #e2e8f0; font-size: 12px; font-weight: 600; text-align: left; }
+.explore-spot-btn:hover { background: rgba(245, 158, 11, 0.18); border-color: rgba(251, 191, 36, 0.6); }
+.explore-place { display: flex; align-items: center; gap: 6px; min-width: 0; padding: 6px 8px; border-radius: 10px; background: #0f172a; border: 1px solid #1e293b; color: #e2e8f0; font-size: 11px; text-align: left; min-height: 32px; }
+.explore-place:hover { background: rgba(245, 158, 11, 0.15); border-color: rgba(251, 191, 36, 0.5); }
+.explore-place-kelo { width: 100%; background: rgba(245, 158, 11, 0.18); border-color: rgba(251, 191, 36, 0.5); color: #fde68a; font-weight: 700; font-size: 12px; }
+.explore-place-group { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #94a3b8; padding: 6px 2px 2px; }
+.explore-mini-btn { width: 22px; height: 22px; border-radius: 7px; background: #1e293b; color: #e2e8f0; font-size: 13px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+.explore-mini-btn:hover { background: #334155; }
+#exploreMinimap { width: 156px; height: 117px; }
+@media (min-width: 1100px) { #exploreMinimap { width: 200px; height: 150px; } }
+#exploreMinimapWrap, #btnShowMinimap { bottom: 12px; }
+@media (min-width: 640px) { body.menu-open #exploreMinimapWrap, body.menu-open #btnShowMinimap { bottom: 108px; } }
+.explore-where { padding: 7px 12px; border-radius: 14px; background: rgba(245, 158, 11, 0.92); color: #0f172a; font-size: 12px; font-weight: 800; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35); }
+.explore-where:hover { background: #fbbf24; }
+.explore-pad-btn { width: 30px; height: 30px; border-radius: 9px; background: #0f172a; border: 1px solid #334155; color: #fcd34d; font-size: 13px; display: flex; align-items: center; justify-content: center; touch-action: none; }
+.explore-pad-btn:hover { background: rgba(245, 158, 11, 0.25); }
+.explore-pad-btn:active { background: rgba(245, 158, 11, 0.45); }
+.explore-touch-btn { width: 48px; height: 48px; border-radius: 16px; background: rgba(2, 6, 23, 0.85); border: 1px solid rgba(71, 85, 105, 0.8); color: #fde68a; font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35); touch-action: none; backdrop-filter: blur(8px); }
+#btnShowMinimap.hidden, .explore-touch-btn.hidden { display: none; }
+.explore-touch-btn:active { background: rgba(245, 158, 11, 0.4); }
+#explorePad { display: flex; }
+#exploreJoystick, #exploreTouchColumn { display: none; }
+#exploreJoystick { width: 112px; height: 112px; border-radius: 9999px; background: rgba(2, 6, 23, 0.55); border: 2px solid rgba(251, 191, 36, 0.45); touch-action: none; bottom: var(--explore-above-panel); backdrop-filter: blur(6px); }
+#exploreJoystickKnob { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 9999px; background: rgba(245, 158, 11, 0.85); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); pointer-events: none; }
+#exploreTouchColumn { bottom: var(--explore-above-panel); }
+/* Touch screens: joystick and big buttons instead of the desktop pad */
+@media (pointer: coarse) {
+  #explorePad { display: none; }
+  #exploreJoystick { display: block; }
+  #exploreTouchColumn { display: flex; }
+  #exploreMinimapWrap, #btnShowMinimap { bottom: calc(var(--explore-above-panel) + 124px); }
+}
+.explore-help-card { padding: 10px; border-radius: 16px; background: #020617; border: 1px solid #1e293b; }
+.explore-help-head { font-weight: 700; color: #fde68a; margin-bottom: 4px; }
+.explore-help-card li { display: flex; gap: 8px; align-items: flex-start; color: #cbd5e1; line-height: 1.35; padding: 2px 0; }
+.explore-help-card li > span:first-child { width: 18px; flex-shrink: 0; text-align: center; }
+.try-label { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #94a3b8; }
+.try-btn { padding: 6px 10px; border-radius: 12px; background: #0f172a; border: 1px solid #334155; color: #e2e8f0; font-size: 12px; font-weight: 600; min-height: 32px; }
+.try-btn:hover { background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.5); }
+.try-btn.try-btn-on { background: rgba(56, 189, 248, 0.25); border-color: #38bdf8; color: #e0f2fe; }
+.try-gift { display: flex; gap: 8px; align-items: flex-start; width: 100%; text-align: left; padding: 7px 9px; border-radius: 12px; background: #0f172a; border: 1px solid #1e293b; }
+.try-gift:hover { background: rgba(245, 158, 11, 0.12); border-color: rgba(251, 191, 36, 0.45); }

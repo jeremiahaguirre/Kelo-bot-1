@@ -2,7 +2,7 @@
 // Loaded after museum.js. Going inside the Storehouse and the Museum for real. When he puts
 // something away or takes it out, he walks in through the door to the exact shelf, plinth or wall
 // it belongs on, reaches up or crouches down to it, and the thing moves between his hands and its
-// place. When it belongs on a lower floor he walks down the spiral stairs, step by step, and the
+// place. When it belongs on a lower floor he rides the glass elevator down the shaft, and the
 // earth in front of the building is cut away so you can watch him in the lit rooms below.
 //
 // How it fits together: goIndoors(site, jobs) walks him to the door the normal way (pathfinding)
@@ -12,11 +12,10 @@
 // always ends (even after an error) with him back out at the door.
 // The basement rooms, the stairs and the cutaway are only built while he is down there.
 
-const BASEMENT_STEPS_PER_LEVEL = 16;
-const SPIRAL_WALK_R = 0.42;   // where he walks on the spiral stairs
-const SPIRAL_OUTER_R = 0.76;  // the outer edge of the treads
 const INDOOR_WALK_SPEED = 1.8;
-const STAIR_WALK_SPEED = 0.95;
+// The glass elevator in the stairwell shaft: much quicker than walking 16 steps a floor
+const ELEVATOR_SPEED = 2.6;     // units a second (about 1.3 seconds a floor)
+const ELEVATOR_CAR_R = 0.66;
 
 // Everything about each building that the trips need, in the building's own coordinates
 // (its group sits on the ground at the building's centre)
@@ -172,34 +171,20 @@ function tripFace(p) {
       indoorTrip.rotY = Math.atan2(p.x - indoorTrip.pos.x, p.z - indoorTrip.pos.z);
     }
 
-// Reaching for something h above his feet: arms up for a high shelf, a crouch for a low one
+// Reaching for something h above his feet: arms up for a high shelf, a squat for a low one
 function reachPose(h) {
-      const crouch = h < 0.85 ? Math.min(0.42, 0.85 - h) : 0;
+      const crouch = h < 1.1 ? Math.min(0.6, 1.1 - h) : 0;
       indoorTrip.crouchTarget = crouch;
-      const rel = (1.7 - crouch - (h + 0.12)) / 0.78;
+      const reach = KELO_UPPER_ARM + KELO_FOREARM + KELO_PALM;
+      const rel = (KELO_SHOULDER.y - crouch - (h + 0.12)) / reach;
       const arm = -Math.acos(Math.max(-1, Math.min(1, rel)));
       keloLeftArm.rotation.set(arm, 0, 0.12);
       keloRightArm.rotation.set(arm, 0, -0.12);
-      keloBody.rotation.x = crouch ? 0.3 : h > 1.6 ? -0.08 : 0.06;
-      keloLeftLeg.rotation.x = -crouch * 2.2;
-      keloRightLeg.rotation.x = -crouch * 2.2;
-      keloHead.rotation.x = Math.max(-0.5, Math.min(0.5, -(h - 1.9) * 0.35));
-    }
-
-// The spiral stairs as a walking path, from one floor down (or up) to another
-function spiralPath(site, fromLevel, toLevel) {
-      const lo = Math.min(fromLevel, toLevel), hi = Math.max(fromLevel, toLevel);
-      const N = BASEMENT_STEPS_PER_LEVEL, rise = BASEMENT_LEVEL_DEPTH / N, dth = Math.PI * 2 / N;
-      const h = site.hatch, th0 = site.entryAngle;
-      const at = (th, r, y) => siteToWorld(site, h.x + Math.cos(th) * r, h.z + Math.sin(th) * r, y);
-      const pts = [at(th0, 0.98, levelFloorY(site, lo)), at(th0, SPIRAL_WALK_R, levelFloorY(site, lo))];
-      for (let k = lo * N; k < hi * N; k++) {
-        // Step down at the front of each tread, then walk across it
-        const y = site.floorY - (k + 1) * rise, ths = th0 + k * dth;
-        pts.push(at(ths + dth * 0.3, SPIRAL_WALK_R, y), at(ths + dth, SPIRAL_WALK_R, y));
-      }
-      pts.push(at(th0, 0.98, levelFloorY(site, hi)));
-      return toLevel > fromLevel ? pts : pts.reverse();
+      keloLeftElbow.rotation.x = keloRightElbow.rotation.x = 0.1;
+      keloLeftHand.userData.grip = keloRightHand.userData.grip = 0.15;
+      keloBody.rotation.x = crouch ? 0.35 : h > 1.6 ? -0.08 : 0.06;
+      if (crouch) keloSquat(crouch);
+      keloHead.rotation.x = Math.max(-0.5, Math.min(0.5, -(h - 2.3) * 0.35));
     }
 
 // --- What gets built while he is down there ---------------------------------------------------
@@ -212,39 +197,6 @@ function disposeTree(obj) {
         if (o.geometry) o.geometry.dispose();
         if (o.material && o.material.map && !o.material.userData.keepMap) o.material.map.dispose();
       });
-    }
-
-function buildSpiralStairs(site, level) {
-      const g = new THREE.Group();
-      const N = BASEMENT_STEPS_PER_LEVEL, rise = BASEMENT_LEVEL_DEPTH / N, dth = Math.PI * 2 / N;
-      const h = site.hatch, th0 = site.entryAngle;
-      const tread = new THREE.MeshStandardMaterial({ color: site.key === 'museum' ? 0xd6d0c4 : 0x9a6a3a, roughness: 0.8 });
-      const steel = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.6, roughness: 0.4 });
-      const treadGeo = new THREE.BoxGeometry(SPIRAL_OUTER_R - 0.06, 0.07, SPIRAL_OUTER_R * dth + 0.04);
-      const postGeo = new THREE.BoxGeometry(0.04, 0.85, 0.04);
-      const rail = [];
-      const total = level * N;
-      for (let k = 0; k < total; k++) {
-        const th = th0 + (k + 0.5) * dth, y = site.floorY - (k + 1) * rise;
-        const step = new THREE.Mesh(treadGeo, tread);
-        step.position.set(h.x + Math.cos(th) * (SPIRAL_OUTER_R + 0.06) / 2, y - 0.035, h.z + Math.sin(th) * (SPIRAL_OUTER_R + 0.06) / 2);
-        step.rotation.y = -th;
-        step.userData.sharedGeometry = k > 0;
-        g.add(step);
-        if (k % 2 === 0) {
-          const post = new THREE.Mesh(postGeo, steel);
-          post.position.set(h.x + Math.cos(th) * (SPIRAL_OUTER_R - 0.03), y + 0.425, h.z + Math.sin(th) * (SPIRAL_OUTER_R - 0.03));
-          post.userData.sharedGeometry = k > 0;
-          g.add(post);
-        }
-        rail.push(new THREE.Vector3(h.x + Math.cos(th) * (SPIRAL_OUTER_R - 0.03), y + 0.86, h.z + Math.sin(th) * (SPIRAL_OUTER_R - 0.03)));
-      }
-      if (rail.length > 1) g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(rail), rail.length * 3, 0.03, 6, false), steel));
-      const height = level * BASEMENT_LEVEL_DEPTH + 0.9;
-      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, height, 10), steel);
-      pole.position.set(h.x, site.floorY - level * BASEMENT_LEVEL_DEPTH + height / 2, h.z);
-      g.add(pole);
-      return g;
     }
 
 // One lit room under the building: floor, three walls (the front is the cut-away side), ceiling
@@ -342,14 +294,74 @@ function museumSculptureHolder(c, slot, shift = 0) {
       return holder;
     }
 
+// A round glass elevator car (built in its own group so it can ride up and down) and the guide
+// rails down the shaft to the deepest floor he needs
+function buildElevator(site, level) {
+      const shaft = new THREE.Group();
+      const h = site.hatch;
+      const steel = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.75, roughness: 0.3 });
+      const depth = level * BASEMENT_LEVEL_DEPTH + 3.2;
+      [0.3, 0.3 + Math.PI].forEach(a => {
+        const rail = new THREE.Mesh(new THREE.BoxGeometry(0.06, depth, 0.06), steel);
+        rail.position.set(h.x + Math.cos(a) * (ELEVATOR_CAR_R + 0.06), site.floorY - level * BASEMENT_LEVEL_DEPTH + depth / 2, h.z + Math.sin(a) * (ELEVATOR_CAR_R + 0.06));
+        shaft.add(rail);
+      });
+      const car = new THREE.Group();
+      const floor = new THREE.Mesh(new THREE.CylinderGeometry(ELEVATOR_CAR_R, ELEVATOR_CAR_R, 0.08, 28), new THREE.MeshStandardMaterial({ color: 0x9aa4b2, metalness: 0.8, roughness: 0.35 }));
+      floor.position.y = -0.04;
+      const roof = new THREE.Mesh(new THREE.CylinderGeometry(ELEVATOR_CAR_R, ELEVATOR_CAR_R, 0.06, 28), steel);
+      roof.position.y = 3.05;
+      // Glass all round except the doorway facing where he steps in
+      const glass = new THREE.Mesh(new THREE.CylinderGeometry(ELEVATOR_CAR_R - 0.02, ELEVATOR_CAR_R - 0.02, 3.0, 28, 1, true, site.entryAngle + 0.55, Math.PI * 2 - 1.1),
+        new THREE.MeshStandardMaterial({ color: 0xbfe3ff, transparent: true, opacity: 0.22, metalness: 0.1, roughness: 0.05, side: THREE.DoubleSide, depthWrite: false }));
+      glass.position.y = 1.5;
+      glass.rotation.y = -Math.PI / 2;
+      const panel = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.32, 0.16), new THREE.MeshStandardMaterial({ color: 0x1f2937, emissive: 0xf59e0b, emissiveIntensity: 0.35 }));
+      panel.position.set(Math.cos(site.entryAngle + 0.75) * (ELEVATOR_CAR_R - 0.08), 1.35, Math.sin(site.entryAngle + 0.75) * (ELEVATOR_CAR_R - 0.08));
+      const light = new THREE.Mesh(new THREE.CircleGeometry(0.28, 20), new THREE.MeshBasicMaterial({ color: 0xfff1c9 }));
+      light.rotation.x = Math.PI / 2;
+      light.position.y = 3.01;
+      car.add(floor, roof, glass, panel, light);
+      car.position.set(h.x, site.floorY, h.z);
+      shaft.add(car);
+      shaft.userData.car = car;
+      return shaft;
+    }
+
+// Ride the elevator from one floor to another: he steps in, the car glides there with him, he steps out
+async function elevatorRide(site, fromLevel, toLevel) {
+      const car = basementBuilt && basementBuilt.elevator ? basementBuilt.elevator.userData.car : null;
+      const h = site.hatch;
+      const y0 = levelFloorY(site, fromLevel), y1 = levelFloorY(site, toLevel);
+      // Step into the middle of the car
+      await tripWalk([siteToWorld(site, h.x, h.z, y0)]);
+      tripFace(siteToWorld(site, stairEntry(site).x, stairEntry(site).z, y0));
+      await tripPause(350);
+      const start = Date.now(), dist = Math.abs(y1 - y0), ms = Math.max(400, dist / ELEVATOR_SPEED * 1000);
+      const base = site.group.position.y;
+      await new Promise(resolve => {
+        const tick = () => {
+          // Ease in and out so the ride starts and stops gently
+          const t = Math.min(1, (Date.now() - start) / ms), e = t * t * (3 - 2 * t);
+          const y = y0 + (y1 - y0) * e;
+          if (car) car.position.y = y;
+          if (indoorTrip.pos) indoorTrip.pos.y = base + y;
+          if (t < 1 && indoorTrip.active) setTimeout(tick, 16); else resolve();
+        };
+        tick();
+      });
+      await tripPause(300);
+    }
+
 function buildBasements(site, level) {
       clearBasements();
       const group = new THREE.Group();
-      group.add(buildSpiralStairs(site, level));
+      const elevator = buildElevator(site, level);
+      group.add(elevator);
       for (let l = 1; l <= level; l++) group.add(buildBasementRoom(site, l));
       site.group.add(group);
       site.group.traverse(o => { if (o.userData && o.userData.stairwellDark) o.visible = false; });
-      basementBuilt = { site, group, level };
+      basementBuilt = { site, group, level, elevator };
     }
 
 function clearBasements() {
@@ -528,7 +540,9 @@ function basementCameraUpdate() {
 // --- Moving a thing between his hands and its place ------------------------------------------
 function handsWorldPosition() {
       keloGroup.updateMatrixWorld(true);
-      return keloGroup.localToWorld(new THREE.Vector3(0, 1.1 - indoorTrip.crouch, 0.62));
+      // halfway between his palms
+      const l = keloPalmLocal(keloLeftHand, new THREE.Vector3()), r = keloPalmLocal(keloRightHand, new THREE.Vector3());
+      return keloGroup.localToWorld(l.add(r).multiplyScalar(0.5));
     }
 
 // Fly an object (already in the building's group) from one local position to another over ms,
@@ -677,8 +691,9 @@ async function runIndoorTrip(siteKey, jobs) {
               buildBasements(site, deepest);
               setEarthCut(site, deepest);
             }
-            tripMood(`Going down to ${site.key === 'museum' ? 'the lower gallery' : 'basement'} B${want}`, `${job.what || 'It'} ${job.mode === 'take' ? 'is down' : 'goes'} on B${want}. Down the stairs I go.`);
-            await tripWalk(spiralPath(site, level, want), STAIR_WALK_SPEED);
+            tripMood(`Taking the elevator to ${site.key === 'museum' ? 'the lower gallery' : 'basement'} B${want}`, `${job.what || 'It'} ${job.mode === 'take' ? 'is down' : 'goes'} on B${want}. Elevator, please!`);
+            await elevatorRide(site, level, want);
+            await tripWalk([atFloor(entry, want)]);
             level = want;
             cur = entry;
             tripMood(`Down on B${want} of the ${site.name}`);
@@ -692,8 +707,10 @@ async function runIndoorTrip(siteKey, jobs) {
         if (level > 0) {
           const entry = stairEntry(site);
           await tripWalk(routeInside(site, cur, entry).map(p => atFloor(p, level)));
-          tripMood('Climbing back up the stairs');
-          await tripWalk(spiralPath(site, level, 0), STAIR_WALK_SPEED);
+          tripMood('Riding the elevator back up');
+          await tripWalk([atFloor(entry, level)]);
+          await elevatorRide(site, level, 0);
+          await tripWalk([atFloor(entry, 0)]);
           setEarthCut(null);
           clearBasements();
           cur = entry;

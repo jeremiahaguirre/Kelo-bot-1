@@ -49,44 +49,72 @@
           </div>
         </div>
 
-        <!-- Top-Left Camera Bar -->
-        <div class="absolute top-44 left-3 z-20 hidden sm:flex flex-wrap items-center gap-1.5 max-w-[calc(100%-1.5rem)] bg-slate-950/85 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800/90">
-          <button data-cam="follow" class="cam-btn px-2.5 py-1 rounded-xl bg-amber-500/25 text-amber-300 text-[11px] font-semibold flex items-center gap-1 transition">
-            <i class="ph-fill ph-crosshair"></i> <span>Follow Kelo-1</span>
-          </button>
-          <button data-cam="bird" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300 text-[11px] font-medium flex items-center gap-1 transition">
-            <i class="ph-fill ph-bird"></i> <span>Bird's-Eye (Arrows)</span>
-          </button>
-          <button data-cam="overview" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300 text-[11px] font-medium flex items-center gap-1 transition">
-            <i class="ph-fill ph-mountains"></i> <span>Valley</span>
-          </button>
-          <button data-cam="house" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300 text-[11px] font-medium flex items-center gap-1 transition">
-            <i class="ph-fill ph-house-line"></i> <span>House</span>
-          </button>
-          <button data-cam="cafes" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300 text-[11px] font-medium flex items-center gap-1 transition">
-            <i class="ph-fill ph-coffee"></i> <span>Cafes</span>
-          </button>
-<button data-cam="storehouse" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300 text-[11px] font-medium flex items-center gap-1 transition">
-            <i class="ph-fill ph-warehouse"></i> <span>Storehouse</span>
-          </button>
-          <button id="btnToggleRoof" class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-mono border border-slate-700/80 transition">
-            <span>Roofs: Cutaway</span>
-          </button>
+        <!-- Exploring the world (js/explore.js): Follow Kelo-1 or Explore freely, Places, help -->
+        <div id="exploreBar" class="absolute left-2 sm:left-3 z-20 flex items-center gap-1 p-1 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-slate-800/90 shadow-xl">
+          <div class="flex rounded-xl bg-slate-900/90 p-0.5" role="group" aria-label="Camera">
+            <button type="button" data-explore-mode="follow" class="explore-mode-btn" aria-pressed="true" title="The camera stays with Kelo-1 (K)"><span aria-hidden="true">🎯</span><span>Follow<span class="hidden sm:inline"> Kelo-1</span></span></button>
+            <button type="button" data-explore-mode="explore" class="explore-mode-btn" aria-pressed="false" title="Move the camera yourself"><span aria-hidden="true">🧭</span><span>Explore</span></button>
+          </div>
+          <button type="button" id="btnPlaces" class="explore-bar-btn" aria-expanded="false" aria-controls="explorePlaces" title="Jump to a place"><span aria-hidden="true">📍</span><span>Places</span></button>
+          <button type="button" data-explore-help class="explore-bar-btn explore-round" aria-label="How to explore" title="How to explore (?)">?</button>
+        </div>
+        <div id="explorePreviewChip" class="hidden absolute left-2 sm:left-3 z-20 px-2.5 py-1 rounded-xl bg-sky-950/90 border border-sky-500/50 text-[11px] text-sky-100 shadow-lg"></div>
+
+        <!-- Places: a quick-jump list -->
+        <div id="explorePlaces" class="hidden absolute left-2 sm:left-3 z-30 w-[min(360px,calc(100%-1rem))] rounded-2xl bg-slate-950/95 backdrop-blur-md border border-slate-700 shadow-2xl p-2.5 overflow-y-auto" role="dialog" aria-label="Places">
+          <div class="flex items-center justify-between mb-1.5">
+            <div class="text-xs font-bold text-slate-100">📍 Fly to a place</div>
+            <button type="button" id="btnClosePlaces" class="explore-x" aria-label="Close places">✕</button>
+          </div>
+          <div id="explorePlacesList" class="space-y-1"></div>
+          <div class="mt-2 pt-2 border-t border-slate-800 flex flex-wrap items-center gap-2 text-[11px] text-slate-300">
+            <button id="btnToggleRoof" type="button" class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-mono border border-slate-700/80 transition"><span>Roofs: Cutaway</span></button>
+          </div>
         </div>
 
-        <!-- Top-Right Bird's-Eye Arrow-Key D-Pad & Live Altitude/Tool Readout -->
-        <div class="absolute bottom-3 right-3 z-20 hidden md:flex flex-col items-end gap-1.5">
-          <div class="bg-slate-950/85 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800/90 grid grid-cols-3 gap-1 text-xs">
-            <div></div>
-            <button data-pan="up" title="Fly North (Up Arrow / W)" class="pan-key-btn w-7 h-7 rounded-lg bg-slate-900 hover:bg-amber-500/30 text-amber-300 flex items-center justify-center border border-slate-700">▲</button>
-            <div></div>
-            <button data-pan="left" title="Fly West (Left Arrow / A)" class="pan-key-btn w-7 h-7 rounded-lg bg-slate-900 hover:bg-amber-500/30 text-amber-300 flex items-center justify-center border border-slate-700">◀</button>
-            <button data-pan="bird" title="Center Bird's-Eye View" class="pan-key-btn w-7 h-7 rounded-lg bg-amber-500/20 hover:bg-amber-500/40 text-amber-200 font-mono text-[9px] font-bold flex items-center justify-center border border-amber-400/40">TOP</button>
-            <button data-pan="right" title="Fly East (Right Arrow / D)" class="pan-key-btn w-7 h-7 rounded-lg bg-slate-900 hover:bg-amber-500/30 text-amber-300 flex items-center justify-center border border-slate-700">▶</button>
-            <div></div>
-            <button data-pan="down" title="Fly South (Down Arrow / S)" class="pan-key-btn w-7 h-7 rounded-lg bg-slate-900 hover:bg-amber-500/30 text-amber-300 flex items-center justify-center border border-slate-700">▼</button>
-            <div></div>
+        <!-- Click menu for a spot on the ground -->
+        <div id="exploreSpotMenu" class="hidden fixed z-40 w-52 rounded-2xl bg-slate-950/95 backdrop-blur-md border border-amber-400/40 shadow-2xl p-2.5" role="menu"></div>
+
+        <!-- Minimap (js/minimap.js) -->
+        <div id="exploreMinimapWrap" class="hidden absolute left-3 z-20 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-slate-800/90 shadow-xl p-1.5">
+          <div class="flex items-center justify-between gap-1 mb-1 px-0.5">
+            <span class="text-[10px] font-bold text-slate-300">🗺️ Map <span class="font-normal text-slate-500">· click to fly</span></span>
+            <div class="flex items-center gap-1">
+              <button type="button" data-minimap-zoom="-1" class="explore-mini-btn" aria-label="Zoom the map out">−</button>
+              <button type="button" data-minimap-zoom="1" class="explore-mini-btn" aria-label="Zoom the map in">+</button>
+              <button type="button" id="btnHideMinimap" class="explore-mini-btn" aria-label="Hide the map">✕</button>
+            </div>
           </div>
+          <canvas id="exploreMinimap" class="block rounded-xl cursor-crosshair" aria-label="Map of the island"></canvas>
+        </div>
+        <button type="button" id="btnShowMinimap" class="hidden absolute left-3 z-20 explore-touch-btn" aria-label="Show the map" title="Show the map">🗺️</button>
+
+        <!-- Desktop: move, turn and zoom buttons, and Where is Kelo-1? -->
+        <div id="explorePad" class="absolute bottom-3 right-3 z-20 flex-col items-end gap-1.5">
+          <button type="button" data-where-kelo class="explore-where">🤖 Where is Kelo-1?</button>
+          <div class="grid grid-cols-3 gap-1 p-1.5 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-slate-800/90">
+            <button type="button" data-hold="turnLeft" class="explore-pad-btn" title="Turn left (Q)" aria-label="Turn left">⟲</button>
+            <button type="button" data-hold="up" class="explore-pad-btn" title="Move forward (W / Up)" aria-label="Move forward">▲</button>
+            <button type="button" data-hold="turnRight" class="explore-pad-btn" title="Turn right (E)" aria-label="Turn right">⟳</button>
+            <button type="button" data-hold="left" class="explore-pad-btn" title="Move left (A / Left)" aria-label="Move left">◀</button>
+            <button type="button" data-hold="down" class="explore-pad-btn" title="Move back (S / Down)" aria-label="Move back">▼</button>
+            <button type="button" data-hold="right" class="explore-pad-btn" title="Move right (D / Right)" aria-label="Move right">▶</button>
+            <button type="button" data-hold="zoomOut" class="explore-pad-btn" title="Zoom out (−)" aria-label="Zoom out">−</button>
+            <button type="button" data-hold="tiltUp" class="explore-pad-btn text-[10px]" title="Look from higher up (R)" aria-label="Look from higher up">⤒</button>
+            <button type="button" data-hold="zoomIn" class="explore-pad-btn" title="Zoom in (+)" aria-label="Zoom in">+</button>
+          </div>
+        </div>
+
+        <!-- Touch screens: a joystick to move, and big zoom/turn buttons -->
+        <div id="exploreJoystick" class="absolute left-3 z-20" aria-label="Move joystick" role="application">
+          <div id="exploreJoystickKnob"></div>
+        </div>
+        <div id="exploreTouchColumn" class="absolute right-2 z-20 flex-col gap-2">
+          <button type="button" data-where-kelo class="explore-touch-btn" aria-label="Where is Kelo-1?" title="Where is Kelo-1?">🤖</button>
+          <button type="button" data-hold="zoomIn" class="explore-touch-btn" aria-label="Zoom in">+</button>
+          <button type="button" data-hold="zoomOut" class="explore-touch-btn" aria-label="Zoom out">−</button>
+          <button type="button" data-hold="turnLeft" class="explore-touch-btn" aria-label="Turn left">⟲</button>
+          <button type="button" data-hold="turnRight" class="explore-touch-btn" aria-label="Turn right">⟳</button>
         </div>
 
 </div>
@@ -532,11 +560,68 @@
               <span>Water the garden</span>
               <span id="gardenRipeBadge" class="px-1.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 font-mono text-[10px]">4/4</span>
             </button></div>
-          <p class="text-[11px] text-slate-400">Drag to orbit the camera, scroll or pinch to zoom, and use the arrow keys or WASD in Bird's-Eye mode to fly around. Click the ground to suggest a spot to explore, or click Kelo-1 to say hi.</p>
+          <p class="text-[11px] text-slate-400">Drag the ground to slide the map, right-drag or twist two fingers to turn, scroll or pinch to zoom, and WASD or the arrow keys to move. Double-click to fly somewhere; click the ground to send Kelo-1 there or ask what it is. <button type="button" data-explore-help class="underline text-amber-300 hover:text-amber-200">How to explore</button></p>
         </div>
+        <div id="tryItPanel" class="p-3 rounded-2xl bg-slate-950 border border-sky-900/70 space-y-2.5"></div>
       </div>
     </div>
   </aside>
+
+  <!-- How to explore (js/explore.js): shown on the first visit, and from the ? button -->
+  <div id="exploreHelp" class="hidden fixed inset-0 z-50 items-center justify-center bg-slate-950/70 backdrop-blur-sm p-3" role="dialog" aria-modal="true" aria-labelledby="exploreHelpTitle">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-xl w-full max-h-[92vh] overflow-y-auto p-4 sm:p-5 space-y-3 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <h3 id="exploreHelpTitle" class="text-base font-bold text-white">🧭 How to explore</h3>
+        <button type="button" data-help-close class="explore-x" aria-label="Close">✕</button>
+      </div>
+      <p class="text-[12px] text-slate-300">Two ways to watch: <b class="text-amber-200">🎯 Follow Kelo-1</b> keeps him in view wherever he goes. <b class="text-amber-200">🧭 Explore</b> lets you fly anywhere yourself. Moving the map switches to Explore; <b>🤖 Where is Kelo-1?</b> brings you back.</p>
+      <div class="grid sm:grid-cols-2 gap-2 text-[12px]">
+        <div class="explore-help-card">
+          <div class="explore-help-head">🖱️ Mouse</div>
+          <ul>
+            <li><span>✋</span> Drag the ground to slide the map</li>
+            <li><span>🔄</span> Right-drag to turn and tilt</li>
+            <li><span>🔍</span> Scroll to zoom toward the cursor</li>
+            <li><span>✈️</span> Double-click a spot to fly there</li>
+            <li><span>👆</span> Click the ground: Fly here, Send Kelo-1 here, or What's this?</li>
+            <li><span>🏛️</span> Click the Storehouse or Museum to look inside</li>
+          </ul>
+        </div>
+        <div class="explore-help-card">
+          <div class="explore-help-head">⌨️ Keys</div>
+          <ul>
+            <li><span>⬆️</span> W A S D or the arrow keys to move</li>
+            <li><span>↩️</span> Q and E to turn</li>
+            <li><span>⤒</span> R and F to tilt</li>
+            <li><span>➕</span> + and − to zoom</li>
+            <li><span>🤖</span> K to fly back to Kelo-1</li>
+            <li><span>❔</span> ? opens this card</li>
+          </ul>
+        </div>
+        <div class="explore-help-card">
+          <div class="explore-help-head">📱 Touch</div>
+          <ul>
+            <li><span>☝️</span> One finger slides the map</li>
+            <li><span>🤏</span> Pinch to zoom, twist two fingers to turn</li>
+            <li><span>🕹️</span> The joystick moves you around</li>
+            <li><span>👆</span> Tap the ground for the spot menu</li>
+          </ul>
+        </div>
+        <div class="explore-help-card">
+          <div class="explore-help-head">🗺️ Map and places</div>
+          <ul>
+            <li><span>🗺️</span> The map shows Kelo-1 (arrow), his vehicles, digs and builds, and what you can see</li>
+            <li><span>👆</span> Click the map to fly there</li>
+            <li><span>📍</span> Places jumps to any building, dig or project</li>
+          </ul>
+        </div>
+      </div>
+      <label class="flex items-center gap-2 text-[12px] text-slate-300"><input id="exploreAutoReturn" type="checkbox" class="accent-amber-500"> Go back to following Kelo-1 after 90 seconds of not touching anything</label>
+      <div class="flex justify-end">
+        <button type="button" data-help-close class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs">Got it</button>
+      </div>
+    </div>
+  </div>
 
 <div id="codeViewerModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
     <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-5 space-y-3 shadow-2xl">
@@ -607,6 +692,7 @@
   <script src="./js/hobbies.js"></script>
   <script src="./js/mining.js"></script>
   <script src="./js/growth.js"></script>
+  <script src="./js/kelo-body.js"></script>
   <script src="./js/scene.js"></script>
   <script src="./js/realism.js"></script>
   <script src="./js/house.js"></script>
@@ -636,5 +722,8 @@
   <script src="./js/printer.js"></script>
   <script src="./js/main.js"></script>
   <script src="./js/portal.js"></script>
+  <script src="./js/explore.js"></script>
+  <script src="./js/minimap.js"></script>
+  <script src="./js/tryit.js"></script>
 </body>
 </html>

@@ -79,7 +79,7 @@ function renderClockUI() {
       const el = document.getElementById('worldClockText');
       if (!el) return;
       const w = worldNow();
-      el.textContent = `📅 Day ${w.day} • ${SEASON_EMOJI[w.season]} ${w.season} (${w.dayOfYear}/365) • 🕒 ${clockLabel(w.hour)}${w.isNight ? ' 🌙' : ''}${typeof windStatusText === 'function' ? ` • ${windStatusText()}` : ''}`;
+      el.textContent = `📅 Day ${w.day} • ${SEASON_EMOJI[w.season]} ${w.season} (${w.dayOfYear}/365) • 🕒 ${clockLabel(w.hour)}${w.isNight ? ' 🌙' : ''}${typeof windStatusText === 'function' ? ` • ${windStatusText()}` : ''}${typeof weatherStatusText === 'function' && weatherStatusText() ? ` • ${weatherStatusText()}` : ''}`;
     }
 
 window.addEventListener('DOMContentLoaded', () => {

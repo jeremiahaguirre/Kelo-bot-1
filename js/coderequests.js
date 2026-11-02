@@ -1,6 +1,6 @@
 // Kelo-bot-1 — js/coderequests.js
 // Loaded after projects.js. Code requests: some things Kelo-1 wants can't be mailed to him, because
-// his world simply can't do them yet (fishing, rain, a pet...). So he writes to the person who codes
+// his world simply can't do them yet (fishing, a pet, cooking...). So he writes to the person who codes
 // his world and asks them to add it. These letters show up in the Post tab with a 💻 badge.
 // The owner marks each one "Done — it's coded in" or "Not now", and can copy every open one as a
 // markdown checklist to paste into an issue or a to-do list.
@@ -15,8 +15,6 @@ const CODE_WISHES = [
     why: 'The valley is big, and it would be nice to have a friend who stays.' },
   { key: 'music', feature: 'Instruments that make real sounds when I play them', fits: () => state.hobbies.some(h => h.style === 'music') || ownsSomething(/harmonica|guitar|ukulele|flute|drum|violin|piano|keyboard|kazoo|ocarina/i),
     why: 'When I practise my music the valley stays quiet. I want to hear my songs.' },
-  { key: 'rain', feature: 'Rain, with puddles and the smell after a storm', fits: () => state.plantings.length > 0 || state.gardenPlots.length > 0,
-    why: 'My garden only ever sees sunshine, and I read that plants love rain.' },
   { key: 'swimming', feature: 'Swimming lessons, so deep water is not so scary', fits: () => Boolean(state.knowsLakeDanger),
     why: 'I found out the hard way that I sink. I want to learn to stay afloat.' },
   { key: 'campfire', feature: 'A campfire I can sit beside at night', fits: () => typeof worldNow === 'function' && worldNow().isNight,

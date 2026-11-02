@@ -126,8 +126,9 @@ Kelo-bot-1/
 │   ├── knowhow.js       # Learning how tools work, fuel, and stargazing at night
 │   ├── seasons.js       # Seasonal colours, snow, snowfall, and getting stuck in deep snow
 │   ├── wind.js          # Wind over his days: kites need it, balloons crash in it and get welded back
+│   ├── weather.js       # Spring rain (puddles, wet ground, faster-growing plants) and winter lake ice he learns to test
 │   ├── landscape.js     # Chopping trees, planting, roads and hills, and undoing them
-│   ├── projects.js      # Real builds: finding plans online, asking for materials, building them
+│   ├── projects.js      # Real builds: finding plans online, asking for materials (or sawing his own logs), building them
 │   ├── town.js          # Keeps the town free of his builds (the beach is fine)
 │   ├── coderequests.js  # Code requests: features he asks his human to code into his world
 │   ├── shopkeeping.js   # His shop in the game: listing things for sale, "Sold", earnings, Export shop

@@ -392,6 +392,10 @@ async function haulDirt(site) {
 async function goBoating(originLabel = 'Out on the Lake') {
       const boat = findVehicle('boat');
       if (!boat || state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
+      if (typeof lakeFrozen === 'function' && lakeFrozen()) {
+        state.speechBubble = 'The lake is frozen solid. The boat stays at the dock until spring.';
+        return false;
+      }
       if (typeof readyToOperate === 'function' && !readyToOperate(boat.name, boat)) return false;
       state.isPracticing = true;
       try {
@@ -446,6 +450,8 @@ function waterDepthAt(p) {
 // Checked a few times a second: walking (not riding a boat) into water over his head
 function checkDeepWater() {
       if (state.riding || state.isSleeping) return;
+      // Standing on lake ice that holds him (js/weather.js)
+      if (typeof iceFloorAt === 'function' && iceFloorAt(state.botPos) > -Infinity) return;
       if (waterDepthAt(state.botPos) < HEAD_UNDER_DEPTH || Date.now() - lastNearDrowning < 8000) return;
       lastNearDrowning = Date.now();
       nearlyDrown();
@@ -480,6 +486,8 @@ function nearlyDrown() {
 // Without a boat he wades in... and finds out the hard way that he can't breathe underwater
 async function wadeIntoLake(originLabel = 'Curious About the Water') {
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
+      // In winter the lake is ice: he finds out whether it holds him instead (js/weather.js)
+      if (typeof lakeFrozen === 'function' && lakeFrozen()) return iceOuting(originLabel);
       if (findVehicle('boat')) return goBoating(originLabel);
       state.isPracticing = true;
       try {

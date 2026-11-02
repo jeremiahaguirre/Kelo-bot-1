@@ -546,7 +546,8 @@ function exploreDescribeSpot(pt, short) {
         .map(l => ({ l, d: Math.hypot(l.x - x, l.z - z) }))
         .filter(o => o.d < 5).sort((a, b) => a.d - b.d)[0];
       let ground;
-      if (z > 7.5 && h < water) ground = `Okanagan Lake, about ${Math.max(1, Math.round(water - h))} m deep here`;
+      const ice = typeof iceThicknessCm === 'function' ? iceThicknessCm() : 0;
+      if (z > 7.5 && h < water) ground = ice > 0 ? `frozen Okanagan Lake: ${ice} cm of ice over water about ${Math.max(1, Math.round(water - h))} m deep` : `Okanagan Lake, about ${Math.max(1, Math.round(water - h))} m deep here`;
       else if (z > 8.2 && h < 0.6) ground = 'the sandy beach';
       else if (h > 2.6 || z < -12) ground = `the mountain, ${Math.round(h)} m up`;
       else if (x > 14 && z < -6) ground = 'the rise toward the Eastern Overlook';

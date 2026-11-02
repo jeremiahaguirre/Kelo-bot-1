@@ -166,7 +166,8 @@ function plantingMesh(e) {
     }
 
 function growthOf(e) {
-      const days = (Date.now() - e.at) / (typeof WORLD_DAY_MS === 'number' ? WORLD_DAY_MS : 43200000);
+      // Spring rain gives it a head start on top of its own days (js/weather.js)
+      const days = (Date.now() - e.at + (e.rainMs || 0)) / (typeof WORLD_DAY_MS === 'number' ? WORLD_DAY_MS : 43200000);
       return Math.min(1, 0.15 + days / GROW_DAYS);
     }
 
@@ -250,7 +251,8 @@ function hillTerrainRefresh(e) {
 
 // --- The jobs -----------------------------------------------------------------------------------
 function nearestTree(x, z) {
-      return valleyTrees.filter(t => !t.removed).sort((a, b) => Math.hypot(a.x - x, a.z - z) - Math.hypot(b.x - x, b.z - z))[0] || null;
+      // A tree with his treehouse in it is never chopped (js/projects.js)
+      return valleyTrees.filter(t => !t.removed && !t.hosting).sort((a, b) => Math.hypot(a.x - x, a.z - z) - Math.hypot(b.x - x, b.z - z))[0] || null;
     }
 
 async function chopTree(x = state.botPos.x, z = state.botPos.z, why = '', originLabel = 'Shaping the Valley') {

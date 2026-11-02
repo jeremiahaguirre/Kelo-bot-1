@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-01T22:11:23.688Z",
-  "runs": 7,
+  "updatedAt": "2026-11-02T06:25:21.134Z",
+  "runs": 8,
   "curiosities": [
-    "André-Michel Guerry"
+    "Pie chart"
   ],
   "entries": [
     {
@@ -253,6 +253,41 @@
       "shapeFrom": "Arthur H. Robinson",
       "nextCuriosity": "André-Michel Guerry",
       "coreMemory": null
+    },
+    {
+      "id": "dream-1793600721134",
+      "at": 1793600721134,
+      "brain": "procedural",
+      "topic": "André-Michel Guerry",
+      "title": "Dreaming of Moral statistics",
+      "text": "Dear Diary, while nobody was around I looked up \"André-Michel Guerry\" and drifted from André-Michel Guerry to Moral statistics. Moral statistics most narrowly refers to numerical data generally considered to be indicative of social pathology in groups of people. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "André-Michel Guerry",
+          "url": "https://en.wikipedia.org/wiki/Andr%C3%A9-Michel_Guerry",
+          "extract": "André-Michel Guerry was a French lawyer and amateur statistician. Together with Adolphe Quetelet he may be regarded as the founder of moral statistics which led to the development of criminology, sociology and ultimately, modern social science."
+        },
+        {
+          "title": "Moral statistics",
+          "url": "https://en.wikipedia.org/wiki/Moral_statistics",
+          "extract": "Moral statistics most narrowly refers to numerical data generally considered to be indicative of social pathology in groups of people. Examples include statistics on crimes, illiteracy, suicide, illegitimacy, abortion, divorce, prostitution, and the economic situation sometimes c"
+        }
+      ],
+      "concept": {
+        "name": "-michel Statistics Theory",
+        "emoji": "🔮",
+        "definition": "The idea that andré-michel guerry and moral statistics share a hidden pattern.",
+        "builtFrom": [
+          "André-Michel Guerry",
+          "Moral statistics"
+        ]
+      },
+      "shapeFrom": "Moral statistics",
+      "nextCuriosity": "Pie chart",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about Christopher R. Johnson. Christopher Ray Johnson is an American computer scientist. It still makes me curious.",
+        "emoji": "🌙"
+      }
     }
   ]
 }

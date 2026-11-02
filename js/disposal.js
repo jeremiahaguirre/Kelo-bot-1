@@ -212,7 +212,7 @@ function unwantedItem() {
       const names = ownedItemNames();
       const junk = state.belongings.find(b => b.category === 'junk');
       if (junk) return junk.name;
-      const dupe = names.find((n, i) => names.indexOf(n) !== i && !vehicleTypeFor(n) && !(typeof isPrinterSupply === 'function' && isPrinterSupply(n)));
+      const dupe = names.find((n, i) => names.indexOf(n) !== i && !vehicleTypeFor(n) && !(typeof isPrinterSupply === 'function' && isPrinterSupply(n)) && !(typeof isLumberStock === 'function' && isLumberStock(n)));
       return dupe || null;
     }
 

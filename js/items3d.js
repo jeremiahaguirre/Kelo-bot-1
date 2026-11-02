@@ -4,6 +4,7 @@
 // and things Kelo-1 carries look like what they are. Unknown items become a labelled gift box.
 
 const ITEM_MODEL_RULES = [
+  [/firewood|\blogs?\b/, () => firewoodModel()], // js/projects.js
   // Workshop and supply items Kelo-1 often asks for
   [/spray ?paint|aerosol/, () => {
     const can = mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.36, 14), 0xff3d7f, { metalness: 0.6 });

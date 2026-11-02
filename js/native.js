@@ -221,7 +221,7 @@
     }
 
     // Save when the app goes to the background (on top of the game's own autosave)
-    App.addListener('pause', () => { if (typeof savePersistentBrainState === 'function') savePersistentBrainState(); });
+    App.addListener('pause', () => { if (typeof savePersistentBrainStateNow === 'function') savePersistentBrainStateNow(); });
     App.addListener('resume', applyKeepAwake);
 
     // Android back button: close whatever is open, one layer at a time, then leave the app

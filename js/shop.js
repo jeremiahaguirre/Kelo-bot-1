@@ -34,7 +34,11 @@ function shopContactLink(value) {
 function readLocalShop() {
       try {
         const saved = JSON.parse(localStorage.getItem(SHOP_BRAIN_KEY) || 'null');
-        return saved && saved.shop && typeof saved.shop === 'object' ? saved.shop : null;
+        const shop = saved && saved.shop && typeof saved.shop === 'object' ? saved.shop : null;
+        // The game keeps the listing pictures under their own key (see BRAIN_PICTURES_KEY in js/agent.js)
+        const pictures = JSON.parse(localStorage.getItem(SHOP_BRAIN_KEY + '_shop_pictures') || 'null');
+        if (shop && pictures && Array.isArray(shop.listings)) shop.listings.forEach(l => { if (l && !l.image && typeof pictures[l.id] === 'string') l.image = pictures[l.id]; });
+        return shop;
       } catch (e) {
         return null;
       }

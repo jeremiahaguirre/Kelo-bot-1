@@ -222,7 +222,8 @@ async function stargaze(originLabel = 'Looking Up') {
         state.botRotY = Math.PI / 2;
         await new Promise(r => setTimeout(r, 3000));
         if (night) {
-          const seen = pick(NIGHT_SKY);
+          // With constellations switched on (js/pastimes.js) he finds a named one and sees it drawn
+          const seen = (typeof constellationForStargaze === 'function' && constellationForStargaze()) || pick(NIGHT_SKY);
           state.moodTitle = 'Stargazing through the telescope';
           state.speechBubble = `I can see ${seen}! It's so much further away than anything I've ever touched.`;
           state.wonderLevel = Math.min(100, state.wonderLevel + 14);

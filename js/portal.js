@@ -85,7 +85,7 @@ function renderMailbox() {
       if (count) count.textContent = `${state.mailbox.length} waiting • ${state.lettersReceived || 0} picked up so far`;
       const list = document.getElementById('mailboxList');
       if (!list) return;
-      list.innerHTML = state.mailbox.length === 0
+      perfSetHtml(list, state.mailbox.length === 0
         ? '<p class="text-[11px] text-slate-500 italic">The post office is empty. Anything you send waits here until Kelo-1 decides to pick it up.</p>'
         : state.mailbox.map(m => `
           <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-900/80 border border-red-500/25 text-xs">
@@ -94,7 +94,7 @@ function renderMailbox() {
               <div class="font-semibold text-red-100 truncate">${escapeHtml(m.kind === 'message' ? 'Letter' : (m.name || m.kind))}</div>
               <div class="text-[10px] font-mono text-slate-400 truncate">from ${escapeHtml(m.from)} • ${escapeHtml(m.time)}${m.note ? ` • "${escapeHtml(m.note.slice(0, 60))}"` : ''}</div>
             </div>
-          </div>`).join('');
+          </div>`).join(''));
     }
 
 function renderPortal() {
@@ -111,17 +111,26 @@ function renderPortal() {
       if (countEl) countEl.textContent = `${owned.length} items${lower ? ` · ${lower + 1} floors` : ''}`;
       const pills = document.getElementById('toolInventoryPills');
       if (pills) {
-        pills.innerHTML = owned.map(o => `
+        // Which floor each thing is on, worked out once (not once per pill), and a long list
+        // shows the first PILLS_STEP with a "Show more" button (js/perf.js)
+        const floorOf = new Map();
+        if (typeof storedItems === 'function' && typeof shelfSlots !== 'undefined' && shelfSlots.length) {
+          storedItems().forEach((it, i) => { if (!floorOf.has(it.name)) floorOf.set(it.name, Math.floor(i / shelfSlots.length)); });
+        }
+        const PILLS_STEP = 60;
+        const shown = typeof perfListLimit === 'function' ? perfListLimit('toolInventoryPills', PILLS_STEP) : owned.length;
+        const html = owned.slice(0, shown).map(o => `
           <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-[10px] font-mono flex items-center gap-1">
-            <span>${escapeHtml(o.emoji)}</span> ${escapeHtml(o.name)}${(() => { const lv = typeof storehouseLevelOf === 'function' ? storehouseLevelOf(o.name) : 0; return lv > 0 ? ` <span class="text-slate-400">· B${lv}</span>` : ''; })()}
-          </span>`).join('');
+            <span>${escapeHtml(o.emoji)}</span> ${escapeHtml(o.name)}${floorOf.get(o.name) > 0 ? ` <span class="text-slate-400">· B${floorOf.get(o.name)}</span>` : ''}
+          </span>`).join('') + (typeof perfMoreButton === 'function' ? perfMoreButton('toolInventoryPills', shown, owned.length, PILLS_STEP) : '');
+        if (typeof perfSetHtml === 'function') perfSetHtml(pills, html); else pills.innerHTML = html;
       }
 
       const logCount = document.getElementById('giftLogCount');
       if (logCount) logCount.textContent = `${state.giftLog.length} items`;
       const log = document.getElementById('giftLogList');
       if (log) {
-        log.innerHTML = state.giftLog.length === 0
+        perfSetHtml(log, state.giftLog.length === 0
           ? '<p class="text-[11px] text-slate-500 italic">Nothing yet. Gifts, deliveries and photos you send show up here with his reaction.</p>'
           : state.giftLog.map(g => `
           <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-xs space-y-0.5">
@@ -131,18 +140,18 @@ function renderPortal() {
             </div>
             <div class="text-[10px] font-mono text-slate-400">from ${escapeHtml(g.from)}${g.note ? ` • "${escapeHtml(g.note)}"` : ''}</div>
             ${g.reaction ? `<p class="text-[11px] text-slate-300 font-serif italic">Kelo-1: "${escapeHtml(g.reaction)}"</p>` : '<p class="text-[11px] text-slate-500 italic">Thinking about it...</p>'}
-          </div>`).join('');
+          </div>`).join(''));
       }
 
       const wall = document.getElementById('photoWallGrid');
-      if (wall) {
-        wall.innerHTML = state.photoAlbum.length === 0
+      // (only rebuilt, and its click handlers re-attached, when the photos change)
+      if (wall && perfSetHtml(wall, state.photoAlbum.length === 0
           ? '<p class="col-span-full text-[11px] text-slate-500 italic">No photos yet.</p>'
           : state.photoAlbum.map(ph => `
           <figure data-photo-idx="${state.photoAlbum.indexOf(ph)}" role="button" tabindex="0" aria-label="View photo" class="rounded-xl overflow-hidden border border-indigo-500/30 bg-slate-900 cursor-pointer hover:border-indigo-300 transition" title="${escapeHtml(ph.reaction || 'Click to view')}">
             <img src="${escapeHtml(ph.thumb)}" alt="${escapeHtml(ph.caption || 'Photo for Kelo-1')}" class="w-full h-20 object-cover">
             <figcaption class="px-1.5 py-1 text-[10px] text-slate-300 truncate">${escapeHtml(ph.caption || `from ${ph.from}`)}</figcaption>
-          </figure>`).join('');
+          </figure>`).join(''))) {
         wall.querySelectorAll('[data-photo-idx]').forEach(fig => {
           const open = () => typeof openPhotoViewer === 'function' && openPhotoViewer(Number(fig.getAttribute('data-photo-idx')));
           fig.addEventListener('click', open);

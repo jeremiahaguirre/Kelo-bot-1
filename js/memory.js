@@ -135,7 +135,7 @@ function isSecretKey(name) {
     }
 
 function exportBrain() {
-      savePersistentBrainState();
+      savePersistentBrainStateNow();
       saveMemoryArchive();
       const data = {};
       try {
@@ -164,6 +164,8 @@ async function importBrain(file) {
         const entries = Object.entries(parsed.data).filter(([k, v]) => k.startsWith('kelo1_') && !isSecretKey(k) && typeof v === 'string');
         if (entries.length === 0) throw new Error('The backup is empty');
         if (!window.confirm(`Replace Kelo-1's current memories with this backup from ${parsed.exportedAt || 'an unknown date'}? Your API keys stay as they are.`)) return;
+        // (the page reloads next; saving the current him on the way out would undo the restore)
+        if (typeof brainSavesBlocked !== 'undefined') brainSavesBlocked = true;
         entries.forEach(([k, v]) => keloStore.setItem(k, v));
         showToast('🧠 Backup restored. Reloading...');
         setTimeout(() => window.location.reload(), 600);
@@ -180,16 +182,18 @@ function renderMemoryUI() {
       }
       const core = document.getElementById('coreMemoriesContainer');
       if (core) {
-        core.innerHTML = state.coreMemories.length === 0
+        // Newest first, 20 at a time ("Show more", js/perf.js); only rewritten when they change
+        const shown = perfListLimit('coreMemoriesContainer', 20);
+        perfSetHtml(core, state.coreMemories.length === 0
           ? `<p class="text-[11px] text-slate-500 italic">No core memories yet. He forms one after every ${ENTRIES_PER_CORE_MEMORY} diary entries.</p>`
-          : state.coreMemories.map(m => `
+          : state.coreMemories.slice(0, shown).map(m => `
           <div class="p-2.5 rounded-xl bg-slate-900/90 border border-pink-500/25 text-xs space-y-0.5">
             <div class="flex items-center justify-between gap-2 text-[10px] font-mono text-pink-300">
               <span>${escapeHtml(m.emoji)} Day ${escapeHtml(m.day || '?')}</span>
               <span class="text-slate-500">${escapeHtml(new Date(m.at).toLocaleDateString())}</span>
             </div>
             <p class="text-[11px] text-slate-200 font-serif italic">"${escapeHtml(m.text)}"</p>
-          </div>`).join('');
+          </div>`).join('') + perfMoreButton('coreMemoriesContainer', shown, state.coreMemories.length, 20));
       }
       const archiveCount = document.getElementById('diaryArchiveCount');
       if (archiveCount) archiveCount.textContent = `${memoryArchive.diary.length} older entries archived`;

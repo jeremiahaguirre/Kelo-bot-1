@@ -205,7 +205,7 @@ function applyIceLook() {
         iceSheet.visible = cm > 0;
         // Thin new ice is dark and see-through; thick ice is white and solid
         const k = Math.min(1, cm / 25);
-        iceSheet.material.opacity = 0.55 + 0.4 * k;
+        iceSheet.material.opacity = 0.55 + 0.43 * k;
         iceSheet.material.color.setHex(0x8fb3cf).lerp(new THREE.Color(0xffffff), k);
       }
       // The sailboat is hauled out and Ogopogo stays down under the ice

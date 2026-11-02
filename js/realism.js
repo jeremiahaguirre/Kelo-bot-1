@@ -360,7 +360,7 @@ function applySkyForHour(hour, dayOfYear) {
       u.rayleigh.value = 2.2 + 1.0 * s.dusk;
       u.mieCoefficient.value = 0.003 + 0.004 * s.dusk;
       u.mieDirectionalG.value = 0.82;
-      u.skyGain.value = 1.0;
+      u.skyGain.value = 0.75; // keeps the sky blue overhead instead of washing out to white
       u.skyTint.value.setRGB(0.004, 0.007, 0.018).multiplyScalar(s.night);
 
       // The sun by day; the moon (cool and dim) at night. One light does both, so shadows always work.

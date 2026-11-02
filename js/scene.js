@@ -1692,8 +1692,8 @@ function animateDiorama() {
           keloGroup.rotation.set(0, 0, 0);
           keloLeftLeg.rotation.set(-2.0, 0, -0.1);
           keloRightLeg.rotation.set(-2.0, 0, 0.1);
-          keloLeftKnee.rotation.x = 1.45 + Math.max(0, Math.sin(t * 2.4)) * 0.25;
-          keloRightKnee.rotation.x = 1.45 + Math.max(0, -Math.sin(t * 2.4)) * 0.25;
+          keloLeftKnee.rotation.x = keloSitKnee(-2.0, 0.2) + Math.max(0, Math.sin(t * 2.4)) * 0.25;
+          keloRightKnee.rotation.x = keloSitKnee(-2.0, 0.2) + Math.max(0, -Math.sin(t * 2.4)) * 0.25;
           keloBody.rotation.x = -0.2;
           keloLeftArm.rotation.set(0.55, 0, -0.25);
           keloRightArm.rotation.set(0.55, 0, 0.25);
@@ -1707,8 +1707,9 @@ function animateDiorama() {
         } else if (state.currentLocKey === 'meadow' || state.microPose === 'crouch_inspect') {
           // Crouching on top of the terrain without sinking below groundY!
           // a deep squat, leaning in, one hand reaching down to look closely at something
-          keloSquat(0.55);
-          keloGroup.position.set(state.botPos.x, groundY - 0.55 + Math.abs(Math.sin(t * 2)) * 0.03, state.botPos.z);
+          const squat = 0.42 * (KELO_THIGH + KELO_SHIN);
+          keloSquat(squat);
+          keloGroup.position.set(state.botPos.x, groundY - squat + Math.abs(Math.sin(t * 2)) * 0.03, state.botPos.z);
           keloBody.rotation.x = 0.4;
           keloRightArm.rotation.x = -0.75 + Math.sin(t * 3) * 0.1;
           keloRightElbow.rotation.x = -0.3;

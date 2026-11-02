@@ -158,10 +158,11 @@ function buildSpot(plan = null) {
         if (tree) return { x: tree.x, z: tree.z, treeId: tree.id };
       }
       for (let i = 0; i < 60; i++) {
-        // Out of town: west toward the Museum, or along the beach
-        const beach = (plan && plan.beach) || Math.random() < 0.3;
-        const x = Math.round((beach ? randRange(-30, 30) : randRange(WORLD_MIN_X + 5, TOWN.minX - 2)) * 10) / 10, z = Math.round((beach ? randRange(8.0, 8.8) : randRange(-10, 6)) * 10) / 10;
+        // Anywhere outside town: the meadows, woods, mountain slopes, along the beach, or land he made
         const r = (plan && plan.r) || 1.2;
+        const beach = (plan && plan.beach) || Math.random() < 0.25;
+        const free = !beach && typeof openGroundSpot === 'function' ? openGroundSpot(r, Math.random() < 0.5 ? state.botPos : null) : null;
+        const x = free ? free.x : Math.round(randRange(-30, 30) * 10) / 10, z = free ? free.z : Math.round(randRange(8.0, 8.8) * 10) / 10;
         if (typeof offLimits === 'function' && offLimits(x, z, r)) continue;
         if (pointBlocked(x, z, { x: 999, z: 999 }) || worldObstacles.some(o => Math.hypot(o.x - x, o.z - z) < o.r + r + 0.2) || taken(x, z, r + 1.5)) continue;
         return { x, z };

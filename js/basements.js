@@ -173,7 +173,9 @@ function tripFace(p) {
 
 // Reaching for something h above his feet: arms up for a high shelf, a squat for a low one
 function reachPose(h) {
-      const crouch = h < 1.1 ? Math.min(0.6, 1.1 - h) : 0;
+      // (a low shelf: squat down, at most about half his leg length)
+      const low = KELO_SHOULDER.y * 0.5;
+      const crouch = h < low ? Math.min(0.45 * (KELO_THIGH + KELO_SHIN), low - h) : 0;
       indoorTrip.crouchTarget = crouch;
       const reach = KELO_UPPER_ARM + KELO_FOREARM + KELO_PALM;
       const rel = (KELO_SHOULDER.y - crouch - (h + 0.12)) / reach;
@@ -184,7 +186,7 @@ function reachPose(h) {
       keloLeftHand.userData.grip = keloRightHand.userData.grip = 0.15;
       keloBody.rotation.x = crouch ? 0.35 : h > 1.6 ? -0.08 : 0.06;
       if (crouch) keloSquat(crouch);
-      keloHead.rotation.x = Math.max(-0.5, Math.min(0.5, -(h - 2.3) * 0.35));
+      keloHead.rotation.x = Math.max(-0.5, Math.min(0.5, -(h - KELO_SHOULDER.y - 0.45) * 0.35));
     }
 
 // --- What gets built while he is down there ---------------------------------------------------

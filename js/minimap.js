@@ -258,7 +258,7 @@ const CHANGE_KINDS = [
   { key: 'chop', label: 'Trees chopped', emoji: '🪓', color: '#d97706' },
   { key: 'plant', label: 'Plantings', emoji: '🌱', color: '#4ade80' },
   { key: 'road', label: 'Roads', emoji: '🛤️', color: '#f5e6b8' },
-  { key: 'hill', label: 'Hills', emoji: '⛰️', color: '#a16207' },
+  { key: 'hill', label: 'Hills and hollows', emoji: '⛰️', color: '#a16207' },
   { key: 'hole', label: 'Holes', emoji: '🕳️', color: '#1c1917' },
   { key: 'pile', label: 'Dirt piles', emoji: '🟫', color: '#92400e' },
   { key: 'land', label: 'New land', emoji: '🏝️', color: '#fde047' },
@@ -273,7 +273,7 @@ function worldChangesList() {
         if (e.type === 'chop') out.push({ kind: 'chop', label: 'Chopped down a tree', x: e.x, z: e.z, at: e.at, why: e.why });
         else if (e.type === 'plant') out.push({ kind: 'plant', label: `Planted ${e.kind === 'tree' ? 'a tree' : 'flowers'}${typeof growthOf === 'function' ? ` (${Math.round(growthOf(e) * 100)}% grown)` : ''}`, x: e.x, z: e.z, at: e.at, why: e.why });
         else if (e.type === 'road' && Number.isFinite(e.toX)) out.push({ kind: 'road', label: `Gravel road, ${Math.round(Math.hypot(e.toX - e.x, e.toZ - e.z))} m long`, x: (e.x + e.toX) / 2, z: (e.z + e.toZ) / 2, x1: e.x, z1: e.z, x2: e.toX, z2: e.toZ, at: e.at, why: e.why });
-        else if (e.type === 'hill') out.push({ kind: 'hill', label: `Raised a hill${e.h ? `, ${e.h.toFixed(1)} m high` : ''}`, x: e.x, z: e.z, r: e.r, at: e.at, why: e.why });
+        else if (e.type === 'hill') out.push({ kind: 'hill', label: e.h < 0 ? `Dug a hollow, ${Math.abs(e.h).toFixed(1)} m deep` : `Raised a hill${e.h ? `, ${e.h.toFixed(1)} m high` : ''}`, emoji: e.h < 0 ? '🕳️' : null, x: e.x, z: e.z, r: e.r, at: e.at, why: e.why });
       });
       (state.digSites || []).forEach(d => {
         out.push({ kind: 'hole', label: `${d.z < -14 ? 'Mountain' : 'Valley'} dig, ${d.depth.toFixed(1)} m deep`, x: d.x, z: d.z, at: d.startedAt });

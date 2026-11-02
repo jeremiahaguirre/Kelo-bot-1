@@ -396,17 +396,18 @@ async function buildRoad(fromX, fromZ, toX, toZ, why = '', originLabel = 'Shapin
       }
     }
 
-async function raiseHill(x, z, why = '', originLabel = 'Shaping the Valley') {
+async function raiseHill(x, z, why = '', originLabel = 'Shaping the Valley', lower = false) {
       const shovel = hasItem(/shovel|spade/i);
       if (!shovel) {
-        addItemRequest('A sturdy shovel', 'tool', 'I want to shape the land into a little hill.', 'Shaping the valley');
+        addItemRequest('A sturdy shovel', 'tool', `I want to shape the land into a little ${lower ? 'hollow' : 'hill'}.`, 'Shaping the valley');
         return 'needs-shovel';
       }
       if (typeof readyToOperate === 'function' && !readyToOperate(shovel)) return 'learning';
       x = Math.round(clampNumber(x, WORLD_MIN_X + 3, WORLD_MAX_X - 3, state.botPos.x) * 10) / 10;
-      z = Math.round(clampNumber(z, -12, 6, state.botPos.z) * 10) / 10;
+      z = Math.round(clampNumber(z, WORLD_MIN_Z + 3, 8.5, state.botPos.z) * 10) / 10;
+      const full = lower ? -HILL_HEIGHT * 0.7 : HILL_HEIGHT;
       if (offLimits(x, z, HILL_RADIUS) || !startJob(x, z)) {
-        if (offLimits(x, z, HILL_RADIUS)) { state.speechBubble = `A hill there would spill onto ${offLimits(x, z, HILL_RADIUS)}. I'll leave it.`; renderAllUI(); }
+        if (offLimits(x, z, HILL_RADIUS)) { state.speechBubble = `${lower ? 'A hollow' : 'A hill'} there would spill onto ${offLimits(x, z, HILL_RADIUS)}. I'll leave it.`; renderAllUI(); }
         return false;
       }
       try {
@@ -414,8 +415,8 @@ async function raiseHill(x, z, why = '', originLabel = 'Shaping the Valley') {
         state.currentLocKey = 'custom';
         state.customPlaceName = 'a spot he is reshaping';
         state.targetPos = { x: x - HILL_RADIUS - 0.4, z };
-        state.moodEmoji = '⛰️';
-        state.moodTitle = 'Shaping a little hill';
+        state.moodEmoji = lower ? '🕳️' : '⛰️';
+        state.moodTitle = lower ? 'Digging out a little hollow' : 'Shaping a little hill';
         renderAllUI();
         await waitForArrival(60000);
         state.microPose = 'digging';
@@ -423,10 +424,12 @@ async function raiseHill(x, z, why = '', originLabel = 'Shaping the Valley') {
         state.worldEdits.push(e);
         for (let i = 1; i <= 5; i++) {
           await new Promise(r => setTimeout(r, 1200));
-          e.h = Math.round(HILL_HEIGHT * i / 5 * 100) / 100;
+          e.h = Math.round(full * i / 5 * 100) / 100;
           hillTerrainRefresh(e);
         }
-        sayAndLog('Raised a little hill', '⛰️', 'A hill of my own. I can see a bit further from the top.',
+        if (lower) sayAndLog('Dug out a little hollow', '🕳️', 'A soft hollow in the ground. It feels sheltered down here.',
+          `I dug the ground out into a gentle hollow. ${why ? why + ' ' : ''}If I change my mind I can always fill it back in.`, originLabel);
+        else sayAndLog('Raised a little hill', '⛰️', 'A hill of my own. I can see a bit further from the top.',
           `I shovelled the earth into a small hill. ${why ? why + ' ' : ''}If I change my mind I can always flatten it again.`, originLabel);
         return true;
       } finally {
@@ -453,9 +456,10 @@ async function undoEdit(id, why = '', originLabel = 'Changing His Mind') {
         await waitForArrival(60000);
         state.microPose = 'digging';
         if (e.type === 'hill') {
+          const full = e.h;
           for (let i = 4; i >= 0; i--) {
             await new Promise(r => setTimeout(r, 900));
-            e.h = Math.round(HILL_HEIGHT * i / 5 * 100) / 100;
+            e.h = Math.round(full * i / 5 * 100) / 100;
             hillTerrainRefresh(e);
           }
         } else {
@@ -464,7 +468,7 @@ async function undoEdit(id, why = '', originLabel = 'Changing His Mind') {
         state.worldEdits = state.worldEdits.filter(w => w !== e);
         removeEditMesh(e.id);
         if (e.type === 'hill') hillTerrainRefresh(e);
-        const what = e.type === 'plant' ? (e.kind === 'tree' ? 'the tree I planted' : 'the flowers I planted') : e.type === 'road' ? 'my road' : 'my hill';
+        const what = e.type === 'plant' ? (e.kind === 'tree' ? 'the tree I planted' : 'the flowers I planted') : e.type === 'road' ? 'my road' : e.h < 0 ? 'my hollow' : 'my hill';
         sayAndLog(`Took away ${what}`, '↩️', `There. ${what[0].toUpperCase() + what.slice(1)} is gone, and the ground is the way it was.`,
           `I changed my mind and took away ${what}. ${why ? why + ' ' : ''}It's good to know nothing I make has to be forever.`, originLabel);
         return true;
@@ -474,30 +478,49 @@ async function undoEdit(id, why = '', originLabel = 'Changing His Mind') {
       }
     }
 
+// Somewhere open anywhere in his world except town and the buildings' grounds: meadows, woods,
+// the mountain, the beach, and land he has made. Too-steep slopes are skipped.
+function openGroundSpot(pad = 1.5, near = null) {
+      for (let i = 0; i < 60; i++) {
+        const x = near && i < 30 ? near.x + randRange(-18, 18) : randRange(WORLD_MIN_X + 4, WORLD_MAX_X - 4);
+        const z = near && i < 30 ? near.z + randRange(-18, 18) : randRange(WORLD_MIN_Z + 4, 8.8);
+        if (x < WORLD_MIN_X + 3 || x > WORLD_MAX_X - 3 || z < WORLD_MIN_Z + 3 || z > 8.8) continue;
+        if (offLimits(x, z, pad) || pointBlocked(x, z, { x: 999, z: 999 })) continue;
+        if (typeof getAnalyticalGroundHeight === 'function') {
+          const slope = Math.abs(getAnalyticalGroundHeight(x + 1, z) - getAnalyticalGroundHeight(x - 1, z)) + Math.abs(getAnalyticalGroundHeight(x, z + 1) - getAnalyticalGroundHeight(x, z - 1));
+          if (slope > 1.6) continue;
+        }
+        return { x: Math.round(x * 10) / 10, z: Math.round(z * 10) / 10 };
+      }
+      return { x: TOWN.minX - 6, z: 2 };
+    }
+
 // --- How he decides to shape things on his own -----------------------------------------------------
 function landscapeChance() {
       if (hasItem(/^(?!.*bird ?seed).*(seed|sapling|bulb)/i)) return 0.12;
       if (hasItem(/gravel|crushed stone|paving/i) && hasItem(/shovel|spade/i)) return 0.08;
-      if (hasItem(/^(?!.*pick ?ax).*(\baxe\b|hatchet)/i)) return 0.04;
-      return 0.01;
+      if (hasItem(/^(?!.*pick ?ax).*(\baxe\b|hatchet)/i)) return 0.06;
+      if (hasItem(/shovel|spade/i)) return 0.06;
+      return 0.025;
     }
 
 function shapeTheValleyOnMyOwn() {
-      const open = () => {
-        for (let i = 0; i < 20; i++) {
-          const x = randRange(-1, 1) < 0 ? randRange(WORLD_MIN_X + 4, TOWN.minX - 2) : randRange(TOWN.maxX + 16, WORLD_MAX_X - 4), z = randRange(-11, 6);
-          if (!offLimits(x, z, 1.5) && !pointBlocked(x, z, { x: 999, z: 999 })) return { x, z };
-        }
-        return { x: -14, z: 2 };
-      };
+      // Anywhere but town: half the time somewhere near where he already is
+      const open = () => openGroundSpot(1.5, Math.random() < 0.5 ? state.botPos : null);
       if (hasItem(/^(?!.*bird ?seed).*(seed|sapling|bulb)/i)) { const p = open(); return plantSeeds(p.x, p.z, 'I wanted something living that I put there myself.', 'Felt Like Planting'); }
       if (hasItem(/gravel|crushed stone|paving/i) && hasItem(/shovel|spade/i)) {
-        // A road out west, from the edge of town toward the Museum and the woods
-        return buildRoad(TOWN.minX - 1, -2, MUSEUM_DOOR.x + 6, MUSEUM_DOOR.z + 1, 'My feet keep wearing a muddy track out here.', 'Felt Like Building');
+        // The first road runs out west from the edge of town toward the Museum; later ones join places he likes
+        if (!state.worldEdits.some(e => e.type === 'road')) return buildRoad(TOWN.minX - 1, -2, MUSEUM_DOOR.x + 6, MUSEUM_DOOR.z + 1, 'My feet keep wearing a muddy track out here.', 'Felt Like Building');
+        const a = openGroundSpot(1.0), b = openGroundSpot(1.0, a);
+        return buildRoad(a.x, a.z, b.x, b.z, 'I keep walking this way, so I gave it a proper path.', 'Felt Like Building');
       }
       if (hasItem(/^(?!.*pick ?ax).*(\baxe\b|hatchet)/i) && Math.random() < 0.5) { const p = open(); return chopTree(p.x, p.z, 'I wanted to open up a clearing.', 'Felt Like Chopping'); }
       if (Math.random() < 0.3 && state.worldEdits.some(e => e.type !== 'chop')) return undoEdit('last', 'It looked better before.');
-      if (hasItem(/shovel|spade/i)) { const p = open(); return raiseHill(p.x, p.z, 'I wanted a little lookout.', 'Felt Like Shaping'); }
+      if (hasItem(/shovel|spade/i)) {
+        const p = open();
+        return Math.random() < 0.35 ? raiseHill(p.x, p.z, 'I wanted a sheltered spot to sit.', 'Felt Like Shaping', true)
+          : raiseHill(p.x, p.z, 'I wanted a little lookout.', 'Felt Like Shaping');
+      }
       return addItemRequest('A packet of tree seeds', 'material', 'I want to plant a tree of my own somewhere in the valley.', 'Shaping the valley');
     }
 
@@ -511,6 +534,7 @@ function applyShapeDecision(shape) {
         plant: () => plantSeeds(x, z, why, 'Decided to Plant'),
         road: () => buildRoad(x, z, n(shape.toX, x + 8), n(shape.toZ, z), why, 'Decided to Build a Road'),
         hill: () => raiseHill(x, z, why, 'Decided to Shape the Land'),
+        hollow: () => raiseHill(x, z, why, 'Decided to Shape the Land', true),
         undo: () => undoEdit(String(shape.id || 'last'), why, 'Changed His Mind')
       }[String(shape.action || '').toLowerCase()];
       if (run) doWhenFree(run);
@@ -518,7 +542,7 @@ function applyShapeDecision(shape) {
 
 function landscapeSummaryForAI() {
       const edits = state.worldEdits.slice(-8).map(e => e.type === 'road' ? `${e.id}: road (${e.x}, ${e.z}) to (${e.toX}, ${e.toZ})`
-        : e.type === 'plant' ? `${e.id}: ${e.kind} planted at (${e.x}, ${e.z})` : e.type === 'hill' ? `${e.id}: hill at (${e.x}, ${e.z})` : `${e.id}: stump at (${e.x}, ${e.z})`);
+        : e.type === 'plant' ? `${e.id}: ${e.kind} planted at (${e.x}, ${e.z})` : e.type === 'hill' ? `${e.id}: ${e.h < 0 ? 'hollow' : 'hill'} at (${e.x}, ${e.z})` : `${e.id}: stump at (${e.x}, ${e.z})`);
       return edits.length ? edits.join('; ') : 'nothing yet';
     }
 
@@ -529,7 +553,7 @@ function renderLandscapeList() {
       const label = { chop: '🪓 Chopped a tree', plant: '🌱 Planted', road: '🛤️ Built a road', hill: '⛰️ Raised a hill' };
       el.innerHTML = state.worldEdits.slice().reverse().slice(0, 12).map(e => `
         <div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200">
-          ${escapeHtml(label[e.type] || e.type)}${e.type === 'plant' ? ` ${escapeHtml(e.kind === 'tree' ? 'a tree' : 'flowers')} <span class="text-slate-500">(${Math.round(growthOf(e) * 100)}% grown)</span>` : ''}
+          ${escapeHtml(e.type === 'hill' && e.h < 0 ? '🕳️ Dug a hollow' : (label[e.type] || e.type))}${e.type === 'plant' ? ` ${escapeHtml(e.kind === 'tree' ? 'a tree' : 'flowers')} <span class="text-slate-500">(${Math.round(growthOf(e) * 100)}% grown)</span>` : ''}
           ${e.why ? `<div class="text-slate-400 italic">${escapeHtml(e.why)}</div>` : ''}
         </div>`).join('');
     }

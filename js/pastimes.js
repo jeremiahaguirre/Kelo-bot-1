@@ -67,7 +67,7 @@ async function goFishing(originLabel = 'Gone Fishing') {
       try {
         const spot = PASTIME_SPOTS.dock;
         state.currentLocKey = 'custom';
-        state.customPlaceName = 'the lake edge'; // (not "shore": its "ore" reads as mining in scene.js)
+        state.customPlaceName = 'the lake edge'; // (scene.js reads his words to pick a tool)
         state.microPose = 'normal';
         state.targetPos = { ...spot };
         state.moodEmoji = '🎣';

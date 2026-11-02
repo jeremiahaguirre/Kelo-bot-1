@@ -1518,7 +1518,7 @@ function animateDiorama() {
 
       // Determine which 3D hand tool Kelo-1 is actively holding
       const textContext = `${state.moodTitle} ${state.speechBubble} ${state.customPlaceName || ''}`.toLowerCase();
-      const isMiningOrDrilling = state.microPose === 'digging' || state.currentLocKey === 'mountain_peak' || /drill|gold|mine|dig|auger|ore|quarry|excavat|mycelium/i.test(textContext);
+      const isMiningOrDrilling = state.microPose === 'digging' || state.currentLocKey === 'mountain_peak' || /drill|gold|\bmine\b|\bmining|\bdig|auger|\bores?\b|quarry|excavat|mycelium/i.test(textContext);
       const isWeldingOrBuilding = state.currentLocKey === 'weld' || Boolean(state.proceduralMotion?.sparkBurst) || /weld|forge|titanium|track|rail|sculpt|arch|spire/i.test(textContext);
 
       if (keloDrillToolGroup && keloWeldTorchGroup) {

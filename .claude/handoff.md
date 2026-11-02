@@ -16,6 +16,11 @@ He may change the world freely. He can never move or change the buildings, and h
 - **Cute Kelo-1** (`js/kelo-body.js`). A small, friendly humanoid robot about 2.6 units tall to the antenna tip (head top about 2.4): a big round teal head with a dark face screen, glowing eyes that blink and show happy (^ ^), sad (droopy, frown) or sleeping looks from `keloMoodNow()`, pink cheek lights, headphone ears and a spring antenna. About 18k triangles.
   - Rig names are unchanged (`keloBody` at `KELO_HIP_Y` = 1.06, legs at `KELO_LEG_Y` = 1.04, elbows, wrists, knees, ankles, `setKeloGrip`, `keloPalmLocal`). Other files read the limb lengths from the `KELO_*` constants, so changing them resizes poses, seats, squats and shelf reaches.
   - `updateKeloFace(t, dt, resting)` runs at the end of `finishKeloPose`. `keloSitKnee(a, hipH)` in animations.js bends his knees so his feet rest on the ground when he sits.
+- **Rain, lake ice, more builds and the Map tab.**
+  - `js/weather.js` (after wind.js). Spring rain comes from `rainForHour` (seeded like the wind; `rainOverride` forces it). It draws streaks (`rainfall`), darkens the sky by wrapping `applyTimeOfDay`, makes the ground darker and glossier, and fills puddles. `rainWatersPlants` adds `e.rainMs` to plantings (read by `growthOf`) and raises garden plot growth. `reactToRain` is the first-rain discovery (`state.knowsRain`, concept "Rain"); after that he enjoys it or shelters (`rainLikes`, `rainShelters`) and may ask for an umbrella.
+  - Lake ice: `iceThicknessCm()` grows through winter and rots before spring; `iceSheet` covers the open water. `iceFloorAt(p)` lifts his feet onto ice that holds (5 cm or more), and `checkDeepWater` skips him there. `iceStepBlocked(p)` stops him at the edge until `iceKnownSafeNow()`: he looks (`firstLookAtIce`), reads at NetNode (`researchIce`, `state.knowsIceRule`), drills a test hole each winter (`testTheIce`, `knowsIceSafe`, `iceTestedWinter`, `iceLastTest`), then walks out (`walkOnIce`, asks for skates). With no ice the old drowning rule still applies; boats stay docked while it is frozen. Try it has a Rain row.
+  - `js/projects.js`: doghouse, kayak rack (always on the beach) and treehouse platform (`inTree`: goes round a standing valley tree, which is scaled up by `TREEHOUSE_TREE_SCALE` and marked `hosting` so it is never chopped). `allocateMaterials(plan)` uses each owned thing once; with a saw, "Firewood logs" stand in for any `lumber: true` material (an extra "Sawing logs into rough boards" step, rough-sawn finish, `p.fromLogs`). `isLumberStock` keeps spare logs out of disposal. `firewoodModel()` is the log stack model (items3d rule).
+  - Map tab (`#tab-map`, `worldChangesList`/`changesMapDraw` in minimap.js): every chop, planting, road, hill or hollow, hole, dirt pile, new land and build on the island map, with legend toggles and a list; tap to fly there. Also opened from the World tab. Tab icons are outlined when idle and filled when open; they fall back to emoji if the Phosphor font can't load.
 - **#21 Seasons and snow** (`js/seasons.js`).
   - `inSnow(p)` uses `SNOW_LINE` per season (all land in winter, the high mountain otherwise). `snowWalkFactor`/`snowSink` slow him and sink him in `scene.js`.
   - `checkSnowStuck` → `getStuckInSnow` → `researchSnowTravel` asks for snowshoes, skis and a snowmobile.
@@ -95,9 +100,9 @@ He may change the world freely. He can never move or change the buildings, and h
 - Check that every test run finishes with no page errors.
 
 ## Exact next steps (open tasks)
-All the planned tasks (#21 to #27) are done. Ideas for what could come next:
-1. More `BUILD_PLANS` (a doghouse, a kayak rack, a treehouse platform), and letting him use firewood logs from chopping as lumber.
-2. Rain in spring, and ice on the lake in winter (he could walk on it once he has learned it is safe).
-3. More polish (#25 is ongoing): icons for the tabs, and a way for the visitor to see a map of everything he has changed.
+Rain, lake ice, the three new builds, sawing logs into lumber and the Map tab are done. Ideas for what could come next:
+1. Ice skating as a hobby once skates arrive, and ice fishing through his test hole.
+2. Puddles that splash under his feet and a rainbow after a shower.
+3. A kayak that actually sits on the kayak rack when he owns one, and a dog for the doghouse (a code wish).
 
 Make sure everything looks right when it is built, removed or invented. Check each change with a screenshot.

@@ -108,6 +108,7 @@ Kelo-bot-1/
 │   ├── kelo-body.js     # Kelo-1's humanoid robot body and rig: head, visor, jointed arms, hands with fingers, legs and feet
 │   ├── scene.js         # Three.js world, pathfinding, terrain
 │   ├── realism.js       # Realistic look: real colours, filmic tone mapping, sky and sun from his clock, HDR lighting, lake, textured ground, trees, Graphics setting
+│   ├── weldstudio.js    # The Welding Studio as a real fab shop: steel table, MIG welder, gas bottles, grinder, fume arm, arc glow
 │   ├── house.js         # Kelo-1's cottage: walls, windows, porch, roof, furniture, night lights
 │   ├── animations.js    # Kelo-1's body animation: smooth pose blending, walk cycle, idle life, emotes
 │   ├── items3d.js       # 3D models of items, the pick-up counter, carrying

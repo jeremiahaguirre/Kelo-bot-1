@@ -152,11 +152,35 @@ function finishRealisticWorld() {
       sunLight.shadow.bias = -0.00025;
       sunLight.shadow.normalBias = 0.035;
       applyGraphicsLevel();
+      // Sparks and flying grit are round, soft and glowing, not flat squares
+      const dot = roundPointTexture();
+      [weldingSparks, miningDebrisParticles].forEach(p => {
+        if (!p) return;
+        p.material.map = dot;
+        p.material.transparent = true;
+        p.material.depthWrite = false;
+        p.material.needsUpdate = true;
+      });
+      if (miningDebrisParticles) { miningDebrisParticles.material.size = 0.09; miningDebrisParticles.material.color.setHex(0xa89474); }
       loadEnvironmentPhotos();
       watchFrameRate();
       // Things added later (items, vehicles, his builds) get shadows too
       setInterval(updateShadowCasters, 3000);
       setTimeout(updateShadowCasters, 500);
+    }
+
+// A soft round dot for particles
+function roundPointTexture() {
+      const c = document.createElement('canvas');
+      c.width = c.height = 32;
+      const ctx = c.getContext('2d');
+      const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+      g.addColorStop(0, 'rgba(255,255,255,1)');
+      g.addColorStop(0.35, 'rgba(255,255,255,0.85)');
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 32, 32);
+      return new THREE.CanvasTexture(c);
     }
 
 // Solid things cast shadows; tiny ones (and glass, labels, effects) don't bother
@@ -543,6 +567,7 @@ function updateRealism(t, dt) {
       sunLight.target.position.set(tx, 0, tz);
       sunLight.position.set(tx, 0, tz).addScaledVector(SKY_STATE.lightDir, 150);
       if (typeof updateRealisticWater === 'function') updateRealisticWater(t);
+      if (typeof updateWeldingStudio === 'function') updateWeldingStudio(t);
       trackFrameRate(dt);
     }
 

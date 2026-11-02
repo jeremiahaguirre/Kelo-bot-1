@@ -111,8 +111,9 @@ function initDiorama3D() {
       sunLight.shadow.normalBias = 0.02;
       scene.add(sunLight);
 
-      forgeArcLight = new THREE.PointLight(0x38bdf8, 0, 9);
-      forgeArcLight.position.set(-1.2, 2.1, -8.2);
+      // The welding arc: blue-white, right above the table
+      forgeArcLight = new THREE.PointLight(0xa8d4ff, 0, 9);
+      forgeArcLight.position.set(-1.2, 1.35, -8.0);
       scene.add(forgeArcLight);
 
       buildAlpineTerrainAndMountains3D();
@@ -328,21 +329,25 @@ function buildHomesteadAndBuildings3D() {
       if (typeof buildKeloHouse3D === 'function') buildKeloHouse3D();
 
       // 2. Outdoor TIG Welding Forge + Spark & Mining Debris Particle Systems
-      const forgeGroup = new THREE.Group();
-      const fy = getAnalyticalGroundHeight(-1.2, -8.2);
-      forgeGroup.position.set(-1.2, fy, -8.2);
-      const bench = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 1.4), new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.7 }));
-      bench.position.y = 0.45;
-      const argonTank = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 1.6, 12), new THREE.MeshStandardMaterial({ color: 0x0d9488, metalness: 0.6 }));
-      argonTank.position.set(1.4, 0.8, 0);
-      const anvil = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.3), new THREE.MeshStandardMaterial({ color: 0x1f2937, metalness: 0.8, roughness: 0.3 }));
-      anvil.position.set(-0.6, 1.08, 0);
-      const forgeSign = makeSignMesh('WELDING STUDIO', { bg: '#0f172a', fg: '#38bdf8', width: 2.2, height: 0.4 });
-      forgeSign.position.set(0, 1.9, -0.75);
-      const signPost = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.4, 0.08), new THREE.MeshStandardMaterial({ color: 0x475569 }));
-      signPost.position.set(0, 1.0, -0.8);
-      forgeGroup.add(bench, argonTank, anvil, signPost, forgeSign);
-      scene.add(forgeGroup);
+      // A real small fab shop around the welding table (js/weldstudio.js); the old open-air bench otherwise
+      if (typeof buildWeldingStudio3D === 'function') buildWeldingStudio3D();
+      else {
+        const forgeGroup = new THREE.Group();
+        const fy = getAnalyticalGroundHeight(-1.2, -8.2);
+        forgeGroup.position.set(-1.2, fy, -8.2);
+        const bench = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 1.4), new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.7 }));
+        bench.position.y = 0.45;
+        const argonTank = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 1.6, 12), new THREE.MeshStandardMaterial({ color: 0x0d9488, metalness: 0.6 }));
+        argonTank.position.set(1.4, 0.8, 0);
+        const anvil = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.3), new THREE.MeshStandardMaterial({ color: 0x1f2937, metalness: 0.8, roughness: 0.3 }));
+        anvil.position.set(-0.6, 1.08, 0);
+        const forgeSign = makeSignMesh('WELDING STUDIO', { bg: '#0f172a', fg: '#38bdf8', width: 2.2, height: 0.4 });
+        forgeSign.position.set(0, 1.9, -0.75);
+        const signPost = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.4, 0.08), new THREE.MeshStandardMaterial({ color: 0x475569 }));
+        signPost.position.set(0, 1.0, -0.8);
+        forgeGroup.add(bench, argonTank, anvil, signPost, forgeSign);
+        scene.add(forgeGroup);
+      }
       worldObstacles.push({ x: -1.2, z: -8.2, r: 1.5 });
 
       // Welding Sparks Particle System
@@ -362,7 +367,8 @@ function buildHomesteadAndBuildings3D() {
         });
       }
       sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPos, 3));
-      weldingSparks = new THREE.Points(sparkGeo, new THREE.PointsMaterial({ color: 0x38bdf8, size: 0.18 }));
+      // Hot orange-white sparks that glow on their own
+      weldingSparks = new THREE.Points(sparkGeo, new THREE.PointsMaterial({ color: 0xffc070, size: 0.07, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
       weldingSparks.userData.vels = sparkVels;
       weldingSparks.visible = false;
       scene.add(weldingSparks);

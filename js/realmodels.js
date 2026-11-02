@@ -46,11 +46,19 @@ function realModelEntry(lower) {
       return REAL_MODELS.find(e => e.re.test(lower)) || null;
     }
 
+// Files load only when something that uses them is built (the Storehouse and Museum build their
+// models only while the camera is near, js/perf.js), at most two at a time, and only the most
+// recently used REAL_MODEL_KEEP stay in memory.
+const REAL_MODEL_LOADS_AT_ONCE = 2;
+const REAL_MODEL_KEEP = 14;
+const realModelQueue = [];
+let realModelLoading = 0;
+
 // Load a model file once; later calls share the same promise
 function loadRealModelFile(entry) {
       let rec = realModelFiles.get(entry.file);
-      if (rec) return rec.promise;
-      rec = { scene: null, failed: false, promise: null };
+      if (rec) { rec.usedAt = Date.now(); return rec.promise; }
+      rec = { scene: null, failed: false, promise: null, usedAt: Date.now() };
       realModelFiles.set(entry.file, rec);
       if (typeof THREE.GLTFLoader !== 'function') {
         rec.failed = true;
@@ -59,17 +67,55 @@ function loadRealModelFile(entry) {
       }
       if (!realModelLoader) realModelLoader = new THREE.GLTFLoader();
       rec.promise = new Promise(resolve => {
-        realModelLoader.load(REAL_MODEL_DIR + entry.file, gltf => {
+        realModelQueue.push(() => realModelLoader.load(REAL_MODEL_DIR + entry.file, gltf => {
           rec.scene = normaliseRealModel(gltf.scene, entry);
           resolve(rec.scene);
           document.dispatchEvent(new CustomEvent('kelo-real-model', { detail: { file: entry.file } }));
+          realModelLoadDone();
         }, undefined, () => {
           // A missing or blocked file just means the drawn model stays
           rec.failed = true;
           resolve(null);
-        });
+          realModelLoadDone();
+        }));
+        startRealModelLoads();
       });
       return rec.promise;
+    }
+
+function startRealModelLoads() {
+      while (realModelLoading < REAL_MODEL_LOADS_AT_ONCE && realModelQueue.length) {
+        realModelLoading++;
+        realModelQueue.shift()();
+      }
+    }
+
+function realModelLoadDone() {
+      realModelLoading = Math.max(0, realModelLoading - 1);
+      startRealModelLoads();
+      trimRealModelCache();
+    }
+
+// Forget the least recently used files beyond REAL_MODEL_KEEP, but never one that is still on show
+// somewhere in the world (it would just be loaded again next time it is needed)
+function trimRealModelCache() {
+      const loaded = [...realModelFiles.entries()].filter(([, r]) => r.scene);
+      if (loaded.length <= REAL_MODEL_KEEP || typeof scene === 'undefined' || !scene) return;
+      const inUse = new Set();
+      scene.traverse(o => { if (o.userData && o.userData.realModelFile) inUse.add(o.userData.realModelFile); });
+      loaded.filter(([file]) => !inUse.has(file)).sort((a, b) => a[1].usedAt - b[1].usedAt)
+        .slice(0, loaded.length - REAL_MODEL_KEEP)
+        .forEach(([file, r]) => {
+          r.scene.traverse(o => {
+            if (!o.isMesh) return;
+            o.geometry.dispose();
+            (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => {
+              ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'emissiveMap', 'aoMap'].forEach(k => { if (m[k]) m[k].dispose(); });
+              m.dispose();
+            });
+          });
+          realModelFiles.delete(file);
+        });
     }
 
 // Scale the loaded model so its longest side is the real thing's size in metres,
@@ -155,6 +201,7 @@ function withRealModel(lower, drawn) {
       if (!entry) return drawn;
       const rec = realModelFiles.get(entry.file);
       if (rec && rec.failed) return drawn;
+      if (rec) rec.usedAt = Date.now();
       const wrapper = realSize(new THREE.Group());
       wrapper.userData.realModelFile = entry.file;
       if (rec && rec.scene) {

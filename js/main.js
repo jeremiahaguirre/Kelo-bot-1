@@ -624,6 +624,9 @@ window.addEventListener('DOMContentLoaded', () => {
       const active = b.getAttribute('data-tab') === tabId;
       b.className = active ? TAB_ACTIVE : TAB_IDLE;
       b.setAttribute('aria-selected', String(active));
+      // The open tab's icon is filled, the others are outlined
+      const icon = b.querySelector('i[class*="ph-"]');
+      if (icon) { icon.classList.toggle('ph-fill', active); icon.classList.toggle('ph', !active); }
     });
     document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.toggle('hidden', pane.id !== 'tab-' + tabId));
     try { localStorage.setItem('kelo1_menu_tab', tabId); } catch (e) {}
@@ -631,6 +634,18 @@ window.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.inspector-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => showTab(btn.getAttribute('data-tab')));
   });
+  // If the icon font can't load (offline, blocked CDN) each tab shows an emoji instead of a blank square
+  setTimeout(() => {
+    const iconFontLoaded = document.fonts && [...document.fonts].some(f => /phosphor/i.test(f.family) && f.status === 'loaded');
+    if (iconFontLoaded) return;
+    document.querySelectorAll('.inspector-tab-btn i[data-tab-emoji]').forEach(i => {
+      const span = document.createElement('span');
+      span.className = 'text-base leading-none';
+      span.setAttribute('aria-hidden', 'true');
+      span.textContent = i.getAttribute('data-tab-emoji');
+      i.replaceWith(span);
+    });
+  }, 6000);
   let savedTab = 'talk';
   try { savedTab = localStorage.getItem('kelo1_menu_tab') || 'talk'; } catch (e) {}
   showTab(document.getElementById('tab-' + savedTab) ? savedTab : 'talk');

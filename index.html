@@ -166,19 +166,21 @@
       <span class="text-sm font-extrabold text-white">Interact with Kelo-1</span>
       <button id="btnCloseMenu" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center" aria-label="Close menu"><i class="ph-bold ph-x"></i></button>
     </div>
-    <nav class="grid grid-cols-6 gap-1 px-2 pb-2 border-b border-slate-800">
+    <nav class="grid grid-cols-7 gap-1 px-2 pb-2 border-b border-slate-800">
       <button data-tab="talk" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Talk">
-            <i class="ph-fill ph-chat-circle-dots text-base"></i><span>Talk</span>
+            <i class="ph-fill ph-chat-circle-dots text-base" data-tab-emoji="💬"></i><span>Talk</span>
           </button><button data-tab="requests" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Post">
-            <i class="ph-fill ph-envelope-simple text-base"></i><span>Post</span><span id="requestsCountBadge" class="absolute -mt-1 ml-8 px-1 rounded-full bg-amber-500 text-slate-950 font-mono text-[9px]">0</span>
+            <i class="ph-fill ph-envelope-simple text-base" data-tab-emoji="✉️"></i><span>Post</span><span id="requestsCountBadge" class="absolute -mt-1 ml-8 px-1 rounded-full bg-amber-500 text-slate-950 font-mono text-[9px]">0</span>
           </button><button data-tab="diary" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Diary">
-            <i class="ph-fill ph-notebook text-base"></i><span>Diary</span>
+            <i class="ph-fill ph-notebook text-base" data-tab-emoji="📓"></i><span>Diary</span>
           </button><button data-tab="brain" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Brain">
-            <i class="ph-fill ph-brain text-base"></i><span>Brain</span>
+            <i class="ph-fill ph-brain text-base" data-tab-emoji="🧠"></i><span>Brain</span>
           </button><button data-tab="github" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="GitHub">
-            <i class="ph-fill ph-github-logo text-base"></i><span>GitHub</span>
+            <i class="ph-fill ph-github-logo text-base" data-tab-emoji="🐙"></i><span>GitHub</span>
           </button><button data-tab="world" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="World">
-            <i class="ph-fill ph-sliders-horizontal text-base"></i><span>World</span>
+            <i class="ph-fill ph-sliders-horizontal text-base" data-tab-emoji="🎛️"></i><span>World</span>
+          </button><button data-tab="map" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Map of his changes">
+            <i class="ph-fill ph-map-trifold text-base" data-tab-emoji="🗺️"></i><span>Map</span>
           </button>
     </nav>
     <div class="flex-1 overflow-y-auto">
@@ -546,7 +548,10 @@
             <button data-cam="cafes" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">☕ Cafes</button>
 <button data-cam="storehouse" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">📦 Storehouse</button>
           </div>
-          <div class="flex flex-wrap gap-2"><button id="btnWaterGarden" class="px-3 py-1.5 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 text-xs font-semibold flex items-center gap-1.5 shadow-lg transition">
+          <div class="flex flex-wrap gap-2"><button id="btnOpenChangesMap" class="px-3 py-1.5 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-200 text-xs font-semibold flex items-center gap-1.5 shadow-lg transition">
+              <i class="ph-fill ph-map-trifold"></i>
+              <span>Map of everything he changed</span>
+            </button><button id="btnWaterGarden" class="px-3 py-1.5 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 text-xs font-semibold flex items-center gap-1.5 shadow-lg transition">
               <i class="ph-fill ph-drop"></i>
               <span>Water the garden</span>
               <span id="gardenRipeBadge" class="px-1.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 font-mono text-[10px]">4/4</span>
@@ -554,6 +559,20 @@
           <p class="text-[11px] text-slate-400">Drag the ground to slide the map, right-drag or twist two fingers to turn, scroll or pinch to zoom, and WASD or the arrow keys to move. Double-click to fly somewhere; click the ground to send Kelo-1 there or ask what it is. <button type="button" data-explore-help class="underline text-amber-300 hover:text-amber-200">How to explore</button></p>
         </div>
         <div id="tryItPanel" class="p-3 rounded-2xl bg-slate-950 border border-sky-900/70 space-y-2.5"></div>
+      </div>
+
+      <!-- TAB: MAP OF EVERYTHING HE HAS CHANGED (js/minimap.js) -->
+      <div id="tab-map" class="tab-pane hidden p-4 space-y-3">
+        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <div class="text-xs font-bold text-slate-200">🗺️ What Kelo-1 has changed</div>
+            <span id="changesMapCount" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-200 border border-amber-500/30">0 changes</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Every tree he chopped, everything he planted, his roads, hills, holes, dirt piles, new land and builds, on a map of the island. Tap a mark or a row to fly there.</p>
+          <canvas id="changesMap" class="w-full rounded-xl border border-slate-800 bg-slate-900 cursor-pointer" style="aspect-ratio: 4 / 3;" aria-label="Map of the island marking everything Kelo-1 has changed"></canvas>
+          <div id="changesMapLegend" class="flex flex-wrap gap-1.5"></div>
+        </div>
+        <div id="changesMapList" class="space-y-1.5"></div>
       </div>
     </div>
   </aside>

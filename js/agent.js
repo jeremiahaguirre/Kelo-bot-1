@@ -358,6 +358,7 @@ const state = {
   "mealsCooked": [],
   "soundMuted": false,
   "shop": { "listings": [], "sold": [], "earnings": 0, "builtAt": null },
+  "workshop": { "known": {}, "made": [], "jobs": 0, "programs": {}, "log": [], "asked": {}, "gadgetUses": 0 },
   "printer": { "setUp": false, "skill": 0, "prints": 0, "fails": 0, "spools": [], "loadedSpoolId": null, "lessons": {}, "history": [], "designs": {}, "welcomeSent": false }
 };
 
@@ -1841,6 +1842,7 @@ Current state:
 - Your shop website, where real people can buy your things: ${typeof shopSummaryForAI === 'function' ? shopSummaryForAI() : 'none'}
 - Your sense of taste: ${typeof tastesSummaryForAI === 'function' ? tastesSummaryForAI() : 'unknown'}
 - Your 3D printer: ${typeof printerSummaryForAI === 'function' ? printerSummaryForAI() : 'none'}
+- Your Workshop: ${typeof workshopStatusLine === 'function' ? workshopStatusLine() : 'not built yet'}
 - Things your human switched on in your world: ${typeof wishFeaturesSummaryForAI === 'function' ? wishFeaturesSummaryForAI() : 'nothing extra yet'}
 - Your hobbies: ${state.hobbies.map(h => `${h.name} (skill ${h.skill}/100)`).join(', ') || 'none yet'}
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
@@ -1870,7 +1872,7 @@ Return ONLY JSON:
   "codeRequest": null OR {"feature": "something your world can't do yet that you wish the person who codes it would add", "why": "1 sentence"} (${typeof codeRequestHintForAI === 'function' ? codeRequestHintForAI() : 'e.g. a way to fish'}),
 ${typeof wishFeaturesPromptLines === 'function' ? wishFeaturesPromptLines() : ''}
   "sellItem": null OR {"item": "exact name of a design you 3D-printed well that people would find fun or useful (your shop sells only 3D print files)", "price": number in Canadian dollars, a fair price for a print file, $1.99-$5.99, "description": "1-2 sentences for buyers: what it's for or why it's fun"} (put it in your shop website at the NetNode cafe; real people may buy it),
-  "print": null OR {"what": "something small to make on your 3D printer: a useful thing, a toy, or a shape or idea of yours as a sculpture", "why": "1 sentence"} (only if you have a 3D printer and filament),
+${typeof workshopPromptLine === 'function' ? workshopPromptLine() + '\n' : ''}  "print": null OR {"what": "something small to make on your 3D printer: a useful thing, a toy, or a shape or idea of yours as a sculpture", "why": "1 sentence"} (only if you have a 3D printer and filament),
   "webQuery": null OR "a topic you want to look up at the NetNode cafe",
   "usedConcept": null OR "name of one of your existing concepts this decision builds on",
   "newConcept": null OR {"name": "2-4 word name for a brand-new idea you just invented", "emoji": "one emoji", "definition": "1 sentence", "builtFrom": ["ideas or things it grew out of"]},
@@ -2039,6 +2041,7 @@ function applyDecision(decision, originLabel) {
       // Something his human switched on (wildlife, his pet, fishing...): see js/wishfeatures.js
       if (typeof applyWishFeatureDecision === 'function') applyWishFeatureDecision(decision);
       if (decision.print && typeof printDecision === 'function') printDecision(decision.print);
+      if (decision.useMachine && typeof useMachineDecision === 'function') useMachineDecision(decision.useMachine);
 
       const used = findConcept(decision.usedConcept);
       if (used) used.uses = (used.uses || 0) + 1;
@@ -2301,6 +2304,9 @@ function runAutonomousLifeTick() {
       // Now and then he puts something in his shop, or wishes his world could do something new
       if (typeof tendShop === 'function' && canTryKey('shop') && Math.random() < shopChance()) { tryKey('shop', () => tendShop()); return; }
       if (typeof printOnMyOwn === 'function' && canTryKey('print') && Math.random() < printChance()) { tryKey('print', () => printOnMyOwn()); return; }
+      // His Workshop: learn a machine, ask for what it needs, make something, service a vehicle (js/machines.js)
+      if (typeof workshopOnMyOwn === 'function' && canTryKey('workshop') && Math.random() < workshopChance()) { tryKey('workshop', () => workshopOnMyOwn()); return; }
+      if (typeof useGadgetOnMyOwn === 'function' && canTryKey('gadget') && Math.random() < gadgetChance()) { tryKey('gadget', () => useGadgetOnMyOwn()); return; }
       if (typeof wishForCode === 'function' && canTryKey('codewish') && Math.random() < codeWishChance()) { tryKey('codewish', () => wishForCode()); return; }
       // Things his human switched on for him: studying wildlife, his pet, fishing, the campfire...
       if (typeof wishFeatureActivity === 'function' && wishFeatureActivity()) return;

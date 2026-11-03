@@ -423,7 +423,7 @@ function polyjetPrinterModel() {
       mmLabel(g, 'stratasys J850', 0.42, 0.06, -0.3, 0.7, 0.451, { bg: '#f8fafc', fg: '#0f172a' });
       mmScreen(g, 0.18, 0.12, 0.45, 0.78, 0.47);
       // Material cabinet with the photopolymer cartridges
-      for (let i = 0; i < 6; i++) mmBox(g, 0.12, 0.3, 0.02, ['#22d3ee', '#ec4899', '#facc15', '#f8fafc', '#111827', '#9ca3af'][i] ? ['teal', 'red', 'yellow', 'white', 'black', 'grey'][i] : 'grey', -0.55 + i * 0.15, 0.2, 0.452);
+      ['teal', 'red', 'yellow', 'white', 'black', 'grey'].forEach((c, i) => mmBox(g, 0.12, 0.3, 0.02, c, -0.55 + i * 0.15, 0.2, 0.452));
       const tower = mmLightTower(g, 0.6, 1.05, -0.38);
       return mmFinish(g, 'polyjet', { lid, tray, block, lamp, tower, plate: { y: 0.012 }, w: 1.35, d: 0.9 });
     }
@@ -661,6 +661,7 @@ function haasVmcModel(big) {
         mmBox(door, w / 2 - 0.28, h - 1.3, 0.05, 'glass', 0, 0.3, 0.005);
         mmBox(door, 0.04, 0.4, 0.06, 'chrome', -s * (w / 4 - 0.12), 0.4, 0.04);
         door.userData.closedX = s * w / 4;
+        door.position.x = s * w / 4 * 1.85; // open
         return door;
       });
       // Inside: the table with a vise, the column and the spindle head that moves over it

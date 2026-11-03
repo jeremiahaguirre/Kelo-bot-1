@@ -331,11 +331,11 @@ registerWorkshopMachine({
 });
 
 registerWorkshopMachine({
-  key: 'depowder', name: 'Depowdering station', short: 'depowder station', kind: 'post', floor: 1, at: { x: 5.2, z: -4.7, ry: 0 }, size: { w: 0.9, h: 1.3, d: 0.6 },
+  key: 'depowder', name: 'Depowdering station', short: 'depowder station', kind: 'post', floor: 1, at: { x: 3.45, z: -6.75, ry: 0 }, size: { w: 0.9, h: 1.3, d: 0.6 },
   learnAs: 'depowder', skill: 'Depowdering', model: depowderStationModel
 });
 registerWorkshopMachine({
-  key: 'beadblast', name: 'Bead blast cabinet', short: 'bead blaster', kind: 'post', floor: 1, at: { x: 7.25, z: -5.2, ry: -Math.PI / 2 }, size: { w: 0.9, h: 1.4, d: 0.6 },
+  key: 'beadblast', name: 'Bead blast cabinet', short: 'bead blaster', kind: 'post', floor: 1, at: { x: 2.0, z: -6.75, ry: 0 }, size: { w: 0.9, h: 1.4, d: 0.6 },
   learnAs: 'beadblast', skill: 'Bead blasting', model: beadBlastModel
 });
 
@@ -376,11 +376,11 @@ registerWorkshopMachine({
 });
 
 registerWorkshopMachine({
-  key: 'edm', name: 'Sodick wire EDM', short: 'wire EDM', kind: 'post', floor: 1, at: { x: 5.05, z: -6.55, ry: 0 }, size: { w: 1.0, h: 1.8, d: 0.85 },
+  key: 'edm', name: 'Sodick wire EDM', short: 'wire EDM', kind: 'post', floor: 1, at: { x: -3.0, z: -6.75, ry: 0 }, size: { w: 1.0, h: 1.8, d: 0.85 },
   learnAs: 'edm', skill: 'Wire EDM', model: wireEdmModel
 });
 registerWorkshopMachine({
-  key: 'bandsaw', name: 'Horizontal bandsaw', short: 'bandsaw', kind: 'post', floor: 1, at: { x: 6.95, z: -6.85, ry: 0 }, size: { w: 0.9, h: 1.0, d: 0.45 },
+  key: 'bandsaw', name: 'Horizontal bandsaw', short: 'bandsaw', kind: 'post', floor: 1, at: { x: -1.5, z: -6.95, ry: 0 }, size: { w: 0.9, h: 1.0, d: 0.45 },
   learnAs: 'bandsaw', skill: 'Bandsaw cutting', model: bandsawModel
 });
 registerWorkshopMachine({

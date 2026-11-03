@@ -258,7 +258,7 @@ function upgradeSignTexture(text, bg, fg) {
       ctx.fillStyle = fg;
       let size = 76;
       ctx.font = `bold ${size}px Georgia, serif`;
-      while (ctx.measureText(text).width > 470 && size > 24) { size -= 4; ctx.font = `bold ${size}px Georgia, serif`; }
+      while (ctx.measureText(text).width > 360 && size > 20) { size -= 4; ctx.font = `bold ${size}px Georgia, serif`; }
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(text, 256, 84);
       const tex = new THREE.CanvasTexture(c);

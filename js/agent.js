@@ -323,6 +323,8 @@ const state = {
   "worldEdits": [],
   "basementDepth": 0,
   "projects": [],
+  "buildProjects": [],
+  "pilotTraining": { "groundSchoolAt": null, "taxiRuns": 0 },
   "landFills": [],
   "aiLearned": [],
   "vocabulary": {},
@@ -1829,6 +1831,7 @@ Current state:
 - The weather: ${typeof weatherSummaryForAI === 'function' ? weatherSummaryForAI() : 'unknown'} (spring rain soaks plants so they grow faster; winter freezes the lake, and you only walk on ice you have measured at 10 cm or more: open water still drowns you)
 - New land in the lake: ${typeof landFillSummaryForAI === 'function' ? landFillSummaryForAI() : 'none'}
 - Real things you are building from plans: ${typeof projectsSummaryForAI === 'function' ? projectsSummaryForAI() : 'none'}
+- Big builds from a bill of materials: ${typeof assemblySummaryForAI === 'function' ? assemblySummaryForAI() : 'none'}
 - How you have shaped the valley (you can undo anything but a chopped tree): ${typeof landscapeSummaryForAI === 'function' ? landscapeSummaryForAI() : 'nothing yet'}
 - Things you know how to use: ${typeof knowHowSummaryForAI === 'function' ? knowHowSummaryForAI() : 'nothing yet'}
 - Your most recent decisions: ${typeof recentDecisionsForAI === 'function' ? recentDecisionsForAI() : 'none yet'}. Choose something genuinely DIFFERENT this time: don't repeat or rephrase any of them, and don't retry something you are still waiting on (tools, materials, fuel or a delivery). Do something else meanwhile.
@@ -1879,7 +1882,7 @@ ${typeof wishFeaturesPromptLines === 'function' ? wishFeaturesPromptLines() : ''
   "shape": null OR {"action": "chop" | "plant" | "road" | "pave" | "hill" | "hollow" | "undo", "x": number, "z": number, "toX": number, "toZ": number, "id": "an id from your list, for undo", "why": "1 sentence"} (change your world yourself, anywhere except town: the meadows, woods, mountain slopes, beach and land you made are all yours. Chop a tree with an axe, plant seeds you have, lay a gravel road, pave one of your gravel roads with asphalt (give its id), raise a hill or dig a hollow with a shovel, or undo something you added; town and the buildings are never touched. x runs ${WORLD_MIN_X} to ${WORLD_MAX_X}, z runs ${WORLD_MIN_Z} (mountain) to 9 (beach); town is x ${TOWN.minX} to ${TOWN.maxX}, z ${TOWN.minZ} to ${TOWN.maxZ}),
   "practise": null OR "one of your vehicles, your telescope or a hobby to go and practise for real right now (e.g. 'the helicopter')",
   "buildProject": null OR "one of the real things you know how to build" (look it up and ask for the materials it takes; one project at a time),
-  "expandLand": null OR {"x": number, "why": "1 sentence"} (from now on, tip the dirt you dig into the lake off the beach near x to make new land, instead of the Disposal Pit; deeper water needs more dirt),
+${typeof buildAnythingPromptLine === 'function' ? buildAnythingPromptLine() + '\n' : ''}  "expandLand": null OR {"x": number, "why": "1 sentence"} (from now on, tip the dirt you dig into the lake off the beach near x to make new land, instead of the Disposal Pit; deeper water needs more dirt),
   "takeOut": null OR {"item": "something in your Storehouse or a piece in your Museum", "purpose": "use" | "display", "for": "what you will do with it"} (fetch it: use a stored thing for what it is for, or stand a Museum piece out in the valley again; to throw something out use "discard"),
   "useItem": null OR {"item": "exact name of something you own", "for": "what you will do with it, which must be what it is for (eat a banana, hammer with a hammer, paint murals with spray paint)"},
   "emote": null OR "wave" | "cheer" | "dance" | "think" | "stretch" | "shiver" | "sit" | "celebrate" (a gesture you make right now to show how you feel),
@@ -2082,6 +2085,8 @@ function applyDecision(decision, originLabel) {
       if (typeof startProject === 'function' && typeof decision.buildProject === 'string' && planFor(decision.buildProject.toLowerCase().trim())) {
         doWhenFree(() => startProject(decision.buildProject.toLowerCase().trim(), 'Decided to Build Something Real'));
       }
+
+      if (decision.buildAnything && typeof applyBuildAnythingDecision === 'function') applyBuildAnythingDecision(decision.buildAnything);
 
       if (decision.repairBalloon === true && state.balloonWreck && typeof repairBalloon === 'function') doWhenFree(() => repairBalloon('Decided to Fix the Balloon'));
 
@@ -2298,6 +2303,8 @@ function runAutonomousLifeTick() {
       }
       // Now and then he looks for something real to build
       if (typeof startProject === 'function' && canTryKey('project') && Math.random() < projectChance()) { tryKey('project', () => startProject(pickNewProject())); return; }
+      // A big build from a bill of materials: the next sub-assembly, its tests, flying lessons (js/assembly.js)
+      if (typeof assemblyActivity === 'function' && canTryKey('assembly') && assemblyActivity()) return;
       // Now and then he puts something in his shop, or wishes his world could do something new
       if (typeof tendShop === 'function' && canTryKey('shop') && Math.random() < shopChance()) { tryKey('shop', () => tendShop()); return; }
       if (typeof printOnMyOwn === 'function' && canTryKey('print') && Math.random() < printChance()) { tryKey('print', () => printOnMyOwn()); return; }

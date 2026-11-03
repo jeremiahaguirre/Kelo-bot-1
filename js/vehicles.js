@@ -236,6 +236,8 @@ function updateVehicles(t) {
 const CRUISE_ALTITUDE = { balloon: 16, helicopter: 11 };
 function airAltitude(m, v, t) {
       const u = m.userData, balloon = /balloon/i.test(v.name);
+      // His home-built airplane rolls down the strip before it climbs (js/assembly.js)
+      if (u.fixedWing && typeof planeAltitude === 'function') return planeAltitude(m, v, t, u);
       // Real seconds since the last frame, so slow computers climb just as fast
       const now = performance.now() / 1000;
       const dt = Math.min(0.5, Math.max(0, now - (u.lastT ?? now)));
@@ -290,7 +292,7 @@ async function driveVehicle(v, target, label) {
         // Lift off first: climb most of the way up before heading anywhere
         Object.assign(mesh.userData, { alt: 0, landing: false, lift: 1 });
         mesh.rotation.z = 0;
-        state.targetPos = { ...state.botPos };
+        state.targetPos = (typeof takeoffRunFor === 'function' && takeoffRunFor(v)) || { ...state.botPos };
         state.speechBubble = /balloon/i.test(v.name) ? 'Burner on... and up we go!' : 'Lifting off!';
         renderAllUI();
         await waitForAltitude(v, a => a > (/balloon/i.test(v.name) ? CRUISE_ALTITUDE.balloon : CRUISE_ALTITUDE.helicopter) * 0.75);

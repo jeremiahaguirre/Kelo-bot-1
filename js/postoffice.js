@@ -83,6 +83,9 @@ async function openParcel(parcel) {
         logEntry.reaction = state.speechBubble;
       } else if (parcel.kind === 'photo') {
         await openPhotoParcel(parcel);
+      } else if (parcel.kind === 'parts' && typeof openPartsParcel === 'function') {
+        // A parts kit from one of his lists (js/assembly.js)
+        await openPartsParcel(parcel);
       } else {
         await receiveItem(parcel.name, parcel.category, parcel.from, parcel.note, { type: parcel.kind === 'request' ? 'request' : 'gift', emoji: parcel.emoji });
       }

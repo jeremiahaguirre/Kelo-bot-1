@@ -451,15 +451,13 @@ function talkSuggestionList() {
       const fresh = !state.chatLog.some(m => !m.isBot);
       const has = kind => typeof skillCandidates === 'function' && skillCandidates().some(c => c.kind === kind || (kind === 'telescope' && c.telescope));
       if (state.isSleeping) return ['How did you sleep?', 'What are you dreaming about?'];
-      const list = fresh ? ['Hi Kelo-1! 👋', 'What are you doing?', 'How are you feeling?', 'Paint me something'] : ['What are you doing?'];
-      if (!fresh) {
-        if (has('air')) list.push('Try flying your helicopter');
-        list.push('Paint me something', 'How are you feeling?');
-        if (has('balloon')) list.push('Take your balloon up');
-        if (has('boat')) list.push('Take your boat out');
-        if (has('bike')) list.push('Go for a bike ride');
-        if (has('telescope') && typeof worldNow === 'function' && worldNow().isNight) list.push('Use your telescope');
-      }
+      const list = fresh ? ['Hi Kelo-1! 👋', 'What are you doing?'] : ['What are you doing?'];
+      if (has('air')) list.push('Try flying your helicopter');
+      list.push('Paint me something', 'How are you feeling?');
+      if (has('balloon')) list.push('Take your balloon up');
+      if (has('boat')) list.push('Take your boat out');
+      if (has('bike')) list.push('Go for a bike ride');
+      if (has('telescope') && typeof worldNow === 'function' && worldNow().isNight) list.push('Use your telescope');
       return list.slice(0, 5);
     }
 

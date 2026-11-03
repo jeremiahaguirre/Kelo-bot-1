@@ -101,6 +101,10 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
    - He still requests every vehicle, trailer and accessory.
    - **Owner rule:** he may ask for only ONE of each vehicle kind (trailers included) until he has a helper or friend, then up to two (one for the friend). Unrequested gifts are always accepted.
 
+10. **Performance, game quality, bug hunt and clean code** (`agent/review`, started):
+    - **Phase 1, now:** measure, find and verify bugs, perf hotspots and cleanup items, and write `.claude/review.md` (tiny safe fixes only).
+    - **Phase 2, after tasks 1-9 are merged:** apply the plan across the merged code, re-profile, and fix new bugs from the merges.
+
 ## Owner notes to keep in mind
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.
 - "He can build anything", he can ask for lists of things, and code upgrades to his world.

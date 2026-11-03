@@ -856,7 +856,9 @@ async function codeAnUpgrade(originLabel = 'Coding an Upgrade', given = null) {
       upgradeSessionRunning = true;
       try {
         directKeloToActivity('cyber', 'Sat down at a NetNode terminal to code an upgrade for my world.', originLabel);
+        // Busy and practising: nothing else starts (or talks over him) while he codes
         state.isBusy = true;
+        state.isPracticing = true;
         // The AI (if there is a key) thinks while he walks
         const aiPromise = given ? Promise.resolve(given) : aiWriteUpgrade(null);
         if (typeof waitForArrival === 'function') await waitForArrival(60000);
@@ -910,6 +912,7 @@ async function codeAnUpgrade(originLabel = 'Coding an Upgrade', given = null) {
         return true;
       } finally {
         state.isBusy = false;
+        state.isPracticing = false;
         upgradeSessionRunning = false;
       }
     }

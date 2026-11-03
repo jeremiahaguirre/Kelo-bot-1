@@ -99,6 +99,7 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
      - the excavator hauled for long trips
    - A trip planner that reasons like a person. Example: no snow between here and the mountain, so he researches, then requests a pickup, a trailer and straps, then loads up, drives to the snow line, unloads and rides.
    - He still requests every vehicle, trailer and accessory.
+   - **Owner rule:** he may ask for only ONE of each vehicle kind (trailers included) until he has a helper or friend, then up to two (one for the friend). Unrequested gifts are always accepted.
 
 ## Owner notes to keep in mind
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.

@@ -506,7 +506,7 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
         state.microPose = 'normal';
         state.moodEmoji = M.emoji;
         state.moodTitle = `Off to paint ${S.label}`.slice(0, 80);
-        state.speechBubble = visitor ? `A ${M.title} of ${S.label}, for ${visitor}. I'll set up my easel.` : `I'm going to paint ${S.label} in ${M.title.replace(/ (painting|drawing)$/, '')}.`;
+        state.speechBubble = visitor ? `${/^[aeiou]/i.test(M.title) ? 'An' : 'A'} ${M.title} of ${S.label}, for ${visitor}. I'll set up my easel.` : `I'm going to paint ${S.label} in ${M.title.replace(/ (painting|drawing)$/, '')}.`;
         renderAllUI();
         await waitForArrival(60000);
         state.botRotY = spot.face;
@@ -567,7 +567,7 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
           : spec.q < 0.45 ? 'It is getting better. Some parts work, some I would do again.'
             : spec.q < 0.75 ? 'I am starting to understand the medium. The light looks right.' : 'I think it is genuinely good. The paint does what I ask now.';
         const forWho = visitor ? ` ${visitor} asked me for it.` : '';
-        const result = `I painted "${title}", a ${M.title} of ${S.label} (${record.size}, ${M.on.toLowerCase()}).${forWho} ${verdict}${record.keep ? ' I\'m keeping this one.' : ''}`;
+        const result = `I painted "${title}", ${/^[aeiou]/i.test(M.title) ? 'an' : 'a'} ${M.title} of ${S.label} (${record.size}, ${M.on.toLowerCase()}).${forWho} ${verdict}${record.keep ? ' I\'m keeping this one.' : ''}`;
         state.speechBubble = `"${title}" is finished and hanging in my Museum.${ranOut.length ? ` That used the last of my ${ranOut.join(' and ')}.` : ''}`;
         state.changedLatelySummary = `Painted "${title}" (${M.title})`;
         state.happiness = Math.min(100, state.happiness + 8);
@@ -671,9 +671,9 @@ function answerPaintRequest(ask, visitor) {
         sayToVisitor(`I'd love to, ${visitor}! I've never painted in ${M.title.replace(/ (painting|drawing)$/, '')}, so I'll read up on how it's done first, then ask for the right supplies.${note}`, visitor);
       } else if (paintMissing(medium).length) {
         const miss = paintMissing(medium).map(n => n.ask.replace(/^an?\s+/i, '').toLowerCase());
-        sayToVisitor(`I'd love to paint you a ${M.title} of ${S.label}, ${visitor}, but I still need ${miss.join(', ')}. I'll ask for ${miss.length === 1 ? 'it' : 'them'}, and paint it as soon as they come.${note}`, visitor);
+        sayToVisitor(`I'd love to paint you ${/^[aeiou]/i.test(M.title) ? 'an' : 'a'} ${M.title} of ${S.label}, ${visitor}, but I still need ${miss.join(', ')}. I'll ask for ${miss.length === 1 ? 'it' : 'them'}, and paint it as soon as they come.${note}`, visitor);
       } else {
-        sayToVisitor(`${busy ? 'As soon as I finish what I\'m doing, I' : 'Okay! I'}'ll set up my easel and paint you a ${M.title} of ${S.label}, ${visitor}.${note}`, visitor);
+        sayToVisitor(`${busy ? 'As soon as I finish what I\'m doing, I' : 'Okay! I'}'ll set up my easel and paint you ${/^[aeiou]/i.test(M.title) ? 'an' : 'a'} ${M.title} of ${S.label}, ${visitor}.${note}`, visitor);
       }
       state.paintPlan = { medium, subject, for: visitor, overrides: ask.overrides || {}, at: Date.now() };
       savePersistentBrainState();

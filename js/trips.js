@@ -94,7 +94,7 @@ function vehicleRequestCheck(item, why = '') {
       const cap = vehicleCapNow(), have = vehicleKindCount(key), word = VEHICLE_KIND_WORDS[key] || key;
       const friend = tripFriendName();
       if (have >= cap) {
-        const said = `vehcap:${key}`;
+        const said = `vehcap:${key}:${cap}`;
         if (typeof activityCoolingDown !== 'function' || !activityCoolingDown(said)) {
           state.speechBubble = friend
             ? `I already have two ${word}s: one for me and one for ${friend}. That's plenty.`

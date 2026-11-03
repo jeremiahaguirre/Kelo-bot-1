@@ -466,6 +466,8 @@ function buildWeldBead() {
       const spat = new THREE.InstancedMesh(dot, new THREE.MeshStandardMaterial({ roughness: 0.5, metalness: 0.6 }), MAXS);
       const spatGlow = new THREE.InstancedMesh(dot, new THREE.MeshBasicMaterial({ transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }), MAXS);
       [spat, spatGlow].forEach(m => { m.count = 0; m.frustumCulled = false; g.add(m); });
+      // Instance colours must exist before the first render, or the shader is built without them (all white)
+      [[solid, MAXB], [glow, MAXB], [spat, MAXS], [spatGlow, MAXS]].forEach(([m, n]) => { for (let i = 0; i < n; i++) m.setColorAt(i, new THREE.Color(0, 0, 0)); });
       weldRig.bead = { solid, glow, ripples: [], MAXB };
       weldRig.spatter = { solid: spat, glow: spatGlow, dots: [], MAXS };
       // Two steel plates butted together along the seam

@@ -93,13 +93,16 @@ function stumpMesh(e) {
         // A few chips of fresh wood from the axe
         const chipMat = finishMaterial(new THREE.MeshStandardMaterial({ color: 0xe8c48c }), 'wood');
         const rng = makeRng(e.id || 'chips');
+        const chips = [];
         for (let i = 0; i < 6; i++) {
-          const chip = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.012, 0.04), chipMat);
+          const chip = new THREE.Object3D();
           const a = rng() * Math.PI * 2, r = 0.32 + rng() * 0.3;
           chip.position.set(Math.cos(a) * r, 0.01, Math.sin(a) * r);
           chip.rotation.set(0, rng() * 3, (rng() - 0.5) * 0.4);
-          g.add(chip);
+          chips.push(chip);
         }
+        // All six chips in one draw call (js/perf.js)
+        g.add(perfInstances(new THREE.BoxGeometry(0.07, 0.012, 0.04), chipMat, chips));
       }
       g.position.set(e.x, getIslandGroundHeight(e.x, e.z), e.z);
       return g;
@@ -134,25 +137,35 @@ function plantingMesh(e) {
         const stemMat = new THREE.MeshStandardMaterial({ color: 0x2f9e44 });
         const heartMat = new THREE.MeshStandardMaterial({ color: 0xf2b705, roughness: 0.9 });
         if (real) { finishMaterial(stemMat, 'leaf'); finishMaterial(heartMat, 'seed'); }
-        const leafGeo = new THREE.SphereGeometry(0.06, 8, 4);
+        // Every stem, bloom, middle and leaf of the clump is drawn together, one draw call each (js/perf.js);
+        // the blooms share one material and get their colours per flower
+        const bloomMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x222222 });
+        if (real) finishMaterial(bloomMat, 'petal');
+        const stems = [], blooms = [], hearts = [], leaves = [], bloomColors = [];
         for (let i = 0; i < 9; i++) {
           const a = i * 2.4, r = 0.15 + (i % 3) * 0.2;
-          const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.35, 4), stemMat);
-          stem.position.set(Math.cos(a) * r, 0.17, Math.sin(a) * r);
-          const bloomMat = new THREE.MeshStandardMaterial({ color: colors[i % colors.length], emissive: colors[i % colors.length], emissiveIntensity: 0.15 });
-          if (real) finishMaterial(bloomMat, 'petal', { seed: i });
+          const x = Math.cos(a) * r, z = Math.sin(a) * r;
+          const stem = new THREE.Object3D();
+          stem.position.set(x, 0.17, z);
           // An open flower: a flat ring of petals around a seed-heavy middle
-          const bloom = new THREE.Mesh(new THREE.SphereGeometry(0.075, 10, 6), bloomMat);
+          const bloom = new THREE.Object3D();
           bloom.scale.set(1, 0.35, 1);
-          bloom.position.set(stem.position.x, 0.36, stem.position.z);
-          const heart = new THREE.Mesh(new THREE.SphereGeometry(0.025, 6, 4), heartMat);
-          heart.position.set(stem.position.x, 0.375, stem.position.z);
-          const leaf = new THREE.Mesh(leafGeo, stemMat);
+          bloom.position.set(x, 0.36, z);
+          const heart = new THREE.Object3D();
+          heart.position.set(x, 0.375, z);
+          const leaf = new THREE.Object3D();
           leaf.scale.set(1, 0.2, 0.4);
-          leaf.position.set(stem.position.x + 0.04, 0.1, stem.position.z);
+          leaf.position.set(x + 0.04, 0.1, z);
           leaf.rotation.z = 0.5;
-          g.add(stem, bloom, heart, leaf);
+          stems.push(stem); blooms.push(bloom); hearts.push(heart); leaves.push(leaf);
+          bloomColors.push(colors[i % colors.length]);
         }
+        g.add(
+          perfInstances(new THREE.CylinderGeometry(0.015, 0.015, 0.35, 4), stemMat, stems),
+          perfInstances(new THREE.SphereGeometry(0.075, 10, 6), bloomMat, blooms, { colors: bloomColors }),
+          perfInstances(new THREE.SphereGeometry(0.025, 6, 4), heartMat, hearts),
+          perfInstances(new THREE.SphereGeometry(0.06, 8, 4), stemMat, leaves)
+        );
       }
       // A little ring of turned soil around it
       const soil = new THREE.Mesh(new THREE.CircleGeometry(e.kind === 'tree' ? 0.45 : 0.75, 16), new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 1 }));
@@ -191,22 +204,24 @@ function roadMesh(e) {
       });
       const len = Math.hypot(e.toX - e.x, e.toZ - e.z);
       const ang = Math.atan2(e.toX - e.x, e.toZ - e.z);
+      // Every slab, and every stone of each shape, is drawn together: one draw call each (js/perf.js).
+      // (Each stone shape always went with the same colour of stone, so that stays the same.)
+      const slabs = [], dashes = [], stones = [[], [], []];
       let n = 0;
       for (let d = 0; d < len; d += 0.6) {
         const x = e.x + Math.sin(ang) * d, z = e.z + Math.cos(ang) * d;
         if (offLimits(x, z, -0.6)) continue; // the road stops short of buildings
         const y = getIslandGroundHeight(x, z) + (stage === 'bed' ? 0.0 : asphalt ? 0.05 : 0.03);
-        const slab = new THREE.Mesh(new THREE.BoxGeometry(1.5, stage === 'loose' ? 0.09 : 0.05, 0.64), gravel);
+        const slab = new THREE.Object3D();
         slab.position.set(x, y + (stage === 'loose' ? Math.sin(d * 5) * 0.025 : 0), z);
         slab.rotation.y = ang;
         if (stage === 'loose') slab.rotation.z = Math.sin(d * 3.1) * 0.04;
-        slab.receiveShadow = true;
-        g.add(slab);
+        slabs.push(slab);
         if (line && Math.round(d / 0.6) % 2 === 0) {
-          const dash = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.01, 0.42), line);
+          const dash = new THREE.Object3D();
           dash.position.set(x, y + 0.03, z);
           dash.rotation.y = ang;
-          g.add(dash);
+          dashes.push(dash);
         }
         if (stage) continue; // edge stones go in once the road is finished
         [-0.8, 0.8].forEach(side => {
@@ -214,16 +229,20 @@ function roadMesh(e) {
           [-0.2, 0.05, 0.25].forEach((along, k) => {
             n++;
             if ((n * 7) % 5 === 0) return;
-            const stone = new THREE.Mesh(stoneGeos[n % 3], edges[(n * 5) % 3]);
+            const stone = new THREE.Object3D();
             const s = 0.8 + ((n * 37) % 10) / 20;
             stone.scale.set(s * 1.2, s * 0.75, s);
             stone.position.set(x + Math.cos(ang) * side + Math.sin(ang) * along, y + 0.02, z - Math.sin(ang) * side + Math.cos(ang) * along);
             stone.rotation.y = ang + n;
-            stone.castShadow = true;
-            g.add(stone);
+            stones[n % 3].push(stone);
           });
         });
       }
+      if (slabs.length) g.add(perfInstances(new THREE.BoxGeometry(1.5, stage === 'loose' ? 0.09 : 0.05, 0.64), gravel, slabs, { receiveShadow: true }));
+      if (dashes.length) g.add(perfInstances(new THREE.BoxGeometry(0.06, 0.01, 0.42), line, dashes, {}));
+      stones.forEach((list, k) => {
+        if (list.length) g.add(perfInstances(stoneGeos[k], edges[(k * 5) % 3], list, { castShadow: true }));
+      });
       return g;
     }
 

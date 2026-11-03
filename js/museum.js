@@ -86,6 +86,13 @@ function buildMuseum3D() {
       scene.add(museumGroup);
       worldObstacles.push({ x: cx, z: cz, r: Math.max(w, d) / 2 + 0.6 });
       renderMuseum3D();
+      if (typeof perfWatchBuilding === 'function') {
+        perfWatchBuilding({
+          key: 'museum', radius: 7,
+          center: () => museumGroup.position.clone().setY(museumGroup.position.y + 2),
+          forced: museumInUse, show: showMuseumModels, tick: museumModelsTick
+        });
+      } else showMuseumModels(true);
     }
 
 // Fit a model inside a box of the given size and sit it on y = 0
@@ -122,21 +129,37 @@ function museumBasementLevels() {
       return Math.max(0, Math.ceil(allMuseumSculptures().length / perFloor) - 1, Math.ceil(allMuseumPaintings().length / (MUSEUM_FRAMES.length || 8)) - 1);
     }
 
+// Like the Storehouse shelves, the art is only built while the camera can see it (js/perf.js):
+// from far away each plinth holds a plain block and each frame a flat patch of the painting's colour.
+let museumModelsWanted = false;
+
 function renderMuseum3D() {
       if (!museumArtGroup) return;
       const sculptures = museumSculptures(), paintings = museumPaintings();
       const levels = museumBasementLevels();
-      const key = sculptures.map(c => `${c.title}${c.createdTime}`).join('|') + '#' + paintings.map(m => m.seed).join('|') + '#' + levels;
+      const key = (museumModelsWanted ? 'art:' : 'blocks:') + sculptures.map(c => `${c.title}${c.createdTime}`).join('|') + '#' + paintings.map(m => m.seed).join('|') + '#' + levels;
       if (key === museumRenderKey) return;
       museumRenderKey = key;
       while (museumArtGroup.children.length) {
         const old = museumArtGroup.children.pop();
-        old.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material && o.material.map) o.material.map.dispose(); });
+        if (old.userData.perfStandIn) { disposePerfStandIns(old); continue; }
+        old.traverse(o => { if (o.geometry && !(o.userData && o.userData.sharedGeometry)) o.geometry.dispose(); if (o.material && o.material.map) o.material.map.dispose(); });
       }
       if (levels > 0) {
         const sign = makeSignMesh(levels === 1 ? 'GALLERY B1 BELOW' : `GALLERIES B1-B${levels} BELOW`, { bg: '#1c1917', fg: '#fbbf24', width: 1.7, height: 0.26 });
         sign.position.set(MUSEUM_HATCH_LOCAL.x, 3.4, -MUSEUM.d / 2 + 0.12);
         museumArtGroup.add(sign);
+      }
+      if (!museumModelsWanted) {
+        // Stand-ins: a block on each filled plinth, a flat patch in each filled frame (one draw call each)
+        const spots = sculptures.map((c, i) => ({ x: MUSEUM_PLINTHS[i].x, y: MUSEUM_PLINTHS[i].y, z: MUSEUM_PLINTHS[i].z, w: 0.5, h: 0.9, d: 0.5, color: new THREE.Color(c.colorHex || '#38bdf8').getHex() }));
+        paintings.forEach((m, i) => {
+          const f = MUSEUM_FRAMES[i];
+          const flat = Math.abs(Math.sin(f.rotY)) > 0.5;
+          spots.push({ x: f.x, y: f.y - 0.6, z: f.z, w: flat ? 0.06 : 1.75, h: 1.2, d: flat ? 1.75 : 0.06, color: new THREE.Color((m.palette && m.palette[0]) || '#b8860b').getHex() });
+        });
+        if (spots.length) museumArtGroup.add(perfStandIns(spots));
+        return;
       }
       sculptures.forEach((c, i) => {
         if (typeof buildCreationGroup !== 'function') return;
@@ -158,6 +181,27 @@ function renderMuseum3D() {
         frame.rotation.y = slot.rotY;
         museumArtGroup.add(frame);
       });
+      museumArtShadows = true;
+      museumModelsTick(true);
+    }
+
+function museumInUse() {
+      return typeof indoorTrip !== 'undefined' && indoorTrip.active && indoorTrip.site && indoorTrip.site.key === 'museum';
+    }
+
+function showMuseumModels(near) {
+      museumModelsWanted = near;
+      renderMuseum3D();
+    }
+
+// Sculptures cast shadows only while the camera is close enough to notice them
+let museumArtShadows = true;
+function museumModelsTick(near) {
+      if (!museumGroup || !near) return;
+      const close = camera.position.distanceTo(museumGroup.position) < 20;
+      if (close === museumArtShadows) return;
+      museumArtShadows = close;
+      museumArtGroup.traverse(o => { if (o.isMesh && !o.userData.perfStandIn) o.castShadow = close; });
     }
 
 // A painting in its gilded frame (the frame's back is at z = 0)

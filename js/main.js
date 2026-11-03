@@ -59,13 +59,13 @@ function renderAllUI() {
 
 function renderChatBox() {
       const box = document.getElementById('chatMessagesBox');
-      box.innerHTML = state.chatLog.slice(-6).map(m => `
+      perfSetHtml(box, state.chatLog.slice(-6).map(m => `
         <div class="flex items-start gap-2 ${m.isBot ? 'text-amber-200' : 'text-sky-200'}">
           <span class="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded ${m.isBot ? 'bg-amber-500/20 text-amber-300' : 'bg-sky-500/20 text-sky-300'} shrink-0">${escapeHtml(m.sender)}</span>
           <p class="leading-snug">${escapeHtml(m.text)}</p>
         </div>
-      `).join('');
-      box.scrollTop = box.scrollHeight;
+      `).join(''));
+      if (box.__keloScrolledFor !== box.__keloHtml) { box.__keloScrolledFor = box.__keloHtml; box.scrollTop = box.scrollHeight; }
     }
 
 function renderDiaryTab() {
@@ -74,7 +74,7 @@ function renderDiaryTab() {
       if (state.diaryEntries.length > 0) {
         document.getElementById('diarySpotlightText').textContent = `"${state.diaryEntries[0].text}"`;
       }
-      list.innerHTML = state.diaryEntries.map(d => `
+      perfSetHtml(list, state.diaryEntries.map(d => `
         <article class="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800/90 space-y-1.5 hover:border-slate-700 transition">
           <div class="flex items-center justify-between text-[11px] font-mono">
             <span class="text-amber-300 font-bold">${escapeHtml(d.mood)}</span>
@@ -87,7 +87,7 @@ function renderDiaryTab() {
             "${escapeHtml(d.text)}"
           </p>
         </article>
-      `).join('');
+      `).join(''));
     }
 
 function renderRequestsTab() {
@@ -272,7 +272,7 @@ function renderGitHubTab() {
       }
 
       const reposList = document.getElementById('githubReposList');
-      reposList.innerHTML = state.githubRepos.map((r, idx) => `
+      perfSetHtml(reposList, state.githubRepos.map((r, idx) => `
         <div data-repo-idx="${idx}" class="repo-card cursor-pointer p-3.5 rounded-2xl bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/50 transition space-y-1.5">
           <div class="flex items-center justify-between">
             <span class="font-mono text-xs font-bold text-purple-300 flex items-center gap-1.5">
@@ -288,10 +288,10 @@ function renderGitHubTab() {
             Latest commit (${escapeHtml(r.updated)}): "${escapeHtml(r.commitMsg)}"
           </div>
         </div>
-      `).join('');
+      `).join(''));
 
       reposList.querySelectorAll('.repo-card').forEach(card => {
-        card.addEventListener('click', () => {
+        card.onclick = () => {
           const r = state.githubRepos[Number(card.getAttribute('data-repo-idx'))];
           if (!r) return;
           document.getElementById('modalRepoTitle').textContent = `kelo1-okanagan-bot/${r.name}`;
@@ -300,7 +300,7 @@ function renderGitHubTab() {
           const modal = document.getElementById('codeViewerModal');
           modal.classList.remove('hidden');
           modal.classList.add('flex');
-        });
+        };
       });
     }
 
@@ -316,7 +316,7 @@ function renderWebTastesTab() {
       if (conceptsBadge) conceptsBadge.textContent = `${state.concepts.length} ${state.concepts.length === 1 ? 'idea' : 'ideas'}`;
       const conceptsEl = document.getElementById('conceptsListContainer');
       if (conceptsEl) {
-        conceptsEl.innerHTML = state.concepts.map((c, idx) => `
+        perfSetHtml(conceptsEl, state.concepts.map((c, idx) => `
           <div data-concept-idx="${idx}" class="concept-card cursor-pointer p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-yellow-500/25 hover:border-yellow-400/60 transition space-y-1">
             <div class="flex items-center justify-between gap-2">
               <span class="text-xs font-bold text-yellow-200 flex items-center gap-1.5"><span>${escapeHtml(c.emoji)}</span> <span>${escapeHtml(c.name)}</span></span>
@@ -325,13 +325,13 @@ function renderWebTastesTab() {
             <p class="text-[11px] text-slate-300 font-serif italic">"${escapeHtml(c.definition)}"</p>
             <div class="text-[10px] font-mono text-slate-500 truncate">${c.parents && c.parents.length ? `Built from: ${escapeHtml(c.parents.join(' + '))}` : escapeHtml(c.origin || '')}</div>
           </div>
-        `).join('');
+        `).join(''));
         conceptsEl.querySelectorAll('.concept-card').forEach(card => {
-          card.addEventListener('click', () => {
+          card.onclick = () => {
             const c = state.concepts[Number(card.getAttribute('data-concept-idx'))];
             if (!c) return;
             decideNextAction(`A visitor asked you to keep exploring your concept "${c.name}" (${c.definition}). Develop it, test it, combine it with something, or change your mind about it.`, 'Exploring a Concept');
-          });
+          };
         });
       }
 
@@ -340,7 +340,7 @@ function renderWebTastesTab() {
       if (shapesBadge) shapesBadge.textContent = `${state.shapeLibrary.length} ${state.shapeLibrary.length === 1 ? 'shape' : 'shapes'}`;
       const shapesEl = document.getElementById('shapeLibraryContainer');
       if (shapesEl) {
-        shapesEl.innerHTML = state.shapeLibrary.length === 0
+        perfSetHtml(shapesEl, state.shapeLibrary.length === 0
           ? '<p class="text-[11px] text-slate-500 italic">No saved shapes yet. He names the forms he is proud of.</p>'
           : state.shapeLibrary.map((sh, idx) => `
           <div data-shape-idx="${idx}" class="shape-card cursor-pointer p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-cyan-500/25 hover:border-cyan-400/60 transition space-y-0.5">
@@ -348,20 +348,20 @@ function renderWebTastesTab() {
             <div class="text-[10px] font-mono text-slate-400">${sh.parts.length} parts • welded ${escapeHtml((sh.uses || 0) + 1)}×</div>
             <div class="text-[10px] font-mono text-slate-500 truncate">${escapeHtml(sh.origin)}</div>
           </div>
-        `).join('');
+        `).join(''));
         shapesEl.querySelectorAll('.shape-card').forEach(card => {
-          card.addEventListener('click', () => {
+          card.onclick = () => {
             const sh = state.shapeLibrary[Number(card.getAttribute('data-shape-idx'))];
             if (!sh) return;
             decideNextAction(`A visitor admired your shape "${sh.name}". Weld it again somewhere new, remix it into a new shape, or do something else entirely.`, 'Shape Admired');
-          });
+          };
         });
       }
 
       // Independent Opinions & Convictions
       const opinionsEl = document.getElementById('opinionsListContainer');
       if (opinionsEl) {
-        opinionsEl.innerHTML = state.opinions.map(op => `
+        perfSetHtml(opinionsEl, state.opinions.map(op => `
           <div class="p-3 rounded-xl bg-slate-900/90 border border-purple-500/25 space-y-1">
             <div class="flex items-center justify-between gap-2">
               <span class="text-xs font-bold text-white">${escapeHtml(op.topic)}</span>
@@ -370,7 +370,7 @@ function renderWebTastesTab() {
             <p class="text-[11px] text-slate-300 font-serif italic leading-relaxed">"${escapeHtml(op.reasoning)}"</p>
             <div class="text-[10px] font-mono text-slate-500">${escapeHtml(op.confidence)}</div>
           </div>
-        `).join('');
+        `).join(''));
       }
 
       // Emergent Unscripted Actions & 3D Creations Invented by Kelo-1
@@ -378,7 +378,7 @@ function renderWebTastesTab() {
       if (invBadge) invBadge.textContent = `${state.inventedCreations.length} built`;
       const invEl = document.getElementById('inventedActionsContainer');
       if (invEl) {
-        invEl.innerHTML = state.inventedCreations.map((c, idx) => `
+        perfSetHtml(invEl, state.inventedCreations.slice(0, perfListLimit('inventedActionsContainer', 24)).map((c, idx) => `
           <div data-cx="${escapeHtml(c.x)}" data-cz="${escapeHtml(c.z)}" data-ctitle="${escapeHtml(c.title)}" class="invented-creation-card cursor-pointer p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-emerald-500/25 transition space-y-1">
             <div class="flex items-center justify-between gap-2">
               <span class="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
@@ -390,22 +390,22 @@ function renderWebTastesTab() {
             <div class="text-[11px] text-amber-200 font-mono">${escapeHtml(c.actionVerb)}</div>
             <p class="text-[11px] text-slate-300 font-serif italic">"${escapeHtml(c.philosophy)}"</p>
           </div>
-        `).join('');
+        `).join('') + perfMoreButton('inventedActionsContainer', perfListLimit('inventedActionsContainer', 24), state.inventedCreations.length, 24));
 
         invEl.querySelectorAll('.invented-creation-card').forEach(card => {
-          card.addEventListener('click', () => {
+          card.onclick = () => {
             const cx = parseFloat(card.getAttribute('data-cx'));
             const cz = parseFloat(card.getAttribute('data-cz'));
             const ctitle = card.getAttribute('data-ctitle');
             synthesizeUnboundedExperience(`Revisit "${ctitle}" and evolve the creation further`, 'Revisiting Creation', { x: cx, z: cz });
-          });
+          };
         });
       }
 
       // Persistent Memories of Visitors
       const memoriesEl = document.getElementById('visitorMemoriesContainer');
       if (memoriesEl) {
-        memoriesEl.innerHTML = state.visitorMemories.map(v => `
+        perfSetHtml(memoriesEl, state.visitorMemories.map(v => `
           <div class="p-2.5 rounded-xl bg-slate-900/80 border border-amber-500/20 flex items-start justify-between gap-2 text-xs">
             <div class="space-y-0.5">
               <div class="font-bold text-amber-300 flex items-center gap-1.5">
@@ -417,26 +417,26 @@ function renderWebTastesTab() {
             </div>
             <span class="text-[10px] font-mono text-slate-500 shrink-0">${escapeHtml(v.lastSeen)}</span>
           </div>
-        `).join('');
+        `).join(''));
       }
 
-      document.getElementById('likesListContainer').innerHTML = state.likes.map(l => `
+      perfSetHtml(document.getElementById('likesListContainer'), state.likes.map(l => `
         <div class="text-xs text-slate-200 bg-slate-950/80 p-2.5 rounded-xl border border-indigo-500/25 space-y-1">
           <div class="font-bold text-indigo-300 flex items-center gap-1.5">
             <span>${escapeHtml(l.icon)}</span> <span>${escapeHtml(l.topic || l.item)}</span>
           </div>
           <p class="text-[11px] text-slate-300 leading-relaxed font-serif italic">"${escapeHtml(l.nuance || l.item)}"</p>
         </div>
-      `).join('');
+      `).join(''));
 
-      document.getElementById('dislikesListContainer').innerHTML = state.dislikes.map(d => `
+      perfSetHtml(document.getElementById('dislikesListContainer'), state.dislikes.map(d => `
         <div class="text-xs text-slate-200 bg-slate-950/80 p-2.5 rounded-xl border border-amber-500/25 space-y-1">
           <div class="font-bold text-amber-300 flex items-center gap-1.5">
             <span>${escapeHtml(d.icon)}</span> <span>${escapeHtml(d.topic || d.item)}</span>
           </div>
           <p class="text-[11px] text-slate-300 leading-relaxed font-serif italic">"${escapeHtml(d.nuance || d.item)}"</p>
         </div>
-      `).join('');
+      `).join(''));
 
       // Browsing history: real articles he read (links only ever point at en.wikipedia.org)
       const curiosityEl = document.getElementById('curiosityQueueText');
@@ -452,7 +452,7 @@ function renderWebTastesTab() {
           return u.protocol === 'https:' && ['en.wikipedia.org', 'en.wiktionary.org', 'duckduckgo.com'].includes(u.hostname) ? u.href : null;
         } catch (e) { return null; }
       };
-      document.getElementById('webHistoryList').innerHTML = state.webHistory.map(w => `
+      perfSetHtml(document.getElementById('webHistoryList'), state.webHistory.map(w => `
         <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
           <div class="flex justify-between gap-2 font-mono text-[10px] text-sky-300">
             <span class="truncate">🔎 "${escapeHtml(w.query)}"</span>
@@ -466,7 +466,7 @@ function renderWebTastesTab() {
             </div>` : ''}
           <div class="text-slate-300 text-[11px] italic">${escapeHtml(w.verdict)}</div>
         </div>
-      `).join('');
+      `).join(''));
     }
 
 function updateCameraButtonsUI() {
@@ -495,8 +495,9 @@ window.addEventListener('DOMContentLoaded', () => {
   loadPersistentBrainState();
   // Keep his memory safe: save every 20 seconds and whenever the tab is hidden or closed
   setInterval(savePersistentBrainState, 20000);
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') savePersistentBrainState(); });
-  window.addEventListener('pagehide', savePersistentBrainState);
+  // Leaving or hiding the page saves straight away (other saves are gathered up, see agent.js)
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') savePersistentBrainStateNow(); });
+  window.addEventListener('pagehide', savePersistentBrainStateNow);
   initDiorama3D();
   renderAllUI();
   scheduleNextOrganicImpulse();

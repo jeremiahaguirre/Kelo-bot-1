@@ -114,6 +114,7 @@ Kelo-bot-1/
 │   ├── everydaymodels.js # Food, toys, instruments and books at real size
 │   ├── materials.js     # What things are made of, how they look, bend, snap or shatter; food flavours and his tastes
 │   ├── realmodels.js    # Real 3D models (glTF files in assets/models/) that replace the drawn ones once loaded
+│   ├── perf.js          # Staying smooth: the Performance setting, building the Storehouse and Museum only when seen, hiding far-away things
 │   ├── storehouse.js    # The Storehouse shelves where everything he owns is kept
 │   ├── museum.js        # His Museum of Art & Ideas: sculptures on plinths, paintings in frames
 │   ├── basements.js     # Walking into the Storehouse and Museum: shelves, spiral stairs, lit basements seen through a cutaway

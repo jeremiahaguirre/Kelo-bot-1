@@ -6,7 +6,8 @@
 // Items are shown as small rendered pictures of their real 3D models.
 
 const SHELF_PAGE = 12;
-const thumbCache = new Map();
+// Pictures are drawn only for the page being looked at, and only the most recent 120 are kept
+const thumbCache = typeof perfLRU === 'function' ? perfLRU(120) : new Map();
 let thumbRenderer = null, thumbScene = null, thumbCamera = null;
 let viewerState = null;
 let thumbRedrawTimer = null;

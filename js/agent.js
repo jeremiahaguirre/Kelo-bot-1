@@ -1185,6 +1185,20 @@ function loadPersistentBrainState() {
         const raw = keloStore.getItem(BRAIN_KEY);
         if (!raw) return;
         const saved = JSON.parse(raw);
+        // The big rarely-changing parts live under their own keys (older saves kept them in the main one)
+        BRAIN_PARTS.forEach(part => {
+          if (part.fields.every(f => f in saved)) return;
+          try {
+            const extra = JSON.parse(keloStore.getItem(part.key) || 'null');
+            if (extra && typeof extra === 'object') part.fields.forEach(f => { if (!(f in saved) && f in extra) saved[f] = extra[f]; });
+          } catch (e) {}
+        });
+        try {
+          const pictures = JSON.parse(keloStore.getItem(BRAIN_PICTURES_KEY) || 'null');
+          if (pictures && saved.shop && Array.isArray(saved.shop.listings)) {
+            saved.shop.listings.forEach(l => { if (l && !l.image && typeof pictures[l.id] === 'string') l.image = pictures[l.id]; });
+          }
+        } catch (e) {}
         // Restore everything that was saved, as long as it has the same shape as today's state
         Object.keys(saved).forEach(k => {
           // Only his own fields (never inherited names like __proto__), and never the moment-to-moment ones
@@ -1243,16 +1257,96 @@ function loadPersistentBrainState() {
 const TRANSIENT_STATE_KEYS = new Set(['riding', 'ridingSpeed', 'ridingMode', 'isSleeping', 'isBusy', 'isWalking', 'isBuilding', 'isPracticing', 'isCollectingMail', 'isBrowsing',
   'pendingImageAttachment', 'photoAlbum', 'rhythmPhaseText', 'unopenedNotesQueue', 'basementDepth']);
 
-// Save his whole self: memories, feelings, where he is, what he is doing, everything he owns
+// Big parts of him that change rarely are kept under their own storage keys, so the main brain
+// stays small and an everyday save doesn't rewrite them: the words and things he has looked up,
+// the shapes the AI drew for items, and his shop's listing pictures. (Older saves had them all in
+// the main key; loadPersistentBrainState reads either.)
+const BRAIN_PARTS = [
+  { key: 'kelo1_brain_v3_lore', fields: ['vocabulary', 'itemLookups', 'aiLearned'] },
+  { key: 'kelo1_brain_v3_designs', fields: ['itemDesigns'] }
+];
+const BRAIN_PICTURES_KEY = 'kelo1_brain_v3_shop_pictures';
+const brainWritten = {};   // storage key -> what was last written there (nothing is rewritten unchanged)
+const brainPartSig = {};   // storage key -> a quick signature of the part when it was last written
+let brainPartsCheckedAt = 0;
+
+// A cheap signature of a part: sizes plus the newest stamp. If it matches, the part is very likely
+// unchanged and isn't even turned into text; once a minute every part is checked properly anyway.
+function brainPartSignature(fields) {
+      return fields.map(f => {
+        const v = state[f];
+        if (Array.isArray(v)) return `${v.length}:${JSON.stringify(v[0] || '').length}:${JSON.stringify(v[v.length - 1] || '').length}`;
+        if (v && typeof v === 'object') {
+          const keys = Object.keys(v);
+          let newest = 0;
+          keys.forEach(k => { const at = v[k] && v[k].at; if (at > newest) newest = at; });
+          return `${keys.length}:${newest}`;
+        }
+        return String(v);
+      }).join('|');
+    }
+
+function writeBrainKey(key, text) {
+      if (brainWritten[key] === text) return;
+      keloStore.setItem(key, text);
+      brainWritten[key] = text;
+    }
+
+// Saving is asked for all the time (70-odd places), so asks are gathered up: the save happens
+// about a second after the last ask, and never more than 4 seconds after the first.
+// Leaving the page, hiding the tab and backing up save straight away (savePersistentBrainStateNow).
+let brainSaveTimer = null, brainSaveAskedAt = 0;
 function savePersistentBrainState() {
+      if (!brainSaveAskedAt) brainSaveAskedAt = Date.now();
+      clearTimeout(brainSaveTimer);
+      const wait = Math.max(0, Math.min(1000, 4000 - (Date.now() - brainSaveAskedAt)));
+      brainSaveTimer = setTimeout(savePersistentBrainStateNow, wait);
+    }
+
+// Save his whole self: memories, feelings, where he is, what he is doing, everything he owns
+// Set while a backup is being restored: the reload that follows must not save the old him over it
+let brainSavesBlocked = false;
+
+function savePersistentBrainStateNow() {
+      if (brainSavesBlocked) return;
+      clearTimeout(brainSaveTimer);
+      brainSaveTimer = null;
+      brainSaveAskedAt = 0;
       trimBrainState();
       try {
         const visitor = (document.getElementById('visitorNameInput')?.value || '').trim();
         if (visitor) state.lastVisitorName = visitor;
-        const snapshot = { savedAt: Date.now() };
-        Object.keys(state).forEach(k => { if (!TRANSIENT_STATE_KEYS.has(k)) snapshot[k] = state[k]; });
+        const snapshot = {};
+        const apart = new Set(BRAIN_PARTS.flatMap(p => p.fields));
+        Object.keys(state).forEach(k => { if (!TRANSIENT_STATE_KEYS.has(k) && !apart.has(k)) snapshot[k] = state[k]; });
         snapshot.giftLog = state.giftLog.slice(0, 30).map(({ thumb, ...rest }) => rest);
-        keloStore.setItem(BRAIN_KEY, JSON.stringify(snapshot));
+        // Listing pictures go in their own key
+        const pictures = {};
+        if (state.shop && Array.isArray(state.shop.listings)) {
+          snapshot.shop = { ...state.shop, listings: state.shop.listings.map(({ image, ...rest }) => { if (image) pictures[rest.id] = image; return rest; }) };
+        }
+        const fullCheck = Date.now() - brainPartsCheckedAt > 60000;
+        if (fullCheck) brainPartsCheckedAt = Date.now();
+        BRAIN_PARTS.forEach(part => {
+          const sig = brainPartSignature(part.fields);
+          if (!fullCheck && brainPartSig[part.key] === sig && part.key in brainWritten) return;
+          const data = {};
+          part.fields.forEach(f => { data[f] = state[f]; });
+          writeBrainKey(part.key, JSON.stringify(data));
+          brainPartSig[part.key] = sig;
+        });
+        const picIds = Object.keys(pictures).join('|');
+        if (fullCheck || brainPartSig[BRAIN_PICTURES_KEY] !== picIds) {
+          writeBrainKey(BRAIN_PICTURES_KEY, JSON.stringify(pictures));
+          brainPartSig[BRAIN_PICTURES_KEY] = picIds;
+        }
+        // The main brain last, so the parts it relies on are already there (stamped with when it was saved,
+        // but only written at all when something in it changed)
+        const body = JSON.stringify(snapshot);
+        if (brainWritten[BRAIN_KEY] !== body) {
+          keloStore.setItem(BRAIN_KEY, `{"savedAt":${Date.now()}${body.length > 2 ? ',' : ''}${body.slice(1)}`);
+          brainWritten[BRAIN_KEY] = body;
+        }
       } catch (e) {
         console.warn('Could not save Kelo-1\'s memory:', e);
       }

@@ -1,11 +1,12 @@
 // Kelo-bot-1 — js/shopkeeping.js
 // Loaded after coderequests.js. Kelo-1's shop: at the NetNode cafe he builds a real website (shop.html)
-// to try to sell his things to real people: spare copies of things he owns, art from his Museum, and
-// things he built from plans. He writes each description and picks each price (in Canadian dollars),
-// and a picture of the real 3D model is taken when he lists it.
+// that sells 3D print files (STL) of designs he has printed himself. Only designs that came out well and
+// that people would find fun or useful are listed (no test pieces or abstract concept statues), at the
+// price real print files go for (about $1.99-$5.99 CAD). He writes each description, and a picture of
+// the print is taken when he lists it. The owner can download each STL to send to buyers.
 // SAFETY: there is no payment here at all. Buyers press "Contact to buy", which goes to the email or
 // link the owner sets in Settings, and his human handles the order. When the owner marks something
-// "Sold", it leaves his things for good and the money goes in state.shop.earnings.
+// "Sold", the money goes in state.shop.earnings. A file can sell again, so it stays listed.
 
 const SHOP_CONTACT_KEY = 'kelo1_shop_contact';
 const MAX_LISTINGS = 12;
@@ -36,6 +37,61 @@ function ensureShop() {
       return s;
     }
 
+// --- Print files: what's worth selling, and for how much ---------------------------------------------
+// Each of his standard designs: what it's for, and whether people would want it
+const PRINT_FILE_APPEAL = {
+  hook: { appeal: 'useful', pitch: 'A sturdy wall hook for keys, a bag or a coat. Screw it up and it holds.' },
+  vase: { appeal: 'useful', pitch: 'A spiral vase that prints in one smooth go. Lovely with dried flowers.' },
+  pot: { appeal: 'useful', pitch: 'A pencil cup for the desk. Holds pens, brushes and screwdrivers.' },
+  stand: { appeal: 'useful', pitch: 'A phone stand for video calls and recipes. Fits most phones, even in a case.' },
+  planter: { appeal: 'useful', pitch: 'A little planter, just right for a seedling or a small succulent.' },
+  whistle: { appeal: 'fun', pitch: 'A loud little whistle. Fun for kids, handy on a hike.' },
+  tugboat: { appeal: 'fun', pitch: 'A little tugboat, the classic first print. It floats in the bath, too.' },
+  robot: { appeal: 'fun', pitch: 'A small figurine of me, Kelo-1. Nice on a desk or a shelf.' },
+  star: { appeal: 'fun', pitch: 'A star ornament for a window, a tree or a gift tag.' },
+  gear: { appeal: null, pitch: '' } // just a test piece on its own
+};
+const FUN_OR_USEFUL_RE = /\b(holder|stand|hook|rack|organi[sz]er|box|tray|clip|cup|mug|planter|pot|vase|bowl|coaster|keychain|key ?ring|bookmark|opener|whistle|toy|game|puzzle|dice|spinner|top|car|boat|plane|rocket|robot|figurine|ornament|dragon|heron|deer|bird|fish|cat|dog|bear|owl|fox|frog|turtle|dinosaur|ogopogo|lighthouse|castle|house|tree|star|moon|heart|flower|lamp|shade|nameplate|sign)\b/i;
+const NOT_FOR_SALE_RE = /\b(abstract|study|concept|theory|form|totem|knot|coil|arch|bloom|spire|lantern|epiphany|idea|test|calibration)\b/i;
+
+function printDesignFor(name) {
+      const p = typeof printerState === 'function' ? printerState() : null;
+      if (!p) return null;
+      let lower = String(name || '').toLowerCase().trim();
+      if (/^"[^"]*"$/.test(lower)) lower = lower.slice(1, -1);
+      const key = Object.keys(p.designs).find(k => k === lower || k.replace(/^a 3d-printed /, '') === lower.replace(/^(an?|the|my)\s+/, '').replace(/^3d-printed /, '').replace(/ (3d )?print file.*$/, ''));
+      return key ? { name: key, ...p.designs[key] } : null;
+    }
+
+// Would people actually want this file? A reason it's fun or useful, or why not
+function printFileVerdict(design) {
+      if (!design) return { ok: false, why: "I haven't printed that one myself, so I don't know it prints well." };
+      const ok = typeof printerState === 'function' && printerState().history.some(h => h.ok && (h.key === design.key || String(h.what || '').toLowerCase() === design.name));
+      if (!ok && !design.key) return { ok: false, why: "I haven't had a good print of it yet." };
+      if (design.key && PRINT_FILE_APPEAL[design.key]) {
+        const a = PRINT_FILE_APPEAL[design.key];
+        return a.appeal ? { ok: true, appeal: a.appeal, pitch: a.pitch } : { ok: false, why: 'On its own it is just a test piece. Nobody needs that file.' };
+      }
+      const plain = design.name.replace(/^a 3d-printed /, '');
+      if (NOT_FOR_SALE_RE.test(plain) || !FUN_OR_USEFUL_RE.test(plain)) return { ok: false, why: `"${plain}" means a lot to me, but it isn't something people would find fun or useful to print.` };
+      return { ok: true, appeal: /holder|stand|hook|rack|organi|box|tray|clip|cup|mug|planter|pot|vase|bowl|coaster|opener|lamp|nameplate|sign/i.test(plain) ? 'useful' : 'fun', pitch: '' };
+    }
+
+// What a real print file like this goes for, in Canadian dollars (simple ones cheap, detailed ones more)
+function printFilePrice(design) {
+      const grams = design && design.key ? ((typeof PRINTABLES !== 'undefined' && PRINTABLES.find(x => x.key === design.key)) || {}).grams || 20 : 35;
+      const detailed = design && (design.key === 'robot' || design.key === 'vase' || (!design.key && design.parts && design.parts.length > 6));
+      const base = grams <= 10 ? 1.99 : grams <= 30 ? 2.99 : grams <= 50 ? 3.99 : 4.49;
+      return Math.min(5.99, base + (detailed ? 1.5 : 0));
+    }
+
+function fileDetails(design) {
+      const def = design && design.key && typeof PRINTABLES !== 'undefined' ? PRINTABLES.find(x => x.key === design.key) : null;
+      const grams = def ? def.grams : 35;
+      const hours = Math.max(0.5, Math.round(grams / 10 * 2) / 2);
+      return `STL file · about ${grams} g of ${design && design.material || 'PLA'} · prints in about ${hours} h`;
+    }
+
 // Spare things and builds read naturally in lowercase ("a claw hammer"); art keeps the title he gave it
 function thingName(kind, name) {
       return kind === 'item' || kind === 'build' ? String(name).toLowerCase() : String(name);
@@ -54,69 +110,37 @@ function isVehicleName(name) {
       return typeof vehicleTypeFor === 'function' && Boolean(vehicleTypeFor(name));
     }
 
-// The things his built-in brain would happily part with: spare copies, Museum art and finished builds
+// The print files he could list: designs he printed well, that people would want, not listed yet
 function sellableCandidates() {
-      const out = [];
-      const names = ownedItemNames();
-      const counts = {};
-      names.forEach(n => { counts[n] = (counts[n] || 0) + 1; });
-      Object.entries(counts).forEach(([name, n]) => {
-        const supply = typeof isPrinterSupply === 'function' && isPrinterSupply(name);
-        if (n > 1 && !isVehicleName(name) && !supply && listedCount('item', name) < n - 1) out.push({ kind: 'item', ref: name, name });
-        // Things he 3D-printed himself are made to sell, even the only one
-        const printed = state.belongings.some(b => b.name === name && b.category === 'printed');
-        if (printed && n === 1 && !listedCount('item', name)) out.push({ kind: 'item', ref: name, name });
-      });
-      state.inventedCreations.filter(c => c.inMuseum && !c.shopId).forEach(c => out.push({ kind: 'sculpture', creation: c, name: c.title || 'Untitled sculpture' }));
-      state.murals.filter(m => !listedCount('painting', m.seed)).forEach(m => out.push({ kind: 'painting', ref: m.seed, mural: m, name: `"${m.text}" (painting)` }));
-      state.projects.filter(p => p.status === 'built' && !listedCount('build', p.id) && typeof planFor === 'function' && planFor(p.key))
-        .forEach(p => out.push({ kind: 'build', ref: p.id, project: p, name: `Handmade ${planFor(p.key).name.toLowerCase()}` }));
-      return out;
+      const p = typeof printerState === 'function' ? printerState() : null;
+      if (!p) return [];
+      return Object.keys(p.designs).map(name => printDesignFor(name)).filter(Boolean)
+        .filter(d => !listedCount('printfile', d.name) && printFileVerdict(d).ok)
+        .map(d => ({ kind: 'printfile', ref: d.name, design: d, name: `${d.name.replace(/^a 3d-printed /, '').replace(/^./, ch => ch.toUpperCase())} (3D print file)` }));
     }
 
-// Find what the AI meant by a name: something he owns, a sculpture, a painting or a build
+// Find what the AI meant by a name: only print files of his own designs. Anything else, he says why not.
 function resolveSellable(name) {
-      const want = String(name || '').trim().toLowerCase().replace(/^(an?|the|my)\s+/, '').replace(/^"|"$/g, '');
-      if (!want) return null;
-      const owned = typeof findOwnedName === 'function' ? findOwnedName(name) : ownedItemNames().find(n => n.toLowerCase() === want);
-      if (owned) {
-        const copies = ownedItemNames().filter(n => n === owned).length;
-        return listedCount('item', owned) < copies ? { kind: 'item', ref: owned, name: owned } : null;
+      const d = printDesignFor(String(name || '').replace(/\s*\(3d print file\)$/i, ''));
+      const verdict = printFileVerdict(d);
+      if (!verdict.ok) {
+        state.speechBubble = /^\s*$/.test(String(name || '')) ? state.speechBubble
+          : `I only sell 3D print files in my shop, of things people would enjoy or use. ${verdict.why}`;
+        return null;
       }
-      const c = state.inventedCreations.find(cr => !cr.shopId && String(cr.title || '').toLowerCase().replace(/^(an?|the|my)\s+/, '') === want);
-      if (c) return { kind: 'sculpture', creation: c, name: c.title };
-      const m = state.murals.find(mu => !listedCount('painting', mu.seed) && (String(mu.text).toLowerCase() === want || `${String(mu.text).toLowerCase()} painting` === want));
-      if (m) return { kind: 'painting', ref: m.seed, mural: m, name: `"${m.text}" (painting)` };
-      const p = state.projects.find(pr => pr.status === 'built' && !listedCount('build', pr.id) && typeof planFor === 'function' && planFor(pr.key)
-        && want.includes(planFor(pr.key).name.toLowerCase()));
-      if (p) return { kind: 'build', ref: p.id, project: p, name: `Handmade ${planFor(p.key).name.toLowerCase()}` };
-      return null;
+      if (listedCount('printfile', d.name)) return null;
+      return { kind: 'printfile', ref: d.name, design: d, name: `${d.name.replace(/^a 3d-printed /, '').replace(/^./, ch => ch.toUpperCase())} (3D print file)` };
     }
 
-// What he thinks it's worth
+// What a print file of it is worth
 function guessPrice(c) {
-      const round = n => Math.max(1, Math.round(n));
-      if (c.kind === 'sculpture') return round(randRange(45, 160));
-      if (c.kind === 'painting') return round(25 + (Number(c.mural.skill) || 20) * 1.4 + randRange(0, 20));
-      if (c.kind === 'build') return { birdhouse: 45, feeder: 35, windchime: 40, bench: 180, picnic: 260, raisedbed: 120 }[c.project.key] || 60;
-      const cat = typeof categorizeItem === 'function' ? categorizeItem(c.name) : 'thing';
-      return round({ tool: randRange(12, 45), toy: randRange(6, 25), food: randRange(4, 12), material: randRange(8, 30) }[cat] || randRange(8, 35));
+      return printFilePrice(c && c.design);
     }
 
 function writeDescription(c) {
-      if (c.kind === 'sculpture') {
-        return pick([
-          `I welded this at my workshop table and it stood in my Museum. ${c.creation.philosophy ? String(c.creation.philosophy).slice(0, 140) : 'I hope it makes your room feel a little more curious.'}`,
-          `One of a kind. I designed every part of "${c.name}" myself, from the first spark to the last weld.`
-        ]);
-      }
-      if (c.kind === 'painting') return `I painted "${c.mural.text}" with spray paint and hung it in my Museum. Every drip is real. Nobody else has one.`;
-      if (c.kind === 'build') return `I read how to make this at the NetNode cafe and built it at my workbench, at real size. It's sturdy and made with care.`;
-      return pick([
-        `I have two of these, and one of them deserves someone who will use it every day.`,
-        `A spare ${c.name.toLowerCase()} from my Storehouse. It works well and I kept it clean.`,
-        `I already own one of these, so this one is looking for a new home.`
-      ]);
+      const v = printFileVerdict(c.design);
+      const pitch = v.pitch || `A ${v.appeal === 'useful' ? 'handy' : 'fun'} ${c.design.name.replace(/^a 3d-printed /, '')}, my own design.`;
+      return `${pitch} I printed it myself first to make sure it comes out well. ${fileDetails(c.design)}.`;
     }
 
 // --- The picture: a small render of the real model, saved as a data URL ---------------------
@@ -166,7 +190,8 @@ async function shopPicture(c) {
         }
         if (typeof modelThumbnail !== 'function') return emojiPicture('🎁');
         let src = '';
-        if (c.kind === 'sculpture') src = modelThumbnail('shop-art:' + Date.now(), () => buildCreationGroup(c.creation));
+        if (c.kind === 'printfile' && typeof printedThingModel === 'function') src = modelThumbnail('shop-print:' + c.ref, () => printedThingModel(c.ref));
+        else if (c.kind === 'sculpture') src = modelThumbnail('shop-art:' + Date.now(), () => buildCreationGroup(c.creation));
         else if (c.kind === 'build') src = modelThumbnail('shop-build:' + c.project.key, () => planFor(c.project.key).build());
         else {
           // The listing photo is taken once, so wait for the item's real 3D model first (js/realmodels.js)
@@ -203,14 +228,17 @@ async function listForSale(c, price, description, originLabel = 'Working on His 
         renderAllUI();
         await waitForArrival(90000);
         await new Promise(r => setTimeout(r, 2500));
-        // Make sure it's still his (he may have thrown it out on the way)
-        if (c.kind === 'item' && !ownedItemNames().includes(c.ref)) return false;
+        // Only print files of good, wanted designs, at a fair price for a file
+        if (c.kind !== 'printfile' || !printFileVerdict(c.design).ok) return false;
         const image = await shopPicture(c);
-        const p = Math.round(clampNumber(price, 1, 10000, guessPrice(c)) * 100) / 100;
+        const fair = guessPrice(c);
+        // Close to what files like it really sell for, ending in .49 or .99
+        const p = Math.max(0.99, Math.round(clampNumber(price, Math.max(0.99, fair * 0.75), Math.min(9.99, fair * 1.35), fair) * 2) / 2 - 0.01);
         const desc = String(description || '').trim().slice(0, 300) || writeDescription(c);
         const id = 'lst-' + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36);
         if (c.kind === 'sculpture') c.creation.shopId = id;
-        shop.listings.unshift({ id, kind: c.kind, ref: c.kind === 'sculpture' ? id : c.ref, name: String(c.name).slice(0, 80), description: desc, price: p, currency: 'CAD', image, listedAt: new Date().toISOString() });
+        shop.listings.unshift({ id, kind: c.kind, ref: c.ref, name: String(c.name).slice(0, 80), description: desc, price: p, currency: 'CAD', image, listedAt: new Date().toISOString(),
+          file: { format: 'STL', details: fileDetails(c.design), design: { key: c.design.key || null, parts: c.design.parts || null, color: c.design.color || '#f97316', size: c.design.size || null } }, sales: 0 });
         if (firstTime) shop.builtAt = Date.now();
         shop.updatedAt = Date.now();
         state.moodTitle = `Listed ${thingName(c.kind, c.name)} for ${formatCAD(p)}`;
@@ -219,7 +247,7 @@ async function listForSale(c, price, description, originLabel = 'Working on His 
           time: originLabel, location: 'NetNode Cyber Cafe', mood: `🛒 ${firstTime ? 'Built a shop website' : 'Updated his shop'}`,
           vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
           text: firstTime
-            ? `Dear Diary, today I built a real website: my own shop! Real people can look at the things I make and ask my human to buy them. The first thing I put up was ${thingName(c.kind, c.name)}, for ${formatCAD(p)}. I wrote: "${desc}"`
+            ? `Dear Diary, today I built a real website: my own shop! Real people can buy the 3D print files of things I designed and printed, and print their own. The first thing I put up was ${thingName(c.kind, c.name)}, for ${formatCAD(p)}. I wrote: "${desc}"`
             : `Dear Diary, I went to the NetNode cafe and put ${thingName(c.kind, c.name)} in my shop for ${formatCAD(p)}. I wrote: "${desc}"`
         });
         showToast(`🛒 Kelo-1 listed ${c.name} for ${formatCAD(p)}`);
@@ -254,34 +282,18 @@ function sellItemDecision(si) {
       doWhenFree(() => listForSale(c, Number.isFinite(price) && price > 0 ? price : guessPrice(c), typeof si.description === 'string' ? si.description : '', 'Decided to Sell Something'));
     }
 
-// --- The owner's side: sold, or taken down -----------------------------------------------------
+// A print file is a copy: selling it takes nothing away from him
 function removeSoldThing(l) {
-      if (l.kind === 'item') {
-        if (typeof forgetItem === 'function') forgetItem(l.ref);
-      } else if (l.kind === 'sculpture') {
-        const i = state.inventedCreations.findIndex(c => c.shopId === l.id);
-        if (i >= 0) state.inventedCreations.splice(i, 1);
-        if (typeof renderMuseum3D === 'function') renderMuseum3D();
-      } else if (l.kind === 'painting') {
-        state.murals = state.murals.filter(m => m.seed !== l.ref);
-        if (typeof renderMuseum3D === 'function') renderMuseum3D();
-      } else if (l.kind === 'build') {
-        state.projects = state.projects.filter(p => p.id !== l.ref);
-        const mesh = typeof projectMeshes !== 'undefined' && projectMeshes[l.ref];
-        if (mesh) {
-          scene.remove(mesh);
-          const oi = worldObstacles.indexOf(mesh.userData.obstacle);
-          if (oi >= 0) worldObstacles.splice(oi, 1);
-          delete projectMeshes[l.ref];
-        }
-      }
+      if (l.kind === 'printfile') return;
     }
 
 function markListingSold(id) {
       const shop = ensureShop();
       const l = shop.listings.find(x => x.id === id);
       if (!l) return;
-      shop.listings = shop.listings.filter(x => x.id !== id);
+      // A print file can sell again and again, so it stays up
+      if (l.kind === 'printfile') l.sales = (l.sales || 0) + 1;
+      else shop.listings = shop.listings.filter(x => x.id !== id);
       removeSoldThing(l);
       shop.earnings = Math.round((shop.earnings + (Number(l.price) || 0)) * 100) / 100;
       shop.sold.unshift({ id: l.id, name: l.name, price: l.price, soldAt: Date.now() });
@@ -291,12 +303,14 @@ function markListingSold(id) {
       state.wonderLevel = Math.min(100, state.wonderLevel + 6);
       state.moodEmoji = '🥳';
       state.moodTitle = `Sold ${thingName(l.kind, l.name)}!`;
-      state.speechBubble = pick([`Someone bought ${thingName(l.kind, l.name)}? A real person? That makes me so happy!`, `${l.name} has a new home. I hope they love it as much as I did.`, `My first customers are real people out there. ${formatCAD(l.price)}!`]);
+      state.speechBubble = l.kind === 'printfile'
+        ? pick([`Someone bought my ${l.name.replace(/ \(3D print file\)$/, '').toLowerCase()} file! Somewhere out there, a printer is making one right now.`, `A real person is going to print my design! ${formatCAD(l.price)}!`])
+        : pick([`Someone bought ${thingName(l.kind, l.name)}? A real person? That makes me so happy!`, `${l.name} has a new home. I hope they love it as much as I did.`, `My first customers are real people out there. ${formatCAD(l.price)}!`]);
       state.chatLog.push({ sender: 'Kelo-1', text: state.speechBubble, time: 'Just now', isBot: true });
       state.diaryEntries.unshift({
         time: 'Sold in His Shop', location: currentPlaceLabel(), mood: '🥳 Sold something',
         vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
-        text: `Dear Diary, someone out in the real world bought ${thingName(l.kind, l.name)} from my shop for ${formatCAD(l.price)}. My human is sending it to them. I've earned ${formatCAD(shop.earnings)} so far.`
+        text: `Dear Diary, someone out in the real world bought ${thingName(l.kind, l.name)} from my shop for ${formatCAD(l.price)}. My human is sending them the file so they can print their own. I've earned ${formatCAD(shop.earnings)} so far.`
       });
       showToast(`🥳 Sold ${l.name} for ${formatCAD(l.price)}`);
       savePersistentBrainState();
@@ -314,39 +328,33 @@ function takeDownListing(id) {
       renderAllUI();
     }
 
-// Listings whose thing is gone (thrown in the pit, say) come down by themselves
+// Only print files belong in his shop (older listings of physical things come down)
 function pruneShop() {
       const shop = ensureShop();
-      const counts = {};
-      ownedItemNames().forEach(n => { counts[n] = (counts[n] || 0) + 1; });
       const before = shop.listings.length;
-      shop.listings = shop.listings.filter(l => {
-        if (l.kind === 'item') return (counts[l.ref] = (counts[l.ref] || 0) - 1) >= 0;
-        if (l.kind === 'sculpture') return state.inventedCreations.some(c => c.shopId === l.id);
-        if (l.kind === 'painting') return state.murals.some(m => m.seed === l.ref);
-        if (l.kind === 'build') return state.projects.some(p => p.id === l.ref);
-        return false;
-      });
+      shop.listings = shop.listings.filter(l => l.kind === 'printfile' && l.file && l.file.design);
+      state.inventedCreations.forEach(c => { if (c.shopId && !shop.listings.some(l => l.id === c.shopId)) delete c.shopId; });
       return shop.listings.length !== before;
     }
 
 function shopSummaryForAI() {
       const shop = ensureShop();
-      if (!shop.builtAt && !shop.listings.length) return 'not built yet (you could build one at the NetNode cafe to sell spare things or your art to real people)';
-      return `${shop.listings.length} for sale (${shop.listings.slice(0, 6).map(l => `${l.name} at $${l.price}`).join(', ') || 'nothing right now'}); sold ${shop.sold.length}, earned ${formatCAD(shop.earnings)}`;
+      const can = sellableCandidates().map(c => `${c.name} (fair price about $${guessPrice(c)})`);
+      if (!shop.builtAt && !shop.listings.length) return `not built yet. It sells only 3D print files of your designs that printed well and that people would find fun or useful, at $1.99-$5.99 CAD. ${can.length ? 'Ready to list: ' + can.join(', ') : 'Nothing good enough to list yet.'}`;
+      return `${shop.listings.length} print files for sale (${shop.listings.slice(0, 6).map(l => `${l.name} at $${l.price}`).join(', ') || 'nothing right now'}); sold ${shop.sold.length}, earned ${formatCAD(shop.earnings)}.${can.length ? ' Ready to list: ' + can.join(', ') : ''}`;
     }
 
 // --- Publishing: shop-data.json for the owner to commit next to shop.html --------------------
 function shopExportData() {
       const shop = ensureShop();
       return {
-        shop: 'Kelo-1\'s Handmade Shop',
+        shop: 'Kelo-1\'s 3D Print Files',
         currency: 'CAD',
         updatedAt: new Date().toISOString(),
         contact: getShopContact(),
         earnings: shop.earnings,
         soldCount: shop.sold.length,
-        listings: shop.listings.map(({ id, kind, name, description, price, currency, image, listedAt }) => ({ id, kind, name, description, price, currency, image, listedAt }))
+        listings: shop.listings.map(({ id, kind, name, description, price, currency, image, listedAt, file }) => ({ id, kind, name, description, price, currency, image, listedAt, format: file ? file.format : null, details: file ? file.details : null }))
       };
     }
 
@@ -361,6 +369,52 @@ function exportShopData() {
       showToast('⬇️ shop-data.json downloaded. Commit it next to shop.html to publish his shop.');
     }
 
+// --- The STL file itself: the print's model, in millimetres, as ASCII STL ----------------------------
+function modelToSTL(object, name) {
+      object.updateMatrixWorld(true);
+      const lines = [`solid ${name}`];
+      const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), n = new THREE.Vector3(), e1 = new THREE.Vector3(), e2 = new THREE.Vector3();
+      const f = v => v.toExponential(6);
+      object.traverse(o => {
+        if (!o.isMesh || !o.geometry || !o.geometry.attributes.position) return;
+        const pos = o.geometry.attributes.position, idx = o.geometry.index;
+        const count = idx ? idx.count : pos.count;
+        for (let i = 0; i + 2 < count; i += 3) {
+          const ia = idx ? idx.getX(i) : i, ib = idx ? idx.getX(i + 1) : i + 1, ic = idx ? idx.getX(i + 2) : i + 2;
+          a.fromBufferAttribute(pos, ia).applyMatrix4(o.matrixWorld);
+          b.fromBufferAttribute(pos, ib).applyMatrix4(o.matrixWorld);
+          c.fromBufferAttribute(pos, ic).applyMatrix4(o.matrixWorld);
+          n.crossVectors(e1.subVectors(c, b), e2.subVectors(a, b)).normalize();
+          lines.push(` facet normal ${f(n.x)} ${f(-n.z)} ${f(n.y)}`, '  outer loop',
+            ...[a, b, c].map(v => `   vertex ${f(v.x)} ${f(-v.z)} ${f(v.y)}`), '  endloop', ' endfacet');
+        }
+      });
+      lines.push(`endsolid ${name}`);
+      return lines.join('\n');
+    }
+
+function downloadListingSTL(id) {
+      const l = ensureShop().listings.find(x => x.id === id);
+      if (!l || !l.file || !l.file.design) return;
+      const d = l.file.design;
+      const def = d.key && typeof PRINTABLES !== 'undefined' ? PRINTABLES.find(x => x.key === d.key) : null;
+      const raw = def ? def.build() : (typeof printedDesign === 'function' ? printedDesign(d.parts, d.color) : null);
+      if (!raw) return;
+      // A sensible real size: the longest side between about 4 and 15 cm, by how much filament it takes
+      const grams = def ? def.grams : 35;
+      const mm = Math.max(40, Math.min(150, 40 + grams * 1.4));
+      const model = typeof fitPrint === 'function' ? fitPrint(raw, mm) : raw;
+      const slug = String(l.name).toLowerCase().replace(/\(3d print file\)/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'kelo-print';
+      const blob = new Blob([modelToSTL(model, slug)], { type: 'model/stl' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `kelo1-${slug}.stl`;
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
+      showToast(`⬇️ ${link.download} downloaded (about ${Math.round(mm)} mm tall/long). Send it to the buyer.`);
+    }
+
 // --- The shop card in the Post tab -------------------------------------------------------------
 function renderShopPanel() {
       const el = document.getElementById('keloShopPanel');
@@ -368,7 +422,7 @@ function renderShopPanel() {
       const shop = ensureShop();
       if (pruneShop()) savePersistentBrainState();
       const contact = getShopContact();
-      const key = JSON.stringify([shop.listings.map(l => l.id), shop.earnings, shop.sold.length, Boolean(contact)]);
+      const key = JSON.stringify([shop.listings.map(l => l.id + ':' + (l.sales || 0)), shop.earnings, shop.sold.length, Boolean(contact)]);
       if (el.dataset.renderKey === key) return;
       el.dataset.renderKey = key;
       el.innerHTML = `
@@ -391,13 +445,15 @@ function renderShopPanel() {
               <div class="text-[10px] text-slate-400 line-clamp-2">${escapeHtml(l.description)}</div>
             </div>
             <div class="flex flex-col gap-1 shrink-0">
-              <button data-listing-id="${escapeHtml(l.id)}" class="listing-sold-btn px-2 py-0.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] font-bold">✓ Sold</button>
+              <button data-listing-id="${escapeHtml(l.id)}" class="listing-stl-btn px-2 py-0.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-200 text-[10px] font-bold" title="Download the STL file to send to a buyer">⬇️ STL</button>
+              <button data-listing-id="${escapeHtml(l.id)}" class="listing-sold-btn px-2 py-0.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] font-bold">✓ Sold${l.sales ? ` (${l.sales})` : ''}</button>
               <button data-listing-id="${escapeHtml(l.id)}" class="listing-down-btn px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-400 text-[10px]">Take down</button>
             </div>
-          </div>`).join('')}</div>` : `<p class="text-[10px] text-slate-400">${shop.builtAt ? 'Nothing for sale right now.' : 'He hasn\'t built his shop yet. He may decide to at the NetNode cafe, once he has spare things or art to sell.'}</p>`}
-        <p class="text-[10px] text-slate-500">No payments happen here. When someone wants something, they contact you, you handle the order, then press "Sold".</p>`;
+          </div>`).join('')}</div>` : `<p class="text-[10px] text-slate-400">${shop.builtAt ? 'Nothing for sale right now.' : 'He hasn\'t built his shop yet. Once he has printed something fun or useful, he may put its 3D print file up for sale.'}</p>`}
+        <p class="text-[10px] text-slate-500">He sells 3D print files only. No payments happen here: when someone wants a file, they contact you, you send them the STL (⬇️ STL), then press "Sold".</p>`;
       el.querySelector('#btnOpenHisShop')?.addEventListener('click', () => window.open('shop.html', '_blank', 'noopener'));
       el.querySelector('#btnExportShop')?.addEventListener('click', exportShopData);
+      el.querySelectorAll('.listing-stl-btn').forEach(b => b.addEventListener('click', () => downloadListingSTL(b.getAttribute('data-listing-id'))));
       el.querySelectorAll('.listing-sold-btn').forEach(b => b.addEventListener('click', () => markListingSold(b.getAttribute('data-listing-id'))));
       el.querySelectorAll('.listing-down-btn').forEach(b => b.addEventListener('click', () => takeDownListing(b.getAttribute('data-listing-id'))));
     }

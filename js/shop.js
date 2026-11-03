@@ -65,6 +65,7 @@ function cleanListing(l) {
         description: String(l.description || '').slice(0, 300),
         price: Number.isFinite(price) && price > 0 ? Math.round(price * 100) / 100 : null,
         image: /^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(String(l.image || '')) ? l.image : '',
+        details: typeof l.details === 'string' ? l.details.slice(0, 120) : (l.file && typeof l.file.details === 'string' ? l.file.details.slice(0, 120) : ''),
         listedAt: l.listedAt && !Number.isNaN(Date.parse(l.listedAt)) ? new Date(l.listedAt) : null
       };
     }
@@ -78,7 +79,7 @@ function buyHref(contact, listing) {
       if (!contact) return '';
       if (contact.startsWith('mailto:')) {
         const subject = encodeURIComponent(`Kelo-1's shop: ${listing.name}`);
-        const body = encodeURIComponent(`Hi! I'd like to buy "${listing.name}" (${priceText(listing.price)}) from Kelo-1's shop.`);
+        const body = encodeURIComponent(`Hi! I'd like to buy the print file "${listing.name}" (${priceText(listing.price)}) from Kelo-1's shop.`);
         return `${contact}${contact.includes('?') ? '&' : '?'}subject=${subject}&body=${body}`;
       }
       return contact;
@@ -106,6 +107,7 @@ function renderShop(listings, contact, updatedAt) {
               <span class="text-sm font-mono font-bold text-emerald-300 shrink-0">${shopEscape(priceText(l.price))}</span>
             </div>
             ${l.description ? `<p class="font-serif italic text-slate-300 text-sm leading-relaxed flex-1">"${shopEscape(l.description)}"<span class="not-italic text-slate-500 text-xs"> — Kelo-1</span></p>` : '<div class="flex-1"></div>'}
+            ${l.details ? `<div class="text-[10px] font-mono text-sky-300">🖨️ ${shopEscape(l.details)}</div>` : ''}
             ${l.listedAt ? `<div class="text-[10px] font-mono text-slate-500">Listed ${shopEscape(l.listedAt.toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' }))}</div>` : ''}
             ${href
               ? `<a href="${shopEscape(href)}" ${external ? 'target="_blank" rel="noopener noreferrer"' : ''} class="block text-center px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-sm transition">✉️ Contact to buy</a>`

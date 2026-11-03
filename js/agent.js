@@ -1869,7 +1869,7 @@ Return ONLY JSON:
   "codeProject": null OR {"name": "repo-name", "desc": "..."},
   "codeRequest": null OR {"feature": "something your world can't do yet that you wish the person who codes it would add", "why": "1 sentence"} (${typeof codeRequestHintForAI === 'function' ? codeRequestHintForAI() : 'e.g. a way to fish'}),
 ${typeof wishFeaturesPromptLines === 'function' ? wishFeaturesPromptLines() : ''}
-  "sellItem": null OR {"item": "exact name of something you own or art you made", "price": number in Canadian dollars, "description": "1-2 sentences you write for buyers"} (put it in your shop website at the NetNode cafe; real people may buy it),
+  "sellItem": null OR {"item": "exact name of a design you 3D-printed well that people would find fun or useful (your shop sells only 3D print files)", "price": number in Canadian dollars, a fair price for a print file, $1.99-$5.99, "description": "1-2 sentences for buyers: what it's for or why it's fun"} (put it in your shop website at the NetNode cafe; real people may buy it),
   "print": null OR {"what": "something small to make on your 3D printer: a useful thing, a toy, or a shape or idea of yours as a sculpture", "why": "1 sentence"} (only if you have a 3D printer and filament),
   "webQuery": null OR "a topic you want to look up at the NetNode cafe",
   "usedConcept": null OR "name of one of your existing concepts this decision builds on",

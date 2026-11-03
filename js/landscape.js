@@ -174,8 +174,13 @@ function roadMesh(e) {
       const g = new THREE.Group();
       const real = typeof finishMaterial === 'function';
       // Packed gravel (the texture carries the pebbles' colours) edged with rough fieldstones
-      const gravel = new THREE.MeshStandardMaterial({ color: real ? 0xffffff : 0xa8a29e, roughness: 1 });
-      if (real) finishMaterial(gravel, 'gravel');
+      // Stages while he works: 'bed' dug-out soil, 'loose' heaped gravel, 'raked' even gravel, then packed.
+      // Paved roads: 'hot' fresh dark asphalt, then rolled asphalt with a dashed centre line.
+      const stage = e.stage || null;
+      const asphalt = e.surface === 'asphalt' || stage === 'hot';
+      const gravel = new THREE.MeshStandardMaterial({ color: asphalt ? (stage === 'hot' ? 0x161618 : 0x2a2a2d) : stage === 'bed' ? (real ? 0xffffff : 0x7a4b2a) : real ? 0xffffff : 0xa8a29e, roughness: asphalt ? (stage === 'hot' ? 0.55 : 0.92) : 1 });
+      if (real && !asphalt) finishMaterial(gravel, stage === 'bed' ? 'soil' : 'gravel');
+      const line = asphalt && stage !== 'hot' ? new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.7 }) : null;
       const edges = [0x8a8580, 0x78716c, 0x9c9488].map((c, i) => {
         const m = new THREE.MeshStandardMaterial({ color: c, roughness: 1 });
         return real ? finishMaterial(m, 'stone', { seed: i }) : m;
@@ -190,12 +195,20 @@ function roadMesh(e) {
       for (let d = 0; d < len; d += 0.6) {
         const x = e.x + Math.sin(ang) * d, z = e.z + Math.cos(ang) * d;
         if (offLimits(x, z, -0.6)) continue; // the road stops short of buildings
-        const y = getIslandGroundHeight(x, z) + 0.03;
-        const slab = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.05, 0.64), gravel);
-        slab.position.set(x, y, z);
+        const y = getIslandGroundHeight(x, z) + (stage === 'bed' ? 0.0 : asphalt ? 0.05 : 0.03);
+        const slab = new THREE.Mesh(new THREE.BoxGeometry(1.5, stage === 'loose' ? 0.09 : 0.05, 0.64), gravel);
+        slab.position.set(x, y + (stage === 'loose' ? Math.sin(d * 5) * 0.025 : 0), z);
         slab.rotation.y = ang;
+        if (stage === 'loose') slab.rotation.z = Math.sin(d * 3.1) * 0.04;
         slab.receiveShadow = true;
         g.add(slab);
+        if (line && Math.round(d / 0.6) % 2 === 0) {
+          const dash = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.01, 0.42), line);
+          dash.position.set(x, y + 0.03, z);
+          dash.rotation.y = ang;
+          g.add(dash);
+        }
+        if (stage) continue; // edge stones go in once the road is finished
         [-0.8, 0.8].forEach(side => {
           // Two or three stones of different sizes along each edge
           [-0.2, 0.05, 0.25].forEach((along, k) => {
@@ -316,6 +329,7 @@ async function plantSeeds(x, z, why = '', originLabel = 'Shaping the Valley') {
         renderAllUI();
         return 'needs-seeds';
       }
+      if (typeof groundworkReady === 'function' && !groundworkReady('planting', 'Planting')) return 'getting-ready';
       x = Math.round(clampNumber(x, WORLD_MIN_X + 2, WORLD_MAX_X - 2, state.botPos.x) * 10) / 10;
       z = Math.round(clampNumber(z, WORLD_MIN_Z + 2, 9, state.botPos.z) * 10) / 10;
       if (!startJob(x, z)) return false;
@@ -327,8 +341,17 @@ async function plantSeeds(x, z, why = '', originLabel = 'Shaping the Valley') {
         state.moodTitle = `Planting ${seeds.replace(/^(an?|the|some)\s+/i, '')}`.slice(0, 80);
         renderAllUI();
         await waitForArrival(60000);
-        state.microPose = 'digging';
+        // Dig the hole with the trowel or shovel, set the seed in, then water it in
+        if (typeof holdJobTool === 'function') holdJobTool(/trowel|shovel|spade/i, 'digging'); else state.microPose = 'digging';
+        state.speechBubble = 'A hole about twice as wide as the roots...';
+        renderAllUI();
         await new Promise(r => setTimeout(r, 2500));
+        if (typeof holdJobTool === 'function' && hasItem(/watering can|garden hose|\bhose\b/i)) {
+          holdJobTool(/watering can|garden hose|\bhose\b/i, 'normal');
+          state.speechBubble = 'And a good long drink to settle it in.';
+          renderAllUI();
+          await new Promise(r => setTimeout(r, 2200));
+        }
         const kind = /flower|bulb|wildflower|sunflower|tulip|daisy/i.test(seeds) ? 'flowers' : 'tree';
         const e = { id: newEditId('plant'), type: 'plant', kind, seed: seeds, x, z, at: Date.now(), why: String(why).slice(0, 160) };
         state.worldEdits.push(e);
@@ -336,15 +359,17 @@ async function plantSeeds(x, z, why = '', originLabel = 'Shaping the Valley') {
         if (typeof forgetItem === 'function') forgetItem(seeds);
         if (typeof seasonApplied !== 'undefined') seasonApplied = null; // let the new leaves match the season
         sayAndLog(`Planted ${kind === 'tree' ? 'a tree' : 'flowers'}`, '🌱', kind === 'tree' ? "A seedling! In a few days it'll be a young tree." : 'Flowers, right here. They should be up in no time.',
-          `I planted the ${seeds.replace(/^(an?|the|some)\s+/i, '')} in the valley. ${why ? why + ' ' : ''}I'll watch it grow over the next few days.`, originLabel);
+          `I planted the ${seeds.replace(/^(an?|the|some)\s+/i, '')} in the valley, then watered it in. ${why ? why + ' ' : ''}I'll watch it grow over the next few days.`, originLabel);
         return true;
       } finally {
+        if (typeof setCarriedObject === 'function') setCarriedObject(null);
         state.microPose = 'normal';
         state.isPracticing = false;
       }
     }
 
 async function buildRoad(fromX, fromZ, toX, toZ, why = '', originLabel = 'Shaping the Valley') {
+      if (typeof groundworkReady === 'function' && !groundworkReady('road', 'Building a road')) return 'getting-ready';
       const shovel = hasItem(/shovel|spade/i);
       const gravel = hasItem(/gravel|crushed stone|paving|road base/i);
       if (!shovel || !gravel) {
@@ -370,23 +395,43 @@ async function buildRoad(fromX, fromZ, toX, toZ, why = '', originLabel = 'Shapin
         state.targetPos = { x: fromX, z: fromZ };
         renderAllUI();
         await waitForArrival(60000);
-        const e = { id: newEditId('road'), type: 'road', x: Math.round(fromX * 10) / 10, z: Math.round(fromZ * 10) / 10, toX: Math.round(toX * 10) / 10, toZ: Math.round(toZ * 10) / 10, at: Date.now(), why: String(why).slice(0, 160) };
-        // Grow the road behind him as he walks along it
-        const steps = 5;
-        for (let i = 1; i <= steps; i++) {
-          const part = { ...e, id: e.id + '-wip', toX: e.x + (e.toX - e.x) * i / steps, toZ: e.z + (e.toZ - e.z) * i / steps };
-          removeEditMesh(part.id);
-          renderEdit(part);
-          state.targetPos = { x: part.toX, z: part.toZ };
+        const e = { id: newEditId('road'), type: 'road', surface: 'gravel', x: Math.round(fromX * 10) / 10, z: Math.round(fromZ * 10) / 10, toX: Math.round(toX * 10) / 10, toZ: Math.round(toZ * 10) / 10, at: Date.now(), why: String(why).slice(0, 160) };
+        // The real steps, each with its own tool, the road growing behind him as he works along it
+        const stages = [
+          { stage: 'bed', tool: /shovel|spade/i, pose: 'digging', say: 'First dig out the roadbed and level it.' },
+          { stage: 'loose', tool: /wheelbarrow/i, pose: 'normal', say: 'Now wheel the gravel in, load by load.' },
+          { stage: 'raked', tool: /\brake\b|lute/i, pose: 'digging', say: 'Rake it out nice and even.' },
+          { stage: null, tool: /plate compactor|compactor|tamper|road roller/i, pose: 'normal', say: 'And pack it down hard so it never ruts.' }
+        ];
+        const steps = 4;
+        for (const st of stages) {
+          if (typeof holdJobTool === 'function') holdJobTool(st.tool, st.pose); else state.microPose = 'digging';
+          state.moodTitle = `Building a road: ${st.say.replace(/^(First|Now|And) /, '').replace(/\.$/, '')}`.slice(0, 80);
+          state.speechBubble = st.say;
+          renderAllUI();
+          state.targetPos = { x: e.x, z: e.z };
           await waitForArrival(30000);
-          await new Promise(r => setTimeout(r, 900));
+          for (let i = 1; i <= steps; i++) {
+            const part = { ...e, id: e.id + '-wip', stage: st.stage, toX: e.x + (e.toX - e.x) * i / steps, toZ: e.z + (e.toZ - e.z) * i / steps };
+            const done = { ...e, id: e.id + '-wip0', stage: stages[stages.indexOf(st) - 1] ? stages[stages.indexOf(st) - 1].stage : 'none' };
+            removeEditMesh(part.id);
+            renderEdit(part);
+            if (i === 1) { removeEditMesh(done.id); if (done.stage !== 'none') renderEdit(done); }
+            state.targetPos = { x: part.toX, z: part.toZ };
+            await waitForArrival(30000);
+            await new Promise(r => setTimeout(r, 700));
+          }
+          removeEditMesh(e.id + '-wip0');
+          removeEditMesh(e.id + '-wip');
+          if (st.stage) renderEdit({ ...e, id: e.id + '-wip0', stage: st.stage });
         }
+        removeEditMesh(e.id + '-wip0');
         removeEditMesh(e.id + '-wip');
         state.worldEdits.push(e);
         renderEdit(e);
         if (typeof forgetItem === 'function') forgetItem(gravel);
         sayAndLog('Built a gravel road', '🛤️', 'A real road! Now nobody has to walk through the mud here.',
-          `I laid a gravel road about ${Math.round(Math.hypot(e.toX - e.x, e.toZ - e.z))} steps long. ${why ? why + ' ' : ''}It felt good to make something everyone can use.`, originLabel);
+          `I built a gravel road about ${Math.round(Math.hypot(e.toX - e.x, e.toZ - e.z))} steps long, the proper way: dug out the bed, wheeled in the gravel, raked it even and packed it down. ${why ? why + ' ' : ''}It felt good to make something everyone can use.`, originLabel);
         return true;
       } finally {
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
@@ -395,6 +440,7 @@ async function buildRoad(fromX, fromZ, toX, toZ, why = '', originLabel = 'Shapin
     }
 
 async function raiseHill(x, z, why = '', originLabel = 'Shaping the Valley', lower = false) {
+      if (typeof groundworkReady === 'function' && !groundworkReady('earthwork', 'Shaping the land')) return 'getting-ready';
       const shovel = hasItem(/shovel|spade/i);
       if (!shovel) {
         addItemRequest('A sturdy shovel', 'tool', `I want to shape the land into a little ${lower ? 'hollow' : 'hill'}.`, 'Shaping the valley');
@@ -421,6 +467,9 @@ async function raiseHill(x, z, why = '', originLabel = 'Shaping the Valley', low
         const e = { id: newEditId('hill'), type: 'hill', x, z, r: HILL_RADIUS, h: 0, at: Date.now(), why: String(why).slice(0, 160) };
         state.worldEdits.push(e);
         for (let i = 1; i <= 5; i++) {
+          // Dig a load, then wheel it to (or away from) the spot
+          if (typeof holdJobTool === 'function') holdJobTool(i % 2 ? /shovel|spade/i : /wheelbarrow/i, i % 2 ? 'digging' : 'normal');
+          if (i % 2 === 0) { state.targetPos = { x: x - HILL_RADIUS - 0.4 + (Math.random() - 0.5) * 2, z: z + (Math.random() - 0.5) * 2 }; }
           await new Promise(r => setTimeout(r, 1200));
           e.h = Math.round(full * i / 5 * 100) / 100;
           hillTerrainRefresh(e);
@@ -506,7 +555,10 @@ function shapeTheValleyOnMyOwn() {
       // Anywhere but town: half the time somewhere near where he already is
       const open = () => openGroundSpot(1.5, Math.random() < 0.5 ? state.botPos : null);
       if (hasItem(/^(?!.*bird ?seed).*(seed|sapling|bulb)/i)) { const p = open(); return plantSeeds(p.x, p.z, 'I wanted something living that I put there myself.', 'Felt Like Planting'); }
-      if (hasItem(/gravel|crushed stone|paving/i) && hasItem(/shovel|spade/i)) {
+      // A gravel road he's had a while: he may want it paved, which means learning how and asking for asphalt
+      const gravelRoad = state.worldEdits.find(e => e.type === 'road' && e.surface !== 'asphalt');
+      if (gravelRoad && typeof paveRoad === 'function' && Math.random() < 0.3) return paveRoad(gravelRoad.id, 'The gravel keeps washing out, and asphalt would last for years.', 'Felt Like Paving');
+      if (Math.random() < 0.35 || (hasItem(/gravel|crushed stone|paving/i) && hasItem(/shovel|spade/i))) {
         // The first road runs out west from the edge of town toward the Museum; later ones join places he likes
         if (!state.worldEdits.some(e => e.type === 'road')) return buildRoad(TOWN.minX - 1, -2, MUSEUM_DOOR.x + 6, MUSEUM_DOOR.z + 1, 'My feet keep wearing a muddy track out here.', 'Felt Like Building');
         const a = openGroundSpot(1.0), b = openGroundSpot(1.0, a);
@@ -531,6 +583,7 @@ function applyShapeDecision(shape) {
         chop: () => chopTree(x, z, why, 'Decided to Chop'),
         plant: () => plantSeeds(x, z, why, 'Decided to Plant'),
         road: () => buildRoad(x, z, n(shape.toX, x + 8), n(shape.toZ, z), why, 'Decided to Build a Road'),
+        pave: () => (typeof paveRoad === 'function' ? paveRoad(String(shape.id || 'any'), why, 'Decided to Pave a Road') : false),
         hill: () => raiseHill(x, z, why, 'Decided to Shape the Land'),
         hollow: () => raiseHill(x, z, why, 'Decided to Shape the Land', true),
         undo: () => undoEdit(String(shape.id || 'last'), why, 'Changed His Mind')
@@ -539,7 +592,7 @@ function applyShapeDecision(shape) {
     }
 
 function landscapeSummaryForAI() {
-      const edits = state.worldEdits.slice(-8).map(e => e.type === 'road' ? `${e.id}: road (${e.x}, ${e.z}) to (${e.toX}, ${e.toZ})`
+      const edits = state.worldEdits.slice(-8).map(e => e.type === 'road' ? `${e.id}: ${e.surface === 'asphalt' ? 'asphalt' : 'gravel'} road (${e.x}, ${e.z}) to (${e.toX}, ${e.toZ})`
         : e.type === 'plant' ? `${e.id}: ${e.kind} planted at (${e.x}, ${e.z})` : e.type === 'hill' ? `${e.id}: ${e.h < 0 ? 'hollow' : 'hill'} at (${e.x}, ${e.z})` : `${e.id}: stump at (${e.x}, ${e.z})`);
       return edits.length ? edits.join('; ') : 'nothing yet';
     }
@@ -570,6 +623,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setInterval(() => {
       state.worldEdits.forEach(e => { if (e.type === 'plant' && editMeshes[e.id]) editMeshes[e.id].scale.setScalar(growthOf(e)); });
       renderLandscapeList();
+      if (typeof renderSkillsList === 'function') renderSkillsList();
     }, 5000);
   }, 300);
 });

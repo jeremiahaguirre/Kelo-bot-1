@@ -47,7 +47,9 @@ function tripVehicleType(name) {
       // "A pickup truck with a tow hitch" is a pickup: what it comes with doesn't change what it is
       const core = n.replace(/\s+(with|plus|and)\s+.*$/i, '');
       if (TRIP_NOT_VEHICLE_RE.test(core) && !/paddle ?board/i.test(core)) return null;
-      if (typeof FUEL_TYPES !== 'undefined' && Object.values(FUEL_TYPES).some(f => f.re.test(core))) return null;
+      // Fuel in something ("a jerry can of diesel", "gasoline for the snowmobile") is fuel; a "diesel dump truck" is a truck
+      if (typeof FUEL_TYPES !== 'undefined' && Object.values(FUEL_TYPES).some(f => f.re.test(core))
+        && (/\b(cans?|jerry|drums?|tanks?|bottles?|cylinders?|barrels?|totes?|gallons?|lit(re|er)s?|jugs?|refills?|for|of)\b/i.test(core) || !VEHICLE_TYPES.some(t => t.re.test(core)))) return null;
       if (PICKUP_RE.test(core)) return TRIP_TYPE_PICKUP;
       return undefined;
     }

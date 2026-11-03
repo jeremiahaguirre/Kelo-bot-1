@@ -4,6 +4,9 @@
 // buildings, the vehicle yard, helipad, balloon field and dock, his digs, roads, hills, plantings,
 // new land and builds, his vehicles, Kelo-1 himself (an arrow pointing the way he faces) and a
 // light patch showing what the camera can see. Click the map to fly there; + and − zoom the map.
+// The menu's Map tab draws the same terrain bigger, marking everything he has changed in the world
+// (chopped trees, plantings, roads, hills, holes, dirt piles, new land and builds) with a legend and
+// a list; tap a mark or a row to fly there.
 
 const MINIMAP_W = 128, MINIMAP_H = 96;        // world size it covers (the whole island)
 const MINIMAP_RES = 1.5;                      // terrain samples per world unit for the base picture
@@ -28,7 +31,8 @@ function minimapSignature() {
       const edits = (state.worldEdits || []).map(e => e.id).join(';');
       const fills = (state.landFills || []).map(f => `${f.id || f.x},${Math.round(f.volume || 0)},${f.done ? 1 : 0}`).join(';');
       const season = typeof currentSeason === 'function' ? currentSeason() : '';
-      return [digs, edits, fills, season].join('|');
+      const frozen = typeof lakeFrozen === 'function' && lakeFrozen() ? 'ice' : '';
+      return [digs, edits, fills, season, frozen].join('|');
     }
 
 // The terrain picture: colour by height, with soft hill shading
@@ -41,6 +45,7 @@ function minimapBuildBase() {
       const water = typeof WATER_LEVEL === 'number' ? WATER_LEVEL : -0.18;
       const season = typeof currentSeason === 'function' ? currentSeason() : 'Summer';
       const snowLine = typeof SNOW_LINE !== 'undefined' ? SNOW_LINE[season] : 99;
+      const frozen = typeof lakeFrozen === 'function' && lakeFrozen();
       const hs = new Float32Array(cw * ch);
       for (let j = 0; j < ch; j++) {
         for (let i = 0; i < cw; i++) {
@@ -54,7 +59,7 @@ function minimapBuildBase() {
           const x = -MINIMAP_W / 2 + (i + 0.5) / MINIMAP_RES, z = -MINIMAP_H / 2 + (j + 0.5) / MINIMAP_RES;
           const h = hs[j * cw + i];
           let c;
-          if (z > 7.5 && h < water) c = mix([120, 190, 222], [24, 70, 120], (water - h) / 5);
+          if (z > 7.5 && h < water) c = frozen ? mix([228, 238, 247], [176, 200, 222], (water - h) / 6) : mix([120, 190, 222], [24, 70, 120], (water - h) / 5);
           else if (z < 7.8 && h > snowLine) c = [238, 243, 250];
           else if (typeof groundDugAt === 'function' && groundDugAt(x, z) > 0.05) c = [122, 75, 42];
           else if (h > 8.5) c = [236, 241, 250];
@@ -244,4 +249,170 @@ function initExploreMinimap() {
       setInterval(() => {
         if (minimapSignature() !== minimap.baseSig) minimapBuildBase();
       }, 4000);
+      initChangesMap();
+    }
+
+
+// --- The Map tab: everything he has changed ---------------------------------------------------------
+const CHANGE_KINDS = [
+  { key: 'chop', label: 'Trees chopped', emoji: '🪓', color: '#d97706' },
+  { key: 'plant', label: 'Plantings', emoji: '🌱', color: '#4ade80' },
+  { key: 'road', label: 'Roads', emoji: '🛤️', color: '#f5e6b8' },
+  { key: 'hill', label: 'Hills and hollows', emoji: '⛰️', color: '#a16207' },
+  { key: 'hole', label: 'Holes', emoji: '🕳️', color: '#1c1917' },
+  { key: 'pile', label: 'Dirt piles', emoji: '🟫', color: '#92400e' },
+  { key: 'land', label: 'New land', emoji: '🏝️', color: '#fde047' },
+  { key: 'build', label: 'Builds', emoji: '🔨', color: '#f472b6' }
+];
+const changesMap = { canvas: null, hidden: new Set(), hits: [], sig: '' };
+
+// One entry per change, newest first: { kind, label, x, z, at, ... }
+function worldChangesList() {
+      const out = [];
+      (state.worldEdits || []).forEach(e => {
+        if (e.type === 'chop') out.push({ kind: 'chop', label: 'Chopped down a tree', x: e.x, z: e.z, at: e.at, why: e.why });
+        else if (e.type === 'plant') out.push({ kind: 'plant', label: `Planted ${e.kind === 'tree' ? 'a tree' : 'flowers'}${typeof growthOf === 'function' ? ` (${Math.round(growthOf(e) * 100)}% grown)` : ''}`, x: e.x, z: e.z, at: e.at, why: e.why });
+        else if (e.type === 'road' && Number.isFinite(e.toX)) out.push({ kind: 'road', label: `Gravel road, ${Math.round(Math.hypot(e.toX - e.x, e.toZ - e.z))} m long`, x: (e.x + e.toX) / 2, z: (e.z + e.toZ) / 2, x1: e.x, z1: e.z, x2: e.toX, z2: e.toZ, at: e.at, why: e.why });
+        else if (e.type === 'hill') out.push({ kind: 'hill', label: e.h < 0 ? `Dug a hollow, ${Math.abs(e.h).toFixed(1)} m deep` : `Raised a hill${e.h ? `, ${e.h.toFixed(1)} m high` : ''}`, emoji: e.h < 0 ? '🕳️' : null, x: e.x, z: e.z, r: e.r, at: e.at, why: e.why });
+      });
+      (state.digSites || []).forEach(d => {
+        out.push({ kind: 'hole', label: `${d.z < -14 ? 'Mountain' : 'Valley'} dig, ${d.depth.toFixed(1)} m deep`, x: d.x, z: d.z, at: d.startedAt });
+        if (d.dirt > 0 && typeof pileOffset === 'function') {
+          const p = pileOffset(d);
+          out.push({ kind: 'pile', label: 'Dirt pile from his dig', x: p.x, z: p.z, r: typeof pileShape === 'function' ? pileShape(d).r : 1, at: d.startedAt });
+        }
+      });
+      (state.landFills || []).forEach(f => out.push({ kind: 'land', label: f.done ? 'New land in the lake' : 'New land (still filling)', x: f.x, z: f.z, r: f.r, at: f.startedAt, why: f.why }));
+      (state.projects || []).filter(p => p.status === 'built' && Number.isFinite(p.x)).forEach(p => {
+        const plan = typeof planFor === 'function' ? planFor(p.key) : null;
+        out.push({ kind: 'build', label: `Built a ${plan ? plan.name.toLowerCase() : p.key}${p.fromLogs ? ' from his own logs' : ''}`, emoji: plan && plan.emoji, x: p.x, z: p.z, at: p.builtAt });
+      });
+      return out.sort((a, b) => (b.at || 0) - (a.at || 0));
+    }
+
+// The whole island, with every change marked in its own colour and shape
+function changesMapDraw() {
+      const cv = changesMap.canvas;
+      if (!cv || !minimap.base || !cv.offsetParent) return;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const w = cv.clientWidth || 400, h = cv.clientHeight || 300;
+      if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+      const ctx = cv.getContext('2d');
+      const W = cv.width, H = cv.height, sx = W / MINIMAP_W, sz = H / MINIMAP_H;
+      const px = x => (x + MINIMAP_W / 2) * sx, pz = z => (z + MINIMAP_H / 2) * sz;
+      ctx.save();
+      ctx.clearRect(0, 0, W, H);
+      ctx.drawImage(minimap.base, 0, 0, W, H);
+      // Dim the land a little so the marks stand out
+      ctx.fillStyle = 'rgba(15,23,42,0.18)';
+      ctx.fillRect(0, 0, W, H);
+      minimapBuildings().forEach(b => {
+        ctx.fillStyle = 'rgba(226,232,240,0.55)';
+        ctx.fillRect(px(b.x - b.w / 2), pz(b.z - b.d / 2), b.w * sx, b.d * sz);
+      });
+      const color = k => CHANGE_KINDS.find(c => c.key === k).color;
+      const list = worldChangesList().filter(c => !changesMap.hidden.has(c.kind));
+      changesMap.hits = [];
+      // Areas first (hills, land, piles, roads), then point marks on top
+      list.forEach(c => {
+        ctx.strokeStyle = 'rgba(15,23,42,0.9)';
+        ctx.lineWidth = 1.2 * dpr;
+        if (c.kind === 'road') {
+          ctx.lineCap = 'round';
+          ctx.strokeStyle = 'rgba(15,23,42,0.9)'; ctx.lineWidth = Math.max(5 * dpr, 2.2 * sx);
+          ctx.beginPath(); ctx.moveTo(px(c.x1), pz(c.z1)); ctx.lineTo(px(c.x2), pz(c.z2)); ctx.stroke();
+          ctx.strokeStyle = color('road'); ctx.lineWidth = Math.max(3 * dpr, 1.6 * sx);
+          ctx.stroke();
+        } else if (c.kind === 'hill' || c.kind === 'land' || c.kind === 'pile') {
+          ctx.globalAlpha = 0.75;
+          ctx.fillStyle = color(c.kind);
+          ctx.beginPath(); ctx.arc(px(c.x), pz(c.z), Math.max(4 * dpr, (c.r || 1.5) * sx), 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = 1;
+          ctx.stroke();
+        }
+      });
+      list.forEach(c => {
+        const X = px(c.x), Z = pz(c.z), r = 4.5 * dpr;
+        ctx.fillStyle = color(c.kind);
+        ctx.strokeStyle = c.kind === 'hole' ? '#f59e0b' : 'rgba(15,23,42,0.95)';
+        ctx.lineWidth = 1.4 * dpr;
+        ctx.beginPath();
+        if (c.kind === 'chop') { ctx.moveTo(X, Z - r); ctx.lineTo(X + r, Z + r * 0.8); ctx.lineTo(X - r, Z + r * 0.8); ctx.closePath(); }       // a triangle: a felled tree
+        else if (c.kind === 'build') { ctx.rect(X - r, Z - r, r * 2, r * 2); }                                                                // a square: something built
+        else if (c.kind === 'plant') { ctx.arc(X, Z, r, 0, Math.PI * 2); }                                                                     // a dot: something growing
+        else if (c.kind === 'hole') { ctx.arc(X, Z, r * 0.9, 0, Math.PI * 2); }
+        else if (c.kind === 'road') { ctx.moveTo(X, Z - r); ctx.lineTo(X + r, Z); ctx.lineTo(X, Z + r); ctx.lineTo(X - r, Z); ctx.closePath(); } // a diamond mid-road
+        else { ctx.arc(X, Z, r * 0.7, 0, Math.PI * 2); }
+        ctx.fill(); ctx.stroke();
+        changesMap.hits.push({ X, Z, c });
+      });
+      // Where he is right now
+      const kx = keloGroup ? keloGroup.position.x : state.botPos.x, kz = keloGroup ? keloGroup.position.z : state.botPos.z;
+      ctx.fillStyle = '#f59e0b'; ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2 * dpr;
+      ctx.beginPath(); ctx.arc(px(kx), pz(kz), 5 * dpr, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = 'rgba(15,23,42,0.75)';
+      ctx.fillRect(W - 17 * dpr, 4 * dpr, 13 * dpr, 13 * dpr);
+      ctx.fillStyle = '#f8fafc'; ctx.font = `bold ${Math.round(10 * dpr)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('N', W - 10.5 * dpr, 10.5 * dpr);
+      ctx.restore();
+    }
+
+// Legend chips (tap to hide or show a kind) and the list of changes
+function renderChangesMapPanel() {
+      const legend = document.getElementById('changesMapLegend'), listEl = document.getElementById('changesMapList'), count = document.getElementById('changesMapCount');
+      if (!legend || !listEl) return;
+      const all = worldChangesList();
+      const sig = JSON.stringify([all.map(c => c.kind + c.label + c.x), [...changesMap.hidden]]);
+      if (count) count.textContent = `${all.length} change${all.length === 1 ? '' : 's'}`;
+      if (sig === changesMap.sig) return;
+      changesMap.sig = sig;
+      legend.innerHTML = CHANGE_KINDS.map(k => {
+        const n = all.filter(c => c.kind === k.key).length, off = changesMap.hidden.has(k.key);
+        return `<button type="button" data-change-kind="${k.key}" aria-pressed="${!off}" class="px-2 py-1 rounded-lg text-[11px] border flex items-center gap-1.5 transition ${off ? 'border-slate-800 text-slate-500' : 'border-slate-700 bg-slate-900 text-slate-200'}${n ? '' : ' opacity-50'}">
+          <span class="inline-block w-2.5 h-2.5 rounded-sm border border-slate-950" style="background:${k.color}"></span>${escapeHtml(k.emoji)} ${escapeHtml(k.label)} <span class="font-mono text-slate-400">${n}</span></button>`;
+      }).join('');
+      const shown = all.filter(c => !changesMap.hidden.has(c.kind));
+      listEl.innerHTML = shown.length ? shown.slice(0, 40).map((c, i) => {
+        const k = CHANGE_KINDS.find(x => x.key === c.kind);
+        return `<button type="button" data-change-row="${i}" class="w-full text-left px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] text-slate-200 flex items-start gap-2">
+          <span class="mt-0.5 inline-block w-2.5 h-2.5 rounded-sm shrink-0 border border-slate-950" style="background:${k.color}"></span>
+          <span class="min-w-0"><span class="block">${escapeHtml(c.emoji || k.emoji)} ${escapeHtml(c.label)}</span>${c.why ? `<span class="block text-slate-400 italic">${escapeHtml(c.why)}</span>` : ''}</span>
+          <i class="ph ph-crosshair ml-auto text-slate-500" aria-hidden="true"></i></button>`;
+      }).join('') : `<p class="text-[11px] text-slate-500 italic">${all.length ? 'Nothing of those kinds is showing.' : "He hasn't changed anything in the world yet. Give him an axe, seeds, a shovel or some lumber and see what he does."}</p>`;
+      listEl.querySelectorAll('[data-change-row]').forEach(b => b.addEventListener('click', () => changesMapFlyTo(shown[Number(b.getAttribute('data-change-row'))])));
+    }
+
+function changesMapFlyTo(c) {
+      if (!c || typeof exploreFlyTo !== 'function') return;
+      exploreFlyTo({ x: c.x, z: c.z, dist: 18 });
+      // On a phone the menu covers the world: close it so you can see the spot
+      if (window.matchMedia('(max-width: 639px)').matches) document.getElementById('btnCloseMenu')?.click();
+    }
+
+function initChangesMap() {
+      const cv = document.getElementById('changesMap');
+      if (!cv) return;
+      changesMap.canvas = cv;
+      cv.addEventListener('click', (e) => {
+        const r = cv.getBoundingClientRect(), dpr = cv.width / (r.width || 1);
+        const X = (e.clientX - r.left) * dpr, Z = (e.clientY - r.top) * dpr;
+        const near = changesMap.hits.map(h => ({ h, d: Math.hypot(h.X - X, h.Z - Z) })).sort((a, b) => a.d - b.d)[0];
+        if (near && near.d < 14 * dpr) return changesMapFlyTo(near.h.c);
+        // Anywhere else: fly to that spot of the island
+        if (typeof exploreFlyTo === 'function') exploreFlyTo({ x: X / cv.width * MINIMAP_W - MINIMAP_W / 2, z: Z / cv.height * MINIMAP_H - MINIMAP_H / 2, dist: 24 });
+      });
+      document.getElementById('btnOpenChangesMap')?.addEventListener('click', () => { if (typeof window.openKeloMenu === 'function') window.openKeloMenu('map'); });
+      document.getElementById('changesMapLegend')?.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-change-kind]');
+        if (!b) return;
+        const k = b.getAttribute('data-change-kind');
+        if (changesMap.hidden.has(k)) changesMap.hidden.delete(k); else changesMap.hidden.add(k);
+        renderChangesMapPanel();
+        changesMapDraw();
+      });
+      setInterval(() => {
+        if (!cv.offsetParent) return;
+        renderChangesMapPanel();
+        changesMapDraw();
+      }, 500);
     }

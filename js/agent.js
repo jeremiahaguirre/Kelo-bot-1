@@ -334,6 +334,13 @@ const state = {
   "ridingSpeed": 1,
   "ridingMode": null,
   "knowsLakeDanger": false,
+  "knowsRain": false,
+  "rainLikes": 0,
+  "rainShelters": 0,
+  "knowsIceRule": false,
+  "knowsIceSafe": false,
+  "iceTestedWinter": null,
+  "iceLastTest": null,
   "knowsKiteWind": false,
   "knowsWindDanger": false,
   "balloonWreck": null,
@@ -1811,6 +1818,7 @@ Current state:
 - Vehicles parked and ready: ${state.vehicles.map(v => typeof fuelNeededBy === 'function' && fuelNeededBy(v) ? `${v.name} (${Math.round(fuelLeft(v))}% ${fuelNeededBy(v)})` : v.name).join(', ') || 'none'}${state.knowsLakeDanger ? ' (you know you cannot breathe in deep water)' : ''}
 - The season: ${typeof seasonSummaryForAI === 'function' ? seasonSummaryForAI() : 'unknown'}
 - The wind: ${typeof windSummaryForAI === 'function' ? windSummaryForAI() : 'unknown'}
+- The weather: ${typeof weatherSummaryForAI === 'function' ? weatherSummaryForAI() : 'unknown'} (spring rain soaks plants so they grow faster; winter freezes the lake, and you only walk on ice you have measured at 10 cm or more: open water still drowns you)
 - New land in the lake: ${typeof landFillSummaryForAI === 'function' ? landFillSummaryForAI() : 'none'}
 - Real things you are building from plans: ${typeof projectsSummaryForAI === 'function' ? projectsSummaryForAI() : 'none'}
 - How you have shaped the valley (you can undo anything but a chopped tree): ${typeof landscapeSummaryForAI === 'function' ? landscapeSummaryForAI() : 'nothing yet'}
@@ -2280,6 +2288,8 @@ function runAutonomousLifeTick() {
       // With a boat he likes going out on the lake; without one he may wade in and learn the hard way
       if (typeof goBoating === 'function' && findVehicle('boat') && Math.random() < 0.1) { goBoating(); return; }
       if (typeof wadeIntoLake === 'function' && !state.knowsLakeDanger && Math.random() < 0.04) { wadeIntoLake(); return; }
+      // In winter the frozen lake draws him: look, read up, test the ice, then walk on it (js/weather.js)
+      if (typeof iceOuting === 'function' && Math.random() < iceChance()) { iceOuting(); return; }
       // A crashed balloon in pieces: now and then he sets about welding it back together (js/wind.js)
       if (typeof repairBalloon === 'function' && Math.random() < repairChance()) { repairBalloon(); return; }
       if (typeof flyBalloon === 'function' && Math.random() < balloonFlightChance()) { flyBalloon(); return; }

@@ -130,10 +130,11 @@ Kelo-bot-1/
 │   ├── itemuse.js       # What each thing is for, and how much is left of things that get used up
 │   ├── seasons.js       # Seasonal colours, snow, snowfall, and getting stuck in deep snow
 │   ├── wind.js          # Wind over his days: kites need it, balloons crash in it and get welded back
+│   ├── weather.js       # Spring rain (puddles, wet ground, faster-growing plants) and winter lake ice he learns to test
 │   ├── landscape.js     # Chopping trees, planting, roads and hills, and undoing them
 │   ├── groundwork.js    # Researching how roads, paving, earthwork and planting are done; the right tools, used in turn
 │   ├── skills.js        # Real skills: practising the vehicles, telescope and hobbies he was given; doing what visitors ask
-│   ├── projects.js      # Real builds: finding plans online, asking for materials, building them
+│   ├── projects.js      # Real builds: finding plans online, asking for materials (or sawing his own logs), building them
 │   ├── town.js          # Keeps the town free of his builds (the beach is fine)
 │   ├── coderequests.js  # Code requests: features he asks his human to code into his world
 │   ├── wishfeatures.js  # Which code requests match a built feature: "Ready to switch on" or "Needs new code"
@@ -145,7 +146,7 @@ Kelo-bot-1/
 │   ├── main.js          # UI wiring
 │   ├── portal.js        # Send-him-something panel
 │   ├── explore.js       # Looking around: Follow Kelo-1 or Explore freely, Places, the click menu, help card, touch joystick
-│   ├── minimap.js       # The live minimap: terrain, buildings, his vehicles, digs and builds, Kelo-1 and the camera's view
+│   ├── minimap.js       # The live minimap: terrain, buildings, his vehicles, digs and builds, Kelo-1 and the camera's view, and the Map tab of everything he has changed
 │   ├── tryit.js         # The World tab's Try it panel: preview seasons, night and wind, send sample gifts
 │   ├── shop.js          # The shop website itself (shop.html)
 │   └── vendor/          # The other three.js r128 add-ons (Sky, RGBELoader, bloom post-processing), kept in the repo

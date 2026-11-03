@@ -1588,10 +1588,17 @@ function animateDiorama() {
         const [sx, sz] = nextPathDirection(state.botPos.x, state.botPos.z, state.targetPos);
         state.botPos.x += sx * step;
         state.botPos.z += sz * step;
+        // A frozen lake he isn't sure of yet: he stops at the edge of the ice (js/weather.js)
+        if (typeof iceStepBlocked === 'function' && iceStepBlocked(state.botPos)) {
+          state.botPos.x -= sx * step;
+          state.botPos.z -= sz * step;
+          state.targetPos = { x: state.botPos.x, z: state.botPos.z };
+        }
         pushOutOfObstacles(state.botPos, state.targetPos);
         state.botRotY = Math.atan2(sx, sz);
 
-        const groundY = getIslandGroundHeight(state.botPos.x, state.botPos.z);
+        // On lake ice that holds him he stands on top of it (js/weather.js)
+        const groundY = Math.max(getIslandGroundHeight(state.botPos.x, state.botPos.z), typeof iceFloorAt === 'function' ? iceFloorAt(state.botPos) : -Infinity);
         state.botAltitudeY = groundY;
         // In deep snow without snowshoes he sinks in up to his knees (js/seasons.js); the step bob is added in animations.js
         const sink = typeof snowSink === 'function' ? snowSink(state.botPos) : 0;
@@ -1617,7 +1624,7 @@ function animateDiorama() {
         forgeArcLight.intensity = 0;
       } else {
         state.isWalking = false;
-        const groundY = getIslandGroundHeight(state.botPos.x, state.botPos.z);
+        const groundY = Math.max(getIslandGroundHeight(state.botPos.x, state.botPos.z), typeof iceFloorAt === 'function' ? iceFloorAt(state.botPos) : -Infinity);
         state.botAltitudeY = groundY;
 
         if (state.microPose === 'collapsed') {

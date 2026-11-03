@@ -1131,6 +1131,7 @@ function weldSolveArm(side, target, endFn) {
     }
 
 function poseKeloForWelding(t) {
+      if (typeof poseKeloAtWorkBench === 'function') poseKeloAtWorkBench(t);
       if (!weldRig.active || !keloBody) return;
       // Nothing else is welding while he sets up: no stray arc, sparks or torch from the old routine
       if (typeof weldingSparks !== 'undefined' && weldingSparks) weldingSparks.visible = false;

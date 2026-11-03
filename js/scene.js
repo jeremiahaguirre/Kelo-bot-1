@@ -1800,6 +1800,8 @@ function animateDiorama() {
 
       if (typeof updateCarriedObject === 'function') updateCarriedObject(t);
       if (typeof updateHobbyProps === 'function') updateHobbyProps(t);
+      // Setting up and welding at the studio, or working at the bench (js/welding.js, js/workbench.js)
+      if (typeof poseKeloForWelding === 'function') poseKeloForWelding(t);
       if (typeof updateVehicles === 'function') updateVehicles(t);
       finishKeloPose(t);
       // Animals, his friend and pet, the campfire, swimming: things his human switched on (js/wishfeatures.js)

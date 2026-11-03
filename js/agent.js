@@ -315,6 +315,7 @@ const state = {
   "vehicles": [],
   "knowHow": {},
   "jobKnowledge": {},
+  "weldSetup": { "cylinder": null, "wire": null, "regulator": false, "hoses": { "gas": false, "gun": false, "clamp": false }, "valveOpen": false, "flow": 0, "hoodAt": null, "glovesAt": null, "kept": [], "welds": 0 },
   "skills": {},
   "activityCooldowns": {},
   "recentDecisionTitles": [],

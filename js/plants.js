@@ -949,7 +949,7 @@ function plantTruckViz(kind, t, dt) {
         if (v.kind === 'truck' && m.userData.loadMesh) {
           const lm = m.userData.loadMesh;
           if (!lm.userData.baseColor) lm.userData.baseColor = lm.material.color.getHex();
-          const hot = Boolean(v.hotMix);
+          const hot = Boolean(v.hotMix || v.charging);
           if (hot) { lm.visible = true; lm.material.color.copy(plantTruckDark); lm.material.roughness = 0.6; }
           else if (lm.material.color.getHex() !== lm.userData.baseColor) { lm.material.color.setHex(lm.userData.baseColor); lm.material.roughness = 1; lm.visible = (v.load || 0) > 0; }
           if (hot && !m.userData.hotPlume) {

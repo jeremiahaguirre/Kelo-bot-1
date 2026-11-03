@@ -158,7 +158,7 @@ function pcSyncAll(now = Date.now()) {
       (state.gardenPlots || []).slice(0, PC_BEDS.length).forEach(p => {
         const c = pcBedCare(p);
         c.g = Number.isFinite(p.growth) ? p.growth : 0;
-        if (pcSimulate(c, 'bed', now)) p.growth = Math.round(c.g * 10) / 10;
+        if (pcSimulate(c, 'bed', now)) p.growth = c.g; // unrounded, so live and catch-up steps agree exactly
       });
     }
 

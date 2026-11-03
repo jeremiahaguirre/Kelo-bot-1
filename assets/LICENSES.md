@@ -44,3 +44,16 @@ Total: 18.3 MB.
 
 `js/vendor/GLTFLoader.js` is three.js r128's `examples/js/loaders/GLTFLoader.js`, unchanged, from the npm package `three@0.128.0`.
 MIT License, Copyright © 2010-2021 three.js authors (https://github.com/mrdoob/three.js/blob/r128/LICENSE).
+
+## Sky, water and ground (js/realism.js)
+| File | What it is | Source | Licence |
+|---|---|---|---|
+| `hdri/quarry_01_1k.hdr` | Daytime outdoor HDR photo (lighting by day) | Poly Haven "Quarry 01", via the three.js repo (`examples/textures/equirectangular`, tag r128) | CC0 1.0 |
+| `hdri/venice_sunset_1k.hdr` | Sunset HDR photo (golden hour lighting) | Poly Haven "Venice Sunset", via the three.js repo (tag r128) | CC0 1.0 |
+| `hdri/moonless_golf_1k.hdr` | Night HDR photo (starlight) | Poly Haven "Moonless Golf", via the three.js repo (`dev` branch) | CC0 1.0 |
+| `textures/waternormals.jpg` | Tiling water ripple normal map | three.js repo, `examples/textures/waternormals.jpg` (tag r128) | MIT (three.js) |
+| `textures/terrain/grass.jpg`, `dirt.jpg`, `rock.jpg`, `sand.jpg`, `snow.jpg` | Tiling ground textures | Generated for this project by `scripts/terrain-textures.py` | CC0 1.0 |
+
+The three.js add-on scripts in `js/vendor/` (RGBELoader, Sky, EffectComposer, RenderPass, ShaderPass,
+UnrealBloomPass, CopyShader, LuminosityHighPassShader) are copied unchanged from the npm package
+`three@0.128.0` (`examples/js/`), MIT licence, copyright 2010-2021 three.js authors.

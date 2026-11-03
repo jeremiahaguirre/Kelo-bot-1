@@ -82,6 +82,8 @@ function initDiorama3D() {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      // Real colours, filmic tone mapping, physical light and the Graphics level (js/realism.js)
+      if (typeof setupRealisticRenderer === 'function') setupRealisticRenderer();
       container.appendChild(renderer.domElement);
 
       controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -109,8 +111,9 @@ function initDiorama3D() {
       sunLight.shadow.normalBias = 0.02;
       scene.add(sunLight);
 
-      forgeArcLight = new THREE.PointLight(0x38bdf8, 0, 9);
-      forgeArcLight.position.set(-1.2, 2.1, -8.2);
+      // The welding arc: blue-white, right above the table
+      forgeArcLight = new THREE.PointLight(0xa8d4ff, 0, 9);
+      forgeArcLight.position.set(-1.2, 1.35, -8.0);
       scene.add(forgeArcLight);
 
       buildAlpineTerrainAndMountains3D();
@@ -123,6 +126,7 @@ function initDiorama3D() {
       buildKelo1Character3D();
       initEmergentCreationsLayer3D();
       createPOILabelsDOM();
+      if (typeof finishRealisticWorld === 'function') finishRealisticWorld();
 
       // Click anywhere on the 3D terrain or mountains to send Kelo-1 exploring!
       // Track the cursor for hover-only name labels (touch: a tap shows names for a few seconds)
@@ -201,6 +205,7 @@ function initDiorama3D() {
         camera.aspect = container.clientWidth / container.clientHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(container.clientWidth, container.clientHeight);
+        if (typeof resizePostProcessing === 'function') resizePostProcessing();
       });
 
       animateDiorama();
@@ -222,14 +227,18 @@ function buildAlpineTerrainAndMountains3D() {
         const vy = getAnalyticalGroundHeight(vx, vz);
         pos.setY(i, vy);
 
-        // Stylized palette by altitude, with gentle variation so the ground doesn't look flat
+        // Natural colours by altitude, with gentle variation so the ground doesn't look flat
+        // (js/realism.js reads these colours to pick the grass, rock, sand, dirt or snow texture)
         const c = new THREE.Color();
         const wobble = Math.sin(vx * 0.9) * Math.cos(vz * 0.7) * 0.5 + Math.sin(vx * 0.23 + vz * 0.31) * 0.5;
-        if (vy > 8.5) c.setHex(0xf4f8ff); // Snow cap
-        else if (vy > 2.6) c.setHex(0x6f7a8f).lerp(new THREE.Color(0x58627a), Math.max(0, wobble)); // Rocky ridge
-        else if (vz > 8.2) c.setHex(0xf6e3a8); // Sandy beach
-        else if (Math.abs(vx + 2) < 2.0 && vz > -10 && vz < 9) c.setHex(0xe9c98b); // Dirt trail
-        else c.setHex(0x5ccf3e).lerp(new THREE.Color(0x3fae2e), Math.max(0, wobble)); // Bright meadow grass
+        const dry = Math.max(0, Math.sin(vx * 0.13 - vz * 0.21) * Math.cos(vz * 0.09 + vx * 0.05));
+        if (vy > 8.5) c.setHex(0xeef1f5); // Snow cap
+        else if (vy > 2.6) c.setHex(0x7a766d).lerp(new THREE.Color(0x5e5b55), Math.max(0, wobble)); // Rocky ridge
+        else if (vz > 8.2) c.setHex(0xc8b48c); // Sandy beach
+        else if (Math.abs(vx + 2) < 2.0 && vz > -10 && vz < 9) c.setHex(0x8f7656); // Dirt trail
+        else c.setHex(0x5d7d33).lerp(new THREE.Color(0x46662a), Math.max(0, wobble)).lerp(new THREE.Color(0x87884a), dry * 0.55); // Meadow grass, drier in patches
+        // Grass thins into bare ground and scree where the slope starts to climb
+        if (vy > 1.6 && vy <= 2.6) c.lerp(new THREE.Color(0x76705f), (vy - 1.6) / 1.0 * 0.7);
         colors.push(c.r, c.g, c.b);
       }
       groundGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
@@ -237,7 +246,7 @@ function buildAlpineTerrainAndMountains3D() {
 
       const groundMesh = terrainGroundMesh = new THREE.Mesh(
         groundGeo,
-        new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 })
+        typeof makeRealisticTerrainMaterial === 'function' ? makeRealisticTerrainMaterial() : new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 })
       );
       groundMesh.receiveShadow = true;
       terrainSwapGroup.add(groundMesh);
@@ -264,14 +273,19 @@ function buildAlpineTerrainAndMountains3D() {
         if (typeof DISPOSAL_PIT !== 'undefined' && Math.hypot(tx - DISPOSAL_PIT.x, tz - DISPOSAL_PIT.z) < DISPOSAL_PIT.r + 1.5) continue; // Keep the pit clear
         const ty = getAnalyticalGroundHeight(tx, tz);
         if (ty > 9.5) continue;
-        const tree = new THREE.Group();
-        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.22, 1.2, 6), trunkMat);
-        trunk.position.y = 0.6;
-        const cone1 = new THREE.Mesh(new THREE.ConeGeometry(1.1, 2.4, 7), needleMat);
-        cone1.position.y = 1.8;
-        const cone2 = new THREE.Mesh(new THREE.ConeGeometry(0.85, 2.0, 7), needleMat);
-        cone2.position.y = 2.9;
-        tree.add(trunk, cone1, cone2);
+        let tree;
+        if (typeof buildNaturalFir === 'function') {
+          tree = buildNaturalFir(Math.random, 3.6 + Math.random() * 2.2); // js/realism.js
+        } else {
+          tree = new THREE.Group();
+          const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.22, 1.2, 6), trunkMat);
+          trunk.position.y = 0.6;
+          const cone1 = new THREE.Mesh(new THREE.ConeGeometry(1.1, 2.4, 7), needleMat);
+          cone1.position.y = 1.8;
+          const cone2 = new THREE.Mesh(new THREE.ConeGeometry(0.85, 2.0, 7), needleMat);
+          cone2.position.y = 2.9;
+          tree.add(trunk, cone1, cone2);
+        }
         tree.position.set(tx, ty, tz);
         scene.add(tree);
         worldObstacles.push({ x: tx, z: tz, r: 0.6 });
@@ -315,21 +329,25 @@ function buildHomesteadAndBuildings3D() {
       if (typeof buildKeloHouse3D === 'function') buildKeloHouse3D();
 
       // 2. Outdoor TIG Welding Forge + Spark & Mining Debris Particle Systems
-      const forgeGroup = new THREE.Group();
-      const fy = getAnalyticalGroundHeight(-1.2, -8.2);
-      forgeGroup.position.set(-1.2, fy, -8.2);
-      const bench = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 1.4), new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.7 }));
-      bench.position.y = 0.45;
-      const argonTank = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 1.6, 12), new THREE.MeshStandardMaterial({ color: 0x0d9488, metalness: 0.6 }));
-      argonTank.position.set(1.4, 0.8, 0);
-      const anvil = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.3), new THREE.MeshStandardMaterial({ color: 0x1f2937, metalness: 0.8, roughness: 0.3 }));
-      anvil.position.set(-0.6, 1.08, 0);
-      const forgeSign = makeSignMesh('WELDING STUDIO', { bg: '#0f172a', fg: '#38bdf8', width: 2.2, height: 0.4 });
-      forgeSign.position.set(0, 1.9, -0.75);
-      const signPost = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.4, 0.08), new THREE.MeshStandardMaterial({ color: 0x475569 }));
-      signPost.position.set(0, 1.0, -0.8);
-      forgeGroup.add(bench, argonTank, anvil, signPost, forgeSign);
-      scene.add(forgeGroup);
+      // A real small fab shop around the welding table (js/weldstudio.js); the old open-air bench otherwise
+      if (typeof buildWeldingStudio3D === 'function') buildWeldingStudio3D();
+      else {
+        const forgeGroup = new THREE.Group();
+        const fy = getAnalyticalGroundHeight(-1.2, -8.2);
+        forgeGroup.position.set(-1.2, fy, -8.2);
+        const bench = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 1.4), new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.7 }));
+        bench.position.y = 0.45;
+        const argonTank = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 1.6, 12), new THREE.MeshStandardMaterial({ color: 0x0d9488, metalness: 0.6 }));
+        argonTank.position.set(1.4, 0.8, 0);
+        const anvil = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.3), new THREE.MeshStandardMaterial({ color: 0x1f2937, metalness: 0.8, roughness: 0.3 }));
+        anvil.position.set(-0.6, 1.08, 0);
+        const forgeSign = makeSignMesh('WELDING STUDIO', { bg: '#0f172a', fg: '#38bdf8', width: 2.2, height: 0.4 });
+        forgeSign.position.set(0, 1.9, -0.75);
+        const signPost = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.4, 0.08), new THREE.MeshStandardMaterial({ color: 0x475569 }));
+        signPost.position.set(0, 1.0, -0.8);
+        forgeGroup.add(bench, argonTank, anvil, signPost, forgeSign);
+        scene.add(forgeGroup);
+      }
       worldObstacles.push({ x: -1.2, z: -8.2, r: 1.5 });
 
       // Welding Sparks Particle System
@@ -349,7 +367,8 @@ function buildHomesteadAndBuildings3D() {
         });
       }
       sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPos, 3));
-      weldingSparks = new THREE.Points(sparkGeo, new THREE.PointsMaterial({ color: 0x38bdf8, size: 0.18 }));
+      // Hot orange-white sparks that glow on their own
+      weldingSparks = new THREE.Points(sparkGeo, new THREE.PointsMaterial({ color: 0xffc070, size: 0.07, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
       weldingSparks.userData.vels = sparkVels;
       weldingSparks.visible = false;
       scene.add(weldingSparks);
@@ -572,6 +591,12 @@ let skyDome = null;
 let cloudGroup = null;
 
 function buildSkyAndClouds3D() {
+      // The real sky, clouds, stars and moon (js/realism.js)
+      if (typeof buildRealisticSky === 'function') {
+        buildRealisticSky();
+        buildRealisticClouds();
+        return;
+      }
       const preset = AMBIANCE_PRESETS[state.lightingIdx] || AMBIANCE_PRESETS[0];
       skyDome = new THREE.Mesh(
         new THREE.SphereGeometry(420, 32, 16),
@@ -639,27 +664,43 @@ function buildOuterLands3D() {
         const nearSeam = Math.min(ISLAND_HALF_X - Math.abs(x), ISLAND_HALF_Z - Math.abs(z)) < 3;
         const y = inside ? getAnalyticalGroundHeight(x, z) - (nearSeam ? 0.4 : 8) : outerTerrainHeight(x, z);
         pos.setY(i, y);
-        if (y > 26) c.setHex(0xf4f8ff); // snow only on the high peaks
-        else if (y > 7) c.setHex(0x6f7a8f).lerp(new THREE.Color(0x8b93a7), (y - 7) / 19);
-        else if (y < 0.2 && z > 0) c.setHex(0xf6e3a8);
-        else c.setHex(0x4cbf37).lerp(new THREE.Color(0x2f8f2a), Math.min(1, Math.max(0, y / 6)));
+        if (y > 26) c.setHex(0xeef1f5); // snow only on the high peaks
+        else if (y > 7) c.setHex(0x4c5a35).lerp(new THREE.Color(0x77736a), Math.min(1, (y - 7) / 12)); // forest giving way to rock
+        else if (y < 0.2 && z > 0) c.setHex(0xc8b48c);
+        else c.setHex(0x5b7a32).lerp(new THREE.Color(0x3d5a28), Math.min(1, Math.max(0, y / 6)));
         colors.push(c.r, c.g, c.b);
       }
       geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
       geo.computeVertexNormals();
-      const outer = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }));
+      // The same textured ground as the island (js/realism.js), so the seam doesn't show
+      const outer = new THREE.Mesh(geo, terrainGroundMesh && terrainGroundMesh.material.userData.keloTerrain ? terrainGroundMesh.material : new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }));
       outer.receiveShadow = true;
       scene.add(outer);
 
       // The lake opens into a wide sea to the south, east and west
       const seaDepth = size / 2 + 10;
       const sea = new THREE.Mesh(new THREE.PlaneGeometry(size, seaDepth),
-        new THREE.MeshStandardMaterial({ color: 0x0b5f99, roughness: 0.18, metalness: 0.2, transparent: true, opacity: 0.95 }));
+        typeof makeRealisticWaterMaterial === 'function' ? makeRealisticWaterMaterial()
+          : new THREE.MeshStandardMaterial({ color: 0x0b5f99, roughness: 0.18, metalness: 0.2, transparent: true, opacity: 0.95 }));
+      sea.receiveShadow = true;
       sea.rotation.x = -Math.PI / 2;
       sea.position.set(0, -0.18, 6 + seaDepth / 2); // starts at the shoreline, so it never shows through the valley
       scene.add(sea);
 
-      // A few distant pines on the far hills
+      // Pine forests on the far hills
+      if (typeof buildDistantForest === 'function') {
+        // Hundreds of firs in one instanced mesh (js/realism.js), thickest on the lower slopes
+        const spots = [];
+        for (let k = 0; k < 2600 && spots.length < 900; k++) {
+          const x = (Math.random() - 0.5) * size * 0.9, z = (Math.random() - 0.5) * size * 0.9;
+          if (Math.abs(x) < ISLAND_HALF_X + 2 && Math.abs(z) < ISLAND_HALF_Z + 2) continue;
+          const y = outerTerrainHeight(x, z);
+          if (y < 0.5 || y > 16 || Math.random() < y / 22) continue;
+          spots.push([x, y - 0.2, z, 0.9 + Math.random() * 0.8, Math.random() * 6.28, Math.random()]);
+        }
+        buildDistantForest(spots);
+        return;
+      }
       const pineMat = new THREE.MeshStandardMaterial({ color: 0x1f9a4b, roughness: 0.75 });
       for (let k = 0; k < 140; k++) {
         const x = (Math.random() - 0.5) * size * 0.9, z = (Math.random() - 0.5) * size * 0.9;
@@ -680,7 +721,25 @@ function updateClouds(dt) {
       });
     }
 
-// Round, bright deciduous trees, flowers and boulders around the valley (kept off paths and buildings)
+// The old round tree (used only if js/realism.js is missing)
+function roundCartoonTree(trunkMat, leafColor) {
+      const tree = new THREE.Group();
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.24, 1.4, 8), trunkMat);
+      trunk.position.y = 0.7;
+      trunk.castShadow = true;
+      tree.add(trunk);
+      const leafMat = new THREE.MeshStandardMaterial({ color: leafColor, roughness: 0.8 });
+      leafMat.userData.seasonal = 'leaf'; // js/seasons.js turns it with the seasons
+      [[0, 1.9, 0, 1.05], [0.55, 1.6, 0.2, 0.7], [-0.5, 1.65, -0.15, 0.75]].forEach(([lx, ly, lz, r]) => {
+        const blob = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 12), leafMat);
+        blob.position.set(lx, ly, lz);
+        blob.castShadow = true;
+        tree.add(blob);
+      });
+      return tree;
+    }
+
+// Deciduous trees, flowers and boulders around the valley (kept off paths and buildings)
 function buildValleyScenery3D() {
       const leafColors = [0x4cc93b, 0x7ad94a, 0x36b37e, 0xf2a93b];
       const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8a5a2b, roughness: 0.9 });
@@ -696,19 +755,8 @@ function buildValleyScenery3D() {
         const z = Math.round((-11 + treeRng() * 18) * 10) / 10;
         if (!clearOf(x, z, 1.4) || Math.hypot(x + 9.5, z + 7.8) < 5) continue;
         const gy = getAnalyticalGroundHeight(x, z);
-        const tree = new THREE.Group();
-        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.24, 1.4, 8), trunkMat);
-        trunk.position.y = 0.7;
-        trunk.castShadow = true;
-        tree.add(trunk);
-        const leafMat = new THREE.MeshStandardMaterial({ color: leafColors[placed % leafColors.length], roughness: 0.8 });
-        leafMat.userData.seasonal = 'leaf'; // js/seasons.js turns it with the seasons
-        [[0, 1.9, 0, 1.05], [0.55, 1.6, 0.2, 0.7], [-0.5, 1.65, -0.15, 0.75]].forEach(([lx, ly, lz, r]) => {
-          const blob = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 12), leafMat);
-          blob.position.set(lx, ly, lz);
-          blob.castShadow = true;
-          tree.add(blob);
-        });
+        // Its shape has its own seed, so the placement sequence (and every tree's id) stays the same
+        const tree = typeof buildNaturalLeafyTree === 'function' ? buildNaturalLeafyTree(makeRng('kelo1-tree-shape-' + placed), placed) : roundCartoonTree(trunkMat, leafColors[placed % leafColors.length]);
         tree.position.set(x, gy, z);
         tree.rotation.y = treeRng() * Math.PI;
         scene.add(tree);
@@ -725,19 +773,7 @@ function buildValleyScenery3D() {
         const x = Math.round(side * (34 + outerRng() * 24) * 10) / 10;
         const z = Math.round((-11 + outerRng() * 18) * 10) / 10;
         if (!clearOf(x, z, 1.4)) continue;
-        const tree = new THREE.Group();
-        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.24, 1.4, 8), trunkMat);
-        trunk.position.y = 0.7;
-        trunk.castShadow = true;
-        const leafMat = new THREE.MeshStandardMaterial({ color: leafColors[outer % leafColors.length], roughness: 0.8 });
-        leafMat.userData.seasonal = 'leaf';
-        tree.add(trunk);
-        [[0, 1.9, 0, 1.05], [0.55, 1.6, 0.2, 0.7], [-0.5, 1.65, -0.15, 0.75]].forEach(([lx, ly, lz, r]) => {
-          const blob = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 12), leafMat);
-          blob.position.set(lx, ly, lz);
-          blob.castShadow = true;
-          tree.add(blob);
-        });
+        const tree = typeof buildNaturalLeafyTree === 'function' ? buildNaturalLeafyTree(makeRng('kelo1-outer-tree-shape-' + outer), outer + 3) : roundCartoonTree(trunkMat, leafColors[outer % leafColors.length]);
         tree.position.set(x, getAnalyticalGroundHeight(x, z), z);
         tree.rotation.y = outerRng() * Math.PI;
         scene.add(tree);
@@ -757,18 +793,20 @@ function buildValleyScenery3D() {
         const flower = new THREE.Group();
         const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.3, 4), new THREE.MeshStandardMaterial({ color: 0x2f9e44 }));
         stem.position.y = 0.15;
-        const bloom = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 6), new THREE.MeshStandardMaterial({ color: petalColors[i % petalColors.length], emissive: petalColors[i % petalColors.length], emissiveIntensity: 0.15 }));
+        const bloom = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), new THREE.MeshStandardMaterial({ color: petalColors[i % petalColors.length], roughness: 0.7 }));
         bloom.position.y = 0.32;
         flower.add(stem, bloom);
         flower.position.set(x, gy, z);
         scene.add(flower);
       }
-      const rockMat = new THREE.MeshStandardMaterial({ color: 0xa3a9b8, roughness: 0.85 });
+      const rockMat = new THREE.MeshStandardMaterial({ color: 0x8d877d, roughness: 0.85 });
+      if (typeof finishMaterial === 'function') finishMaterial(rockMat, 'stone');
       for (let i = 0; i < 14; i++) {
         const x = (Math.random() - 0.5) * 60;
         const z = -10 + Math.random() * 17;
         if (!clearOf(x, z, 1.0)) continue;
-        const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.4 + Math.random() * 0.4, 1), rockMat);
+        const rockGeo = new THREE.DodecahedronGeometry(0.4 + Math.random() * 0.4, 1);
+        const rock = new THREE.Mesh(typeof roughenGeometry === 'function' ? roughenGeometry(rockGeo, 0.18, i + 3) : rockGeo, rockMat);
         rock.scale.y = 0.6;
         rock.position.set(x, getAnalyticalGroundHeight(x, z) + 0.15, z);
         rock.castShadow = true;
@@ -883,11 +921,11 @@ function buildCafe3D() {
       const gy = getAnalyticalGroundHeight(cx, cz);
       const cafe = new THREE.Group();
       cafe.position.set(cx, gy, cz);
-      const walls = new THREE.Mesh(new THREE.BoxGeometry(3.8, 2.4, 2.8), new THREE.MeshStandardMaterial({ color: 0xfde7c8, roughness: 0.8 }));
+      const walls = new THREE.Mesh(new THREE.BoxGeometry(3.8, 2.4, 2.8), new THREE.MeshStandardMaterial({ color: 0xeadcc2, roughness: 0.8 }));
       walls.position.y = 1.2;
       walls.castShadow = true;
       walls.receiveShadow = true;
-      const roof = new THREE.Mesh(new THREE.BoxGeometry(4.1, 0.25, 3.1), new THREE.MeshStandardMaterial({ color: 0x7c2d12 }));
+      const roof = new THREE.Mesh(new THREE.BoxGeometry(4.1, 0.25, 3.1), new THREE.MeshStandardMaterial({ color: 0x5c3a2a }));
       roof.position.y = 2.52;
       // Striped awning over the front
       const awning = new THREE.Group();
@@ -922,6 +960,8 @@ function buildCafe3D() {
       const umbrellaPole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.1, 6), tableLeg.material);
       umbrellaPole.position.set(-1.3, 1.3, 2.5);
       cafe.add(walls, roof, awning, door, shopWindow, sign, cup, coffee, handle, table, tableLeg, umbrella, umbrellaPole);
+      // Stucco walls, a steel roof and a wooden door (js/materials.js)
+      if (typeof dressBuilding === 'function') dressBuilding(cafe, [[walls.material, 'plaster', 2], [roof.material, 'metalroof', 2], [door.material, 'paintedwood']]);
       scene.add(cafe);
       worldObstacles.push({ x: cx, z: cz, r: 2.3 }, { x: cx - 1.3, z: cz + 2.5, r: 0.6 });
     }
@@ -931,12 +971,12 @@ function buildNetNode3D() {
       const gy = getAnalyticalGroundHeight(cx, cz);
       const net = new THREE.Group();
       net.position.set(cx, gy, cz);
-      const body = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.5, 3.0), new THREE.MeshStandardMaterial({ color: 0x1e1b4b, metalness: 0.4, roughness: 0.4 }));
+      const body = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.5, 3.0), new THREE.MeshStandardMaterial({ color: 0x6b717c, metalness: 0.4, roughness: 0.4 }));
       body.position.y = 1.25;
       body.castShadow = true;
       body.receiveShadow = true;
       // Glowing glass front with screens behind it
-      const glass = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.3, 0.05), new THREE.MeshStandardMaterial({ color: 0x67e8f9, emissive: 0x0891b2, emissiveIntensity: 0.55, transparent: true, opacity: 0.85 }));
+      const glass = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.3, 0.05), new THREE.MeshStandardMaterial({ color: 0x8fb8c2, roughness: 0.05, metalness: 0.2, emissive: 0x0891b2, emissiveIntensity: 0.18, transparent: true, opacity: 0.85 }));
       glass.position.set(0, 1.25, 1.52);
       const screenMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee });
       [-1.1, 0, 1.1].forEach(x => {
@@ -955,6 +995,8 @@ function buildNetNode3D() {
       const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), new THREE.MeshBasicMaterial({ color: 0xf43f5e }));
       beacon.position.set(-1.4, 3.92, -0.6);
       net.add(body, glass, sign, dish, antenna, beacon);
+      // Modern metal wall panels (js/materials.js)
+      if (typeof dressBuilding === 'function') dressBuilding(net, [[body.material, 'cladding', 2.5]]);
       scene.add(net);
       worldObstacles.push({ x: cx, z: cz, r: 2.5 });
     }
@@ -966,9 +1008,9 @@ function buildPostOffice3D() {
       const po = new THREE.Group();
       po.position.set(cx, gy, cz);
 
-      const brick = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.85 });
+      const brick = new THREE.MeshStandardMaterial({ color: 0x9a4a38, roughness: 0.85 });
       const trim = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.6 });
-      const slate = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.7 });
+      const slate = new THREE.MeshStandardMaterial({ color: 0x4a4f55, roughness: 0.7 });
 
       const body = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.6, 3.2), brick);
       body.position.y = 1.3;
@@ -1012,6 +1054,8 @@ function buildPostOffice3D() {
       mailbox.position.set(-1.9, 0, 2.1);
 
       po.add(body, roof, cornice, door, step, sign, pole, flag, mailbox);
+      // Real brick, slate shingles and painted trim (js/materials.js)
+      if (typeof dressBuilding === 'function') dressBuilding(po, [[brick, 'brick', 1.2], [slate, 'shingles', 1.4], [trim, 'paintedwood']]);
       scene.add(po);
       worldObstacles.push({ x: cx, z: cz, r: 2.5 }, { x: cx - 1.9, z: cz + 2.1, r: 0.4 });
     }
@@ -1049,6 +1093,11 @@ function pruneEmergentCreations3D(maxCount) {
 
 function applyLightingPreset(idx) {
       const preset = AMBIANCE_PRESETS[idx] || AMBIANCE_PRESETS[0];
+      // With the real sky each preset is simply a time of day: noon, golden hour, or night
+      if (typeof applySkyPreset === 'function') {
+        applySkyPreset(idx);
+        return preset;
+      }
       scene.background = new THREE.Color(preset.bg);
       scene.fog.color.setHex(preset.fog);
       scene.fog.density = preset.fogDensity;
@@ -1198,7 +1247,7 @@ function buildCreationGroup(creation) {
         crystal.userData.finish = 'glow';
         crystal.position.y = 0.65;
         crystal.userData.spin = true;
-        const light = new THREE.PointLight(col, 0.9, 6);
+        const light = new THREE.PointLight(col, renderer.physicallyCorrectLights ? 5 : 0.9, 6);
         light.position.y = 0.8;
         g.add(base, crystal, light);
       } else if (archetype === 'botanical_totem') {
@@ -1639,7 +1688,7 @@ function animateDiorama() {
           keloGroup.rotation.set(0, state.currentLocKey === 'weld' ? Math.PI : state.botRotY, 0);
           weldingSparks.visible = keloWeldPose(t);
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
-          forgeArcLight.intensity = 1.5 + Math.random() * 2.0;
+          forgeArcLight.intensity = (1.5 + Math.random() * 2.0) * (renderer.physicallyCorrectLights ? 6 : 1);
 
           const sparkOriginX = state.currentLocKey === 'weld' ? -1.2 : state.botPos.x;
           const sparkOriginZ = state.currentLocKey === 'weld' ? -8.2 : state.botPos.z;
@@ -1819,7 +1868,10 @@ function animateDiorama() {
       }
 
       controls.update();
-      renderer.render(scene, camera);
+      // Sky, haze, shadows and water follow the camera; then draw (with post-processing on High)
+      if (typeof updateRealism === 'function') updateRealism(t, dt);
+      if (typeof renderWorld === 'function') renderWorld();
+      else renderer.render(scene, camera);
 
       // 5. Project 3D Labels & Kelo-1 Speech Bubble to 2D Screen
       projectLabelsToScreen();

@@ -111,7 +111,10 @@ function stumpMesh(e) {
 function plantingMesh(e) {
       const g = new THREE.Group();
       const real = typeof finishMaterial === 'function';
-      if (e.kind === 'tree') {
+      if (e.kind === 'tree' && typeof buildNaturalLeafyTree === 'function') {
+        // The same kind of broadleaf tree as the valley's own (js/realism.js), shaped by its id
+        g.add(buildNaturalLeafyTree(makeRng(e.id || 'planted-tree'), 2));
+      } else if (e.kind === 'tree') {
         const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 1.4, 10), new THREE.MeshStandardMaterial({ color: 0x7a5232, roughness: 0.9 }));
         trunk.position.y = 0.7;
         const leafMat = new THREE.MeshStandardMaterial({ color: 0x4cc93b, roughness: 0.8 });

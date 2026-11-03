@@ -9,7 +9,7 @@ const SNOW_LINE = { Winter: -10, Spring: 6.5, Summer: 11, Autumn: 7.5 }; // grou
 const SNOW_SINK = 0.45;
 
 const SEASON_LEAF = { Spring: 0x86efac, Summer: null, Autumn: 0xf59e0b, Winter: 0xe2e8f0 };
-const SNOW_COLOR = new THREE.Color(0xf1f5fb);
+const SNOW_COLOR = new THREE.Color(0xeef1f5);
 
 let seasonApplied = null;
 let terrainBaseColors = null;
@@ -153,8 +153,8 @@ function applySeasonLook(season = currentSeason()) {
         if (z < 7.8 && y > line) {
           // A soft edge where the snow thins out
           c.lerp(SNOW_COLOR, Math.min(1, (y - line) / 0.6 + 0.35));
-        } else if (season === 'Spring') c.lerp(new THREE.Color(0x6ee75a), 0.25);
-        else if (season === 'Autumn' && c.g > c.r) c.lerp(new THREE.Color(0xb5a642), 0.3);
+        } else if (season === 'Spring') c.lerp(new THREE.Color(0x5f8a2e), 0.25);
+        else if (season === 'Autumn' && c.g > c.r) c.lerp(new THREE.Color(0x8e8442), 0.35);
         col.setXYZ(i, c.r, c.g, c.b);
       }
       col.needsUpdate = true;
@@ -165,7 +165,11 @@ function applySeasonLook(season = currentSeason()) {
         if (!m.userData.baseColor) m.userData.baseColor = m.color.getHex();
         const base = new THREE.Color(m.userData.baseColor);
         if (m.userData.seasonal === 'needle') m.color.copy(season === 'Winter' ? base.lerp(SNOW_COLOR, 0.45) : base);
-        else m.color.copy(SEASON_LEAF[season] ? base.lerp(new THREE.Color(SEASON_LEAF[season]), season === 'Winter' ? 0.7 : 0.55) : base);
+        else if (m.userData.autumn) {
+          // The realistic trees (js/realism.js): each turns its own shade in autumn and drops its leaves for winter
+          m.visible = season !== 'Winter';
+          m.color.copy(season === 'Autumn' ? base.lerp(new THREE.Color(m.userData.autumn), 0.8) : season === 'Spring' ? base.lerp(new THREE.Color(0x7fa83f), 0.35) : base);
+        } else m.color.copy(SEASON_LEAF[season] ? base.lerp(new THREE.Color(SEASON_LEAF[season]), season === 'Winter' ? 0.7 : 0.55) : base);
       });
       // Snow falls in winter
       if (snowfall) snowfall.visible = season === 'Winter';

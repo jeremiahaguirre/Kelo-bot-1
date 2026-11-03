@@ -19,6 +19,8 @@ function modelThumbnail(key, buildModel) {
         thumbRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
         thumbRenderer.setSize(192, 192);
         if (typeof renderer !== 'undefined' && renderer) thumbRenderer.outputEncoding = renderer.outputEncoding;
+        // Same filmic look as the world (js/realism.js), a little brighter for small pictures
+        if (typeof renderer !== 'undefined' && renderer) { thumbRenderer.toneMapping = renderer.toneMapping; thumbRenderer.toneMappingExposure = 0.85; }
         thumbScene = new THREE.Scene();
         thumbScene.add(new THREE.HemisphereLight(0xffffff, 0x8a6a4a, 1.0));
         const sun = new THREE.DirectionalLight(0xffffff, 0.9);

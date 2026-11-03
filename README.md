@@ -107,6 +107,8 @@ Kelo-bot-1/
 │   ├── growth.js        # Merges what he dreamt while you were away
 │   ├── kelo-body.js     # Kelo-1's cute robot body and rig: big head, blinking mood eyes, bouncy antenna, jointed arms, hands and legs
 │   ├── scene.js         # Three.js world, pathfinding, terrain
+│   ├── realism.js       # Realistic look: real colours, filmic tone mapping, sky and sun from his clock, HDR lighting, lake, textured ground, trees, Graphics setting
+│   ├── weldstudio.js    # The Welding Studio as a real fab shop: steel table, MIG welder, gas bottles, grinder, fume arm, arc glow
 │   ├── house.js         # Kelo-1's cottage: walls, windows, porch, roof, furniture, night lights
 │   ├── animations.js    # Kelo-1's body animation: smooth pose blending, walk cycle, idle life, emotes
 │   ├── items3d.js       # 3D models of items, the pick-up counter, carrying
@@ -145,12 +147,16 @@ Kelo-bot-1/
 │   ├── explore.js       # Looking around: Follow Kelo-1 or Explore freely, Places, the click menu, help card, touch joystick
 │   ├── minimap.js       # The live minimap: terrain, buildings, his vehicles, digs and builds, Kelo-1 and the camera's view
 │   ├── tryit.js         # The World tab's Try it panel: preview seasons, night and wind, send sample gifts
-│   └── shop.js          # The shop website itself (shop.html)
+│   ├── shop.js          # The shop website itself (shop.html)
+│   └── vendor/          # The other three.js r128 add-ons (Sky, RGBELoader, bloom post-processing), kept in the repo
 ├── assets/
 │   ├── models/          # Real-world 3D models (.glb) of everyday things
-│   └── LICENSES.md      # Where each model came from, its author and licence
+│   ├── hdri/            # HDR sky photos that light the world by day, at sunset and at night
+│   ├── textures/        # Lake ripples and the tiling ground textures (grass, dirt, rock, sand, snow)
+│   └── LICENSES.md      # Where each model, photo and texture came from, its author and licence
 ├── brain/growth.json    # His dreams, written by the scheduled Action
 ├── scripts/dream.mjs    # The dreaming script
+├── scripts/terrain-textures.py # Makes the tiling ground textures in assets/textures/terrain
 ├── desktop/             # Windows app (Electron): main process + preload bridge
 ├── android/, ios/       # Phone app projects (Capacitor); open them in Android Studio / Xcode
 ├── capacitor.config.json # Phone app settings (app id, splash screen, status bar)

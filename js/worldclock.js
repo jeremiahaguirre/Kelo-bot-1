@@ -53,7 +53,12 @@ function lerpHex(a, b, t) {
 
 function applyTimeOfDay() {
       if (!scene || !sunLight || state.lightingMode === 'manual') return;
-      const { hour } = worldNow();
+      const { hour, dayOfYear } = worldNow();
+      // The real sky (js/realism.js): the sun stands where it would over Kelowna at this hour and date
+      if (typeof applySkyForHour === 'function') {
+        applySkyForHour(hour, dayOfYear);
+        return;
+      }
       const [noon, golden, night] = AMBIANCE_PRESETS;
       // 0 = full night, 1 = full day; golden light around sunrise and sunset
       const dayAmount = Math.max(0, Math.min(1, hour < 12 ? (hour - 5) / 2.5 : (21 - hour) / 2.5));

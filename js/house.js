@@ -445,6 +445,8 @@ function buildKeloHouse3D() {
       const bulbMat = new THREE.MeshStandardMaterial({ color: 0xfff7e0, emissive: 0xffc46b, emissiveIntensity: 0.1 });
       mesh(new THREE.SphereGeometry(0.11, 12, 10), bulbMat, 0, floorY + wallH - 0.22, 0).castShadow = false;
 
+      // Painted lap siding, shingles, stone and wood trim at real size (js/materials.js)
+      if (typeof dressBuilding === 'function') dressBuilding(house, [[wallMat, 'siding', 1.6], [frontWallMat, 'siding', 1.6], [roofMat, 'shingles', 1.6], [stoneMat, 'stone', 1.2], [trimMat, 'paintedwood'], [darkWood, 'wood'], [lightWood, 'wood']]);
       scene.add(house);
       terrainSwapGroup.add(ground);
       // The foothill firs (scattered at random from z -11 northward) mustn't grow through the back
@@ -516,13 +518,16 @@ function buildKeloHouse3D() {
 // Lamps on after dark: the room light, window glow, lamp shades and the porch lantern ease up and down
 function updateHouseLights(instant) {
       if (!houseLights) return;
-      const night = typeof worldNow === 'function' && worldNow().isNight;
+      // Lamps go on once it's getting dark outside (the real sky in js/realism.js), or at night by the clock
+      const night = typeof skyDarkness === 'function' && typeof skyMesh !== 'undefined' && skyMesh ? skyDarkness() > 0.6 : (typeof worldNow === 'function' && worldNow().isNight);
       const L = houseLights;
       const target = night ? 1 : 0;
       L.level = instant ? target : L.level + (target - L.level) * 0.35;
       if (Math.abs(L.level - target) < 0.02) L.level = target;
-      L.roomLight.intensity = 1.5 * L.level;
-      L.porchLight.intensity = 1.1 * L.level;
+      // Physically based lights (js/realism.js) need real-world strengths: a warm room lamp and a porch lantern
+      const k = typeof renderer !== 'undefined' && renderer && renderer.physicallyCorrectLights ? 7 : 1;
+      L.roomLight.intensity = 1.5 * k * L.level;
+      L.porchLight.intensity = 1.1 * k * L.level;
       L.glassMat.emissiveIntensity = 0.75 * L.level;
       L.shadeMat.emissiveIntensity = 0.05 + 0.9 * L.level;
       L.lanternGlow.emissiveIntensity = 0.1 + 1.4 * L.level;

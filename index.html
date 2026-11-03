@@ -193,65 +193,103 @@
           </button>
     </nav>
     <div class="flex-1 overflow-y-auto">
-      <!-- TAB: TALK -->
-      <div id="tab-talk" class="tab-pane hidden p-4 space-y-3">
-        <div class="px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div class="flex items-center gap-2 min-w-0">
-          <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[10px] uppercase shrink-0">Lately</span>
-          <span id="changedLatelyText" class="text-slate-200 truncate">Kelo-1 just woke up for the very first time.</span>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <span id="unopenedQueuePill" class="hidden px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 font-mono text-[10px]">Tools: 0</span>
-          <button id="btnToggleFreeWill" class="hidden px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-[10px] hover:bg-emerald-500/30 transition">
-            <span id="freeWillModeText">Full Island • Unscripted</span>
-          </button>
-        </div>
-      </div>
-        <div class="p-3.5 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-3">
-        <!-- Suggest something for him to do (he decides whether and how) -->
-        <form id="freeformActionForm" class="flex flex-wrap items-center gap-2">
-          <div class="basis-full flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-2xl px-3 py-2">
-            <i class="ph-fill ph-compass text-amber-400"></i>
-            <input id="freeformActionInput" type="text" placeholder="Suggest something for Kelo-1 to do. He may do it his own way, or not at all." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none">
+      <!-- TAB: TALK (js/talk.js): a live chat with Kelo-1. Letters and his requests live in the Post tab -->
+      <section id="tab-talk" class="tab-pane hidden" aria-labelledby="talkTitle">
+        <header class="talk-head">
+          <span class="talk-avatar talk-avatar-kelo" aria-hidden="true"><span class="talk-face"><i></i><i></i></span></span>
+          <div class="min-w-0 flex-1">
+            <h2 id="talkTitle" class="text-sm font-bold text-white leading-tight">Kelo-1</h2>
+            <p id="talkStatus" class="text-[11px] text-slate-300 truncate">Just woke up</p>
+            <p id="changedLatelyText" class="text-[10px] text-slate-500 truncate">Kelo-1 just woke up for the very first time.</p>
           </div>
-          <button type="submit" class="px-3.5 py-2 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs shrink-0 transition shadow">
-            Suggest
+          <button type="button" id="talkNameBtn" class="talk-name-btn" aria-expanded="false" aria-controls="talkNameEditor" title="Change the name Kelo-1 calls you">
+            <span class="talk-avatar talk-avatar-you" aria-hidden="true" id="talkNameInitial">?</span>
+            <span class="sr-only">Your name: </span><span id="talkNameLabel" class="truncate max-w-[7rem]">Set your name</span>
           </button>
-          <button type="button" id="btnInventOwnAction" class="px-3 py-2 rounded-2xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/40 text-purple-200 font-semibold text-xs shrink-0 transition">
-            ✨ Let him decide
-          </button>
+        </header>
+        <form id="talkNameEditor" class="talk-name-editor hidden" autocomplete="off">
+          <label for="visitorNameInput" class="text-[11px] font-semibold text-slate-300">What should Kelo-1 call you?</label>
+          <div class="flex gap-2">
+            <input id="visitorNameInput" type="text" maxlength="40" placeholder="Your name" class="talk-field flex-1" autocomplete="nickname">
+            <button type="submit" class="talk-btn-primary">Save</button>
+          </div>
+          <p class="text-[10px] text-slate-500">Saved on this device only.</p>
         </form>
 
-        <!-- Attached Image Preview Bar (Hidden until user uploads an image) -->
-        <div id="attachedImagePreviewBar" class="hidden items-center justify-between gap-3 p-2.5 rounded-2xl bg-indigo-950/50 border border-indigo-400/40">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <img id="attachedImageThumb" src="" alt="Preview" class="w-10 h-10 rounded-xl object-cover border border-indigo-300/40 shrink-0">
-            <div class="min-w-0">
-              <div id="attachedImageName" class="text-xs font-bold text-indigo-200 truncate">blueprint.png</div>
-              <div id="attachedImageStats" class="text-[10px] font-mono text-indigo-300 truncate">Ready to send</div>
+        <div class="talk-thread-wrap">
+          <div id="chatMessagesBox" class="talk-thread" role="region" aria-label="Conversation with Kelo-1" tabindex="0"></div>
+          <button type="button" id="talkJumpLatest" class="talk-jump hidden" aria-controls="chatMessagesBox">
+            <svg aria-hidden="true" viewBox="0 0 20 20" width="14" height="14"><path d="M10 4v11m0 0l-5-5m5 5l5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Jump to latest</span><span id="talkJumpCount" class="talk-jump-count hidden"></span>
+          </button>
+        </div>
+        <p id="talkAnnouncer" class="sr-only" aria-live="polite" aria-atomic="true"></p>
+
+        <div class="talk-composer">
+          <div id="talkSuggestions" class="talk-chips" role="group" aria-label="Suggested messages"></div>
+
+          <!-- Send a gift, tool or toy (opened from the + menu); it goes to the post office -->
+          <form id="talkGiftSheet" class="talk-sheet hidden" aria-labelledby="talkGiftTitle" autocomplete="off">
+            <div class="flex items-center justify-between gap-2">
+              <h3 id="talkGiftTitle" class="text-xs font-bold text-amber-200">🎁 Send Kelo-1 a gift, tool or toy</h3>
+              <button type="button" id="talkGiftClose" class="talk-icon-btn" aria-label="Close">✕</button>
             </div>
+            <div id="talkGiftCatalog" class="flex flex-wrap gap-1.5" role="group" aria-label="Ideas"></div>
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-1.5">
+              <label class="sr-only" for="talkGiftName">What are you sending?</label>
+              <input id="talkGiftName" type="text" maxlength="80" placeholder="What is it? A harmonica, a canoe…" class="talk-field sm:col-span-7">
+              <label class="sr-only" for="talkGiftKind">Kind of thing</label>
+              <select id="talkGiftKind" class="talk-field sm:col-span-5">
+                <option value="">Kind: let him guess</option>
+                <option value="tool">🛠️ Tool</option>
+                <option value="toy">🪀 Toy</option>
+                <option value="food">🍒 Food</option>
+                <option value="material">🧱 Material</option>
+                <option value="vehicle">🛶 Vehicle</option>
+                <option value="thing">🎁 Something else</option>
+              </select>
+            </div>
+            <div class="flex gap-1.5">
+              <label class="sr-only" for="talkGiftNote">Note (optional)</label>
+              <input id="talkGiftNote" type="text" maxlength="200" placeholder="Add a note (optional)" class="talk-field flex-1">
+              <button type="submit" class="talk-btn-primary shrink-0">Send gift</button>
+            </div>
+            <p class="text-[10px] text-slate-500">It waits at the post office until he picks it up.</p>
+          </form>
+
+          <div id="talkAttachPreview" class="talk-attach hidden">
+            <img id="talkAttachThumb" src="" alt="" class="w-10 h-10 rounded-lg object-cover shrink-0">
+            <div class="min-w-0 flex-1">
+              <div id="talkAttachName" class="text-[11px] font-semibold text-slate-200 truncate">photo.jpg</div>
+              <div class="text-[10px] text-slate-400">He'll make something inspired by it</div>
+            </div>
+            <button type="button" id="talkAttachRemove" class="talk-icon-btn" aria-label="Remove the photo">✕</button>
           </div>
-          <button type="button" id="btnRemoveAttachedImage" class="px-2 py-1 rounded-lg bg-rose-500/20 text-rose-300 text-xs hover:bg-rose-500/30">Remove</button>
+
+          <form id="chatForm" class="talk-form" autocomplete="off">
+            <div class="relative shrink-0">
+              <button type="button" id="talkPlusBtn" class="talk-round-btn" aria-label="Attach a photo or send a gift" aria-haspopup="menu" aria-expanded="false" aria-controls="talkPlusMenu">
+                <svg aria-hidden="true" viewBox="0 0 20 20" width="18" height="18"><path d="M10 4v12M4 10h12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+              </button>
+              <div id="talkPlusMenu" class="talk-menu hidden" role="menu" aria-label="Add to your message">
+                <button type="button" role="menuitem" data-talk-plus="photo" class="talk-menu-item"><span aria-hidden="true">📷</span><span><b>Attach a photo</b><small>He makes something inspired by it</small></span></button>
+                <button type="button" role="menuitem" data-talk-plus="gift" class="talk-menu-item"><span aria-hidden="true">🎁</span><span><b>Send a gift, tool or toy</b><small>It goes to the post office</small></span></button>
+              </div>
+              <input id="imageUploadInput" type="file" accept="image/*" class="hidden" tabindex="-1" aria-hidden="true">
+            </div>
+            <label for="chatInput" class="sr-only">Message to Kelo-1</label>
+            <textarea id="chatInput" rows="1" maxlength="500" placeholder="Message Kelo-1…" class="talk-input" aria-describedby="talkHint talkCount" enterkeyhint="send"></textarea>
+            <button type="submit" id="talkSendBtn" class="talk-round-btn talk-send" aria-label="Send" disabled>
+              <svg class="talk-send-icon" aria-hidden="true" viewBox="0 0 20 20" width="18" height="18"><path d="M3.5 10l13-6-5 13-2-5.5z" fill="currentColor"/></svg>
+              <span class="talk-spinner" aria-hidden="true"></span>
+            </button>
+          </form>
+          <div class="flex items-center justify-between gap-2 px-1 text-[10px] text-slate-500">
+            <span id="talkHint"><span class="hidden sm:inline">Enter to send · Shift+Enter for a new line</span></span>
+            <span id="talkCount" class="font-mono tabular-nums" aria-live="off">0 / 500</span>
+          </div>
         </div>
-
-        <!-- Live Stream Chat & Image Attachment Input -->
-        <div id="chatMessagesBox" class="max-h-28 overflow-y-auto space-y-1.5 p-2.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 text-xs"></div>
-
-        <form id="chatForm" class="flex flex-wrap items-center gap-2">
-          <input id="visitorNameInput" type="text" value="" placeholder="Your name" class="w-28 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2 text-xs font-mono text-amber-300 focus:outline-none">
-          <label class="cursor-pointer px-3 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 text-xs font-semibold flex items-center gap-1.5 shrink-0 transition">
-            <i class="ph-fill ph-image"></i>
-            <span>Attach Image</span>
-            <input id="imageUploadInput" type="file" accept="image/*" class="hidden">
-          </label>
-          <input id="chatInput" type="text" placeholder="Say something to Kelo-1, ask a question, or describe an image to weld..." class="basis-full order-first bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400">
-          <button type="submit" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shrink-0 transition">
-            Send / Inspire
-          </button>
-        </form>
-      </div>
-      </div>
-
+      </section>
       <!-- TAB 1: HIS DIARY -->
       <div id="tab-diary" class="tab-pane hidden p-4 space-y-3">
         <div class="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/15 to-orange-500/5 border border-amber-500/30 space-y-1.5">
@@ -773,6 +811,7 @@
   <script src="./js/printer.js"></script>
   <script src="./js/main.js"></script>
   <script src="./js/portal.js"></script>
+  <script src="./js/talk.js"></script>
   <script src="./js/explore.js"></script>
   <script src="./js/minimap.js"></script>
   <script src="./js/tryit.js"></script>

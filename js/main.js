@@ -26,10 +26,6 @@ function renderAllUI() {
       // Changed Lately & Equipped Tool Inventory Status
       const changedEl = document.getElementById('changedLatelyText');
       if (changedEl) changedEl.textContent = stripCoords(state.changedLatelySummary);
-      const queuePill = document.getElementById('unopenedQueuePill');
-      if (queuePill) {
-        queuePill.textContent = `Tools Equipped: ${state.toolInventory.length}`;
-      }
 
       // Header & Overhead 3D Bubble
       document.getElementById('headerEmotionBadge').innerHTML = `<span>${escapeHtml(state.moodEmoji)}</span> <span>${escapeHtml(state.moodTitle)}</span>`;
@@ -46,7 +42,7 @@ function renderAllUI() {
       const ripe = state.gardenPlots.filter(p => p.growth >= 80).length;
       document.getElementById('gardenRipeBadge').textContent = `${ripe}/${state.gardenPlots.length}`;
 
-      renderChatBox();
+      if (typeof renderTalkTab === 'function') renderTalkTab(); // js/talk.js
       renderDiaryTab();
       renderRequestsTab();
       renderGitHubTab();
@@ -55,17 +51,6 @@ function renderAllUI() {
       if (typeof renderMemoryUI === 'function') renderMemoryUI();
       if (typeof renderHobbiesUI === 'function') renderHobbiesUI();
       if (typeof renderMiningUI === 'function') renderMiningUI();
-    }
-
-function renderChatBox() {
-      const box = document.getElementById('chatMessagesBox');
-      perfSetHtml(box, state.chatLog.slice(-6).map(m => `
-        <div class="flex items-start gap-2 ${m.isBot ? 'text-amber-200' : 'text-sky-200'}">
-          <span class="font-mono text-[10px] uppercase px-1.5 py-0.5 rounded ${m.isBot ? 'bg-amber-500/20 text-amber-300' : 'bg-sky-500/20 text-sky-300'} shrink-0">${escapeHtml(m.sender)}</span>
-          <p class="leading-snug">${escapeHtml(m.text)}</p>
-        </div>
-      `).join(''));
-      if (box.__keloScrolledFor !== box.__keloHtml) { box.__keloScrolledFor = box.__keloHtml; box.scrollTop = box.scrollHeight; }
     }
 
 function renderDiaryTab() {
@@ -502,47 +487,10 @@ window.addEventListener('DOMContentLoaded', () => {
   renderAllUI();
   scheduleNextOrganicImpulse();
 
-  document.getElementById('visitorNameInput')?.addEventListener('change', (e) => {
-    const vName = e.target.value.trim();
-    if (vName) {
-      recordVisitorMemory(vName, 'Visited Kelo-1 in his timeless Okanagan valley.');
-      renderAllUI();
-    }
-  });
-
   document.getElementById('keloOverheadHUD')?.addEventListener('click', () => petKelo1Interaction());
   document.getElementById('btnFocusKelo')?.addEventListener('click', () => {
     state.cameraMode = 'follow';
     updateCameraButtonsUI();
-  });
-
-  document.getElementById('btnToggleFreeWill')?.addEventListener('click', () => {
-    state.freeWillUnbound = !state.freeWillUnbound;
-    const txt = document.getElementById('freeWillModeText');
-    if (txt) txt.textContent = state.freeWillUnbound ? 'Full Island • Unscripted' : 'Guided Exploration';
-    showToast(state.freeWillUnbound ? '♾️ Kelo-1 is in Full Unscripted Free-Will mode!' : '🧭 Kelo-1 will prioritize your location suggestions.');
-  });
-
-  document.getElementById('freeformActionForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const input = document.getElementById('freeformActionInput');
-    const val = input.value.trim();
-    if (!val) return;
-    input.value = '';
-    synthesizeUnboundedExperience(val, 'Custom Synthesis');
-  });
-
-  document.getElementById('btnInventOwnAction')?.addEventListener('click', () => {
-    decideNextAction(null, 'Invented Himself');
-  });
-
-  document.getElementById('chatForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const input = document.getElementById('chatInput');
-    const msg = input.value.trim();
-    if (!msg && !state.pendingImageAttachment) return;
-    input.value = '';
-    handleVisitorChatMessage(msg);
   });
 
   document.getElementById('btnWaterGarden')?.addEventListener('click', () => {
@@ -819,39 +767,6 @@ window.addEventListener('DOMContentLoaded', () => {
   setInterval(recheckKeys, 5 * 60 * 1000);
   window.addEventListener('storage', (e) => { if (/^kelo1_(gemini|anthropic)_api_key$/.test(e.key || '')) recheckKeys(); });
   updateKeyStatus();
-
-  // Image attachment for image-to-weld synthesis
-  const previewBar = document.getElementById('attachedImagePreviewBar');
-  const imageInput = document.getElementById('imageUploadInput');
-  imageInput?.addEventListener('change', async () => {
-    const file = imageInput.files && imageInput.files[0];
-    imageInput.value = '';
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      showToast('Please choose an image file.');
-      return;
-    }
-    if (file.size > 8 * 1024 * 1024) {
-      showToast('That image is over 8 MB; please pick a smaller one.');
-      return;
-    }
-    const analyzed = await analyzeUploadedImage(file);
-    if (!analyzed) {
-      showToast('Could not read that image.');
-      return;
-    }
-    state.pendingImageAttachment = analyzed;
-    document.getElementById('attachedImageThumb').src = analyzed.dataUrl;
-    document.getElementById('attachedImageName').textContent = analyzed.name;
-    document.getElementById('attachedImageStats').textContent = `Palette ${analyzed.primaryHex} / ${analyzed.secondaryHex} • ready for 3D welding`;
-    previewBar.classList.remove('hidden');
-    previewBar.classList.add('flex');
-  });
-  document.getElementById('btnRemoveAttachedImage')?.addEventListener('click', () => {
-    state.pendingImageAttachment = null;
-    previewBar.classList.add('hidden');
-    previewBar.classList.remove('flex');
-  });
 
   // Copy the whole diary to the clipboard
   document.getElementById('btnExportDiary')?.addEventListener('click', async () => {

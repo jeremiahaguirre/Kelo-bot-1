@@ -225,6 +225,7 @@ const ART_SKIES = {
 
 function artSkyFor(spec) {
       // sumi-e leaves the sky as bare paper, with a breath of grey at the horizon
+      if (spec.medium === 'ink' && spec.season === 'Winter' && spec.time !== 'night') return ['#9c9c9c', '#a8a8a8', '#b4b4b4', '#bebebe', '#c8c8c8'];
       if (spec.medium === 'ink') return spec.time === 'night' ? ['#9a9a9a', '#b0b0b0', '#c4c4c4', '#d6d6d6', '#e4e4e4'] : ['#ffffff', '#ffffff', '#fbfbfb', '#efefef', '#e2e2e2'];
       if (spec.time === 'night') return ART_SKIES.night;
       if (spec.weather === 'rain' || spec.weather === 'snow') return spec.weather === 'snow' ? ['#8f99a6', '#a7afba', '#c0c6cd', '#d3d7db', '#dfe2e4'] : ART_SKIES.rain;
@@ -258,6 +259,24 @@ function artRidge(rng, x0, x1, yBase, height, rough, wob) {
       return pts;
     }
 
+// A mountain skyline: a few distinct peaks with their own slopes, roughened with small crags
+function artPeaksRidge(rng, x0, x1, yBase, height) {
+      const n = Math.max(2, Math.min(7, Math.round((x1 - x0) / (height * 1.5))));
+      const peaks = [];
+      for (let i = 0; i < n; i++) {
+        peaks.push({ x: x0 + (i + 0.5 + (rng() - 0.5) * 0.7) * (x1 - x0) / n, h: height * (0.55 + rng() * 0.45), l: 0.55 + rng() * 0.7, r: 0.55 + rng() * 0.7 });
+      }
+      const waves = [0, 1, 2, 3].map(k => ({ f: 0.02 * Math.pow(2.1, k) * (0.8 + rng() * 0.4), p: rng() * 6.28, a: height * 0.05 / Math.pow(1.8, k) }));
+      const pts = [];
+      for (let x = x0; x <= x1 + 0.1; x += 4) {
+        let h = height * 0.22;
+        peaks.forEach(pk => { h = Math.max(h, pk.h - Math.abs(x - pk.x) * (x < pk.x ? pk.l : pk.r)); });
+        waves.forEach(w => { h += Math.sin(x * w.f + w.p) * w.a; });
+        pts.push([x, yBase - h + (rng() - 0.5) * 2]);
+      }
+      return pts;
+    }
+
 function artFillRidge(ctx, pts, yBottom, fill) {
       ctx.beginPath();
       ctx.moveTo(pts[0][0], yBottom);
@@ -270,7 +289,7 @@ function artFillRidge(ctx, pts, yBottom, fill) {
 
 // A mountain range with a lit side, a shadow side and snow above the snowline
 function artMountains(ctx, rng, spec, { yBase, height, color, shade, snow, snowFrac, rough = 0.55, x0 = -20, x1 = ART_W + 20 }) {
-      const pts = artRidge(rng, x0, x1, yBase, height, rough, 6);
+      const pts = artPeaksRidge(rng, x0, x1, yBase, height);
       artFillRidge(ctx, pts, yBase + 2, color);
       ctx.save();
       ctx.beginPath();
@@ -279,23 +298,30 @@ function artMountains(ctx, rng, spec, { yBase, height, color, shade, snow, snowF
       ctx.lineTo(pts[pts.length - 1][0], yBase + 2);
       ctx.closePath();
       ctx.clip();
-      // Shadow facets: from each peak, the slope down to the right is in shade
+      // Shadow sides: from each main peak, the slope down to the next valley is in shade, and the shade
+      // runs down the mountain from there along a gully (so faces follow the real ridge line)
+      const shadeFaces = [];
       for (let i = 2; i < pts.length - 2; i++) {
         const p = pts[i];
-        if (p[1] < pts[i - 1][1] && p[1] < pts[i + 1][1] && p[1] < yBase - height * 0.35) {
-          ctx.beginPath();
-          ctx.moveTo(p[0], p[1]);
-          ctx.lineTo(p[0] + height * (0.5 + rng() * 0.6), yBase + 2);
-          ctx.lineTo(p[0] + height * (0.05 + rng() * 0.15), yBase + 2);
-          ctx.closePath();
-          ctx.fillStyle = shade;
-          ctx.globalAlpha = 0.75;
-          ctx.fill();
-          ctx.globalAlpha = 1;
-        }
+        if (!(p[1] <= pts[i - 1][1] && p[1] <= pts[i + 1][1] && p[1] <= pts[Math.max(0, i - 4)][1] && p[1] <= pts[Math.min(pts.length - 1, i + 4)][1] && p[1] < yBase - height * 0.3)) continue;
+        let j = i + 1;
+        while (j < pts.length - 1 && pts[j + 1][1] >= pts[j][1] - 0.5) j++;
+        const drop = pts[j][1] - p[1];
+        if (drop < height * 0.08) continue;
+        const poly = pts.slice(i, j + 1).map(q => [q[0], q[1]]);
+        // the shaded flank reaches down to the foot of the mountain under the valley
+        poly.push([pts[j][0], yBase + 2], [p[0] + (pts[j][0] - p[0]) * 0.1, yBase + 2]);
+        shadeFaces.push(poly);
+        ctx.beginPath();
+        poly.forEach((q, k) => (k ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])));
+        ctx.closePath();
+        ctx.fillStyle = shade;
+        ctx.globalAlpha = 0.7;
+        ctx.fill();
+        ctx.globalAlpha = 1;
       }
       if (snow && snowFrac > 0) {
-        const line = yBase - height * (1 - snowFrac) * 0.95;
+        const line = yBase - height * (1 - snowFrac * 0.65);
         const noise = artRidge(rng, x0, x1, line + 6, 10, 0.7, 3);
         ctx.beginPath();
         ctx.moveTo(x0, -10);
@@ -304,19 +330,22 @@ function artMountains(ctx, rng, spec, { yBase, height, color, shade, snow, snowF
         ctx.closePath();
         ctx.fillStyle = snow;
         ctx.fill();
-        // and the snow on the shadow facets is blue
-        for (let i = 2; i < pts.length - 2; i++) {
-          const p = pts[i];
-          if (p[1] < pts[i - 1][1] && p[1] < pts[i + 1][1] && p[1] < line) {
-            ctx.beginPath();
-            ctx.moveTo(p[0], p[1]);
-            ctx.lineTo(p[0] + (line - p[1]) * 0.9, line + 4);
-            ctx.lineTo(p[0] + (line - p[1]) * 0.15, line + 4);
-            ctx.closePath();
-            ctx.fillStyle = 'rgba(120,140,185,0.55)';
-            ctx.fill();
-          }
-        }
+        // and the snow on the shadow sides is blue
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x0, -10);
+        noise.forEach(p => ctx.lineTo(p[0], p[1]));
+        ctx.lineTo(x1, -10);
+        ctx.closePath();
+        ctx.clip();
+        shadeFaces.forEach(poly => {
+          ctx.beginPath();
+          poly.forEach((q, k) => (k ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])));
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(120,140,185,0.55)';
+          ctx.fill();
+        });
+        ctx.restore();
       }
       ctx.restore();
       return pts;
@@ -960,7 +989,7 @@ function paintingSceneRef(spec) {
       } else if (subject === 'mountains' || subject === 'wildlife') {
         horizon = ART_H * (subject === 'wildlife' ? 0.5 : 0.6);
         artDrawSky(ctx, spec, -20, horizon + 2);
-        artClouds(ctx, rng, spec, horizon * 0.6, spec.weather === 'clear' ? 3 : 8);
+        artClouds(ctx, rng, spec, horizon * 0.32, spec.weather === 'clear' ? 3 : 8);
         artMountains(ctx, rng, spec, { yBase: horizon, height: subject === 'wildlife' ? 110 : 190, color: farMtn[0], shade: farMtn[1], snow: snowCol, snowFrac: Math.max(0.35, Math.min(1, look.snowline + 0.25)), rough: 0.58 });
         artMountains(ctx, rng, spec, { yBase: horizon + 8, height: 70, color: artMixHex(midMtn[0], '#2f4a35', 0.45), shade: artMixHex(midMtn[1], '#1d3024', 0.5), snow: snowy ? snowCol : null, snowFrac: snowy ? 0.9 : 0, rough: 0.5 });
         // forested slopes
@@ -1460,7 +1489,9 @@ async function artGouachePainting(scene, spec, rng, q, step) {
       // Opaque, matte and a touch chalky: gouache dries a little lighter than it goes on
       const pal = artPalette(src, Math.round(7 + q * 7), rng).map(c => artSaturate(c, 0.9, 0.04).map(v => artMix(v, 0.97, 0.06)));
       let idx = new Uint8Array(N);
-      for (let i = 0; i < N; i++) idx[i] = artNearest(pal, src.r[i], src.g[i], src.b[i]);
+      // a little low-frequency wobble so smooth gradients break into painted patches, not even rings
+      const wob = artFbm(W, H, 26, 2, rng);
+      for (let i = 0; i < N; i++) { const n = (wob[i] - 0.5) * 0.045; idx[i] = artNearest(pal, src.r[i] + n, src.g[i] + n, src.b[i] + n); }
       // simplify the shapes (a mode filter), as a painter blocks in flat areas
       const rad = q > 0.5 ? 2 : 3;
       const simp = new Uint8Array(N);

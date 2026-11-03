@@ -27,7 +27,7 @@ const PC_FEEDS = [
   { re: /compost|manure|worm castings/i, n: 0.3, m: 0.08, label: 'compost' },
   { re: /./, n: 0.5, label: 'fertilizer' }
 ];
-const PC_BROWN = new THREE.Color(0x8a6a34);
+const PC_BROWN = new THREE.Color(0x6e5a3a); // dry, dull, dead-leaf brown
 const PC_SOIL_DRY = new THREE.Color(0x8c6a45), PC_SOIL_WET = new THREE.Color(0x2c1c0e);
 const PC_BED_DRY = new THREE.Color(0x7a5a38), PC_BED_WET = new THREE.Color(0x23170b);
 
@@ -389,9 +389,9 @@ function pcApplyPlantingLook(m, k) {
         const sc = cur.h / s.base;
         // Wilting: it sags and leans over, and the leaves brown
         s.holder.scale.set(sc, sc * (1 - 0.28 * cur.w), sc);
-        s.holder.rotation.set(Math.sin(pc.lean) * 0.32 * cur.w, 0, Math.cos(pc.lean) * 0.32 * cur.w);
+        s.holder.rotation.set(Math.sin(pc.lean) * 0.42 * cur.w, 0, Math.cos(pc.lean) * 0.42 * cur.w);
       });
-      pcTint(pc.mats, cur.w * 0.8);
+      pcTint(pc.mats, cur.w * 0.9);
       if (pc.soil) pcSoilColor(pc.soil.material, cur.wet, PC_SOIL_DRY, PC_SOIL_WET);
     }
 

@@ -75,9 +75,10 @@ function postStop(key, title, ms, anim, opts = {}) {
           const u = m ? m.userData : {};
           if (opts.consume) for (const [k, n] of Object.entries(opts.consume)) useWorkshopSupply(k, n, title);
           let part = null;
-          if (m && opts.part) { part = wsPartOn(m, opts.part, opts.size || 0.14); m.add(part); }
+          const host = m && (m.userData.inner || m);
+          if (host && opts.part) { part = wsPartOn(host, opts.part, opts.size || 0.14); host.add(part); }
           await machineStep(ctx, title, ms, (k, t) => anim && anim(u, k, t, part), opts.speech);
-          if (part) { m.remove(part); }
+          if (part && part.parent) part.parent.remove(part);
           if (opts.after) opts.after(u);
           machineSkill(key, 3);
           return true;
@@ -289,12 +290,12 @@ deskPrinterDef('msla', 'Elegoo Saturn (MSLA/LCD)', 'MSLA printer', msslaPrinterM
 registerWorkshopMachine({
   key: 'wash', name: 'Form Wash (IPA)', short: 'wash station', kind: 'post', floor: 1, at: { x: deskSpot(4).x, z: DESK.z, ry: Math.PI }, size: { w: 0.35, h: 0.6, d: 0.35 },
   stand: { x: deskSpot(4).x, z: DESK.z - 0.95 }, learnAs: 'wash', skill: 'Washing resin prints',
-  model: () => { const m = washStationModel(); m.position.y = 0.98; const g = new THREE.Group(); g.add(m); g.userData = { ...m.userData }; return g; }
+  model: () => { const m = washStationModel(); m.position.y = 0.98; const g = new THREE.Group(); g.add(m); g.userData = { ...m.userData, inner: m }; return g; }
 });
 registerWorkshopMachine({
   key: 'cure', name: 'Form Cure (UV)', short: 'cure station', kind: 'post', floor: 1, at: { x: deskSpot(5).x, z: DESK.z, ry: Math.PI }, size: { w: 0.35, h: 0.5, d: 0.35 },
   stand: { x: deskSpot(5).x, z: DESK.z - 0.95 }, learnAs: 'cure', skill: 'UV curing',
-  model: () => { const m = cureStationModel(); m.position.y = 0.98; const g = new THREE.Group(); g.add(m); g.userData = { ...m.userData }; return g; }
+  model: () => { const m = cureStationModel(); m.position.y = 0.98; const g = new THREE.Group(); g.add(m); g.userData = { ...m.userData, inner: m }; return g; }
 });
 
 // SLS: a nylon powder bed fused by a laser, cooled, then depowdered and bead blasted

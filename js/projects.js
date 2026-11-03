@@ -225,8 +225,8 @@ async function buildProject(id, originLabel = 'Building Something Real') {
         const fromLogs = alloc.some(a => a.fromLogs);
         const material = (alloc.find(a => a.fromLogs) || alloc[0]).item;
         if (typeof fetchFromStorehouse === 'function' && material) await fetchFromStorehouse(material);
-        const bench = TOWN_LOCATIONS.weld;
-        state.currentLocKey = 'weld';
+        const bench = typeof projectBenchFor === 'function' ? projectBenchFor(plan) : TOWN_LOCATIONS.weld;
+        state.currentLocKey = bench.locKey || 'weld';
         state.customPlaceName = null;
         state.targetPos = { x: bench.x, z: bench.z };
         state.moodEmoji = '🔨';
@@ -250,7 +250,7 @@ async function buildProject(id, originLabel = 'Building Something Real') {
           state.moodTitle = steps[i][0];
           state.speechBubble = steps[i][1];
           const stage = fromLogs ? i - 1 : i;
-          state.proceduralMotion = { ...(state.proceduralMotion || {}), sparkBurst: stage === 1 };
+          state.proceduralMotion = { ...(state.proceduralMotion || {}), sparkBurst: stage === 1 && Boolean(plan.welded) };
           if (stage < 0) {
             // The log stack on the bench while he saws it up
             logStack = lifeSize(firewoodModel());

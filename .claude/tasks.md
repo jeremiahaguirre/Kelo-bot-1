@@ -46,8 +46,8 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
    - He builds safe declarative world upgrades (JSON, never eval), which the owner can view, toggle and remove.
    - It was writing js/upgrades.js.
 
-## Not started yet
-7. **Big workshop building**, to the RIGHT of the helipad (AIR_SLOTS around x 38.5, z -2, in js/vehicles.js). Floor 1 is the main fabrication shop, holding all his 3D printers, work benches, welding and CNC machines. Each machine has full functionality and real requirements:
+## In progress
+7. **Big workshop building** (`agent/workshop`, worktree /home/user/wt/workshop). PROGRESS: building + car elevator (js/workshopbuilding.js), models (js/machinemodels.js), machine framework (js/machines.js), printers (js/additive.js), CNC (js/cnc.js), electronics (js/electronics.js), garage + vehicle wear (js/garage.js) written and wired in (index.html, agent.js state/tick/prompt/decision, vehicles.js wear hook, scene.js pad hook, landscape.js offLimits). Next: screenshot tests of every job, regressions. WORKSHOP_SITE = { x: 51.6, z: -4, w: 16, d: 15 }; WORKSHOP_STATIONS.weld/bench/assembly for the weld and assembly branches., to the RIGHT of the helipad (AIR_SLOTS around x 38.5, z -2, in js/vehicles.js). Floor 1 is the main fabrication shop, holding all his 3D printers, work benches, welding and CNC machines. Each machine has full functionality and real requirements:
    - **3D printers**, every type: FDM/FFF, SLA, DLP, MSLA/LCD, SLS, DMLS/SLM, MJF, PolyJet material jetting, binder jetting, DED, EBM and LOM. Each has its real materials (filament, resin, nylon powder, metal powder, binder, wire feedstock, paper or laminate), post-processing (washing and UV curing for resin, depowdering, sintering, heat treating, support removal) and safety needs (gloves, ventilation, inert gas).
    - **CNC machines**:
      - Avid CNC PRO4896 / PRO60120: large-format modular routers for wood and plastics.

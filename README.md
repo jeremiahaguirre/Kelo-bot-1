@@ -144,6 +144,13 @@ Kelo-bot-1/
 │   ├── pastimes.js      # Fishing, the stove, real music sounds, swimming, the campfire, named constellations
 │   ├── shopkeeping.js   # His shop in the game: listing things for sale, "Sold", earnings, Export shop
 │   ├── printer.js       # His 3D printer: setting it up, learning it, filament spools, prints that fail and succeed
+│   ├── machinemodels.js # The Workshop's machine models (printers, routers, Haas, Taurus, SMT line, garage), shared materials
+│   ├── workshopbuilding.js # His two-storey Workshop east of the helipad: levelled pad, steel shell, car elevator, indoor trips, stations
+│   ├── machines.js      # Using the machines: research at NetNode, supplies and requests, jobs, made parts, AI field, Brain tab
+│   ├── additive.js      # Every kind of 3D printer (FDM, SLA, DLP, MSLA, SLS, DMLS, MJF, PolyJet, binder jet, DED, EBM, LOM) and post-processing
+│   ├── cnc.js           # Avid, AltMill, ShopSaber and Laguna routers, Haas VS-1/VS-3 and the Waldrich Coburg Taurus
+│   ├── electronics.js   # Floor 2 PCB line (mill, paste, place, reflow, AOI, wave, laser, enclosures) and the gadgets he builds
+│   ├── garage.js        # Floor 2 garage: lifts, tire changer, balancer, brake lathe, hoist, press, welder, compressor, plasma; vehicle wear
 │   ├── main.js          # UI wiring
 │   ├── portal.js        # Send-him-something panel
 │   ├── explore.js       # Looking around: Follow Kelo-1 or Explore freely, Places, the click menu, help card, touch joystick

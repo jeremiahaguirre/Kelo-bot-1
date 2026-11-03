@@ -105,6 +105,13 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
     - **Phase 1, now:** measure, find and verify bugs, perf hotspots and cleanup items, and write `.claude/review.md` (tiny safe fixes only).
     - **Phase 2, after tasks 1-9 are merged:** apply the plan across the merged code, re-profile, and fix new bugs from the merges.
 
+11. **Talk tab clean-up and improvement** (`agent/talk`, started):
+    - A modern chat thread with bubbles, avatars, a typing indicator, auto-scroll, jump-to-latest, lookup cards and status chips for actions you asked for.
+    - One composer with a + menu for photos and gifts.
+    - Suggested reply chips that fit his current situation.
+    - An empty state, "load earlier", and accessibility.
+    - Obsolete controls removed.
+
 ## Owner notes to keep in mind
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.
 - "He can build anything", he can ask for lists of things, and code upgrades to his world.

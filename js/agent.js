@@ -321,6 +321,9 @@ const state = {
   "lastWeldAt": 0,
   "knowsSnow": false,
   "worldEdits": [],
+  "batchPlant": {},
+  "asphaltPlant": {},
+  "concretePours": [],
   "basementDepth": 0,
   "projects": [],
   "landFills": [],
@@ -1835,6 +1838,7 @@ Current state:
 - Welding: ${recentlyWelded() ? 'you welded a piece within the last 15 minutes, so do something different this time ("build" should be null)' : 'welding is one of many things you do; most of your decisions should not include a "build"'}. Pieces stand outdoors (never in town); only overflow goes to your Museum.
 - Your real skills (practise with the things you asked for and were given; this matters more than welding): ${typeof skillsSummaryForAI === 'function' ? skillsSummaryForAI() : 'none yet'}
 - Groundwork you've researched (roads, asphalt paving, moving earth, planting): ${typeof groundworkSummaryForAI === 'function' ? groundworkSummaryForAI() : 'nothing yet'}
+- Your concrete and asphalt plant (beside the big workshop): ${typeof plantSummaryForAI === 'function' ? plantSummaryForAI() : 'none'}
 - In your Storehouse: ${typeof storehouseSummaryForAI === 'function' ? storehouseSummaryForAI() : 'empty'}
 - Tidying up: ${typeof tidySummaryForAI === 'function' ? tidySummaryForAI() : 'nothing to tidy'}
 - Thrown into your Disposal Pit (gone forever): ${typeof disposalSummaryForAI === 'function' ? disposalSummaryForAI() : 'nothing yet'}
@@ -1877,6 +1881,7 @@ ${typeof wishFeaturesPromptLines === 'function' ? wishFeaturesPromptLines() : ''
   "updatedWorldview": null OR "1-2 sentences if your philosophy shifted",
   "discard": null OR {"item": "exact name of something you own that you no longer want", "why": "1 sentence"} (you carry or drive it to your Disposal Pit and throw it in; it is gone forever),
   "shape": null OR {"action": "chop" | "plant" | "road" | "pave" | "hill" | "hollow" | "undo", "x": number, "z": number, "toX": number, "toZ": number, "id": "an id from your list, for undo", "why": "1 sentence"} (change your world yourself, anywhere except town: the meadows, woods, mountain slopes, beach and land you made are all yours. Chop a tree with an axe, plant seeds you have, lay a gravel road, pave one of your gravel roads with asphalt (give its id), raise a hill or dig a hollow with a shovel, or undo something you added; town and the buildings are never touched. x runs ${WORLD_MIN_X} to ${WORLD_MAX_X}, z runs ${WORLD_MIN_Z} (mountain) to 9 (beach); town is x ${TOWN.minX} to ${TOWN.maxX}, z ${TOWN.minZ} to ${TOWN.maxZ}),
+  "runPlant": null OR {"plant": "concrete" | "asphalt", "pour": "path" | "pad", "why": "1 sentence"} (run your own plant: concrete is batched into your mixer truck and poured as a path or pad that cures over days; asphalt is made only to pave one of your gravel roads, because it cools and is wasted if it waits),
   "practise": null OR "one of your vehicles, your telescope or a hobby to go and practise for real right now (e.g. 'the helicopter')",
   "buildProject": null OR "one of the real things you know how to build" (look it up and ask for the materials it takes; one project at a time),
   "expandLand": null OR {"x": number, "why": "1 sentence"} (from now on, tip the dirt you dig into the lake off the beach near x to make new land, instead of the Disposal Pit; deeper water needs more dirt),
@@ -2038,6 +2043,7 @@ function applyDecision(decision, originLabel) {
       if (decision.sellItem && typeof sellItemDecision === 'function') sellItemDecision(decision.sellItem);
       // Something his human switched on (wildlife, his pet, fishing...): see js/wishfeatures.js
       if (typeof applyWishFeatureDecision === 'function') applyWishFeatureDecision(decision);
+      if (typeof applyPlantDecision === 'function') applyPlantDecision(decision);
       if (decision.print && typeof printDecision === 'function') printDecision(decision.print);
 
       const used = findConcept(decision.usedConcept);
@@ -2298,6 +2304,7 @@ function runAutonomousLifeTick() {
       }
       // Now and then he looks for something real to build
       if (typeof startProject === 'function' && canTryKey('project') && Math.random() < projectChance()) { tryKey('project', () => startProject(pickNewProject())); return; }
+      if (typeof plantActivity === 'function' && canTryKey('plant') && Math.random() < plantRunChance()) { tryKey('plant', () => plantActivity()); return; }
       // Now and then he puts something in his shop, or wishes his world could do something new
       if (typeof tendShop === 'function' && canTryKey('shop') && Math.random() < shopChance()) { tryKey('shop', () => tendShop()); return; }
       if (typeof printOnMyOwn === 'function' && canTryKey('print') && Math.random() < printChance()) { tryKey('print', () => printOnMyOwn()); return; }

@@ -112,6 +112,8 @@ Kelo-bot-1/
 │   ├── weldstudio.js    # The Welding Studio as a real fab shop: steel table, MIG welder, gas bottles, grinder, fume arm, arc glow
 │   ├── house.js         # Kelo-1's cottage: walls, windows, porch, roof, furniture, night lights
 │   ├── animations.js    # Kelo-1's body animation: smooth pose blending, walk cycle, idle life, emotes
+│   ├── motion.js        # Fluid movement: easing speed and turns, turning on the spot, smooth paths round obstacles, vehicles leaning into turns, no popping
+│   ├── humanize.js      # Human body language: gaze, head-first turns, blinks, talking hands, stretches, head scratches, sighs, hums, fidgets
 │   ├── items3d.js       # 3D models of items, the pick-up counter, carrying
 │   ├── gearmodels.js    # Detailed vehicles and tools, sized against Kelo-1
 │   ├── everydaymodels.js # Food, toys, instruments and books at real size
@@ -147,6 +149,7 @@ Kelo-bot-1/
 │   ├── main.js          # UI wiring
 │   ├── portal.js        # Send-him-something panel
 │   ├── explore.js       # Looking around: Follow Kelo-1 or Explore freely, Places, the click menu, help card, touch joystick
+│   ├── eyecam.js        # "Through his eyes": a first-person camera at Kelo-1's eyes with look-around and a small HUD
 │   ├── minimap.js       # The live minimap: terrain, buildings, his vehicles, digs and builds, Kelo-1 and the camera's view, and the Map tab of everything he has changed
 │   ├── tryit.js         # The World tab's Try it panel: preview seasons, night and wind, send sample gifts
 │   ├── shop.js          # The shop website itself (shop.html)

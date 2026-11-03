@@ -152,6 +152,7 @@ function exploreKeloSpot() {
 function exploreTakeOver(kind) {
       exploreCam.lastInput = Date.now();
       exploreHideSpotMenu();
+      if (state.cameraMode === 'eyes') return;   // looking around through his eyes stays there
       const mode = state.cameraMode;
       if (exploreCam.fly) {
         exploreCam.fly = null;
@@ -223,6 +224,8 @@ function exploreCameraUpdate() {
       const dt = exploreCam.lastMs ? Math.min(0.2, (now - exploreCam.lastMs) / 1000) : 1 / 60;
       exploreCam.lastMs = now;
       const mode = state.cameraMode;
+      // Through his eyes (js/eyecam.js) places the camera itself
+      if (typeof eyeCamFrame === 'function' && eyeCamFrame(dt)) { exploreCam.driving = false; return true; }
 
       if (!exploreCam.fly) {
         if (mode === 'follow') {
@@ -357,6 +360,7 @@ function exploreBindPointer() {
         e.preventDefault();
         exploreTakeOver('zoom');
         const factor = Math.exp(exploreClamp(e.deltaY, -120, 120) * 0.0022);
+        if (state.cameraMode === 'eyes' && typeof eyeCamZoom === 'function') return eyeCamZoom(factor);
         exploreZoomAbout(exploreTerrainPoint(e.clientX, e.clientY), factor);
       }, { passive: false });
 
@@ -396,6 +400,15 @@ function exploreMoveDrag(e, px, py) {
         exploreTakeOver(d.kind === 'pan' ? 'pan' : 'turn');
       }
       exploreCam.lastInput = Date.now();
+      if (state.cameraMode === 'eyes' && typeof eyeCamLook === 'function') {
+        // Through his eyes: a drag looks around, a pinch zooms
+        if (d.kind === 'pinch' && pts.length >= 2) {
+          const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+          if (dist > 10 && d.d > 10) eyeCamZoom(d.d / dist);
+          d.d = dist;
+        } else eyeCamLook(e.clientX - px, e.clientY - py);
+        return;
+      }
       const g = exploreCam.goal;
       if (d.kind === 'rotate') {
         g.yaw -= (e.clientX - px) * 0.006;
@@ -448,6 +461,7 @@ function exploreBindKeys() {
         if (e.key === '?') { exploreShowHelp(true); return; }
         if (e.code === 'Escape') { exploreHideSpotMenu(); exploreTogglePlaces(false); exploreShowHelp(false); return; }
         if (e.code === 'KeyK' || e.code === 'Home') { exploreFlyToKelo(); e.stopPropagation(); return; }
+        if (e.code === 'KeyV' && typeof eyeCamToggle === 'function') { eyeCamToggle(); e.stopPropagation(); return; }
         if (!EXPLORE_KEYS.has(e.code)) return;
         e.stopPropagation();
         // With the menu open the arrow keys scroll it instead
@@ -625,6 +639,7 @@ function explorePlaces() {
 
 function exploreGoToPlace(id) {
       if (id === 'kelo') return exploreFlyToKelo();
+      if (id === 'eyes' && typeof eyeCamStart === 'function') { exploreTogglePlaces(false); return eyeCamStart(); }
       const p = explorePlaces().find(pl => pl.id === id);
       if (p) exploreFlyTo(p);
       exploreTogglePlaces(false);
@@ -636,7 +651,10 @@ function exploreRenderPlaces() {
       const groups = {};
       explorePlaces().forEach(p => { (groups[p.group] = groups[p.group] || []).push(p); });
       list.innerHTML = `
-        <button type="button" data-place="kelo" class="explore-place explore-place-kelo"><span aria-hidden="true">🤖</span><span>Where is Kelo-1?</span></button>
+        <div class="grid grid-cols-2 gap-1">
+          <button type="button" data-place="kelo" class="explore-place explore-place-kelo"><span aria-hidden="true">🤖</span><span>Where is Kelo-1?</span></button>
+          <button type="button" data-place="eyes" class="explore-place explore-place-kelo"><span aria-hidden="true">👀</span><span>Through his eyes</span></button>
+        </div>
         ${Object.entries(groups).map(([g, items]) => `
           <div class="explore-place-group">${escapeHtml(g)}</div>
           <div class="grid grid-cols-2 gap-1">
@@ -675,7 +693,7 @@ function exploreShowHelp(show) {
 function exploreUpdateUI() {
       const mode = state.cameraMode;
       document.querySelectorAll('[data-explore-mode]').forEach(b => {
-        const on = b.getAttribute('data-explore-mode') === (mode === 'follow' ? 'follow' : 'explore');
+        const on = b.getAttribute('data-explore-mode') === (mode === 'follow' || mode === 'eyes' ? mode : 'explore');
         b.classList.toggle('explore-mode-on', on);
         b.setAttribute('aria-pressed', String(on));
       });
@@ -685,6 +703,7 @@ function exploreUpdateUI() {
 function exploreBindButtons() {
       document.querySelectorAll('[data-explore-mode]').forEach(b => b.addEventListener('click', () => {
         if (b.getAttribute('data-explore-mode') === 'follow') exploreFlyToKelo();
+        else if (b.getAttribute('data-explore-mode') === 'eyes') eyeCamStart();
         else { exploreTakeOver('pan'); exploreSetMode('explore'); }
       }));
       document.getElementById('btnPlaces')?.addEventListener('click', () => exploreTogglePlaces());
@@ -723,6 +742,7 @@ function exploreBindButtons() {
         e.preventDefault();
         const cam = b.id === 'btnFocusKelo' ? 'follow' : b.getAttribute('data-cam');
         if (cam === 'follow') return exploreFlyToKelo();
+        if (cam === 'eyes' && typeof eyeCamStart === 'function') return eyeCamStart();
         if (cam === 'bird') {
           const k = exploreKeloSpot();
           return exploreFlyTo({ x: k.x, z: k.z, dist: 60, pitch: 1.2 });

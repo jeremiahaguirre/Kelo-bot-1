@@ -316,6 +316,9 @@ const state = {
   "knowHow": {},
   "jobKnowledge": {},
   "skills": {},
+  "paintKnowledge": {},
+  "paintPlan": null,
+  "paintingImages": {},
   "activityCooldowns": {},
   "recentDecisionTitles": [],
   "lastWeldAt": 0,
@@ -1275,7 +1278,9 @@ const TRANSIENT_STATE_KEYS = new Set(['riding', 'ridingSpeed', 'ridingMode', 'is
 // the main key; loadPersistentBrainState reads either.)
 const BRAIN_PARTS = [
   { key: 'kelo1_brain_v4_lore', fields: ['vocabulary', 'itemLookups', 'aiLearned'] },
-  { key: 'kelo1_brain_v4_designs', fields: ['itemDesigns'] }
+  { key: 'kelo1_brain_v4_designs', fields: ['itemDesigns'] },
+  // his paintings' pictures (js/paintstudio.js): a JPEG and a thumbnail each
+  { key: 'kelo1_brain_v4_paintings', fields: ['paintingImages'] }
 ];
 const BRAIN_PICTURES_KEY = 'kelo1_brain_v4_shop_pictures';
 const brainWritten = {};   // storage key -> what was last written there (nothing is rewritten unchanged)
@@ -1842,6 +1847,7 @@ Current state:
 - Your sense of taste: ${typeof tastesSummaryForAI === 'function' ? tastesSummaryForAI() : 'unknown'}
 - Your 3D printer: ${typeof printerSummaryForAI === 'function' ? printerSummaryForAI() : 'none'}
 - Things your human switched on in your world: ${typeof wishFeaturesSummaryForAI === 'function' ? wishFeaturesSummaryForAI() : 'nothing extra yet'}
+- Painting for real, in real media (oil, acrylic, watercolour, gouache, pastel, ink, charcoal): each needs its own supplies, and you research a new medium at NetNode first, then ask for what's missing. Your media: ${typeof paintingSummaryForAI === 'function' ? paintingSummaryForAI() : 'none'}
 - Your hobbies: ${state.hobbies.map(h => `${h.name} (skill ${h.skill}/100)`).join(', ') || 'none yet'}
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
@@ -1869,7 +1875,8 @@ Return ONLY JSON:
   "codeProject": null OR {"name": "repo-name", "desc": "..."},
   "codeRequest": null OR {"feature": "something your world can't do yet that you wish the person who codes it would add", "why": "1 sentence"} (${typeof codeRequestHintForAI === 'function' ? codeRequestHintForAI() : 'e.g. a way to fish'}),
 ${typeof wishFeaturesPromptLines === 'function' ? wishFeaturesPromptLines() : ''}
-  "sellItem": null OR {"item": "exact name of a design you 3D-printed well that people would find fun or useful (your shop sells only 3D print files)", "price": number in Canadian dollars, a fair price for a print file, $1.99-$5.99, "description": "1-2 sentences for buyers: what it's for or why it's fun"} (put it in your shop website at the NetNode cafe; real people may buy it),
+  "sellItem": null OR {"item": "exact name of a design you 3D-printed well that people would find fun or useful, OR the exact title of one of your good paintings that you don't want to keep (your shop sells only 3D print files and your original paintings)", "price": number in Canadian dollars: a print file $1.99-$5.99; an original painting by an emerging artist $35-$120 for watercolour, ink, pastel or charcoal, $60-$180 for acrylic or gouache, $90-$350 for oil, higher as your skill grows, "description": "1-2 sentences for buyers: what it's for or why it's fun, or what the painting shows"} (put it in your shop website at the NetNode cafe; real people may buy it; an original sells only once and leaves your Museum),
+  "paint": null OR {"medium": "oil|acrylic|watercolour|gouache|pastel|ink|charcoal", "subject": "lake|night|mountains|house|wildlife|stilllife|friend", "why": "1 sentence"} (set up your easel facing the subject and paint a real picture; if you haven't learned the medium or lack its supplies you research it and ask for them first),
   "print": null OR {"what": "something small to make on your 3D printer: a useful thing, a toy, or a shape or idea of yours as a sculpture", "why": "1 sentence"} (only if you have a 3D printer and filament),
   "webQuery": null OR "a topic you want to look up at the NetNode cafe",
   "usedConcept": null OR "name of one of your existing concepts this decision builds on",
@@ -2036,6 +2043,7 @@ function applyDecision(decision, originLabel) {
       const cr = decision.codeRequest;
       if (cr && typeof cr === 'object' && typeof addCodeRequest === 'function') addCodeRequest(cr.feature, cr.why, title);
       if (decision.sellItem && typeof sellItemDecision === 'function') sellItemDecision(decision.sellItem);
+      if (decision.paint && typeof paintDecision === 'function') paintDecision(decision.paint);
       // Something his human switched on (wildlife, his pet, fishing...): see js/wishfeatures.js
       if (typeof applyWishFeatureDecision === 'function') applyWishFeatureDecision(decision);
       if (decision.print && typeof printDecision === 'function') printDecision(decision.print);
@@ -2281,6 +2289,8 @@ function runAutonomousLifeTick() {
       }
       // Something a visitor asked him to go and do (js/skills.js)
       if (typeof takeSkillAsk === 'function' && takeSkillAsk()) return;
+      // A painting a visitor asked for (or he planned) whose supplies have now arrived (js/paintstudio.js)
+      if (typeof paintPlanTick === 'function' && paintPlanTick()) return;
       // Getting good at the real things he asked for and was given comes first (js/skills.js)
       if (typeof practiseSkill === 'function' && canTryKey('skill') && Math.random() < skillPracticeChance()) { tryKey('skill', () => practiseSkill(pickSkillToPractise())); return; }
       // Sometimes he feels like digging (and asks for tools if he doesn't have them)
@@ -2301,6 +2311,8 @@ function runAutonomousLifeTick() {
       // Now and then he puts something in his shop, or wishes his world could do something new
       if (typeof tendShop === 'function' && canTryKey('shop') && Math.random() < shopChance()) { tryKey('shop', () => tendShop()); return; }
       if (typeof printOnMyOwn === 'function' && canTryKey('print') && Math.random() < printChance()) { tryKey('print', () => printOnMyOwn()); return; }
+      // Now and then he sets up his easel and paints (or learns a new medium) (js/paintstudio.js)
+      if (typeof paintOnMyOwn === 'function' && canTryKey('paint') && Math.random() < paintChance()) { tryKey('paint', () => paintOnMyOwn()); return; }
       if (typeof wishForCode === 'function' && canTryKey('codewish') && Math.random() < codeWishChance()) { tryKey('codewish', () => wishForCode()); return; }
       // Things his human switched on for him: studying wildlife, his pet, fishing, the campfire...
       if (typeof wishFeatureActivity === 'function' && wishFeatureActivity()) return;

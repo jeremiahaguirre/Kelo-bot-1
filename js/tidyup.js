@@ -72,7 +72,7 @@ function tidyCandidates() {
       // A crowded Museum: the oldest pieces are up for reconsideration too
       if (typeof museumBasementLevels === 'function' && museumBasementLevels() >= 2) {
         allMuseumSculptures().slice(0, 4).forEach(c => out.push({ name: c.title, kind: 'sculpture', score: 2, reason: 'the Museum is crowded and it\'s one of my oldest pieces' }));
-        allMuseumPaintings().slice(0, 2).forEach(m => out.push({ name: m.text, kind: 'painting', score: 2, reason: 'the Museum is crowded and it\'s one of my first paintings' }));
+        allMuseumPaintings().filter(m => !m.keep && !(m.kind === 'art' && typeof ensureShop === 'function' && ensureShop().listings.some(l => l.painting && l.painting.id === m.id))).slice(0, 2).forEach(m => out.push({ name: m.text, kind: 'painting', score: 2, reason: 'the Museum is crowded and it\'s one of my first paintings' }));
       }
       return out.sort((a, b) => b.score - a.score);
     }

@@ -144,6 +144,9 @@ async function respondToVisitor(visitor, message) {
       const kind = classifyMessage(message);
       const unknown = unknownWords(message);
       if (kind === 'greeting' && typeof playEmote === 'function') playEmote('wave');
+      // "Paint me a watercolour of the lake": he sets up his easel and does (js/paintstudio.js)
+      const paintAsk = typeof parsePaintRequest === 'function' ? parsePaintRequest(message) : null;
+      if (paintAsk) return answerPaintRequest(paintAsk, visitor);
       // "Try flying your helicopter!": he goes and actually does it (js/skills.js)
       const useAsk = typeof parseUseRequest === 'function' ? parseUseRequest(message) : null;
       if (useAsk && (useAsk.candidate || useAsk.missing)) return answerUseRequest(useAsk, visitor);

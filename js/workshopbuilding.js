@@ -958,7 +958,10 @@ function wsSetFrontFade(opacity) {
 
 // The deck: see-through while he works downstairs (so you can watch), solid while he is up there
 function wsSetDeck(opacity) {
-      wsDeckMeshes.forEach(m => { m.material.opacity = opacity === null ? (state.roofCutaway ? 0.18 : 0.95) : opacity; });
+      wsDeckMeshes.forEach(m => {
+        m.material.opacity = opacity === null ? (state.roofCutaway ? 0.18 : 0.95) : opacity;
+        m.visible = opacity === null || opacity > 0.12; // (hidden outright while he works downstairs)
+      });
     }
 
 // Walk onto the platform, ride it, walk off onto the other floor

@@ -22,6 +22,7 @@ const WS_EAVE = 12.6;
 const WS_IN = { x: WORKSHOP_SITE.w / 2 - 0.15, z: WORKSHOP_SITE.d / 2 - 0.15 };
 // The car elevator platform (local coordinates): a truck drives straight in through the east door
 const WS_LIFT = { x: 6.05, z: 2.65, w: 3.5, d: 9.3 };
+const WS_LIFT_GATE = 6.0;                // where he steps on and off the platform (z)
 const WS_DOORS = {
   vehicle: { x: 6.05, w: 3.9, h: 4.9 },
   hangar: { x: -5.95, w: 3.6, h: 4.9 },
@@ -37,7 +38,7 @@ const WORKSHOP_STATIONS = {
   bench: { local: { x: 2.65, z: 6.6 }, floor: 1, rotY: 0, size: { w: 2.6, d: 0.8 }, label: 'Work bench' },
   assembly: { local: { x: -5.9, z: 4.6 }, floor: 1, rotY: 0, size: { w: 3.4, d: 4.6 }, label: 'Hangar / assembly bay' },
   electronics: { local: { x: -2.9, z: -2.75 }, floor: 2, rotY: 0, size: { w: 1.6, d: 0.7 }, label: 'Electronics bench' },
-  garage: { local: { x: 1.9, z: 2.65 }, floor: 2, rotY: 0, size: { w: 3.9, d: 8.4 }, label: 'Garage bay' }
+  garage: { local: { x: 6.05, z: -2.0 }, floor: 2, rotY: 0, size: { w: 3.5, d: 8.4 }, label: 'Garage lift bay' }
 };
 
 // --- Levelling the ground ------------------------------------------------------------------------------
@@ -427,6 +428,8 @@ function buildWorkshop3D() {
       };
       rail(deckX0 + 0.05, -hz + 0.3, deckX0 + 0.05, hz - 0.3);
       rail(liftX0, liftZ0 - 0.05, WS_IN.x, liftZ0 - 0.05);
+      rail(liftX0 - 0.05, liftZ0, liftX0 - 0.05, WS_LIFT_GATE - 0.8);
+      rail(liftX0 - 0.05, WS_LIFT_GATE + 0.8, liftX0 - 0.05, WS_IN.z - 0.1);
 
       // The car elevator: four tall yellow masts, a diamond-plate platform with hazard edges,
       // a hydraulic ram under it, gates and the call box
@@ -854,7 +857,7 @@ async function runWorkshopVisit(plan) {
         wsUpdateLighting();
         if (veh) {
           await wsDriveIn(site, veh);
-          cur = { x: WS_LIFT.x - WS_LIFT.w / 2 - 0.6, z: WS_LIFT.z };
+          cur = { x: WS_LIFT.x - WS_LIFT.w / 2 - 0.45, z: WORKSHOP_STATIONS.garage.local.z + 0.8 };
         } else {
           await tripWalk([outside, ...site.walkIn.map(p => siteToWorld(site, p.x, p.z, p.y))]);
           const hub = site.walkIn[site.walkIn.length - 1];
@@ -923,18 +926,21 @@ function wsSetDeck(opacity) {
 
 // Walk onto the platform, ride it, walk off onto the other floor
 async function wsChangeFloor(site, cur, floor) {
-      const onLift = { x: WS_LIFT.x, z: WS_LIFT.z + 1.5 };
-      await wsWalkTo(site, cur, { x: WS_LIFT.x - WS_LIFT.w / 2 - 0.5, z: WS_LIFT.z + 1.5 });
+      const onLift = { x: WS_LIFT.x, z: WS_LIFT_GATE };
+      await wsWalkTo(site, cur, { x: WS_LIFT.x - WS_LIFT.w / 2 - 0.5, z: WS_LIFT_GATE });
       await tripWalk([siteToWorld(site, onLift.x, onLift.z, workshopTrip.floor === 2 ? WS_F2 : WS_F1)]);
       tripFace(siteToWorld(site, onLift.x, onLift.z + 2, 0));
       if (floor === 2) workshopShowUpstairs(true);
       wsSetDeck(floor === 2 ? 0.98 : 0.15);
       tripMood(floor === 2 ? 'Taking the car elevator up' : 'Riding the car elevator down', floor === 2 ? 'Up to the second floor!' : null);
       await tripPause(400);
+      // (the engine hoist parks over the shaft upstairs: it's only there while the platform is up)
+      if (wsModels.hoist) wsModels.hoist.visible = false;
       await wsRideLift(floor, [y => { if (indoorTrip.pos) indoorTrip.pos.y = y; }]);
       workshopTrip.floor = floor;
+      if (floor === 2 && wsModels.hoist) wsModels.hoist.visible = true;
       await tripPause(300);
-      const off = { x: WS_LIFT.x - WS_LIFT.w / 2 - 0.6, z: WS_LIFT.z + 1.5 };
+      const off = { x: WS_LIFT.x - WS_LIFT.w / 2 - 0.6, z: WS_LIFT_GATE };
       await tripWalk([siteToWorld(site, off.x, off.z, floor === 2 ? WS_F2 : WS_F1)]);
       if (floor === 1) workshopShowUpstairs(false);
       return off;
@@ -978,45 +984,52 @@ async function wsDriveAlong(site, v, pts, ms) {
       });
     }
 
-// Drive in through door 1 onto the car elevator, ride up, drive over to the two-post lift
+// Back in through door 1 onto the car elevator (so it can drive out forwards), ride up, and reverse
+// on up onto the two-post lift behind the shaft
 async function wsDriveIn(site, v) {
       const mesh = vehicleMeshes[v.id];
       if (!mesh) return;
       workshopTrip.vehicleOut = { x: v.x, z: v.z };
-      tripMood(`Driving the ${String(v.name).replace(/^(an?|the)\s+/i, '')} onto the car elevator`, 'In we go, nice and slow.');
-      const ry = Math.PI / 2; // nose north (into the building)
-      mesh.rotation.y = ry;
-      await wsDriveAlong(site, v, [{ x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 3.0, ry }, { x: WS_LIFT.x, z: WS_LIFT.z, ry }], 4200);
+      const nm = String(v.name).replace(/^(an?|the)\s+/i, '');
+      const ry = -Math.PI / 2; // nose south, toward the doors
+      // He swings it round on the apron and backs in
+      tripMood(`Backing the ${nm} onto the car elevator`, 'Reverse... slowly... a little more.');
+      const ax = WS_DOORS.vehicle.x, az = WORKSHOP_SITE.d / 2 + 5.5;
+      await wsDriveAlong(site, v, [{ x: ax - 2.5, z: az + 1.5, ry: ry + 0.9 }, { x: ax, z: az + 0.8, ry }], 3000);
+      await wsDriveAlong(site, v, [{ x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 1.5, ry }, { x: WS_LIFT.x, z: WS_LIFT.z, ry }], 4200);
       workshopShowUpstairs(true);
+      if (wsModels.hoist) wsModels.hoist.visible = false;
       wsSetDeck(0.98);
-      tripMood('Taking the car elevator up', 'Going up with the truck. This is the best part.');
+      tripMood('Taking the car elevator up', `Going up with the ${nm}. This is the best part.`);
       await wsRideLift(2, [y => { mesh.position.y = y; wsSeatKelo(mesh); }]);
       workshopTrip.floor = 2;
-      const lift = WORKSHOP_STATIONS.garage.local;
-      // Out sideways onto the deck and into the lift bay
-      await wsDriveAlong(site, v, [{ x: WS_LIFT.x - 1.4, z: WS_LIFT.z + 0.6, ry: ry + 0.25 }, { x: lift.x + 0.8, z: lift.z + 0.2, ry: ry - 0.15 }, { x: lift.x, z: lift.z, ry }], 5200);
-      workshopTrip.vehicleAt = { x: lift.x, z: lift.z };
+      if (wsModels.hoist) wsModels.hoist.visible = true;
+      const car = WORKSHOP_STATIONS.garage.local;
+      tripMood(`Reversing the ${nm} onto the lift`);
+      await wsDriveAlong(site, v, [{ x: car.x, z: car.z, ry }], 3500);
+      workshopTrip.vehicleAt = { x: car.x, z: car.z };
       // He climbs out on the driver's side
       indoorTrip.pose = null;
-      const side = siteToWorld(site, lift.x + 2.3, lift.z + 1.2, WS_F2);
+      const side = siteToWorld(site, car.x - 2.05, car.z + 0.8, WS_F2);
       indoorTrip.pos = { x: side.x, y: side.y, z: side.z };
       await tripPause(400);
     }
 
 async function wsDriveOut(site, v) {
       const mesh = vehicleMeshes[v.id];
-      const lift = WORKSHOP_STATIONS.garage.local;
-      const ry = Math.PI / 2;
+      const car = WORKSHOP_STATIONS.garage.local;
+      const ry = -Math.PI / 2;
       if (!mesh) return;
-      // Back in the driver's seat
-      await wsWalkTo(site, { x: indoorTrip.pos.x - wsGroup.position.x, z: indoorTrip.pos.z - wsGroup.position.z }, { x: lift.x + 2.3, z: lift.z + 1.2 });
-      await wsDriveAlong(site, v, [{ x: lift.x + 0.8, z: lift.z + 0.2, ry: ry - 0.15 }, { x: WS_LIFT.x - 1.4, z: WS_LIFT.z + 0.6, ry: ry + 0.25 }, { x: WS_LIFT.x, z: WS_LIFT.z, ry }], 5200);
+      // Back in the driver's seat, forwards onto the platform
+      await wsWalkTo(site, { x: indoorTrip.pos.x - wsGroup.position.x, z: indoorTrip.pos.z - wsGroup.position.z }, { x: car.x - 2.05, z: car.z + 0.8 });
+      await wsDriveAlong(site, v, [{ x: WS_LIFT.x, z: WS_LIFT.z, ry }], 3500);
+      if (wsModels.hoist) wsModels.hoist.visible = false;
       tripMood('Riding the car elevator down');
       await wsRideLift(1, [y => { mesh.position.y = y; wsSeatKelo(mesh); }]);
       workshopTrip.floor = 1;
       wsSetDeck(0.15);
       workshopShowUpstairs(false);
-      // Reverse out of door 1 and park on the apron
+      // Out through door 1 and onto the apron
       const apron = { x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 5.5 };
       await wsDriveAlong(site, v, [{ x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 1.0, ry }, { x: apron.x, z: apron.z, ry }], 4200);
       v.x = Math.round((wsGroup.position.x + apron.x) * 10) / 10;

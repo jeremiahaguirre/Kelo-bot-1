@@ -58,7 +58,7 @@ function registerVehicle(name) {
       const used = new Set(state.vehicles.map(v => `${v.x},${v.z}`));
       const [x, z] = slots.find(([sx, sz]) => !used.has(`${sx},${sz}`)) || slots[0];
       // New vehicles arrive with an empty tank (js/knowhow.js)
-      const v = { id: 'veh-' + Date.now() + '-' + Math.floor(Math.random() * 1000), name, kind: type.kind, x, z, rotY: type.mode === 'water' ? BOAT_ROT_Y : 0, load: 0, fuel: 0 };
+      const v = { id: 'veh-' + Date.now() + '-' + Math.floor(Math.random() * 1000), name, kind: type.kind, x, z, rotY: type.mode === 'water' ? BOAT_ROT_Y : 0, load: 0, fuel: 0, wear: 0 };
       state.vehicles.push(v);
       state.unstoredItems = state.unstoredItems.filter(n => n !== name);
       renderVehicles3D();
@@ -305,6 +305,8 @@ async function driveVehicle(v, target, label) {
         await waitForAltitude(v, a => a < 0.05);
       }
       if (typeof burnFuel === 'function') burnFuel(v, Math.hypot(state.botPos.x - v.x, state.botPos.z - v.z));
+      // Wear and tear, kept apart from fuel (js/garage.js services it away)
+      if (typeof wearVehicle === 'function') wearVehicle(v, Math.hypot(state.botPos.x - v.x, state.botPos.z - v.z));
       // Every real trip is a little practice (js/skills.js)
       if (typeof gainSkill === 'function' && typeof skillCandidates === 'function') {
         const c = skillCandidates().find(x => x.vehicle === v);

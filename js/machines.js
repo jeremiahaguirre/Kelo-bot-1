@@ -54,7 +54,7 @@ const WORKSHOP_SUPPLIES = {
   spoilboard: { ask: 'A sacrificial MDF spoilboard', re: /spoilboard/i, kind: 'workholding', per: 8, unit: 'jobs', label: 'a spoilboard (resurfaced as it wears)', uses: ['machine'] },
   vacuumPump: { ask: 'A vacuum table pump', re: /vacuum (table )?pump/i, kind: 'workholding', label: 'a vacuum pump for the vacuum table', uses: ['machine'] },
   vise: { ask: 'A 6 inch Kurt machining vise', re: /\bvise\b|machining vice/i, kind: 'workholding', label: 'a machining vise', uses: ['machine'] },
-  fixturePlate: { ask: 'A modular fixture plate set', re: /fixture plate|fixture/i, kind: 'workholding', label: 'fixtures for big parts', uses: ['machine'] },
+  fixturePlate: { ask: 'A modular fixture plate set', re: /fixture plate|modular fixture/i, kind: 'workholding', label: 'fixtures for big parts', uses: ['machine'] },
   dustHose: { ask: 'A 4 inch dust collection hose', re: /dust (collection )?hose/i, kind: 'workholding', label: 'a hose to the dust collector', uses: ['clean'] },
   coolant: { ask: 'A 5 gal pail of water-soluble coolant', re: /coolant/i, kind: 'consumable', per: 5, unit: 'jobs', label: 'flood coolant concentrate', uses: ['machine'] },
   safetyGlasses: { ask: 'A pair of safety glasses', re: /safety (glasses|goggles|spectacles)/i, kind: 'safety', label: 'safety glasses', uses: ['wear'] },
@@ -131,7 +131,13 @@ function supplyOwned(key) {
         if (typeof pruneSpools === 'function') pruneSpools();
         if (typeof totalFilament === 'function') return totalFilament() > 0 ? 'filament' : null;
       }
-      return ownedItemNames().find(n => s.re.test(n)) || null;
+      return ownedItemNames().find(n => s.re.test(n) && !isMadeThing(n)) || null;
+    }
+
+// Things he made himself ("An SLA-printed resin miniature") are never mistaken for supplies
+const MADE_THING_RE = /\b(FDM|SLA|DLP|MSLA|SLS|DMLS|MJF|PolyJet|binder-jetted|DED|EBM|LOM)-(printed|built)\b|\b(Haas|Taurus|Avid|AltMill|ShopSaber|Laguna|PCB|plasma)-(machined|routed|milled|cut)\b|\bhomemade\b|3-?D-printed/i;
+function isMadeThing(name) {
+      return MADE_THING_RE.test(String(name || ''));
     }
 
 // Waiting on it already (asked, or it's at the post office)?
@@ -145,7 +151,7 @@ function supplyAwaited(key) {
 
 // Everything this job needs: the machine's own list plus the extras the job adds
 function jobNeeds(def, job = {}) {
-      const list = [...(def.needs || []), ...(job.needs || [])];
+      const list = [...(def.needsFor ? def.needsFor(job || {}) : def.needs || []), ...(job.needs || [])];
       return [...new Set(list.map(n => (typeof n === 'string' ? n : n.key)))];
     }
 

@@ -186,6 +186,9 @@ body {
 .talk-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 1px; }
 .talk-chips::-webkit-scrollbar { display: none; }
 .talk-chips:empty { display: none; }
+@media (min-width: 640px) { .talk-chips { flex-wrap: wrap; } }
+.talk-hint { visibility: hidden; }
+@media (hover: hover) and (pointer: fine) { .talk-hint { visibility: visible; } }
 .talk-chip { flex-shrink: 0; padding: 6px 12px; border-radius: 9999px; border: 1px solid rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.08); color: #fde68a; font-size: 12px; white-space: nowrap; }
 .talk-chip:hover { background: rgba(245, 158, 11, 0.2); }
 .talk-sheet { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 16px; background: #0f172a; border: 1px solid rgba(245, 158, 11, 0.35); }

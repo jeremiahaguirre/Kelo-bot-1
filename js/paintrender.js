@@ -806,11 +806,11 @@ function artStillLife(ctx, rng, spec) {
       }
       const items = (spec.items && spec.items.length ? spec.items : ['A ceramic jug', 'An apple', 'An orange']).slice(0, 4).map(artStillLifeShape);
       if (items.length < 3) items.push(artStillLifeShape('a pear'));
-      const slots = [[0.3, 0.7, 1.0], [0.52, 0.66, 1.2], [0.7, 0.72, 0.9], [0.42, 0.8, 0.8]];
+      const slots = [[0.36, 0.74, 1.0], [0.58, 0.7, 1.15], [0.76, 0.78, 0.95], [0.2, 0.86, 0.85]];
       items.sort((a, b) => (b.kind === 'vase' || b.kind === 'uke') - (a.kind === 'vase' || a.kind === 'uke'));
       items.forEach((it, i) => {
         const [fx, fy, sc] = slots[i % slots.length];
-        const x = ART_W * fx + (rng() - 0.5) * 10, y = ART_H * fy, s = 46 * sc;
+        const x = ART_W * fx + (rng() - 0.5) * 10, y = ART_H * fy, s = 82 * sc;
         // cast shadow to the right
         ctx.fillStyle = 'rgba(25,15,8,0.45)';
         ctx.beginPath();
@@ -985,7 +985,7 @@ function paintingSceneRef(spec) {
         if (subject === 'wildlife') {
           if (spec.deer !== false) {
             const n = 1 + Math.floor(rng() * 3);
-            for (let i = 0; i < n; i++) artDeer(ctx, ART_W * (0.3 + i * 0.2 + (rng() - 0.5) * 0.08), ART_H * (0.78 + i * 0.05), 70 - i * 6, rng() < 0.5 ? 1 : -1, i === 1 || rng() < 0.3, rng, wob);
+            for (let i = 0; i < n; i++) artDeer(ctx, ART_W * (0.3 + i * 0.22 + (rng() - 0.5) * 0.08), ART_H * (0.8 + i * 0.05), 120 - i * 12, rng() < 0.5 ? 1 : -1, i === 1 || rng() < 0.3, rng, wob);
           }
           if (spec.birds !== false) artBirds(ctx, rng, 5 + Math.floor(rng() * 4), ART_W * 0.6, horizon * 0.35, 150, '#1f2937');
         }
@@ -1284,7 +1284,7 @@ async function artOilPainting(scene, spec, rng, q, step) {
       const radii = q > 0.65 ? [13, 8, 4.5, 2.6] : q > 0.35 ? [14, 8, 4.5] : [16, 10];
       await artStrokeLayers(out, hc, src, dir, {
         radii, blurK: 0.6, gridK: 0.95, threshold: 0.09 - q * 0.04, lenMin: 2 + q * 2, lenMax: 5 + q * 6, stepK: 0.9, stiff: 0.55, jitter: 0.25 + (1 - q) * 0.6, stopDiff: 0.16,
-        wetMix: 0.45, maxBristles: 12, streak: 0.28, bodyAlpha: 0.92, bristleAlpha: 0.9, dryTail: true, thick: 110, ridge: 70, pile: 90,
+        wetMix: 0.45, maxBristles: 12, streak: 0.4, bodyAlpha: 0.92, bristleAlpha: 0.9, dryTail: true, thick: 110, ridge: 70, pile: 90,
         colorize: (c, r) => artSaturate(artMuddy(c, q, r, 0.4), 1.12)
       }, rng, step, 0.05, 0.92);
       // Thick palette-knife highlights where the light is brightest (snow, the sun, its path on the water)
@@ -1313,7 +1313,7 @@ async function artAcrylicPainting(scene, spec, rng, q, step) {
       // Flat bold colour: the scene simplified to a few saturated colours, painted in layers
       const raw = artChannels(scene.ref);
       const blurred = artBlurChannels(raw, 2);
-      const pal = artPalette(blurred, Math.round(9 + q * 7), rng).map(c => artSaturate(c, 1.3));
+      const pal = artPalette(blurred, Math.round(10 + q * 8), rng).map(c => artSaturate(c, 1.15));
       const flat = { r: new Float32Array(raw.r.length), g: new Float32Array(raw.r.length), b: new Float32Array(raw.r.length), w: ART_W, h: ART_H };
       for (let i = 0; i < flat.r.length; i++) {
         const k = artNearest(pal, blurred.r[i], blurred.g[i], blurred.b[i]);
@@ -1434,7 +1434,7 @@ async function artWatercolourPainting(scene, spec, rng, q, step) {
         for (let y = Math.max(0, cy - rad * 1.3 | 0); y < Math.min(H, cy + rad * 1.3); y++) for (let x = Math.max(0, cx - rad * 1.3 | 0); x < Math.min(W, cx + rad * 1.3); x++) {
           const i = y * W + x;
           const a = Math.atan2(y - cy, x - cx);
-          const rr = rad * (0.85 + 0.25 * Math.sin(a * 5 + n) + 0.1 * (gran[i] - 0.5));
+          const rr = rad * (0.85 + 0.12 * Math.sin(a * 3 + n * 1.7) + 0.08 * Math.sin(a * 7 + n) + 0.35 * (gran[i] - 0.5));
           const d = Math.hypot(x - cx, y - cy);
           if (d < rr) { const k = 0.6 + 0.4 * (d / rr); accR[i] *= k; accG[i] *= k; accB[i] *= k; }
           else if (d < rr + 2.2) { const k = 1.25; accR[i] *= k; accG[i] *= k; accB[i] *= k; }
@@ -1680,20 +1680,20 @@ async function artInkPainting(scene, spec, rng, q, step) {
       const lines = [];
       for (let n = 0; n < 2600; n++) {
         const x0 = 4 + rng() * (W - 8), y0 = 4 + rng() * (H - 8), i0 = (y0 | 0) * W + (x0 | 0);
-        if (used[i0] || mag[i0] < maxM * (0.28 - q * 0.06)) continue;
+        if (used[i0] || mag[i0] < maxM * (0.34 - q * 0.06)) continue;
         const pts = [[x0, y0]];
         let x = x0, y = y0, pdx = 0, pdy = 0;
-        for (let k = 0; k < 26; k++) {
+        for (let k = 0; k < 60; k++) {
           const ii = (Math.max(0, Math.min(H - 1, y | 0))) * W + Math.max(0, Math.min(W - 1, x | 0));
           let dx = Math.cos(dir.ang[ii]), dy = Math.sin(dir.ang[ii]);
           if (k && dx * pdx + dy * pdy < 0) { dx = -dx; dy = -dy; }
           x += dx * 2.5; y += dy * 2.5;
           const jj = (Math.max(0, Math.min(H - 1, y | 0))) * W + Math.max(0, Math.min(W - 1, x | 0));
-          if (mag[jj] < maxM * 0.18 || used[jj]) break;
+          if (mag[jj] < maxM * 0.14 || used[jj]) break;
           pts.push([x, y]);
           pdx = dx; pdy = dy;
         }
-        if (pts.length < 4) continue;
+        if (pts.length < 9) continue;
         pts.forEach(([px, py]) => {
           for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) {
             const yy = (py | 0) + dy, xx = (px | 0) + dx;

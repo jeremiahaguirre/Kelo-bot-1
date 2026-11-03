@@ -450,7 +450,7 @@ function talkScrollToLatest(smooth) {
 function talkSuggestionList() {
       const fresh = !state.chatLog.some(m => !m.isBot);
       const has = kind => typeof skillCandidates === 'function' && skillCandidates().some(c => c.kind === kind || (kind === 'telescope' && c.telescope));
-      if (state.isSleeping) return ['How did you sleep?', 'What are you dreaming about?'];
+      if (state.isSleeping) return ['Sleep well, Kelo-1', 'What are you dreaming about?'];
       const list = fresh ? ['Hi Kelo-1! 👋', 'What are you doing?'] : ['What are you doing?'];
       if (has('air')) list.push('Try flying your helicopter');
       list.push('Paint me something', 'How are you feeling?');

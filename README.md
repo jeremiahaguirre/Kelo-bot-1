@@ -135,6 +135,7 @@ Kelo-bot-1/
 │   ├── landscape.js     # Chopping trees, planting, roads and hills, and undoing them
 │   ├── groundwork.js    # Researching how roads, paving, earthwork and planting are done; the right tools, used in turn
 │   ├── skills.js        # Real skills: practising the vehicles, telescope and hobbies he was given; doing what visitors ask
+│   ├── trips.js         # Vehicle terrain rules, a trip planner, trailers (snowmobile, boat, lowboy) with hitch physics, one of each vehicle
 │   ├── projects.js      # Real builds: finding plans online, asking for materials (or sawing his own logs), building them
 │   ├── town.js          # Keeps the town free of his builds (the beach is fine)
 │   ├── coderequests.js  # Code requests: features he asks his human to code into his world

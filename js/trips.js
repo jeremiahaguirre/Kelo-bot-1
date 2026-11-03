@@ -515,11 +515,21 @@ function tripFrame() {
           tripPlaceTrailer(tr, rm, hitch.x - Math.cos(b) * L, hitch.z + Math.sin(b) * L, b);
         }
       }
+      // Winching a boat on or floating it off: it slides between the deck and the water
+      const sl = tripRig.slide;
+      if (sl) {
+        const cm = tripMesh(state.vehicles.find(v => v.id === sl.cargoId));
+        if (cm) {
+          const p = sl.p;
+          cm.position.set(sl.from.x + (sl.to.x - sl.from.x) * p, sl.from.y + (sl.to.y - sl.from.y) * p, sl.from.z + (sl.to.z - sl.from.z) * p);
+          cm.rotation.set(0, sl.b, 0);
+        }
+      }
       // Anything strapped on a trailer sits on its deck and goes where it goes
       Object.keys(ts.loads || {}).forEach(tid => {
         const tr = state.vehicles.find(v => v.id === tid), cargo = state.vehicles.find(v => v.id === ts.loads[tid]);
         const rm = tripMesh(tr), cm = tripMesh(cargo);
-        if (!rm || !cm || state.riding === cargo.id) return;
+        if (!rm || !cm || state.riding === cargo.id || (sl && sl.cargoId === cargo.id)) return;
         if (!(h && state.riding === h.tow && h.trailer === tid)) tripPlaceTrailer(tr, rm, tr.x, tr.z, tr.rotY || 0);
         rm.updateMatrixWorld(true);
         const box = tripCargoBox(cargo);
@@ -545,6 +555,17 @@ function tripFrame() {
         }
       }
     }
+
+// A new trailer parks in the trailer row; a new boat goes on an empty boat trailer if he has one
+if (typeof registerVehicle === 'function') {
+  const registerVehicleBeforeTrips = registerVehicle;
+  registerVehicle = function (name) {
+    const v = registerVehicleBeforeTrips(name);
+    if (v && trailerKindOf(v.name)) { parkNewTrailer(v); renderVehicles3D(); }
+    else if (v && vehicleKindKey(v.name) === 'boat' && stowBoatOnTrailer(v)) renderVehicles3D();
+    return v;
+  };
+}
 
 // Run right after updateVehicles in the same frame (js/scene.js calls it by name)
 if (typeof updateVehicles === 'function') {
@@ -830,3 +851,547 @@ function requestTripGear(plan) {
       if (asked) showToast(`🚚 Kelo-1 asked for what he needs to haul the ${tripPlain(plan.vehicle.name).toLowerCase()}`);
       return asked;
     }
+
+// --- Driving, hitching, loading ---------------------------------------------------------------------
+const tripSleep = ms => new Promise(r => setTimeout(r, ms));
+
+function tripFwd(b) {
+      return { x: Math.cos(b), z: -Math.sin(b) };
+    }
+
+// Get to a point, even if something else nudges where he's headed
+async function tripGoTo(p, ms = 70000) {
+      const started = Date.now();
+      state.targetPos = { x: p.x, z: p.z };
+      while (Date.now() - started < ms && Math.hypot(state.botPos.x - p.x, state.botPos.z - p.z) > 1.0) {
+        if (Math.hypot(state.targetPos.x - p.x, state.targetPos.z - p.z) > 0.1) state.targetPos = { x: p.x, z: p.z };
+        await waitForArrival(3000);
+      }
+    }
+
+function tripSetRiding(v, slow = 1) {
+      const type = vehicleTypeFor(v.name) || { speed: 1.5, mode: 'land' };
+      state.riding = v.id;
+      state.ridingSpeed = Math.max(0.15, (type.speed || 1.5) * slow);
+      state.ridingMode = type.mode === 'water' ? 'water' : 'land';
+    }
+
+async function tripBoard(v, label) {
+      if (state.riding !== v.id) {
+        if (state.riding) tripExitVehicle(state.vehicles.find(o => o.id === state.riding));
+        state.moodTitle = `Walking to the ${tripPlain(v.name).toLowerCase()}`;
+        renderAllUI();
+        await tripGoTo(boardingSpot(v), 60000);
+        tripSetRiding(v, state.tripState && state.tripState.hitch && state.tripState.hitch.tow === v.id ? 0.8 : 1);
+        state.botPos = { x: v.x, z: v.z };
+        state.targetPos = { ...state.botPos };
+        state.botRotY = (v.rotY || 0) + Math.PI / 2;
+      }
+      if (label) { state.moodTitle = label.slice(0, 80); renderAllUI(); }
+    }
+
+async function tripDrive(v, pts, label) {
+      await tripBoard(v, label);
+      let driven = 0, last = { ...state.botPos };
+      for (const p of pts) {
+        await tripGoTo(p, 70000);
+        driven += Math.hypot(state.botPos.x - last.x, state.botPos.z - last.z);
+        last = { ...state.botPos };
+      }
+      v.x = Math.round(state.botPos.x * 10) / 10;
+      v.z = Math.round(state.botPos.z * 10) / 10;
+      v.rotY = state.botRotY - Math.PI / 2;
+      if (typeof burnFuel === 'function' && driven > 0) burnFuel(v, driven);
+      return driven;
+    }
+
+function tripExitVehicle(v) {
+      if (!v) return;
+      if (state.riding === v.id) {
+        v.x = Math.round(state.botPos.x * 10) / 10;
+        v.z = Math.round(state.botPos.z * 10) / 10;
+        v.rotY = state.botRotY - Math.PI / 2;
+      }
+      state.riding = null;
+      state.ridingSpeed = 1;
+      state.ridingMode = null;
+      renderVehicles3D();
+      const type = vehicleTypeFor(v.name);
+      if (!type || type.mode !== 'water') state.botPos = boardingSpot(v);
+      state.targetPos = { ...state.botPos };
+    }
+
+// Backing up in a straight line, facing the way it already faces
+async function tripReverse(v, to, speed = 1.3) {
+      const rot = state.botRotY, from = { ...state.botPos };
+      const len = Math.hypot(to.x - from.x, to.z - from.z), steps = Math.max(1, Math.round(len / speed / 0.05));
+      for (let s = 1; s <= steps; s++) {
+        state.botPos = { x: from.x + (to.x - from.x) * s / steps, z: from.z + (to.z - from.z) * s / steps };
+        state.targetPos = { ...state.botPos };
+        state.botRotY = rot;
+        await tripSleep(50);
+      }
+      v.x = state.botPos.x; v.z = state.botPos.z; v.rotY = rot - Math.PI / 2;
+    }
+
+// Turning the vehicle to face a heading, a little at a time
+async function tripTurnTo(b) {
+      const want = b + Math.PI / 2;
+      let d = ((want - state.botRotY) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
+      const steps = Math.max(1, Math.round(Math.abs(d) / 0.08));
+      for (let s = 0; s < steps; s++) { state.botRotY += d / steps; state.targetPos = { ...state.botPos }; await tripSleep(40); }
+    }
+
+async function tripHitchUp(tow, trailer) {
+      const ts = tripStateNow();
+      if (ts.hitch && ts.hitch.tow === tow.id && ts.hitch.trailer === trailer.id) return;
+      const rm = tripMesh(trailer);
+      const b = trailer.rotY || 0, f = tripFwd(b), L = (rm && rm.userData.tongue) || 4, hx = tripHitchX(tow);
+      const coupler = { x: trailer.x + f.x * L, z: trailer.z + f.z * L };
+      const spot = { x: coupler.x - f.x * hx, z: coupler.z - f.z * hx };
+      const approach = { x: spot.x + f.x * 3.5, z: spot.z + f.z * 3.5 };
+      await tripDrive(tow, [approach], `Backing the ${tripPlain(tow.name).toLowerCase()} up to the ${tripPlain(trailer.name).toLowerCase()}`);
+      await tripTurnTo(b);
+      state.speechBubble = 'Back... back... a little more... stop.';
+      renderAllUI();
+      await tripReverse(tow, spot, 1.0);
+      ts.hitch = { tow: tow.id, trailer: trailer.id, home: { x: spot.x, z: spot.z } };
+      state.speechBubble = 'Clunk. Coupler on the ball, latch locked, safety chains crossed, lights plugged in.';
+      renderAllUI();
+      await tripSleep(1800);
+    }
+
+function tripUnhitch() {
+      const ts = tripStateNow();
+      ts.hitch = null;
+    }
+
+function tripRampDown(trailer, down) {
+      const rm = tripMesh(trailer);
+      if (rm && rm.userData.ramp) rm.userData.ramp.rotation.z = down ? Math.asin(Math.min(0.9, (rm.userData.deckY || 0.7) / 2)) : -1.4;
+    }
+
+function tripDeckPoints(cargo, trailer) {
+      const rm = tripMesh(trailer), u = rm ? rm.userData : {};
+      const b = trailer.rotY || 0, f = tripFwd(b), back = (u.deckLen || 4.8) / 2 + 2.4;
+      const foot = { x: trailer.x - f.x * back, z: trailer.z - f.z * back };
+      foot.y = getIslandGroundHeight(foot.x, foot.z);
+      let deckY = (u.deckY || 0.7) + getIslandGroundHeight(trailer.x, trailer.z);
+      if (rm) { rm.updateMatrixWorld(true); tripV3.set(0, u.deckY || 0.7, 0); rm.localToWorld(tripV3); deckY = tripV3.y; }
+      const box = tripCargoBox(cargo);
+      return { foot, deck: { x: trailer.x, z: trailer.z, y: deckY - box.bottom }, b, f };
+    }
+
+// Ride it up the ramp onto the deck (a boat is winched up instead)
+async function tripLoad(cargo, trailer, label) {
+      const ts = tripStateNow(), plain = tripPlain(cargo.name).toLowerCase();
+      tripRampDown(trailer, true);
+      const { foot, deck, b, f } = tripDeckPoints(cargo, trailer);
+      if (vehicleKindKey(cargo.name) === 'boat') {
+        state.moodTitle = `Winching the ${plain} onto the trailer`;
+        state.speechBubble = 'Hook on the bow eye... crank, crank, crank.';
+        renderAllUI();
+        await tripSlide(cargo, { x: cargo.x, z: cargo.z, y: WATER_LEVEL }, deck, b, 4000);
+      } else {
+        if (Math.hypot(cargo.x - foot.x, cargo.z - foot.z) > 1.5) await tripDrive(cargo, [foot], `Creeping the ${plain} over to the ramp`);
+        else await tripBoard(cargo);
+        await tripTurnTo(b);
+        state.moodTitle = label || `Riding the ${plain} up the ramp`;
+        state.speechBubble = 'Slow and steady up the ramp...';
+        renderAllUI();
+        tripRig.ramp = { cargoId: cargo.id, from: foot, to: deck };
+        tripSetRiding(cargo, 0.3);
+        await tripReverse(cargo, deck, 0.9); // at a crawl, in a straight line up the ramp
+        tripRig.ramp = null;
+        state.riding = null; state.ridingSpeed = 1; state.ridingMode = null;
+      }
+      ts.loads[trailer.id] = cargo.id;
+      Object.assign(cargo, { x: trailer.x, z: trailer.z, rotY: b });
+      tripRampDown(trailer, false);
+      const side = { x: trailer.x + Math.sin(b) * 2.2, z: trailer.z + Math.cos(b) * 2.2 };
+      state.botPos = side; state.targetPos = { ...side };
+      renderAllUI();
+      await tripSleep(600);
+    }
+
+// Down the ramp and off, still in the seat (or floated off into the water)
+async function tripUnload(cargo, trailer, waterAt = null) {
+      const ts = tripStateNow(), plain = tripPlain(cargo.name).toLowerCase();
+      const { foot, deck, b } = tripDeckPoints(cargo, trailer);
+      delete ts.loads[trailer.id];
+      if (waterAt) {
+        state.moodTitle = `Floating the ${plain} off the trailer`;
+        state.speechBubble = 'Unhook the winch strap... and off she floats.';
+        renderAllUI();
+        await tripSlide(cargo, deck, { x: waterAt.x, z: waterAt.z, y: WATER_LEVEL - 0.05 }, b, 3500);
+        Object.assign(cargo, { x: waterAt.x, z: waterAt.z, rotY: b });
+        renderVehicles3D();
+        return;
+      }
+      tripRampDown(trailer, true);
+      state.botPos = { x: deck.x, z: deck.z };
+      tripSetRiding(cargo, 0.3);
+      state.botRotY = b + Math.PI / 2;
+      state.moodTitle = `Backing the ${plain} down the ramp`;
+      state.speechBubble = 'Easy... easy... and down.';
+      renderAllUI();
+      tripRig.ramp = { cargoId: cargo.id, from: foot, to: deck };
+      await tripReverse(cargo, foot, 0.9);
+      tripRig.ramp = null;
+      tripRampDown(trailer, false);
+      Object.assign(cargo, { x: foot.x, z: foot.z, rotY: b });
+      tripSetRiding(cargo);
+    }
+
+async function tripSlide(cargo, from, to, b, ms) {
+      tripRig.slide = { cargoId: cargo.id, from, to, b, p: 0 };
+      const steps = Math.round(ms / 50);
+      for (let s = 1; s <= steps; s++) { tripRig.slide.p = s / steps; await tripSleep(50); }
+      tripRig.slide = null;
+    }
+
+async function tripStrap(trailer, on) {
+      const rm = tripMesh(trailer), cargo = tripCargoOn(trailer);
+      if (!rm || !rm.userData.straps) return;
+      const straps = rm.userData.straps;
+      if (!on) {
+        state.speechBubble = 'Ratchets released, straps off.';
+        renderAllUI();
+        await tripSleep(1500);
+        straps.visible = false;
+        return;
+      }
+      while (straps.children.length) straps.remove(straps.children[0]);
+      const u = rm.userData, box = cargo ? tripCargoBox(cargo) : { top: 1, bottom: 0 };
+      const top = u.deckY + (box.top - box.bottom) * 0.8, half = (u.width || 2) / 2;
+      [-0.28, 0.28].forEach(k => {
+        const x = k * (u.deckLen || 4.8);
+        straps.add(rod([x, u.deckY, -half], [x, top, -0.25], 0.035, 0xf97316));
+        straps.add(rod([x, u.deckY, half], [x, top, 0.25], 0.035, 0xf97316));
+        straps.add(rod([x, top, -0.25], [x, top, 0.25], 0.035, 0xf97316));
+      });
+      // He walks round both sides, hooking and ratcheting
+      const b = trailer.rotY || 0;
+      for (const sgn of [1, -1]) {
+        await tripGoTo({ x: trailer.x + Math.sin(b) * 2.0 * sgn, z: trailer.z + Math.cos(b) * 2.0 * sgn }, 15000);
+        state.speechBubble = sgn > 0 ? 'Hook it on the rail, over the top... click, click, click.' : 'And this side. Click, click, click. Tight.';
+        renderAllUI();
+        if (sgn > 0) straps.visible = true;
+        await tripSleep(1600);
+      }
+    }
+
+// The very first time he tries to ride a snowmobile across dry ground, it bogs down
+async function tripBogDown(v, originLabel) {
+      const ts = tripStateNow(), plain = tripPlain(v.name).toLowerCase();
+      state.isPracticing = true;
+      try {
+        await tripBoard(v, `Trying to ride the ${plain} on dry ground`);
+        state.speechBubble = "Let's go! Throttle on...";
+        renderAllUI();
+        tripSetRiding(v, 0.08);
+        const a = v.rotY || 0;
+        state.targetPos = { x: v.x + Math.cos(a) * 3, z: v.z - Math.sin(a) * 3 };
+        await tripSleep(4500);
+        state.targetPos = { ...state.botPos };
+        state.moodEmoji = '😣';
+        state.moodTitle = `The ${plain} bogged down`;
+        state.speechBubble = `The track's just spinning and grinding on the gravel. It barely moved. A ${plain} is made for snow: on dry ground it bogs down and wrecks its track.`;
+        renderAllUI();
+        await tripSleep(3500);
+        tripExitVehicle(v);
+        ts.bogged.snowmobile = Date.now();
+        state.diaryEntries.unshift({
+          time: originLabel, location: currentPlaceLabel(), mood: `😣 The ${plain} bogged down`.slice(0, 80),
+          vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
+          text: `Dear Diary, I tried to ride the ${plain} out of the yard and it just ground into the gravel. Its track and skis need snow under them. If I want to ride it somewhere snowy, I have to get it there some other way.`
+        });
+        savePersistentBrainState();
+      } finally {
+        if (state.riding === v.id) tripExitVehicle(v);
+        state.isPracticing = false;
+      }
+    }
+
+// --- Taking a trip ----------------------------------------------------------------------------------
+function tripBusy() {
+      return state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || state.isBrowsing;
+    }
+
+async function takeTrip(name, to = null, why = '', originLabel = 'Taking a Trip') {
+      if (tripBusy()) return false;
+      const ts = tripStateNow();
+      const v = typeof name === 'object' && name ? name : findTripVehicle(name);
+      if (!v) {
+        tripSay(`trip:none:${String(name).toLowerCase()}`, `I don't have ${/^(an?|the|my)\s/i.test(String(name)) ? String(name).toLowerCase() : 'a ' + String(name).toLowerCase()} to take anywhere.`);
+        return 'no-vehicle';
+      }
+      const plan = planTrip(v, to);
+      const plain = tripPlain(v.name).toLowerCase();
+      ts.last = { at: Date.now(), vehicle: v.name, to: plan.dest.label, ok: plan.ok, mode: plan.mode, why: (plan.ok ? plan.reasoning || `The ${plain} can get there by itself.` : plan.why).slice(0, 240) };
+      if (!plan.ok) {
+        if (tripSay(`trip:${plan.key}:no`, plan.why)) {
+          state.diaryEntries.unshift({
+            time: originLabel, location: currentPlaceLabel(), mood: `🤔 Not a trip for the ${plain}`.slice(0, 80),
+            vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '', text: `Dear Diary, ${plan.why} I'll do something else instead.`
+          });
+        }
+        if (typeof coolDownActivity === 'function') coolDownActivity(`trip:${plan.key}`);
+        return 'cannot';
+      }
+      if (plan.mode === 'balloon') return typeof flyBalloon === 'function' ? flyBalloon(originLabel) : false;
+      if (plan.mode === 'boat-dock') return goBoating(originLabel);
+      // The first time, he finds out the hard way that a snowmobile won't go on dry ground
+      if (plan.mode === 'haul' && plan.key === 'snowmobile' && !ts.bogged.snowmobile && !tripLoadOf(v) && !plan.learn.includes(v.name) && fuelLeft(v) > 0) {
+        await tripBogDown(v, originLabel);
+      }
+      if (plan.missing.length) {
+        if (!ts.researched[plan.key] && plan.mode === 'haul') await researchTransport(plan, originLabel);
+        else tripSay(`trip:${plan.key}:need`, `${plan.reasoning || ''} I'm still waiting for ${plan.missing.map(m => tripPlain(m.item).toLowerCase()).join(' and ')}.`.trim());
+        requestTripGear(plan);
+        if (typeof coolDownActivity === 'function') coolDownActivity(`trip:${plan.key}`);
+        renderAllUI();
+        return 'waiting-for-gear';
+      }
+      if (plan.learn.length) {
+        tripSay(`trip:${plan.key}:learn`, `Before I take the ${plain} anywhere, I want to know how to handle the ${tripPlain(plan.learn[0]).toLowerCase()}.`);
+        await learnToUse(plan.learn[0], 'Learning Before a Trip');
+        return 'learning';
+      }
+      for (const f of plan.fuel) {
+        if (fuelLeft(f.v) >= f.need) continue;
+        const fuel = fuelNeededBy(f.v), can = typeof fuelCanFor === 'function' ? fuelCanFor(fuel) : null, fp = tripPlain(f.v.name).toLowerCase();
+        tripSay(`trip:fuel:${f.v.id}`, `The ${fp} has ${Math.round(fuelLeft(f.v))}% ${fuel} left, and this trip there and back takes about ${f.need}%. ${can ? "I'll fill it up first." : "I'll need more fuel first."}`);
+        if (can && !(typeof activityCoolingDown === 'function' && activityCoolingDown('refuel:' + fuel))) {
+          await refuelWith(can, 'Filling Up Before a Trip');
+          if (fuelLeft(f.v) >= f.need) continue;
+        } else if (!can) requestFuel(fuel, `I want to take the ${plain} ${plan.dest.label}, and the ${fp} doesn't have enough ${fuel} for the trip there and back.`);
+        if (typeof coolDownActivity === 'function') coolDownActivity(`trip:${plan.key}`);
+        return 'needs-fuel';
+      }
+      if (tripBusy()) return false;
+      state.isPracticing = true;
+      state.currentLocKey = 'custom';
+      state.customPlaceName = plan.dest.label;
+      state.moodEmoji = '🧭';
+      try {
+        if (plan.mode === 'haul') await runHaulTrip(plan, why);
+        else if (plan.mode === 'fly') await runFlyTrip(plan);
+        else await runDirectTrip(plan);
+        const skill = typeof skillCandidates === 'function' && skillCandidates().find(c => c.vehicle === v);
+        if (skill && typeof gainSkill === 'function') gainSkill(skill.key, skill.label, 8);
+        state.happiness = Math.min(100, state.happiness + 8);
+        state.diaryEntries.unshift({
+          time: originLabel, location: plan.dest.label, mood: `${plan.key === 'snowmobile' ? '🏂' : plan.key === 'boat' ? '🛶' : '🚚'} A real trip with the ${plain}`.slice(0, 80),
+          vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
+          text: plan.mode === 'haul'
+            ? `Dear Diary, ${plan.reasoning} So I did: hitched up the ${tripPlain(plan.trailer.name).toLowerCase()}, loaded the ${plain}, strapped it down, towed it with the ${tripPlain(plan.tow.name).toLowerCase()}, unloaded it ${plan.key === 'snowmobile' ? 'at the snow line and rode it on the snow' : plan.key === 'boat' ? 'into the water and rowed out' : 'and put it to work'}, then loaded it up and came home.${why ? ' ' + why : ''}`
+            : `Dear Diary, I took the ${plain} ${plan.dest.label}. It could get there on its own ground the whole way.${why ? ' ' + why : ''}`
+        });
+        ts.trips = (ts.trips || 0) + 1;
+        savePersistentBrainState();
+        renderAllUI();
+        return true;
+      } finally {
+        if (state.riding) tripExitVehicle(state.vehicles.find(o => o.id === state.riding));
+        tripRig.ramp = null; tripRig.slide = null;
+        state.isPracticing = false;
+        state.microPose = 'normal';
+      }
+    }
+
+async function runDirectTrip(plan) {
+      const v = plan.vehicle, plain = tripPlain(v.name).toLowerCase();
+      const trailer = tripLoadOf(v);
+      const home = trailer ? null : { x: v.x, z: v.z };
+      if (trailer) { await tripStrap(trailer, false); await tripUnload(v, trailer); }
+      const back = [...plan.route].reverse();
+      await tripDrive(v, plan.route, `Riding the ${plain} ${plan.dest.label}`);
+      state.speechBubble = plan.key === 'snowmobile' ? 'Woohoo! This is what it was made for.' : `Made it, all on the right ground for the ${plain}.`;
+      renderAllUI();
+      await tripSleep(2500);
+      if (trailer) {
+        await tripDrive(v, back.slice(1), `Riding the ${plain} back to its trailer`);
+        await tripLoad(v, trailer);
+        await tripStrap(trailer, true);
+      } else {
+        await tripDrive(v, [...back.slice(1), home], `Bringing the ${plain} home`);
+        tripExitVehicle(v);
+      }
+    }
+
+async function runFlyTrip(plan) {
+      const v = plan.vehicle, home = { x: v.x, z: v.z };
+      await driveVehicle(v, plan.landing, `Flying the ${tripPlain(v.name).toLowerCase()} ${plan.dest.label}`);
+      await tripSleep(2500);
+      await driveVehicle(v, home, `Flying the ${tripPlain(v.name).toLowerCase()} home`);
+    }
+
+async function runHaulTrip(plan) {
+      const { vehicle: cargo, tow, trailer, key } = plan;
+      const cp = tripPlain(cargo.name).toLowerCase(), tp = tripPlain(tow.name).toLowerCase(), trp = tripPlain(trailer.name).toLowerCase();
+      const towHome = { x: tow.x, z: tow.z, rotY: tow.rotY || 0 };
+      state.speechBubble = plan.reasoning;
+      renderAllUI();
+      await tripSleep(2500);
+      // 1. Hitch up and load
+      await tripHitchUp(tow, trailer);
+      if (tripLoadOf(cargo) !== trailer) {
+        await tripLoad(cargo, trailer);
+        await tripStrap(trailer, true);
+      } else if (!(tripMesh(trailer) && tripMesh(trailer).userData.straps.visible)) await tripStrap(trailer, true);
+      // 2. Tow it to where its own ground starts (the truck stays on its own ground)
+      if (key === 'boat') {
+        const L = BOAT_LAUNCH;
+        await tripDrive(tow, [...plan.towRoute, { x: L.x, z: L.startZ }, { x: L.x, z: L.pullOutZ }], `Towing the ${cp} to the beach`);
+        state.speechBubble = 'Now back it down the beach, slowly, until the boat floats.';
+        renderAllUI();
+        await tripTurnTo(Math.PI / 2);
+        await tripReverse(tow, { x: L.x, z: L.backZ }, 1.0);
+        tripExitVehicle(tow);
+        await tripStrap(trailer, false);
+        const rear = tripDeckPoints(cargo, trailer);
+        await tripUnload(cargo, trailer, { x: rear.foot.x, z: Math.max(L.waterZ, rear.foot.z + 1) });
+        // 3. Out on the water and back
+        await driveVehicle(cargo, { x: plan.dest.x, z: Math.max(14, plan.dest.z) }, `Rowing the ${cp} out on the lake`);
+        state.speechBubble = pick(['Launched from my own trailer! The lake is huge from out here.', 'No dock needed: I backed it right in.', 'The water is so calm today.']);
+        renderAllUI();
+        await tripSleep(2500);
+        await driveVehicle(cargo, { x: rear.foot.x, z: Math.max(L.waterZ, rear.foot.z + 1) }, `Rowing the ${cp} back to the trailer`);
+        state.riding = null; state.ridingSpeed = 1; state.ridingMode = null;
+        state.botPos = { x: L.x + 2.2, z: 8.2 }; state.targetPos = { ...state.botPos };
+        await tripLoad(cargo, trailer);
+        await tripStrap(trailer, true);
+        await tripDrive(tow, [{ x: L.x, z: L.pullOutZ }], `Pulling the ${cp} out of the water`);
+      } else {
+        await tripDrive(tow, plan.towRoute, `Towing the ${cp} on the ${trp}`);
+        state.speechBubble = key === 'snowmobile' ? "This is as far as the truck should go. The snow starts right here." : 'Here we are.';
+        renderAllUI();
+        tripExitVehicle(tow);
+        await tripSleep(1200);
+        await tripStrap(trailer, false);
+        await tripUnload(cargo, trailer);
+        // 3. Use it on its own ground, then back to the trailer
+        const foot = { x: cargo.x, z: cargo.z };
+        if (key === 'excavator') {
+          await tripDrive(cargo, plan.cargoRoute.slice(1), 'Crawling the excavator to the work');
+          const ex = tripMesh(cargo);
+          state.moodTitle = 'Digging with the excavator';
+          for (let i = 0; i < 4; i++) {
+            if (ex && ex.userData.house) { ex.userData.house.rotation.y = i % 2 ? 1.0 : -0.4; if (ex.userData.boom) ex.userData.boom.rotation.z = i % 2 ? 0.9 : 0.4; }
+            await tripSleep(1100);
+          }
+          if (ex && ex.userData.house) ex.userData.house.rotation.y = 0;
+        } else {
+          state.speechBubble = 'Woohoo! Snow under the track at last.';
+          await tripDrive(cargo, plan.cargoRoute.length > 1 ? plan.cargoRoute.slice(1) : plan.cargoRoute, `Riding the ${cp} on the snow`);
+          await tripSleep(2000);
+          await tripDrive(cargo, [...plan.cargoRoute].reverse().slice(1), `Riding the ${cp} back to the trailer`);
+        }
+        await tripDrive(cargo, [foot], `Lining the ${cp} up with the ramp`);
+        await tripLoad(cargo, trailer);
+        await tripStrap(trailer, true);
+      }
+      // 4. Home, unhitch, park the truck
+      const hitchHome = (tripStateNow().hitch || {}).home || { x: towHome.x, z: towHome.z };
+      const cells = tripGridNow(), here = tripCellAt(cells, tow.x, tow.z), there = tripCellAt(cells, hitchHome.x, hitchHome.z);
+      tripAssumeChains = tripHasChains();
+      const flood = tripFlood(cells, plan.towKey, [here]);
+      tripAssumeChains = false;
+      const back = tripSimplify(tripPathTo(cells, flood, there) || []);
+      await tripDrive(tow, [...back, hitchHome], `Towing the ${cp} home`);
+      tripExitVehicle(tow);
+      tripUnhitch();
+      state.speechBubble = `Unhitched. The ${cp} stays strapped on its ${trp} for next time.`;
+      renderAllUI();
+      await tripSleep(1200);
+      await tripDrive(tow, [{ x: towHome.x, z: towHome.z }], `Parking the ${tp}`);
+      tripExitVehicle(tow);
+      tow.x = towHome.x; tow.z = towHome.z; tow.rotY = towHome.rotY;
+      renderVehicles3D();
+    }
+
+// --- Snow within reach? (cached: the skills list asks often) ---------------------------------------
+let tripSnowCache = { at: 0, season: '', ok: false };
+function snowmobileHasSnow(v) {
+      const season = typeof currentSeason === 'function' ? currentSeason() : '';
+      if (Date.now() - tripSnowCache.at < 60000 && tripSnowCache.season === season) return tripSnowCache.ok;
+      let ok = false;
+      try { ok = planTrip(v, 'mountain').ok; } catch (e) { ok = false; }
+      tripSnowCache = { at: Date.now(), season, ok };
+      return ok;
+    }
+
+// --- For his AI, and the Brain tab ------------------------------------------------------------------
+function vehicleReadiness(v) {
+      const key = vehicleKindKey(v.name);
+      if (key && (key.includes('trailer') || key === 'lowboy')) { const c = tripCargoOn(v); return c ? `carrying the ${tripPlain(c.name).toLowerCase()}` : 'empty'; }
+      const rule = typeof knowHowRule === 'function' && knowHowRule(v.name);
+      if (rule && !state.knowHow[rule.key]) return 'needs know-how';
+      if (typeof fuelNeededBy === 'function' && fuelNeededBy(v) && fuelLeft(v) <= 0) return 'empty tank';
+      if (key === 'snowmobile' && !(typeof inSnow === 'function' && inSnow(v))) return 'no snow here: needs hauling';
+      if (key === 'boat' && boatOnLand(v)) return 'on land: needs trailering to the water';
+      return 'ready';
+    }
+
+function vehiclesSummaryForAI() {
+      if (!state.vehicles.length) return 'none';
+      return state.vehicles.map(v => {
+        const fuel = typeof fuelNeededBy === 'function' && fuelNeededBy(v) ? `${Math.round(fuelLeft(v))}% ${fuelNeededBy(v)}` : 'no fuel needed';
+        const cond = Number.isFinite(v.condition) ? `, condition ${Math.round(v.condition)}%` : '';
+        return `${v.name} (${fuel}${cond}; at ${vehicleLocationLabel(v)}; ${vehicleReadiness(v)}; goes on ${terrainRuleText(v)})`;
+      }).join('; ');
+    }
+
+function tripSummaryForAI() {
+      const l = state.tripState && state.tripState.last;
+      return l ? `last trip plan: ${l.vehicle} to ${l.to}: ${l.why}` : 'no trips planned yet';
+    }
+
+// From an AI decision: "takeTrip": {"vehicle": ..., "to": ..., "why": ...}
+function applyTripDecision(decision) {
+      const t = decision && decision.takeTrip;
+      if (!t || typeof t !== 'object' || !t.vehicle) return false;
+      const v = findTripVehicle(String(t.vehicle).slice(0, 80));
+      const key = v ? vehicleKindKey(v.name) : vehicleKindKey(String(t.vehicle));
+      const k = `trip:${key || 'none'}`;
+      if (typeof activityCoolingDown === 'function' && activityCoolingDown(k)) return false;
+      doWhenFree(() => (typeof tryActivity === 'function' ? tryActivity(k, () => takeTrip(v || String(t.vehicle), String(t.to || ''), String(t.why || '').slice(0, 200), 'Decided to Take a Trip')) : takeTrip(v || String(t.vehicle), t.to, t.why)));
+      return true;
+    }
+
+function renderVehiclesList() {
+      const el = document.getElementById('vehiclesListContainer');
+      if (!el) return;
+      const html = state.vehicles.length ? state.vehicles.map(v => {
+        const key = vehicleKindKey(v.name);
+        const fuel = typeof fuelNeededBy === 'function' && fuelNeededBy(v) ? Math.round(fuelLeft(v)) : null;
+        const ready = vehicleReadiness(v);
+        const ok = ready === 'ready' || ready.startsWith('carrying') || ready === 'empty';
+        return `
+        <div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200 space-y-0.5">
+          <div class="flex items-center gap-2">
+            <span class="flex-1 font-semibold">${escapeHtml(v.name)}</span>
+            <span class="${ok ? 'text-emerald-300' : 'text-amber-300'}">${escapeHtml(ready)}</span>
+          </div>
+          <div class="flex items-center gap-2 text-slate-400">
+            ${fuel === null ? '<span>No fuel needed</span>' : `<span>⛽ ${fuel}%</span><span class="w-14 h-1.5 rounded bg-slate-700 overflow-hidden"><span class="block h-full ${fuel > 30 ? 'bg-emerald-400' : 'bg-rose-400'}" style="width:${fuel}%"></span></span>`}
+            <span class="flex-1 text-right">📍 ${escapeHtml(vehicleLocationLabel(v))}</span>
+          </div>
+          <div class="text-slate-500">${escapeHtml(((VEHICLE_TERRAIN[key] || {}).text || '').replace(/^./, c => c.toUpperCase()))}</div>
+        </div>`;
+      }).join('') : '<div class="text-[11px] text-slate-500 italic">No vehicles yet. He has to ask for each one.</div>';
+      if (typeof perfSetHtml === 'function') perfSetHtml(el, html); else el.innerHTML = html;
+    }
+
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    tripStateNow();
+    // Trailers that arrived before this file existed get a spot in the trailer row
+    state.vehicles.filter(v => trailerKindOf(v.name) && !TRAILER_SLOTS.some(([x, z]) => Math.hypot(v.x - x, v.z - z) < 5) && !(state.tripState.hitch && state.tripState.hitch.trailer === v.id)).forEach(parkNewTrailer);
+    state.riding = null;
+    renderVehicles3D();
+    renderVehiclesList();
+    setInterval(renderVehiclesList, 5000);
+  }, 50);
+});

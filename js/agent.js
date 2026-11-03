@@ -317,6 +317,7 @@ const state = {
   "jobKnowledge": {},
   "skills": {},
   "activityCooldowns": {},
+  "tripState": {},
   "recentDecisionTitles": [],
   "lastWeldAt": 0,
   "knowsSnow": false,
@@ -1026,7 +1027,8 @@ Return ONLY valid JSON matching this schema:
 
         // If Kelo-1 requested new gear on this tick, add it to his Supply Broker Requisitions inbox!
         if (synth.gearRequested && synth.gearRequested !== 'None') {
-          const alreadyAsked = state.requestsToUser.some(r => r.requestedGear === synth.gearRequested);
+          const alreadyAsked = state.requestsToUser.some(r => r.requestedGear === synth.gearRequested)
+            || (typeof vehicleRequestCheck === 'function' && vehicleRequestCheck(synth.gearRequested).blocked);
           if (!alreadyAsked) {
             state.requestsToUser.unshift({
               id: 'req-gear-' + Date.now(),
@@ -1823,7 +1825,8 @@ Current state:
 - How your body feels: ${typeof bodySymptoms === 'function' && bodySymptoms().length ? bodySymptoms().join('; ') : 'fine'}
 - Days you have been alive: ${typeof daysAlive === 'function' ? daysAlive() : 1}${typeof worldNow === 'function' ? ` (it is ${worldNow().season.toLowerCase()}, ${clockLabel(worldNow().hour)}${worldNow().isNight ? ', night' : ''})` : ''}
 - Digging: ${state.digSites.length ? state.digSites.map(d => `site (${d.x}, ${d.z}) ${d.depth.toFixed(1)} m deep, pile ${d.dirt.toFixed(1)}`).join('; ') : 'no digs yet'}; equipment: ${typeof hasEquipment === 'function' ? ['dig', 'rock', 'truck', 'excavator'].filter(hasEquipment).join(', ') || 'none' : 'none'}; finds so far: ${state.foundItems.map(f => f.name).join(', ') || 'none'}
-- Vehicles parked and ready: ${state.vehicles.map(v => typeof fuelNeededBy === 'function' && fuelNeededBy(v) ? `${v.name} (${Math.round(fuelLeft(v))}% ${fuelNeededBy(v)})` : v.name).join(', ') || 'none'}${state.knowsLakeDanger ? ' (you know you cannot breathe in deep water)' : ''}
+- Your vehicles (fuel, where, ready?, the ground each can go on): ${typeof vehiclesSummaryForAI === 'function' ? vehiclesSummaryForAI() : state.vehicles.map(v => v.name).join(', ') || 'none'}${state.knowsLakeDanger ? ' (you know you cannot breathe in deep water)' : ''}. A vehicle that can't go somewhere by itself gets hauled on a trailer behind a truck; ${typeof tripSummaryForAI === 'function' ? tripSummaryForAI() : ''}
+- Vehicle rule: ${typeof vehicleCapLineForAI === 'function' ? vehicleCapLineForAI() : 'one of each kind'}
 - The season: ${typeof seasonSummaryForAI === 'function' ? seasonSummaryForAI() : 'unknown'}
 - The wind: ${typeof windSummaryForAI === 'function' ? windSummaryForAI() : 'unknown'}
 - The weather: ${typeof weatherSummaryForAI === 'function' ? weatherSummaryForAI() : 'unknown'} (spring rain soaks plants so they grow faster; winter freezes the lake, and you only walk on ice you have measured at 10 cm or more: open water still drowns you)
@@ -1877,6 +1880,7 @@ ${typeof wishFeaturesPromptLines === 'function' ? wishFeaturesPromptLines() : ''
   "updatedWorldview": null OR "1-2 sentences if your philosophy shifted",
   "discard": null OR {"item": "exact name of something you own that you no longer want", "why": "1 sentence"} (you carry or drive it to your Disposal Pit and throw it in; it is gone forever),
   "shape": null OR {"action": "chop" | "plant" | "road" | "pave" | "hill" | "hollow" | "undo", "x": number, "z": number, "toX": number, "toZ": number, "id": "an id from your list, for undo", "why": "1 sentence"} (change your world yourself, anywhere except town: the meadows, woods, mountain slopes, beach and land you made are all yours. Chop a tree with an axe, plant seeds you have, lay a gravel road, pave one of your gravel roads with asphalt (give its id), raise a hill or dig a hollow with a shovel, or undo something you added; town and the buildings are never touched. x runs ${WORLD_MIN_X} to ${WORLD_MAX_X}, z runs ${WORLD_MIN_Z} (mountain) to 9 (beach); town is x ${TOWN.minX} to ${TOWN.maxX}, z ${TOWN.minZ} to ${TOWN.maxZ}),
+  "takeTrip": null OR {"vehicle": "one of your vehicles", "to": "the mountain | the lake | a place you know", "why": "1 sentence"} (you plan it like a person: if it can't get there on its own ground you haul it on a trailer, and ask for anything missing),
   "practise": null OR "one of your vehicles, your telescope or a hobby to go and practise for real right now (e.g. 'the helicopter')",
   "buildProject": null OR "one of the real things you know how to build" (look it up and ask for the materials it takes; one project at a time),
   "expandLand": null OR {"x": number, "why": "1 sentence"} (from now on, tip the dirt you dig into the lake off the beach near x to make new land, instead of the Disposal Pit; deeper water needs more dirt),
@@ -2079,6 +2083,7 @@ function applyDecision(decision, originLabel) {
       }
       if (decision.expandLand && typeof startLandFill === 'function') startLandFill(decision.expandLand.x, str(decision.expandLand.why, 160));
       if (typeof decision.practise === 'string' && typeof practiseNamed === 'function') practiseNamed(decision.practise);
+      if (decision.takeTrip && typeof applyTripDecision === 'function') applyTripDecision(decision);
       if (typeof startProject === 'function' && typeof decision.buildProject === 'string' && planFor(decision.buildProject.toLowerCase().trim())) {
         doWhenFree(() => startProject(decision.buildProject.toLowerCase().trim(), 'Decided to Build Something Real'));
       }
@@ -2132,6 +2137,8 @@ function doWhenFree(fn, attempt = 0) {
 // Add something Kelo-1 wants to the requests inbox
 function addItemRequest(item, category, why, context) {
       if (!item || state.requestsToUser.some(r => !r.fulfilled && r.requestedGear === item)) return;
+      // One of each kind of vehicle until he has a friend to share with (js/trips.js)
+      if (typeof vehicleRequestCheck === 'function') { const cap = vehicleRequestCheck(item, why); if (cap.blocked) return; why = cap.why; }
       state.requestsToUser.unshift({
         id: 'req-item-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
         category,

@@ -588,7 +588,7 @@ const TRIP_PLACES = {
 // Where a trailered boat is backed into the water: the beach below the vehicle yard
 const BOAT_LAUNCH = { x: 24, pullOutZ: -3.5, startZ: 3.0, backZ: 1.6, waterZ: 13.5 };
 const TOW_KINDS = { snowmobile: ['pickup', 'dump truck'], boat: ['pickup', 'dump truck'], excavator: ['dump truck'] };
-const TRIP_VERBS = { snowmobile: 'ride the snowmobile', boat: 'take the boat out', excavator: 'take the excavator', bike: 'ride my bike', pickup: 'drive the pickup', 'dump truck': 'drive the dump truck', helicopter: 'fly the helicopter', balloon: 'fly the balloon' };
+const TRIP_VERBS = { snowmobile: 'ride the snowmobile', boat: 'take the boat', excavator: 'take the excavator', bike: 'ride my bike', pickup: 'drive the pickup', 'dump truck': 'drive the dump truck', helicopter: 'fly the helicopter', balloon: 'fly the balloon' };
 
 function tripPlain(name) {
       return String(name || '').replace(/^(an?|the|my)\s+/i, '');
@@ -833,7 +833,7 @@ async function researchTransport(plan, originLabel = 'Planning a Trip') {
         ts.researched[key] = { at: Date.now(), how };
         state.webHistory.unshift({ query, time: 'Just now', verdict: how, hops: article ? [{ title: article.title, url: article.url, extract: String(article.extract || '').slice(0, 280) }] : [] });
         if (state.webHistory.length > 12) state.webHistory.length = 12;
-        const need = plan.missing.map(m => tripPlain(m.item).toLowerCase());
+        const need = plan.missing.map(m => m.item.replace(/^A /, 'a '));
         state.moodTitle = `Worked out how to haul the ${plain}`.slice(0, 80);
         state.speechBubble = `${how}${need.length ? ` So I need ${need.join(', ').replace(/, ([^,]*)$/, ' and $1')}.` : ''}`.slice(0, 400);
         state.diaryEntries.unshift({
@@ -1111,7 +1111,7 @@ async function tripBogDown(v, originLabel) {
         state.moodTitle = `The ${plain} bogged down`;
         state.speechBubble = `The track's just spinning and grinding on the gravel. It barely moved. A ${plain} is made for snow: on dry ground it bogs down and wrecks its track.`;
         renderAllUI();
-        await tripSleep(3500);
+        await tripSleep(6000);
         tripExitVehicle(v);
         ts.bogged.snowmobile = Date.now();
         state.diaryEntries.unshift({
@@ -1160,7 +1160,7 @@ async function takeTrip(name, to = null, why = '', originLabel = 'Taking a Trip'
       }
       if (plan.missing.length) {
         if (!ts.researched[plan.key] && plan.mode === 'haul') await researchTransport(plan, originLabel);
-        else tripSay(`trip:${plan.key}:need`, `${plan.reasoning || ''} I'm still waiting for ${plan.missing.map(m => tripPlain(m.item).toLowerCase()).join(' and ')}.`.trim());
+        else tripSay(`trip:${plan.key}:need`, `${plan.reasoning || ''} I'm still waiting for ${plan.missing.map(m => m.item.replace(/^A /, 'a ')).join(', ').replace(/, ([^,]*)$/, ' and $1')}.`.trim());
         requestTripGear(plan);
         if (typeof coolDownActivity === 'function') coolDownActivity(`trip:${plan.key}`);
         renderAllUI();

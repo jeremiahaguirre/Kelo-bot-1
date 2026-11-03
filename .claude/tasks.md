@@ -8,7 +8,7 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
-## In progress (helpers, interrupted by usage limits; resume each one)
+## In progress (helpers resumed 2026-11-03 17:17 UTC; if one stops, resume it)
 1. **Paintings** (`agent/paint`): real oil, acrylic, watercolour, gouache, pastel, ink and charcoal paintings.
    - He researches each medium, then requests its supplies. Supplies are used up.
    - He paints at an easel, the paintings hang in the Museum, and visitors can ask for one.
@@ -46,7 +46,7 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
    - He builds safe declarative world upgrades (JSON, never eval), which the owner can view, toggle and remove.
    - It was writing js/upgrades.js.
 
-## Not started yet
+## Started (helper running, branch `agent/workshop`)
 7. **Big workshop building**, to the RIGHT of the helipad (AIR_SLOTS around x 38.5, z -2, in js/vehicles.js). Floor 1 is the main fabrication shop, holding all his 3D printers, work benches, welding and CNC machines. Each machine has full functionality and real requirements:
    - **3D printers**, every type: FDM/FFF, SLA, DLP, MSLA/LCD, SLS, DMLS/SLM, MJF, PolyJet material jetting, binder jetting, DED, EBM and LOM. Each has its real materials (filament, resin, nylon powder, metal powder, binder, wire feedstock, paper or laminate), post-processing (washing and UV curing for resin, depowdering, sintering, heat treating, support removal) and safety needs (gloves, ventilation, inert gas).
    - **CNC machines**:

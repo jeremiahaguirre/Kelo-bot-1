@@ -80,6 +80,15 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
        - CNC plasma cutter
        - parts washer
 
+## Started (helper running, branch `agent/plant`)
+8. **Concrete and asphalt plant** beside the big workshop (south of it, between the helipad and the lake; one constant, `AGGREGATE_PLANT_SITE` in js/plants.js, follows `WORKSHOP_SITE` if that exists).
+   - Ready-mix concrete batch plant: cement silos with screw conveyors, sand and stone bins, weigh hopper, inclined belt, water tank, admixture totes, twin-shaft mixer, truck loading chute, control room. A drivable concrete mixer truck (vehicles.js type `mixer`).
+   - Hot-mix asphalt plant: cold feed bins and feeder belts, inclined conveyor, drum dryer with burner flame, baghouse and stack, heated bitumen tank, pugmill, slat conveyor, hot storage silo, truck load-out, control house.
+   - He researches each plant at NetNode, asks for the real materials (cement, sand, stone, admixture; aggregate, bitumen binder, burner fuel), follows a mix design (w/c ratio matters, binder ~5.5%), and his own dug rock and dirt can feed the bins.
+   - Output: "A load of ready-mix concrete (2 m³)" and "A load of hot-mix asphalt (5 t)" (which satisfies groundwork paving). Hot asphalt cools and is wasted if not used in time; concrete is poured (formwork, pour, screed, cure over world days) as paths and pads, shown on the Map tab.
+   - Wear and service (filters, burner, mixer paddles), loop-guarded autonomy, AI `runPlant` field, Brain tab section, hover labels on every part, lazy detail.
+   - Status: starting.
+
 ## Owner notes to keep in mind
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.
 - "He can build anything", he can ask for lists of things, and code upgrades to his world.

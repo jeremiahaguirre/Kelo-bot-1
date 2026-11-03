@@ -90,6 +90,15 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
    - His own asphalt can be used for paving, and it is wasted if it cools.
    - Concrete is used to pour pads, paths and foundations, and it cures over days.
 
+9. **Smarter vehicles** (`agent/vehicles`, started 2026-11-03):
+   - Fix the refuel loop (he fills the snowmobile again and again and the tank stays empty), for every fuel type.
+   - Terrain rules per vehicle (snowmobile on snow only, boats on water, bikes on roads/gentle ground, trucks off deep snow and steep slopes unless chained, excavator short hops, helicopter anywhere with fuel and a landing spot, balloon by the wind) and fuel range.
+   - A trip planner (`js/trips.js`): picks vehicles per leg, plans truck + trailer transport for ones that can't get there by themselves, checks fuel, know-how and gear (straps, trailer, hitch), explains once and requests exactly what is missing. He researches at NetNode first ("how to transport a snowmobile").
+   - Trailers (snowmobile trailer, boat trailer, lowboy) with models that hitch behind the truck; loading, strapping, hauling and unloading are visible.
+   - Everything is still requested. AI prompt lists his vehicles and a `takeTrip` decision field; the Brain/World tab gets a "His vehicles" list.
+   - One of each vehicle kind (trailers included) until he has a friend or pet (`friend`/`pet` unlocked), then two. Owned + open requests + mailbox count; owner gifts always accepted.
+   - Status: in progress.
+
 ## Owner notes to keep in mind
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.
 - "He can build anything", he can ask for lists of things, and code upgrades to his world.

@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-02T06:25:21.134Z",
-  "runs": 8,
+  "updatedAt": "2026-11-02T21:48:32.272Z",
+  "runs": 9,
   "curiosities": [
-    "Pie chart"
+    "Anscombe transform"
   ],
   "entries": [
     {
@@ -288,6 +288,38 @@
         "text": "I remember a quiet night dreaming about Christopher R. Johnson. Christopher Ray Johnson is an American computer scientist. It still makes me curious.",
         "emoji": "🌙"
       }
+    },
+    {
+      "id": "dream-1793656112271",
+      "at": 1793656112271,
+      "brain": "procedural",
+      "topic": "Pie chart",
+      "title": "Dreaming of Blocking (statistics)",
+      "text": "Dear Diary, while nobody was around I looked up \"Pie chart\" and drifted from Pie chart to Blocking (statistics). In the statistical theory of the design of experiments, blocking is the arranging of experimental units that are similar to one another in groups (blocks) based on one or more variables. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Pie chart",
+          "url": "https://en.wikipedia.org/wiki/Pie_chart",
+          "extract": "A pie chart is a circular statistical graphic which is divided into slices to illustrate numerical proportion. In a pie chart, the arc length of each slice is proportional to the quantity it represents. While it is named for its resemblance to a pie which has been sliced, there a"
+        },
+        {
+          "title": "Blocking (statistics)",
+          "url": "https://en.wikipedia.org/wiki/Blocking_(statistics)",
+          "extract": "In the statistical theory of the design of experiments, blocking is the arranging of experimental units that are similar to one another in groups (blocks) based on one or more variables. These variables are chosen carefully to minimize the effect of their variability on the obser"
+        }
+      ],
+      "concept": {
+        "name": "Chart Statistics Theory",
+        "emoji": "🌀",
+        "definition": "The idea that pie chart and blocking (statistics) share a hidden pattern.",
+        "builtFrom": [
+          "Pie chart",
+          "Blocking (statistics)"
+        ]
+      },
+      "shapeFrom": "Blocking (statistics)",
+      "nextCuriosity": "Anscombe transform",
+      "coreMemory": null
     }
   ]
 }

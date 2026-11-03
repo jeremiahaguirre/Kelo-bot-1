@@ -33,7 +33,7 @@ const GEAR_KNOWHOW = [
 
 const FUEL_TYPES = {
   diesel: { re: /diesel/i, ask: 'A jerry can of diesel' },
-  gasoline: { re: /gasoline|petrol|\bgas can\b/i, ask: 'A can of gasoline' },
+  gasoline: { re: /gasoline|petrol|\bgas can\b|\bcans? of gas\b|\bjerry ?can of gas\b/i, ask: 'A can of gasoline' },
   'jet fuel': { re: /jet fuel|aviation fuel|kerosene/i, ask: 'A drum of jet fuel' },
   propane: { re: /propane/i, ask: 'A full propane tank' }
 };
@@ -77,12 +77,29 @@ function readyToOperate(name, v = null, { quiet = false } = {}) {
       return true;
     }
 
+// A can (jerry can, drum, tank) of this fuel he owns. Only real fuel counts: a "Diesel dump truck"
+// is a truck, not a can of diesel, and filling a tank from it would loop forever.
+function fuelCanFor(fuel) {
+      return ownedItemNames().find(n => fuelTypeOf(n) === fuel && !(typeof vehicleTypeFor === 'function' && vehicleTypeFor(n))
+        && (typeof usesPerItem !== 'function' || usesPerItem(n) > 0)) || null;
+    }
+
+const refuelsQueued = new Set(); // one queued fill-up per fuel at a time (this session only)
+
 function requestFuel(fuel, why) {
       const type = FUEL_TYPES[fuel];
       if (!type) return;
-      // Some left in a can on his shelf? He fills up from that before asking for more
-      const can = ownedItemNames().find(n => type.re.test(n));
-      if (can) { doWhenFree(() => refuelWith(can)); return; }
+      // Some left in a can on his shelf? He fills up from that before asking for more,
+      // once: a fill-up that just failed isn't retried on every check (js/loopguard.js)
+      const can = fuelCanFor(fuel);
+      if (can) {
+        if (refuelsQueued.has(fuel) || (typeof activityCoolingDown === 'function' && activityCoolingDown('refuel:' + fuel))) return;
+        refuelsQueued.add(fuel);
+        doWhenFree(async () => {
+          try { await refuelWith(can); } finally { refuelsQueued.delete(fuel); }
+        });
+        return;
+      }
       // Already waiting for some (asked, or sitting in the mailbox)?
       if (state.requestsToUser.some(r => !r.fulfilled && type.re.test(r.requestedGear || '')) || state.mailbox.some(m => type.re.test(m.name || ''))) return;
       addItemRequest(type.ask, 'fuel', why, 'Fuel');
@@ -154,14 +171,36 @@ function fuelTypeOf(item) {
 
 // Called when he opens a delivery: if it's fuel, he goes and fills up whatever runs on it
 function receiveFuel(item) {
-      if (fuelTypeOf(item)) doWhenFree(() => refuelWith(item));
+      const fuel = fuelTypeOf(item);
+      if (!fuel || (typeof vehicleTypeFor === 'function' && vehicleTypeFor(item)) || refuelsQueued.has(fuel)) return;
+      refuelsQueued.add(fuel);
+      doWhenFree(async () => {
+        try { await refuelWith(item); } finally { refuelsQueued.delete(fuel); }
+      });
+    }
+
+// Couldn't fill up: say why once, and leave it alone for a while instead of trying again and again
+function refuelFailed(fuel, why) {
+      if (typeof coolDownActivity === 'function') coolDownActivity('refuel:' + fuel);
+      state.speechBubble = why;
+      state.diaryEntries.unshift({
+        time: 'Filling Up', location: currentPlaceLabel(), mood: '⛽ Couldn\'t fill up',
+        vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
+        text: `Dear Diary, ${why} I'll stop trying for now and do something else.`
+      });
+      renderAllUI();
+      return 'refuel-failed';
     }
 
 async function refuelWith(item, originLabel = 'Filling Up') {
       const fuel = fuelTypeOf(item);
-      const thirsty = state.vehicles.filter(v => fuelNeededBy(v) === fuel && fuelLeft(v) < 100);
+      const thirsty = state.vehicles.filter(v => fuelNeededBy(v) === fuel && fuelLeft(v) < 100 && v.name !== item);
       if (!fuel || !thirsty.length) return false;
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
+      // Only a real can of fuel he owns can fill a tank
+      if (!ownedItemNames().includes(item) || (typeof vehicleTypeFor === 'function' && vehicleTypeFor(item))) {
+        return refuelFailed(fuel, `I went to fill up with the ${String(item).replace(/^(an?|the)\s+/i, '')}, but that isn't a can of ${fuel} I can pour.`);
+      }
       state.isPracticing = true;
       try {
         if (typeof setCarriedObject === 'function') setCarriedObject(buildItemModel3D(item, { label: false }));
@@ -174,20 +213,34 @@ async function refuelWith(item, originLabel = 'Filling Up') {
           state.targetPos = boardingSpot(v);
           state.moodEmoji = '⛽';
           state.moodTitle = `Filling the ${plain} with ${fuel}`;
-          state.speechBubble = `Glug, glug, glug... the ${plain} gets a full tank.`;
+          state.speechBubble = `Off to fill the ${plain} with ${fuel}.`;
           renderAllUI();
-          await waitForArrival(60000);
+          // He really walks over to it: something else changing where he's headed doesn't count as arriving
+          const spot = { ...state.targetPos }, startedAt = Date.now();
+          while (Date.now() - startedAt < 90000 && Math.hypot(state.botPos.x - spot.x, state.botPos.z - spot.z) > 1.2) {
+            if (Math.hypot(state.targetPos.x - spot.x, state.targetPos.z - spot.z) > 0.1) state.targetPos = { ...spot };
+            await waitForArrival(5000);
+          }
+          state.speechBubble = `Glug, glug, glug... ${fuel} into the ${plain}.`;
+          renderAllUI();
           await new Promise(r => setTimeout(r, 2200));
-          // A can holds about one tank: it pours what the tank needs, or what's left (js/itemuse.js)
+          // A can holds about one tank: it pours what the tank needs, or what's left (js/itemuse.js).
+          // Quiet: running the can dry isn't a reason to ask for more while the tank is now full.
           const need = 100 - fuelLeft(v);
-          const got = typeof useUpItem === 'function' ? useUpItem(item, need, { why: `filling the ${plain}` }).used : need;
+          const got = typeof useUpItem === 'function' ? useUpItem(item, need, { quiet: true, why: `filling the ${plain}` }).used : need;
+          if (!(got > 0)) {
+            if (typeof forgetItem === 'function' && !(typeof supplyOf === 'function' && supplyOf(item))) forgetItem(item);
+            return refuelFailed(fuel, `I tipped the ${String(item).replace(/^(an?|the)\s+/i, '')} into the ${plain}, but nothing came out: it's empty.`);
+          }
           v.fuel = Math.min(100, Math.round((fuelLeft(v) + got) * 10) / 10);
           filled.push(v);
         }
+        if (!filled.length) return refuelFailed(fuel, `I don't have any ${fuel} left to pour.`);
         if (typeof useUpItem !== 'function' && typeof forgetItem === 'function') forgetItem(item);
         const left = typeof supplyNote === 'function' ? supplyNote(item) : '';
         if (left) state.speechBubble = `The tank's topped up, and there's ${left.replace(' left', '')} of the ${fuel} left for later.`;
-        else if (filled.some(v => fuelLeft(v) < 100)) requestFuel(fuel, `One can wasn't enough to fill everything that runs on ${fuel}.`);
+        else if (state.vehicles.some(v => fuelNeededBy(v) === fuel && fuelLeft(v) < 100)) requestFuel(fuel, `One can wasn't enough to fill everything that runs on ${fuel}.`);
+        else state.speechBubble = `Full tank${filled.length > 1 ? 's' : ''}! That used up the whole can of ${fuel}.`;
         const names = filled.map(v => v.name.replace(/^(an?|the)\s+/i, '')).join(' and ');
         state.moodTitle = `Filled up the ${names}`.slice(0, 80);
         state.diaryEntries.unshift({

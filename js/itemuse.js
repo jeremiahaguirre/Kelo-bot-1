@@ -17,7 +17,7 @@
 // uses: what it's for. per: uses in one (a spray can paints ~3 murals). unit: what one use is.
 const ITEM_KINDS = [
   { kind: 'filament', label: '3D printer filament', re: /filament/i, uses: ['print'], per: 'grams' },
-  { kind: 'fuel', label: 'fuel for an engine or burner', re: /diesel|gasoline|petrol|\bgas can\b|jet fuel|aviation fuel|kerosene|propane/i, uses: ['fuel'], per: 100, unit: '%' },
+  { kind: 'fuel', label: 'fuel for an engine or burner', re: /diesel|gasoline|petrol|\bgas can\b|\bcans? of gas\b|jet fuel|aviation fuel|kerosene|propane/i, uses: ['fuel'], per: 100, unit: '%' },
   { kind: 'printer', label: 'a 3D printer for printing things', re: /3d printer/i, uses: ['print'] },
   { kind: 'welding supply', label: 'welding supplies', re: /welding (wire|rods?|gas)|electrodes?|argon|shielding gas|flux.?core/i, uses: ['weld'], per: 5, unit: 'welds' },
   { kind: 'welder', label: 'a tool for welding and soldering', re: /welding torch|\bwelder\b|soldering iron/i, uses: ['weld', 'fix'] },
@@ -311,7 +311,8 @@ function supplyLabel(name, nth = 0) {
 function stillNeeds(name, k) {
       if (!k) return false;
       if (state.hobbies.some(h => k.uses.includes(hobbyPurpose(h)))) return true;
-      if (k.kind === 'fuel') return state.vehicles.some(v => typeof fuelNeededBy === 'function' && fuelNeededBy(v) && FUEL_TYPES[fuelNeededBy(v)] && FUEL_TYPES[fuelNeededBy(v)].re.test(name));
+      // Only while a tank that takes it isn't full: an empty can after filling up is no reason to ask again
+      if (k.kind === 'fuel') return state.vehicles.some(v => typeof fuelNeededBy === 'function' && fuelNeededBy(v) && FUEL_TYPES[fuelNeededBy(v)] && FUEL_TYPES[fuelNeededBy(v)].re.test(name) && fuelLeft(v) < 100);
       if (k.kind === 'seeds' || k.kind === 'welding supply') return true;
       if (k.kind === 'batteries') return ownedItemNames().some(n => itemKindOf(n).needsPower);
       if (k.kind === 'film') return ownedItemNames().some(n => /film camera|polaroid|instant camera/i.test(n));

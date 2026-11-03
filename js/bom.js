@@ -106,7 +106,7 @@ const BOM_TEMPLATES = {
           ['Jury struts', 4, '', 'p'],
           ['1/8 in. aluminium pop rivets', 2400, '', 'f'],
           ['AN3-5A bolts', 48, '', 'f'],
-          ['AN365-1032 nylock nuts', 48, '', 'f'],
+          ['AN365-1032 nylock nuts (rib fittings and struts)', 64, '', 'f'],
           ['AN4-11A bolts (spar attach)', 8, '', 'f'],
           ['AN365-428 nylock nuts', 8, '', 'f'],
           ['AN3-12A bolts (strut fittings)', 16, '', 'f'],

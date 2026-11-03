@@ -77,6 +77,12 @@ function nextSubToBuild(p) {
       return p.bom.subs.find(s => !s.built) || null;
     }
 
+// "a go-kart", "an airplane"
+function aName(n) {
+      const t = String(n || '').toLowerCase();
+      return `${/^[aeiou]/.test(t) ? 'an' : 'a'} ${t}`;
+    }
+
 function plainName(n) {
       return String(n || '').replace(/^(an?|the)\s+/i, '');
     }
@@ -203,7 +209,7 @@ async function researchBuild(target, why = '', originLabel = 'Decided to Build S
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
       const tplKey = bomTemplateFor(want);
       if (!tplKey && !(typeof hasLLMKey === 'function' && hasLLMKey())) {
-        state.speechBubble = `I couldn't find proper plans for a ${want.toLowerCase()} on my own. I know how to build ${Object.values(BOM_TEMPLATES).map(t => t.name.toLowerCase()).join(', ')}.`;
+        state.speechBubble = `I couldn't find proper plans for ${aName(want)} on my own. I know how to build ${Object.values(BOM_TEMPLATES).map(t => t.name.toLowerCase()).join(', ')}.`;
         renderAllUI();
         return 'no-plans';
       }
@@ -216,7 +222,7 @@ async function researchBuild(target, why = '', originLabel = 'Decided to Build S
         state.targetPos = { x: cafe.x, z: cafe.z };
         state.microPose = 'normal';
         state.moodEmoji = '📐';
-        state.moodTitle = `Researching how to build a ${want.toLowerCase()}`.slice(0, 80);
+        state.moodTitle = `Researching how to build ${aName(want)}`.slice(0, 80);
         state.speechBubble = `I want to build a real ${want.toLowerCase()} from scratch. First I need the plans and a proper parts list.`;
         renderAllUI();
         await waitForArrival(90000);
@@ -234,7 +240,7 @@ async function researchBuild(target, why = '', originLabel = 'Decided to Build S
         let bom = await bomFromAI(want, why, readings);
         const fromAI = Boolean(bom);
         if (!bom && tplKey) bom = bomFromTemplate(tplKey);
-        if (!bom) { state.speechBubble = `I couldn't work out a trustworthy parts list for a ${want.toLowerCase()}.`; renderAllUI(); return 'no-plans'; }
+        if (!bom) { state.speechBubble = `I couldn't work out a trustworthy parts list for ${aName(want)}.`; renderAllUI(); return 'no-plans'; }
         const p = { id: 'build-' + Date.now().toString(36), target: want, why: String(why || '').slice(0, 200), status: 'gathering', startedAt: Date.now(), fromAI, bom,
           readings: readings.map(r => r.title), tests: {}, parcels: 0, site: null };
         if (!state.buildProjects) state.buildProjects = [];
@@ -243,7 +249,7 @@ async function researchBuild(target, why = '', originLabel = 'Decided to Build S
         siteFor(p);
         const lines = bomLineCount(bom), fasteners = bom.subs.reduce((n, s) => n + bomFastenerCount(s), 0);
         const verdict = `${bom.name}: ${bom.summary}. ${bom.subs.length} sub-assemblies, ${lines} lines, ${bomFmtQty(fasteners)} fasteners. Tools: ${bom.tools.map(t => t.name).join(', ')}. Skills: ${bom.skills.join(', ')}.`;
-        state.webHistory.unshift({ query: `How to build a ${want.toLowerCase()} from scratch`, time: 'Just now', verdict: verdict.slice(0, 600),
+        state.webHistory.unshift({ query: `How to build ${aName(want)} from scratch`, time: 'Just now', verdict: verdict.slice(0, 600),
           hops: readings.map(r => ({ title: r.title, url: r.url, extract: r.extract.slice(0, 280) })) });
         if (state.webHistory.length > 12) state.webHistory.length = 12;
         state.moodTitle = `Planned a ${bom.name.toLowerCase()}: ${lines} parts lines`.slice(0, 80);
@@ -983,7 +989,7 @@ function answerBuildRequest(ask, visitor) {
       }
       const cur = activeBuild();
       if (cur) return sayToVisitor(`I'd love to, ${visitor}, but I'm in the middle of building a ${cur.bom.name.toLowerCase()} (${bomPercentBuilt(cur.bom)}% built). One big build at a time!`, visitor);
-      sayToVisitor(`A ${ask.target.toLowerCase()}? Yes! I'll research it at NetNode, write a bill of materials down to the screw, and send you the parts lists.`, visitor);
+      sayToVisitor(`${/^[aeiou]/i.test(ask.target) ? 'An' : 'A'} ${ask.target.toLowerCase()}? Yes! I'll research it at NetNode, write a bill of materials down to the screw, and send you the parts lists.`, visitor);
       doWhenFree(() => researchBuild(ask.target, `${visitor} asked me to`, `Asked by ${visitor}`));
     }
 

@@ -572,7 +572,7 @@ function pcMakeSpray(color, size, count, streaks) {
         const lp = new Float32Array(count * 6).fill(-999);
         const lg = new THREE.BufferGeometry();
         lg.setAttribute('position', new THREE.BufferAttribute(lp, 3));
-        lines = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.55, depthWrite: false }));
+        lines = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.8, depthWrite: false }));
         lines.frustumCulled = false;
         scene.add(lines);
       }
@@ -685,7 +685,7 @@ function pcDropHeld() {
     }
 
 // Where the water leaves the can, and which way it is heading
-function pcRoseSource(floorY, rate = 140) {
+function pcRoseSource(floorY, rate = 230) {
       const pos = new THREE.Vector3(), base = new THREE.Vector3(), dir = new THREE.Vector3();
       return () => {
         if (!pcHeld || !pcHeld.obj.parent) return null;
@@ -693,7 +693,7 @@ function pcRoseSource(floorY, rate = 140) {
         pcHeld.body.getWorldPosition(base);
         dir.copy(pos).sub(base).normalize();
         if (pcHeld.tilt.rotation.x < 0.5) return null; // not tipped far enough to pour yet
-        return { pos, dir, speed: 1.3, spread: 0.55, rate, floorY: floorY(), splash: true };
+        return { pos, dir, speed: 1.3, spread: 0.45, rate, floorY: floorY(), splash: true };
       };
     }
 
@@ -1087,7 +1087,7 @@ window.addEventListener('DOMContentLoaded', () => {
     pcState();
     pcSyncAll(); // catch up on everything that grew (or dried out) while the page was closed
     pcCatchUpNote();
-    pcWater = pcMakeSpray(0xcfeaff, 0.055, 420, true);
+    pcWater = pcMakeSpray(0xd6efff, 0.075, 600, true);
     pcGrain = pcMakeSpray(0x4a3220, 0.04, 160, false);
     pcTapGroup = buildGardenTap3D();
     pcFindBedSoils();

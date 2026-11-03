@@ -33,7 +33,7 @@ Object.assign(KELO_EMOTES, {
       const rub = smoothstep((e - 0.4) / 0.2) * Math.sin(e * 17);
       return {
         // elbow out wide and high, forearm folded back up so his fingers reach behind his ear
-        rArmX: -0.3 * up, rArmY: 0, rArmZ: 2.4 * up, rElbowX: -0.1 * up, rElbowZ: 1.15 * up + rub * 0.12,
+        rArmX: -0.35 * up, rArmY: 0, rArmZ: 2.2 * up, rElbowX: -0.1 * up, rElbowZ: 1.65 * up + rub * 0.12,
         rHandZ: rub * 0.18, rHandY: 0.4 * up, rGrip: 0.55,
         headZ: 0.2 * up, headX: -0.06 * up, headY: -0.12 * up, bodyZ: -0.04 * up, lArmZ: -0.12
       };

@@ -1273,12 +1273,12 @@ function updateWeldArc(dt) {
         weldRig.arcLine.visible = true;
         weldRig.arcCore.visible = true;
         weldRig.arcCore.position.copy(seam).lerp(_weldV, 0.3);
-        const c = 0.07 + Math.random() * 0.06;
+        const c = 0.12 + Math.random() * 0.1;
         weldRig.arcCore.scale.set(c, c, 1);
         // The shop flare (js/weldstudio.js) sits on the arc and flickers
         flare.visible = true;
         flare.position.copy(seam).sub(weldStudio.group.position);
-        const f = 0.45 + Math.random() * 0.55;
+        const f = 0.6 + Math.random() * 0.6;
         flare.scale.set(f, f, 1);
         flare.material.opacity = 0.65 + Math.random() * 0.35;
         // The light: bright, blue-white, flickering

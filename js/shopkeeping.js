@@ -193,7 +193,7 @@ function guessPrice(c) {
 function writeDescription(c) {
       if (c.kind === 'painting') {
         const p = c.painting, M = PAINT_MEDIA[p.medium];
-        return `${p.title}: ${p.subjectLabel || 'a scene from my valley'}, painted ${p.place ? `at ${String(p.place).replace(/\bmy\b/g, 'his').replace(/^his /, 'my ')}` : 'from life'} in ${String(p.season || '').toLowerCase()}. ${M ? M.on : 'Original'}, ${paintingInches(p).join('x')} in. The original, one of a kind, signed by me.`;
+        return `${p.title}: ${String(p.subjectLabel || 'a scene from my valley').replace(/\bhis\b/g, 'my')}, painted ${p.place ? `at ${String(p.place).replace(/\bmy\b/g, 'his').replace(/^his /, 'my ')}` : 'from life'} in ${String(p.season || '').toLowerCase()}. ${M ? M.on : 'Original'}, ${paintingInches(p).join('x')} in. The original, one of a kind, signed by me.`;
       }
       const v = printFileVerdict(c.design);
       const pitch = v.pitch || `A ${v.appeal === 'useful' ? 'handy' : 'fun'} ${c.design.name.replace(/^a 3d-printed /, '')}, my own design.`;

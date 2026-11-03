@@ -543,12 +543,28 @@ function buildGardenTap3D() {
     }
 
 // --- Water and granules in the air ----------------------------------------------------------------
+// A soft round dot, so the drops aren't square
+function pcDropTexture() {
+      if (pcDropTexture.tex) return pcDropTexture.tex;
+      const c = document.createElement('canvas');
+      c.width = c.height = 32;
+      const g = c.getContext('2d');
+      const grad = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+      grad.addColorStop(0, 'rgba(255,255,255,1)');
+      grad.addColorStop(0.45, 'rgba(255,255,255,0.85)');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 32, 32);
+      pcDropTexture.tex = new THREE.CanvasTexture(c);
+      return pcDropTexture.tex;
+    }
+
 function pcMakeSpray(color, size, count, streaks) {
       const pos = new Float32Array(count * 3).fill(0);
       for (let i = 0; i < count; i++) pos[i * 3 + 1] = -999;
       const geo = new THREE.BufferGeometry();
       geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color, size, transparent: true, opacity: 0.9, depthWrite: false }));
+      const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color, size, map: pcDropTexture(), alphaTest: 0.05, transparent: true, opacity: 0.95, depthWrite: false }));
       pts.frustumCulled = false;
       scene.add(pts);
       let lines = null;
@@ -700,7 +716,13 @@ async function pcWalkTo(spot, placeName) {
       renderAllUI();
       await waitForArrival(45000);
       state.botRotY = spot.face;
-      await new Promise(r => setTimeout(r, 450));
+      // Turn to face it before starting (his body eases round)
+      for (let i = 0; i < 16; i++) {
+        const d = typeof keloGroup !== 'undefined' && keloGroup ? Math.atan2(Math.sin(keloGroup.rotation.y - spot.face), Math.cos(keloGroup.rotation.y - spot.face)) : 0;
+        if (Math.abs(d) < 0.12) break;
+        await new Promise(r => setTimeout(r, 250));
+      }
+      await new Promise(r => setTimeout(r, 300));
     }
 
 const pcWait = (ms) => new Promise(r => setTimeout(r, ms));
@@ -724,6 +746,16 @@ async function pcPour(t, amount, ms = 3200) {
       pcWater.source = null;
     }
 
+// Water running from the tap's spout into the can (or onto the drain if nothing is under it)
+function pcTapSource() {
+      const spout = pcTapSpout(), down = new THREE.Vector3(0, -0.4, 0.35).normalize();
+      const top = new THREE.Vector3();
+      return () => {
+        if (pcHeld) pcHeld.body.getWorldPosition(top);
+        return { pos: spout, dir: down, speed: 0.6, spread: 0.06, rate: 220, floorY: pcHeld ? top.y + 0.06 : getAnalyticalGroundHeight(PC_TAP.x, PC_TAP.z) + 0.09, splash: !pcHeld };
+      };
+    }
+
 // --- Filling the can: the garden tap, or the lake if that's nearer ----------------------------------------
 async function refillCan(originLabel = 'Filling the Watering Can') {
       const pc = pcState();
@@ -739,12 +771,7 @@ async function refillCan(originLabel = 'Filling the Watering Can') {
         if (pcTapGroup) pcTapGroup.userData.lever.rotation.y = -1.2;
         state.speechBubble = 'Lever up... and the water runs.';
         renderAllUI();
-        const spout = pcTapSpout(), down = new THREE.Vector3(0, -0.4, 0.35).normalize();
-        const top = new THREE.Vector3();
-        pcWater.source = () => {
-          if (pcHeld) { pcHeld.body.getWorldPosition(top); }
-          return { pos: spout, dir: down, speed: 0.6, spread: 0.06, rate: 220, floorY: pcHeld ? top.y + 0.06 : getAnalyticalGroundHeight(PC_TAP.x, PC_TAP.z), splash: false };
-        };
+        pcWater.source = pcTapSource();
         await pcWait(3600);
         pcWater.source = null;
         if (pcTapGroup) pcTapGroup.userData.lever.rotation.y = 0;
@@ -887,7 +914,7 @@ async function feedPlants(targets = null, why = '', originLabel = 'Feeding the G
       const fed = [];
       try {
         state.moodEmoji = '🌾';
-        state.moodTitle = `Feeding his plants ${pcFeedOf(fert).label}`;
+        state.moodTitle = `Feeding his plants with ${pcFeedOf(fert).label}`;
         for (const t of list) {
           fert = ownedFertilizer();
           if (!fert) break;
@@ -1033,10 +1060,10 @@ if (typeof ITEM_MODEL_RULES !== 'undefined') {
 }
 
 // --- Every frame, and every few seconds -------------------------------------------------------------
-function pcFrame(dt) {
+function pcFrame(dt, realDt = dt) {
       pcUpdateSpray(pcWater, dt);
       pcUpdateSpray(pcGrain, dt);
-      if (pcHeld) pcHeld.tilt.rotation.x += (pcHeld.want - pcHeld.tilt.rotation.x) * Math.min(1, dt * 3);
+      if (pcHeld) pcHeld.tilt.rotation.x += (pcHeld.want - pcHeld.tilt.rotation.x) * Math.min(1, realDt * 3);
       const k = Math.min(1, dt * 1.5);
       if (typeof editMeshes !== 'undefined') {
         (state.worldEdits || []).forEach(e => {
@@ -1068,9 +1095,9 @@ window.addEventListener('DOMContentLoaded', () => {
     refreshPlantLooks();
     let last = performance.now();
     (function plantCareFrame(now) {
-      const dt = Math.min(0.1, (now - last) / 1000);
+      const real = Math.min(0.5, (now - last) / 1000);
       last = now;
-      pcFrame(dt);
+      pcFrame(Math.min(0.1, real), real);
       requestAnimationFrame(plantCareFrame);
     })(last);
     setInterval(() => { pcSyncAll(); refreshPlantLooks(); }, 3000);

@@ -907,7 +907,7 @@ function paintingSceneRef(spec) {
       const look = ART_SEASON_LOOK[spec.season] || ART_SEASON_LOOK.Summer;
       ctx.save();
       // A beginner's horizon tilts a little
-      const tilt = (rng() - 0.5) * 0.07 * (1 - q);
+      const tilt = (rng() - 0.5) * 0.14 * Math.pow(1 - q, 1.5);
       ctx.translate(ART_W / 2, ART_H / 2);
       ctx.rotate(tilt);
       ctx.scale(1 + Math.abs(tilt) * 1.6, 1 + Math.abs(tilt) * 1.6);
@@ -1059,6 +1059,15 @@ function paintingSceneRef(spec) {
 // between them, so the easel in the world can show the canvas filling in.
 async function renderPaintingInMedium(spec, { progress = null } = {}) {
       const scene = paintingSceneRef(spec);
+      // A beginner can't see or place detail yet: everything comes out vaguer and a little lopsided
+      const qq = artClamp01(spec.q == null ? 0.5 : spec.q);
+      if (qq < 0.5) {
+        const soft = artCanvas();
+        const sx = soft.getContext('2d');
+        sx.filter = `blur(${((0.5 - qq) * 9).toFixed(1)}px)`;
+        sx.drawImage(scene.ref, 0, 0);
+        scene.ref = soft;
+      }
       const rng = makeRng(`paint:${spec.seed}:${spec.medium}`);
       const q = artClamp01(spec.q == null ? 0.5 : spec.q);
       const step = progress || (async () => {});
@@ -1471,7 +1480,7 @@ async function artWatercolourPainting(scene, spec, rng, q, step) {
       }
       // beginners overwork it into mud
       if (q < 0.5) {
-        const mud = (0.5 - q) * 0.35;
+        const mud = (0.5 - q) * 0.75;
         for (let i = 0; i < N; i++) if (Av[i] > 0.1) { accR[i] += mud * 0.5; accG[i] += mud * 0.6; accB[i] += mud * 0.85; }
       }
       // sparkle: dry brush skipping over the paper's tooth (on water and in the grass)

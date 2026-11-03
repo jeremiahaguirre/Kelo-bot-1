@@ -606,7 +606,11 @@ function paintPlanTick() {
         tryKey('paint', () => researchMedium(plan.medium));
         return true;
       }
-      if (paintMissing(plan.medium).length) return false;
+      if (paintMissing(plan.medium).length) {
+        // Two days with no supplies (asks turned down): he lets the plan go and paints something else
+        if (Date.now() - (plan.at || 0) > 48 * 3600000) { state.paintPlan = null; savePersistentBrainState(); }
+        return false;
+      }
       tryKey('paint', () => paintPicture(plan.medium, plan.subject, { visitor: plan.for, overrides: plan.overrides || {}, originLabel: plan.for ? `Painting for ${plan.for}` : 'Painting at His Easel' }));
       return true;
     }

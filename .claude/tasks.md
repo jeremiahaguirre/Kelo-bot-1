@@ -80,6 +80,16 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
        - CNC plasma cutter
        - parts washer
 
+8. **Concrete and asphalt plant** (`agent/plant`, started), right beside the workshop. It positions itself from `WORKSHOP_SITE`.
+   - **Ready-mix concrete batch plant:**
+     - cement silos, aggregate bins, a weigh hopper, conveyor, water and admixture tanks, a twin-shaft mixer and a load-out
+     - a concrete mixer truck he can drive
+   - **Hot-mix asphalt plant:**
+     - cold feed bins, a drum dryer with a burner, a baghouse and stack, a heated bitumen tank, a pugmill and a hot silo
+   - He researches each plant, requests materials, and uses them up.
+   - His own asphalt can be used for paving, and it is wasted if it cools.
+   - Concrete is used to pour pads, paths and foundations, and it cures over days.
+
 ## Owner notes to keep in mind
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.
 - "He can build anything", he can ask for lists of things, and code upgrades to his world.

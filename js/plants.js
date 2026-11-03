@@ -455,7 +455,11 @@ function plantFree() {
     }
 
 let plantTimeScale = 1;   // tests slow the stages down to look at them
-const plantWait = ms => new Promise(r => setTimeout(r, ms * plantTimeScale));
+let plantHoldRe = null;     // tests (and a curious owner in the console) can pause a stage to look at it
+const plantWait = async ms => {
+      await new Promise(r => setTimeout(r, ms * plantTimeScale));
+      while (plantHoldRe && plantHoldRe.test(state.moodTitle)) await new Promise(r => setTimeout(r, 300));
+    };
 
 function plantSay(kind, title, speech) {
       state.moodTitle = title.slice(0, 80);

@@ -472,8 +472,8 @@ function buildWorkshop3D() {
       // Area signs hanging inside
       const hang = (text, x, y, z, ry = 0, bg = '#0f172a', fg = '#facc15') => { const s = makeSignMesh(text, { bg, fg, width: 2.6, height: 0.42 }); s.position.set(x, y, z); s.rotation.y = ry; wsGroup.add(s); return s; };
       hang('HIGH BAY  •  TAURUS', -5.9, 7.4, -hz + 0.25);
-      hang('3D PRINTING', -2.1, 4.6, 1.4);
-      hang('CNC MACHINING', 2.5, 4.6, -2.6);
+      hang('3D PRINTING', -2.1, 4.95, 1.6);
+      hang('CNC MACHINING', 2.5, 4.95, -3.1);
       hang('PPE REQUIRED BEYOND THIS POINT', 0.3, 3.6, hz - 0.25, Math.PI, '#facc15', '#111827');
       hang('ELECTRONICS', -0.6, WS_F2 + 3.4, -1.6);
       hang('GARAGE', 4.9, WS_F2 + 3.4, -1.6);

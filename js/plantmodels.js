@@ -392,8 +392,8 @@ function buildAggregatePlantGround() {
         s.userData.plantLabel = text.charAt(0) + text.slice(1).toLowerCase();
         g.add(post, s);
       };
-      sign('KELO-1 READY-MIX', S.x - S.w / 2 + 0.7, S.z - S.d / 2 + 0.6, 0.6);
-      sign('KELO-1 HOT MIX ASPHALT', S.x + S.w / 2 - 0.9, S.z - S.d / 2 + 0.7, -0.5, '#c2410c');
+      sign('KELO-1 READY-MIX', S.x - S.w / 2 + 0.25, S.z - S.d / 2 + 0.2, 0.35);
+      sign('KELO-1 HOT MIX ASPHALT', S.x + S.w / 2 - 0.35, S.z + 0.1, -0.35, '#c2410c');
       return g;
     }
 

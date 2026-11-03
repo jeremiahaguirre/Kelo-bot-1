@@ -142,7 +142,9 @@ function exploreTerrainPoint(clientX, clientY) {
 
 function exploreKeloSpot() {
       const p = keloGroup ? keloGroup.position : new THREE.Vector3(state.botPos.x, 0, state.botPos.z);
-      return new THREE.Vector3(p.x, p.y + 1.6, p.z);
+      // On foot, follow the ground under him rather than the bob of each step
+      const y = keloGroup && state.isWalking && !state.riding && Number.isFinite(state.botAltitudeY) ? state.botAltitudeY : p.y;
+      return new THREE.Vector3(p.x, y + 1.6, p.z);
     }
 
 // --- Taking over the camera ----------------------------------------------------------------------

@@ -1583,19 +1583,15 @@ function animateDiorama() {
         forgeArcLight.intensity = 0;
       } else if (dist > arrivalRadius(state.targetPos)) {
         state.isWalking = true;
-        // Speed eases up as he sets off, settles as he arrives, and stretches into a stride on long trips
-        const step = Math.min(dist, keloWalkStep(dist, dt) * (state.ridingSpeed || 1) * (typeof snowWalkFactor === 'function' ? snowWalkFactor(state.botPos) : 1));
-        const [sx, sz] = nextPathDirection(state.botPos.x, state.botPos.z, state.targetPos);
-        state.botPos.x += sx * step;
-        state.botPos.z += sz * step;
+        // Speeding up and braking, eased turns (on the spot for big ones) and a smooth line around
+        // obstacles (js/motion.js); he moves the way he faces
+        const [sx, sz, step] = keloLocomote(dist, dt, t);
         // A frozen lake he isn't sure of yet: he stops at the edge of the ice (js/weather.js)
         if (typeof iceStepBlocked === 'function' && iceStepBlocked(state.botPos)) {
           state.botPos.x -= sx * step;
           state.botPos.z -= sz * step;
           state.targetPos = { x: state.botPos.x, z: state.botPos.z };
         }
-        pushOutOfObstacles(state.botPos, state.targetPos);
-        state.botRotY = Math.atan2(sx, sz);
 
         // On lake ice that holds him he stands on top of it (js/weather.js)
         const groundY = Math.max(getIslandGroundHeight(state.botPos.x, state.botPos.z), typeof iceFloorAt === 'function' ? iceFloorAt(state.botPos) : -Infinity);

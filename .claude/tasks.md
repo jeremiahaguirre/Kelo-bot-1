@@ -87,7 +87,7 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
    - He researches each plant at NetNode, asks for the real materials (cement, sand, stone, admixture; aggregate, bitumen binder, burner fuel), follows a mix design (w/c ratio matters, binder ~5.5%), and his own dug rock and dirt can feed the bins.
    - Output: "A load of ready-mix concrete (2 m³)" and "A load of hot-mix asphalt (5 t)" (which satisfies groundwork paving). Hot asphalt cools and is wasted if not used in time; concrete is poured (formwork, pour, screed, cure over world days) as paths and pads, shown on the Map tab.
    - Wear and service (filters, burner, mixer paddles), loop-guarded autonomy, AI `runPlant` field, Brain tab section, hover labels on every part, lazy detail.
-   - Status: starting.
+   - Status: built and tested (js/plants.js, js/plantmodels.js; hooks in agent.js, vehicles.js, index.html; groundwork paving no longer mistakes the asphalt rake for the asphalt). Full flow test passes: research, requests, deliveries absorbed, batches, pour forms/pour/screed/cure, paving with his own hot mix, cooling waste, service, reload. Remaining polish: screenshots of each stage.
 
 ## Owner notes to keep in mind
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.

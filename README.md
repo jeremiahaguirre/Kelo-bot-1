@@ -142,7 +142,9 @@ Kelo-bot-1/
 │   ├── wildlife.js      # Songbird flocks and mule deer in the meadow; walking up quietly to study them
 │   ├── companions.js    # His robot friend (follows, carries, hands tools, keeps watch) and his pet dog or cat
 │   ├── pastimes.js      # Fishing, the stove, real music sounds, swimming, the campfire, named constellations
-│   ├── shopkeeping.js   # His shop in the game: listing things for sale, "Sold", earnings, Export shop
+│   ├── paintrender.js   # How his paintings look: the scene from simple shapes, painted again in oil, acrylic, watercolour, gouache, pastel, ink or charcoal
+│   ├── paintstudio.js   # Real painting: researching a medium, asking for its supplies, painting at an easel, the Museum, visitor requests
+│   ├── shopkeeping.js   # His shop in the game: print files and original paintings for sale, "Sold", earnings, Export shop
 │   ├── printer.js       # His 3D printer: setting it up, learning it, filament spools, prints that fail and succeed
 │   ├── main.js          # UI wiring
 │   ├── portal.js        # Send-him-something panel

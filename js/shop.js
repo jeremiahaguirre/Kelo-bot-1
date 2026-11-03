@@ -1,5 +1,5 @@
 // Kelo-bot-1 — js/shop.js
-// The script for shop.html, Kelo-1's shop website. It stands alone (none of the game's scripts load here).
+// The script for shop.html, Kelo-1's shop website: his 3D print files and his original paintings. It stands alone (none of the game's scripts load here).
 // It shows the things he put up for sale from two places:
 //   - his save in this browser (the same storage key the game uses, see BRAIN_KEY in js/agent.js), so
 //     the owner sees new listings straight away
@@ -59,13 +59,19 @@ async function readPublishedShop() {
 function cleanListing(l) {
       if (!l || typeof l !== 'object' || typeof l.name !== 'string' || !l.name.trim()) return null;
       const price = Number(l.price);
+      const art = l.kind === 'painting';
+      const pd = l.painting && typeof l.painting === 'object' ? l.painting : null;
       return {
+        kind: art ? 'painting' : 'printfile',
+        medium: art ? String((pd && pd.on) || l.medium || '').slice(0, 60) : '',
+        size: art ? String((pd && pd.size) || l.size || '').slice(0, 20) : '',
+        subject: art ? String((pd && pd.subject) || l.subject || '').slice(0, 80) : '',
         id: String(l.id || l.name).slice(0, 60),
         name: l.name.trim().slice(0, 80),
         description: String(l.description || '').slice(0, 300),
         price: Number.isFinite(price) && price > 0 ? Math.round(price * 100) / 100 : null,
         image: /^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(String(l.image || '')) ? l.image : '',
-        details: typeof l.details === 'string' ? l.details.slice(0, 120) : (l.file && typeof l.file.details === 'string' ? l.file.details.slice(0, 120) : ''),
+        details: typeof l.details === 'string' ? l.details.slice(0, 120) : (l.file && typeof l.file.details === 'string' ? l.file.details.slice(0, 120) : (pd && typeof pd.details === 'string' ? pd.details.slice(0, 120) : '')),
         listedAt: l.listedAt && !Number.isNaN(Date.parse(l.listedAt)) ? new Date(l.listedAt) : null
       };
     }
@@ -79,7 +85,9 @@ function buyHref(contact, listing) {
       if (!contact) return '';
       if (contact.startsWith('mailto:')) {
         const subject = encodeURIComponent(`Kelo-1's shop: ${listing.name}`);
-        const body = encodeURIComponent(`Hi! I'd like to buy the print file "${listing.name}" (${priceText(listing.price)}) from Kelo-1's shop.`);
+        const body = encodeURIComponent(listing.kind === 'painting'
+          ? `Hi! I'd like to buy the original painting ${listing.name} (${priceText(listing.price)}) from Kelo-1's shop. Is it still available, and how would shipping work?`
+          : `Hi! I'd like to buy the print file "${listing.name}" (${priceText(listing.price)}) from Kelo-1's shop.`);
         return `${contact}${contact.includes('?') ? '&' : '?'}subject=${subject}&body=${body}`;
       }
       return contact;
@@ -96,10 +104,15 @@ function renderShop(listings, contact, updatedAt) {
       grid.innerHTML = listings.map(l => {
         const href = buyHref(contact, l);
         const external = href.startsWith('https:');
+        const art = l.kind === 'painting';
+        const badge = art
+          ? '<span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-rose-600/90 text-white text-[10px] font-bold tracking-wide shadow">🖼️ ORIGINAL PAINTING</span>'
+          : '<span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-sky-600/90 text-white text-[10px] font-bold tracking-wide shadow">🖨️ 3D PRINT FILE</span>';
         return `
-        <article class="rounded-3xl bg-slate-900/80 border border-slate-800 hover:border-amber-400/50 overflow-hidden shadow-xl flex flex-col transition">
-          <div class="aspect-square bg-gradient-to-b from-amber-100 to-orange-200 flex items-center justify-center">
-            ${l.image ? `<img src="${shopEscape(l.image)}" alt="${shopEscape(l.name)}" class="w-full h-full object-cover" loading="lazy">` : '<span class="text-6xl" aria-hidden="true">🎁</span>'}
+        <article class="rounded-3xl bg-slate-900/80 border ${art ? 'border-rose-400/30 hover:border-rose-300/60' : 'border-slate-800 hover:border-amber-400/50'} overflow-hidden shadow-xl flex flex-col transition">
+          <div class="relative aspect-square ${art ? 'bg-stone-200' : 'bg-gradient-to-b from-amber-100 to-orange-200'} flex items-center justify-center">
+            ${l.image ? `<img src="${shopEscape(l.image)}" alt="${shopEscape(l.name)}" class="w-full h-full ${art ? 'object-contain' : 'object-cover'}" loading="lazy">` : `<span class="text-6xl" aria-hidden="true">${art ? '🖼️' : '🎁'}</span>`}
+            ${badge}
           </div>
           <div class="p-4 space-y-2 flex-1 flex flex-col">
             <div class="flex items-start justify-between gap-2">
@@ -107,7 +120,11 @@ function renderShop(listings, contact, updatedAt) {
               <span class="text-sm font-mono font-bold text-emerald-300 shrink-0">${shopEscape(priceText(l.price))}</span>
             </div>
             ${l.description ? `<p class="font-serif italic text-slate-300 text-sm leading-relaxed flex-1">"${shopEscape(l.description)}"<span class="not-italic text-slate-500 text-xs"> — Kelo-1</span></p>` : '<div class="flex-1"></div>'}
-            ${l.details ? `<div class="text-[10px] font-mono text-sky-300">🖨️ ${shopEscape(l.details)}</div>` : ''}
+            ${art ? `<div class="text-[11px] text-rose-200 space-y-0.5">
+              ${l.medium ? `<div>🎨 ${shopEscape(l.medium)}${l.size ? ` · ${shopEscape(l.size.replace('x', '×'))}` : ''}</div>` : ''}
+              ${l.subject ? `<div class="text-slate-300">Subject: ${shopEscape(l.subject)}</div>` : ''}
+              <div class="font-semibold">Original, one of a kind · signed</div>
+            </div>` : (l.details ? `<div class="text-[10px] font-mono text-sky-300">🖨️ ${shopEscape(l.details)}</div>` : '')}
             ${l.listedAt ? `<div class="text-[10px] font-mono text-slate-500">Listed ${shopEscape(l.listedAt.toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' }))}</div>` : ''}
             ${href
               ? `<a href="${shopEscape(href)}" ${external ? 'target="_blank" rel="noopener noreferrer"' : ''} class="block text-center px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-sm transition">✉️ Contact to buy</a>`

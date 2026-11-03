@@ -319,6 +319,7 @@ const state = {
   "paintKnowledge": {},
   "paintPlan": null,
   "paintingImages": {},
+  "paintingsSold": [],
   "activityCooldowns": {},
   "recentDecisionTitles": [],
   "lastWeldAt": 0,

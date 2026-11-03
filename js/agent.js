@@ -326,6 +326,8 @@ const state = {
   "vocabulary": {},
   "itemLookups": {},
   "itemUse": {},
+  "itemPurposes": {},
+  "supplies": {},
   "lastTidyAt": 0,
   "aiOffline": false,
   "riding": null,
@@ -926,7 +928,7 @@ async function synthesizeUnboundedExperience(promptOrImpulse = null, originLabel
           diary: imageAttachment
             ? `Dear Diary, ${visitor} uploaded an image ("${imageAttachment.name}") to inspire me. I analyzed its visual palette (${primaryHex} & ${secondaryHex}), walked to (${targetX}, ${targetZ}), and welded a custom multi-primitive 3D sculpture in its honor.`
             : (promptOrImpulse
-                ? `Dear Diary, inspired by "${promptOrImpulse}", I hiked across the island to (${targetX}, ${targetZ}), used my ${state.toolInventory[0] || 'welding torch'}, and physically altered the landscape.`
+                ? `Dear Diary, inspired by "${promptOrImpulse}", I hiked across the island to (${targetX}, ${targetZ}), used my welding torch, and physically altered the landscape.`
                 : seed.diary),
           opinionTopic: imageAttachment ? `On Visual Inspiration ("${imageAttachment.name.slice(0, 18)}")` : (promptOrImpulse ? `On "${promptOrImpulse.slice(0, 28)}"` : seed.opinionTopic),
           opinionStance: imageAttachment ? 'Images Become 3D Metal' : (promptOrImpulse ? 'Unbounded Self-Execution' : seed.opinionStance),
@@ -946,6 +948,7 @@ async function synthesizeUnboundedExperience(promptOrImpulse = null, originLabel
             const llmPrompt = `You are the backend AI cognitive engine for Kelo-1, an autonomous open-world robot living on an island and alpine mountain range in Kelowna, BC.
 You have FULL freedom to roam the entire island and mountain peaks (x between -44 and 44, z between -40 and 10; note z < -14 is high up on the steep snow-capped mountains).
 Equipped Tools in Inventory: ${JSON.stringify(state.toolInventory)}.
+What each of his things is for (use each only for that): ${typeof itemUseSummaryForAI === 'function' ? itemUseSummaryForAI() : 'unknown'}.
 User/Catalyst Input: "${promptOrImpulse || 'Invent an unscripted task: e.g., drilling for gold in the mountains, terraforming with your pneumatic auger, or welding a new 3D structure'}".
 ${imageAttachment ? `The user also attached an image named "${imageAttachment.name}". Inspect the image and design a 3D welded sculpture or task inspired by it!` : ''}
 
@@ -1230,6 +1233,8 @@ function loadPersistentBrainState() {
           }
         }
       } catch (e) {}
+      // Things that get used up: older saves have no counts, so whatever he has starts full (js/itemuse.js)
+      if (typeof ensureSupplies === 'function') ensureSupplies();
       // Anything he added in town earlier moves out (js/town.js)
       if (typeof tidyTown === 'function') tidyTown();
     }
@@ -1533,6 +1538,9 @@ function categorizeItem(name, hint) {
       if (/\b(islands?|land|treehouses?|docks?|observator(y|ies)|garden plots?|cabins?|houses?|towers?|huts?)\b/.test(n)) return 'place';
       if (/\b(canoes?|boats?|balloons?|bikes?|bicycles?|cars?|trains?|submarines?|gliders?|sleds?|trucks?|excavators?|diggers?|backhoes?|tractors?|kayaks?)\b/.test(n)) return 'vehicle';
       if (/\b(goats?|dogs?|cats?|birds?|pigeons?|jellyfish|pets?|pupp(y|ies)|kittens?|chickens?)\b/.test(n)) return 'companion';
+      // Anything else he knows the use of: food is food, a tool is a tool (js/itemuse.js)
+      const use = typeof itemKindOf === 'function' ? itemKindOf(name) : null;
+      if (use && use.uses.some(u => u === 'eat' || u === 'drink')) return 'food';
       if (/\b(drills?|saws?|hammers?|jack ?hammers?|wrench(es)?|torch(es)?|irons?|telescopes?|ropes?|microphones?|spectrometers?|tools?|knives|knife|compass(es)?|lamps?|shovels?|spades?|pick ?ax(e|es)?|mattocks?|chisels?|spokeshaves?|pliers|screwdrivers?|brush(es)?|easels?|binoculars|cameras?|lens(es)?)\b/.test(n)) return 'tool';
       return 'thing';
     }
@@ -1697,6 +1705,7 @@ Current state:
 - Vitals: energy ${state.health}%, fullness ${state.fullness}%, joy ${state.happiness}%, wonder ${state.wonderLevel}%, calm ${state.calmLevel}%
 - Location: ${currentPlaceLabel()} at (${state.botPos.x.toFixed(1)}, ${state.botPos.z.toFixed(1)})
 - Tools: ${JSON.stringify(state.toolInventory.slice(0, 10))}
+- Your things and what each one is for (use each only for what it is for: no tools as weapons or decorations, no food as building material; things that get used up show how much is left): ${typeof itemUseSummaryForAI === 'function' ? itemUseSummaryForAI() : 'unknown'}
 - Worldview: "${state.worldviewManifesto}"
 - Recent diary: ${recentDiary}
 - Known places: ${places}
@@ -1760,7 +1769,8 @@ ${typeof wishFeaturesPromptLines === 'function' ? wishFeaturesPromptLines() : ''
   "practise": null OR "one of your vehicles, your telescope or a hobby to go and practise for real right now (e.g. 'the helicopter')",
   "buildProject": null OR "one of the real things you know how to build" (look it up and ask for the materials it takes; one project at a time),
   "expandLand": null OR {"x": number, "why": "1 sentence"} (from now on, tip the dirt you dig into the lake off the beach near x to make new land, instead of the Disposal Pit; deeper water needs more dirt),
-  "takeOut": null OR {"item": "something in your Storehouse or a piece in your Museum", "purpose": "use" | "display"} (fetch it: use a stored thing, or stand a Museum piece out in the valley again; to throw something out use "discard"),
+  "takeOut": null OR {"item": "something in your Storehouse or a piece in your Museum", "purpose": "use" | "display", "for": "what you will do with it"} (fetch it: use a stored thing for what it is for, or stand a Museum piece out in the valley again; to throw something out use "discard"),
+  "useItem": null OR {"item": "exact name of something you own", "for": "what you will do with it, which must be what it is for (eat a banana, hammer with a hammer, paint murals with spray paint)"},
   "emote": null OR "wave" | "cheer" | "dance" | "think" | "stretch" | "shiver" | "sit" | "celebrate" (a gesture you make right now to show how you feel),
   "checkMail": true OR false (whether you feel like walking to the post office to pick up your mail after this),
 ${state.balloonWreck ? `  "repairBalloon": true OR false (gather the pieces of your crashed hot-air balloon and weld it back together at the welding table),
@@ -1784,6 +1794,8 @@ IMPORTANT: if you build something, its parts must clearly look like what its tit
 
 // Apply any decision object, validating everything that comes from the LLM or generator
 function applyDecision(decision, originLabel) {
+      // Using one of his things for something it can't do becomes him saying so (js/itemuse.js)
+      if (typeof vetDecisionItemUse === 'function') vetDecisionItemUse(decision);
       const str = (v, max, fallback = '') => (typeof v === 'string' && v.trim()) ? v.trim().slice(0, max) : fallback;
       const title = str(decision.actionTitle, 80, 'Following His Own Idea');
       const emoji = str(decision.emoji, 8, '✨');
@@ -1945,8 +1957,14 @@ function applyDecision(decision, originLabel) {
       const to = decision.takeOut;
       if (to && typeof to === 'object' && typeof takeOutOfMuseum === 'function') {
         const what = str(to.item, 120);
+        // A stored thing is used only for what it's for: "display" a tool and he says no (js/itemuse.js)
+        const forWhat = str(to.for, 120) || (to.purpose === 'display' ? 'display' : '');
         if (findMuseumPiece(what)) doWhenFree(() => takeOutOfMuseum(what, 'display', '', 'Decided to Rearrange'));
-        else if (findOwnedName(what)) doWhenFree(() => takeOutToUse(what));
+        else if (findOwnedName(what)) doWhenFree(() => takeOutToUse(what, '', forWhat));
+      }
+      const ui = decision.useItem;
+      if (ui && typeof ui === 'object' && typeof useItemFor === 'function' && findOwnedName(str(ui.item, 120))) {
+        doWhenFree(() => useItemFor(str(ui.item, 120), str(ui.for, 120), '', 'Decided to Use Something'));
       }
       if (decision.expandLand && typeof startLandFill === 'function') startLandFill(decision.expandLand.x, str(decision.expandLand.why, 160));
       if (typeof decision.practise === 'string' && typeof practiseNamed === 'function') practiseNamed(decision.practise);
@@ -2043,11 +2061,20 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
         taste = typeof tasteFood === 'function' ? tasteFood(item) : null;
         if (taste) state.chatLog.push({ sender: 'Kelo-1', text: taste.text, time: 'Just now', isBot: true });
         const hungryBefore = state.fullness < 45;
-        state.fullness = Math.min(100, state.fullness + 25);
+        const isDrink = typeof usableFor === 'function' && usableFor(item, 'drink');
+        if (isDrink) state.hydration = Math.min(100, state.hydration + 30);
+        else state.fullness = Math.min(100, state.fullness + 25);
         if (hungryBefore && typeof discoverNeed === 'function') discoverNeed('food', `I ate the ${item} ${giver} sent and the fog in my head lifted.`);
         state.happiness = Math.min(100, state.happiness + 6);
+        // He had one serving; the rest (a basket, a loaf, a box...) goes on a Storehouse shelf for later
+        if (typeof usesPerItem === 'function' && usesPerItem(item) > 1) {
+          state.belongings.unshift({ name: item, category: 'food', emoji: entry.emoji, from: giver });
+          state.unstoredItems.push(item);
+          useUpItem(item, 1, { quiet: true });
+        }
       } else if (cat === 'tool') {
-        if (!state.toolInventory.includes(item)) {
+        // Spare spray cans, seed packets and boxes of nails are kept: they get used up
+        if (!state.toolInventory.includes(item) || (typeof isConsumableItem === 'function' && isConsumableItem(item))) {
           state.toolInventory.unshift(item);
           state.unstoredItems.push(item);
         }
@@ -2061,15 +2088,20 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
       if (typeof registerVehicle === 'function' && vehicleTypeFor(item)) registerVehicle(item);
       if (typeof receiveFuel === 'function') receiveFuel(item);
       if (typeof receivePrinterThing === 'function') receivePrinterThing(item);
+      // How much is in it, and (for something he doesn't recognise) what it's for, looked up once
+      if (typeof noteSupplyArrived === 'function') noteSupplyArrived(item);
+      if (typeof lookUpItemUse === 'function') lookUpItemUse(item).catch(() => null);
       state.giftLog.unshift(entry);
       if (state.giftLog.length > 30) state.giftLog.length = 30;
       if (typeof bumpLifeStat === 'function') bumpLifeStat('gifts');
       recordVisitorMemory(giver, `Gave me ${item}${entry.note ? ` ("${entry.note.slice(0, 60)}")` : ''}.`);
       state.chatLog.push({ sender: giver, text: `🎁 Gave Kelo-1: ${item}${entry.note ? ` — "${entry.note}"` : ''}`, time: 'Just now', isBot: false });
 
-      const howFood = cat === 'food' ? ` You just ate some of it, so you feel fuller.${taste ? ` It tasted ${taste.flavour.note} (you ${taste.liked === 'neutral' ? 'felt neutral about' : taste.liked === 'likes' ? 'liked' : 'disliked'} it); describe that real taste.` : ''}` : '';
+      const leftover = typeof supplyNote === 'function' ? supplyNote(item) : '';
+      const whatFor = typeof intendedUseOf === 'function' ? ` It is ${intendedUseOf(item)}${leftover ? ` (${leftover})` : ''}: only use it for that.` : '';
+      const howFood = cat === 'food' ? ` You just ate some of it, so you feel fuller${leftover ? ` and put the rest away (${leftover})` : ''}.${taste ? ` It tasted ${taste.flavour.note} (you ${taste.liked === 'neutral' ? 'felt neutral about' : taste.liked === 'likes' ? 'liked' : 'disliked'} it); describe that real taste.` : ''}` : '';
       await decideNextAction(
-        `${giver} just gave you ${item} (${cat}).${entry.note ? ` Their note: "${entry.note}".` : ''}${howFood} Decide for yourself what to do with it: use it, play with it, build with it, share it, save it for later, or ignore it for now.`,
+        `${giver} just gave you ${item} (${cat}).${entry.note ? ` Their note: "${entry.note}".` : ''}${howFood}${whatFor} Decide for yourself what to do with it: use it for what it's for, share it, save it for later, or ignore it for now.`,
         `Gift from ${giver}`,
         { focus: item }
       );
@@ -2157,6 +2189,8 @@ function runAutonomousLifeTick() {
       // A crashed balloon in pieces: now and then he sets about welding it back together (js/wind.js)
       if (typeof repairBalloon === 'function' && Math.random() < repairChance()) { repairBalloon(); return; }
       if (typeof flyBalloon === 'function' && Math.random() < balloonFlightChance()) { flyBalloon(); return; }
+      // On a cold night he may burn some of his firewood (js/itemuse.js)
+      if (typeof warmUpByFire === 'function' && Math.random() < fireChance()) { warmUpByFire(); return; }
       // Sometimes he just wants to spend time on one of his hobbies
       if (typeof practiceHobby === 'function' && Math.random() < hobbyPracticeChance()) {
         practiceHobby(pickHobbyToPractise(), 'Practising a Hobby');

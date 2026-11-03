@@ -83,10 +83,12 @@ async function takeOutOfMuseum(name, purpose = 'display', why = '', originLabel 
       }
     }
 
-// Take something off the Storehouse shelves to use it: he fetches it and does what fits
-async function takeOutToUse(name, why = '') {
+// Take something off the Storehouse shelves to use it: he fetches it and uses it for what it's for
+// (`purpose` is what he means to do with it; something it can't do, and he says so: js/itemuse.js)
+async function takeOutToUse(name, why = '', purpose = '') {
       const item = findOwnedName(name);
       if (!item) return false;
+      if (typeof useItemFor === 'function') return useItemFor(item, purpose, why, 'Took It Out to Use');
       const hobby = state.hobbies.find(h => h.tool === item) || (typeof hobbyForItem === 'function' && hobbyForItem(item) ? findHobby(hobbyForItem(item).name) : null);
       if (hobby && typeof practiceHobby === 'function') return practiceHobby(hobby, 'Took It Out to Use');
       const telescope = /telescope/i.test(item) && typeof stargaze === 'function';

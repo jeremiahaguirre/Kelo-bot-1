@@ -124,6 +124,7 @@ Kelo-bot-1/
 │   ├── landfill.js      # Tipping dug dirt into the lake to make new land
 │   ├── disposal.js      # The Disposal Pit: whatever he throws in is gone for good
 │   ├── knowhow.js       # Learning how tools work, fuel, and stargazing at night
+│   ├── itemuse.js       # What each thing is for, and how much is left of things that get used up
 │   ├── seasons.js       # Seasonal colours, snow, snowfall, and getting stuck in deep snow
 │   ├── wind.js          # Wind over his days: kites need it, balloons crash in it and get welded back
 │   ├── landscape.js     # Chopping trees, planting, roads and hills, and undoing them

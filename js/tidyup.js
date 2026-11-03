@@ -65,7 +65,7 @@ function tidyCandidates() {
         if (b && b.category === 'junk') { score = 9; reason = 'it\'s just junk from a dig'; }
         else if (typeof isBrokenItem === 'function' && isBrokenItem(n)) { score = 8; reason = 'it\'s broken'; }
         else if (typeof isPrinterSupply === 'function' && isPrinterSupply(n) && /empty/i.test(n)) { score = 8; reason = 'the spool is empty'; }
-        else if (counted[n] > 1) { score = 6; reason = 'I have more than one'; }
+        else if (counted[n] > 1 && !(typeof isConsumableItem === 'function' && isConsumableItem(n))) { score = 6; reason = 'I have more than one'; }
         else if (idle >= UNTOUCHED_DAYS) { score = 3 + Math.min(3, Math.floor(idle / UNTOUCHED_DAYS)); reason = `I haven't touched it in ${idle} days`; }
         if (score) out.push({ name: n, kind: 'item', score, reason });
       });

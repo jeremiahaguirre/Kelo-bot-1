@@ -80,6 +80,9 @@ function readyToOperate(name, v = null, { quiet = false } = {}) {
 function requestFuel(fuel, why) {
       const type = FUEL_TYPES[fuel];
       if (!type) return;
+      // Some left in a can on his shelf? He fills up from that before asking for more
+      const can = ownedItemNames().find(n => type.re.test(n));
+      if (can) { doWhenFree(() => refuelWith(can)); return; }
       // Already waiting for some (asked, or sitting in the mailbox)?
       if (state.requestsToUser.some(r => !r.fulfilled && type.re.test(r.requestedGear || '')) || state.mailbox.some(m => type.re.test(m.name || ''))) return;
       addItemRequest(type.ask, 'fuel', why, 'Fuel');
@@ -162,7 +165,9 @@ async function refuelWith(item, originLabel = 'Filling Up') {
       state.isPracticing = true;
       try {
         if (typeof setCarriedObject === 'function') setCarriedObject(buildItemModel3D(item, { label: false }));
+        const filled = [];
         for (const v of thirsty) {
+          if (!ownedItemNames().includes(item)) break; // the can is empty
           const plain = v.name.replace(/^(an?|the)\s+/i, '');
           state.currentLocKey = 'custom';
           state.customPlaceName = `the ${plain}`;
@@ -173,10 +178,17 @@ async function refuelWith(item, originLabel = 'Filling Up') {
           renderAllUI();
           await waitForArrival(60000);
           await new Promise(r => setTimeout(r, 2200));
-          v.fuel = 100;
+          // A can holds about one tank: it pours what the tank needs, or what's left (js/itemuse.js)
+          const need = 100 - fuelLeft(v);
+          const got = typeof useUpItem === 'function' ? useUpItem(item, need, { why: `filling the ${plain}` }).used : need;
+          v.fuel = Math.min(100, Math.round((fuelLeft(v) + got) * 10) / 10);
+          filled.push(v);
         }
-        if (typeof forgetItem === 'function') forgetItem(item);
-        const names = thirsty.map(v => v.name.replace(/^(an?|the)\s+/i, '')).join(' and ');
+        if (typeof useUpItem !== 'function' && typeof forgetItem === 'function') forgetItem(item);
+        const left = typeof supplyNote === 'function' ? supplyNote(item) : '';
+        if (left) state.speechBubble = `The tank's topped up, and there's ${left.replace(' left', '')} of the ${fuel} left for later.`;
+        else if (filled.some(v => fuelLeft(v) < 100)) requestFuel(fuel, `One can wasn't enough to fill everything that runs on ${fuel}.`);
+        const names = filled.map(v => v.name.replace(/^(an?|the)\s+/i, '')).join(' and ');
         state.moodTitle = `Filled up the ${names}`.slice(0, 80);
         state.diaryEntries.unshift({
           time: originLabel, location: 'the vehicle yard', mood: '⛽ Full tank',

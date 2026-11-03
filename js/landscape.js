@@ -356,7 +356,7 @@ async function plantSeeds(x, z, why = '', originLabel = 'Shaping the Valley') {
         const e = { id: newEditId('plant'), type: 'plant', kind, seed: seeds, x, z, at: Date.now(), why: String(why).slice(0, 160) };
         state.worldEdits.push(e);
         renderEdit(e);
-        if (typeof forgetItem === 'function') forgetItem(seeds);
+        if (typeof useUpItem === 'function') useUpItem(seeds, 1, { why: 'planting' }); else if (typeof forgetItem === 'function') forgetItem(seeds);
         if (typeof seasonApplied !== 'undefined') seasonApplied = null; // let the new leaves match the season
         sayAndLog(`Planted ${kind === 'tree' ? 'a tree' : 'flowers'}`, '🌱', kind === 'tree' ? "A seedling! In a few days it'll be a young tree." : 'Flowers, right here. They should be up in no time.',
           `I planted the ${seeds.replace(/^(an?|the|some)\s+/i, '')} in the valley, then watered it in. ${why ? why + ' ' : ''}I'll watch it grow over the next few days.`, originLabel);
@@ -429,7 +429,7 @@ async function buildRoad(fromX, fromZ, toX, toZ, why = '', originLabel = 'Shapin
         removeEditMesh(e.id + '-wip');
         state.worldEdits.push(e);
         renderEdit(e);
-        if (typeof forgetItem === 'function') forgetItem(gravel);
+        if (typeof useUpItem === 'function') useUpItem(gravel, 1, { why: 'on a road' }); else if (typeof forgetItem === 'function') forgetItem(gravel);
         sayAndLog('Built a gravel road', '🛤️', 'A real road! Now nobody has to walk through the mud here.',
           `I built a gravel road about ${Math.round(Math.hypot(e.toX - e.x, e.toZ - e.z))} steps long, the proper way: dug out the bed, wheeled in the gravel, raked it even and packed it down. ${why ? why + ' ' : ''}It felt good to make something everyone can use.`, originLabel);
         return true;

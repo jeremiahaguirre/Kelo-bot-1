@@ -12,7 +12,7 @@ Everything he gets (tools, vehicles, seeds, materials) arrives **only** through 
 He may change the world freely. He can never move or change the buildings, and he can't build new ones.
 
 ## Recently shipped (on `main`, pushed)
-  agent → memory → worldclock → needs → forms → netnode → conversation → postoffice → workshop → hobbies → mining → growth → kelo-body → scene → house → animations → items3d → gearmodels → everydaymodels → materials → realmodels → storehouse → museum → basements → viewer → takeout → tidyup → vehicles → landfill → disposal → knowhow → seasons → wind → landscape → groundwork → skills → projects → town → coderequests → wishfeatures → wildlife → companions → pastimes → shopkeeping → printer → main → portal → explore → minimap → tryit.
+  agent → memory → worldclock → needs → forms → netnode → conversation → postoffice → workshop → hobbies → mining → growth → kelo-body → scene → house → animations → items3d → gearmodels → everydaymodels → materials → realmodels → storehouse → museum → basements → viewer → takeout → tidyup → vehicles → landfill → disposal → knowhow → itemuse → seasons → wind → landscape → groundwork → skills → projects → town → coderequests → wishfeatures → wildlife → companions → pastimes → shopkeeping → printer → main → portal → explore → minimap → tryit.
 - **Cute Kelo-1** (`js/kelo-body.js`). A small, friendly humanoid robot about 2.6 units tall to the antenna tip (head top about 2.4): a big round teal head with a dark face screen, glowing eyes that blink and show happy (^ ^), sad (droopy, frown) or sleeping looks from `keloMoodNow()`, pink cheek lights, headphone ears and a spring antenna. About 18k triangles.
   - Rig names are unchanged (`keloBody` at `KELO_HIP_Y` = 1.06, legs at `KELO_LEG_Y` = 1.04, elbows, wrists, knees, ankles, `setKeloGrip`, `keloPalmLocal`). Other files read the limb lengths from the `KELO_*` constants, so changing them resizes poses, seats, squats and shelf reaches.
   - `updateKeloFace(t, dt, resting)` runs at the end of `finishKeloPose`. `keloSitKnee(a, hipH)` in animations.js bends his knees so his feet rest on the ground when he sits.
@@ -33,6 +33,10 @@ He may change the world freely. He can never move or change the buildings, and h
   - `BUILD_PLANS` (6 real items, each with its materials, tools and a real-size model). `startProject` is a NetNode visit followed by requests.
   - An 8-second check calls `buildProject` once everything has arrived: it builds at the bench, uses up the materials, and places the item (`state.projects`).
   - Reading at NetNode can spark a project (`maybeProjectFromReading`), and the AI can choose one with `buildProject`.
+- **Things are used only as intended, and expendables run out** (`js/itemuse.js`, after knowhow.js).
+  - `ITEM_KINDS` says what every kind of thing is for (`itemKindOf`, `intendedUseOf`, `usableFor(name, purpose)`). Unknown things are looked up once at NetNode (`lookUpItemUse`, cached in `state.itemPurposes`).
+  - `useItemFor(name, purpose)` is the one way to "use" a stored thing (takeOutToUse, the AI's `useItem` and `takeOut.for`): the wrong purpose and he says so, then picks the right thing or asks for it. `vetDecisionItemUse` catches AI plans like "hammer with the banana". `hobbyGearCheck` gates hobbies; `buildableOwnedNames` gates builds.
+  - Consumables keep uses in `state.supplies[name] = { cur, per }` (the open copy; spare copies are full). `useUpItem(name, n)` opens the next copy, and when the last is gone writes a diary line and asks again if he still needs it. Shown as "Spray paint (2 of 3 left)" in the inventory pills and Storehouse viewer. Filament keeps its grams in printer.js. Old saves start full (`ensureSupplies` on load).
 - **#26 Tools work only as intended** (`js/knowhow.js`).
   - `GEAR_KNOWHOW` lists each tool and vehicle with its Wikipedia page, a how-to line and its fuel. `state.knowHow[key]` is set by `learnToUse()` (a NetNode trip).
   - `readyToOperate(name, v)` gates digging, hauling, boating and long rides; `{ quiet: true }` checks without fixing anything.
@@ -67,7 +71,7 @@ He may change the world freely. He can never move or change the buildings, and h
 
 ## Architecture decisions
 - **No build step.** The page uses plain global-script JS loaded in order from `index.html`:
-  agent → memory → worldclock → needs → forms → netnode → conversation → postoffice → workshop → hobbies → mining → growth → kelo-body → scene → house → animations → items3d → gearmodels → everydaymodels → materials → realmodels → storehouse → museum → basements → viewer → takeout → tidyup → vehicles → landfill → disposal → knowhow → seasons → wind → landscape → groundwork → skills → projects → town → coderequests → wishfeatures → wildlife → companions → pastimes → shopkeeping → printer → main → portal → explore → minimap → tryit.
+  agent → memory → worldclock → needs → forms → netnode → conversation → postoffice → workshop → hobbies → mining → growth → kelo-body → scene → house → animations → items3d → gearmodels → everydaymodels → materials → realmodels → storehouse → museum → basements → viewer → takeout → tidyup → vehicles → landfill → disposal → knowhow → itemuse → seasons → wind → landscape → groundwork → skills → projects → town → coderequests → wishfeatures → wildlife → companions → pastimes → shopkeeping → printer → main → portal → explore → minimap → tryit.
   (`js/shop.js` is loaded only by `shop.html`.) A later file silently replaces a same-named function from an earlier one, so keep top-level names unique.
   Three.js r128, Tailwind and Phosphor all load from CDN. Other languages are allowed if they help.
 - **State and persistence.**

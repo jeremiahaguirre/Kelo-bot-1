@@ -57,8 +57,10 @@ function modelThumbnail(key, buildModel) {
     }
 
 function storehouseViewerItems() {
+      const seen = {};
       return storedItems().map((it, i) => ({
-        label: it.name, name: it.name, floor: shelfSlots.length ? Math.floor(i / shelfSlots.length) : 0,
+        // How much is left of things that get used up: "Spray paint (2 of 3 left)" (js/itemuse.js)
+        label: typeof supplyLabel === 'function' ? supplyLabel(it.name, seen[it.name] = (seen[it.name] ?? -1) + 1) : it.name, name: it.name, floor: shelfSlots.length ? Math.floor(i / shelfSlots.length) : 0,
         image: () => modelThumbnail('item:' + it.name, () => buildItemModel3D(it.name, { label: false }))
       }));
     }

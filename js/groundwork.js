@@ -209,7 +209,7 @@ async function paveRoad(id = 'any', why = '', originLabel = 'Paving a Road') {
         e.surface = 'asphalt';
         e.pavedAt = Date.now();
         renderEdit(e);
-        if (typeof forgetItem === 'function') forgetItem(asphalt);
+        if (typeof useUpItem === 'function') useUpItem(asphalt, 1, { why: 'paving a road' }); else if (typeof forgetItem === 'function') forgetItem(asphalt);
         sayAndLog('Paved his road with asphalt', '🛣️', 'Smooth black asphalt! It even has a line down the middle.',
           `I paved my gravel road with the ${String(asphalt).replace(/^(an?|the|some)\s+/i, '')}: wheeled it in hot, raked it smooth and rolled it flat before it cooled. ${why ? why + ' ' : ''}That load is all used up now.`, originLabel);
         return true;

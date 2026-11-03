@@ -73,6 +73,9 @@ function practiceWhenFree(hobby, originLabel, attempt = 0) {
 function maybeStartHobbyFromItem(itemName, from) {
       const template = hobbyForItem(itemName);
       if (!template) return null;
+      // Only if the thing is really for it: birdseed isn't for planting, a drum of jet fuel isn't for music (js/itemuse.js)
+      const purpose = typeof hobbyPurpose === 'function' ? hobbyPurpose(template) : null;
+      if (purpose && !usableFor(itemName, purpose)) return null;
       const isNew = !findHobby(template.name);
       const hobby = addHobby(template, `${itemName} from ${from}`);
       if (hobby && isNew) {
@@ -301,6 +304,8 @@ async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
       if (!hobby || state.isBusy || state.isBuilding || state.isPracticing) return false;
       // No kite, or (once he knows) no wind for it (js/wind.js)
       if (hobby.style === 'kite' && typeof kiteWontFlyToday === 'function' && kiteWontFlyToday(hobby)) return false;
+      // The right gear for it (paint for murals, seeds for planting...), or he says so and asks (js/itemuse.js)
+      if (typeof hobbyGearCheck === 'function' && !hobbyGearCheck(hobby).ok) return false;
       state.isPracticing = true;
       try {
         const skillBefore = hobby.skill;
@@ -380,6 +385,11 @@ async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
           result = `I spent a while on ${hobby.name.toLowerCase()}. I'm getting better at it.`;
         }
 
+        // Paint, seeds, film and batteries get used up (js/itemuse.js)
+        const usedUp = typeof useHobbySupplies === 'function' ? useHobbySupplies(hobby) : null;
+        const toolLeft = hobby.tool && typeof supplyNote === 'function' ? supplyNote(hobby.tool) : '';
+        if (usedUp && usedUp.ranOut) result += ' That was the last of it.';
+        else if (toolLeft) result += ` (${plainItem(hobby.tool)}: ${toolLeft}.)`;
         state.speechBubble = result;
         state.changedLatelySummary = `Practised ${hobby.name} (skill ${skillBefore} → ${hobby.skill})`;
         state.happiness = Math.min(100, state.happiness + 6);

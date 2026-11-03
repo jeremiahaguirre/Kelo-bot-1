@@ -134,6 +134,7 @@ Kelo-bot-1/
 │   ├── weather.js       # Spring rain (puddles, wet ground, faster-growing plants) and winter lake ice he learns to test
 │   ├── landscape.js     # Chopping trees, planting, roads and hills, and undoing them
 │   ├── groundwork.js    # Researching how roads, paving, earthwork and planting are done; the right tools, used in turn
+│   ├── plantcare.js     # Soil moisture, nutrients and wilting; plants and garden beds grow with care; watering can, tap and fertilizer
 │   ├── skills.js        # Real skills: practising the vehicles, telescope and hobbies he was given; doing what visitors ask
 │   ├── projects.js      # Real builds: finding plans online, asking for materials (or sawing his own logs), building them
 │   ├── town.js          # Keeps the town free of his builds (the beach is fine)

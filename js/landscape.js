@@ -182,6 +182,8 @@ function plantingMesh(e) {
     }
 
 function growthOf(e) {
+      // Water, nutrients and care decide it (js/plantcare.js)
+      if (typeof plantGrowthOf === 'function') return plantGrowthOf(e);
       // Spring rain gives it a head start on top of its own days (js/weather.js)
       const days = (Date.now() - e.at + (e.rainMs || 0)) / (typeof WORLD_DAY_MS === 'number' ? WORLD_DAY_MS : 43200000);
       return Math.min(1, 0.15 + days / GROW_DAYS);
@@ -258,7 +260,7 @@ function renderEdit(e) {
       if (!landscapeGroup || editMeshes[e.id]) return;
       const m = e.type === 'chop' ? stumpMesh(e) : e.type === 'plant' ? plantingMesh(e) : e.type === 'road' ? roadMesh(e) : hillMesh(e);
       if (!m) return;
-      if (e.type === 'plant') m.scale.setScalar(growthOf(e));
+      if (e.type === 'plant') (typeof plantcareLook === 'function' ? plantcareLook(e, m) : m.scale.setScalar(growthOf(e)));
       landscapeGroup.add(m);
       editMeshes[e.id] = m;
     }
@@ -374,7 +376,7 @@ async function plantSeeds(x, z, why = '', originLabel = 'Shaping the Valley') {
           holdJobTool(/watering can|garden hose|\bhose\b/i, 'normal');
           state.speechBubble = 'And a good long drink to settle it in.';
           renderAllUI();
-          await new Promise(r => setTimeout(r, 2200));
+          if (typeof waterInPlanting === 'function') await waterInPlanting(x, z); else await new Promise(r => setTimeout(r, 2200));
         }
         const kind = /flower|bulb|wildflower|sunflower|tulip|daisy/i.test(seeds) ? 'flowers' : 'tree';
         const e = { id: newEditId('plant'), type: 'plant', kind, seed: seeds, x, z, at: Date.now(), why: String(why).slice(0, 160) };
@@ -628,7 +630,7 @@ function renderLandscapeList() {
       const label = { chop: '🪓 Chopped a tree', plant: '🌱 Planted', road: '🛤️ Built a road', hill: '⛰️ Raised a hill' };
       el.innerHTML = state.worldEdits.slice().reverse().slice(0, 12).map(e => `
         <div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200">
-          ${escapeHtml(e.type === 'hill' && e.h < 0 ? '🕳️ Dug a hollow' : (label[e.type] || e.type))}${e.type === 'plant' ? ` ${escapeHtml(e.kind === 'tree' ? 'a tree' : 'flowers')} <span class="text-slate-500">(${Math.round(growthOf(e) * 100)}% grown)</span>` : ''}
+          ${escapeHtml(e.type === 'hill' && e.h < 0 ? '🕳️ Dug a hollow' : (label[e.type] || e.type))}${e.type === 'plant' ? ` ${escapeHtml(e.kind === 'tree' ? 'a tree' : 'flowers')} <span class="text-slate-500">(${typeof plantStageOf === 'function' ? escapeHtml(plantStageOf(e)) + ', ' : ''}${Math.round(growthOf(e) * 100)}% grown)</span>` : ''}
           ${e.why ? `<div class="text-slate-400 italic">${escapeHtml(e.why)}</div>` : ''}
         </div>`).join('');
     }
@@ -645,7 +647,7 @@ window.addEventListener('DOMContentLoaded', () => {
     renderLandscapeList();
     // Plantings grow as his days pass
     setInterval(() => {
-      state.worldEdits.forEach(e => { if (e.type === 'plant' && editMeshes[e.id]) editMeshes[e.id].scale.setScalar(growthOf(e)); });
+      state.worldEdits.forEach(e => { if (e.type === 'plant' && editMeshes[e.id]) (typeof plantcareLook === 'function' ? plantcareLook(e, editMeshes[e.id]) : editMeshes[e.id].scale.setScalar(growthOf(e))); });
       renderLandscapeList();
       if (typeof renderSkillsList === 'function') renderSkillsList();
     }, 5000);

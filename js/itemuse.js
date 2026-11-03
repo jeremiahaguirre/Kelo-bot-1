@@ -24,6 +24,7 @@ const ITEM_KINDS = [
   { kind: 'batteries', label: 'batteries to power gadgets', re: /^(?!.*(powered|operated)).*\bbatter(y|ies)\b/i, uses: ['power'], per: 5, unit: 'charges' },
   { kind: 'film', label: 'film for a camera', re: /^(?!.*camera).*\bfilm\b/i, uses: ['camera film'], per: 3, unit: 'photo walks' },
   { kind: 'camera', label: 'a camera for taking photos', re: /camera|polaroid/i, uses: ['photograph'] },
+  { kind: 'fertilizer', label: 'fertilizer to feed plants', re: /fertili[sz]er|compost|bone ?meal|blood ?meal|plant food|manure|worm castings/i, uses: ['fertilize'], per: 4, unit: 'feedings' },
   { kind: 'birdseed', label: 'bird food', re: /bird ?seed/i, uses: ['feed birds', 'build'], per: 3, unit: 'fillings' },
   { kind: 'seeds', label: 'seeds for planting', re: /^(?!.*light ?bulb).*\b(seeds?|saplings?|bulbs?|seedlings?|acorns?|cuttings?)\b/i, uses: ['plant'], per: 4, unit: 'plantings' },
   { kind: 'paving', label: 'paving for roads and paths', re: /gravel|crushed stone|road base|asphalt|paving/i, uses: ['pave'], per: 1, unit: 'road' },
@@ -99,7 +100,8 @@ const PURPOSE_INFO = {
   display: { say: 'decoration', ask: null }, 'feed birds': { say: 'feeding birds', ask: 'A bag of birdseed' }, climb: { say: 'climbing', ask: 'Climbing rope and carabiners' },
   power: { say: 'powering gadgets', ask: 'A pack of AA batteries' }, weapon: { say: 'a weapon', ask: null }, measure: { say: 'measuring', ask: null },
   'watch birds': { say: 'watching birds', ask: 'A pair of binoculars' }, navigate: { say: 'finding the way', ask: 'A compass' }, fish: { say: 'fishing', ask: 'A fishing rod' },
-  'snow travel': { say: 'getting about in snow', ask: 'A pair of snowshoes' }, garden: { say: 'gardening', ask: null }, 'water plants': { say: 'watering plants', ask: 'A watering can' }
+  'snow travel': { say: 'getting about in snow', ask: 'A pair of snowshoes' }, garden: { say: 'gardening', ask: null }, 'water plants': { say: 'watering plants', ask: 'A watering can' },
+  fertilize: { say: 'feeding plants', ask: 'A bag of all-purpose fertilizer' }
 };
 
 // Words in a plan or request that name a purpose (first match wins)
@@ -111,6 +113,7 @@ const PURPOSE_WORDS = [
   [/\beat|\bsnack|\btaste|\bmeal|lunch|breakfast|dinner/i, 'eat'],
   [/\bdrink|\bsip\b|thirst/i, 'drink'],
   [/feed (?:the )?birds/i, 'feed birds'],
+  [/fertili[sz]|feed (?:the |my )?(?:plants|garden|soil)/i, 'fertilize'],
   [/\bplant|\bsow\b|\bgrow\b/i, 'plant'],
   [/\bpave|\broad|\bpath\b/i, 'pave'],
   [/mural|graffiti|\btag\b|spray/i, 'mural'],
@@ -312,7 +315,7 @@ function stillNeeds(name, k) {
       if (!k) return false;
       if (state.hobbies.some(h => k.uses.includes(hobbyPurpose(h)))) return true;
       if (k.kind === 'fuel') return state.vehicles.some(v => typeof fuelNeededBy === 'function' && fuelNeededBy(v) && FUEL_TYPES[fuelNeededBy(v)] && FUEL_TYPES[fuelNeededBy(v)].re.test(name));
-      if (k.kind === 'seeds' || k.kind === 'welding supply') return true;
+      if (k.kind === 'seeds' || k.kind === 'welding supply' || k.kind === 'fertilizer') return true;
       if (k.kind === 'batteries') return ownedItemNames().some(n => itemKindOf(n).needsPower);
       if (k.kind === 'film') return ownedItemNames().some(n => /film camera|polaroid|instant camera/i.test(n));
       return false;

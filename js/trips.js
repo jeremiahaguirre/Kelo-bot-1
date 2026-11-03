@@ -710,15 +710,20 @@ function planTrip(v, to) {
       const trailer = trailerFor(key);
       Object.assign(plan, { tow, towKey, trailer, trailerKind: tk });
       const towFrom = tow ? tripCellAt(cells, tow.x, tow.z) : tripCellAt(cells, 24, -1);
-      tripAssumeChains = true;
-      let towFlood;
-      try { towFlood = tripFlood(cells, towKey, [towFrom]); } finally { tripAssumeChains = false; }
+      // The truck keeps to dry ground if it can; only with nowhere dry to go does it plan on tire chains
+      const towFloodWith = chains => {
+        tripAssumeChains = chains;
+        try { return tripFlood(cells, towKey, [towFrom]); } finally { tripAssumeChains = false; }
+      };
+      let towFlood = towFloodWith(false);
       let drop = null, cargoRoute = null;
+      const findDrop = () => {
+      drop = null; cargoRoute = null;
       if (key === 'boat') {
         // Back it down the beach below the yard into the water
         drop = tripCellAt(cells, BOAT_LAUNCH.x, BOAT_LAUNCH.startZ);
         if (!Number.isFinite(towFlood.dist[drop.j * TRIP_GRID.nx + drop.i])) drop = null;
-        if (typeof lakeFrozen === 'function' && lakeFrozen()) return { ...plan, ok: false, why: 'The lake is frozen solid, so there is nowhere to launch the boat until spring.' };
+        if (typeof lakeFrozen === 'function' && lakeFrozen()) plan.frozen = 'The lake is frozen solid, so there is nowhere to launch the boat until spring.';
       } else if (key === 'excavator') {
         drop = goalOf(towFlood);
         if (drop) {
@@ -759,6 +764,10 @@ function planTrip(v, to) {
           }
         }
       }
+      };
+      findDrop();
+      if (!drop && plan.ok !== false && !tripHasChains()) { towFlood = towFloodWith(true); findDrop(); }
+      if (plan.frozen) return { ...plan, ok: false, why: plan.frozen };
       if (!drop) {
         return { ...plan, ok: false, why: key === 'snowmobile'
           ? `I want to ride the snowmobile ${dest.label}, but there's no snow anywhere a truck can drive to: the snow line is up past the steep slopes. It'll have to wait for more snow.`

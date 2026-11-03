@@ -105,6 +105,13 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
     - **Phase 1, now:** measure, find and verify bugs, perf hotspots and cleanup items, and write `.claude/review.md` (tiny safe fixes only).
     - **Phase 2, after tasks 1-9 are merged:** apply the plan across the merged code, re-profile, and fix new bugs from the merges.
 
+11. **Talk tab redesign** (`agent/talk`, started): "Clean up and improve the Talk tab of my interaction with him."
+    - A clean chat thread: his and your bubbles with avatars, world day/time separators, a "Kelo-1 is thinking…" indicator, auto-scroll with "Jump to latest", NetNode lookups as inline cards, and status chips (queued → doing → done) for things he does because you asked.
+    - One composer: multiline (Enter sends, Shift+Enter new line), send button, a "+" menu with Attach photo and Send a gift/tool/toy, character count, disabled and sending states.
+    - Suggested reply chips that fit his context (the helicopter one only if he has one); your name saved on the device and edited in one place; an empty state for a fresh Kelo-1; "Load earlier" within MAX_CHAT_LOG.
+    - Accessible (labels, focus, aria-live), re-render only on change, escapeHtml everywhere, no inline handlers (CSP).
+    - New code in `js/talk.js` (after main.js). Status: studying the old tab.
+
 ## Owner notes to keep in mind
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.
 - "He can build anything", he can ask for lists of things, and code upgrades to his world.

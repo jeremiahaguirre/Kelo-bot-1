@@ -982,6 +982,7 @@ function showPlantDetail(kind, near) {
         const built = plantModels[kind];
         aggregatePlantGroup.remove(built.root);
         built.root.traverse(o => {
+          if (o.isSprite) { o.material.dispose(); return; }  // sprites share one geometry: keep it
           if (!o.geometry) return;
           // unit geometries and shared materials stay; clones and one-offs go
           if (!Object.values(PLANT_GEO).includes(o.geometry)) o.geometry.dispose();
@@ -1231,6 +1232,7 @@ function removeConcretePourMesh(id) {
 // The look of a pour changes as it cures; redraw now and then
 function refreshConcretePours() {
       (state.concretePours || []).forEach(p => {
+        if (typeof concretePourActive !== 'undefined' && concretePourActive === p.id) return; // being worked on: the job draws it
         const m = concretePourMeshes[p.id];
         const key = `${p.stage}|${Math.floor((typeof concretePourAge === 'function' ? concretePourAge(p) : 0) * 4)}`;
         if (!m || m.userData.key !== key) {

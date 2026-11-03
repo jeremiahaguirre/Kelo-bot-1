@@ -446,7 +446,8 @@ async function plantReadyForService(kind) {
     }
 
 // --- Running a plant --------------------------------------------------------------------------------
-let plantBusy = null;   // 'batch' or 'asphalt' while one is running
+let plantBusy = null;
+let concretePourActive = null;  // the pour he is working on right now   // 'batch' or 'asphalt' while one is running
 function plantBusyWith() { return plantBusy; }
 
 function plantFree() {
@@ -784,6 +785,7 @@ async function pourConcrete(kind = 'path', x = null, z = null, toX = null, toZ =
         state.customPlaceName = kind === 'pad' ? 'his new concrete pad' : 'his new concrete path';
         state.moodEmoji = '🧱';
         state.concretePours.push(p);
+        concretePourActive = p.id;
         // 1. Truck the concrete over (it keeps turning), then set out the forms
         if (truck && readyToOperate(truck.name, truck, { quiet: true })) {
           const side = { x: p.x - Math.sin(Math.atan2(p.toX - p.x, p.toZ - p.z)) * 4.5 + 1.5, z: p.z - 2.4 };
@@ -838,10 +840,12 @@ async function pourConcrete(kind = 'path', x = null, z = null, toX = null, toZ =
         return false;
       } finally {
         if (p.stage !== 'curing' && p.stage !== 'cured') {
-          // Didn't get finished: the forms stay, waiting for concrete
-          if (p.stage !== 'forms') p.stage = 'forms';
+          // Didn't get finished: the forms come up again
+          state.concretePours = state.concretePours.filter(x => x !== p);
+          removeConcretePourMesh(p.id);
         }
         if (truck) truck.pouring = false;
+        concretePourActive = null;
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
         state.microPose = 'normal';
         state.isPracticing = false;
@@ -1118,6 +1122,9 @@ function plantRefresh3D() {
 
 window.addEventListener('DOMContentLoaded', () => {
   ensureAggregatePlantState();
+  (state.vehicles || []).forEach(v => { v.charging = false; v.pouring = false; });
+  // A pour left half-done when the page closed: its forms came up
+  state.concretePours = (state.concretePours || []).filter(p => p.stage === 'curing' || p.stage === 'cured');
   setTimeout(() => {
     injectPlantsPanel();
     renderPlantsPanel();

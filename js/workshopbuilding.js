@@ -365,11 +365,12 @@ function buildWorkshop3D() {
       sub.position.set(0, WS_EAVE - 3.35, hz + 0.1);
       wsGroup.add(sub);
       wsFrontFade.push(sub);
+      const packMat = mmGlow('window');
+      packMat.emissive.setHex(0xfff4d6);
       [-5.95, 0.3, 6.05].forEach(x => {
         const lamp = mmBox(wsGroup, 0.4, 0.22, 0.25, mmMat('dark'), x, 5.6, hz + 0.18);
-        const lens = mmBox(wsGroup, 0.32, 0.03, 0.18, mmGlow('window'), x, 5.58, hz + 0.2);
-        lens.material.emissive.setHex(0xfff4d6);
-        wsLights.push({ mesh: lens, outdoor: true });
+        const lens = mmBox(wsGroup, 0.32, 0.03, 0.18, packMat, x, 5.58, hz + 0.2);
+        if (x === 0.3) wsLights.push({ mesh: lens, outdoor: true });
         wsFrontFade.push(lamp);
       });
       [[-hx, -hz], [hx, -hz], [-hx, hz], [hx, hz]].forEach(([x, z]) => mmBox(wsGroup, 0.14, WS_EAVE, 0.14, trim, x + Math.sign(x) * 0.1, 0, z + Math.sign(z) * 0.1));
@@ -479,27 +480,25 @@ function buildWorkshop3D() {
 
       // Lights: LED high-bay fixtures under the roof and under the deck (they glow), plus two real
       // point lights that are only bright while the camera is near
+      const lensMat = mmGlow('window');
+      lensMat.emissive.setHex(0xf1f5ff);
       const fixture = (x, y, z) => {
         mmBox(wsGroup, 0.6, 0.08, 0.6, mmMat('dark'), x, y, z);
-        const lens = mmBox(wsGroup, 0.5, 0.02, 0.5, mmGlow('window'), x, y - 0.02, z);
-        lens.material.emissive.setHex(0xf1f5ff);
-        wsLights.push({ mesh: lens });
+        const lens = mmBox(wsGroup, 0.5, 0.02, 0.5, lensMat, x, y - 0.02, z);
+        if (!wsLights.some(l => l.mesh.material === lensMat)) wsLights.push({ mesh: lens });
       };
       for (let x = -6; x <= 6; x += 3) [-4.5, 0, 4.5].forEach(z => fixture(x, WS_EAVE - 1.0, z));
       for (let x = -2.4; x <= 3.2; x += 2.8) [-5, -1.6, 1.8, 5.2].forEach(z => fixture(x, WS_F2 - 0.4, z));
-      const lamp1 = new THREE.PointLight(0xf6f8ff, 0, 18, 2);
-      lamp1.position.set(0, WS_F2 - 0.8, 1);
-      const lamp2 = new THREE.PointLight(0xf6f8ff, 0, 20, 2);
-      lamp2.position.set(0, WS_EAVE - 1.5, -2);
-      wsGroup.add(lamp1, lamp2);
-      wsGroup.userData.lamps = [lamp1, lamp2];
+      // (no real point lights: each one would make every material in the world dearer to draw)
+      wsGroup.userData.lamps = [];
 
       // The work stations other systems can move into
       buildWorkshopStations();
 
+      wsMergeStatic(wsGroup, new Set([...wsFrontFade, ...wsDeckMeshes, ...(typeof cutawayRoofMeshes !== 'undefined' ? cutawayRoofMeshes : [])]),
+        [wsLift, crane, ...Object.values(doors), ...Object.values(WORKSHOP_STATIONS).map(st => st.group).filter(Boolean), wsGroup.userData.ram]);
       wsFloor1 = mmGroup(wsGroup, 0, WS_F1, 0);
       wsFloor2 = mmGroup(wsGroup, 0, WS_F2, 0);
-      wsGroup.traverse(o => { if (o.isMesh && o.castShadow === undefined) o.castShadow = false; });
       scene.add(wsGroup);
       wsUpdateLift(0);
       wsClearSceneryInside();
@@ -520,6 +519,46 @@ function buildWorkshop3D() {
       wsInitHover();
       wsUpdateLighting();
       setInterval(wsUpdateLighting, 4000);
+    }
+
+// Fewer draw calls: the building's many fixed little parts (trim, mullions, railings, columns...) are
+// baked into one mesh per material. Anything that moves or fades is left alone.
+function wsMergeStatic(root, keep, keepTrees) {
+      root.updateMatrixWorld(true);
+      const skip = new Set();
+      keepTrees.forEach(t => { if (t) t.traverse(o => skip.add(o)); });
+      const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
+      const byMat = new Map();
+      root.traverse(o => {
+        if (!o.isMesh || skip.has(o) || keep.has(o) || o.material.transparent) return;
+        const g = o.geometry;
+        if (!g.attributes.normal || !g.attributes.uv) return;
+        if (!byMat.has(o.material)) byMat.set(o.material, []);
+        byMat.get(o.material).push(o);
+      });
+      const m4 = new THREE.Matrix4();
+      byMat.forEach((list, mat) => {
+        if (list.length < 3) return;
+        const pos = [], nor = [], uv = [];
+        list.forEach(o => {
+          const g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone();
+          m4.multiplyMatrices(inv, o.matrixWorld);
+          g.applyMatrix4(m4);
+          pos.push(...g.attributes.position.array);
+          nor.push(...g.attributes.normal.array);
+          uv.push(...g.attributes.uv.array);
+          g.dispose();
+          o.parent.remove(o);
+        });
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+        geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+        geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+        const merged = new THREE.Mesh(geo, mat);
+        merged.castShadow = list.some(o => o.castShadow);
+        merged.receiveShadow = true;
+        root.add(merged);
+      });
     }
 
 // Trees, flowers and rocks that the valley scenery put inside the footprint are cleared away
@@ -675,9 +714,6 @@ function wsUpdateLighting() {
       const on = near || night || workshopTrip.active;
       wsLights.forEach(l => { l.mesh.material.emissiveIntensity = l.outdoor ? (night ? 1.6 : 0.1) : (on ? 1.4 : 0.2); });
       wsWindowGlass.forEach(m => { m.emissiveIntensity = night ? 0.35 : 0; });
-      const [l1, l2] = wsGroup.userData.lamps || [];
-      if (l1) l1.intensity = near ? 9 : 0;
-      if (l2) l2.intensity = near ? 12 : 0;
     }
 
 // The platform at height y above floor 1's top (0 = down, WS_F2 - WS_F1 = up)

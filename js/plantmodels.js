@@ -284,7 +284,7 @@ function plantConveyor(a, b, width, label, { bents = true, frameMat = null, cove
       k.cyl(M.frameDark, 0.11, 0.34, len - 0.05, 0.0, hw + 0.5, 'Conveyor electric motor', { rx: Math.PI / 2 });
       // The return belt
       k.box(M.rubber, len, 0.015, width * 0.95, len / 2, -0.24, 0, 'Return belt');
-      if (cover) for (let x = 0.4; x < len - 0.3; x += 0.9) k.trough(M.galv, width * 0.6, 0.7, x + 0.35, 0.06, 0, 'Belt weather cover', { flip: true });
+      if (cover) { k.box(M.galv, len - 0.4, 0.03, width + 0.2, len / 2, 0.42, 0, 'Conveyor casing lid'); [-1, 1].forEach(sd => k.box(M.galv, len - 0.4, 0.36, 0.03, len / 2, 0.24, sd * (width / 2 + 0.1), 'Conveyor casing')); }
       k.flush();
       const tex = plantBeltTexture(len / 0.5);
       const beltMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: 0, map: tex });
@@ -392,8 +392,8 @@ function buildAggregatePlantGround() {
         s.userData.plantLabel = text.charAt(0) + text.slice(1).toLowerCase();
         g.add(post, s);
       };
-      sign('KELO-1 READY-MIX', S.x - S.w / 2 + 0.25, S.z - S.d / 2 + 0.2, 0.35);
-      sign('KELO-1 HOT MIX ASPHALT', S.x + S.w / 2 - 0.35, S.z + 0.1, -0.35, '#c2410c');
+      sign('KELO-1 READY-MIX', S.x + BATCH_PLANT_OFFSET + 2.2, S.z + S.d / 2 + 0.15, 0);
+      sign('KELO-1 HOT MIX ASPHALT', S.x + ASPHALT_PLANT_OFFSET + 2.6, S.z + S.d / 2 + 0.15, 0, '#c2410c');
       return g;
     }
 
@@ -641,22 +641,24 @@ function buildAsphaltPlantModel() {
       glow.rotation.y = Math.PI / 2;
       root.add(glow);
       parts.glow = glow;
-      k.cyl(M.orange, 0.38, 1.05, dx1 + 1.0, 1.95, dz, 'Burner (diesel or natural gas)', { rz: Math.PI / 2 });
-      k.cyl(M.dark, 0.3, 0.2, dx1 + 1.6, 1.95, dz, 'Burner air register', { rz: Math.PI / 2 });
-      k.cyl(M.orange, 0.5, 0.36, dx1 + 1.25, 0.85, dz - 0.25, 'Combustion air blower', { rx: Math.PI / 2 });
-      k.cyl(M.frameDark, 0.18, 0.45, dx1 + 1.25, 0.85, dz + 0.25, 'Blower motor', { rx: Math.PI / 2 });
-      k.pipe(M.orange, [dx1 + 1.25, 1.25, dz - 0.25], [dx1 + 1.25, 1.75, dz - 0.25], 0.15, 'Blower duct to the burner');
-      k.run(M.yellow, [[dx1 + 0.8, 2.35, dz + 0.3], [dx1 + 1.9, 2.35, dz + 0.3], [dx1 + 1.9, 0.6, dz + 0.3], [5.4, 0.6, -2.9]], 0.04, 'Burner fuel train');
-      [[dx1 + 1.2, 2.35], [dx1 + 1.55, 2.35]].forEach(([x, y]) => k.box(M.dark, 0.12, 0.16, 0.12, x, y, dz + 0.3, 'Fuel safety shut-off valve'));
+      k.cyl(M.orange, 0.38, 0.85, dx1 + 1.45, 1.95, dz, 'Burner (diesel or natural gas)', { rz: Math.PI / 2 });
+      // An open burner throat between the burner and the hood, so the flame shows
+      [[0, 1], [0, -1], [1, 0], [-1, 0]].forEach(([a, b]) => k.beam(M.dark, [dx1 + 0.45, 1.95 + a * 0.42, dz + b * 0.42], [dx1 + 1.02, 1.95 + a * 0.42, dz + b * 0.42], 0.05, 'Burner throat frame'));
+      k.cyl(M.dark, 0.3, 0.2, dx1 + 1.95, 1.95, dz, 'Burner air register', { rz: Math.PI / 2 });
+      k.cyl(M.orange, 0.5, 0.36, dx1 + 1.5, 0.85, dz - 0.25, 'Combustion air blower', { rx: Math.PI / 2 });
+      k.cyl(M.frameDark, 0.18, 0.45, dx1 + 1.5, 0.85, dz + 0.25, 'Blower motor', { rx: Math.PI / 2 });
+      k.pipe(M.orange, [dx1 + 1.5, 1.25, dz - 0.25], [dx1 + 1.5, 1.75, dz - 0.25], 0.15, 'Blower duct to the burner');
+      k.run(M.yellow, [[dx1 + 1.2, 2.35, dz + 0.3], [dx1 + 2.1, 2.35, dz + 0.3], [dx1 + 2.1, 0.6, dz + 0.3], [5.4, 0.6, -2.9]], 0.04, 'Burner fuel train');
+      [[dx1 + 1.5, 2.35], [dx1 + 1.8, 2.35]].forEach(([x, y]) => k.box(M.dark, 0.12, 0.16, 0.12, x, y, dz + 0.3, 'Fuel safety shut-off valve'));
       // The flame inside the burner throat (a cone of fire pointing into the drum)
       const flame = new THREE.Group();
-      flame.position.set(dx1 + 0.48, 1.95, dz);
+      flame.position.set(dx1 + 1.05, 1.95, dz);
       const outer = plantPart(new THREE.ConeGeometry(0.42, 1.6, 16, 1, true), M.flame, 'Burner flame');
       outer.rotation.z = Math.PI / 2;
-      outer.position.x = -0.8;
+      outer.position.x = -0.6;
       const core = plantPart(new THREE.ConeGeometry(0.2, 1.0, 12, 1, true), M.flameCore, 'Burner flame');
       core.rotation.z = Math.PI / 2;
-      core.position.x = -0.5;
+      core.position.x = -0.4;
       [outer, core].forEach(m => { m.castShadow = false; m.receiveShadow = false; });
       flame.add(outer, core);
       flame.visible = false;
@@ -1174,7 +1176,7 @@ function concretePourMesh(p, extent = 1) {
       if (stage !== 'forms' && extent > 0) {
         // The slab itself: one box per segment so it follows the ground
         const cured = Math.min(1, Math.max(0, age / 7));
-        const col = new THREE.Color(0x5f6266).lerp(new THREE.Color(0xc9c6bf), stage === 'curing' || stage === 'cured' ? Math.pow(cured, 0.6) : 0);
+        const col = new THREE.Color(0x868a8f).lerp(new THREE.Color(0xc9c6bf), stage === 'curing' || stage === 'cured' ? Math.pow(cured, 0.6) : 0);
         const mat = new THREE.MeshStandardMaterial({ color: col, roughness: stage === 'poured' || stage === 'pouring' ? 0.55 : stage === 'screeded' ? 0.2 : 0.35 + cured * 0.55, metalness: 0 });
         if (typeof finishMaterial === 'function' && (stage === 'curing' || stage === 'cured') && cured > 0.3) { finishMaterial(mat, 'stone'); mat.color.copy(col); mat.roughness = 0.85; }
         const places = [], joints = [];

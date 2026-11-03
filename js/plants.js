@@ -454,7 +454,8 @@ function plantFree() {
       return !(state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping);
     }
 
-const plantWait = ms => new Promise(r => setTimeout(r, ms));
+let plantTimeScale = 1;   // tests slow the stages down to look at them
+const plantWait = ms => new Promise(r => setTimeout(r, ms * plantTimeScale));
 
 function plantSay(kind, title, speech) {
       state.moodTitle = title.slice(0, 80);

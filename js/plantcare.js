@@ -1000,7 +1000,10 @@ async function noticeWiltingPlant(t) {
       } finally {
         state.isPracticing = false;
       }
-      return researchJob('plantcare', 'A Wilting Plant');
+      const read = await researchJob('plantcare', 'A Wilting Plant');
+      // Something else had him busy right then: he goes as soon as he's free
+      if (!read && !jobKnown('plantcare')) doWhenFree(() => researchJob('plantcare', 'A Wilting Plant'));
+      return read;
     }
 
 // The life tick (js/agent.js): something that needs doing in the garden right now, or null

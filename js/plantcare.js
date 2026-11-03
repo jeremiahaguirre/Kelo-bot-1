@@ -499,7 +499,7 @@ function pcApplyBedLook(i, k) {
 
 // --- The garden tap ------------------------------------------------------------------------------------
 function pcTapSpout() {
-      return new THREE.Vector3(PC_TAP.x, getAnalyticalGroundHeight(PC_TAP.x, PC_TAP.z) + 1.12, PC_TAP.z + 0.24);
+      return new THREE.Vector3(PC_TAP.x, getAnalyticalGroundHeight(PC_TAP.x, PC_TAP.z) + 1.47, PC_TAP.z + 0.3);
     }
 
 function buildGardenTap3D() {
@@ -510,14 +510,14 @@ function buildGardenTap3D() {
       const pad = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.46, 0.08, 16), new THREE.MeshStandardMaterial({ color: 0x9a9690, roughness: 0.95 }));
       pad.position.y = 0.04;
       pad.receiveShadow = true;
-      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 1.25, 12), new THREE.MeshStandardMaterial({ color: 0x2f6f3a, ...steel }));
-      post.position.y = 0.66;
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 1.55, 12), new THREE.MeshStandardMaterial({ color: 0x2f6f3a, ...steel }));
+      post.position.y = 0.81;
       post.castShadow = true;
       const head = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.16), new THREE.MeshStandardMaterial({ color: 0x2f6f3a, ...steel }));
-      head.position.set(0, 1.24, 0.03);
-      const spout = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, 0.2, 10), new THREE.MeshStandardMaterial({ color: 0xb08d57, metalness: 0.8, roughness: 0.3 }));
+      head.position.set(0, 1.58, 0.03);
+      const spout = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, 0.3, 10), new THREE.MeshStandardMaterial({ color: 0xb08d57, metalness: 0.8, roughness: 0.3 }));
       spout.rotation.x = Math.PI / 2 + 0.5;
-      spout.position.set(0, 1.17, 0.16);
+      spout.position.set(0, 1.53, 0.18);
       const lever = new THREE.Group();
       const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.36, 8), new THREE.MeshStandardMaterial({ color: 0x1f2937, ...steel }));
       arm.rotation.z = Math.PI / 2;
@@ -525,7 +525,7 @@ function buildGardenTap3D() {
       const knob = new THREE.Mesh(new THREE.SphereGeometry(0.03, 8, 6), new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.5 }));
       knob.position.x = 0.3;
       lever.add(arm, knob);
-      lever.position.set(0, 1.32, 0);
+      lever.position.set(0, 1.66, 0);
       // A worn wet patch on the gravel under the spout
       const drain = new THREE.Mesh(new THREE.CircleGeometry(0.18, 14), new THREE.MeshStandardMaterial({ color: 0x5b5650, roughness: 0.5 }));
       drain.rotation.x = -Math.PI / 2;
@@ -536,7 +536,7 @@ function buildGardenTap3D() {
       if (typeof worldObstacles !== 'undefined') worldObstacles.push({ x: PC_TAP.x, z: PC_TAP.z, r: 0.35 });
       if (typeof makeSignMesh === 'function') {
         const sign = makeSignMesh('GARDEN TAP', { bg: '#e0f2fe', fg: '#075985', width: 0.5, height: 0.13 });
-        sign.position.set(0, 0.95, 0.07);
+        sign.position.set(0, 1.1, 0.07);
         g.add(sign);
       }
       return g;
@@ -680,6 +680,7 @@ function pcHoldCan() {
 function pcDropHeld() {
       if (pcWater) pcWater.source = null;
       if (pcGrain) pcGrain.source = null;
+      if (pcHeld && pcHeld.obj.parent === scene) scene.remove(pcHeld.obj); // still standing under the tap
       pcHeld = null;
       if (typeof setCarriedObject === 'function') setCarriedObject(null);
     }
@@ -746,13 +747,32 @@ async function pcPour(t, amount, ms = 3200) {
       pcWater.source = null;
     }
 
+// He sets the can down on the tap's pad to fill it, then picks it up again
+function pcSetCanUnderTap(down) {
+      if (!pcHeld) return;
+      const can = pcHeld.obj;
+      if (down) {
+        if (typeof carriedObject !== 'undefined' && carriedObject === can) { if (can.parent) can.parent.remove(can); carriedObject = null; }
+        can.position.set(PC_TAP.x, getAnalyticalGroundHeight(PC_TAP.x, PC_TAP.z) + 0.08, PC_TAP.z + 0.3);
+        can.rotation.set(0, Math.PI / 2, 0);
+        pcHeld.tilt.rotation.x = 0;
+        scene.add(can);
+        state.microPose = 'normal';
+      } else {
+        if (can.parent) can.parent.remove(can);
+        can.position.set(0, 0, 0);
+        can.rotation.set(0, 0, 0);
+        if (typeof setCarriedObject === 'function') setCarriedObject(can);
+      }
+    }
+
 // Water running from the tap's spout into the can (or onto the drain if nothing is under it)
 function pcTapSource() {
       const spout = pcTapSpout(), down = new THREE.Vector3(0, -0.4, 0.35).normalize();
       const top = new THREE.Vector3();
       return () => {
         if (pcHeld) pcHeld.body.getWorldPosition(top);
-        return { pos: spout, dir: down, speed: 0.6, spread: 0.06, rate: 220, floorY: pcHeld ? top.y + 0.06 : getAnalyticalGroundHeight(PC_TAP.x, PC_TAP.z) + 0.09, splash: !pcHeld };
+        return { pos: spout, dir: down, speed: 0.6, spread: 0.06, rate: 220, floorY: pcHeld ? Math.min(top.y + 0.1, spout.y - 0.25) : getAnalyticalGroundHeight(PC_TAP.x, PC_TAP.z) + 0.09, splash: !pcHeld };
       };
     }
 
@@ -767,7 +787,8 @@ async function refillCan(originLabel = 'Filling the Watering Can') {
       state.moodTitle = useTap ? 'Filling the watering can at the tap' : 'Filling the watering can at the lake';
       state.speechBubble = pc.can > 0.05 ? 'Nearly empty. Time for a refill.' : 'First, some water in the can.';
       if (useTap) {
-        await pcWalkTo({ x: PC_TAP.x, z: PC_TAP.z + 0.95, face: Math.PI }, 'the garden tap');
+        await pcWalkTo({ x: PC_TAP.x, z: PC_TAP.z + 1.0, face: Math.PI }, 'the garden tap');
+        pcSetCanUnderTap(true);
         if (pcTapGroup) pcTapGroup.userData.lever.rotation.y = -1.2;
         state.speechBubble = 'Lever up... and the water runs.';
         renderAllUI();
@@ -775,6 +796,8 @@ async function refillCan(originLabel = 'Filling the Watering Can') {
         await pcWait(3600);
         pcWater.source = null;
         if (pcTapGroup) pcTapGroup.userData.lever.rotation.y = 0;
+        await pcWait(400);
+        pcSetCanUnderTap(false);
       } else {
         await pcWalkTo({ x: lake.x, z: lake.z, face: 0 }, 'the lakeshore');
         state.speechBubble = 'Dip it in and let it fill.';

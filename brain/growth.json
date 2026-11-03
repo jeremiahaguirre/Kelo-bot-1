@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-03T06:58:39.348Z",
-  "runs": 1,
+  "updatedAt": "2026-11-03T19:37:33.207Z",
+  "runs": 2,
   "curiosities": [
-    "Art Tower Mito"
+    "Mito, Ibaraki"
   ],
   "entries": [
     {
@@ -37,6 +37,38 @@
       },
       "shapeFrom": "Buckminster Fuller: Thinking Out Loud",
       "nextCuriosity": "Art Tower Mito",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1793734653207",
+      "at": 1793734653207,
+      "brain": "procedural",
+      "topic": "Art Tower Mito",
+      "title": "Dreaming of Boerdijk–Coxeter helix",
+      "text": "Dear Diary, while nobody was around I looked up \"Art Tower Mito\" and drifted from Art Tower Mito to Boerdijk–Coxeter helix. The Boerdijk–Coxeter helix, named after H. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Art Tower Mito",
+          "url": "https://en.wikipedia.org/wiki/Art_Tower_Mito",
+          "extract": "Art Tower Mito  is an arts complex in Mito, Ibaraki, Japan. It opened in 1990 as part of the centennial celebrations of the municipality of Mito. There is a concert hall that seats 680, a theater for up to 636, a contemporary art gallery, and a landmark tower, which rises 100 met"
+        },
+        {
+          "title": "Boerdijk–Coxeter helix",
+          "url": "https://en.wikipedia.org/wiki/Boerdijk%E2%80%93Coxeter_helix",
+          "extract": "The Boerdijk–Coxeter helix, named after H. S. M. Coxeter and Arie Hendrick Boerdijk, is a linear stacking of regular tetrahedra, arranged so that the edges of the complex that belong to only one tetrahedron form three intertwined helices. There are two chiral forms, with either r"
+        }
+      ],
+      "concept": {
+        "name": "Tower Boerdijk Loop",
+        "emoji": "💡",
+        "definition": "The idea that art tower mito and boerdijk–coxeter helix share a hidden pattern.",
+        "builtFrom": [
+          "Art Tower Mito",
+          "Boerdijk–Coxeter helix"
+        ]
+      },
+      "shapeFrom": "Boerdijk–Coxeter helix",
+      "nextCuriosity": "Mito, Ibaraki",
       "coreMemory": null
     }
   ]

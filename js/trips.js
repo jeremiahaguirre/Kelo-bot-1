@@ -937,12 +937,15 @@ function tripExitVehicle(v) {
 // Backing up in a straight line, facing the way it already faces
 async function tripReverse(v, to, speed = 1.3) {
       const rot = state.botRotY, from = { ...state.botPos };
-      const len = Math.hypot(to.x - from.x, to.z - from.z), steps = Math.max(1, Math.round(len / speed / 0.05));
-      for (let s = 1; s <= steps; s++) {
-        state.botPos = { x: from.x + (to.x - from.x) * s / steps, z: from.z + (to.z - from.z) * s / steps };
+      // Timed by the clock, not by steps, so a slow computer doesn't make it crawl
+      const len = Math.hypot(to.x - from.x, to.z - from.z), ms = Math.max(300, len / Math.abs(speed) * 1000), t0 = performance.now();
+      for (;;) {
+        const p = Math.min(1, (performance.now() - t0) / ms);
+        state.botPos = { x: from.x + (to.x - from.x) * p, z: from.z + (to.z - from.z) * p };
         state.targetPos = { ...state.botPos };
         state.botRotY = rot;
-        await tripSleep(50);
+        if (p >= 1) break;
+        await tripSleep(40);
       }
       v.x = state.botPos.x; v.z = state.botPos.z; v.rotY = rot - Math.PI / 2;
     }
@@ -951,8 +954,14 @@ async function tripReverse(v, to, speed = 1.3) {
 async function tripTurnTo(b) {
       const want = b + Math.PI / 2;
       let d = ((want - state.botRotY) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
-      const steps = Math.max(1, Math.round(Math.abs(d) / 0.08));
-      for (let s = 0; s < steps; s++) { state.botRotY += d / steps; state.targetPos = { ...state.botPos }; await tripSleep(40); }
+      const start = state.botRotY, ms = Math.max(200, Math.abs(d) * 600), t0 = performance.now();
+      for (;;) {
+        const p = Math.min(1, (performance.now() - t0) / ms);
+        state.botRotY = start + d * p;
+        state.targetPos = { ...state.botPos };
+        if (p >= 1) break;
+        await tripSleep(40);
+      }
     }
 
 async function tripHitchUp(tow, trailer) {
@@ -1058,8 +1067,12 @@ async function tripUnload(cargo, trailer, waterAt = null) {
 
 async function tripSlide(cargo, from, to, b, ms) {
       tripRig.slide = { cargoId: cargo.id, from, to, b, p: 0 };
-      const steps = Math.round(ms / 50);
-      for (let s = 1; s <= steps; s++) { tripRig.slide.p = s / steps; await tripSleep(50); }
+      const t0 = performance.now();
+      for (;;) {
+        tripRig.slide.p = Math.min(1, (performance.now() - t0) / ms);
+        if (tripRig.slide.p >= 1) break;
+        await tripSleep(40);
+      }
       tripRig.slide = null;
     }
 

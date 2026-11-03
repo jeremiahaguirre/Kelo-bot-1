@@ -305,6 +305,11 @@ async function driveVehicle(v, target, label) {
         await waitForAltitude(v, a => a < 0.05);
       }
       if (typeof burnFuel === 'function') burnFuel(v, Math.hypot(state.botPos.x - v.x, state.botPos.z - v.z));
+      // Every real trip is a little practice (js/skills.js)
+      if (typeof gainSkill === 'function' && typeof skillCandidates === 'function') {
+        const c = skillCandidates().find(x => x.vehicle === v);
+        if (c && !skillSessionRunning) gainSkill(c.key, c.label, 2);
+      }
       v.x = Math.round(state.botPos.x * 10) / 10;
       v.z = Math.round(state.botPos.z * 10) / 10;
       v.rotY = state.botRotY - Math.PI / 2;

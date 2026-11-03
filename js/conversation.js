@@ -144,6 +144,9 @@ async function respondToVisitor(visitor, message) {
       const kind = classifyMessage(message);
       const unknown = unknownWords(message);
       if (kind === 'greeting' && typeof playEmote === 'function') playEmote('wave');
+      // "Try flying your helicopter!": he goes and actually does it (js/skills.js)
+      const useAsk = typeof parseUseRequest === 'function' ? parseUseRequest(message) : null;
+      if (useAsk && (useAsk.candidate || useAsk.missing)) return answerUseRequest(useAsk, visitor);
 
       // With an AI brain: answer the actual message, with his situation and vocabulary as context
       if (hasLLMKey()) {

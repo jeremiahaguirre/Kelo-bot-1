@@ -127,6 +127,8 @@ Kelo-bot-1/
 │   ├── seasons.js       # Seasonal colours, snow, snowfall, and getting stuck in deep snow
 │   ├── wind.js          # Wind over his days: kites need it, balloons crash in it and get welded back
 │   ├── landscape.js     # Chopping trees, planting, roads and hills, and undoing them
+│   ├── groundwork.js    # Researching how roads, paving, earthwork and planting are done; the right tools, used in turn
+│   ├── skills.js        # Real skills: practising the vehicles, telescope and hobbies he was given; doing what visitors ask
 │   ├── projects.js      # Real builds: finding plans online, asking for materials, building them
 │   ├── town.js          # Keeps the town free of his builds (the beach is fine)
 │   ├── coderequests.js  # Code requests: features he asks his human to code into his world

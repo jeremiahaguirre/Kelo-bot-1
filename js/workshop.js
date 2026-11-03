@@ -62,12 +62,14 @@ async function runWeldJob(creation, destLabel) {
       state.isBuilding = true;
       const title = creation.title || 'something new';
       let dest = { x: clampNumber(creation.x, WORLD_MIN_X, WORLD_MAX_X, 0), z: clampNumber(creation.z, WORLD_MIN_Z, WORLD_MAX_Z, 0) };
-      // The town isn't his to build in: a piece meant for town goes to his Museum instead
-      if (typeof inTown === 'function' && inTown(dest.x, dest.z) && typeof MUSEUM_DOOR !== 'undefined') {
+      // His welded pieces and abstract ideas are art: they go on display in his Museum, not out on the
+      // mountain or in town where they'd just be in the way (things he builds to use come from js/projects.js)
+      if (typeof MUSEUM_DOOR !== 'undefined') {
         creation.inMuseum = true;
         dest = { ...MUSEUM_DOOR };
         destLabel = 'his Museum';
       }
+      state.lastWeldAt = Date.now();
       const bench = TOWN_LOCATIONS.weld;
       try {
         // Sketch the design while walking: with an AI brain, design exactly what he means

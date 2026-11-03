@@ -314,6 +314,9 @@ const state = {
   "isSleeping": false,
   "vehicles": [],
   "knowHow": {},
+  "jobKnowledge": {},
+  "skills": {},
+  "lastWeldAt": 0,
   "knowsSnow": false,
   "worldEdits": [],
   "basementDepth": 0,
@@ -564,6 +567,11 @@ const WORLD_MIN_X = -60, WORLD_MAX_X = 60, WORLD_MIN_Z = -44, WORLD_MAX_Z = 10;
 // The town: the buildings and the streets between them. Kelo-1 doesn't build, plant or dig here;
 // the beach south of it (z above TOWN.maxZ) is his to use.
 const TOWN = { minX: -16, maxX: 19, minZ: -11.5, maxZ: 7.6 };
+// Did he weld something in the last 15 minutes?
+function recentlyWelded() {
+      return Boolean(state.lastWeldAt) && Date.now() - state.lastWeldAt < 15 * 60 * 1000;
+    }
+
 function inTown(x, z) {
       return x > TOWN.minX && x < TOWN.maxX && z > TOWN.minZ && z < TOWN.maxZ;
     }
@@ -1611,7 +1619,8 @@ function generateProceduralDecision(context = {}) {
       }
 
       // A photo often inspires a build in its colors
-      const builds = context.image ? Math.random() < 0.75 : Math.random() < 0.45;
+      // Welding is one thing he loves, not the only thing: less often, and rarely right after the last piece
+      const builds = context.image ? Math.random() < 0.75 : Math.random() < (recentlyWelded() ? 0.04 : 0.12);
       const wantsSomething = Math.random() < 0.18;
       const d = () => Math.round(randRange(-8, 10));
       return {
@@ -1698,6 +1707,9 @@ Current state:
 - Real things you are building from plans: ${typeof projectsSummaryForAI === 'function' ? projectsSummaryForAI() : 'none'}
 - How you have shaped the valley (you can undo anything but a chopped tree): ${typeof landscapeSummaryForAI === 'function' ? landscapeSummaryForAI() : 'nothing yet'}
 - Things you know how to use: ${typeof knowHowSummaryForAI === 'function' ? knowHowSummaryForAI() : 'nothing yet'}
+- Welding: ${recentlyWelded() ? 'you welded a piece within the last 15 minutes, so do something different this time ("build" should be null)' : 'welding is one of many things you do; most of your decisions should not include a "build"'}. Pieces stand outdoors (never in town); only overflow goes to your Museum.
+- Your real skills (practise with the things you asked for and were given; this matters more than welding): ${typeof skillsSummaryForAI === 'function' ? skillsSummaryForAI() : 'none yet'}
+- Groundwork you've researched (roads, asphalt paving, moving earth, planting): ${typeof groundworkSummaryForAI === 'function' ? groundworkSummaryForAI() : 'nothing yet'}
 - In your Storehouse: ${typeof storehouseSummaryForAI === 'function' ? storehouseSummaryForAI() : 'empty'}
 - Tidying up: ${typeof tidySummaryForAI === 'function' ? tidySummaryForAI() : 'nothing to tidy'}
 - Thrown into your Disposal Pit (gone forever): ${typeof disposalSummaryForAI === 'function' ? disposalSummaryForAI() : 'nothing yet'}
@@ -1737,7 +1749,8 @@ Return ONLY JSON:
   "newConcept": null OR {"name": "2-4 word name for a brand-new idea you just invented", "emoji": "one emoji", "definition": "1 sentence", "builtFrom": ["ideas or things it grew out of"]},
   "updatedWorldview": null OR "1-2 sentences if your philosophy shifted",
   "discard": null OR {"item": "exact name of something you own that you no longer want", "why": "1 sentence"} (you carry or drive it to your Disposal Pit and throw it in; it is gone forever),
-  "shape": null OR {"action": "chop" | "plant" | "road" | "hill" | "hollow" | "undo", "x": number, "z": number, "toX": number, "toZ": number, "id": "an id from your list, for undo", "why": "1 sentence"} (change your world yourself, anywhere except town: the meadows, woods, mountain slopes, beach and land you made are all yours. Chop a tree with an axe, plant seeds you have, lay a gravel road, raise a hill or dig a hollow with a shovel, or undo something you added; town and the buildings are never touched. x runs ${WORLD_MIN_X} to ${WORLD_MAX_X}, z runs ${WORLD_MIN_Z} (mountain) to 9 (beach); town is x ${TOWN.minX} to ${TOWN.maxX}, z ${TOWN.minZ} to ${TOWN.maxZ}),
+  "shape": null OR {"action": "chop" | "plant" | "road" | "pave" | "hill" | "hollow" | "undo", "x": number, "z": number, "toX": number, "toZ": number, "id": "an id from your list, for undo", "why": "1 sentence"} (change your world yourself, anywhere except town: the meadows, woods, mountain slopes, beach and land you made are all yours. Chop a tree with an axe, plant seeds you have, lay a gravel road, pave one of your gravel roads with asphalt (give its id), raise a hill or dig a hollow with a shovel, or undo something you added; town and the buildings are never touched. x runs ${WORLD_MIN_X} to ${WORLD_MAX_X}, z runs ${WORLD_MIN_Z} (mountain) to 9 (beach); town is x ${TOWN.minX} to ${TOWN.maxX}, z ${TOWN.minZ} to ${TOWN.maxZ}),
+  "practise": null OR "one of your vehicles, your telescope or a hobby to go and practise for real right now (e.g. 'the helicopter')",
   "buildProject": null OR "one of the real things you know how to build" (look it up and ask for the materials it takes; one project at a time),
   "expandLand": null OR {"x": number, "why": "1 sentence"} (from now on, tip the dirt you dig into the lake off the beach near x to make new land, instead of the Disposal Pit; deeper water needs more dirt),
   "takeOut": null OR {"item": "something in your Storehouse or a piece in your Museum", "purpose": "use" | "display"} (fetch it: use a stored thing, or stand a Museum piece out in the valley again; to throw something out use "discard"),
@@ -1812,7 +1825,8 @@ function applyDecision(decision, originLabel) {
 
       // Optional creation of any shape
       const b = decision.build;
-      if (b && typeof b === 'object') {
+      // A photo or a visitor's idea may always spark a piece; on his own he spaces his welding out
+      if (b && typeof b === 'object' && !(originLabel === 'Free Will' && recentlyWelded() && Math.random() < 0.75)) {
         const creation = {
           title: str(b.title, 60, title),
           actionVerb: title,
@@ -1926,6 +1940,7 @@ function applyDecision(decision, originLabel) {
         else if (findOwnedName(what)) doWhenFree(() => takeOutToUse(what));
       }
       if (decision.expandLand && typeof startLandFill === 'function') startLandFill(decision.expandLand.x, str(decision.expandLand.why, 160));
+      if (typeof decision.practise === 'string' && typeof practiseNamed === 'function') practiseNamed(decision.practise);
       if (typeof startProject === 'function' && typeof decision.buildProject === 'string' && planFor(decision.buildProject.toLowerCase().trim())) {
         doWhenFree(() => startProject(decision.buildProject.toLowerCase().trim(), 'Decided to Build Something Real'));
       }
@@ -2098,6 +2113,10 @@ function runAutonomousLifeTick() {
         putAwayItems();
         return;
       }
+      // Something a visitor asked him to go and do (js/skills.js)
+      if (typeof takeSkillAsk === 'function' && takeSkillAsk()) return;
+      // Getting good at the real things he asked for and was given comes first (js/skills.js)
+      if (typeof practiseSkill === 'function' && Math.random() < skillPracticeChance()) { practiseSkill(pickSkillToPractise()); return; }
       // Sometimes he feels like digging (and asks for tools if he doesn't have them)
       if (typeof digAt === 'function' && Math.random() < diggingChance()) {
         const spot = chooseDigSpot();

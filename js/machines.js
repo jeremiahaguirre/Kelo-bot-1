@@ -262,7 +262,7 @@ async function researchMachine(key, originLabel = 'Reading Up on a Machine') {
           vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
           text: `Dear Diary, I read up on the ${def.name}${hops.length ? ` (${hops.map(h => h.title).join(', ')})` : ''}. ${def.learned}${needs.length ? ` To run it properly I need: ${needs.join(', ')}.` : ''}`
         });
-        if (typeof gainSkill === 'function') gainSkill('ws-' + learnKey, def.skill || def.name, 2);
+        if (typeof gainSkill === 'function') gainSkill('ws-' + key, def.skill || def.name, 2);
         showToast(`📘 Kelo-1 researched the ${def.name}`);
         savePersistentBrainState();
         renderAllUI();
@@ -327,12 +327,12 @@ async function machineStep(ctx, title, ms, anim = null, speech = null) {
 function machineSkill(key, amount = 6) {
       const def = WORKSHOP_MACHINES[key];
       if (!def || typeof gainSkill !== 'function') return null;
-      return gainSkill('ws-' + (def.learnAs || key), def.skill || def.name, amount);
+      return gainSkill('ws-' + key, def.skill || def.name, amount);
     }
 
 function machineLevel(key) {
       const def = WORKSHOP_MACHINES[key];
-      const s = def && state.skills ? state.skills['ws-' + (def.learnAs || key)] : null;
+      const s = def && state.skills ? state.skills['ws-' + key] : null;
       return s ? s.level : 0;
     }
 
@@ -507,10 +507,10 @@ function workshopPromptLine() {
 function renderWorkshopBrain() {
       const el = document.getElementById('workshopListContainer');
       if (!el) return;
-      const groups = [['🖨️ 3D printers', 'printer'], ['🛠️ CNC', 'cnc'], ['🔌 Electronics line', 'electronics'], ['🚗 Garage', 'garage']];
+      const groups = [['🖨️ 3D printers', 'printer'], ['🧽 Post-processing', 'post'], ['🛠️ CNC', 'cnc'], ['🔌 Electronics (floor 2)', 'electronics'], ['🚗 Garage (floor 2)', 'garage']];
       const w = workshopState();
       const html = groups.map(([title, kind]) => {
-        const defs = Object.values(WORKSHOP_MACHINES).filter(d => d.kind === kind && d.plan);
+        const defs = Object.values(WORKSHOP_MACHINES).filter(d => d.kind === kind && d.key !== 'printbench');
         if (!defs.length) return '';
         return `<div class="text-[10px] uppercase tracking-wide text-slate-500 mt-1">${title}</div>` + defs.map(d => {
           const known = machineKnown(d.key);
@@ -522,7 +522,7 @@ function renderWorkshopBrain() {
             const note = have && have !== 'filament' && typeof supplyNote === 'function' ? supplyNote(have) : have === 'filament' && typeof totalFilament === 'function' ? `${Math.round(totalFilament())} g` : '';
             return `<span class="${have ? 'text-emerald-300' : supplyAwaited(k) ? 'text-amber-300' : 'text-slate-500'}">${escapeHtml(plainItem(s ? s.ask : k).replace(/^(a|an)\s+/i, ''))}${note ? ` (${escapeHtml(note)})` : ''}</span>`;
           }).join(' · ');
-          const status = !known ? '<span class="text-slate-400">not learned yet</span>' : missing.length ? `<span class="text-amber-300">needs ${missing.length} thing${missing.length > 1 ? 's' : ''}</span>` : '<span class="text-emerald-300 font-bold">ready</span>';
+          const status = !known ? '<span class="text-slate-400">not learned yet</span>' : !d.plan ? '<span class="text-sky-300">learned</span>' : missing.length ? `<span class="text-amber-300">needs ${missing.length} thing${missing.length > 1 ? 's' : ''}</span>` : '<span class="text-emerald-300 font-bold">ready</span>';
           return `<div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200">
             <div class="flex items-center gap-2"><span class="flex-1">${d.emoji || '⚙️'} ${escapeHtml(d.name)}</span>${known ? `<span class="text-amber-300 font-bold">Lv ${lvl}</span>` : ''} ${status}</div>
             ${known ? `<div class="text-[10px] mt-0.5 leading-snug">${supplies}</div>` : ''}

@@ -44,9 +44,11 @@ function tripVehicleType(name) {
       const trailer = trailerKindOf(n);
       if (trailer) return { ...TRIP_TYPE_TRAILER, re: trailer.re, trailer };
       if (/\btrailer\b/i.test(n)) return null; // some other trailer: nothing he can tow it for
-      if (TRIP_NOT_VEHICLE_RE.test(n) && !/paddle ?board/i.test(n)) return null;
-      if (typeof FUEL_TYPES !== 'undefined' && Object.values(FUEL_TYPES).some(f => f.re.test(n))) return null;
-      if (PICKUP_RE.test(n) && /truck|\bpick-?up\b/i.test(n)) return TRIP_TYPE_PICKUP;
+      // "A pickup truck with a tow hitch" is a pickup: what it comes with doesn't change what it is
+      const core = n.replace(/\s+(with|plus|and)\s+.*$/i, '');
+      if (TRIP_NOT_VEHICLE_RE.test(core) && !/paddle ?board/i.test(core)) return null;
+      if (typeof FUEL_TYPES !== 'undefined' && Object.values(FUEL_TYPES).some(f => f.re.test(core))) return null;
+      if (PICKUP_RE.test(core)) return TRIP_TYPE_PICKUP;
       return undefined;
     }
 
@@ -437,7 +439,7 @@ function tireChainsModel() {
 // items3d.js picks the first rule that matches, so these go in front of the truck/snowmobile/boat rules
 if (typeof ITEM_MODEL_RULES !== 'undefined') {
   ITEM_MODEL_RULES.unshift(
-    [/trailer|low-?boy|low-?bed|low ?loader/, lower => (trailerKindOf(lower) ? trailerModel(lower) : null) || trailerModel('snowmobile trailer')],
+    [/^(?!.*hitch).*(trailer|low-?boy|low-?bed|low ?loader)/, lower => (trailerKindOf(lower) ? trailerModel(lower) : null) || trailerModel('snowmobile trailer')],
     [/\bpick-?up\b.*truck|\bpick-?up\b$/, () => pickupTruckModel()],
     [/ratchet straps?|tie-?down straps?|cargo straps?/, () => ratchetStrapsModel()],
     [/tire chains|tyre chains|snow chains|load binders?/, () => tireChainsModel()]

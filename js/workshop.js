@@ -130,6 +130,8 @@ async function runWeldJob(creation, destLabel) {
         state.pendingBuilds = state.pendingBuilds.filter(j => j.creation !== creation && j.creation.title !== creation.title);
         state.inventedCreations.unshift(creation);
         if (typeof bumpLifeStat === 'function') bumpLifeStat('builds');
+        // Welding wire, rods or gas he has are used up as he welds (js/itemuse.js)
+        if (typeof useWeldingSupplies === 'function') useWeldingSupplies();
         spawnEmergent3DObjectInWorld(creation, false);
         if (creation.inMuseum && typeof renderMuseum3D === 'function') renderMuseum3D();
         state.microPose = 'procedural_custom';

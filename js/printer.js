@@ -152,6 +152,10 @@ function finishSpool(spool) {
       p.spools = p.spools.filter(s => s.id !== spool.id);
       if (p.loadedSpoolId === spool.id) p.loadedSpoolId = null;
       if (typeof forgetItem === 'function') forgetItem(spool.name);
+      state.diaryEntries.unshift({
+        time: 'Ran Out', location: 'his 3D printer', mood: '🧵 An empty spool', vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
+        text: `Dear Diary, the ${spool.material} spool ran empty, so it came off the printer and went in the recycling.`
+      });
     }
 
 // Put a spool on the holder (the one for this material if he has it)

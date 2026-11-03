@@ -44,7 +44,7 @@ function activeProject() {
 
 // What is still missing for a plan: materials and tools he doesn't have yet
 function missingFor(plan) {
-      const owned = ownedItemNames();
+      const owned = typeof buildableOwnedNames === 'function' ? buildableOwnedNames() : ownedItemNames();
       return {
         materials: plan.materials.filter(m => !owned.some(n => m.re.test(n))),
         tools: plan.tools.filter(t => !owned.some(n => BUILD_TOOLS[t].re.test(n)))
@@ -173,7 +173,8 @@ async function buildProject(id, originLabel = 'Building Something Real') {
         scene.remove(wip);
         wip = null;
         // The materials are used up
-        plan.materials.forEach(m => {
+        if (typeof useBuildSupplies === 'function') useBuildSupplies(plan);
+        else plan.materials.forEach(m => {
           const name = ownedItemNames().find(n => m.re.test(n));
           if (name && typeof forgetItem === 'function') forgetItem(name);
         });

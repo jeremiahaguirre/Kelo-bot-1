@@ -88,6 +88,9 @@ async function drinkFromLake(originLabel = 'Thirsty') {
 
 async function eatSomething(originLabel = 'Hungry') {
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
+      // His own food on the Storehouse shelf comes first, a serving at a time (js/itemuse.js)
+      const stored = typeof storedFoodName === 'function' ? storedFoodName() : null;
+      if (stored && !usableFor(stored, 'drink')) return eatStoredFood(stored, originLabel);
       state.isPracticing = true;
       try {
         const before = state.fullness;

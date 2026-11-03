@@ -104,6 +104,20 @@ function keloLocomote(dist, dt, t) {
         }
         m.aim = aim;
       }
+      // Looking ahead: if where he will be in a moment is too close to something solid, ease away from it
+      if (!straight && typeof worldObstacles !== 'undefined' && m.speed > 0.5) {
+        const ahead = Math.min(2.5, m.speed * 0.35);
+        const fx = p.x + Math.sin(m.heading) * ahead, fz = p.z + Math.cos(m.heading) * ahead;
+        for (const o of worldObstacles) {
+          if (typeof obstacleHoldsTarget === 'function' && obstacleHoldsTarget(o, state.targetPos)) continue;
+          const ox = fx - o.x, oz = fz - o.z, d = Math.hypot(ox, oz), clear = o.r + KELO_RADIUS + 0.25;
+          if (d > 0 && d < clear + 0.5) {
+            const push = Math.min(1, (clear + 0.5 - d) / 0.8) * 0.9;
+            wantX += ox / d * push; wantZ += oz / d * push;
+          }
+        }
+        const l = Math.hypot(wantX, wantZ) || 1; wantX /= l; wantZ /= l;
+      }
       m.desiredYaw = Math.atan2(wantX, wantZ);
       const err = keloMotionWrap(m.desiredYaw - m.heading);
       m.yawError = err;
@@ -147,8 +161,19 @@ function keloLocomote(dist, dt, t) {
       if (m.speed > want && m.acc > 0) m.acc = 0;
       if (want === 0 && m.speed < 0.05) { m.speed = 0; m.acc = Math.min(0, m.acc); }
 
-      const sx = Math.sin(m.heading), sz = Math.cos(m.heading);
+      let sx = Math.sin(m.heading), sz = Math.cos(m.heading);
       const step = Math.min(dist, m.speed * dt);
+      // Brushing past something solid: slide along its edge rather than being shoved back out
+      if (typeof worldObstacles !== 'undefined') {
+        for (const o of worldObstacles) {
+          if (typeof obstacleHoldsTarget === 'function' && obstacleHoldsTarget(o, state.targetPos)) continue;
+          const nx = p.x + sx * step - o.x, nz = p.z + sz * step - o.z, d = Math.hypot(nx, nz);
+          if (d > 0 && d < o.r + KELO_RADIUS + 0.02) {
+            const ux = nx / d, uz = nz / d, inward = sx * ux + sz * uz;
+            if (inward < 0) { sx -= inward * ux; sz -= inward * uz; const l = Math.hypot(sx, sz) || 1; sx /= l; sz /= l; }
+          }
+        }
+      }
       p.x += sx * step;
       p.z += sz * step;
       pushOutOfObstacles(p, state.targetPos);

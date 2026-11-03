@@ -111,9 +111,12 @@ function renderPortal() {
       if (countEl) countEl.textContent = `${owned.length} items${lower ? ` · ${lower + 1} floors` : ''}`;
       const pills = document.getElementById('toolInventoryPills');
       if (pills) {
+        // Things that get used up show how much is left: "Spray paint (2 of 3 left)" (js/itemuse.js)
+        const seen = {};
+        owned.forEach(o => { const nth = seen[o.name] = (seen[o.name] ?? -1) + 1; o.left = typeof supplyNote === 'function' ? supplyNote(o.name, nth) : ''; });
         pills.innerHTML = owned.map(o => `
           <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-[10px] font-mono flex items-center gap-1">
-            <span>${escapeHtml(o.emoji)}</span> ${escapeHtml(o.name)}${(() => { const lv = typeof storehouseLevelOf === 'function' ? storehouseLevelOf(o.name) : 0; return lv > 0 ? ` <span class="text-slate-400">· B${lv}</span>` : ''; })()}
+            <span>${escapeHtml(o.emoji)}</span> ${escapeHtml(o.name)}${o.left ? ` <span class="text-emerald-300">(${escapeHtml(o.left)})</span>` : ''}${(() => { const lv = typeof storehouseLevelOf === 'function' ? storehouseLevelOf(o.name) : 0; return lv > 0 ? ` <span class="text-slate-400">· B${lv}</span>` : ''; })()}
           </span>`).join('');
       }
 

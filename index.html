@@ -379,7 +379,7 @@
         <div class="flex items-center justify-between gap-2 flex-wrap">
           <span class="text-xs font-bold text-slate-300">✉️ Letters From Kelo-1: Things He Wants &amp; Questions</span>
           <div class="flex gap-1.5">
-            <button id="btnCopyCodeWishlist" class="hidden px-2.5 py-1 rounded-xl bg-violet-500/20 hover:bg-violet-500/30 text-violet-200 text-[11px] font-semibold transition" title="Copy his open code requests as a markdown checklist">📋 Copy wishlist</button>
+            <button id="btnCopyCodeWishlist" class="hidden px-2.5 py-1 rounded-xl bg-violet-500/20 hover:bg-violet-500/30 text-violet-200 text-[11px] font-semibold transition" title="Copy every open code request as markdown: a checklist plus a spec for each">📋 Copy all as markdown</button>
             <button id="btnGenerateNewRequest" class="px-2.5 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-[11px] font-semibold transition">+ New Question</button>
           </div>
         </div>
@@ -425,6 +425,16 @@
           </summary>
           <div class="pt-2 space-y-2">
             <div id="inventedActionsContainer" class="space-y-2"></div>
+          </div>
+        </details>
+        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="upgrades" open>
+          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-violet-300">
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>⌨️ Upgrades He Coded</span></span>
+            <span id="worldUpgradesCount" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-violet-500/20">0</span>
+          </summary>
+          <div class="pt-2 space-y-2">
+            <p class="text-[10.5px] text-slate-500">He writes these at NetNode in a small, safe JSON language (never JavaScript). View the code, switch one off, or remove it.</p>
+            <div id="worldUpgradesList" class="space-y-2"></div>
           </div>
         </details>
         <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="projects" open>
@@ -771,6 +781,7 @@
   <script src="./js/pastimes.js"></script>
   <script src="./js/shopkeeping.js"></script>
   <script src="./js/printer.js"></script>
+  <script src="./js/upgrades.js"></script>
   <script src="./js/main.js"></script>
   <script src="./js/portal.js"></script>
   <script src="./js/explore.js"></script>

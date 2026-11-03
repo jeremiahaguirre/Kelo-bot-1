@@ -38,7 +38,7 @@ const WELD_PROCESSES = {
 
 // Safety gear for any arc
 const WELD_SAFETY = [
-  { role: 'hood', re: /welding (hood|helmet|mask)|auto-?darkening/i, ask: 'An auto-darkening welding hood', why: 'to protect my eyes and face from the arc\'s UV light and the sparks' },
+  { role: 'hood', re: /welding (hood|helmet|mask)|auto-?darkening/i, ask: 'A welding hood with an auto-darkening lens', why: 'to protect my eyes and face from the arc\'s UV light and the sparks' },
   { role: 'gloves', re: /welding (gloves|gauntlets)|welder'?s gloves/i, ask: 'A pair of leather welding gloves', why: 'to keep the heat and spatter off my hands' }
 ];
 
@@ -118,9 +118,13 @@ function weldPlanFor(creation) {
 // His saved setup (state.weldSetup in agent.js), with any missing fields filled in
 function weldSetupState() {
       const d = { cylinder: null, wire: null, regulator: false, hoses: { gas: false, gun: false, clamp: false }, valveOpen: false, flow: 0, hoodAt: null, glovesAt: null, kept: [], welds: 0 };
-      const s = state.weldSetup && typeof state.weldSetup === 'object' ? state.weldSetup : {};
-      state.weldSetup = { ...d, ...s, hoses: { ...d.hoses, ...(s.hoses || {}) }, kept: Array.isArray(s.kept) ? s.kept : [] };
-      return state.weldSetup;
+      if (!state.weldSetup || typeof state.weldSetup !== 'object') state.weldSetup = {};
+      const s = state.weldSetup;   // fixed up in place, so everyone holding it sees the same setup
+      Object.keys(d).forEach(k => { if (s[k] === undefined) s[k] = d[k]; });
+      if (!s.hoses || typeof s.hoses !== 'object') s.hoses = { ...d.hoses };
+      Object.keys(d.hoses).forEach(k => { s.hoses[k] = Boolean(s.hoses[k]); });
+      if (!Array.isArray(s.kept)) s.kept = [];
+      return s;
     }
 
 // Gear and consumables he keeps at the studio stay off the Storehouse shelves (js/storehouse.js)
@@ -720,7 +724,7 @@ function weldPalmWorld(out, hand = keloRightHand) {
 // Bring a thing from the Storehouse (or straight from where the delivery left it) to the studio
 async function weldFetch(name, spotKey) {
       if (!name) return;
-      const plain = plainItem(name).toLowerCase();
+      const plain = plainItem(name).replace(/^[A-Z](?=[a-z])/, ch => ch.toLowerCase());
       weldSay(`Getting the ${plain} for the welder`, `First, the ${plain}. It belongs at the welder, not on a shelf.`);
       let got = null;
       try { got = typeof fetchFromStorehouse === 'function' ? await fetchFromStorehouse(name) : null; } catch (e) { got = null; }
@@ -809,7 +813,7 @@ async function prepareWeldingStation(plan) {
       if (plan.process === 'mig' && gear.wire.name && s.wire !== gear.wire.name) {
         if (s.wire) { s.wire = null; syncWeldRig(); }
         await weldFetch(gear.wire.name, 'side');
-        weldSay('Loading the wire spool', `Open the side, put the ${plainItem(gear.wire.name).toLowerCase()} on the spindle...`);
+        weldSay('Loading the wire spool', `Open the side, put the ${plainItem(gear.wire.name)} on the spindle...`);
         weldRig.doorOpen = 1;
         await weldWait(500);
         weldDropCarried();
@@ -1155,7 +1159,8 @@ function poseKeloForWelding(t) {
       const pose = weldRig.pose;
       if (!pose) return;
       if (pose.kind === 'reach') {
-        const target = pose.target(new THREE.Vector3());
+        let target;
+        try { target = pose.target(new THREE.Vector3()); } catch (e) { weldRig.pose = null; return; }
         const h = target.y - gy;
         const drop = h < 1.0 ? Math.min(0.42, (1.0 - h) * 0.75) : 0;
         if (drop > 0) { keloSquat(drop); keloGroup.position.y = gy - drop; }
@@ -1218,7 +1223,7 @@ function updateWeldingRigAfterPose(t) {
         weldPalmWorld(weldRig.inHand.position, keloRightHand);
         if (weldRig.inHand === P.hoodOnHook || weldRig.inHand === P.regulator) weldRig.inHand.rotation.set(0, keloGroup.rotation.y, 0);
       }
-      Object.values(weldRig.cables).forEach(updateWeldCable);
+      Object.values(weldRig.cables).forEach(c => { try { updateWeldCable(c); } catch (e) { c.a = c.b = null; c.mesh.visible = false; } });
       // The hood flips: up, or down for the arc
       if (weldRig.hood) {
         const want = weldRig.hoodDown ? 0 : -1.75;

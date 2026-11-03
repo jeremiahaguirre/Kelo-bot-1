@@ -20,6 +20,10 @@ He may change the world freely. He can never move or change the buildings, and h
   - Ground: the terrain and outer lands share one textured material that reads the vertex colours to choose grass, dirt, rock, sand or snow textures (`assets/textures/terrain`, made by `scripts/terrain-textures.py`). Keep using natural colours when recolouring the ground.
   - Trees: `buildNaturalFir`, `buildNaturalLeafyTree` (same ids and spots; leaves drop in winter), an instanced forest on the far hills. Buildings get real-size siding, brick, shingles, stucco and steel via `dressBuilding` in materials.js.
   - Settings → Graphics (High / Balanced / Fast) in localStorage `kelo-graphics`; it steps down by itself if the frame rate stays under ~32. High adds bloom.
+  - Welding Studio (`js/weldstudio.js`): a real fab shop around the old table spot (top still at -1.2, -8.2, 0.92; he still stands at -1.2, -6.6). `updateWeldingStudio` runs from `updateRealism`; the arc flare shows whenever `forgeArcLight` is on.
+- **Cute Kelo-1** (`js/kelo-body.js`). A small, friendly humanoid robot about 2.6 units tall to the antenna tip (head top about 2.4): a big round teal head with a dark face screen, glowing eyes that blink and show happy (^ ^), sad (droopy, frown) or sleeping looks from `keloMoodNow()`, pink cheek lights, headphone ears and a spring antenna. About 18k triangles.
+  - Rig names are unchanged (`keloBody` at `KELO_HIP_Y` = 1.06, legs at `KELO_LEG_Y` = 1.04, elbows, wrists, knees, ankles, `setKeloGrip`, `keloPalmLocal`). Other files read the limb lengths from the `KELO_*` constants, so changing them resizes poses, seats, squats and shelf reaches.
+  - `updateKeloFace(t, dt, resting)` runs at the end of `finishKeloPose`. `keloSitKnee(a, hipH)` in animations.js bends his knees so his feet rest on the ground when he sits.
 - **#21 Seasons and snow** (`js/seasons.js`).
   - `inSnow(p)` uses `SNOW_LINE` per season (all land in winter, the high mountain otherwise). `snowWalkFactor`/`snowSink` slow him and sink him in `scene.js`.
   - `checkSnowStuck` → `getStuckInSnow` → `researchSnowTravel` asks for snowshoes, skis and a snowmobile.

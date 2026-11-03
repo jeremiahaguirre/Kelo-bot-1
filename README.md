@@ -105,7 +105,7 @@ Kelo-bot-1/
 │   ├── hobbies.js       # Hobbies sparked by items (murals, kites, music...)
 │   ├── mining.js        # Digging, equipment needs, hidden finds
 │   ├── growth.js        # Merges what he dreamt while you were away
-│   ├── kelo-body.js     # Kelo-1's humanoid robot body and rig: head, visor, jointed arms, hands with fingers, legs and feet
+│   ├── kelo-body.js     # Kelo-1's cute robot body and rig: big head, blinking mood eyes, bouncy antenna, jointed arms, hands and legs
 │   ├── scene.js         # Three.js world, pathfinding, terrain
 │   ├── realism.js       # Realistic look: real colours, filmic tone mapping, sky and sun from his clock, HDR lighting, lake, textured ground, trees, Graphics setting
 │   ├── weldstudio.js    # The Welding Studio as a real fab shop: steel table, MIG welder, gas bottles, grinder, fume arm, arc glow

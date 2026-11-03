@@ -90,6 +90,15 @@ function keloSitPose(seatAbove, kneeBend = 1.35) {
       return KELO_LEG_Y - KELO_THIGH_R - seatAbove;
     }
 
+// For sitting on the ground: with his hips hipH above the ground and thighs raised to hip angle a
+// (more negative is higher), how far his knees must bend for his feet to rest flat on the ground
+function keloSitKnee(a, hipH) {
+      const ankleY = KELO_LEG_Y - KELO_THIGH - KELO_SHIN;
+      const kneeY = hipH - KELO_THIGH * Math.cos(a);
+      const shin = Math.acos(Math.max(-1, Math.min(1, (kneeY - ankleY) / KELO_SHIN)));
+      return -a - shin;
+    }
+
 // How far he walks this frame (before vehicle and snow speed): he eases up to speed as he sets
 // off, lengthens into a quicker stride on long trips, and slows for the last step as he arrives
 function keloWalkStep(dist, dt) {
@@ -307,7 +316,7 @@ const KELO_EMOTES = {
       // Down on the ground, knees up, forearms resting on his knees
       return {
         lift: -(KELO_LEG_Y - 0.22) * s, lLegX: -2.15 * s, rLegX: -2.15 * s, lLegZ: -0.12 * s, rLegZ: 0.12 * s,
-        lKneeX: 1.7 * s, rKneeX: 1.7 * s,
+        lKneeX: keloSitKnee(-2.15, 0.22) * s, rKneeX: keloSitKnee(-2.15, 0.22) * s,
         bodyX: lean, lArmX: -0.75 * s, rArmX: -0.75 * s, lArmZ: -0.12 * s, rArmZ: 0.12 * s, lElbowX: -0.5 * s, rElbowX: -0.5 * s,
         headY: Math.sin(e * 0.6) * 0.3 * s, headX: -0.15 * s
       };
@@ -377,7 +386,7 @@ function finishKeloPose(t) {
       // Carrying something: forearms out in front, hands gripping it from the sides
       if (holding && !riding && (a.mode === 'walk' || a.mode === 'idle')) {
         const size = keloCarrySize(carriedObject);
-        const reach = Math.max(-0.35, Math.min(0.12, (Math.min(size.x, 0.9) / 2 + 0.03 - KELO_SHOULDER.x) / 0.62));
+        const reach = Math.max(-0.35, Math.min(0.12, (Math.min(size.x, 0.9) / 2 + 0.03 - KELO_SHOULDER.x) / ((KELO_UPPER_ARM + KELO_FOREARM) * 0.75)));
         keloLeftArm.rotation.set(-0.38, 0, -Math.asin(reach));
         keloRightArm.rotation.set(-0.38, 0, Math.asin(reach));
         keloLeftElbow.rotation.x = keloRightElbow.rotation.x = -1.05;
@@ -396,7 +405,7 @@ function finishKeloPose(t) {
       target.bodyShift = keloBody.position.x;
       // Relaxed joints are never quite straight: elbows and knees a touch bent, arms clear of his sides
       target.lElbowX -= 0.16; target.rElbowX -= 0.16;
-      target.lArmZ -= 0.05; target.rArmZ += 0.05;
+      target.lArmZ -= 0.1; target.rArmZ += 0.1;
       target.lKneeX += 0.04; target.rKneeX += 0.04;
       if (!a.base) a.base = { ...target };
       const out = {};
@@ -546,6 +555,8 @@ function finishKeloPose(t) {
       KELO_JOINTS.forEach(([name, get]) => get().rotation.set(out[name + 'X'], out[name + 'Y'], out[name + 'Z']));
       setKeloGrip(keloLeftHand, out.lGrip);
       setKeloGrip(keloRightHand, out.rGrip);
+      // Blinking, his mood on his face, and the bounce of his antenna (js/kelo-body.js)
+      if (typeof updateKeloFace === 'function') updateKeloFace(t, dt, resting);
       keloBody.position.set(out.bodyShift, KELO_HIP_Y + out.bodyLift, 0);
       keloGroup.position.y += out.lift;
       keloGroup.rotation.set(a.groupX, a.yaw + out.yaw, a.groupZ);

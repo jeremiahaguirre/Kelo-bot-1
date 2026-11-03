@@ -137,13 +137,14 @@ Kelo-bot-1/
 │   ├── skills.js        # Real skills: practising the vehicles, telescope and hobbies he was given; doing what visitors ask
 │   ├── projects.js      # Real builds: finding plans online, asking for materials (or sawing his own logs), building them
 │   ├── town.js          # Keeps the town free of his builds (the beach is fine)
-│   ├── coderequests.js  # Code requests: features he asks his human to code into his world
+│   ├── coderequests.js  # Code requests for anything he wants (no cap, paced), each with a copyable spec
 │   ├── wishfeatures.js  # Which code requests match a built feature: "Ready to switch on" or "Needs new code"
 │   ├── wildlife.js      # Songbird flocks and mule deer in the meadow; walking up quietly to study them
 │   ├── companions.js    # His robot friend (follows, carries, hands tools, keeps watch) and his pet dog or cat
 │   ├── pastimes.js      # Fishing, the stove, real music sounds, swimming, the campfire, named constellations
 │   ├── shopkeeping.js   # His shop in the game: listing things for sale, "Sold", earnings, Export shop
 │   ├── printer.js       # His 3D printer: setting it up, learning it, filament spools, prints that fail and succeed
+│   ├── upgrades.js      # World upgrades he codes himself in a safe, validated JSON language (never JavaScript)
 │   ├── main.js          # UI wiring
 │   ├── portal.js        # Send-him-something panel
 │   ├── explore.js       # Looking around: Follow Kelo-1 or Explore freely, Places, the click menu, help card, touch joystick

@@ -1207,7 +1207,7 @@ async function artStrokeLayers(out, hc, src, dir, o, rng, step, from, to) {
           }
         }
         for (let i = strokes.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [strokes[i], strokes[j]] = [strokes[j], strokes[i]]; }
-        const chunk = Math.max(200, Math.ceil(strokes.length / 4));
+        const chunk = Math.max(60, Math.ceil(strokes.length / 12));
         for (let s = 0; s < strokes.length; s++) {
           const [sx, sy] = strokes[s];
           const xi = Math.max(0, Math.min(W - 1, sx | 0)), yi = Math.max(0, Math.min(H - 1, sy | 0));

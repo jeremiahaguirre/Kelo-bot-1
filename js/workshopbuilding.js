@@ -868,13 +868,14 @@ async function runWorkshopVisit(plan) {
         // He drives it round to the vehicle door first
         const door = siteToWorld(site, WS_DOORS.vehicle.x, WORKSHOP_SITE.d / 2 + 5.5, 0);
         await driveVehicle(veh, { x: door.x, z: door.z }, `Driving the ${String(veh.name).replace(/^(an?|the)\s+/i, '')} to the Workshop`);
-        state.targetPos = { x: outside.x, z: outside.z };
+        // (he climbed out by the driver's door; he gets straight back in to back it inside)
+        if (state.riding || Math.hypot(veh.x - door.x, veh.z - door.z) > 3) return false;
       } else {
         state.targetPos = { x: outside.x, z: outside.z };
+        const far = Math.hypot(state.botPos.x - outside.x, state.botPos.z - outside.z);
+        await waitForArrival(Math.min(150000, 15000 + far * 1500));
+        if (Math.hypot(state.botPos.x - outside.x, state.botPos.z - outside.z) > 1.8 || state.riding) return false;
       }
-      const far = Math.hypot(state.botPos.x - outside.x, state.botPos.z - outside.z);
-      await waitForArrival(Math.min(150000, 15000 + far * 1500));
-      if (Math.hypot(state.botPos.x - outside.x, state.botPos.z - outside.z) > 1.8 || state.riding) return false;
       const roofs = typeof cutawayRoofMeshes !== 'undefined' ? cutawayRoofMeshes.filter(r => r.parent === wsGroup && !wsDeckMeshes.includes(r)) : [];
       const results = [];
       let cur = null;

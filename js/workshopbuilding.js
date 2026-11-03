@@ -239,8 +239,8 @@ function buildWorkshop3D() {
       wsGroup.userData.isWorkshop = true;
 
       const rib = wsRibTexture();
-      const cladding = new THREE.MeshStandardMaterial({ color: 0xc3c9d0, roughness: 0.42, metalness: 0.55, map: rib, bumpMap: rib, bumpScale: 0.03 });
-      const cladDark = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.45, metalness: 0.5, map: rib, bumpMap: rib, bumpScale: 0.03 });
+      const cladding = new THREE.MeshStandardMaterial({ color: 0xd3d8de, roughness: 0.5, metalness: 0.22, map: rib, bumpMap: rib, bumpScale: 0.03 });
+      const cladDark = new THREE.MeshStandardMaterial({ color: 0x3b4a5e, roughness: 0.5, metalness: 0.25, map: rib, bumpMap: rib, bumpScale: 0.03 });
       // The front wall shares the look but fades on its own during a trip
       const cladFront = cladding.clone();
       const cladFrontDark = cladDark.clone();

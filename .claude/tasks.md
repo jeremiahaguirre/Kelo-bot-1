@@ -90,6 +90,16 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
    - His own asphalt can be used for paving, and it is wasted if it cools.
    - Concrete is used to pour pads, paths and foundations, and it cures over days.
 
+9. **Smarter vehicles** (`agent/vehicles`, started):
+   - Fix the snowmobile refuel loop: he kept filling it and it never filled.
+   - Terrain rules for every vehicle:
+     - the snowmobile only on snow
+     - boats only on water
+     - trucks on roads
+     - the excavator hauled for long trips
+   - A trip planner that reasons like a person. Example: no snow between here and the mountain, so he researches, then requests a pickup, a trailer and straps, then loads up, drives to the snow line, unloads and rides.
+   - He still requests every vehicle, trailer and accessory.
+
 ## Owner notes to keep in mind
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.
 - "He can build anything", he can ask for lists of things, and code upgrades to his world.

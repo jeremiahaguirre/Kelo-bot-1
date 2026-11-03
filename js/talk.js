@@ -652,7 +652,7 @@ function talkInit() {
           talkRenderJump();
         }
       }, { passive: true });
-      talkEl('talkJumpLatest')?.addEventListener('click', () => { talkScrollToLatest(true); input.focus({ preventScroll: true }); });
+      talkEl('talkJumpLatest')?.addEventListener('click', () => { talkScrollToLatest(false); input.focus({ preventScroll: true }); });
 
       // Buttons inside the thread (it is rebuilt, so one listener on the box)
       box.addEventListener('click', (e) => {

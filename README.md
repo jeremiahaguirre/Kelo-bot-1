@@ -136,6 +136,9 @@ Kelo-bot-1/
 │   ├── groundwork.js    # Researching how roads, paving, earthwork and planting are done; the right tools, used in turn
 │   ├── skills.js        # Real skills: practising the vehicles, telescope and hobbies he was given; doing what visitors ask
 │   ├── projects.js      # Real builds: finding plans online, asking for materials (or sawing his own logs), building them
+│   ├── bom.js           # Bills of materials for building anything (built-in plans or AI-written, down to the screw)
+│   ├── buildmodels.js   # Part-by-part 3D models of the big builds: airplane, go-kart, canoe, kayak, shed, drone, guitar, tree fort
+│   ├── assembly.js      # Build anything: research, parts lists for his human, step-by-step assembly, tests, learning to fly
 │   ├── town.js          # Keeps the town free of his builds (the beach is fine)
 │   ├── coderequests.js  # Code requests: features he asks his human to code into his world
 │   ├── wishfeatures.js  # Which code requests match a built feature: "Ready to switch on" or "Needs new code"

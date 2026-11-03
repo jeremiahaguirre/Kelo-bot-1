@@ -7,7 +7,7 @@
 //     commits, so everyone else sees the shop too
 // There is no payment here. "Contact to buy" goes to the email or https link the owner set in Settings.
 
-const SHOP_BRAIN_KEY = 'kelo1_brain_v3';
+const SHOP_BRAIN_KEY = 'kelo1_brain_v4';
 const SHOP_CONTACT_STORAGE_KEY = 'kelo1_shop_contact';
 
 function shopEscape(value) {

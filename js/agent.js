@@ -1181,9 +1181,12 @@ function handleUserLocationSuggestion(locKey, source) {
     directKeloToActivity(locKey, `Wandered over to ${loc.building} after noticing your pin`, 'Visitor Suggestion');
   }
 
-// Version 3 = the fresh start in the updated world. Older saves are cleared, not loaded.
-const BRAIN_KEY = 'kelo1_brain_v3';
-const LEGACY_KEYS = ['kelo1_autonomous_brain_v2', 'kelo1_memory_archive_v1', 'kelo1_photo_album_v1'];
+// Version 4 = a second fresh start (Kelo-1 and his map, after the realism, skills and wishes update).
+// Older saves are cleared, not loaded. API keys and this device's display settings are kept.
+const BRAIN_KEY = 'kelo1_brain_v4';
+const LEGACY_KEYS = ['kelo1_autonomous_brain_v2', 'kelo1_memory_archive_v1', 'kelo1_photo_album_v1',
+  'kelo1_brain_v3', 'kelo1_brain_v3_lore', 'kelo1_brain_v3_designs', 'kelo1_brain_v3_shop_pictures',
+  'kelo1_memory_archive_v2', 'kelo1_photo_album_v2'];
 
 function loadPersistentBrainState() {
       try { LEGACY_KEYS.forEach(k => keloStore.removeItem(k)); } catch (e) {}
@@ -1269,10 +1272,10 @@ const TRANSIENT_STATE_KEYS = new Set(['riding', 'ridingSpeed', 'ridingMode', 'is
 // the shapes the AI drew for items, and his shop's listing pictures. (Older saves had them all in
 // the main key; loadPersistentBrainState reads either.)
 const BRAIN_PARTS = [
-  { key: 'kelo1_brain_v3_lore', fields: ['vocabulary', 'itemLookups', 'aiLearned'] },
-  { key: 'kelo1_brain_v3_designs', fields: ['itemDesigns'] }
+  { key: 'kelo1_brain_v4_lore', fields: ['vocabulary', 'itemLookups', 'aiLearned'] },
+  { key: 'kelo1_brain_v4_designs', fields: ['itemDesigns'] }
 ];
-const BRAIN_PICTURES_KEY = 'kelo1_brain_v3_shop_pictures';
+const BRAIN_PICTURES_KEY = 'kelo1_brain_v4_shop_pictures';
 const brainWritten = {};   // storage key -> what was last written there (nothing is rewritten unchanged)
 const brainPartSig = {};   // storage key -> a quick signature of the part when it was last written
 let brainPartsCheckedAt = 0;

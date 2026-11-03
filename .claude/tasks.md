@@ -110,7 +110,7 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
     - One composer: multiline (Enter sends, Shift+Enter new line), send button, a "+" menu with Attach photo and Send a gift/tool/toy, character count, disabled and sending states.
     - Suggested reply chips that fit his context (the helicopter one only if he has one); your name saved on the device and edited in one place; an empty state for a fresh Kelo-1; "Load earlier" within MAX_CHAT_LOG.
     - Accessible (labels, focus, aria-live), re-render only on change, escapeHtml everywhere, no inline handlers (CSP).
-    - New code in `js/talk.js` (after main.js). Status: studying the old tab.
+    - New code in `js/talk.js` (after portal.js). Status: built and committed; phone tests pass (empty state, name, Enter/Shift+Enter, thinking, lookup cards, photo and gift from +, jump to latest, load earlier, reload). Desktop, helicopter chip and regression runs in progress.
 
 ## Owner notes to keep in mind
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.

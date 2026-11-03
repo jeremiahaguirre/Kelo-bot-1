@@ -146,6 +146,7 @@ Kelo-bot-1/
 │   ├── printer.js       # His 3D printer: setting it up, learning it, filament spools, prints that fail and succeed
 │   ├── main.js          # UI wiring
 │   ├── portal.js        # Send-him-something panel
+│   ├── talk.js          # The Talk tab: the live chat with Kelo-1, suggested messages, photos and gifts from the + menu
 │   ├── explore.js       # Looking around: Follow Kelo-1 or Explore freely, Places, the click menu, help card, touch joystick
 │   ├── minimap.js       # The live minimap: terrain, buildings, his vehicles, digs and builds, Kelo-1 and the camera's view, and the Map tab of everything he has changed
 │   ├── tryit.js         # The World tab's Try it panel: preview seasons, night and wind, send sample gifts

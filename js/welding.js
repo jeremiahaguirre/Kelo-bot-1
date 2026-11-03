@@ -458,16 +458,22 @@ function buildWeldBead() {
       const g = weldRig.group;
       const MAXB = 140, MAXS = 70;
       const ripple = new THREE.SphereGeometry(1, 10, 6);
-      const solid = new THREE.InstancedMesh(ripple, new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.75 }), MAXB);
+      const solid = new THREE.InstancedMesh(ripple, new THREE.MeshStandardMaterial({ roughness: 0.45, metalness: 0.45 }), MAXB);
       const glow = new THREE.InstancedMesh(ripple, new THREE.MeshBasicMaterial({ transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }), MAXB);
-      [solid, glow].forEach(m => { m.count = 0; m.frustumCulled = false; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); g.add(m); });
+      [solid, glow].forEach(m => { m.frustumCulled = false; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); g.add(m); });
       glow.scale.setScalar(1);
       const dot = new THREE.SphereGeometry(1, 6, 4);
       const spat = new THREE.InstancedMesh(dot, new THREE.MeshStandardMaterial({ roughness: 0.5, metalness: 0.6 }), MAXS);
       const spatGlow = new THREE.InstancedMesh(dot, new THREE.MeshBasicMaterial({ transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }), MAXS);
-      [spat, spatGlow].forEach(m => { m.count = 0; m.frustumCulled = false; g.add(m); });
-      // Instance colours must exist before the first render, or the shader is built without them (all white)
-      [[solid, MAXB], [glow, MAXB], [spat, MAXS], [spatGlow, MAXS]].forEach(([m, n]) => { for (let i = 0; i < n; i++) m.setColorAt(i, new THREE.Color(0, 0, 0)); });
+      [spat, spatGlow].forEach(m => { m.frustumCulled = false; g.add(m); });
+      // Instance colours are made (sized by count, in r128) before count drops to 0 and before the first
+      // render, or the shader is built without them and the bead is plain white
+      [solid, glow, spat, spatGlow].forEach(m => {
+        const black = new THREE.Color(0, 0, 0);
+        for (let i = 0; i < m.count; i++) m.setColorAt(i, black);
+        m.instanceColor.setUsage(THREE.DynamicDrawUsage);
+        m.count = 0;
+      });
       weldRig.bead = { solid, glow, ripples: [], MAXB };
       weldRig.spatter = { solid: spat, glow: spatGlow, dots: [], MAXS };
       // Two steel plates butted together along the seam
@@ -511,7 +517,7 @@ function updateWeldBead(t) {
         _weldM.compose(_weldV.set(r.x, y + 0.002, r.z), _weldQ.identity(), _weldS);
         b.solid.setMatrixAt(i, _weldM);
         // Cooled steel bead: grey, with a faint straw and blue heat tint while it is still warm
-        const g = 0.32 + 0.22 * (1 - T);
+        const g = 0.3 + 0.38 * (1 - T);
         b.solid.setColorAt(i, _weldC.setRGB(g + 0.05 * T, g, g - 0.02 + 0.06 * (1 - T)));
         _weldS.multiplyScalar(1.12);
         _weldM.compose(_weldV, _weldQ, _weldS);

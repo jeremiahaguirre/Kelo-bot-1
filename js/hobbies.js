@@ -191,6 +191,8 @@ function clearHobbyProps() {
       hobbyPropUpdate = null;
       // Ends a kite session too, so its run-back-and-forth timer stops (js/wind.js)
       if (typeof kiteSession !== 'undefined') kiteSession = null;
+      // ...and any music he was playing (js/pastimes.js)
+      if (typeof stopHobbyMusic === 'function') stopHobbyMusic();
     }
 
 function noteSprite(symbol, color) {
@@ -227,6 +229,8 @@ function startPracticeProps(hobby) {
         // How it really flies depends on the wind (js/wind.js)
         if (typeof windKiteProps === 'function') hobbyPropUpdate = windKiteProps(kite, line);
       } else if (hobby.style === 'music') {
+        // Real sound once his human has switched music on (js/pastimes.js)
+        if (typeof playHobbyMusic === 'function' && typeof featureOn === 'function' && featureOn('music')) playHobbyMusic(hobby);
         const notes = [];
         for (let i = 0; i < 6; i++) {
           const n = noteSprite(i % 2 ? '♪' : '♫', ['#facc15', '#f472b6', '#38bdf8'][i % 3]);

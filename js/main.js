@@ -111,7 +111,7 @@ function renderRequestsTab() {
 
       const list = document.getElementById('requestsInboxList');
       // Only rebuild the letters when they actually change, so a note you are typing isn't wiped
-      const requestsKey = JSON.stringify(state.requestsToUser.map(r => [r.id, r.fulfilled, r.declined, r.userAnswer]));
+      const requestsKey = JSON.stringify(state.requestsToUser.map(r => [r.id, r.fulfilled, r.declined, r.userAnswer, r.willCode, r.notBuilt, r.featureKey]));
       if (list.dataset.renderKey === requestsKey) return;
       list.dataset.renderKey = requestsKey;
       list.innerHTML = state.requestsToUser.map(req => req.category === 'code' && typeof codeRequestCardHtml === 'function' ? codeRequestCardHtml(req) : `

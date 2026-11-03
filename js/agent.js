@@ -316,6 +316,8 @@ const state = {
   "knowHow": {},
   "jobKnowledge": {},
   "skills": {},
+  "activityCooldowns": {},
+  "recentDecisionTitles": [],
   "lastWeldAt": 0,
   "knowsSnow": false,
   "worldEdits": [],
@@ -1691,7 +1693,10 @@ function rememberAIDecision(d) {
 // Offline (no key, or the AI can't be reached) he often falls back on what he learned with the AI
 function decisionFromAIMemory() {
       if (!state.aiLearned.length) return null;
-      const h = pick(state.aiLearned);
+      // Rotate through them: not one he did recently (js/loopguard.js)
+      const fresh = state.aiLearned.filter(x => !(state.recentDecisionTitles || []).slice(0, 8).some(t => typeof similarTitles === 'function' && similarTitles(t, x.title)));
+      if (!fresh.length) return null;
+      const h = pick(fresh);
       return {
         actionTitle: h.title, emoji: h.emoji || '💭',
         speech: h.speech ? `${h.speech} (I remember working this out before.)` : `I remember doing this before: ${h.title.toLowerCase()}.`,
@@ -1706,7 +1711,7 @@ function decisionFromAIMemory() {
 function generateProceduralDecision(context = {}) {
       if (context.declined) return proceduralDeclinedDecision(context.focus);
       // What he learned with the AI isn't lost when it's gone
-      if (!context.focus && state.aiLearned.length && Math.random() < 0.45) {
+      if (!context.focus && !context.noReplay && state.aiLearned.length && Math.random() < 0.45) {
         const remembered = decisionFromAIMemory();
         if (remembered) return remembered;
       }
@@ -1826,6 +1831,7 @@ Current state:
 - Real things you are building from plans: ${typeof projectsSummaryForAI === 'function' ? projectsSummaryForAI() : 'none'}
 - How you have shaped the valley (you can undo anything but a chopped tree): ${typeof landscapeSummaryForAI === 'function' ? landscapeSummaryForAI() : 'nothing yet'}
 - Things you know how to use: ${typeof knowHowSummaryForAI === 'function' ? knowHowSummaryForAI() : 'nothing yet'}
+- Your most recent decisions: ${typeof recentDecisionsForAI === 'function' ? recentDecisionsForAI() : 'none yet'}. Choose something genuinely DIFFERENT this time: don't repeat or rephrase any of them, and don't retry something you are still waiting on (tools, materials, fuel or a delivery). Do something else meanwhile.
 - Welding: ${recentlyWelded() ? 'you welded a piece within the last 15 minutes, so do something different this time ("build" should be null)' : 'welding is one of many things you do; most of your decisions should not include a "build"'}. Pieces stand outdoors (never in town); only overflow goes to your Museum.
 - Your real skills (practise with the things you asked for and were given; this matters more than welding): ${typeof skillsSummaryForAI === 'function' ? skillsSummaryForAI() : 'none yet'}
 - Groundwork you've researched (roads, asphalt paving, moving earth, planting): ${typeof groundworkSummaryForAI === 'function' ? groundworkSummaryForAI() : 'nothing yet'}
@@ -2245,10 +2251,24 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will', conte
         // Even the AI brain can't think straight on an empty tank
         if (decision && typeof isFoggy === 'function' && isFoggy() && Math.random() < 0.5) decision = foggyDecision();
         if (!decision || !decision.actionTitle) decision = generateProceduralDecision(context);
+        // Not the same plan again: on his own he picks something different (js/loopguard.js)
+        if (!trigger && typeof isRepeatDecision === 'function') {
+          for (let i = 0; i < 4 && isRepeatDecision(decision); i++) decision = generateProceduralDecision({ ...context, noReplay: true });
+        }
+        if (typeof noteDecision === 'function') noteDecision(decision.actionTitle);
         applyDecision(decision, originLabel);
       } finally {
         state.isBusy = false;
       }
+    }
+
+// The loop guard (js/loopguard.js), if it loaded
+function canTryKey(key) {
+      return typeof canTry === 'function' ? canTry(key) : true;
+    }
+
+function tryKey(key, fn) {
+      return typeof tryActivity === 'function' ? tryActivity(key, fn) : fn();
     }
 
 function runAutonomousLifeTick() {
@@ -2262,57 +2282,57 @@ function runAutonomousLifeTick() {
       // Something a visitor asked him to go and do (js/skills.js)
       if (typeof takeSkillAsk === 'function' && takeSkillAsk()) return;
       // Getting good at the real things he asked for and was given comes first (js/skills.js)
-      if (typeof practiseSkill === 'function' && Math.random() < skillPracticeChance()) { practiseSkill(pickSkillToPractise()); return; }
+      if (typeof practiseSkill === 'function' && canTryKey('skill') && Math.random() < skillPracticeChance()) { tryKey('skill', () => practiseSkill(pickSkillToPractise())); return; }
       // Sometimes he feels like digging (and asks for tools if he doesn't have them)
-      if (typeof digAt === 'function' && Math.random() < diggingChance()) {
+      if (typeof digAt === 'function' && canTryKey('dig') && Math.random() < diggingChance()) {
         const spot = chooseDigSpot();
-        digAt(spot.x, spot.z, 'Felt Like Digging');
+        tryKey('dig', () => digAt(spot.x, spot.z, 'Felt Like Digging'));
         return;
       }
       // Now and then he clears out junk and spare copies into the Disposal Pit
       // Every half hour he's reminded to go through his Storehouse and Museum (js/tidyup.js)
       if (typeof tidyUpDue === 'function' && tidyUpDue()) { startTidyUp(); return; }
-      if (typeof disposeItem === 'function' && Math.random() < disposalChance()) {
-        disposeUnwanted();
+      if (typeof disposeItem === 'function' && canTryKey('dispose') && Math.random() < disposalChance()) {
+        tryKey('dispose', () => disposeUnwanted());
         return;
       }
       // Now and then he looks for something real to build
-      if (typeof startProject === 'function' && Math.random() < projectChance()) { startProject(pickNewProject()); return; }
+      if (typeof startProject === 'function' && canTryKey('project') && Math.random() < projectChance()) { tryKey('project', () => startProject(pickNewProject())); return; }
       // Now and then he puts something in his shop, or wishes his world could do something new
-      if (typeof tendShop === 'function' && Math.random() < shopChance()) { tendShop(); return; }
-      if (typeof printOnMyOwn === 'function' && Math.random() < printChance()) { printOnMyOwn(); return; }
-      if (typeof wishForCode === 'function' && Math.random() < codeWishChance()) { wishForCode(); return; }
+      if (typeof tendShop === 'function' && canTryKey('shop') && Math.random() < shopChance()) { tryKey('shop', () => tendShop()); return; }
+      if (typeof printOnMyOwn === 'function' && canTryKey('print') && Math.random() < printChance()) { tryKey('print', () => printOnMyOwn()); return; }
+      if (typeof wishForCode === 'function' && canTryKey('codewish') && Math.random() < codeWishChance()) { tryKey('codewish', () => wishForCode()); return; }
       // Things his human switched on for him: studying wildlife, his pet, fishing, the campfire...
       if (typeof wishFeatureActivity === 'function' && wishFeatureActivity()) return;
       // Now and then he reshapes a bit of the valley
-      if (typeof shapeTheValleyOnMyOwn === 'function' && Math.random() < landscapeChance()) { shapeTheValleyOnMyOwn(); return; }
+      if (typeof shapeTheValleyOnMyOwn === 'function' && canTryKey('landscape') && Math.random() < landscapeChance()) { tryKey('landscape', () => shapeTheValleyOnMyOwn()); return; }
       // A telescope comes out mostly at night
-      if (typeof stargaze === 'function' && Math.random() < stargazeChance()) { stargaze(); return; }
+      if (typeof stargaze === 'function' && canTryKey('stargaze') && Math.random() < stargazeChance()) { tryKey('stargaze', () => stargaze()); return; }
       // With a boat he likes going out on the lake; without one he may wade in and learn the hard way
-      if (typeof goBoating === 'function' && findVehicle('boat') && Math.random() < 0.1) { goBoating(); return; }
-      if (typeof wadeIntoLake === 'function' && !state.knowsLakeDanger && Math.random() < 0.04) { wadeIntoLake(); return; }
+      if (typeof goBoating === 'function' && canTryKey('boat') && findVehicle('boat') && Math.random() < 0.1) { tryKey('boat', () => goBoating()); return; }
+      if (typeof wadeIntoLake === 'function' && canTryKey('wade') && !state.knowsLakeDanger && Math.random() < 0.04) { tryKey('wade', () => wadeIntoLake()); return; }
       // In winter the frozen lake draws him: look, read up, test the ice, then walk on it (js/weather.js)
-      if (typeof iceOuting === 'function' && Math.random() < iceChance()) { iceOuting(); return; }
+      if (typeof iceOuting === 'function' && canTryKey('ice') && Math.random() < iceChance()) { tryKey('ice', () => iceOuting()); return; }
       // A crashed balloon in pieces: now and then he sets about welding it back together (js/wind.js)
-      if (typeof repairBalloon === 'function' && Math.random() < repairChance()) { repairBalloon(); return; }
-      if (typeof flyBalloon === 'function' && Math.random() < balloonFlightChance()) { flyBalloon(); return; }
+      if (typeof repairBalloon === 'function' && canTryKey('repair') && Math.random() < repairChance()) { tryKey('repair', () => repairBalloon()); return; }
+      if (typeof flyBalloon === 'function' && canTryKey('balloon') && Math.random() < balloonFlightChance()) { tryKey('balloon', () => flyBalloon()); return; }
       // On a cold night he may burn some of his firewood (js/itemuse.js)
-      if (typeof warmUpByFire === 'function' && Math.random() < fireChance()) { warmUpByFire(); return; }
+      if (typeof warmUpByFire === 'function' && canTryKey('fire') && Math.random() < fireChance()) { tryKey('fire', () => warmUpByFire()); return; }
       // Sometimes he just wants to spend time on one of his hobbies
-      if (typeof practiceHobby === 'function' && Math.random() < hobbyPracticeChance()) {
-        practiceHobby(pickHobbyToPractise(), 'Practising a Hobby');
+      if (typeof practiceHobby === 'function' && canTryKey('hobby') && Math.random() < hobbyPracticeChance()) {
+        tryKey('hobby', () => practiceHobby(pickHobbyToPractise(), 'Practising a Hobby'));
         return;
       }
       // Most of the time Kelo-1 makes a fully open-ended decision. Otherwise he falls back
       // into one of his familiar routines (which are also his own choice).
       // Mail waiting at the post office? He may (or may not) feel like picking it up now
-      if (typeof pickUpMail === 'function' && Math.random() < mailPickupChance()) {
-        pickUpMail('Checking the Mail');
+      if (typeof pickUpMail === 'function' && canTryKey('mail') && Math.random() < mailPickupChance()) {
+        tryKey('mail', () => pickUpMail('Checking the Mail'));
         return;
       }
       // Sometimes he goes online to chase something he has been wondering about
-      if (typeof browseInternet === 'function' && Math.random() < (state.curiosityQueue.length > 0 ? 0.2 : 0.08)) {
-        browseInternet(null, 'Own Curiosity');
+      if (typeof browseInternet === 'function' && canTryKey('browse') && Math.random() < (state.curiosityQueue.length > 0 ? 0.2 : 0.08)) {
+        tryKey('browse', () => browseInternet(null, 'Own Curiosity'));
         return;
       }
       const openEndedChance = hasLLMKey() ? 0.85 : 0.6;

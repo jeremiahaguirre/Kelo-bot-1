@@ -94,6 +94,7 @@ Kelo-bot-1/
 │   ├── vendor/GLTFLoader.js # three.js r128's glTF loader (loaded right after three.js)
 │   ├── native.js        # Phone apps only (added by the www build before agent.js): device storage, secure keys, back button
 │   ├── agent.js         # State, decision engine, AI providers, requests (loaded first)
+│   ├── loopguard.js     # Keeps him out of decision loops: no 3-in-a-row, cooldowns for blocked jobs, no repeated plans
 │   ├── memory.js        # Long-term memory, core memories, backups
 │   ├── worldclock.js    # His calendar: 12-hour days, 365-day years, seasons
 │   ├── needs.js         # Food, water and sleep, which he has to discover

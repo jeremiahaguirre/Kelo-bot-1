@@ -8,7 +8,10 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
-## In progress (helpers, interrupted by usage limits; resume each one)
+## Merged into main locally (2026-11-04, waiting on the regression run before push)
+- Task 1 Paintings (agent/paint), task 2 Accurate welding + work bench (agent/weld), task 3 Humanize/eye cam/fluid motion (agent/body), task 4 Garden (agent/garden), task 6 Code anything + self-upgrades (agent/upgrades), task 10 phase 1 audit (agent/review; plan in .claude/review.md, phase 2 still to do after the rest merge).
+
+## In progress (helpers resumed 2026-11-04 03:12 UTC; if one stops, resume it)
 1. **Paintings** (`agent/paint`): real oil, acrylic, watercolour, gouache, pastel, ink and charcoal paintings.
    - He researches each medium, then requests its supplies. Supplies are used up.
    - He paints at an easel, the paintings hang in the Museum, and visitors can ask for one.
@@ -46,8 +49,8 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
    - He builds safe declarative world upgrades (JSON, never eval), which the owner can view, toggle and remove.
    - It was writing js/upgrades.js.
 
-## In progress
-7. **Big workshop building** (`agent/workshop`, worktree /home/user/wt/workshop). PROGRESS: building + car elevator (js/workshopbuilding.js), models (js/machinemodels.js), machine framework (js/machines.js), printers (js/additive.js), CNC (js/cnc.js), electronics (js/electronics.js), garage + vehicle wear (js/garage.js) written and wired in (index.html, agent.js state/tick/prompt/decision, vehicles.js wear hook, scene.js pad hook, landscape.js offLimits). Next: screenshot tests of every job, regressions. WORKSHOP_SITE = { x: 51.6, z: -4, w: 16, d: 15 }; WORKSHOP_STATIONS.weld/bench/assembly for the weld and assembly branches., to the RIGHT of the helipad (AIR_SLOTS around x 38.5, z -2, in js/vehicles.js). Floor 1 is the main fabrication shop, holding all his 3D printers, work benches, welding and CNC machines. Each machine has full functionality and real requirements:
+## In progress (helper running, branch `agent/workshop`)
+7. **Big workshop building** (worktree /home/user/wt/workshop). PROGRESS: building + car elevator (js/workshopbuilding.js), models (js/machinemodels.js), machine framework (js/machines.js), printers (js/additive.js), CNC (js/cnc.js), electronics (js/electronics.js), garage + vehicle wear (js/garage.js) are written, wired in and tested job by job; final screenshot and regression passes in progress. `WORKSHOP_SITE = { x: 51.6, z: -4, w: 16, d: 15 }`. The original brief: to the RIGHT of the helipad (AIR_SLOTS around x 38.5, z -2, in js/vehicles.js). Floor 1 is the main fabrication shop, holding all his 3D printers, work benches, welding and CNC machines. Each machine has full functionality and real requirements:
    - **3D printers**, every type: FDM/FFF, SLA, DLP, MSLA/LCD, SLS, DMLS/SLM, MJF, PolyJet material jetting, binder jetting, DED, EBM and LOM. Each has its real materials (filament, resin, nylon powder, metal powder, binder, wire feedstock, paper or laminate), post-processing (washing and UV curing for resin, depowdering, sintering, heat treating, support removal) and safety needs (gloves, ventilation, inert gas).
    - **CNC machines**:
      - Avid CNC PRO4896 / PRO60120: large-format modular routers for wood and plastics.
@@ -79,6 +82,38 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
        - air compressor system
        - CNC plasma cutter
        - parts washer
+
+8. **Concrete and asphalt plant** (`agent/plant`, started), right beside the workshop. It positions itself from `WORKSHOP_SITE`.
+   - **Ready-mix concrete batch plant:**
+     - cement silos, aggregate bins, a weigh hopper, conveyor, water and admixture tanks, a twin-shaft mixer and a load-out
+     - a concrete mixer truck he can drive
+   - **Hot-mix asphalt plant:**
+     - cold feed bins, a drum dryer with a burner, a baghouse and stack, a heated bitumen tank, a pugmill and a hot silo
+   - He researches each plant, requests materials, and uses them up.
+   - His own asphalt can be used for paving, and it is wasted if it cools.
+   - Concrete is used to pour pads, paths and foundations, and it cures over days.
+
+9. **Smarter vehicles** (`agent/vehicles`, started):
+   - Fix the snowmobile refuel loop: he kept filling it and it never filled.
+   - Terrain rules for every vehicle:
+     - the snowmobile only on snow
+     - boats only on water
+     - trucks on roads
+     - the excavator hauled for long trips
+   - A trip planner that reasons like a person. Example: no snow between here and the mountain, so he researches, then requests a pickup, a trailer and straps, then loads up, drives to the snow line, unloads and rides.
+   - He still requests every vehicle, trailer and accessory.
+   - **Owner rule:** he may ask for only ONE of each vehicle kind (trailers included) until he has a helper or friend, then up to two (one for the friend). Unrequested gifts are always accepted.
+
+10. **Performance, game quality, bug hunt and clean code** (`agent/review`, started):
+    - **Phase 1, now:** measure, find and verify bugs, perf hotspots and cleanup items, and write `.claude/review.md` (tiny safe fixes only).
+    - **Phase 2, after tasks 1-9 are merged:** apply the plan across the merged code, re-profile, and fix new bugs from the merges.
+
+11. **Talk tab clean-up and improvement** (`agent/talk`, started):
+    - A modern chat thread with bubbles, avatars, a typing indicator, auto-scroll, jump-to-latest, lookup cards and status chips for actions you asked for.
+    - One composer with a + menu for photos and gifts.
+    - Suggested reply chips that fit his current situation.
+    - An empty state, "load earlier", and accessibility.
+    - Obsolete controls removed.
 
 ## Owner notes to keep in mind
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.

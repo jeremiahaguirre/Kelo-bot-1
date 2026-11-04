@@ -858,7 +858,7 @@ function builtAirplane() {
 async function flyBuiltAirplane(originLabel = 'Flying His Own Airplane') {
       const plane = (state.buildProjects || []).find(x => x.bom && x.bom.vehicle === 'plane');
       if (!plane) return 'no-plane';
-      if (plane.status !== 'finished' && plane.status !== 'complete') { state.speechBubble = `My airplane is only ${bomPercentBuilt(plane.bom)}% built. It doesn't fly until it's finished and inspected.`; renderAllUI(); return 'not-built'; }
+      if (plane.status !== 'finished' && plane.status !== 'complete') { state.speechBubble = bomPercentBuilt(plane.bom) >= 100 ? "My airplane is built, but it doesn't fly until it has passed every inspection and test." : `My airplane is only ${bomPercentBuilt(plane.bom)}% built. It doesn't fly until it's finished and inspected.`; renderAllUI(); return 'not-built'; }
       if (!pilotTrained()) return learnToFly();
       const b = builtAirplane();
       if (!b) return finishBuild(plane.id) ? 'registered' : false;
@@ -1012,7 +1012,7 @@ function parseBuildRequest(message) {
 function answerBuildRequest(ask, visitor) {
       if (ask.fly) {
         const plane = state.buildProjects.find(p => p.bom.vehicle === 'plane');
-        if (plane.status === 'gathering' || plane.status === 'testing') return sayToVisitor(`Not yet, ${visitor}! My airplane is ${bomPercentBuilt(plane.bom)}% built, and it doesn't fly until it has passed its inspections.`, visitor);
+        if (plane.status === 'gathering' || plane.status === 'testing') return sayToVisitor(bomPercentBuilt(plane.bom) >= 100 ? `Not yet, ${visitor}! My airplane is built, but it doesn't fly until it has passed its inspections.` : `Not yet, ${visitor}! My airplane is ${bomPercentBuilt(plane.bom)}% built, and it doesn't fly until it has passed its inspections.`, visitor);
         sayToVisitor(pilotTrained() ? `Okay ${visitor}! Preflight, then up over the lake.` : `I'd love to, ${visitor}, but I have to learn to fly first: ground school, then taxi practice.`, visitor);
         doWhenFree(() => flyBuiltAirplane(`Asked by ${visitor}`));
         return;

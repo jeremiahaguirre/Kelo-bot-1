@@ -644,9 +644,11 @@ function planTrip(v, to) {
       const dest = tripDestination(to, key);
       const plain = tripPlain(v.name);
       const plan = { ok: true, key, vehicle: v, dest, mode: 'direct', missing: [], learn: [], fuel: [], why: '', reasoning: '' };
+      // There and back, plus the bits in between (hitching, lining up, parking) and the bends a route
+      // really takes: a quarter extra and a few units more, so a tank doesn't run dry on the way home
       const fuelFor = (veh, length) => {
         if (typeof fuelNeededBy !== 'function' || !fuelNeededBy(veh)) return;
-        plan.fuel.push({ v: veh, need: Math.min(100, Math.ceil(length * 2 * FUEL_PER_UNIT * 1.15)) });
+        plan.fuel.push({ v: veh, need: Math.min(100, Math.ceil((length * 2 + 12) * FUEL_PER_UNIT * 1.25)) });
       };
       const learnFor = veh => { const r = typeof knowHowRule === 'function' && knowHowRule(veh.name); if (r && !state.knowHow[r.key]) plan.learn.push(veh.name); };
       if (key && (key.includes('trailer') || key === 'lowboy')) return { ...plan, ok: false, why: `The ${plain} has no engine. It only goes where a truck pulls it.` };

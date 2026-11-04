@@ -1378,6 +1378,8 @@ function tripSummaryForAI() {
       return l ? `last trip plan: ${l.vehicle} to ${l.to}: ${l.why}` : 'no trips planned yet';
     }
 
+const tripsQueued = new Map(); // trips the AI asked for, waiting for him to be free (this session only)
+
 // From an AI decision: "takeTrip": {"vehicle": ..., "to": ..., "why": ...}
 function applyTripDecision(decision) {
       const t = decision && decision.takeTrip;
@@ -1385,8 +1387,15 @@ function applyTripDecision(decision) {
       const v = findTripVehicle(String(t.vehicle).slice(0, 80));
       const key = v ? vehicleKindKey(v.name) : vehicleKindKey(String(t.vehicle));
       const k = `trip:${key || 'none'}`;
-      if (typeof activityCoolingDown === 'function' && activityCoolingDown(k)) return false;
-      doWhenFree(() => (typeof tryActivity === 'function' ? tryActivity(k, () => takeTrip(v || String(t.vehicle), String(t.to || ''), String(t.why || '').slice(0, 200), 'Decided to Take a Trip')) : takeTrip(v || String(t.vehicle), t.to, t.why)));
+      // Already queued, or tried lately and still blocked: the same idea again changes nothing
+      const cooling = () => typeof activityCoolingDown === 'function' && activityCoolingDown(k);
+      if (cooling() || Date.now() - (tripsQueued.get(k) || 0) < 4 * 60 * 1000) return false;
+      tripsQueued.set(k, Date.now());
+      doWhenFree(() => {
+        tripsQueued.delete(k);
+        if (cooling()) return;
+        return typeof tryActivity === 'function' ? tryActivity(k, () => takeTrip(v || String(t.vehicle), String(t.to || ''), String(t.why || '').slice(0, 200), 'Decided to Take a Trip')) : takeTrip(v || String(t.vehicle), t.to, t.why);
+      });
       return true;
     }
 

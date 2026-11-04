@@ -30,7 +30,7 @@ g2({ key: 'brakelathe', name: 'Brake lathe', short: 'brake lathe', at: { x: 3.5,
 g2({ key: 'hoist', name: 'Engine hoist (cherry picker)', short: 'engine hoist', at: { x: 5.85, z: 4.6, ry: Math.PI }, size: { w: 0.8, h: 1.8, d: 1.6 }, skill: 'Pulling engines', model: engineHoistModel, stand: { x: 3.7, z: 3.2 } });
 g2({ key: 'press', name: 'Hydraulic shop press (20 t)', short: 'shop press', at: { x: 0.75, z: 2.6, ry: Math.PI / 2 }, size: { w: 0.9, h: 1.9, d: 0.4 }, skill: 'Pressing bearings', model: shopPressModel, stand: { x: 1.45, z: 2.6 } });
 g2({ key: 'partswasher', name: 'Parts washer', short: 'parts washer', at: { x: 2.1, z: 1.0, ry: Math.PI }, size: { w: 0.85, h: 1.2, d: 0.6 }, skill: 'Cleaning parts', model: partsWasherModel, stand: { x: 2.1, z: 0.1 } });
-g2({ key: 'migtig', name: 'MIG/TIG welder', short: 'MIG/TIG welder', at: { x: 3.55, z: 0.9, ry: Math.PI }, size: { w: 0.5, h: 1.2, d: 0.8 }, skill: 'MIG and TIG welding', model: migTigModel, stand: { x: 3.7, z: -0.4 } });
+g2({ key: 'migtig', name: 'MIG/TIG welder', short: 'MIG/TIG welder', at: { x: 3.3, z: 0.9, ry: Math.PI }, size: { w: 0.5, h: 1.2, d: 0.8 }, skill: 'MIG and TIG welding', model: migTigModel, stand: { x: 3.3, z: -0.4 } });
 g2({ key: 'compressor', name: '80-gallon air compressor', short: 'air compressor', at: { x: 1.7, z: 6.75, ry: Math.PI }, size: { w: 1.7, h: 1.3, d: 0.8 }, skill: 'Running the air system', model: compressorModel, stand: { x: 1.7, z: 5.85 } });
 g2({ key: 'airtools', name: 'Air tools: impact wrench, air jack, sandblaster', short: 'air tools', at: { x: 0.35, z: 6.8, ry: Math.PI }, size: { w: 0.9, h: 1.5, d: 0.6 }, skill: 'Using air tools', model: airToolsModel, stand: { x: 0.35, z: 5.9 } });
 

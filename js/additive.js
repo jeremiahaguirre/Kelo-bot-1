@@ -138,7 +138,7 @@ function printFailChance(key) {
 
 // --- The printers ------------------------------------------------------------------------------------
 // Positions are local to the Workshop (x across, z toward the front doors), floor 1.
-const DESK = { x: 2.6, z: 3.95 }; // the desktop printer bench (FDM, SLA, DLP, MSLA, wash and cure)
+const DESK = { x: 2.35, z: 3.95 }; // the desktop printer bench (FDM, SLA, DLP, MSLA, wash and cure)
 
 function deskSpot(i) {
       return { x: DESK.x - 1.25 + i * 0.5, z: DESK.z };
@@ -439,7 +439,7 @@ registerWorkshopMachine({
 
 // PolyJet: jetted photopolymer droplets cured by UV, with gel support that a waterjet washes off
 registerWorkshopMachine({
-  key: 'polyjet', name: 'Stratasys J850 (PolyJet)', short: 'PolyJet printer', kind: 'printer', floor: 1, at: { x: 3.4, z: 2.3, ry: 0 }, size: { w: 1.35, h: 1.4, d: 0.9 }, color: 0xeef0f2,
+  key: 'polyjet', name: 'Stratasys J850 (PolyJet)', short: 'PolyJet printer', kind: 'printer', floor: 1, at: { x: 3.2, z: 2.3, ry: 0 }, size: { w: 1.35, h: 1.4, d: 0.9 }, color: 0xeef0f2,
   emoji: '🌈', skill: 'PolyJet printing', teaches: ['waterjet'], model: polyjetPrinterModel,
   wiki: ['Material jetting'], learned: 'PolyJet material jetting sprays tiny drops of photopolymer like an inkjet and cures each layer with UV lamps, in many colours at once. Gel support fills the gaps and is blasted off with a waterjet afterwards.',
   needs: ['polyjetCart', 'supportCart', 'gloves'], words: [/polyjet|material jetting|stratasys|j850/i],

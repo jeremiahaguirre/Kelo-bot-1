@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-03T19:37:33.207Z",
-  "runs": 2,
+  "updatedAt": "2026-11-04T06:41:12.355Z",
+  "runs": 3,
   "curiosities": [
-    "Mito, Ibaraki"
+    "Ageo"
   ],
   "entries": [
     {
@@ -69,6 +69,43 @@
       },
       "shapeFrom": "Boerdijk–Coxeter helix",
       "nextCuriosity": "Mito, Ibaraki",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1793774472355",
+      "at": 1793774472355,
+      "brain": "procedural",
+      "topic": "Mito, Ibaraki",
+      "title": "Dreaming of Bunkyo Gakuin University",
+      "text": "Dear Diary, while nobody was around I looked up \"Mito, Ibaraki\" and drifted from Mito, Ibaraki to Bunkyō to Bunkyo Gakuin University. Bunkyo Gakuin University  is a coeducational instituition located in Bunkyō, Tokyo, Japan, in proximity to the University of Tokyo. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Mito, Ibaraki",
+          "url": "https://en.wikipedia.org/wiki/Mito%2C_Ibaraki",
+          "extract": "Mito  is the capital city of Ibaraki Prefecture, in the northern Kantō region of Japan. As of 1 January 2024, the city had an estimated population of 268,036 in 126,055 households and a population density of 1,233 persons per km2. The percentage of the population aged over 65 was"
+        },
+        {
+          "title": "Bunkyō",
+          "url": "https://en.wikipedia.org/wiki/Bunky%C5%8D",
+          "extract": "Bunkyō  is a special ward in the Tokyo Metropolis in Japan. Situated in the middle of the ward area, Bunkyō is a residential and educational center. Beginning in the Meiji period, literati like Natsume Sōseki, as well as scholars and politicians have lived there. Bunkyō is home t"
+        },
+        {
+          "title": "Bunkyo Gakuin University",
+          "url": "https://en.wikipedia.org/wiki/Bunkyo_Gakuin_University",
+          "extract": "Bunkyo Gakuin University  is a coeducational instituition located in Bunkyō, Tokyo, Japan, in proximity to the University of Tokyo. Bunkyo Gakuin University was founded by Ishiko Shimada and is operated by the Bunkyo Gakuin Educational Foundation. The university has affiliated in"
+        }
+      ],
+      "concept": {
+        "name": "Ibaraki University Craft",
+        "emoji": "🌀",
+        "definition": "The idea that mito, ibaraki and bunkyo gakuin university share a hidden pattern.",
+        "builtFrom": [
+          "Mito, Ibaraki",
+          "Bunkyo Gakuin University"
+        ]
+      },
+      "shapeFrom": "Bunkyo Gakuin University",
+      "nextCuriosity": "Ageo",
       "coreMemory": null
     }
   ]

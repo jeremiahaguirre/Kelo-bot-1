@@ -757,11 +757,14 @@ function planTrip(v, to) {
           if (path && path.length) {
             drop = from.get(path[0]);
             cargoRoute = tripSimplify(path);
-            // A loop on its own ground: out to the far point and back to where it was unloaded
+            // A loop on its own ground: out to the far point and back to where it was unloaded,
+            // flooded from that very spot (the multi-start flood could lead off from another edge)
             if (tripLength(cargoRoute) < 8) {
-              const far = cells.filter((c, k) => Number.isFinite(flood.dist[k]) && flood.dist[k] <= TRIP_RIDE_RANGE).sort((a, b) => Math.hypot(b.x - path[0].x, b.z - path[0].z) - Math.hypot(a.x - path[0].x, a.z - path[0].z))[0];
-              const p2 = far && tripPathTo(cells, flood, far);
-              if (p2) cargoRoute = tripSimplify(p2);
+              const fromHere = tripFlood(cells, key, [path[0]]);
+              const far = cells.filter((c, k) => Number.isFinite(fromHere.dist[k]) && fromHere.dist[k] <= TRIP_RIDE_RANGE)
+                .sort((a, b) => Math.hypot(b.x - path[0].x, b.z - path[0].z) - Math.hypot(a.x - path[0].x, a.z - path[0].z))[0];
+              const p2 = far && tripPathTo(cells, fromHere, far);
+              if (p2 && p2.length > 1) cargoRoute = tripSimplify(p2);
             }
           }
         }

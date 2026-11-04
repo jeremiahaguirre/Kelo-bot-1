@@ -118,6 +118,15 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
     - Accessible (labels, focus, aria-live), re-render only on change, escapeHtml everywhere, no inline handlers (CSP).
     - New code in `js/talk.js` (after portal.js). Status: done on `agent/talk`, ready to merge. Talk tests pass on desktop (1024x720) and phone (390x844): empty state, saved name, Enter/Shift+Enter, thinking indicator, lookup cards, helicopter chip queued → doing → done (and no chip without one), photo and gift from +, load earlier, jump to latest, reload. Regressions reload, chat and skills: page errors none. Harness note: on a loaded machine use DOM clicks (`el.click()`) rather than `page.click`.
 
+## Order of work (owner, 2026-11-05): one task at a time, in this order, to keep merge conflicts to a minimum
+1. Task 7 workshop (only helper running). It exposes `WORKSHOP_SITE`, its land constant and `workshopAssemblyBay()`.
+2. Task 8 plant: resume `agent/plant`, rebase onto main after the workshop merge, join its site and land to the workshop's, then finish the road and concrete fixes.
+3. Task 5 build anything: resume `agent/assembly`, rebase, move the build into `workshopAssemblyBay()`, then finish the label, site, grammar and flight-shot fixes.
+4. Task 12 full play-through QA, done directly on main.
+5. Task 13 audit phase 2 (from `.claude/review.md`), directly on main.
+6. Task 14 quality upgrade, no new features.
+Each step merges, passes the regression tests and is pushed before the next starts.
+
 ## Final steps (owner, 2026-11-04), in this order, after tasks 5, 7, 8 and 9 are merged
 12. **Full play-through QA.** Run through the entire game and make sure everything works as intended and smoothly, without bugs:
     - every tab and panel

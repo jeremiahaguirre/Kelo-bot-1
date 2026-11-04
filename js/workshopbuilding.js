@@ -22,7 +22,7 @@ const WORKSHOP_PAD_Y = 0.05;            // the levelled ground it stands on (lev
 // along the east edge down to a gravel beach. Other land (the plant's pad) joins it along z 0.6.
 const WORKSHOP_LAND = {
   pad: { minX: WORKSHOP_SITE.x - WORKSHOP_SITE.w / 2 - 1.2, maxX: WORKSHOP_SITE.x + WORKSHOP_SITE.w / 2 + 1.2, minZ: WORKSHOP_SITE.z - WORKSHOP_SITE.d / 2 - 0.8, maxZ: WORKSHOP_SITE.z + WORKSHOP_SITE.d / 2 + 0.3 },
-  lane: { minX: WORKSHOP_SITE.x + 6.05 - 2.4, maxX: WORKSHOP_SITE.x + WORKSHOP_SITE.w / 2 + 1.0, minZ: WORKSHOP_SITE.z, maxZ: 9.0 },
+  lane: { minX: WORKSHOP_SITE.x + 5.85 - 2.6, maxX: WORKSHOP_SITE.x + WORKSHOP_SITE.w / 2 + 1.0, minZ: WORKSHOP_SITE.z, maxZ: 9.0 },
   // The hangar's pad (js/workshopbuilding.js, buildWorkshopHangar3D) and its apron down to the helipad
   hangar: { minX: 23.6, maxX: 45.6, minZ: -22.9, maxZ: -6.9 },
   y: WORKSHOP_PAD_Y, blend: 3.2, blendNorth: 9, shore: 1.4
@@ -37,10 +37,10 @@ const WS_F2 = 5.4;                       // floor 2 deck top
 const WS_EAVE = 12.6;
 const WS_IN = { x: WORKSHOP_SITE.w / 2 - 0.15, z: WORKSHOP_SITE.d / 2 - 0.15 };
 // The car elevator platform (local coordinates): a truck drives straight in through the east door
-const WS_LIFT = { x: 6.05, z: 2.65, w: 3.5, d: 9.3 };
+const WS_LIFT = { x: 5.85, z: 2.65, w: 4.0, d: 9.3 };
 const WS_LIFT_GATE = 6.0;                // where he steps on and off the platform (z)
 const WS_DOORS = {
-  vehicle: { x: 6.05, w: 3.9, h: 4.9 },
+  vehicle: { x: 5.85, w: 4.15, h: 4.9 },
   hangar: { x: -5.95, w: 3.6, h: 4.9 },
   person: { x: 0.3, w: 1.5, h: 3.1 }
 };
@@ -55,7 +55,7 @@ const WORKSHOP_STATIONS = {
   assembly: { local: { x: -5.9, z: 4.6 }, floor: 1, rotY: 0, size: { w: 17, d: 10.5 }, label: 'Hangar / assembly bay', world: { x: 34.6, z: -15.6 } },
   smallAssembly: { local: { x: -5.9, z: 4.6 }, floor: 1, rotY: 0, size: { w: 3.4, d: 4.6 }, label: 'Small-parts assembly bay' },
   electronics: { local: { x: -2.9, z: -2.75 }, floor: 2, rotY: 0, size: { w: 1.6, d: 0.7 }, label: 'Electronics bench' },
-  garage: { local: { x: 6.05, z: -2.0 }, floor: 2, rotY: 0, size: { w: 3.5, d: 8.4 }, label: 'Garage lift bay' }
+  garage: { local: { x: 5.85, z: -2.0 }, floor: 2, rotY: 0, size: { w: 3.8, d: 8.4 }, label: 'Garage lift bay' }
 };
 
 // --- Levelling the ground ------------------------------------------------------------------------------
@@ -400,7 +400,7 @@ function buildWorkshop3D() {
       wsFrontFade.push(sub);
       const packMat = mmGlow('window');
       packMat.emissive.setHex(0xfff4d6);
-      [-5.95, 0.3, 6.05].forEach(x => {
+      [-5.95, 0.3, 5.85].forEach(x => {
         const lamp = mmBox(wsGroup, 0.4, 0.22, 0.25, mmMat('dark'), x, 5.6, hz + 0.18);
         const lens = mmBox(wsGroup, 0.32, 0.03, 0.18, packMat, x, 5.58, hz + 0.2);
         if (x === 0.3) wsLights.push({ mesh: lens, outdoor: true });
@@ -788,7 +788,7 @@ function workshopFits(size) {
         hangarBay: L < bay.w + 0.01 && W < bay.d + 0.01 && Hh < WORKSHOP_HANGAR.craneY - 0.5,
         door1: W < WS_DOORS.vehicle.w - 0.3 && Hh < WS_DOORS.vehicle.h - 0.2,
         carElevator: L < WS_LIFT.d - 0.2 && W < WS_LIFT.w - 0.1 && Hh < WS_F2 - 0.3 - WS_F1,
-        garageLift: W < 3.3 && Hh + 1.9 < WS_EAVE - WS_F2
+        garageLift: W < 3.6 && Hh + 1.9 < WS_EAVE - WS_F2
       };
     }
 

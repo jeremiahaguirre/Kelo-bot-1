@@ -210,46 +210,78 @@ function roadMesh(e) {
       });
       const len = Math.hypot(e.toX - e.x, e.toZ - e.z);
       const ang = Math.atan2(e.toX - e.x, e.toZ - e.z);
-      // Every slab, and every stone of each shape, is drawn together: one draw call each (js/perf.js).
-      // (Each stone shape always went with the same colour of stone, so that stays the same.)
-      const slabs = [], dashes = [], stones = [[], [], []];
+      const lift = stage === 'bed' ? 0.01 : asphalt ? 0.05 : 0.03;
+      // The surface is one continuous ribbon that follows the ground (both edges sampled), broken only
+      // where the road stops short of a building; the centre line is a dashed ribbon just above it
+      const surface = roadRibbon(e, 1.5, d => lift + (stage === 'loose' ? 0.03 + Math.sin(d * 5) * 0.025 : 0), 0.3);
+      if (surface) {
+        const m = new THREE.Mesh(surface, gravel);
+        m.receiveShadow = true;
+        g.add(m);
+      }
+      if (line) {
+        const dashes = roadRibbon(e, 0.07, () => lift + 0.012, 0.3, d => Math.floor(d / 0.6) % 2 === 0);
+        if (dashes) g.add(new THREE.Mesh(dashes, line));
+      }
+      // Edge stones (once the road is finished), all of each shape in one draw call (js/perf.js)
+      const stones = [[], [], []];
       let n = 0;
-      for (let d = 0; d < len; d += 0.6) {
+      if (!stage) for (let d = 0; d < len; d += 0.6) {
         const x = e.x + Math.sin(ang) * d, z = e.z + Math.cos(ang) * d;
-        if (offLimits(x, z, -0.6)) continue; // the road stops short of buildings
-        const y = getIslandGroundHeight(x, z) + (stage === 'bed' ? 0.0 : asphalt ? 0.05 : 0.03);
-        const slab = new THREE.Object3D();
-        slab.position.set(x, y + (stage === 'loose' ? Math.sin(d * 5) * 0.025 : 0), z);
-        slab.rotation.y = ang;
-        if (stage === 'loose') slab.rotation.z = Math.sin(d * 3.1) * 0.04;
-        slabs.push(slab);
-        if (line && Math.round(d / 0.6) % 2 === 0) {
-          const dash = new THREE.Object3D();
-          dash.position.set(x, y + 0.03, z);
-          dash.rotation.y = ang;
-          dashes.push(dash);
-        }
-        if (stage) continue; // edge stones go in once the road is finished
+        if (offLimits(x, z, -0.6)) continue;
         [-0.8, 0.8].forEach(side => {
-          // Two or three stones of different sizes along each edge
-          [-0.2, 0.05, 0.25].forEach((along, k) => {
+          [-0.2, 0.05, 0.25].forEach(along => {
             n++;
             if ((n * 7) % 5 === 0) return;
             const stone = new THREE.Object3D();
             const s = 0.8 + ((n * 37) % 10) / 20;
             stone.scale.set(s * 1.2, s * 0.75, s);
-            stone.position.set(x + Math.cos(ang) * side + Math.sin(ang) * along, y + 0.02, z - Math.sin(ang) * side + Math.cos(ang) * along);
+            const sx = x + Math.cos(ang) * side + Math.sin(ang) * along, sz = z - Math.sin(ang) * side + Math.cos(ang) * along;
+            stone.position.set(sx, getIslandGroundHeight(sx, sz) + 0.05, sz);
             stone.rotation.y = ang + n;
             stones[n % 3].push(stone);
           });
         });
       }
-      if (slabs.length) g.add(perfInstances(new THREE.BoxGeometry(1.5, stage === 'loose' ? 0.09 : 0.05, 0.64), gravel, slabs, { receiveShadow: true }));
-      if (dashes.length) g.add(perfInstances(new THREE.BoxGeometry(0.06, 0.01, 0.42), line, dashes, {}));
       stones.forEach((list, k) => {
         if (list.length) g.add(perfInstances(stoneGeos[k], edges[(k * 5) % 3], list, { castShadow: true }));
       });
       return g;
+    }
+
+// A strip `width` wide along a road, its vertices on the ground (plus lift(d)) every `step`, shared
+// between neighbouring pieces so the surface is continuous. keep(d) can leave gaps (dashes); the strip
+// also breaks where the road stops short of a building. Returns a BufferGeometry, or null.
+function roadRibbon(e, width, lift, step = 0.3, keep = null) {
+      const len = Math.hypot(e.toX - e.x, e.toZ - e.z);
+      if (len < 0.05) return null;
+      const dx = (e.toX - e.x) / len, dz = (e.toZ - e.z) / len;
+      const px = dz, pz = -dx; // across the road
+      const pos = [], uv = [], idx = [];
+      let prev = -1;
+      for (let d = 0; d <= len + 1e-6; d += step) {
+        const dd = Math.min(d, len);
+        const cx = e.x + dx * dd, cz = e.z + dz * dd;
+        const on = !offLimits(cx, cz, -0.6) && (!keep || keep(dd));
+        if (!on) { prev = -1; continue; }
+        const base = pos.length / 3;
+        [-1, 1].forEach(sd => {
+          const x = cx + px * sd * width / 2, z = cz + pz * sd * width / 2;
+          pos.push(x, getIslandGroundHeight(x, z) + lift(dd), z);
+          uv.push(sd < 0 ? 0 : 1, dd / 1.5);
+        });
+        if (prev >= 0) idx.push(prev, prev + 1, base, prev + 1, base + 1, base);
+        prev = base;
+      }
+      if (!idx.length) return null;
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+      geo.setIndex(idx);
+      geo.computeVertexNormals();
+      // Make sure it faces up
+      if (geo.attributes.normal.getY(0) < 0) { for (let i = 0; i < idx.length; i += 3) { const t = idx[i + 1]; idx[i + 1] = idx[i + 2]; idx[i + 2] = t; } geo.setIndex(idx); geo.computeVertexNormals(); }
+      return geo;
     }
 
 function hillMesh() {

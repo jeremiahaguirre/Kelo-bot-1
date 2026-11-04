@@ -1196,10 +1196,11 @@ function concretePourMesh(p, extent = 1) {
       k.flush();
       if (stage !== 'forms' && extent > 0) {
         // The slab itself: one box per segment so it follows the ground
-        const cured = Math.min(1, Math.max(0, age / 7));
-        const col = new THREE.Color(0x868a8f).lerp(new THREE.Color(0xc9c6bf), stage === 'curing' || stage === 'cured' ? Math.pow(cured, 0.6) : 0);
-        const mat = new THREE.MeshStandardMaterial({ color: col, roughness: stage === 'poured' || stage === 'pouring' ? 0.55 : stage === 'screeded' ? 0.2 : 0.35 + cured * 0.55, metalness: 0 });
-        if (typeof finishMaterial === 'function' && (stage === 'curing' || stage === 'cured') && cured > 0.3) { finishMaterial(mat, 'stone'); mat.color.copy(col); mat.roughness = 0.85; }
+        // Dark and wet when fresh, lightening to a pale grey as it cures (7 world days)
+        const cured = stage === 'cured' ? 1 : Math.min(1, Math.max(0, age / 7));
+        const curing = stage === 'curing' || stage === 'cured';
+        const col = new THREE.Color(0x6a6e73).lerp(new THREE.Color(0xd9d5cc), curing ? Math.pow(cured, 0.55) : 0);
+        const mat = new THREE.MeshStandardMaterial({ color: col, roughness: stage === 'poured' || stage === 'pouring' ? 0.5 : stage === 'screeded' ? 0.2 : 0.4 + cured * 0.5, metalness: 0 });
         const places = [], joints = [];
         const n = Math.max(1, Math.ceil(len / 0.8));
         for (let i = 0; i < n; i++) {

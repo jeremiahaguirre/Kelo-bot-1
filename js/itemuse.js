@@ -27,8 +27,24 @@ const ITEM_KINDS = [
   { kind: 'birdseed', label: 'bird food', re: /bird ?seed/i, uses: ['feed birds', 'build'], per: 3, unit: 'fillings' },
   { kind: 'seeds', label: 'seeds for planting', re: /^(?!.*light ?bulb).*\b(seeds?|saplings?|bulbs?|seedlings?|acorns?|cuttings?)\b/i, uses: ['plant'], per: 4, unit: 'plantings' },
   { kind: 'paving', label: 'paving for roads and paths', re: /gravel|crushed stone|road base|asphalt|paving/i, uses: ['pave'], per: 1, unit: 'road' },
+  // Real painting supplies (js/paintstudio.js). Tools first, then the surfaces (one used per painting),
+  // then the paints, which run down over several paintings.
+  { kind: 'art tool', label: 'a tool for painting pictures', re: /paint ?brush|brushes|easel|palette knife|stay.?wet palette|mixing palette|blending stumps?|tortillons?|kneaded eraser|ink ?stone|suzuri|water jar|brush.?(washing|rinsing)|felt mat/i, uses: ['paint'] },
+  { kind: 'painting canvas', label: 'canvas to paint on in oil or acrylic', re: /stretched canvas|canvas (panels?|boards?)|\bcanvases\b|primed canvas/i, uses: ['paint'], per: n => sheetsInName(n, 3), unit: 'paintings', paintSupply: true },
+  { kind: 'watercolour paper', label: 'watercolour paper to paint on', re: /watercolou?r (paper|block|pad)|cold.?press|hot.?press|illustration board|gouache paper/i, uses: ['paint'], per: n => sheetsInName(n, 12), unit: 'paintings', paintSupply: true },
+  { kind: 'pastel paper', label: 'pastel paper to draw on', re: /pastel paper|sanded paper|mi-?teintes|pastelmat/i, uses: ['paint'], per: n => sheetsInName(n, 12), unit: 'pictures', paintSupply: true },
+  { kind: 'rice paper', label: 'rice paper for ink painting', re: /rice paper|xuan|sumi(-e)? paper|mulberry paper/i, uses: ['paint'], per: n => sheetsInName(n, 20), unit: 'pictures', paintSupply: true },
+  { kind: 'drawing paper', label: 'drawing paper for sketches', re: /sketch ?(pad|book)|drawing (paper|pad)|newsprint|bristol (board|pad)|cartridge paper/i, uses: ['paint'], per: n => sheetsInName(n, 20), unit: 'sketches', paintSupply: true },
+  { kind: 'oil paint', label: 'oil paint for oil paintings', re: /oil (paints?|colou?rs?)/i, uses: ['paint'], per: 6, unit: 'paintings', paintSupply: true },
+  { kind: 'acrylic paint', label: 'acrylic paint for acrylic paintings', re: /acrylic (paints?|colou?rs?)|\bacrylics\b/i, uses: ['paint'], per: 6, unit: 'paintings', paintSupply: true },
+  { kind: 'gouache paint', label: 'gouache paint for gouache paintings', re: /gouache/i, uses: ['paint'], per: 6, unit: 'paintings', paintSupply: true },
+  { kind: 'watercolour paint', label: 'watercolour paint for watercolours', re: /watercolou?r (paints?|pans?|set|tubes?|colou?rs)|\bwatercolou?rs\b/i, uses: ['paint'], per: 10, unit: 'paintings', paintSupply: true },
+  { kind: 'soft pastels', label: 'soft pastels for pastel pictures', re: /soft pastels?|pastel sticks|\bpastels\b/i, uses: ['paint'], per: 8, unit: 'pictures', paintSupply: true },
+  { kind: 'sumi ink', label: 'ink for ink painting', re: /sumi ink|ink sticks?|india ink|chinese ink|\bink\b/i, uses: ['paint'], per: 10, unit: 'pictures', paintSupply: true },
+  { kind: 'charcoal', label: 'charcoal and graphite for drawing', re: /charcoal|graphite|drawing pencils|sketching pencils/i, uses: ['paint'], per: 6, unit: 'drawings', paintSupply: true },
+  { kind: 'painting medium', label: 'oil and solvent for thinning paint and cleaning brushes', re: /linseed|odou?rless|mineral spirits|turpentine|solvent|painting medium|gamsol/i, uses: ['paint'], per: 8, unit: 'paintings', paintSupply: true },
+  { kind: 'fixative', label: 'fixative spray to keep pastel and charcoal from smudging', re: /fixative/i, uses: ['paint'], per: 8, unit: 'pictures', paintSupply: true },
   { kind: 'spray paint', label: 'paint for murals and graffiti', re: /spray ?paint|aerosol|graffiti|paint markers?|chalk/i, uses: ['mural'], per: 3, unit: 'murals' },
-  { kind: 'art tool', label: 'a tool for painting pictures', re: /paint ?brush|brushes|easel|palette knife/i, uses: ['paint'] },
   { kind: 'wood finish', label: 'a finish for woodwork', re: /wood stain|varnish|wood oil|\bstain\b/i, uses: ['build'], per: 2, unit: 'builds' },
   { kind: 'art supply', label: 'paint and paper for pictures', re: /watercolou?rs?|paint ?set|acrylics?|oil paints?|pastels|crayons|\bpaints?\b|canvas|sketchbook|drawing paper/i, uses: ['paint'], per: 5, unit: 'paintings' },
   { kind: 'glue', label: 'glue for building and mending', re: /glue|epoxy|adhesive/i, uses: ['build', 'fix'], per: 3, unit: 'jobs' },
@@ -247,8 +263,16 @@ async function lookUpItemUse(name) {
     }
 
 // --- How much is left ---------------------------------------------------------------------------
+// "A pack of 3 stretched canvases", "a block of watercolour paper (20 sheets)": how many in it
+function sheetsInName(name, fallback) {
+      const m = String(name || '').match(/(\d+)\s*(sheets?|canvases|canvas|panels?|boards?)\b/i) || String(name || '').match(/pack of (\d+)/i);
+      const n = m ? parseInt(m[1], 10) : 0;
+      return n >= 1 && n <= 100 ? n : fallback;
+    }
+
 function usesPerItem(name, k = itemKindOf(name)) {
       if (!k || !k.per || k.per === 'grams') return 0;
+      if (typeof k.per === 'function') return k.per(name);
       if (k.per === 'servings') return /basket|\bbag\b|\bbox\b|loaf|wheel|dozen|\bjar\b|crate|\bpack\b|carton|bunch|tray|bucket|\btin\b|\bcase\b|batch|sack|thermos|\bjug\b|\bpie\b|\bcake\b|six|\bset of\b/i.test(name) ? 4 : 1;
       return k.per;
     }
@@ -313,6 +337,8 @@ function stillNeeds(name, k) {
       if (state.hobbies.some(h => k.uses.includes(hobbyPurpose(h)))) return true;
       if (k.kind === 'fuel') return state.vehicles.some(v => typeof fuelNeededBy === 'function' && fuelNeededBy(v) && FUEL_TYPES[fuelNeededBy(v)] && FUEL_TYPES[fuelNeededBy(v)].re.test(name));
       if (k.kind === 'seeds' || k.kind === 'welding supply') return true;
+      // painting supplies for a medium he paints in (js/paintstudio.js)
+      if (k.paintSupply && typeof paintSupplyStillNeeded === 'function') return paintSupplyStillNeeded(name);
       if (k.kind === 'batteries') return ownedItemNames().some(n => itemKindOf(n).needsPower);
       if (k.kind === 'film') return ownedItemNames().some(n => /film camera|polaroid|instant camera/i.test(n));
       return false;

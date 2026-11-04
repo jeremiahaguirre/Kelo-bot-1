@@ -75,8 +75,9 @@ function museumViewerItems() {
         image: () => modelThumbnail('art:' + c.title + (c.createdTime || ''), () => buildCreationGroup(c))
       }));
       const paintings = allMuseumPaintings().map((m, i) => ({
-        label: `"${m.text}"`, name: m.text, floor: Math.floor(i / perWall), sub: 'Painting',
+        label: `"${m.text}"`, name: m.text, floor: Math.floor(i / perWall), sub: 'Painting', art: m.kind === 'art' ? m : null,
         image: () => {
+          if (m.kind === 'art' && typeof paintingImageUrl === 'function') return paintingImageUrl(m, 'thumb');
           const key = 'paint:' + m.seed;
           if (!thumbCache.has(key)) thumbCache.set(key, paintMuralCanvas(m).toDataURL('image/jpeg', 0.85));
           return thumbCache.get(key);
@@ -106,6 +107,7 @@ function closeViewer() {
 
 function viewerPages() {
       if (!viewerState) return 0;
+      if (viewerState.kind === 'art') return 1;
       return viewerState.kind === 'photo' ? state.photoAlbum.length : Math.max(1, Math.ceil(viewerState.items.length / SHELF_PAGE));
     }
 
@@ -134,6 +136,26 @@ function renderViewer() {
           <button data-viewer="next" class="w-12 h-12 rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xl font-bold" aria-label="Next" ${pages < 2 ? 'disabled style="opacity:.35"' : ''}>▶</button>
           <button data-viewer="exit" class="ml-4 px-4 h-12 rounded-lg bg-red-700 hover:bg-red-600 border-2 border-red-300 text-white font-black tracking-widest text-sm flex items-center gap-2 shadow-lg" aria-label="Exit to the world"><span class="text-lg">🚪</span> EXIT</button>
         </div>`;
+      if (viewerState.kind === 'art') {
+        const m = viewerState.art;
+        el.innerHTML = `
+          <div class="shrink-0 px-4 py-3 text-sm font-bold text-white">🏛️ Museum of Art & Ideas</div>
+          <div class="flex-1 min-h-0 flex flex-col items-center justify-center gap-3 p-4">
+            <img src="${escapeHtml(paintingImageUrl(m))}" alt="${escapeHtml(m.title)}" class="max-w-full max-h-[62vh] object-contain shadow-2xl ${['oil', 'acrylic'].includes(m.medium) ? 'border-[10px] border-amber-600' : 'border-[18px] border-stone-50 outline outline-[6px] outline-stone-800'}">
+            <div class="text-center space-y-1 max-w-xl">
+              <div class="text-base font-serif italic text-amber-100">"${escapeHtml(m.title)}"</div>
+              <div class="text-[11px] font-mono text-slate-300">${escapeHtml(m.on || m.medium)} · ${escapeHtml(m.size || '')} · ${escapeHtml(m.subjectLabel || '')}</div>
+              <div class="text-[10px] font-mono text-slate-500">Kelo-1, ${escapeHtml(m.season || '')} · skill ${escapeHtml(m.skill)}/100${m.keep ? ' · he is keeping this one' : ''}${m.for ? ` · painted for ${escapeHtml(m.for)}` : ''}</div>
+            </div>
+          </div>
+          <div class="shrink-0 flex items-center justify-center gap-3 p-3 border-t border-slate-800 bg-slate-950">
+            <button data-viewer="back" class="px-4 h-12 rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-sm font-bold">◀ Back to the Museum</button>
+            <button data-viewer="exit" class="ml-4 px-4 h-12 rounded-lg bg-red-700 hover:bg-red-600 border-2 border-red-300 text-white font-black tracking-widest text-sm flex items-center gap-2 shadow-lg" aria-label="Exit to the world"><span class="text-lg">🚪</span> EXIT</button>
+          </div>`;
+        el.querySelector('[data-viewer="back"]').onclick = () => { viewerState = viewerState.back; renderViewer(); };
+        el.querySelector('[data-viewer="exit"]').onclick = closeViewer;
+        return;
+      }
       if (viewerState.kind === 'photo') {
         const ph = state.photoAlbum[viewerState.page];
         el.innerHTML = `
@@ -153,7 +175,8 @@ function renderViewer() {
         const floorLabel = floors.map(f => (f === 0 ? 'Ground floor' : `Basement B${f}`)).join(' & ');
         const cell = (it) => it ? `
           <figure class="flex flex-col items-center justify-end gap-1 min-w-0">
-            <img src="${escapeHtml(it.image())}" alt="" class="w-full max-w-[110px] aspect-square object-contain drop-shadow-lg">
+            ${it.art ? `<button data-art="${escapeHtml(it.art.id)}" class="w-full max-w-[110px] aspect-square flex items-center" title="See it full size"><img src="${escapeHtml(it.image())}" alt="${escapeHtml(it.label)}" class="w-full object-contain drop-shadow-lg border-[3px] ${['oil', 'acrylic'].includes(it.art.medium) ? 'border-amber-600' : 'border-stone-800 bg-white p-1'}"></button>`
+              : `<img src="${escapeHtml(it.image())}" alt="" class="w-full max-w-[110px] aspect-square object-contain drop-shadow-lg">`}
             <figcaption class="w-full text-center text-[10px] leading-tight text-amber-50 bg-black/40 rounded px-1 py-0.5 truncate" title="${escapeHtml(it.label)}">${escapeHtml(it.label)}${it.sub ? ` <span class="text-amber-300/80">· ${escapeHtml(it.sub)}</span>` : ''}</figcaption>
             <div class="flex gap-1">
               ${it.sub === 'Painting' ? '' : `<button data-take="${which === 'museum' ? 'display' : 'use'}" data-name="${escapeHtml(it.name || '')}" class="px-1.5 py-0.5 rounded bg-emerald-700/80 hover:bg-emerald-600 text-[9px] text-white">${which === 'museum' ? 'Put outside' : 'Use it'}</button>`}
@@ -179,6 +202,11 @@ function renderViewer() {
       el.querySelector('[data-viewer="prev"]').onclick = () => turnViewerPage(-1);
       el.querySelector('[data-viewer="next"]').onclick = () => turnViewerPage(1);
       el.querySelector('[data-viewer="exit"]').onclick = closeViewer;
+      // A painting at full size
+      el.querySelectorAll('[data-art]').forEach(btn => btn.addEventListener('click', () => {
+        const m = allMuseumPaintings().find(p => p.id === btn.getAttribute('data-art'));
+        if (m) { viewerState = { kind: 'art', art: m, back: viewerState }; renderViewer(); }
+      }));
       // Suggest he takes something out: he does it as soon as he's free (js/takeout.js)
       el.querySelectorAll('[data-take]').forEach(btn => btn.addEventListener('click', () => {
         const name = btn.getAttribute('data-name'), what = btn.getAttribute('data-take');

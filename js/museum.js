@@ -206,6 +206,8 @@ function museumModelsTick(near) {
 
 // A painting in its gilded frame (the frame's back is at z = 0)
 function buildMuseumFrame(m) {
+      // A real painting (oil, watercolour...) hangs in a frame that suits its medium (js/paintstudio.js)
+      if (m && m.kind === 'art' && typeof buildArtFrame === 'function') return buildArtFrame(m);
       const frame = new THREE.Group();
       const border = new THREE.Mesh(new THREE.BoxGeometry(1.75, 1.2, 0.06), new THREE.MeshStandardMaterial({ color: 0xb8860b, metalness: 0.6, roughness: 0.35 }));
       const canvas = new THREE.Mesh(new THREE.PlaneGeometry(1.55, 1.0), new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(paintMuralCanvas(m)), roughness: 0.9 }));

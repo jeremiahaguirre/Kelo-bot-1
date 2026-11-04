@@ -20,7 +20,7 @@
 //   beach:    on sawhorses on the beach west of the dock (canoes and kayaks)
 //   bench:    the work bench (js/workbench.js when it exists), else next to the welding studio
 const ASSEMBLY_SITES = {
-  airfield: { x: -31, z: 2.0, rotY: -Math.PI / 2, name: 'his airfield build site' },
+  airfield: { x: -27, z: 2.6, rotY: -Math.PI / 2, name: 'his airfield build site' },
   beach: { x: -8.5, z: 8.3, rotY: 0, name: 'his boat-building spot on the beach' },
   benchFallback: { x: 1.9, z: -7.4, rotY: 0, y: 0, top: 0.92, standX: 1.9, standZ: -6.2, name: 'the bench by the welding studio' }
 };
@@ -142,12 +142,12 @@ function placeAssemblyMesh(p) {
           const sock = mesh(new THREE.ConeGeometry(0.28, 1.4, 12, 1, true), 0xf97316, { side: THREE.DoubleSide });
           sock.rotation.z = Math.PI / 2; sock.position.set(0.7, 4.0, 0);
           const w = group(pole, sock);
-          w.position.set(-6.5, 0, 9.5);
+          w.position.set(3.0, 0, -9.0);
           extras.add(w);
-          if (typeof makeSignMesh === 'function') { const sign = makeSignMesh("KELO-1'S AIRFIELD", { bg: '#fef3c7', fg: '#7c2d12', width: 2.6, height: 0.5 }); sign.position.set(4.5, 1.3, -9.8); sign.rotation.y = Math.PI / 2; extras.add(sign); }
+          if (typeof makeSignMesh === 'function') { const sign = makeSignMesh("KELO-1'S AIRFIELD", { bg: '#fef3c7', fg: '#7c2d12', width: 2.6, height: 0.5 }); sign.position.set(3.6, 1.3, -4.0); sign.rotation.y = Math.PI / 2; extras.add(sign); }
         }
         const crates = group();
-        crates.position.set(p.bom.site === 'airfield' ? -3.5 : 1.4, 0, p.bom.site === 'airfield' ? 6.5 : 1.6);
+        crates.position.set(p.bom.site === 'airfield' ? 2.2 : 1.4, 0, p.bom.site === 'airfield' ? 9.0 : 1.6);
         extras.add(crates);
         m.add(extras);
         m.userData.crates = crates;

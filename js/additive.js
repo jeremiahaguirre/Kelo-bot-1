@@ -128,7 +128,7 @@ function printerFinish(key, name, fromLabel) {
         addMadeThing(name, fromLabel, { emoji: '🖨️' });
         machineSkill(key, 6);
         state.moodEmoji = '🎉';
-        state.moodTitle = `Printed ${plainItem(name).toLowerCase()}`.slice(0, 80);
+        state.moodTitle = `Printed ${wsThing(name)}`.slice(0, 80);
       };
     }
 
@@ -170,7 +170,7 @@ deskPrinterDef('fdm', 'Prusa FDM printer', 'FDM printer', fdmPrinterModel, 0, {
     const key = this.key;
     let fail = false;
     return {
-      title: `Printing ${plainItem(name).toLowerCase()} on the FDM printer`, product: name,
+      title: `Printing ${wsThing(name)} on the FDM printer`, product: name,
       stops: [{
         key, act: async ctx => {
           const u = ctx.model.userData.inner.userData;
@@ -183,7 +183,7 @@ deskPrinterDef('fdm', 'Prusa FDM printer', 'FDM printer', fdmPrinterModel, 0, {
           part.scale.y *= 0.01;
           const full = part.scale.x;
           fail = Math.random() < printFailChance(key);
-          await machineStep(ctx, `Printing ${plainItem(name).toLowerCase()}`, 7000, (k, t) => {
+          await machineStep(ctx, `Printing ${wsThing(name)}`, 7000, (k, t) => {
             const kk = fail ? Math.min(k, 0.45) : k;
             u.head.position.x = Math.sin(t * 7) * u.travel.x;
             u.bed.position.z = Math.sin(t * 5.3) * u.travel.z;
@@ -215,7 +215,7 @@ function resinPlan(def, job, prefix, products, label) {
       const name = madeName(prefix, 'resin', job.make, wsPick(products));
       let ok = true;
       return {
-        title: `Printing ${plainItem(name).toLowerCase()} on the ${label}`, product: name,
+        title: `Printing ${wsThing(name)} on the ${label}`, product: name,
         speech: 'Gloves on first. Resin is nasty on skin.',
         stops: [
           {
@@ -230,7 +230,7 @@ function resinPlan(def, job, prefix, products, label) {
               const full = part.scale.x;
               part.scale.y = 0.01;
               ok = Math.random() >= printFailChance(key);
-              await machineStep(ctx, `Printing ${plainItem(name).toLowerCase()} layer by layer`, 8000, (k, t) => {
+              await machineStep(ctx, `Printing ${wsThing(name)} layer by layer`, 8000, (k, t) => {
                 const layers = 26, f = k * layers, lk = f - Math.floor(f);
                 const reach = ok ? k : Math.min(k, 0.5);
                 u.platform.position.y = 0.215 + reach * 0.16 + (lk < 0.5 ? lk * 0.03 : (1 - lk) * 0.03);
@@ -308,7 +308,7 @@ registerWorkshopMachine({
   plan(job) {
     const key = this.key, name = madeName('SLS-printed', 'nylon', job.make, wsPick(this.products));
     return {
-      title: `Printing ${plainItem(name).toLowerCase()} on the SLS printer`, product: name, speech: 'Respirator on. Nylon powder is fine enough to breathe in.',
+      title: `Printing ${wsThing(name)} on the SLS printer`, product: name, speech: 'Respirator on. Nylon powder is fine enough to breathe in.',
       stops: [
         {
           key, act: async ctx => {
@@ -317,7 +317,7 @@ registerWorkshopMachine({
             useWorkshopSupply('pa12', 1, 'SLS build');
             mmSetTower(u.tower, 'run');
             await machineStep(ctx, 'Preheating the powder bed', 1600, k => wsGlowSet(u.window, k * 0.5));
-            await machineStep(ctx, `Sintering ${plainItem(name).toLowerCase()} layer by layer`, 8000, (k, t) => powderBedFrame(u, k, t));
+            await machineStep(ctx, `Sintering ${wsThing(name)} layer by layer`, 8000, (k, t) => powderBedFrame(u, k, t));
             await machineStep(ctx, 'Letting the build cake cool down slowly', 2200, k => wsGlowSet(u.window, 0.5 * (1 - k)));
             wsMachineIdle(u);
             return true;
@@ -351,7 +351,7 @@ registerWorkshopMachine({
   plan(job) {
     const key = this.key, name = madeName('DMLS-printed', 'stainless', job.make, wsPick(this.products));
     return {
-      title: `Printing ${plainItem(name).toLowerCase()} in steel`, product: name, speech: 'Metal powder. Respirator and gloves on, and the chamber gets filled with argon first.',
+      title: `Printing ${wsThing(name)} in steel`, product: name, speech: 'Metal powder. Respirator and gloves on, and the chamber gets filled with argon first.',
       stops: [
         {
           key, act: async ctx => {
@@ -363,7 +363,7 @@ registerWorkshopMachine({
             mmSetTower(u.tower, 'wait');
             await machineStep(ctx, 'Purging the chamber with argon', 3000, (k, t) => { if (u.gauge) u.gauge.rotation.z = -k * 2.4; }, 'Oxygen falling... under 0.1 percent. Good.');
             mmSetTower(u.tower, 'run');
-            await machineStep(ctx, `Laser-melting ${plainItem(name).toLowerCase()}`, 9000, (k, t) => powderBedFrame(u, k, t, { layers: 30, glow: 0.8 }));
+            await machineStep(ctx, `Laser-melting ${wsThing(name)}`, 9000, (k, t) => powderBedFrame(u, k, t, { layers: 30, glow: 0.8 }));
             wsMachineIdle(u);
             return true;
           }
@@ -399,7 +399,7 @@ registerWorkshopMachine({
   plan(job) {
     const key = this.key, name = madeName('MJF-printed', 'nylon', job.make, wsPick(this.products));
     return {
-      title: `Printing ${plainItem(name).toLowerCase()} on the MJF printer`, product: name,
+      title: `Printing ${wsThing(name)} on the MJF printer`, product: name,
       stops: [
         {
           key, act: async ctx => {
@@ -409,7 +409,7 @@ registerWorkshopMachine({
             useWorkshopSupply('fusingAgent', 1, 'MJF build');
             useWorkshopSupply('detailingAgent', 1, 'MJF build');
             mmSetTower(u.tower, 'run');
-            await machineStep(ctx, `Jetting agents and fusing ${plainItem(name).toLowerCase()}`, 8000, (k, t) => {
+            await machineStep(ctx, `Jetting agents and fusing ${wsThing(name)}`, 8000, (k, t) => {
               const sweep = Math.sin(t * 2.2);
               u.recoater.position.x = sweep * 0.24;
               u.dot.position.x = -sweep * 0.24;
@@ -447,7 +447,7 @@ registerWorkshopMachine({
   plan(job) {
     const key = this.key, name = madeName('PolyJet-printed', 'photopolymer', job.make, wsPick(this.products));
     return {
-      title: `Printing ${plainItem(name).toLowerCase()} on the PolyJet printer`, product: name,
+      title: `Printing ${wsThing(name)} on the PolyJet printer`, product: name,
       stops: [
         {
           key, act: async ctx => {
@@ -460,7 +460,7 @@ registerWorkshopMachine({
             const full = part.scale.x;
             part.scale.y = 0.01;
             mmSetTower(u.tower, 'run');
-            await machineStep(ctx, `Jetting ${plainItem(name).toLowerCase()} and UV curing each pass`, 8000, (k, t) => {
+            await machineStep(ctx, `Jetting ${wsThing(name)} and UV curing each pass`, 8000, (k, t) => {
               u.block.position.x = Math.sin(t * 2.6) * 0.38;
               wsGlowSet(u.lamp, 0.7 + Math.random() * 0.3);
               u.tray.position.y = 1.06 - k * 0.02;
@@ -493,7 +493,7 @@ registerWorkshopMachine({
   plan(job) {
     const key = this.key, name = madeName('binder-jetted', 'stainless', job.make, wsPick(this.products));
     return {
-      title: `Binder jetting ${plainItem(name).toLowerCase()}`, product: name,
+      title: `Binder jetting ${wsThing(name)}`, product: name,
       stops: [
         {
           key, act: async ctx => {
@@ -501,7 +501,7 @@ registerWorkshopMachine({
             useWorkshopSupply('bjPowder', 1, 'Binder jet build');
             useWorkshopSupply('binder', 1, 'Binder jet build');
             mmSetTower(u.tower, 'run');
-            await machineStep(ctx, `Jetting binder into the powder for ${plainItem(name).toLowerCase()}`, 7000, (k, t) => powderBedFrame(u, k, t, { noBeam: true, glow: 0.25 }));
+            await machineStep(ctx, `Jetting binder into the powder for ${wsThing(name)}`, 7000, (k, t) => powderBedFrame(u, k, t, { noBeam: true, glow: 0.25 }));
             await machineStep(ctx, 'Curing the bed so the green part holds together', 2200, k => wsGlowSet(u.window, 0.6 * Math.sin(k * Math.PI)));
             wsMachineIdle(u);
             return true;
@@ -525,7 +525,7 @@ registerWorkshopMachine({
   plan(job) {
     const key = this.key, name = madeName('DED-built', 'stainless', job.make, wsPick(this.products));
     return {
-      title: `Building ${plainItem(name).toLowerCase()} with the DED robot`, product: name, speech: 'Helmet down. That arc is bright.',
+      title: `Building ${wsThing(name)} with the DED robot`, product: name, speech: 'Helmet down. That arc is bright.',
       stops: [
         {
           key, act: async ctx => {
@@ -539,7 +539,7 @@ registerWorkshopMachine({
             part.scale.y = 0.01;
             ctx.model.add(part);
             mmSetTower(u.tower, 'run');
-            await machineStep(ctx, `Depositing ${plainItem(name).toLowerCase()} bead by bead`, 9000, (k, t) => {
+            await machineStep(ctx, `Depositing ${wsThing(name)} bead by bead`, 9000, (k, t) => {
               const a = t * 2.4;
               u.turret.rotation.y = -0.9 + Math.sin(a) * 0.18;
               u.shoulder.rotation.z = -0.55 + Math.cos(a) * 0.06 - k * 0.15;
@@ -583,7 +583,7 @@ registerWorkshopMachine({
   plan(job) {
     const key = this.key, name = madeName('EBM-printed', 'titanium', job.make, wsPick(this.products));
     return {
-      title: `Printing ${plainItem(name).toLowerCase()} in titanium`, product: name,
+      title: `Printing ${wsThing(name)} in titanium`, product: name,
       stops: [
         {
           key, act: async ctx => {
@@ -594,7 +594,7 @@ registerWorkshopMachine({
             await machineStep(ctx, 'Pumping the chamber down to a vacuum', 3000, k => { if (u.vac) u.vac.rotation.z = -k * 2.6; }, 'An electron beam only works in a vacuum.');
             await machineStep(ctx, 'Preheating the powder bed', 2000, k => wsGlowSet(u.window, k * 0.8));
             mmSetTower(u.tower, 'run');
-            await machineStep(ctx, `Melting ${plainItem(name).toLowerCase()} with the electron beam`, 8000, (k, t) => powderBedFrame(u, k, t, { layers: 36, glow: 0.95 }));
+            await machineStep(ctx, `Melting ${wsThing(name)} with the electron beam`, 8000, (k, t) => powderBedFrame(u, k, t, { layers: 36, glow: 0.95 }));
             await machineStep(ctx, 'Cooling down under helium', 1800, k => wsGlowSet(u.window, 0.9 * (1 - k)));
             wsMachineIdle(u);
             return true;
@@ -618,7 +618,7 @@ registerWorkshopMachine({
   plan(job) {
     const key = this.key, name = madeName('LOM-built', 'paper', job.make, wsPick(this.products));
     return {
-      title: `Laminating ${plainItem(name).toLowerCase()}`, product: name,
+      title: `Laminating ${wsThing(name)}`, product: name,
       stops: [
         {
           key, act: async ctx => {

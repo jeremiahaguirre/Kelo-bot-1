@@ -102,7 +102,7 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
    - Trailers (snowmobile trailer, boat trailer, lowboy) with models that hitch behind the truck; loading, strapping, hauling and unloading are visible.
    - Everything is still requested. AI prompt lists his vehicles and a `takeTrip` decision field; the Brain/World tab gets a "His vehicles" list.
    - One of each vehicle kind (trailers included) until he has a friend or pet (`friend`/`pet` unlocked), then two. Owned + open requests + mailbox count; owner gifts always accepted.
-   - Status: built and tested on `agent/vehicles` (js/trips.js plus small hooks in vehicles.js, knowhow.js, itemuse.js, skills.js, agent.js, index.html). Refuel loop root cause: AI-named fuel ("Gasoline for the snowmobile") was classed as a vehicle (0 uses, phantom vehicle), and every empty can asked for another. Waiting to be merged into `main`.
+   - Status: done on `agent/vehicles`, origin/main merged in (js/trips.js plus small hooks in vehicles.js, knowhow.js, itemuse.js, skills.js, agent.js, index.html, and a frame-rate fix in motion.js). Refuel loop root cause: AI-named fuel ("Gasoline for the snowmobile") was classed as a vehicle (0 uses, a phantom vehicle with an empty tank), and every empty can asked for another. Ready to merge into `main`.
 
 10. **Performance, game quality, bug hunt and clean code** (`agent/review`, started):
     - **Phase 1, now:** measure, find and verify bugs, perf hotspots and cleanup items, and write `.claude/review.md` (tiny safe fixes only).

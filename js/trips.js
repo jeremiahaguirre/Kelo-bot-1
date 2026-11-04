@@ -1313,32 +1313,32 @@ async function runHaulTrip(plan) {
           await tripSleep(2500);
           plan.turnedBack = true;
         } else {
-        state.speechBubble = key === 'snowmobile' ? "This is as far as the truck should go. The snow starts right here." : 'Here we are.';
-        renderAllUI();
-        tripExitVehicle(tow);
-        await tripSleep(1200);
-        await tripStrap(trailer, false);
-        await tripUnload(cargo, trailer);
-        // 3. Use it on its own ground, then back to the trailer
-        const foot = { x: cargo.x, z: cargo.z };
-        if (key === 'excavator') {
-          await tripDrive(cargo, plan.cargoRoute.slice(1), 'Crawling the excavator to the work');
-          const ex = tripMesh(cargo);
-          state.moodTitle = 'Digging with the excavator';
-          for (let i = 0; i < 4; i++) {
-            if (ex && ex.userData.house) { ex.userData.house.rotation.y = i % 2 ? 1.0 : -0.4; if (ex.userData.boom) ex.userData.boom.rotation.z = i % 2 ? 0.9 : 0.4; }
-            await tripSleep(1100);
+          state.speechBubble = key === 'snowmobile' ? "This is as far as the truck should go. The snow starts right here." : 'Here we are.';
+          renderAllUI();
+          tripExitVehicle(tow);
+          await tripSleep(1200);
+          await tripStrap(trailer, false);
+          await tripUnload(cargo, trailer);
+          // 3. Use it on its own ground, then back to the trailer
+          const foot = { x: cargo.x, z: cargo.z };
+          if (key === 'excavator') {
+            await tripDrive(cargo, plan.cargoRoute.slice(1), 'Crawling the excavator to the work');
+            const ex = tripMesh(cargo);
+            state.moodTitle = 'Digging with the excavator';
+            for (let i = 0; i < 4; i++) {
+              if (ex && ex.userData.house) { ex.userData.house.rotation.y = i % 2 ? 1.0 : -0.4; if (ex.userData.boom) ex.userData.boom.rotation.z = i % 2 ? 0.9 : 0.4; }
+              await tripSleep(1100);
+            }
+            if (ex && ex.userData.house) ex.userData.house.rotation.y = 0;
+          } else {
+            state.speechBubble = 'Woohoo! Snow under the track at last.';
+            await tripDrive(cargo, plan.cargoRoute.length > 1 ? plan.cargoRoute.slice(1) : plan.cargoRoute, `Riding the ${cp} on the snow`);
+            await tripSleep(2000);
+            await tripDrive(cargo, [...plan.cargoRoute].reverse().slice(1), `Riding the ${cp} back to the trailer`);
           }
-          if (ex && ex.userData.house) ex.userData.house.rotation.y = 0;
-        } else {
-          state.speechBubble = 'Woohoo! Snow under the track at last.';
-          await tripDrive(cargo, plan.cargoRoute.length > 1 ? plan.cargoRoute.slice(1) : plan.cargoRoute, `Riding the ${cp} on the snow`);
-          await tripSleep(2000);
-          await tripDrive(cargo, [...plan.cargoRoute].reverse().slice(1), `Riding the ${cp} back to the trailer`);
-        }
-        await tripDrive(cargo, [foot], `Lining the ${cp} up with the ramp`);
-        await tripLoad(cargo, trailer);
-        await tripStrap(trailer, true);
+          await tripDrive(cargo, [foot], `Lining the ${cp} up with the ramp`);
+          await tripLoad(cargo, trailer);
+          await tripStrap(trailer, true);
         }
       }
       // 4. Home, unhitch, park the truck

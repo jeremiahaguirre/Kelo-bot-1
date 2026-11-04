@@ -218,6 +218,11 @@ function useWorkshopSupply(key, amount = 1, why = '') {
       // Things that don't get used up (a respirator, a vise) are simply used
       if (typeof isConsumableItem === 'function' && !isConsumableItem(name)) return { used: 0, name };
       const r = useUpItem(name, amount, { why });
+      // The last of it: he'll need more for this machine, so he asks (once)
+      if (r && r.ranOut && !supplyOwned(key) && !supplyAwaited(key)) {
+        addItemRequest(s.ask, s.kind === 'stock' || s.kind === 'consumable' ? 'material' : 'tool', `I used up the last of my ${plainItem(name).toLowerCase()}${why ? ` (${why})` : ''}, and my Workshop needs more.`, 'Workshop');
+        workshopState().asked[key] = Date.now();
+      }
       return { ...r, name };
     }
 

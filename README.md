@@ -154,6 +154,7 @@ Kelo-bot-1/
 │   ├── upgrades.js      # World upgrades he codes himself in a safe, validated JSON language (never JavaScript)
 │   ├── main.js          # UI wiring
 │   ├── portal.js        # Send-him-something panel
+│   ├── talk.js          # The Talk tab: the live chat with Kelo-1, suggested messages, photos and gifts from the + menu
 │   ├── explore.js       # Looking around: Follow Kelo-1 or Explore freely, Places, the click menu, help card, touch joystick
 │   ├── eyecam.js        # "Through his eyes": a first-person camera at Kelo-1's eyes with look-around and a small HUD
 │   ├── minimap.js       # The live minimap: terrain, buildings, his vehicles, digs and builds, Kelo-1 and the camera's view, and the Map tab of everything he has changed

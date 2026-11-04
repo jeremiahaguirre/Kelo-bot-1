@@ -108,12 +108,12 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
     - **Phase 1, now:** measure, find and verify bugs, perf hotspots and cleanup items, and write `.claude/review.md` (tiny safe fixes only).
     - **Phase 2, after tasks 1-9 are merged:** apply the plan across the merged code, re-profile, and fix new bugs from the merges.
 
-11. **Talk tab clean-up and improvement** (`agent/talk`, started):
-    - A modern chat thread with bubbles, avatars, a typing indicator, auto-scroll, jump-to-latest, lookup cards and status chips for actions you asked for.
-    - One composer with a + menu for photos and gifts.
-    - Suggested reply chips that fit his current situation.
-    - An empty state, "load earlier", and accessibility.
-    - Obsolete controls removed.
+11. **Talk tab redesign** (`agent/talk`, started): "Clean up and improve the Talk tab of my interaction with him."
+    - A clean chat thread: his and your bubbles with avatars, world day/time separators, a "Kelo-1 is thinking…" indicator, auto-scroll with "Jump to latest", NetNode lookups as inline cards, and status chips (queued → doing → done) for things he does because you asked.
+    - One composer: multiline (Enter sends, Shift+Enter new line), send button, a "+" menu with Attach photo and Send a gift/tool/toy, character count, disabled and sending states.
+    - Suggested reply chips that fit his context (the helicopter one only if he has one); your name saved on the device and edited in one place; an empty state for a fresh Kelo-1; "Load earlier" within MAX_CHAT_LOG.
+    - Accessible (labels, focus, aria-live), re-render only on change, escapeHtml everywhere, no inline handlers (CSP).
+    - New code in `js/talk.js` (after portal.js). Status: done on `agent/talk`, ready to merge. Talk tests pass on desktop (1024x720) and phone (390x844): empty state, saved name, Enter/Shift+Enter, thinking indicator, lookup cards, helicopter chip queued → doing → done (and no chip without one), photo and gift from +, load earlier, jump to latest, reload. Regressions reload, chat and skills: page errors none. Harness note: on a loaded machine use DOM clicks (`el.click()`) rather than `page.click`.
 
 ## Owner notes to keep in mind
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.

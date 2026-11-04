@@ -56,7 +56,7 @@ e2({
   plan(job) {
     const key = this.key, name = job.make ? madeName('laser-cut', 'acrylic', job.make, this.products[0]) : this.products[0];
     return {
-      title: `Laser cutting ${plainItem(name).toLowerCase()}`, product: name,
+      title: `Laser cutting ${wsThing(name)}`, product: name,
       stops: [{ floor: 2, key, act: async ctx => { await laserStep(ctx, name); return true; } }],
       finish: () => { addMadeThing(name, 'laser cutter', { emoji: '🔴' }); machineSkill(key, 6); }
     };

@@ -323,7 +323,7 @@ registerWorkshopMachine({
     const key = this.key;
     const name = job.make ? madeName('plasma-cut', 'steel', job.make, this.products[0]) : wsPick(this.products);
     return {
-      title: `Plasma cutting ${plainItem(name).toLowerCase()}`, product: name,
+      title: `Plasma cutting ${wsThing(name)}`, product: name,
       stops: [{ floor: 2, key, act: async ctx => {
         const u = ctx.model.userData, m = ctx.model;
         await writeCam(ctx, WORKSHOP_MACHINES.plasma, name, strokePoints(PART_STROKES, 1.0, 0.6));
@@ -331,7 +331,7 @@ registerWorkshopMachine({
         useWorkshopSupply('plasmaKit', 1, 'Plasma');
         const plate = mmBox(m, 1.2, 0.02, 0.7, 'steel', 0, 0.61, 0);
         const pts = strokePoints(PART_STROKES, 1.0, 0.6);
-        await machineStep(ctx, `Cutting ${plainItem(name).toLowerCase()} out of the plate`, 7000, (k, t) => {
+        await machineStep(ctx, `Cutting ${wsThing(name)} out of the plate`, 7000, (k, t) => {
           const f = k * (pts.length - 1), i = Math.min(pts.length - 2, Math.floor(f)), uu = f - i;
           const a = pts[i], b = pts[i + 1];
           u.gantry.position.x = a.x + (b.x - a.x) * uu;

@@ -105,6 +105,12 @@ if (typeof PURPOSE_INFO !== 'undefined') {
     gadget: { say: 'using a gadget', ask: null }, clean: { say: 'cleaning parts', ask: null } });
 }
 
+// "An SLA-printed resin figure" -> "SLA-printed resin figure" (keeps acronyms and brand names as they are)
+function wsThing(name) {
+      const t = plainItem(name);
+      return /^[A-Z][a-z]/.test(t) ? t[0].toLowerCase() + t.slice(1) : t;
+    }
+
 // --- State ------------------------------------------------------------------------------------------
 function workshopState() {
       if (!state.workshop || typeof state.workshop !== 'object') state.workshop = {};
@@ -220,7 +226,7 @@ function useWorkshopSupply(key, amount = 1, why = '') {
       const r = useUpItem(name, amount, { why });
       // The last of it: he'll need more for this machine, so he asks (once)
       if (r && r.ranOut && !supplyOwned(key) && !supplyAwaited(key)) {
-        addItemRequest(s.ask, s.kind === 'stock' || s.kind === 'consumable' ? 'material' : 'tool', `I used up the last of my ${plainItem(name).toLowerCase()}${why ? ` (${why})` : ''}, and my Workshop needs more.`, 'Workshop');
+        addItemRequest(s.ask, s.kind === 'stock' || s.kind === 'consumable' ? 'material' : 'tool', `I used up the last of my ${wsThing(name)}${why ? ` (${why})` : ''}, and my Workshop needs more.`, 'Workshop');
         workshopState().asked[key] = Date.now();
       }
       return { ...r, name };
@@ -359,12 +365,12 @@ function addMadeThing(name, from, { gadget = false, emoji = '⚙️' } = {}) {
       w.made.unshift({ name, from, at: Date.now() });
       if (w.made.length > 40) w.made.length = 40;
       state.diaryEntries.unshift({
-        time: 'Made in the Workshop', location: "his Workshop", mood: `${emoji} Made ${plainItem(name).toLowerCase()}`.slice(0, 80),
+        time: 'Made in the Workshop', location: "his Workshop", mood: `${emoji} Made ${wsThing(name)}`.slice(0, 80),
         vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
-        text: `Dear Diary, I made ${plainItem(name).toLowerCase()} on the ${from}. ${gadget ? 'It works, and I can use it.' : 'It goes on the shelf until a build needs it.'}`
+        text: `Dear Diary, I made ${wsThing(name)} on the ${from}. ${gadget ? 'It works, and I can use it.' : 'It goes on the shelf until a build needs it.'}`
       });
       state.happiness = Math.min(100, state.happiness + 6);
-      showToast(`${emoji} Kelo-1 made ${plainItem(name).toLowerCase()}`);
+      showToast(`${emoji} Kelo-1 made ${wsThing(name)}`);
       workshopPartToAssembly(name);
       return name;
     }

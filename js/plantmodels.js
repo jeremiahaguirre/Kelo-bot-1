@@ -349,7 +349,7 @@ function plantTwinShaft(len, wid, hgt, label, mat) {
 // --- The site ---------------------------------------------------------------------------------------
 function plantSiteLocal(kind) {
       const S = aggregatePlantSite();
-      return kind === 'batch' ? { x: S.x + BATCH_PLANT_OFFSET, z: S.z } : { x: S.x + ASPHALT_PLANT_OFFSET, z: S.z };
+      return kind === 'batch' ? { x: S.x + BATCH_PLANT_OFFSET, z: S.oz } : { x: S.x + ASPHALT_PLANT_OFFSET, z: S.oz };
     }
 
 // Gravel ground on the pad, a concrete apron under each plant, the truck lane, signs
@@ -360,8 +360,9 @@ function buildAggregatePlantGround() {
         const gravel = new THREE.Color(0x9a948a), dark = new THREE.Color(0x7d786f);
         for (let i = 0; i < pos.count; i++) {
           const vx = pos.getX(i), vz = pos.getZ(i);
-          if (!inAggregatePlantSite(vx, vz, 0.2)) continue;
-          const c = gravel.clone().lerp(dark, (Math.sin(vx * 2.3) * Math.cos(vz * 3.1) + 1) / 3);
+          const walk = Math.abs(vx - S.x) < S.w / 2 + 0.2 && vz > S.z + S.d / 2 && vz < PLANT_SHORE_Z + 0.1;
+          if (!walk && !inAggregatePlantSite(vx, vz, 0.2)) continue;
+          const c = walk ? new THREE.Color(0xb3a58c).lerp(dark, (Math.sin(vx * 3.7) + 1) / 8) : gravel.clone().lerp(dark, (Math.sin(vx * 2.3) * Math.cos(vz * 3.1) + 1) / 3);
           col.setXYZ(i, c.r, c.g, c.b);
         }
         col.needsUpdate = true;
@@ -371,11 +372,11 @@ function buildAggregatePlantGround() {
       const y = S.y;
       // Concrete aprons where the trucks load, and slabs under the plants
       const B = plantSiteLocal('batch'), A = plantSiteLocal('asphalt');
-      k.box(M.concrete, 11.6, 0.08, 2.9, B.x + 0.2, y + 0.03, S.z + PLANT_LANE_Z, 'Concrete loading apron');
-      k.box(M.concrete, 13.4, 0.08, 2.9, A.x - 0.4, y + 0.03, S.z + PLANT_LANE_Z + 0.2, 'Concrete loading apron');
+      k.box(M.concrete, 11.6, 0.08, 2.8, B.x + 0.2, y + 0.03, S.oz + PLANT_LANE_Z, 'Concrete loading apron');
+      k.box(M.concrete, 13.4, 0.08, 2.8, A.x - 0.4, y + 0.03, S.oz + PLANT_LANE_Z, 'Concrete loading apron');
       // Painted lane edges
       for (let x = S.x - S.w / 2 + 0.6; x < S.x + S.w / 2 - 0.6; x += 1.2) {
-        k.box(M.paint, 0.7, 0.01, 0.08, x, y + 0.075, S.z + PLANT_LANE_Z - 1.45, 'Truck lane marking');
+        k.box(M.paint, 0.7, 0.01, 0.08, x, y + 0.075, S.oz + PLANT_LANE_Z - 1.4, 'Truck lane marking');
       }
       // Jersey barriers along the lake edge
       for (let x = S.x - S.w / 2 + 1.2; x < S.x + S.w / 2 - 0.8; x += 2.1) {
@@ -392,8 +393,8 @@ function buildAggregatePlantGround() {
         s.userData.plantLabel = text.charAt(0) + text.slice(1).toLowerCase();
         g.add(post, s);
       };
-      sign('KELO-1 READY-MIX', S.x - S.w / 2 - 0.4, S.z + PLANT_LANE_Z + 1.0, 0.7);
-      sign('KELO-1 HOT MIX ASPHALT', S.x + S.w / 2 + 0.9, S.z + PLANT_LANE_Z + 1.2, -1.1, '#c2410c');
+      sign('KELO-1 READY-MIX', S.x - S.w / 2 - 0.4, S.oz + PLANT_LANE_Z + 0.4, 0.7);
+      sign('KELO-1 HOT MIX ASPHALT', S.x + S.w / 2 + 0.9, S.oz + PLANT_LANE_Z + 0.4, -1.1, '#c2410c');
       return g;
     }
 
@@ -406,7 +407,7 @@ function buildBatchPlantModel() {
       const L = PLANT_LANE_Z;           // truck lane centre
       const deck = 3.9;
       // 1. The mixer tower straddling the truck lane: legs, bracing on the north and south faces
-      const tx0 = -4.3, tx1 = -1.7, tz0 = L - 1.45, tz1 = L + 1.45;
+      const tx0 = -4.3, tx1 = -1.7, tz0 = L - 1.4, tz1 = L + 1.4;
       k.legs(M.frame, tx0, tx1, tz0, tz1, 0, deck, 0.24, 'Mixer tower: steel legs', { braceX: false });
       [[tx0, tz0], [tx1, tz0], [tx0, tz1], [tx1, tz1]].forEach(([x, z]) => k.box(M.concrete, 0.6, 0.25, 0.6, x, 0.12, z, 'Concrete footing'));
       k.box(M.frameDark, 3.2, 0.14, 3.3, -3.0, deck, L, 'Mixer deck (steel grating)');
@@ -444,7 +445,7 @@ function buildBatchPlantModel() {
       }));
       // 4. Two cement silos north of the tower, each with a screw conveyor up to the cement weigh hopper
       parts.screws = [];
-      [[-5.0, -1.65, 1], [-2.9, -1.75, 2]].forEach(([x, z, n]) => {
+      [[-4.3, -1.25, 1], [-5.6, L, 2]].forEach(([x, z, n]) => {
         const lab = `Cement silo ${n} (portland cement)`;
         k.legs(M.frame, x - 0.6, x + 0.6, z - 0.6, z + 0.6, 0, 2.5, 0.16, `Cement silo ${n}: legs`);
         k.cyl(M.white, 0.88, 0.95, x, 2.95, z, lab, { geo: 'cone' });
@@ -479,7 +480,7 @@ function buildBatchPlantModel() {
       });
       // 5. Aggregate bins: sand, 20 mm gravel, 10 mm crushed stone, over a weigh belt
       const bins = [[2.95, 'sand', 'Sand bin (washed concrete sand)', M.sand], [4.05, 'stone', 'Gravel bin (20 mm stone)', M.gravel], [5.15, 'stone10', 'Crushed stone bin (10 mm)', M.stone]];
-      const bz = -1.65;
+      const bz = -1.5;
       k.legs(M.frame, 2.4, 5.7, bz - 0.95, bz + 0.95, 0, 1.75, 0.18, 'Aggregate bins: legs');
       parts.binFill = [];
       bins.forEach(([x, key, lab, mat]) => {
@@ -502,7 +503,8 @@ function buildBatchPlantModel() {
       [5.5, 3.6, 2.1].forEach(x => k.legs(M.frame, x - 0.25, x + 0.25, bz - 0.38, bz + 0.38, 0, 0.36, 0.08, 'Weigh belt stand', { braceX: false, braceZ: false }));
       parts.belts = [wb];
       // 6. Inclined belt conveyor up to the aggregate weigh hopper
-      const inc = plantConveyor([1.6, 0.85, bz], [-2.35, 6.75, L - 0.35], 0.6, 'Inclined belt conveyor (aggregates to the mixer)', { cover: false });
+      const inc = plantConveyor([1.6, 0.85, bz], [-2.35, 6.75, L - 0.35], 0.6, 'Inclined belt conveyor (aggregates to the mixer)', { cover: false, bents: false });
+      inc.bents = [new THREE.Vector3(1.6, 0.85, bz).lerp(new THREE.Vector3(-2.35, 6.75, L - 0.35), 0.55)];
       root.add(inc.group);
       inc.bents.forEach(p => {
         k.legs(M.frame, p.x - 0.35, p.x + 0.35, p.z - 0.3, p.z + 0.3, 0, p.y - 0.36, 0.13, 'Conveyor support bent', { braceZ: false });
@@ -511,42 +513,42 @@ function buildBatchPlantModel() {
       // Walkway with handrail along the incline
       parts.belts.push(inc);
       // 7. Water tank (filled from the lake) with its pump and the pipe up to the water weigh tank
-      k.cyl(M.polyBlue, 0.78, 2.3, -0.5, 1.5, -2.05, 'Water tank (8 m³, filled from the lake)');
-      k.cyl(M.polyBlue, 0.8, 0.12, -0.5, 2.7, -2.05, 'Water tank lid');
-      k.box(M.concrete, 1.8, 0.3, 1.8, -0.5, 0.15, -2.05, 'Water tank base');
-      k.box(M.grey, 0.45, 0.35, 0.3, 0.5, 0.42, -1.2, 'Lake water pump');
-      k.cyl(M.frameDark, 0.12, 0.35, 0.82, 0.42, -1.2, 'Lake water pump motor', { rz: Math.PI / 2 });
-      k.run(M.polyBlue, [[0.5, 0.25, -0.9], [0.5, 0.25, 3.2]], 0.06, 'Lake intake pipe');
-      k.run(M.galv, [[0.2, 0.42, -1.2], [-0.5, 0.42, -1.25], [-1.3, 0.42, -1.25], [-1.3, 3.5, -1.25], [-1.3, 3.5, L - 1.4], [-3.65, 5.4, L + 0.75]], 0.05, 'Water line to the mixer');
-      // 8. Admixture totes (IBCs) and their dosing pump
-      [[0.75, -2.6, M.toteAmber, 'Admixture tote: water reducer'], [1.75, -2.6, M.toteBlue, 'Admixture tote: set retarder']].forEach(([x, z, mat, lab]) => {
-        k.box(M.wood, 1.0, 0.14, 1.0, x, 0.07, z, lab + ' (pallet)');
-        k.box(mat, 0.92, 0.95, 0.92, x, 0.64, z, lab);
-        k.cyl(M.dark, 0.1, 0.06, x, 1.14, z, lab + ' (cap)');
-        for (const y of [0.18, 0.6, 1.1]) {
-          k.box(M.galv, 1.0, 0.025, 0.025, x, y, z - 0.5, lab + ' (steel cage)');
-          k.box(M.galv, 1.0, 0.025, 0.025, x, y, z + 0.5, lab + ' (steel cage)');
-          k.box(M.galv, 0.025, 0.025, 1.0, x - 0.5, y, z, lab + ' (steel cage)');
-          k.box(M.galv, 0.025, 0.025, 1.0, x + 0.5, y, z, lab + ' (steel cage)');
+      k.cyl(M.polyBlue, 0.5, 1.6, 0.6, 1.0, -0.75, 'Water tank (filled from the lake)');
+      k.cyl(M.polyBlue, 0.52, 0.1, 0.6, 1.83, -0.75, 'Water tank lid');
+      k.box(M.concrete, 1.15, 0.2, 1.15, 0.6, 0.1, -0.75, 'Water tank base');
+      k.box(M.grey, 0.4, 0.3, 0.26, 0.6, 0.35, -0.05, 'Lake water pump');
+      k.run(M.polyBlue, [[0.6, 0.12, 0.1], [0.6, 0.12, 3.1]], 0.05, 'Lake intake pipe');
+      k.run(M.galv, [[0.6, 1.9, -0.75], [0.6, 3.6, -0.75], [-1.3, 3.6, -0.75], [-1.3, 3.6, L - 1.4], [-3.65, 5.4, L + 0.75]], 0.05, 'Water line to the mixer');
+      // 8. Admixture: a tote of water reducer and a drum of set retarder, with the dosing pump
+      {
+        const x = -0.45, z = -0.95, lab = 'Admixture tote: water reducer';
+        k.box(M.wood, 0.78, 0.12, 0.72, x, 0.06, z, lab + ' (pallet)');
+        k.box(M.toteAmber, 0.7, 0.85, 0.64, x, 0.56, z, lab);
+        k.cyl(M.dark, 0.08, 0.06, x, 1.02, z, lab + ' (cap)');
+        for (const y of [0.16, 0.55, 0.98]) {
+          k.box(M.galv, 0.76, 0.025, 0.025, x, y, z - 0.34, lab + ' (steel cage)');
+          k.box(M.galv, 0.76, 0.025, 0.025, x, y, z + 0.34, lab + ' (steel cage)');
+          k.box(M.galv, 0.025, 0.025, 0.7, x - 0.38, y, z, lab + ' (steel cage)');
+          k.box(M.galv, 0.025, 0.025, 0.7, x + 0.38, y, z, lab + ' (steel cage)');
         }
-        [-0.5, 0.5].forEach(dx => [-0.5, 0.5].forEach(dz => k.beam(M.galv, [x + dx, 0.14, z + dz], [x + dx, 1.12, z + dz], 0.03, lab + ' (steel cage)')));
-      });
-      k.box(M.grey, 0.4, 0.3, 0.3, 1.25, 0.25, -1.75, 'Admixture dosing pump');
-      k.run(M.dark, [[1.25, 0.4, -1.75], [-1.2, 3.45, -1.15], [-3.4, 5.2, L + 0.6]], 0.025, 'Admixture line to the mixer');
-      // 9. Control room west of the tower, its window on the loading bay
-      const cx = -5.65, cz = L;
-      k.box(M.cabin, 1.8, 2.3, 2.4, cx, 1.35, cz, 'Batch control room');
-      k.box(M.dark, 2.0, 0.12, 2.6, cx, 2.56, cz, 'Control room roof');
-      k.box(M.concrete, 2.0, 0.2, 2.6, cx, 0.1, cz, 'Control room base');
-      k.box(M.glass, 0.05, 0.9, 1.8, cx + 0.91, 1.75, cz, 'Control room window (looks onto the loading chute)');
-      k.box(M.dark, 0.06, 1.8, 0.8, cx, 1.1, cz - 1.22, 'Control room door', Math.PI / 2);
-      k.box(M.grey, 0.5, 0.4, 0.3, cx - 0.5, 2.0, cz + 1.3, 'Air conditioner');
-      k.box(M.dark, 0.4, 0.75, 1.4, cx + 0.55, 0.95, cz, 'Batching console');
-      k.box(M.screen, 0.04, 0.38, 0.6, cx + 0.72, 1.55, cz - 0.3, 'Batching computer (mix designs and tickets)');
-      k.box(M.grey, 0.5, 0.06, 0.5, cx, 0.36, cz - 1.55, 'Control room step');
+      }
+      k.cyl(M.toteBlue, 0.28, 0.85, 1.4, 0.43, -0.3, 'Admixture drum: set retarder (200 L)');
+      k.box(M.grey, 0.3, 0.25, 0.25, -0.45, 0.2, -0.45, 'Admixture dosing pump');
+      k.run(M.dark, [[-0.45, 0.3, -0.45], [-1.3, 3.5, -0.6], [-3.4, 5.2, L + 0.6]], 0.025, 'Admixture line to the mixer');
+      // 9. Control room north of the tower, its window on the truck lane
+      const cx = -2.1, cz = -0.95;
+      k.box(M.cabin, 2.4, 2.3, 1.2, cx, 1.35, cz, 'Batch control room');
+      k.box(M.dark, 2.6, 0.12, 1.4, cx, 2.56, cz, 'Control room roof');
+      k.box(M.concrete, 2.6, 0.2, 1.4, cx, 0.1, cz, 'Control room base');
+      k.box(M.glass, 1.6, 0.8, 0.05, cx, 1.75, cz + 0.61, 'Control room window (looks onto the truck lane and the chute)');
+      k.box(M.dark, 0.8, 1.8, 0.06, cx - 0.6, 1.1, cz - 0.61, 'Control room door');
+      k.box(M.grey, 0.4, 0.35, 0.3, cx + 0.8, 2.05, cz - 0.7, 'Air conditioner');
+      k.box(M.dark, 1.4, 0.75, 0.35, cx, 0.95, cz + 0.35, 'Batching console');
+      k.box(M.screen, 0.6, 0.38, 0.04, cx + 0.3, 1.55, cz + 0.5, 'Batching computer (mix designs and tickets)');
+      k.box(M.grey, 0.5, 0.06, 0.5, cx - 0.6, 0.36, cz - 0.9, 'Control room step');
       const beacon = (mat, x, y, z, lab) => { const b = plantPart(new THREE.SphereGeometry(0.11, 12, 8), mat, lab, x, y, z); root.add(b); return b; };
-      parts.beaconGreen = beacon(M.beaconGreen, cx + 0.5, 2.72, cz - 0.6, 'Running light');
-      parts.beaconAmber = beacon(M.beaconAmber, cx + 0.5, 2.72, cz + 0.6, 'Service light (filters or mixer wear)');
+      parts.beaconGreen = beacon(M.beaconGreen, cx - 0.7, 2.72, cz + 0.3, 'Running light');
+      parts.beaconAmber = beacon(M.beaconAmber, cx + 0.7, 2.72, cz + 0.3, 'Service light (filters or mixer wear)');
       // Tower sign
       const sign = makeSignMesh('KELO-1 READY-MIX', { bg: '#1d4ed8', fg: '#ffffff', width: 2.8, height: 0.5 });
       sign.position.set(-3.0, 6.75, tz1 + 0.12);
@@ -566,8 +568,12 @@ function buildAsphaltPlantModel() {
       const M = plantMats();
       const root = new THREE.Group();
       const parts = {};
-      const k = plantKit(root);
-      const L = PLANT_LANE_Z + 0.2;
+      // The machines north of the lane sit a little further south, so the plant stays clear of the workshop
+      const north = new THREE.Group();
+      north.position.z = ASPHALT_NORTH_SHIFT;
+      root.add(north);
+      let k = plantKit(north);
+      const L = PLANT_LANE_Z;
       // 1. Cold feed bins with feeder belts under each
       const bz = -1.85;
       const bins = [[-6.75, 'coarse', 'Cold feed bin: 19 mm crushed stone', M.gravel], [-5.55, 'chips', 'Cold feed bin: 10 mm chips', M.chips], [-4.35, 'fine', 'Cold feed bin: manufactured sand', M.sand]];
@@ -579,7 +585,7 @@ function buildAsphaltPlantModel() {
         k.box(M.orange, 1.36, 0.35, 0.06, x, 2.85, bz + 1.02, lab + ': extension board', 0, -0.5);
         const fill = plantPart(new THREE.SphereGeometry(0.62, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), mat, lab, x, 2.55, bz);
         fill.scale.set(1, 0.5, 1.5);
-        root.add(fill);
+        north.add(fill);
         parts.binFill.push({ mesh: fill, key });
         // Feeder belt and its motor
         k.box(M.dark, 0.9, 0.18, 0.55, x, 1.0, bz, 'Variable-speed feeder belt');
@@ -587,15 +593,15 @@ function buildAsphaltPlantModel() {
       });
       parts.belts = [];
       const coll = plantConveyor([-7.4, 0.5, bz], [-3.5, 0.5, bz], 0.55, 'Collecting conveyor (cold feed)', { bents: false, frameMat: M.orange });
-      root.add(coll.group);
+      north.add(coll.group);
       parts.belts.push(coll);
       // 2. Inclined conveyor with a scalping screen at the top
       const inc = plantConveyor([-3.35, 0.55, bz], [-1.1, 3.2, -1.65], 0.55, 'Inclined charging conveyor', { frameMat: M.orange });
-      root.add(inc.group);
+      north.add(inc.group);
       parts.belts.push(inc);
       inc.bents.forEach(p => k.legs(M.orange, p.x - 0.3, p.x + 0.3, p.z - 0.3, p.z + 0.3, 0, p.y - 0.36, 0.12, 'Conveyor support bent', { braceZ: false }));
       const screen = plantPart(new THREE.BoxGeometry(0.85, 0.42, 0.85), M.orange, 'Scalping screen (rejects oversize)', -0.95, 3.3, -1.65);
-      root.add(screen);
+      north.add(screen);
       parts.screen = screen;
       k.box(M.galv, 0.9, 0.05, 0.9, -0.95, 3.53, -1.65, 'Scalping screen deck');
       k.legs(M.orange, -1.3, -0.6, -2.0, -1.3, 0, 3.1, 0.1, 'Scalping screen support');
@@ -619,7 +625,7 @@ function buildAsphaltPlantModel() {
       }
       for (let x = -dl / 2 + 0.3; x < dl / 2; x += 0.45) sk.cyl(M.dark, 0.835, 0.03, x, 0, 0, 'Drum dryer shell', { rz: Math.PI / 2 });
       sk.flush();
-      root.add(drum);
+      north.add(drum);
       parts.drum = spin;
       // Drum frame and trunnions
       k.box(M.orange, dl + 0.6, 0.18, 0.2, (dx0 + dx1) / 2, 0.95, dz - 0.75, 'Drum frame');
@@ -639,7 +645,7 @@ function buildAsphaltPlantModel() {
       k.box(M.asphaltGrey, 0.4, 2.0, 2.0, dx1 + 0.25, 1.95, dz, 'Burner hood (hot aggregate falls out here)');
       const glow = plantPart(new THREE.CircleGeometry(0.34, 20), M.glow, 'Burner sight glass', dx1 + 0.46, 2.45, dz + 0.55);
       glow.rotation.y = Math.PI / 2;
-      root.add(glow);
+      north.add(glow);
       parts.glow = glow;
       k.cyl(M.orange, 0.38, 0.85, dx1 + 1.45, 1.95, dz, 'Burner (diesel or natural gas)', { rz: Math.PI / 2 });
       // An open burner throat between the burner and the hood, so the flame shows
@@ -662,7 +668,7 @@ function buildAsphaltPlantModel() {
       [outer, core].forEach(m => { m.castShadow = false; m.receiveShadow = false; });
       flame.add(outer, core);
       flame.visible = false;
-      root.add(flame);
+      north.add(flame);
       parts.flame = flame;
       // 4. Baghouse dust collector with hoppers, pulse-jet headers, fan and stack
       const hx = 1.5, hz = -3.05;
@@ -673,7 +679,7 @@ function buildAsphaltPlantModel() {
       for (let i = 0; i < 5; i++) k.cyl(M.galv, 0.04, 1.2, hx - 1.0 + i * 0.5, 5.02, hz, 'Pulse-jet compressed-air header', { rx: Math.PI / 2 });
       k.cyl(M.galv, 0.18, 0.8, hx + 0.9, 5.25, hz - 0.3, 'Compressed-air tank', { rz: Math.PI / 2 });
       k.pipe(M.asphaltGrey, [hx - 0.75, 1.25, hz], [hx + 0.75, 1.25, hz], 0.1, 'Fines return screw');
-      k.run(M.asphaltGrey, [[hx + 0.75, 1.25, hz], [3.0, 1.25, hz + 0.4], [3.4, 1.7, -0.6]], 0.1, 'Fines return screw (dust back into the mix)');
+      k.run(M.asphaltGrey, [[hx + 0.75, 1.25, hz], [3.0, 1.25, hz + 0.4], [3.4, 1.7, -0.6 - ASPHALT_NORTH_SHIFT]], 0.1, 'Fines return screw (dust back into the mix)');
       k.box(M.asphaltGrey, 0.7, 0.9, 0.7, hx + 1.65, 4.0, hz, 'Baghouse outlet duct');
       k.cyl(M.orange, 0.55, 0.45, hx + 1.95, 1.0, hz - 0.1, 'Exhaust fan (induced draft)', { rx: Math.PI / 2 });
       k.cyl(M.frameDark, 0.22, 0.5, hx + 1.95, 1.0, hz + 0.45, 'Exhaust fan motor', { rx: Math.PI / 2 });
@@ -683,15 +689,21 @@ function buildAsphaltPlantModel() {
       k.cyl(M.dark, 0.34, 0.12, sx, 8.82, sz, 'Stack lip');
       k.cyl(M.galv, 0.6, 0.06, sx, 5.6, sz, 'Stack sampling platform');
       k.ladder(sx - 0.42, sz, 0.2, 6.4, Math.PI / 2, 'Stack ladder');
-      parts.stackTop = new THREE.Vector3(sx, 8.9, sz);
+      parts.stackTop = new THREE.Vector3(sx, 8.9, sz + ASPHALT_NORTH_SHIFT);
       k.ladder(hx - 1.3, hz, 0, 4.9, Math.PI / 2, 'Baghouse ladder');
+      // 9. Burner fuel tank and the gas meter
+      k.cyl(M.white, 0.48, 1.8, 5.35, 0.85, -3.0, 'Burner diesel tank (double-walled)', { rz: Math.PI / 2 });
+      k.legs(M.grey, 4.7, 6.0, -3.25, -2.75, 0, 0.4, 0.1, 'Fuel tank saddles', { braceX: false, braceZ: false });
+      k.box(M.yellow, 0.4, 0.55, 0.3, 6.15, 0.35, -1.8, 'Natural gas meter');
+      k.flush();
+      k = plantKit(root);
       // 5. Pugmill under the drum discharge, with the bitumen spray bar
       const pug = plantTwinShaft(1.6, 0.9, 0.7, 'Pugmill (twin-shaft asphalt mixer)', M.orange);
       pug.group.position.set(3.35, 0.85, -0.3);
       root.add(pug.group);
       parts.pugShafts = pug.shafts;
       k.legs(M.orange, 2.6, 4.1, -0.7, 0.1, 0, 0.85, 0.12, 'Pugmill legs', { braceZ: false });
-      k.pipe(M.dark, [3.7, 1.75, -1.4], [3.55, 1.2, -0.5], 0.17, 'Hot aggregate chute (from the drum to the pugmill)');
+      k.pipe(M.dark, [3.7, 1.75, -1.4 + ASPHALT_NORTH_SHIFT], [3.55, 1.2, -0.5], 0.17, 'Hot aggregate chute (from the drum to the pugmill)');
       k.pipe(M.cladding, [2.75, 1.65, -0.3], [3.95, 1.65, -0.3], 0.05, 'Bitumen spray bar (5.5% binder)');
       // 6. Slat conveyor up to the hot storage silo over the truck lane
       const silX = -1.2;
@@ -728,10 +740,6 @@ function buildAsphaltPlantModel() {
       k.box(M.grey, 0.4, 0.3, 0.3, 4.7, 0.3, tz - 0.6, 'Bitumen metering pump');
       parts.tankVent = new THREE.Vector3(tx + 0.3, 4.25, tz);
       parts.heaterFlue = new THREE.Vector3(tx + 0.6, 3.05, tz - 1.25);
-      // 9. Burner fuel tank and the gas meter
-      k.cyl(M.white, 0.48, 1.8, 5.35, 0.85, -3.0, 'Burner diesel tank (double-walled)', { rz: Math.PI / 2 });
-      k.legs(M.grey, 4.7, 6.0, -3.25, -2.75, 0, 0.4, 0.1, 'Fuel tank saddles', { braceX: false, braceZ: false });
-      k.box(M.yellow, 0.4, 0.55, 0.3, 6.15, 0.35, -1.8, 'Natural gas meter');
       // 10. Control house at the west end of the lane
       const cx = -6.55, cz = L;
       k.box(M.cabin, 1.7, 2.3, 2.4, cx, 1.35, cz, 'Asphalt plant control house');
@@ -760,22 +768,22 @@ function buildAsphaltPlantModel() {
 
 // --- Far away: a few plain boxes and cylinders in each plant's colours -----------------------------
 function plantStandIns(kind) {
-      const L = PLANT_LANE_Z;
+      const L = PLANT_LANE_Z, N = ASPHALT_NORTH_SHIFT;
       const spots = kind === 'batch' ? [
-        { x: -3.0, y: 0, z: L, w: 3.0, h: 7.0, d: 3.0, color: 0x1d4ed8 },
-        { x: -5.0, y: 0, z: -1.65, w: 1.7, h: 9.4, d: 1.7, color: 0xe7e9ec },
-        { x: -2.9, y: 0, z: -1.75, w: 1.7, h: 9.4, d: 1.7, color: 0xe7e9ec },
-        { x: 4.05, y: 0, z: -1.65, w: 3.3, h: 3.2, d: 2.0, color: 0x1d4ed8 },
-        { x: -0.5, y: 0, z: -2.05, w: 1.5, h: 2.7, d: 1.5, color: 0x2b6cb0 },
-        { x: -5.65, y: 0, z: L, w: 1.8, h: 2.6, d: 2.4, color: 0xf4f4f5 }
+        { x: -3.0, y: 0, z: L, w: 3.0, h: 7.0, d: 2.9, color: 0x1d4ed8 },
+        { x: -4.3, y: 0, z: -1.25, w: 1.7, h: 9.4, d: 1.7, color: 0xe7e9ec },
+        { x: -5.6, y: 0, z: L, w: 1.7, h: 9.4, d: 1.7, color: 0xe7e9ec },
+        { x: 4.05, y: 0, z: -1.5, w: 3.3, h: 3.2, d: 2.0, color: 0x1d4ed8 },
+        { x: 0.6, y: 0, z: -0.75, w: 1.0, h: 1.9, d: 1.0, color: 0x2b6cb0 },
+        { x: -2.1, y: 0, z: -0.95, w: 2.4, h: 2.6, d: 1.2, color: 0xf4f4f5 }
       ] : [
-        { x: -5.55, y: 0, z: -1.85, w: 3.6, h: 2.9, d: 1.8, color: 0xe8590c },
-        { x: 1.9, y: 1.2, z: -1.65, w: 4.4, h: 1.7, d: 1.7, color: 0x3b4047 },
-        { x: 1.5, y: 0, z: -3.05, w: 2.4, h: 4.9, d: 1.2, color: 0xa3a8ae },
-        { x: 3.65, y: 0, z: -3.6, w: 0.6, h: 8.9, d: 0.6, color: 0xb7bdc5 },
-        { x: -1.2, y: 0, z: L + 0.2, w: 1.9, h: 7.0, d: 1.9, color: 0xd3d7dc },
-        { x: 5.35, y: 0, z: L + 0.1, w: 1.6, h: 3.9, d: 1.6, color: 0xd3d7dc },
-        { x: -6.55, y: 0, z: L + 0.2, w: 1.7, h: 2.6, d: 2.4, color: 0xf4f4f5 }
+        { x: -5.55, y: 0, z: -1.85 + N, w: 3.6, h: 2.9, d: 1.8, color: 0xe8590c },
+        { x: 1.9, y: 1.2, z: -1.65 + N, w: 4.4, h: 1.7, d: 1.7, color: 0x3b4047 },
+        { x: 1.5, y: 0, z: -3.05 + N, w: 2.4, h: 4.9, d: 1.2, color: 0xa3a8ae },
+        { x: 3.65, y: 0, z: -3.6 + N, w: 0.6, h: 8.9, d: 0.6, color: 0xb7bdc5 },
+        { x: -1.2, y: 0, z: L, w: 1.9, h: 7.0, d: 1.9, color: 0xd3d7dc },
+        { x: 5.35, y: 0, z: L - 0.1, w: 1.6, h: 3.9, d: 1.6, color: 0xd3d7dc },
+        { x: -6.55, y: 0, z: L, w: 1.7, h: 2.6, d: 2.4, color: 0xf4f4f5 }
       ];
       return perfStandIns(spots, { castShadow: true });
     }
@@ -1262,7 +1270,7 @@ function initAggregatePlant3D() {
       });
       if (typeof refreshTerrainAround === 'function') {
         const S = aggregatePlantSite();
-        for (let x = S.x - S.w / 2; x <= S.x + S.w / 2; x += 4) refreshTerrainAround(x, S.z, S.d / 2 + 3);
+        for (let x = S.x - S.w / 2; x <= S.x + S.w / 2; x += 4) refreshTerrainAround(x, S.z, S.d / 2 + 4);
       }
       aggregatePlantGroup = new THREE.Group();
       aggregatePlantGroup.name = 'aggregatePlant';
@@ -1297,13 +1305,17 @@ function initAggregatePlant3D() {
 // Obstacle circles for the solid parts (world coordinates)
 function aggregatePlantObstacles() {
       const B = plantSiteLocal('batch'), A = plantSiteLocal('asphalt');
-      const L = PLANT_LANE_Z;
-      const b = [[-5.0, -1.65, 1.0], [-2.9, -1.75, 1.0], [3.0, -1.65, 1.0], [4.6, -1.65, 1.0], [-0.5, -2.05, 0.9], [1.25, -2.6, 0.8], [-5.65, L - 0.5, 1.0], [-5.65, L + 0.6, 1.0],
-        [-4.3, L - 1.45, 0.25], [-1.7, L - 1.45, 0.25], [-4.3, L + 1.45, 0.25], [-1.7, L + 1.45, 0.25], [0.2, -0.6, 0.45]];
-      const a = [[-6.75, -1.85, 0.95], [-5.55, -1.85, 0.95], [-4.35, -1.85, 0.95], [-2.2, -1.75, 0.6], [0.6, -1.65, 1.0], [2.2, -1.65, 1.0], [3.7, -1.65, 1.0], [5.2, -1.65, 0.8],
-        [1.5, -3.05, 1.3], [3.35, -0.3, 0.9], [5.35, L + 0.1, 1.0], [5.35, -3.0, 0.9], [-6.55, L - 0.3, 1.0], [-6.55, L + 0.7, 1.0],
-        [-2.15, L - 1.1, 0.25], [-0.25, L - 1.1, 0.25], [-2.15, L + 1.5, 0.25], [-0.25, L + 1.5, 0.25], [1.6, -0.5, 0.4]];
-      return [...b.map(([x, z, r]) => ({ x: B.x + x, z: B.z + z, r })), ...a.map(([x, z, r]) => ({ x: A.x + x, z: A.z + z, r }))];
+      const L = PLANT_LANE_Z, N = ASPHALT_NORTH_SHIFT;
+      const b = [[-4.3, -1.25, 1.0], [-5.6, L, 1.0], [3.0, -1.5, 1.0], [4.6, -1.5, 1.0], [0.6, -0.75, 0.6], [-0.45, -0.95, 0.5], [1.4, -0.3, 0.35],
+        [-2.8, -0.95, 0.65], [-1.5, -0.95, 0.65],
+        [-4.3, L - 1.4, 0.25], [-1.7, L - 1.4, 0.25], [-4.3, L + 1.4, 0.25], [-1.7, L + 1.4, 0.25]];
+      const a = [[-6.75, -1.85 + N, 0.95], [-5.55, -1.85 + N, 0.95], [-4.35, -1.85 + N, 0.95], [-2.2, -1.75 + N, 0.6], [0.6, -1.65 + N, 1.0], [2.2, -1.65 + N, 1.0], [3.7, -1.65 + N, 1.0], [5.2, -1.65 + N, 0.8],
+        [1.5, -3.05 + N, 1.3], [5.35, -3.0 + N, 0.9], [3.35, -0.3, 0.9], [5.35, L - 0.1, 1.0], [-6.55, L - 0.5, 1.0], [-6.55, L + 0.6, 1.0],
+        [-2.15, L - 1.3, 0.25], [-0.25, L - 1.3, 0.25], [-2.15, L + 1.3, 0.25], [-0.25, L + 1.3, 0.25]];
+      // A line out in the shallows: nobody's path past the plant cuts through the water
+      const shore = [];
+      for (let x = AGGREGATE_PLANT_SITE.x - AGGREGATE_PLANT_SITE.w / 2 - 2; x <= WORLD_MAX_X; x += 1.2) shore.push({ x, z: PLANT_SHORE_Z + 1.0, r: 0.8 });
+      return [...b.map(([x, z, r]) => ({ x: B.x + x, z: B.z + z, r })), ...a.map(([x, z, r]) => ({ x: A.x + x, z: A.z + z, r })), ...shore];
     }
 
 window.addEventListener('DOMContentLoaded', () => {

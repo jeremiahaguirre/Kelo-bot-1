@@ -17,11 +17,16 @@
 // --- Where it is --------------------------------------------------------------------------------
 // South of the big workshop (assumed at x 44-56, z -10 to 2), between the helipad and the lake.
 // If js has a WORKSHOP_SITE, the plant lines up with it (the lake stops it moving further south).
-const AGGREGATE_PLANT_SITE = { x: 45.5, z: 5.9, w: 26, d: 6.2, y: 0.05 };
+// The pad runs from z 0.7 to 7.2; south of it a levelled gravel walkway 2 units wide runs to the
+// water (the lake starts at z 9.2). oz is where the plants' own layouts are centred.
+const AGGREGATE_PLANT_SITE = { x: 45.5, z: 3.95, w: 26, d: 6.5, y: 0.05, oz: 4.05 };
+const PLANT_SHORE_Z = 9.2;          // where the lake begins
+const PLANT_DRY_Z = 7.7;            // walk targets and parking stay north of this (1.5 inland)
 const BATCH_PLANT_OFFSET = -6.5;    // the batch plant's origin, east of the site centre
 const ASPHALT_PLANT_OFFSET = 6.5;   // the asphalt plant's origin
-const PLANT_LANE_Z = 1.7;           // the truck lane, south of the machines (local z)
-const PLANT_BLEND = 1.8, PLANT_BLEND_SOUTH = 0.4;
+const PLANT_LANE_Z = 1.45;          // the truck lane, south of the machines (local z)
+const ASPHALT_NORTH_SHIFT = 0.35;   // the asphalt plant's north machines sit this much further south
+const PLANT_BLEND = 1.8, PLANT_BLEND_SOUTH = 0.7;
 let aggregatePlantSiteDone = false;
 
 function aggregatePlantSite() {
@@ -33,7 +38,6 @@ function aggregatePlantSite() {
         const cx = Number.isFinite(W.x) ? W.x : (W.minX + W.maxX) / 2;
         const maxZ = Number.isFinite(W.maxZ) ? W.maxZ : (Number.isFinite(W.z) && Number.isFinite(W.d) ? W.z + W.d / 2 : null);
         if (Number.isFinite(cx)) S.x = Math.max(32.5 + S.w / 2, Math.min(58.5 - S.w / 2, cx));
-        if (Number.isFinite(maxZ)) S.z = Math.max(5.6, Math.min(5.9, maxZ + 0.5 + S.d / 2));
       }
       // Level with the lowest dry ground around it, never below the lake
       let sum = 0, n = 0;
@@ -53,7 +57,9 @@ getAnalyticalGroundHeight = function (x, z) {
       const h = plantOrigGround(x, z);
       const S = aggregatePlantSite();
       const dx = Math.max(0, Math.abs(x - S.x) - S.w / 2);
-      const dzN = Math.max(0, (S.z - S.d / 2) - z), dzS = Math.max(0, z - (S.z + S.d / 2));
+      // South of the pad the level ground carries on as a dry gravel walkway to the shore (z 9.2): the
+      // natural beach here sits just under the lake's level
+      const dzN = Math.max(0, (S.z - S.d / 2) - z), dzS = Math.max(0, z - PLANT_SHORE_Z);
       const d = Math.hypot(dx, dzN, dzS * (PLANT_BLEND / PLANT_BLEND_SOUTH));
       if (d >= PLANT_BLEND) return h;
       const t = d / PLANT_BLEND, s = t * t * (3 - 2 * t);
@@ -69,20 +75,21 @@ if (plantOrigOffLimits) offLimits = function (x, z, pad = 0) {
 
 TOWN_LOCATIONS.aggregate_plant = {
   id: 'aggregate_plant', name: 'Concrete & Asphalt Plant', building: 'Kelo-1 Concrete & Asphalt Plant', icon: '🏗️',
-  x: AGGREGATE_PLANT_SITE.x, z: AGGREGATE_PLANT_SITE.z, showPin: true, pinColor: 'from-slate-500/90 to-blue-800/90'
+  x: AGGREGATE_PLANT_SITE.x, z: AGGREGATE_PLANT_SITE.oz, showPin: true, pinColor: 'from-slate-500/90 to-blue-800/90'
 };
 
 // World positions of the spots that matter
 function plantSpot(kind, what) {
       const S = aggregatePlantSite();
-      const B = { x: S.x + BATCH_PLANT_OFFSET, z: S.z }, A = { x: S.x + ASPHALT_PLANT_OFFSET, z: S.z };
+      const B = { x: S.x + BATCH_PLANT_OFFSET, z: S.oz }, A = { x: S.x + ASPHALT_PLANT_OFFSET, z: S.oz };
       const spots = {
-        batch: { control: { x: B.x - 5.65, z: B.z + PLANT_LANE_Z - 2.1 }, bay: { x: B.x + 0.25, z: B.z + PLANT_LANE_Z, rotY: 0 }, bins: { x: B.x + 4.05, z: B.z + 0.0 },
-          silo: { x: B.x - 3.95, z: B.z - 0.35 }, mixer: { x: B.x - 3.0, z: B.z + 0.0 }, stockpile: { x: B.x + 6.2, z: B.z + PLANT_LANE_Z } },
-        asphalt: { control: { x: A.x - 6.55, z: A.z + PLANT_LANE_Z - 1.6 }, bay: { x: A.x - 0.2, z: A.z + PLANT_LANE_Z + 0.2, rotY: 0 }, bins: { x: A.x - 5.55, z: A.z + 0.0 },
-          baghouse: { x: A.x + 0.0, z: A.z - 0.6 }, burner: { x: A.x + 5.0, z: A.z - 0.25 }, stockpile: { x: A.x - 7.6, z: A.z - 1.6 } }
+        batch: { control: { x: B.x - 2.7, z: B.z - 2.2 }, bay: { x: B.x + 0.25, z: B.z + PLANT_LANE_Z, rotY: 0 }, bins: { x: B.x + 4.05, z: B.z + 0.0 },
+          silo: { x: B.x - 4.3, z: B.z - 2.6 }, mixer: { x: B.x - 3.0, z: B.z + 0.0 }, stockpile: { x: B.x + 5.9, z: B.z - 2.9 } },
+        asphalt: { control: { x: A.x - 6.55, z: A.z + PLANT_LANE_Z - 1.5 }, bay: { x: A.x - 0.2, z: A.z + PLANT_LANE_Z, rotY: 0 }, bins: { x: A.x - 5.55, z: A.z + 0.0 },
+          baghouse: { x: A.x + 0.0, z: A.z - 0.6 }, burner: { x: A.x + 5.0, z: A.z - 0.1 }, stockpile: { x: A.x - 7.4, z: A.z - 2.9 } }
       };
-      return spots[kind][what];
+      const p = spots[kind][what];
+      return { ...p, z: Math.min(PLANT_DRY_Z, p.z) };
     }
 
 // --- The jobs he researches (js/groundwork.js: researchJob / groundworkReady) -------------------
@@ -695,7 +702,7 @@ async function paveWithOwnAsphalt(why = '', originLabel = 'Paving With His Own A
       if (truck && plantFree()) {
         state.isPracticing = true;
         try {
-          const spot = { x: road.x - Math.sign(road.toX - road.x || 1) * 2.5, z: road.z + 2.2 };
+          const spot = { x: road.x - Math.sign(road.toX - road.x || 1) * 2.5, z: Math.min(PLANT_DRY_Z, road.z + 2.2) };
           await driveVehicle(truck, spot, 'Trucking the hot asphalt to the road');
           const m = vehicleMeshes[truck.id];
           if (m && m.userData.bed) { m.userData.bed.rotation.z = 0.55; await plantWait(1500); m.userData.bed.rotation.z = 0; }
@@ -708,14 +715,14 @@ async function paveWithOwnAsphalt(why = '', originLabel = 'Paving With His Own A
 
 // Where a new concrete path could go: open ground outside town, clear of roads, pours and buildings
 const CONCRETE_PATH_SEEDS = [
-  [31.0, 8.1, 19.8, 8.1], [-18.5, -1.5, -32.0, -1.5], [-18.5, -5.0, -32.0, -5.0], [-20.0, 1.5, -33.0, 1.5],
+  [31.0, 7.0, 19.8, 7.0], [-18.5, -1.5, -32.0, -1.5], [-18.5, -5.0, -32.0, -5.0], [-20.0, 1.5, -33.0, 1.5],
   [24.0, -9.0, 24.0, -16.0], [-22.0, -9.5, -34.0, -9.5], [30.0, -9.0, 34.0, -16.0]
 ];
 function concretePathSpotOk(x, z, toX, toZ, w = 1.2) {
       const len = Math.hypot(toX - x, toZ - z);
       for (let d = 0; d <= len; d += 0.6) {
         const px = x + (toX - x) * d / len, pz = z + (toZ - z) * d / len;
-        if (offLimits(px, pz, w / 2) || pz > 8.6 || px < WORLD_MIN_X + 2 || px > WORLD_MAX_X - 2 || pz < WORLD_MIN_Z + 2) return false;
+        if (offLimits(px, pz, w / 2) || pz + w / 2 > PLANT_DRY_Z || px < WORLD_MIN_X + 2 || px > WORLD_MAX_X - 2 || pz < WORLD_MIN_Z + 2) return false;
         if ((state.concretePours || []).some(p => segDist(px, pz, p) < (p.w || 1.2) / 2 + w / 2 + 0.3)) return false;
         if ((state.worldEdits || []).some(e => e.type === 'road' && segDist(px, pz, e) < 1.6)) return false;
       }
@@ -802,7 +809,7 @@ async function pourConcrete(kind = 'path', x = null, z = null, toX = null, toZ =
         concretePourActive = p.id;
         // 1. Truck the concrete over (it keeps turning), then set out the forms
         if (truck && readyToOperate(truck.name, truck, { quiet: true })) {
-          const side = { x: p.x - Math.sin(Math.atan2(p.toX - p.x, p.toZ - p.z)) * 4.5 + 1.5, z: p.z - 2.4 };
+          const side = { x: p.x - Math.sin(Math.atan2(p.toX - p.x, p.toZ - p.z)) * 4.5 + 1.5, z: Math.min(PLANT_DRY_Z, p.z - 2.4) };
           await driveVehicle(truck, side, 'Driving the mixer truck to the pour');
         }
         const len = Math.hypot(p.toX - p.x, p.toZ - p.z);
@@ -1124,8 +1131,8 @@ if (typeof minimapBuildings === 'function') {
   minimapBuildings = function () {
       const b = plantOrigBuildings();
       const S = aggregatePlantSite();
-      b.push({ x: S.x + BATCH_PLANT_OFFSET - 1, z: S.z - 0.2, w: 11, d: 5.6, color: '#1d4ed8', icon: '🏗️' });
-      b.push({ x: S.x + ASPHALT_PLANT_OFFSET - 0.5, z: S.z - 0.2, w: 13, d: 5.8, color: '#c2410c', icon: '🛢️' });
+      b.push({ x: S.x + BATCH_PLANT_OFFSET - 0.5, z: S.oz - 0.1, w: 12, d: 5.6, color: '#1d4ed8', icon: '🏗️' });
+      b.push({ x: S.x + ASPHALT_PLANT_OFFSET - 0.5, z: S.oz - 0.3, w: 13, d: 6.2, color: '#c2410c', icon: '🛢️' });
       return b;
     };
 }

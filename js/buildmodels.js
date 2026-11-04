@@ -466,6 +466,29 @@ function applyBuildProgress(model, bom, partial = null) {
       return model;
     }
 
+// How big a build is once assembled, for fitting it in a workshop bay: the real size in metres and the
+// size in the world (×BUILD_MODEL_SCALE). length is along the build's forward (+x), width across it
+// (the ultralight's wingspan), height from the floor. Measured from the finished model, so it is exact.
+const buildFootprintCache = {};
+function buildFootprint(bomOrKey) {
+      const bom = typeof bomOrKey === 'string' ? bomFromTemplate(bomOrKey) : bomOrKey;
+      if (!bom) return null;
+      const key = bom.templateKey || `ai:${bom.name}:${bom.subs.length}`;
+      if (buildFootprintCache[key]) return buildFootprintCache[key];
+      const b = JSON.parse(JSON.stringify(bom));
+      b.subs.forEach(s => { s.built = true; });
+      const m = applyBuildProgress(buildTargetModel(b), b);
+      m.updateMatrixWorld(true);
+      const box = new THREE.Box3();
+      m.traverse(o => { if (o.isMesh && o.visible) box.expandByObject(o); });
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      const k = BUILD_MODEL_SCALE, r = v => Math.round(v * 100) / 100;
+      const out = { length: r(size.x), width: r(size.z), height: r(size.y), metres: { length: r(size.x / k), width: r(size.z / k), height: r(size.y / k) } };
+      m.traverse(o => { if (o.geometry) o.geometry.dispose(); });
+      return (buildFootprintCache[key] = out);
+    }
+
 // A finished build as a vehicle: full size, wrapped like the other vehicles (js/gearmodels.js)
 function finishedBuildVehicle(key) {
       const bom = bomFromTemplate(key);

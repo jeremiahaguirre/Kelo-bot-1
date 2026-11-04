@@ -109,7 +109,7 @@ function assemblyBench(welded = false) {
 const ASSEMBLY_FAB_VERBS = ['cut', 'notch', 'drill', 'weld', 'solder'];
 function stepWorkSpot(p, sub, step) {
       const site = siteFor(p);
-      if (p.bom.site === 'bench') return { pos: { x: site.standX, z: site.standZ }, face: { x: site.x, z: site.z }, place: site.name, locKey: site.locKey || null };
+      if (p.bom.site === 'bench' && !site.inWorkshop) return { pos: { x: site.standX, z: site.standZ }, face: { x: site.x, z: site.z }, place: site.name, locKey: site.locKey || null };
       if (ASSEMBLY_FAB_VERBS.includes(step.verb) && p.bom.site !== 'tree') {
         const b = assemblyBench(step.verb === 'weld');
         return { pos: b.stand, face: b.top, place: b.name, locKey: b.locKey, bench: true };
@@ -118,10 +118,31 @@ function stepWorkSpot(p, sub, step) {
       return { pos: siteToWorld(site, stand[0], stand[1]), face: siteToWorld(site, 0, 0), place: site.name, locKey: null };
     }
 
+// The workshop's assembly bay (js/workshop.js on the workshop branch), if there is one and the build
+// fits: workshopAssemblyBay({ key, name, length, width, height }) -> { x, z, rotY, name } or null.
+// Sizes are world units (see buildFootprint in js/buildmodels.js). Airplanes, boats and go-karts go there.
+function workshopBayFor(p) {
+      if (typeof workshopAssemblyBay !== 'function' || !p.bom) return null;
+      const big = p.bom.site === 'airfield' || p.bom.site === 'beach' || p.bom.templateKey === 'gokart';
+      if (!big) return null;
+      let bay = null;
+      try { bay = workshopAssemblyBay({ key: p.bom.templateKey, name: p.bom.name, ...buildFootprint(p.bom) }); } catch (e) { bay = null; }
+      if (!bay || !Number.isFinite(bay.x) || !Number.isFinite(bay.z)) return null;
+      return { x: bay.x, z: bay.z, rotY: Number.isFinite(bay.rotY) ? bay.rotY : 0, y: bay.y || 0, name: bay.name || 'the workshop assembly bay', inWorkshop: true };
+    }
+
 function siteFor(p) {
-      if (p.site && Number.isFinite(p.site.x)) return p.site;
+      if (p.site && Number.isFinite(p.site.x)) {
+        // A workshop that went up after the build started: the unfinished build moves inside
+        if (!p.site.inWorkshop && p.status !== 'finished' && p.status !== 'complete') {
+          const bay = workshopBayFor(p);
+          if (bay) { p.site = bay; p.cleared = true; removeAssemblyMesh(p.id); }
+        }
+        return p.site;
+      }
       const kind = p.bom.site;
-      let s;
+      let s = workshopBayFor(p);
+      if (s) { p.cleared = true; p.site = s; return s; }
       if (kind === 'airfield' || kind === 'beach') s = { ...ASSEMBLY_SITES[kind] };
       else if (kind === 'bench') {
         // Small things go on the bench top; a go-kart (welded frame) on the floor beside the welding table
@@ -154,8 +175,8 @@ function siteGroundY(site) {
 function placeAssemblyMesh(p) {
       if (!p.bom || typeof scene === 'undefined' || !scene) return null;
       if (p.status === 'finished' && (p.bom.vehicle || p.bom.itemKind)) { removeAssemblyMesh(p.id); return null; }
-      let m = assemblyMeshes[p.id];
       const site = siteFor(p);
+      let m = assemblyMeshes[p.id];
       if (!m) {
         m = buildTargetModel(p.bom);
         m.position.set(site.x, siteGroundY(site), site.z);
@@ -163,7 +184,7 @@ function placeAssemblyMesh(p) {
         if (site.treeId && typeof hostTree === 'function') hostTree({ id: p.id, treeId: site.treeId });
         // Site extras: a sign, a windsock on the airfield, and a crate for every parts kit that came
         const extras = new THREE.Group();
-        if (p.bom.site === 'airfield') {
+        if (p.bom.site === 'airfield' && !site.inWorkshop) {
           const pole = rod([0, 0, 0], [0, 4.2, 0], 0.04, 0xe5e7eb);
           const sock = mesh(new THREE.ConeGeometry(0.28, 1.4, 12, 1, true), 0xf97316, { side: THREE.DoubleSide });
           sock.rotation.z = Math.PI / 2; sock.position.set(0.7, 4.0, 0);
@@ -488,7 +509,7 @@ async function openPartsParcel(parcel) {
 // --- Clearing the airfield ------------------------------------------------------------------------
 // Valley trees standing where the airplane's wings and tail will be
 function siteTreesInTheWay(p) {
-      if (p.bom.site !== 'airfield' || typeof valleyTrees === 'undefined') return [];
+      if (p.bom.site !== 'airfield' || typeof valleyTrees === 'undefined' || (p.site && p.site.inWorkshop)) return [];
       const site = siteFor(p);
       const rects = [[-0.9, 1.1, -5.2, 5.2], [-4.7, 2.1, -0.6, 0.6], [-4.6, -3.2, -1.5, 1.5]]; // [x0, x1, z0, z1] metres: wings, fuselage, tail
       return valleyTrees.filter(t => !t.removed && !t.hosting && rects.some(([x0, x1, z0, z1]) => {
@@ -660,7 +681,7 @@ async function runBuildTests(id, originLabel = 'Inspecting the Build') {
         placeAssemblyMesh(p);
         state.currentLocKey = 'custom';
         state.customPlaceName = site.name;
-        state.targetPos = Number.isFinite(site.standX) && p.bom.site === 'bench' ? { x: site.standX, z: site.standZ } : siteToWorld(site, 0.8, 1.8);
+        state.targetPos = Number.isFinite(site.standX) && p.bom.site === 'bench' && !site.inWorkshop ? { x: site.standX, z: site.standZ } : siteToWorld(site, 0.8, 1.8);
         state.moodEmoji = '🔍';
         state.moodTitle = `Inspecting the ${p.bom.name.toLowerCase()}`;
         renderAllUI();

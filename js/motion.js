@@ -41,6 +41,7 @@ const keloMotion = {
   yawError: 0,         // desiredYaw - heading (for the head leading the body, js/humanize.js)
   pivot: false,        // turning on the spot
   lastCall: -1,
+  frameT: null,        // the time of the last frame that finished (keloSmoothRoot)
   lastX: null, lastZ: null,
   aim: null,           // the point on his path he steers toward
   bank: 0,             // vehicle lean
@@ -81,8 +82,10 @@ function keloLocomote(dist, dt, t) {
       const gait = keloGaitNow();
       // A fresh start: he stood still last frame, or was put somewhere new
       const jumped = m.lastX === null || Math.hypot(p.x - m.lastX, p.z - m.lastZ) > 1.5;
-      // (dt is capped at 0.1 s, so on a slow frame rate compare with at least two seconds, or every frame looks like a fresh start)
-      if (jumped || t - m.lastCall > Math.max(dt * 1.5 + 0.02, 2) || m.heading === null) {
+      // "Last frame" is the frame keloSmoothRoot saw end, so this holds at any frame rate (dt is capped
+      // at 0.1 s, and comparing times made every frame look like a fresh start on a slow computer)
+      const movedLastFrame = Number.isFinite(m.frameT) ? m.lastCall === m.frameT : t - m.lastCall <= dt * 1.5 + 0.02;
+      if (jumped || !movedLastFrame || m.heading === null) {
         m.speed = 0; m.acc = 0; m.yawRate = 0; m.pivot = false;
         const shown = typeof keloAnim !== 'undefined' && keloAnim.yaw !== null && !state.riding ? keloAnim.yaw : state.botRotY;
         m.heading = Number.isFinite(shown) ? shown : 0;
@@ -186,7 +189,8 @@ function keloLocomote(dist, dt, t) {
 
 // The walk cycle (animations.js) and the camera read his real speed from here while he moves
 function keloMotionSpeed(t) {
-      return t - keloMotion.lastCall < 0.2 ? keloMotion.speed : 0;
+      const m = keloMotion, now = typeof keloAnim !== 'undefined' ? keloAnim.lastT : null;
+      return t - m.lastCall < 0.2 || m.lastCall === now || m.lastCall === m.frameT ? m.speed : 0;
     }
 
 // --- No popping ---------------------------------------------------------------------------------
@@ -195,6 +199,8 @@ function keloMotionSpeed(t) {
 // that fades over about a third of a second, so sitting, standing, climbing in and out of seats and
 // collapsing all slide smoothly. Steady motion (walking, terrain, an aircraft climbing) is untouched.
 function keloSmoothRoot(dt) {
+      // The end of a frame: keloLocomote compares with this to know whether he was moving just now
+      keloMotion.frameT = typeof keloAnim !== 'undefined' ? keloAnim.lastT : null;
       if (!keloGroup) return;
       const r = keloMotion.root, P = keloGroup.position;
       if (!r.prev) { r.prev = P.clone(); r.corr = new THREE.Vector3(); return; }

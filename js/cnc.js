@@ -110,7 +110,7 @@ function routerPlan(def, job) {
       const name = job.make ? madeName(def.prefix, mdf ? 'MDF' : 'plywood', job.make, def.products[0]) : (sign ? def.products[0] : wsPick(def.products));
       const strokes = sign ? SIGN_STROKES : PART_STROKES;
       return {
-        title: `Cutting ${wsThing(name)} on the ${def.short}`, product: name,
+        title: `Routing ${wsThing(name).replace(/^[A-Za-z]+-routed /, '')} on the ${def.name}`, product: name,
         speech: `Safety glasses and ear defenders on. Router day!`,
         stops: [{
           key, act: async ctx => {
@@ -138,7 +138,7 @@ function routerPlan(def, job) {
             const grooves = [];
             const total = pts.length - 1;
             let lastSeg = -1;
-            await machineStep(ctx, `Cutting ${wsThing(name)}`, 9000, (k, t) => {
+            await machineStep(ctx, `Routing ${wsThing(name).replace(/^[A-Za-z]+-routed /, '')} on the ${def.name}`, 9000, (k, t) => {
               const f = k * total, i = Math.min(total - 1, Math.floor(f)), uu = f - i;
               const a = pts[i], b = pts[i + 1];
               const x = a.x + (b.x - a.x) * uu, z = a.z + (b.z - a.z) * uu;
@@ -147,7 +147,7 @@ function routerPlan(def, job) {
               if (b.down && i !== lastSeg && grooves.length < 60) {
                 lastSeg = i;
                 const len = Math.hypot(b.x - a.x, b.z - a.z);
-                const gm = mmBox(m, len, 0.006, sign ? 0.03 : 0.018, 'dark', (a.x + b.x) / 2, u.bedTop + 0.037, (a.z + b.z) / 2, { ry: -Math.atan2(b.z - a.z, b.x - a.x) });
+                const gm = mmBox(m, len, 0.008, sign ? 0.045 : 0.03, 'black', (a.x + b.x) / 2, u.bedTop + 0.036, (a.z + b.z) / 2, { ry: -Math.atan2(b.z - a.z, b.x - a.x) });
                 gm.scale.x = 0.001;
                 gm.userData.full = len;
                 grooves.push(gm);

@@ -583,44 +583,75 @@ function bandsawModel() {
 function cncRouterModel(spec) {
       const { w, d, frame, gantryMat, accent, logo, logoBg = '#111827', logoFg = '#f8fafc', heavy = false, atc = false, vacuum = false } = spec;
       const g = new THREE.Group();
-      const legH = 0.72, rail = heavy ? 0.16 : 0.1;
-      // Frame: legs and long side rails (welded steel tube on the heavy ones)
-      const legs = heavy ? [[-1, -1], [1, -1], [-1, 1], [1, 1], [0, -1], [0, 1]] : [[-1, -1], [1, -1], [-1, 1], [1, 1]];
-      legs.forEach(([sx, sz]) => mmBox(g, heavy ? 0.14 : 0.08, legH, heavy ? 0.14 : 0.08, frame, sx * (w / 2 - 0.08), 0, sz * (d / 2 - 0.08)));
-      mmBox(g, w, 0.08, d - 0.1, frame, 0, 0.18, 0);
-      [-1, 1].forEach(sz => mmBox(g, w, rail, rail, frame, 0, legH, sz * (d / 2 - rail / 2)));
-      // Bed: spoilboard (or a vacuum table with its grid), the T-track or the pod rails
-      const bed = mmBox(g, w - 0.12, 0.05, d - 0.3, vacuum ? 'dark' : 'mdf', 0, legH + 0.02, 0);
-      if (vacuum) for (let i = -3; i <= 3; i++) mmBox(g, 0.008, 0.002, d - 0.32, 'steel', i * (w - 0.2) / 7, legH + 0.072, 0);
-      else for (let i = -2; i <= 2; i++) mmBox(g, 0.02, 0.004, d - 0.32, 'alu', i * (w - 0.3) / 5, legH + 0.07, 0);
-      const bedTop = legH + 0.074;
-      // Gantry: two side plates and the beam across (travels along x)
-      const gantry = mmGroup(g, 0, legH + rail, 0);
+      const legH = 0.72, railH = heavy ? 0.18 : 0.14, railW = heavy ? 0.2 : 0.14;
+      // Base frame: a welded or bolted table on legs with cross members and levelling feet
+      const legs = heavy ? [-1, -0.33, 0.33, 1] : [-1, 0, 1];
+      legs.forEach(fx => [-1, 1].forEach(sz => {
+        const x = fx * (w / 2 - 0.1), z = sz * (d / 2 - 0.1);
+        mmBox(g, heavy ? 0.14 : 0.1, legH, heavy ? 0.14 : 0.1, frame, x, 0, z);
+        mmCyl(g, 0.06, 0.03, 'dark', x, 0.015, z);
+      }));
+      [-1, 1].forEach(sz => mmBox(g, w, 0.1, 0.1, frame, 0, 0.2, sz * (d / 2 - 0.1)));
+      for (let i = 0; i < 4; i++) mmBox(g, 0.08, 0.08, d - 0.2, frame, -w / 2 + 0.25 + i * (w - 0.5) / 3, 0.2, 0);
+      // The table top: the long side rails with linear guides and gear racks the gantry drives on
       [-1, 1].forEach(sz => {
-        mmBox(gantry, heavy ? 0.24 : 0.18, 0.62, 0.05, gantryMat, 0, 0, sz * (d / 2 - rail / 2));
-        mmBox(gantry, 0.1, 0.1, 0.1, accent, -0.06, 0.62, sz * (d / 2 - rail / 2) + sz * 0.05); // X motor
+        const z = sz * (d / 2 - railW / 2);
+        mmBox(g, w, railH, railW, frame, 0, legH, z);
+        mmBox(g, w - 0.1, 0.03, 0.04, 'chrome', 0, legH + railH, z - sz * 0.02);   // linear guide
+        mmBox(g, w - 0.1, 0.03, 0.015, 'brass', 0, legH + railH - 0.05, z + sz * (railW / 2 + 0.008)); // gear rack
       });
-      mmBox(gantry, heavy ? 0.22 : 0.16, heavy ? 0.24 : 0.18, d, gantryMat, 0, 0.4, 0);
-      if (logo) mmLabel(gantry, logo, Math.min(0.9, d * 0.5), 0.09, 0.0, 0.49, 0, { bg: logoBg, fg: logoFg, ry: Math.PI / 2 });
-      // Cable chain over the top
-      mmBox(gantry, 0.06, 0.05, d * 0.7, 'black', -0.05, 0.66, -0.05);
-      // Z carriage and spindle (travels along z, plunges in y)
-      const carriage = mmGroup(gantry, heavy ? 0.16 : 0.13, 0.42, 0);
-      mmBox(carriage, 0.08, 0.34, 0.2, gantryMat, 0, -0.1, 0);
-      mmBox(carriage, 0.08, 0.08, 0.08, accent, 0, 0.26, 0); // Z motor
-      const zSlide = mmGroup(carriage, 0.08, 0, 0);
-      const spindle = mmCyl(zSlide, 0.055, 0.32, heavy ? 'white' : 'dark', 0, -0.12, 0);
-      mmCyl(zSlide, 0.035, 0.05, 'steel', 0, -0.3, 0);
-      const bit = mmCyl(zSlide, 0.008, 0.06, 'chrome', 0, -0.35, 0);
-      // The dust shoe with its brush skirt and the hose up to the collector
-      const shoe = mmCyl(zSlide, 0.09, 0.05, 'glass', 0, -0.33, 0);
-      mmRod(zSlide, [0, -0.25, 0], [-0.1, 0.3, 0.1], 0.03, 'black');
+      [-1, 1].forEach(sx => mmBox(g, 0.1, railH, d, frame, sx * (w / 2 - 0.05), legH, 0));
+      // Spoilboard (MDF with T-tracks) or a vacuum table (grid, zones, plenum)
+      const bed = mmBox(g, w - 0.2, 0.05, d - railW * 2 - 0.04, vacuum ? 'dark' : 'mdf', 0, legH + 0.05, 0);
+      const bedTop = legH + 0.1;
+      if (vacuum) {
+        for (let i = -6; i <= 6; i++) mmBox(g, 0.01, 0.004, d - railW * 2 - 0.1, 'grey', i * (w - 0.3) / 13, bedTop - 0.002, 0);
+        for (let i = -3; i <= 3; i++) mmBox(g, w - 0.3, 0.004, 0.01, 'grey', 0, bedTop - 0.002, i * (d - 0.4) / 7);
+        mmBox(g, 0.4, 0.35, 0.35, 'dark', w / 2 - 0.4, 0.25, 0); // vacuum pump under the table
+      } else {
+        for (let i = -2; i <= 2; i++) mmBox(g, 0.035, 0.008, d - railW * 2 - 0.1, 'alu', i * (w - 0.4) / 5, bedTop - 0.003, 0);
+      }
+      // The gantry: two upright side plates on bearing blocks, the beam across with its rail, the X motors
+      const gantry = mmGroup(g, 0, legH + railH, 0);
+      const plateH = heavy ? 0.75 : 0.66, beamY = plateH - 0.12;
+      [-1, 1].forEach(sz => {
+        const z = sz * (d / 2 - railW / 2);
+        mmBox(gantry, 0.34, 0.06, railW + 0.06, 'dark', 0, 0, z);            // bearing carriage
+        mmBox(gantry, heavy ? 0.36 : 0.3, plateH, 0.05, gantryMat, 0, 0.06, z + sz * 0.05); // side plate
+        mmBox(gantry, 0.11, 0.11, 0.11, accent, -0.16, 0.12, z + sz * 0.13);   // X motor and pinion
+      });
+      mmBox(gantry, heavy ? 0.26 : 0.2, heavy ? 0.3 : 0.24, d + 0.1, gantryMat, 0, beamY, 0);
+      mmBox(gantry, 0.02, 0.05, d - 0.2, 'chrome', 0.11 + (heavy ? 0.03 : 0), beamY + 0.04, 0);   // Y guide
+      mmBox(gantry, 0.02, 0.05, d - 0.2, 'chrome', 0.11 + (heavy ? 0.03 : 0), beamY + 0.16, 0);
+      if (logo) mmLabel(gantry, logo, Math.min(1.0, d * 0.55), 0.1, -0.11 - (heavy ? 0.03 : 0), beamY + 0.12, 0, { bg: logoBg, fg: logoFg, ry: -Math.PI / 2 });
+      // Cable chain riding over the beam to the carriage
+      const chain = mmGroup(gantry, -0.02, beamY + (heavy ? 0.32 : 0.26), 0);
+      for (let i = 0; i < 14; i++) mmBox(chain, 0.07, 0.05, (d - 0.3) / 14 * 0.85, 'black', 0, 0, -d / 2 + 0.15 + (i + 0.5) * (d - 0.3) / 14);
+      // The Z carriage: a plate on the beam's guides, the Z motor on top, the spindle with its collet
+      const carriage = mmGroup(gantry, (heavy ? 0.16 : 0.13), beamY + 0.1, 0);
+      mmBox(carriage, 0.05, 0.36, 0.26, gantryMat, 0, -0.18, 0);
+      mmBox(carriage, 0.09, 0.09, 0.09, accent, 0.04, 0.2, 0);
+      const zSlide = mmGroup(carriage, 0.09, -0.05, 0);
+      mmBox(zSlide, 0.04, 0.32, 0.16, 'alu', -0.03, -0.25, 0);
+      const spindle = mmCyl(zSlide, 0.06, 0.34, heavy ? 'white' : 'dark', 0.04, -0.22, 0);
+      mmCyl(zSlide, 0.065, 0.04, accent, 0.04, -0.06, 0);
+      mmCyl(zSlide, 0.035, 0.05, 'steel', 0.04, -0.41, 0);
+      const bit = mmCyl(zSlide, 0.009, 0.07, 'chrome', 0.04, -0.47, 0);
+      // The dust shoe with its brush skirt, and the hose looping up to the boom and off to the collector
+      const shoe = mmCyl(zSlide, 0.1, 0.06, 'glass', 0.04, -0.46, 0);
+      mmCyl(zSlide, 0.1, 0.03, 'black', 0.04, -0.5, 0);
+      mmRod(zSlide, [0.12, -0.42, 0], [0.3, -0.05, 0.05], 0.035, 'black');
+      mmRod(gantry, [0.45, beamY - 0.05, 0.05], [0.25, beamY + 0.6, -d / 2], 0.035, 'black');
       if (atc) {
         // Automatic tool changer rack along the back
-        mmBox(g, 0.7, 0.05, 0.12, 'alu', -w / 2 + 0.5, legH + 0.12, -d / 2 + 0.2);
-        for (let i = 0; i < 8; i++) mmCyl(g, 0.02, 0.07, i % 2 ? 'red' : 'steel', -w / 2 + 0.2 + i * 0.085, legH + 0.19, -d / 2 + 0.2);
+        mmBox(g, 0.75, 0.05, 0.12, 'alu', -w / 2 + 0.5, bedTop + 0.02, -d / 2 + railW + 0.1);
+        for (let i = 0; i < 8; i++) mmCyl(g, 0.02, 0.07, i % 2 ? 'red' : 'steel', -w / 2 + 0.2 + i * 0.085, bedTop + 0.1, -d / 2 + railW + 0.1);
       }
-      // A control pendant on a stand at the front corner
+      // The control box (drives and controller) and the pendant on its stand at the front corner
+      const box = mmGroup(g, w / 2 + 0.3, 0, -d / 2 + 0.3);
+      mmBox(box, 0.4, 1.1, 0.35, heavy ? 'grey' : 'dark', 0, 0, 0);
+      mmBox(box, 0.3, 0.12, 0.005, 'lampGreen', 0, 0.95, 0.18);
+      mmCyl(box, 0.04, 0.03, 'lampRed', 0.12, 0.8, 0.18, { axis: 'z' });
       const pendant = mmGroup(g, w / 2 - 0.15, 0, d / 2 + 0.25);
       mmBox(pendant, 0.05, 1.05, 0.05, 'dark', 0, 0, 0);
       mmScreen(pendant, 0.2, 0.14, 0, 1.12, 0.03);

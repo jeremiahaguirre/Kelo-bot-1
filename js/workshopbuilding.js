@@ -837,7 +837,7 @@ async function wsRideLift(toFloor, riders = []) {
         const tick = () => {
           // (window.__wsHold = 'elevator' stops the ride half way, for a screenshot; see js/machines.js)
           if (pausedAt) {
-            if (window.__wsHold && workshopTrip.active) { setTimeout(tick, 50); return; }
+            if (window.__wsHold && /elevator/i.test(window.__wsHold) && workshopTrip.active) { setTimeout(tick, 50); return; }
             start += Date.now() - pausedAt; pausedAt = 0; window.__wsHeld = null;
           } else if (!held && window.__wsHold && /elevator/i.test(window.__wsHold) && Date.now() - start > ms / 2) {
             held = true; pausedAt = Date.now(); window.__wsHeld = 'car elevator';

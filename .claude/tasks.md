@@ -9,7 +9,7 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
 ## Merged into main locally (2026-11-04, waiting on the regression run before push)
-- Task 1 Paintings (agent/paint), task 3 Humanize/eye cam/fluid motion (agent/body), task 6 Code anything + self-upgrades (agent/upgrades).
+- Task 1 Paintings (agent/paint), task 2 Accurate welding + work bench (agent/weld), task 3 Humanize/eye cam/fluid motion (agent/body), task 4 Garden (agent/garden), task 6 Code anything + self-upgrades (agent/upgrades), task 10 phase 1 audit (agent/review; plan in .claude/review.md, phase 2 still to do after the rest merge).
 
 ## In progress (helpers resumed 2026-11-04 03:12 UTC; if one stops, resume it)
 1. **Paintings** (`agent/paint`): real oil, acrylic, watercolour, gouache, pastel, ink and charcoal paintings.

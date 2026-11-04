@@ -859,7 +859,7 @@ async function runWorkshopVisit(plan) {
       const veh = plan.vehicle || null;
       if (veh && typeof driveVehicle === 'function') {
         // He drives it round to the vehicle door first
-        const door = siteToWorld(site, WS_DOORS.vehicle.x, WORKSHOP_SITE.d / 2 + 5.5, 0);
+        const door = siteToWorld(site, WS_DOORS.vehicle.x, WORKSHOP_SITE.d / 2 + 4.2, 0);
         await driveVehicle(veh, { x: door.x, z: door.z }, `Driving the ${String(veh.name).replace(/^(an?|the)\s+/i, '')} to the Workshop`);
         // (he climbed out by the driver's door; he gets straight back in to back it inside)
         if (state.riding || Math.hypot(veh.x - door.x, veh.z - door.z) > 3) return false;
@@ -1027,7 +1027,7 @@ async function wsDriveIn(site, v) {
       const ry = -Math.PI / 2; // nose south, toward the doors
       // He swings it round on the apron and backs in
       tripMood(`Backing the ${nm} onto the car elevator`, 'Reverse... slowly... a little more.');
-      const ax = WS_DOORS.vehicle.x, az = WORKSHOP_SITE.d / 2 + 5.5;
+      const ax = WS_DOORS.vehicle.x, az = WORKSHOP_SITE.d / 2 + 4.2;
       await wsDriveAlong(site, v, [{ x: ax - 2.5, z: az + 1.5, ry: ry + 0.9 }, { x: ax, z: az + 0.8, ry }], 3000);
       await wsDriveAlong(site, v, [{ x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 1.5, ry }, { x: WS_LIFT.x, z: WS_LIFT.z, ry }], 4200);
       workshopShowUpstairs(true);
@@ -1063,7 +1063,7 @@ async function wsDriveOut(site, v) {
       wsSetDeck(0.15);
       workshopShowUpstairs(false);
       // Out through door 1 and onto the apron
-      const apron = { x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 5.5 };
+      const apron = { x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 4.2 };
       await wsDriveAlong(site, v, [{ x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 1.0, ry }, { x: apron.x, z: apron.z, ry }], 4200);
       v.x = Math.round((wsGroup.position.x + apron.x) * 10) / 10;
       v.z = Math.round((wsGroup.position.z + apron.z) * 10) / 10;

@@ -129,6 +129,13 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
     - phone and desktop layouts
     Fix what is found.
 13. **Task 10 phase 2:** apply the `.claude/review.md` plan across the merged code, re-profile and fix new bugs.
+14. **Quality upgrade, no new features** (owner, 2026-11-04; after 12 and 13): raise every existing aspect to the polish level of a modern commercial farming and vehicle simulator (the owner's reference: Farming Simulator 25/26). Use it as a quality bar only: no copying its assets, models, UI or look.
+    - Rendering: lighting, shadows, terrain texturing and blending, vegetation, water, sky and weather, post-processing.
+    - Models: vehicles, machines, buildings, Kelo-1 and items, with detail, proper materials and scale.
+    - Animation: vehicles and machines with suspension, wheels, hydraulics and moving parts, plus Kelo-1's motion.
+    - Camera feel, audio polish, UI/HUD clarity and consistency, transitions, loading.
+    - Steady frame rate on desktop and phone, with quality presets.
+    - Polish and fix only what already exists. Add nothing new.
 
 ## Owner notes to keep in mind
 - Owner (2026-11-04): helpers may add as much land as needed for machines, workshops and plants (natural shoreline, walkable, clear of town, one shared land constant/helper). Kelo-1 must never end up standing in water.

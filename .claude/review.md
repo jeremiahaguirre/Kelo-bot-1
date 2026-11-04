@@ -119,6 +119,8 @@ These are cheap, but each could early-out when its panel is hidden.
 | B6 | Low (UI) | `index.html` header buttons, `#btnCloseMenu` | When the Phosphor icon font can't load (offline web, blocked CDN, the test harness), the settings, menu and close-menu buttons are blank squares. Only the tab icons have the emoji fallback (`main.js:638–648`). Seen at 390×844 (`shots/phone-main.png`, `phone-tab-*.png`). | Extend the `data-tab-emoji` fallback to every icon-only button (`data-icon-emoji`). | Wait (index.html and main.js are shared) |
 | B7 | Low (UI) | `#btnFocusKelo` ("Follow" in the bottom panel) | The tap target is 52×19 px on a phone (WCAG/Apple minimum is 44×44, Material 48×48). | `min-h-[32px]` plus padding, or make the whole panel header the button. | Wait (index.html) |
 | B8 | Info | `js/agent.js:1188–1194` | `BRAIN_KEY` is now `kelo1_brain_v4`, and `kelo1_brain_v3*` keys are **deleted** on load. The perf agent's `stress.js` still seeds `kelo1_brain_v3`, so its "stress" numbers since the v4 change are for a *fresh* state. My `prof.js` and `boot.js` seed v4. | Update `perf/stress.js` (scratchpad only). | Now (tooling) |
+| B9 | Low (fixed) | `js/conversation.js:74`, `155` | "How are you?" answered *"I feel good! Energy 79.07176697530865%"*. The vitals are floats, and the AI prompt got the same unrounded numbers (chat scenario, before the fix). | `Math.round` on energy, wonder, fullness and calm in the reply and the prompt. Neither paint nor assembly touches these lines (their edits are at line 146). | **Done** |
+| B10 | Info | chat scenario timing | Each chat reply took 40–50 s in the harness. That is not a game delay: the built-in brain answers synchronously, and the time is `page.evaluate` queuing behind multi-second SwiftShader frames on a host shared with about 10 browsers. Under that load, `page.goto(…, 180000)` and Playwright's default 30 s screenshot also time out. The harness now retries a goto timeout and gives screenshots 240 s. | — | Tooling |
 
 Checked and clean:
 - **Busy flags:** all 57 places that set `isBusy`, `isBuilding`, `isPracticing`, `isBrowsing` or `isCollectingMail` in an async function reset them in a `finally` (acorn walk, `lint/flags2.js`). No flag stayed stuck in the 10-min watch.
@@ -207,6 +209,7 @@ All of these must **wait** until the nine branches are merged, or they will conf
 
 **Safe now (done or tooling):**
 - B1: fixed.
+- B9: fixed.
 - B8: the perf harness seeds the wrong key (scratchpad only).
 
 **Right after the nine branches merge, in this order** (each step is small and has a measurable result):

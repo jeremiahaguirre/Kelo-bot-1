@@ -54,6 +54,7 @@
           <div class="flex rounded-xl bg-slate-900/90 p-0.5" role="group" aria-label="Camera">
             <button type="button" data-explore-mode="follow" class="explore-mode-btn" aria-pressed="true" title="The camera stays with Kelo-1 (K)"><span aria-hidden="true">🎯</span><span>Follow<span class="hidden sm:inline"> Kelo-1</span></span></button>
             <button type="button" data-explore-mode="explore" class="explore-mode-btn" aria-pressed="false" title="Move the camera yourself"><span aria-hidden="true">🧭</span><span>Explore</span></button>
+            <button type="button" data-explore-mode="eyes" class="explore-mode-btn" aria-pressed="false" title="See through his eyes (V)"><span aria-hidden="true">👀</span><span>Eyes</span></button>
           </div>
           <button type="button" id="btnPlaces" class="explore-bar-btn" aria-expanded="false" aria-controls="explorePlaces" title="Jump to a place"><span aria-hidden="true">📍</span><span>Places</span></button>
           <button type="button" data-explore-help class="explore-bar-btn explore-round" aria-label="How to explore" title="How to explore (?)">?</button>
@@ -69,6 +70,24 @@
           <div id="explorePlacesList" class="space-y-1"></div>
           <div class="mt-2 pt-2 border-t border-slate-800 flex flex-wrap items-center gap-2 text-[11px] text-slate-300">
             <button id="btnToggleRoof" type="button" class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-mono border border-slate-700/80 transition"><span>Roofs: Cutaway</span></button>
+          </div>
+        </div>
+
+        <!-- Through his eyes (js/eyecam.js): a soft visor edge and what he sees and thinks -->
+        <div id="eyeCamVignette" aria-hidden="true"></div>
+        <div id="eyeCamHud" class="hidden absolute z-20 rounded-2xl bg-slate-950/80 backdrop-blur-md border border-teal-400/40 shadow-xl px-3 py-2" role="status" aria-live="polite">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-[11px] font-bold text-teal-200">👀 Through Kelo-1's eyes</span>
+            <span class="flex items-center gap-1">
+              <button type="button" data-eyecam-hud class="eyecam-btn" aria-pressed="true" title="Show or hide what he sees and thinks">Hide</button>
+              <button type="button" data-eyecam-exit class="eyecam-btn" title="Back to following him (V)">✕</button>
+            </span>
+          </div>
+          <div data-eyecam-body class="mt-1 space-y-0.5 text-[11px] leading-snug">
+            <div class="text-slate-200"><span class="text-slate-400">Looking at</span> <span data-eyecam-look></span></div>
+            <div class="text-slate-300 italic line-clamp-2"><span class="not-italic text-slate-400">Thinking</span> <span data-eyecam-think></span></div>
+            <div class="text-[10px] text-slate-500 hidden sm:block">Drag or use the arrow keys to look around · scroll to zoom</div>
+            <div class="text-[10px] text-slate-500 sm:hidden">Drag to look around · pinch to zoom</div>
           </div>
         </div>
 
@@ -379,7 +398,7 @@
         <div class="flex items-center justify-between gap-2 flex-wrap">
           <span class="text-xs font-bold text-slate-300">✉️ Letters From Kelo-1: Things He Wants &amp; Questions</span>
           <div class="flex gap-1.5">
-            <button id="btnCopyCodeWishlist" class="hidden px-2.5 py-1 rounded-xl bg-violet-500/20 hover:bg-violet-500/30 text-violet-200 text-[11px] font-semibold transition" title="Copy his open code requests as a markdown checklist">📋 Copy wishlist</button>
+            <button id="btnCopyCodeWishlist" class="hidden px-2.5 py-1 rounded-xl bg-violet-500/20 hover:bg-violet-500/30 text-violet-200 text-[11px] font-semibold transition" title="Copy every open code request as markdown: a checklist plus a spec for each">📋 Copy all as markdown</button>
             <button id="btnGenerateNewRequest" class="px-2.5 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-[11px] font-semibold transition">+ New Question</button>
           </div>
         </div>
@@ -425,6 +444,16 @@
           </summary>
           <div class="pt-2 space-y-2">
             <div id="inventedActionsContainer" class="space-y-2"></div>
+          </div>
+        </details>
+        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="upgrades" open>
+          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-violet-300">
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>⌨️ Upgrades He Coded</span></span>
+            <span id="worldUpgradesCount" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-violet-500/20">0</span>
+          </summary>
+          <div class="pt-2 space-y-2">
+            <p class="text-[10.5px] text-slate-500">He writes these at NetNode in a small, safe JSON language (never JavaScript). View the code, switch one off, or remove it.</p>
+            <div id="worldUpgradesList" class="space-y-2"></div>
           </div>
         </details>
         <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="projects" open>
@@ -561,6 +590,7 @@
           <div class="flex flex-wrap gap-1.5 text-[11px]">
             <button data-cam="follow" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">🎯 Follow</button>
             <button data-cam="bird" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">🦅 Bird's-Eye</button>
+            <button data-cam="eyes" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">👀 His Eyes</button>
             <button data-cam="overview" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">⛰️ Valley</button>
             <button data-cam="house" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">🏠 House</button>
             <button data-cam="cafes" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">☕ Cafes</button>
@@ -739,6 +769,8 @@
   <script src="./js/weldstudio.js"></script>
   <script src="./js/house.js"></script>
   <script src="./js/animations.js"></script>
+  <script src="./js/motion.js"></script>
+  <script src="./js/humanize.js"></script>
   <script src="./js/items3d.js"></script>
   <script src="./js/gearmodels.js"></script>
   <script src="./js/everydaymodels.js"></script>
@@ -761,6 +793,9 @@
   <script src="./js/weather.js"></script>
   <script src="./js/landscape.js"></script>
   <script src="./js/groundwork.js"></script>
+  <script src="./js/welding.js"></script>
+  <script src="./js/workbench.js"></script>
+  <script src="./js/plantcare.js"></script>
   <script src="./js/skills.js"></script>
   <script src="./js/projects.js"></script>
   <script src="./js/town.js"></script>
@@ -769,11 +804,15 @@
   <script src="./js/wildlife.js"></script>
   <script src="./js/companions.js"></script>
   <script src="./js/pastimes.js"></script>
+  <script src="./js/paintrender.js"></script>
+  <script src="./js/paintstudio.js"></script>
   <script src="./js/shopkeeping.js"></script>
   <script src="./js/printer.js"></script>
+  <script src="./js/upgrades.js"></script>
   <script src="./js/main.js"></script>
   <script src="./js/portal.js"></script>
   <script src="./js/explore.js"></script>
+  <script src="./js/eyecam.js"></script>
   <script src="./js/minimap.js"></script>
   <script src="./js/tryit.js"></script>
   <script src="./js/plants.js"></script>

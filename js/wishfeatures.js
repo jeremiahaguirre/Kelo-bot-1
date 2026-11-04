@@ -275,6 +275,8 @@ function updateWishFeatures(t) {
       if (typeof updateCompanionBot === 'function' && featureOn('friend')) updateCompanionBot(t);
       if (typeof updatePetAnimal === 'function' && featureOn('pet')) updatePetAnimal(t);
       if (typeof updatePastimes === 'function') updatePastimes(t);
+      // Upgrades he coded himself (js/upgrades.js)
+      if (typeof updateWorldUpgrades === 'function') updateWorldUpgrades(t);
     }
 
 window.addEventListener('DOMContentLoaded', () => {

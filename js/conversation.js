@@ -71,7 +71,7 @@ function answerAboutHimself(msg) {
       const owned = ownedItemNames();
       if (/how are you|how do you feel|how('| a)re you (doing|feeling)|you ok/.test(m)) {
         const low = [['energy', state.health], ['fullness', state.fullness], ['calm', state.calmLevel]].filter(([, v]) => v < 40).map(([k]) => k);
-        return low.length ? `Honestly? A bit low on ${low.join(' and ')} right now. But I'm curious as ever.` : `I feel good! Energy ${state.health}%, and my wonder is at ${state.wonderLevel}%.`;
+        return low.length ? `Honestly? A bit low on ${low.join(' and ')} right now. But I'm curious as ever.` : `I feel good! Energy ${Math.round(state.health)}%, and my wonder is at ${Math.round(state.wonderLevel)}%.`;
       }
       if (/what('| a)?re you doing|what are you up to|what('s| is) up/.test(m)) return `Right now: ${state.moodTitle.toLowerCase()}.`;
       if (/where are you|where('s| is) kelo/.test(m)) return `I'm at ${currentPlaceLabel().replace(/^his /i, 'my ')}.`;
@@ -147,6 +147,9 @@ async function respondToVisitor(visitor, message) {
       // "Build an airplane!", "What parts do you still need?", "Fly your airplane!" (js/assembly.js)
       const buildAsk = typeof parseBuildRequest === 'function' ? parseBuildRequest(message) : null;
       if (buildAsk) return answerBuildRequest(buildAsk, visitor);
+      // "Paint me a watercolour of the lake": he sets up his easel and does (js/paintstudio.js)
+      const paintAsk = typeof parsePaintRequest === 'function' ? parsePaintRequest(message) : null;
+      if (paintAsk) return answerPaintRequest(paintAsk, visitor);
       // "Try flying your helicopter!": he goes and actually does it (js/skills.js)
       const useAsk = typeof parseUseRequest === 'function' ? parseUseRequest(message) : null;
       if (useAsk && (useAsk.candidate || useAsk.missing)) return answerUseRequest(useAsk, visitor);
@@ -155,7 +158,7 @@ async function respondToVisitor(visitor, message) {
       if (hasLLMKey()) {
         const prompt = `You are Kelo-1, a curious robot living in a valley near Kelowna. A visitor named ${visitor} just said to you: "${message}".
 Answer what they actually said: if it's a question, answer it; if it's a request, say whether and how you'll do it; if it's news, react to it. Speak in first person, 1-3 sentences, warm and curious.
-Your situation: at ${currentPlaceLabel()}, doing "${state.moodTitle}". Energy ${state.health}%, fullness ${state.fullness}%, calm ${state.calmLevel}%.
+Your situation: at ${currentPlaceLabel()}, doing "${state.moodTitle}". Energy ${Math.round(state.health)}%, fullness ${Math.round(state.fullness)}%, calm ${Math.round(state.calmLevel)}%.
 You own: ${ownedItemNames().slice(0, 15).join(', ') || 'nothing yet'}.
 Your outlook: "${state.worldviewManifesto}".
 Words you learned recently: ${Object.keys(state.vocabulary).slice(-15).join(', ') || 'none'}.

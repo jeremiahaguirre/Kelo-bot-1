@@ -157,6 +157,7 @@ const HOT_MIX_RE = /hot.?mix asphalt|load of (hot )?asphalt|blacktop|tarmac/i;
 const CONCRETE_WORKABLE_MS = 3 * (typeof WORLD_DAY_MS === 'number' ? WORLD_DAY_MS : 43200000) / 24;  // 3 world hours
 const HMA_WORKABLE_MS = 1.5 * (typeof WORLD_DAY_MS === 'number' ? WORLD_DAY_MS : 43200000) / 24;     // 1.5 world hours
 const CONCRETE_CURE_DAYS = 7;
+let plantWorkableScale = 1;   // tests on a slow machine stretch the working windows
 
 // Mix designs: parts of cement : sand : stone by weight, and the water-cement ratio
 const CONCRETE_MIXES = {
@@ -886,7 +887,7 @@ function plantReconcileLoads() {
     }
 
 function hotMixTemp(load) {
-      const f = Math.min(1, (Date.now() - load.madeAt) / HMA_WORKABLE_MS);
+      const f = Math.min(1, (Date.now() - load.madeAt) / (HMA_WORKABLE_MS * plantWorkableScale));
       return Math.round((load.temp || 155) - ((load.temp || 155) - 105) * f);
     }
 
@@ -895,7 +896,7 @@ function plantTimeTick() {
       plantReconcileLoads();
       let changed = false;
       // Hot mix that cooled before it was laid: wasted
-      while (ap.loads.length && Date.now() - ap.loads[0].madeAt > HMA_WORKABLE_MS) {
+      while (ap.loads.length && Date.now() - ap.loads[0].madeAt > HMA_WORKABLE_MS * plantWorkableScale) {
         ap.loads.shift();
         const name = hotMixName();
         if (name) forgetItem(name);
@@ -907,7 +908,7 @@ function plantTimeTick() {
         showToast('🥶 Kelo-1\'s hot asphalt cooled and was wasted');
       }
       // Concrete left in the drum too long starts to set
-      while (bp.loads.length && Date.now() - bp.loads[0].madeAt > CONCRETE_WORKABLE_MS) {
+      while (bp.loads.length && Date.now() - bp.loads[0].madeAt > CONCRETE_WORKABLE_MS * plantWorkableScale) {
         bp.loads.shift();
         const name = readyMixName();
         if (name) forgetItem(name);

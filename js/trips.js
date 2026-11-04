@@ -27,7 +27,8 @@ const PICKUP_RE = /\bpick-?up\b/i;
 const TRIP_TYPE_TRAILER = { kind: 'trailer', mode: 'tow', speed: 0, scale: 2.6, seatY: 0.4 };
 const TRIP_TYPE_PICKUP = { kind: 'pickup', re: PICKUP_RE, mode: 'land', speed: 2.2, scale: 3.0, seatY: 1.0 };
 // Fuel, straps, covers and toys named after a vehicle are not vehicles ("Gasoline for the snowmobile")
-const TRIP_NOT_VEHICLE_RE = /\b(fuel|gasoline|petrol|diesel|propane|kerosene|jet fuel|gas can|cans? of gas|jerry ?can|oil|helmet|cover|tarp|straps?|chains?|binders?|spare parts?|keys?|manual|toy|model|miniature|poster|sticker|oars?|life ?jackets?|hitch|ramp|wax|charger|anchor|picture|photo|drawing|painting)\b/i;
+// (Fuel names themselves are checked against FUEL_TYPES with a container or "for", so a diesel dump truck stays a truck)
+const TRIP_NOT_VEHICLE_RE = /\b((?<!jet )fuel(?! injected)|gas can|cans? of gas|jerry ?can|oil|helmet|cover|tarp|straps?|chains?|binders?|spare parts?|keys?|manual|toy|model|miniature|poster|sticker|oars?|life ?jackets?|hitch|ramp|wax|charger|anchor|picture|photo|drawing|painting)\b/i;
 // Where trailers park: a row on the gravel south of the yard, couplers pointing west
 const TRAILER_SLOTS = [[27.0, 6.6], [33.5, 6.6], [40.0, 6.6]];
 const TRAILER_ROT_Y = Math.PI;

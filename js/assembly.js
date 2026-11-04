@@ -18,7 +18,9 @@
 // Where things are built. Constant positions, so the site can later move into a workshop or hangar.
 //   airfield: the open strip south of the Museum by the West Meadow; the airplane faces the lake
 //   beach:    on sawhorses on the beach west of the dock (canoes and kayaks)
-//   bench:    the work bench (js/workbench.js when it exists), else next to the welding studio
+//   bench:    small builds on the work bench, welded ones on the welding table (projectBenchFor, js/workbench.js)
+// Cutting, drilling, welding and soldering for any build happen at the bench or welding table too;
+// fitting, covering and painting happen where the build stands.
 const ASSEMBLY_SITES = {
   airfield: { x: -27, z: 2.6, rotY: -Math.PI / 2, name: 'his airfield build site' },
   beach: { x: -8.5, z: 8.3, rotY: 0, name: 'his boat-building spot on the beach' },
@@ -88,10 +90,32 @@ function plainName(n) {
     }
 
 // --- The build site ------------------------------------------------------------------------------
-function assemblyBench() {
-      if (typeof workbenchSpot === 'function') { const w = workbenchSpot(); if (w && Number.isFinite(w.x)) return { ...ASSEMBLY_SITES.benchFallback, ...w }; }
-      if (typeof WORKBENCH !== 'undefined' && WORKBENCH && Number.isFinite(WORKBENCH.x)) return { ...ASSEMBLY_SITES.benchFallback, ...WORKBENCH };
-      return ASSEMBLY_SITES.benchFallback;
+// Where a piece is made (js/workbench.js projectBenchFor): welded work on the welding table, everything
+// else on the work bench. Returned as { stand: where he stands, top: centre of the work surface, y, name }.
+function assemblyBench(welded = false) {
+      const b = typeof projectBenchFor === 'function' ? projectBenchFor({ welded }) : null;
+      if (b && Number.isFinite(b.x)) {
+        const weldTable = b.locKey === 'weld';
+        const depth = weldTable ? 1.6 : (b.depth || 1.4);
+        return { stand: { x: b.x, z: b.z }, top: { x: b.x, z: b.z - depth }, y: weldTable ? 0.92 : (b.top || 0.8), locKey: b.locKey || null,
+          name: weldTable ? 'the welding table' : (b.name || 'his work bench') };
+      }
+      const f = ASSEMBLY_SITES.benchFallback;
+      return { stand: { x: f.standX, z: f.standZ }, top: { x: f.x, z: f.z }, y: f.top, locKey: null, name: f.name };
+    }
+
+// Cutting, notching, drilling, welding and soldering happen at the bench or welding table;
+// fitting, covering and painting where the build stands
+const ASSEMBLY_FAB_VERBS = ['cut', 'notch', 'drill', 'weld', 'solder'];
+function stepWorkSpot(p, sub, step) {
+      const site = siteFor(p);
+      if (p.bom.site === 'bench') return { pos: { x: site.standX, z: site.standZ }, face: { x: site.x, z: site.z }, place: site.name, locKey: site.locKey || null };
+      if (ASSEMBLY_FAB_VERBS.includes(step.verb) && p.bom.site !== 'tree') {
+        const b = assemblyBench(step.verb === 'weld');
+        return { pos: b.stand, face: b.top, place: b.name, locKey: b.locKey, bench: true };
+      }
+      const stand = sub.stand || [0, 1.2];
+      return { pos: siteToWorld(site, stand[0], stand[1]), face: siteToWorld(site, 0, 0), place: site.name, locKey: null };
     }
 
 function siteFor(p) {
@@ -100,9 +124,11 @@ function siteFor(p) {
       let s;
       if (kind === 'airfield' || kind === 'beach') s = { ...ASSEMBLY_SITES[kind] };
       else if (kind === 'bench') {
-        const b = assemblyBench();
-        // Small things go on the bench top; a go-kart on the floor beside it
-        s = { x: b.x, z: b.z, rotY: b.rotY || 0, y: p.bom.templateKey === 'gokart' ? 0 : (b.top || 0.92), name: b.name, standX: b.standX, standZ: b.standZ };
+        // Small things go on the bench top; a go-kart (welded frame) on the floor beside the welding table
+        const kart = p.bom.templateKey === 'gokart';
+        const b = assemblyBench(p.bom.subs.some(x => x.steps.some(st => st.verb === 'weld')));
+        s = kart ? { x: b.top.x + 2.4, z: b.top.z + 0.4, rotY: 0, y: 0, name: b.name, standX: b.top.x + 2.4, standZ: b.top.z + 1.6, locKey: b.locKey }
+          : { x: b.top.x, z: b.top.z, rotY: 0, y: b.y, name: b.name, standX: b.stand.x, standZ: b.stand.z, locKey: b.locKey };
       } else if (kind === 'tree' && typeof buildSpot === 'function') {
         const t = buildSpot({ inTree: true, r: 2 });
         s = { x: t.x, z: t.z, rotY: 0, treeId: t.treeId || null, name: 'a big tree in the valley' };
@@ -530,8 +556,7 @@ async function buildNextSubAssembly(id, originLabel = 'Building Something Big') 
         const site = siteFor(p);
         if (!p.cleared && p.bom.site === 'airfield' && !(await clearAirfield(p))) return 'clearing-site';
         const model = placeAssemblyMesh(p);
-        const stand = sub.stand || [0, 1.2];
-        const spot = Number.isFinite(site.standX) && p.bom.site === 'bench' ? { x: site.standX, z: site.standZ } : siteToWorld(site, stand[0], stand[1]);
+        const spot = stepWorkSpot(p, sub, sub.steps[Math.min(sub.stepsDone, sub.steps.length - 1)]).pos;
         state.currentLocKey = 'custom';
         state.customPlaceName = site.name;
         state.targetPos = spot;
@@ -545,6 +570,18 @@ async function buildNextSubAssembly(id, originLabel = 'Building Something Big') 
         const n = sub.steps.length;
         for (let i = sub.stepsDone; i < n; i++) {
           const step = sub.steps[i];
+          const ws = stepWorkSpot(p, sub, step);
+          if (Math.hypot(ws.pos.x - state.targetPos.x, ws.pos.z - state.targetPos.z) > 0.5) {
+            if (typeof setCarriedObject === 'function') setCarriedObject(null);
+            state.microPose = 'normal';
+            state.currentLocKey = ws.locKey && TOWN_LOCATIONS[ws.locKey] ? ws.locKey : 'custom';
+            state.customPlaceName = state.currentLocKey === 'custom' ? ws.place : null;
+            state.moodTitle = ws.bench ? `Taking the ${sub.name.toLowerCase()} parts to ${ws.place}`.slice(0, 80) : `Back to the ${p.bom.name.toLowerCase()}`.slice(0, 80);
+            state.targetPos = { ...ws.pos };
+            renderAllUI();
+            await waitForArrival(90000);
+          }
+          state.botRotY = Math.atan2(ws.face.x - state.botPos.x, ws.face.z - state.botPos.z);
           const tool = step.tool ? bomToolByKey(p.bom, step.tool) : null;
           holdAssemblyTool(tool);
           assemblyPose(step.verb);

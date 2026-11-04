@@ -393,7 +393,7 @@ function buildAggregatePlantGround() {
         g.add(post, s);
       };
       sign('KELO-1 READY-MIX', S.x - S.w / 2 - 0.4, S.z + PLANT_LANE_Z + 1.0, 0.7);
-      sign('KELO-1 HOT MIX ASPHALT', S.x + S.w / 2 + 0.3, S.z + 0.2, -0.7, '#c2410c');
+      sign('KELO-1 HOT MIX ASPHALT', S.x + S.w / 2 + 0.9, S.z + PLANT_LANE_Z + 1.2, -1.1, '#c2410c');
       return g;
     }
 

@@ -84,7 +84,12 @@ function fuelCanFor(fuel) {
         && (typeof usesPerItem !== 'function' || usesPerItem(n) > 0)) || null;
     }
 
-const refuelsQueued = new Set(); // one queued fill-up per fuel at a time (this session only)
+// One queued fill-up per fuel at a time (this session only). doWhenFree gives up after ~3 minutes
+// of him being busy, so a queued one older than 4 minutes no longer counts.
+const refuelsQueued = new Map();
+function refuelQueued(fuel) {
+      return Date.now() - (refuelsQueued.get(fuel) || 0) < 4 * 60 * 1000;
+    }
 
 function requestFuel(fuel, why) {
       const type = FUEL_TYPES[fuel];
@@ -93,8 +98,8 @@ function requestFuel(fuel, why) {
       // once: a fill-up that just failed isn't retried on every check (js/loopguard.js)
       const can = fuelCanFor(fuel);
       if (can) {
-        if (refuelsQueued.has(fuel) || (typeof activityCoolingDown === 'function' && activityCoolingDown('refuel:' + fuel))) return;
-        refuelsQueued.add(fuel);
+        if (refuelQueued(fuel) || (typeof activityCoolingDown === 'function' && activityCoolingDown('refuel:' + fuel))) return;
+        refuelsQueued.set(fuel, Date.now());
         doWhenFree(async () => {
           try { await refuelWith(can); } finally { refuelsQueued.delete(fuel); }
         });
@@ -172,8 +177,8 @@ function fuelTypeOf(item) {
 // Called when he opens a delivery: if it's fuel, he goes and fills up whatever runs on it
 function receiveFuel(item) {
       const fuel = fuelTypeOf(item);
-      if (!fuel || (typeof vehicleTypeFor === 'function' && vehicleTypeFor(item)) || refuelsQueued.has(fuel)) return;
-      refuelsQueued.add(fuel);
+      if (!fuel || (typeof vehicleTypeFor === 'function' && vehicleTypeFor(item)) || refuelQueued(fuel)) return;
+      refuelsQueued.set(fuel, Date.now());
       doWhenFree(async () => {
         try { await refuelWith(item); } finally { refuelsQueued.delete(fuel); }
       });

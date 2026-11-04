@@ -1369,7 +1369,8 @@ function vehiclesSummaryForAI() {
       return state.vehicles.map(v => {
         const fuel = typeof fuelNeededBy === 'function' && fuelNeededBy(v) ? `${Math.round(fuelLeft(v))}% ${fuelNeededBy(v)}` : 'no fuel needed';
         const cond = Number.isFinite(v.condition) ? `, condition ${Math.round(v.condition)}%` : '';
-        return `${v.name} (${fuel}${cond}; at ${vehicleLocationLabel(v)}; ${vehicleReadiness(v)}; goes on ${terrainRuleText(v)})`;
+        const where = vehicleLocationLabel(v);
+        return `${v.name} (${fuel}${cond}; ${/^(on|near|out|up|hitched) /.test(where) ? where : 'at ' + where}; ${vehicleReadiness(v)}; rule: ${terrainRuleText(v)})`;
       }).join('; ');
     }
 

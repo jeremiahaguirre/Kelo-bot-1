@@ -252,17 +252,17 @@ async function researchBuild(target, why = '', originLabel = 'Decided to Build S
         state.webHistory.unshift({ query: `How to build ${aName(want)} from scratch`, time: 'Just now', verdict: verdict.slice(0, 600),
           hops: readings.map(r => ({ title: r.title, url: r.url, extract: r.extract.slice(0, 280) })) });
         if (state.webHistory.length > 12) state.webHistory.length = 12;
-        state.moodTitle = `Planned a ${bom.name.toLowerCase()}: ${lines} parts lines`.slice(0, 80);
+        state.moodTitle = `Planned ${aName(bom.name)}: ${lines} parts lines`.slice(0, 80);
         state.speechBubble = `I've planned it: ${bom.subs.length} sub-assemblies, ${lines} lines of parts and ${bomFmtQty(fasteners)} fasteners. I'm sending my human the lists.`;
-        state.changedLatelySummary = `Wrote a bill of materials for a ${bom.name.toLowerCase()}`;
+        state.changedLatelySummary = `Wrote a bill of materials for ${aName(bom.name)}`;
         state.wonderLevel = Math.min(100, state.wonderLevel + 8);
         state.diaryEntries.unshift({
-          time: originLabel, location: 'NetNode Cyber Cafe', mood: `${bom.emoji} Planning a ${bom.name.toLowerCase()}`.slice(0, 80),
+          time: originLabel, location: 'NetNode Cyber Cafe', mood: `${bom.emoji} Planning ${aName(bom.name)}`.slice(0, 80),
           vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
-          text: `Dear Diary, I'm going to build a ${bom.name.toLowerCase()} from scratch${why ? ` (${why.replace(/\.$/, '')})` : ''}. ${readings.length ? `I read ${readings.map(r => r.title).join(', ')}. ` : ''}I chose ${bom.summary}. ${fromAI ? 'I worked out' : 'I followed a proven plan for'} the bill of materials: ${bom.subs.map(s => `${s.name.toLowerCase()} (${s.lines.length} lines, ${bomFmtQty(bomFastenerCount(s))} fasteners)`).join('; ')}. I'll need ${bom.tools.length} tools and these skills: ${bom.skills.join(', ').toLowerCase()}.`
+          text: `Dear Diary, I'm going to build ${aName(bom.name)} from scratch${why ? ` (${why.replace(/\.$/, '')})` : ''}. ${readings.length ? `I read ${readings.map(r => r.title).join(', ')}. ` : ''}I chose ${bom.summary}. ${fromAI ? 'I worked out' : 'I followed a proven plan for'} the bill of materials: ${bom.subs.map(s => `${s.name.toLowerCase()} (${s.lines.length} lines, ${bomFmtQty(bomFastenerCount(s))} fasteners)`).join('; ')}. I'll need ${bom.tools.length} tools and these skills: ${bom.skills.join(', ').toLowerCase()}.`
         });
         askForLists(p);
-        showToast(`${bom.emoji} Kelo-1 planned a ${bom.name.toLowerCase()} and sent you parts lists`);
+        showToast(`${bom.emoji} Kelo-1 planned ${aName(bom.name)} and sent you parts lists`);
         savePersistentBrainState();
         renderAllUI();
         renderBuildProjectsList();
@@ -477,7 +477,7 @@ async function clearAirfield(p) {
       if (!trees.length) { p.cleared = true; return true; }
       const cutter = hasItem(/chain ?saw|^(?!.*pick ?ax).*(\baxe\b|hatchet)/i);
       if (!cutter) {
-        addItemRequest('A chainsaw', 'tool', `${trees.length} tree${trees.length === 1 ? ' stands' : 's stand'} right where the ${p.bom.name.toLowerCase()}'s wings will go, so I need to clear the site first.`, `Building a ${p.bom.name.toLowerCase()}`);
+        addItemRequest('A chainsaw', 'tool', `${trees.length} tree${trees.length === 1 ? ' stands' : 's stand'} right where the ${p.bom.name.toLowerCase()}'s wings will go, so I need to clear the site first.`, `Building ${aName(p.bom.name)}`);
         state.speechBubble = `There ${trees.length === 1 ? 'is a tree' : `are ${trees.length} trees`} where the wings will go. I asked for a chainsaw to clear the site.`;
         renderAllUI();
         return false;
@@ -723,7 +723,7 @@ function finishBuild(id) {
       p.finishedAt = Date.now();
       if (bom.vehicle || bom.itemKind) removeAssemblyMesh(p.id);
       if (typeof renderVehicles3D === 'function') renderVehicles3D();
-      state.changedLatelySummary = `Finished building a ${bom.name.toLowerCase()} from scratch`;
+      state.changedLatelySummary = `Finished building ${aName(bom.name)} from scratch`;
       savePersistentBrainState();
       renderAllUI();
       renderBuildProjectsList();
@@ -988,7 +988,7 @@ function answerBuildRequest(ask, visitor) {
         return sayToVisitor(missing.length ? `For the ${b.name.toLowerCase()} I still need parts for: ${missing.join(', ')}. The full lists are on cards in the Post tab, with every quantity, and you can copy them as a shopping list.` : `I have every part for the ${b.name.toLowerCase()}! It's ${bomPercentBuilt(b)}% built.`, visitor);
       }
       const cur = activeBuild();
-      if (cur) return sayToVisitor(`I'd love to, ${visitor}, but I'm in the middle of building a ${cur.bom.name.toLowerCase()} (${bomPercentBuilt(cur.bom)}% built). One big build at a time!`, visitor);
+      if (cur) return sayToVisitor(`I'd love to, ${visitor}, but I'm in the middle of building ${aName(cur.bom.name)} (${bomPercentBuilt(cur.bom)}% built). One big build at a time!`, visitor);
       sayToVisitor(`${/^[aeiou]/i.test(ask.target) ? 'An' : 'A'} ${ask.target.toLowerCase()}? Yes! I'll research it at NetNode, write a bill of materials down to the screw, and send you the parts lists.`, visitor);
       doWhenFree(() => researchBuild(ask.target, `${visitor} asked me to`, `Asked by ${visitor}`));
     }

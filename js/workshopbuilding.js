@@ -588,32 +588,26 @@ function wsClearSceneryInside() {
 // A weld bay (screens, a steel welding table) and his work bench on floor 1; the assembly bay is
 // the marked-out floor in the high bay. Each keeps a group other systems can fill (userData.station).
 function buildWorkshopStations() {
+      // The weld bay and the bench bay are marked out and screened, but empty: his welding rig
+      // (js/welding.js at WELD_STUDIO) and his work bench (js/workbench.js at WORK_BENCH) are the
+      // real ones, so nothing is duplicated here. workshopStation('weld' | 'bench') gives the spot
+      // to move them to (set WELD_STUDIO / WORK_BENCH x and z to it before they build).
       const weld = WORKSHOP_STATIONS.weld, bench = WORKSHOP_STATIONS.bench;
       const wg = mmGroup(wsGroup, weld.local.x, WS_F1, weld.local.z);
-      mmBox(wg, 1.4, 0.06, 0.8, 'steel', 0, 0.86, 0);
-      [-1, 1].forEach(sx => [-1, 1].forEach(sz => mmBox(wg, 0.06, 0.86, 0.06, 'dark', sx * 0.62, 0, sz * 0.33)));
-      // Red welding curtains on two sides
       const curtain = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.6, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false });
       mmBox(wg, 2.2, 1.9, 0.02, curtain, 0, 0.1, -0.65);
       mmBox(wg, 0.02, 1.9, 1.3, curtain, -1.1, 0.1, 0);
       mmBox(wg, 2.2, 0.04, 0.04, 'steel', 0, 2.0, -0.65);
-      mmBox(wg, 0.5, 0.6, 0.4, 'blue', 0.85, 0, -0.35);
-      mmCyl(wg, 0.1, 0.95, 'argon', 1.05, 0.48, 0.1);
+      mmBox(wg, 0.04, 2.0, 0.04, 'steel', 1.1, 0, -0.65);
+      mmBox(wg, 0.04, 2.0, 0.04, 'steel', -1.1, 0, 0.65);
       mmLabel(wg, 'WELD BAY', 0.8, 0.18, 0, 2.15, -0.64, { bg: '#b91c1c', fg: '#fff' });
       wg.userData.station = 'weld';
       WORKSHOP_STATIONS.weld.group = wg;
-      const bg = workBenchModel(2.6, 0.8);
-      bg.position.set(bench.local.x, WS_F1, bench.local.z);
-      bg.rotation.y = Math.PI;
-      wsGroup.add(bg);
+      const bg = mmGroup(wsGroup, bench.local.x, WS_F1, bench.local.z);
+      [[0, -0.45, 2.7, 0.06], [0, 0.45, 2.7, 0.06], [-1.35, 0, 0.06, 0.96], [1.35, 0, 0.06, 0.96]].forEach(([x, z, w, d]) => mmBox(bg, w, 0.006, d, 'stripe', x, 0, z));
+      mmLabel(bg, 'BENCH BAY', 1.0, 0.25, 0, 0.01, 0, { bg: '#b9bab5', fg: '#a16207' }).rotation.x = -Math.PI / 2;
       bg.userData.station = 'bench';
       WORKSHOP_STATIONS.bench.group = bg;
-      // A vise and a drill press on the bench
-      mmBox(bg, 0.2, 0.12, 0.14, 'dark', -0.9, 0.98, 0.1);
-      const dp = mmGroup(bg, 0.9, 0.98, -0.1);
-      mmBox(dp, 0.25, 0.04, 0.25, 'dark', 0, 0, 0);
-      mmCyl(dp, 0.03, 0.75, 'steel', 0, 0.38, -0.08);
-      mmBox(dp, 0.18, 0.2, 0.32, 'green', 0, 0.62, 0);
       const ab = WORKSHOP_STATIONS.assembly;
       const ag = mmGroup(wsGroup, ab.local.x, WS_F1, ab.local.z);
       // Two sawhorses and a parts cart wait in the bay
@@ -790,7 +784,7 @@ function wsObstacles(floor) {
       if (floor === 1) {
         // The deck columns, the Taurus bay edge, the stations
         for (let z = -WS_IN.z + 1.45; z < WS_IN.z - 0.4; z += 3.5) out.push({ x: -3.8, z, r: 0.35 });
-        ['weld', 'bench'].forEach(k => { const st = WORKSHOP_STATIONS[k]; out.push({ x: st.local.x - 0.6, z: st.local.z, r: 0.55 }, { x: st.local.x + 0.6, z: st.local.z, r: 0.55 }); });
+        ['weld'].forEach(k => { const st = WORKSHOP_STATIONS[k]; out.push({ x: st.local.x - 0.6, z: st.local.z, r: 0.55 }, { x: st.local.x + 0.6, z: st.local.z, r: 0.55 }); });
       } else {
         // The open edge over the high bay
         for (let z = -WS_IN.z; z <= WS_IN.z; z += 0.8) out.push({ x: -4.4, z, r: 0.5 });

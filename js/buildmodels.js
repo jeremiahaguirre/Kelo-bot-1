@@ -108,7 +108,8 @@ function ultralightModel() {
       [-1, 1].forEach(s => { const a = slab(stab.map(([x, w]) => [x, w]), 0.025, BM_COL.fabric); a.rotation.x = s * Math.PI / 2; a.position.y = 1.06; a.scale.y = 1; p('covering', fab(a)); });
       [-1, 1].forEach(s => { const a = slab(elev.map(([x, w]) => [x, w]), 0.02, BM_COL.fabric); a.rotation.x = s * Math.PI / 2; a.position.y = 1.06; p('covering', fab(a)); });
       p('covering', fab(slab(fin, 0.03, BM_COL.fabric)));
-      p('covering', fab(slab(rud, 0.025, BM_COL.fabric)));
+      const rudSkin = p('covering', fab(slab(rud, 0.025, BM_COL.fabric)));
+      rudSkin.userData.trim = true;
       [-1, 1].forEach(s => { const sk = slab(UL_AIRFOIL, W1 - W0, BM_COL.fabric); sk.position.z = s * (W0 + W1) / 2; p('covering', fab(sk)); });
       [-1, 1].forEach(s => p('covering', fab(bmBox(0.28, 0.04, 3.4, BM_COL.fabric, -0.72, 1.86, s * 2.95))));
       // Engine and propeller: mount, Rotax 582, radiator, exhaust, prop and spinner
@@ -148,7 +149,7 @@ function ultralightModel() {
         root.userData.parts.fuselage.forEach(m => { if (m.material && m.material.color && m.geometry.type === 'CylinderGeometry') m.material.color.setHex(f >= 1 ? BM_COL.primer : BM_COL.steel); });
         root.userData.parts.covering.forEach((m, i) => {
           if (!m.userData.fabric) return;
-          const col = c >= 5 / 6 ? (i === 6 ? 0xc2261e : BM_COL.yellow) : c >= 4 / 6 ? BM_COL.silver : BM_COL.fabric;
+          const col = c >= 5 / 6 ? (m.userData.trim ? 0xc2261e : BM_COL.yellow) : c >= 4 / 6 ? BM_COL.silver : BM_COL.fabric;
           m.material.color.setHex(col);
           m.material.transparent = c < 4 / 6;
           m.material.opacity = c < 4 / 6 ? 0.82 : 1;
@@ -447,7 +448,8 @@ function buildTargetModel(bom) {
       const outer = new THREE.Group();
       outer.add(inner);
       outer.userData.inner = inner;
-      outer.traverse(o => { if (o.isMesh) { o.castShadow = true; o.material = o.material.clone(); } });
+      // Its own finishes: js/materials.js leaves realModel meshes alone (no wood grain on fabric)
+      outer.traverse(o => { if (o.isMesh) { o.castShadow = true; o.material = o.material.clone(); o.userData.realModel = true; } });
       return outer;
     }
 

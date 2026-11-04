@@ -860,7 +860,7 @@ async function runWorkshopVisit(plan) {
       if (veh && typeof driveVehicle === 'function') {
         // He drives it round to the vehicle door first
         const door = siteToWorld(site, WS_DOORS.vehicle.x, WORKSHOP_SITE.d / 2 + 4.2, 0);
-        await driveVehicle(veh, { x: door.x, z: door.z }, `Driving the ${String(veh.name).replace(/^(an?|the)\s+/i, '')} to the Workshop`);
+        if (Math.hypot(veh.x - door.x, veh.z - door.z) > 3) await driveVehicle(veh, { x: door.x, z: door.z }, `Driving the ${String(veh.name).replace(/^(an?|the)\s+/i, '')} to the Workshop`);
         // (he climbed out by the driver's door; he gets straight back in to back it inside)
         if (state.riding || Math.hypot(veh.x - door.x, veh.z - door.z) > 3) return false;
       } else {

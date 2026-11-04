@@ -874,15 +874,20 @@ function tripFwd(b) {
       return { x: Math.cos(b), z: -Math.sin(b) };
     }
 
-// Get to a point, even if something else nudges where he's headed
+// Get to a point, even if something else nudges where he's headed. He keeps going as long as he's
+// getting closer (a slow computer just takes longer); he gives up only when he's made no headway for a while.
 async function tripGoTo(p, ms = null) {
       const started = Date.now();
-      // Long legs get long enough: about a unit every four seconds even on a slow computer
-      if (!ms) ms = Math.max(40000, Math.hypot(p.x - state.botPos.x, p.z - state.botPos.z) * 4000);
+      const far = Math.hypot(p.x - state.botPos.x, p.z - state.botPos.z);
+      const cap = ms || Math.max(120000, far * 15000);
+      let best = far, lastGain = Date.now();
       state.targetPos = { x: p.x, z: p.z };
-      while (Date.now() - started < ms && Math.hypot(state.botPos.x - p.x, state.botPos.z - p.z) > 1.0) {
+      while (Date.now() - started < cap && Math.hypot(state.botPos.x - p.x, state.botPos.z - p.z) > 1.0) {
         if (Math.hypot(state.targetPos.x - p.x, state.targetPos.z - p.z) > 0.1) state.targetPos = { x: p.x, z: p.z };
         await waitForArrival(3000);
+        const d = Math.hypot(state.botPos.x - p.x, state.botPos.z - p.z);
+        if (d < best - 0.3) { best = d; lastGain = Date.now(); }
+        else if (Date.now() - lastGain > 45000) break; // stuck
       }
     }
 

@@ -140,6 +140,7 @@ Kelo-bot-1/
 │   ├── workbench.js     # His wooden work bench with a vise, where woodworking and other non-welded builds are made
 │   ├── plantcare.js     # Soil moisture, nutrients and wilting; plants and garden beds grow with care; watering can, tap and fertilizer
 │   ├── skills.js        # Real skills: practising the vehicles, telescope and hobbies he was given; doing what visitors ask
+│   ├── trips.js         # Vehicle terrain rules, a trip planner, trailers (snowmobile, boat, lowboy) with hitch physics, one of each vehicle
 │   ├── projects.js      # Real builds: finding plans online, asking for materials (or sawing his own logs), building them
 │   ├── town.js          # Keeps the town free of his builds (the beach is fine)
 │   ├── coderequests.js  # Code requests for anything he wants (no cap, paced), each with a copyable spec

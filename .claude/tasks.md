@@ -85,6 +85,8 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
        - CNC plasma cutter
        - parts washer
 
+   - **Owner (2026-11-04):** the workshop must be big enough for his projects (the airplane being built) and vehicles (pickup and trailer, dump truck, mixer truck, cars on the lifts) to fit inside, with doors, bays and the car elevator sized to match. Every 3D printer, CNC machine and floor-2 machine must be visually, mechanically and functionally accurate: real layouts, motion that moves the right way during a job, real steps, materials and post-processing. Assembly builds move into the workshop's assembly bay (`workshopAssemblyBay`).
+
 8. **Concrete and asphalt plant** (`agent/plant`, started), right beside the workshop. It positions itself from `WORKSHOP_SITE`.
    - **Ready-mix concrete batch plant:**
      - cement silos, aggregate bins, a weigh hopper, conveyor, water and admixture tanks, a twin-shaft mixer and a load-out
@@ -116,6 +118,24 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
     - Suggested reply chips that fit his context (the helicopter one only if he has one); your name saved on the device and edited in one place; an empty state for a fresh Kelo-1; "Load earlier" within MAX_CHAT_LOG.
     - Accessible (labels, focus, aria-live), re-render only on change, escapeHtml everywhere, no inline handlers (CSP).
     - New code in `js/talk.js` (after portal.js). Status: done on `agent/talk`, ready to merge. Talk tests pass on desktop (1024x720) and phone (390x844): empty state, saved name, Enter/Shift+Enter, thinking indicator, lookup cards, helicopter chip queued → doing → done (and no chip without one), photo and gift from +, load earlier, jump to latest, reload. Regressions reload, chat and skills: page errors none. Harness note: on a loaded machine use DOM clicks (`el.click()`) rather than `page.click`.
+
+## Final steps (owner, 2026-11-04), in this order, after tasks 5, 7, 8 and 9 are merged
+12. **Full play-through QA.** Run through the entire game and make sure everything works as intended and smoothly, without bugs:
+    - every tab and panel
+    - every building, including the workshop on both floors, the plant, the Museum and the Storehouse
+    - every vehicle and trip
+    - every hobby and skill: paintings, welding, garden, builds and upgrades
+    - requests, the Post tab, the shop website, reload and offline catch-up
+    - phone and desktop layouts
+    Fix what is found.
+13. **Task 10 phase 2:** apply the `.claude/review.md` plan across the merged code, re-profile and fix new bugs.
+14. **Quality upgrade, no new features** (owner, 2026-11-04; after 12 and 13): raise every existing aspect to the polish level of a modern commercial farming and vehicle simulator (the owner's reference: Farming Simulator 25/26). Use it as a quality bar only: no copying its assets, models, UI or look.
+    - Rendering: lighting, shadows, terrain texturing and blending, vegetation, water, sky and weather, post-processing.
+    - Models: vehicles, machines, buildings, Kelo-1 and items, with detail, proper materials and scale.
+    - Animation: vehicles and machines with suspension, wheels, hydraulics and moving parts, plus Kelo-1's motion.
+    - Camera feel, audio polish, UI/HUD clarity and consistency, transitions, loading.
+    - Steady frame rate on desktop and phone, with quality presets.
+    - Polish and fix only what already exists. Add nothing new.
 
 ## Owner notes to keep in mind
 - Owner (2026-11-04): helpers may add as much land as needed for machines, workshops and plants (natural shoreline, walkable, clear of town, one shared land constant/helper). Kelo-1 must never end up standing in water.

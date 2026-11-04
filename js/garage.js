@@ -20,14 +20,14 @@ function g2(def) {
       return registerWorkshopMachine({ floor: 2, kind: 'garage', learnAs: 'garage', ...def });
     }
 
-const LIFT2 = { x: 6.05, z: -2.6 };      // the two-post lift, behind the car elevator (the truck backs on)
-const LIFT2_CAR = { x: 6.05, z: -2.0 };  // where the vehicle sits on it (nose south, toward the elevator)
-g2({ key: 'lift2', name: 'Two-post lift', short: 'two-post lift', at: { x: LIFT2.x, z: LIFT2.z, ry: 0 }, size: { w: 4.3, h: 3.6, d: 0.6 }, skill: 'Using a two-post lift', model: () => twoPostLiftModel(3.5, 1.5), stand: { x: 3.9, z: -1.2 } });
+const LIFT2 = { x: 5.85, z: -2.6 };      // the two-post lift, behind the car elevator (the truck backs on)
+const LIFT2_CAR = { x: 5.85, z: -2.0 };  // where the vehicle sits on it (nose south, toward the elevator)
+g2({ key: 'lift2', name: 'Two-post lift', short: 'two-post lift', at: { x: LIFT2.x, z: LIFT2.z, ry: 0 }, size: { w: 4.3, h: 3.6, d: 0.6 }, skill: 'Using a two-post lift', model: () => twoPostLiftModel(3.8, 1.6), stand: { x: 3.9, z: -1.2 } });
 g2({ key: 'lift4', name: 'Four-post lift', short: 'four-post lift', at: { x: -2.0, z: 2.0, ry: 0 }, size: { w: 3.8, h: 2.9, d: 7.0 }, skill: 'Using a four-post lift', model: () => fourPostLiftModel(6.2, 2.0), stand: { x: -0.1, z: 5.9 } });
 g2({ key: 'tirechanger', name: 'Tire changer', short: 'tire changer', at: { x: 0.9, z: 4.55, ry: Math.PI }, size: { w: 1.0, h: 1.8, d: 0.8 }, skill: 'Changing tires', model: tireChangerModel, stand: { x: 0.9, z: 3.6 } });
 g2({ key: 'balancer', name: 'Wheel balancer', short: 'wheel balancer', at: { x: 2.55, z: 4.6, ry: Math.PI }, size: { w: 1.2, h: 1.4, d: 0.6 }, skill: 'Balancing wheels', model: wheelBalancerModel, stand: { x: 2.55, z: 3.65 } });
 g2({ key: 'brakelathe', name: 'Brake lathe', short: 'brake lathe', at: { x: 3.5, z: 2.6, ry: -Math.PI / 2 }, size: { w: 1.0, h: 1.3, d: 0.5 }, skill: 'Turning brake rotors', model: brakeLatheModel, stand: { x: 2.7, z: 2.6 } });
-g2({ key: 'hoist', name: 'Engine hoist (cherry picker)', short: 'engine hoist', at: { x: 6.05, z: 4.6, ry: Math.PI }, size: { w: 0.8, h: 1.8, d: 1.6 }, skill: 'Pulling engines', model: engineHoistModel, stand: { x: 3.7, z: 3.2 } });
+g2({ key: 'hoist', name: 'Engine hoist (cherry picker)', short: 'engine hoist', at: { x: 5.85, z: 4.6, ry: Math.PI }, size: { w: 0.8, h: 1.8, d: 1.6 }, skill: 'Pulling engines', model: engineHoistModel, stand: { x: 3.7, z: 3.2 } });
 g2({ key: 'press', name: 'Hydraulic shop press (20 t)', short: 'shop press', at: { x: 0.75, z: 2.6, ry: Math.PI / 2 }, size: { w: 0.9, h: 1.9, d: 0.4 }, skill: 'Pressing bearings', model: shopPressModel, stand: { x: 1.45, z: 2.6 } });
 g2({ key: 'partswasher', name: 'Parts washer', short: 'parts washer', at: { x: 2.1, z: 1.0, ry: Math.PI }, size: { w: 0.85, h: 1.2, d: 0.6 }, skill: 'Cleaning parts', model: partsWasherModel, stand: { x: 2.1, z: 0.1 } });
 g2({ key: 'migtig', name: 'MIG/TIG welder', short: 'MIG/TIG welder', at: { x: 3.55, z: 0.9, ry: Math.PI }, size: { w: 0.5, h: 1.2, d: 0.8 }, skill: 'MIG and TIG welding', model: migTigModel, stand: { x: 3.7, z: -0.4 } });

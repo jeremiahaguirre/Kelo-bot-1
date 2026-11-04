@@ -653,12 +653,16 @@ function haasVmcModel(big) {
       // The front: a fixed header, the two sliding doors with big windows, the red stripe
       mmBox(g, w, 0.45, 0.05, 'haas', 0, h - 0.45, d / 2 - 0.025);
       mmBox(g, w, 0.08, 0.055, 'haasRed', 0, h - 0.3, d / 2 - 0.02);
-      mmLabel(g, 'HAAS', 0.42, 0.13, -w / 2 + 0.38, h - 0.2, d / 2 + 0.005, { bg: '#c8102e', fg: '#ffffff' });
-      mmLabel(g, big ? 'VS-3' : 'VS-1', 0.3, 0.1, w / 2 - 0.35, h - 0.2, d / 2 + 0.005, { bg: '#d2d5d9', fg: '#111827' });
+      mmLabel(g, 'HAAS', 0.42, 0.13, -w / 2 + 0.38, h - 0.2, d / 2 + 0.04, { bg: '#c8102e', fg: '#ffffff' });
+      mmLabel(g, big ? 'VS-3' : 'VS-1', 0.3, 0.1, w / 2 - 0.35, h - 0.2, d / 2 + 0.04, { bg: '#d2d5d9', fg: '#111827' });
       const doors = [-1, 1].map(s => {
         const door = mmGroup(g, s * w / 4, 0.35, d / 2 + 0.01);
-        mmBox(door, w / 2 - 0.02, h - 0.82, 0.04, 'haas', 0, 0, 0);
-        mmBox(door, w / 2 - 0.28, h - 1.3, 0.05, 'glass', 0, 0.3, 0.005);
+        // A sheet-metal frame round a big window, so you can watch the cut
+        const dw = w / 2 - 0.02, dh = h - 0.82, ww = w / 2 - 0.28, wh = h - 1.3;
+        mmBox(door, dw, 0.3, 0.04, 'haas', 0, 0, 0);
+        mmBox(door, dw, dh - 0.3 - wh, 0.04, 'haas', 0, 0.3 + wh, 0);
+        [-1, 1].forEach(sx => mmBox(door, (dw - ww) / 2, wh, 0.04, 'haas', sx * (ww + (dw - ww) / 2) / 2, 0.3, 0));
+        mmBox(door, ww, wh, 0.01, 'glass', 0, 0.3, 0.005);
         mmBox(door, 0.04, 0.4, 0.06, 'chrome', -s * (w / 4 - 0.12), 0.4, 0.04);
         door.userData.closedX = s * w / 4;
         door.position.x = s * w / 4 * 1.85; // open

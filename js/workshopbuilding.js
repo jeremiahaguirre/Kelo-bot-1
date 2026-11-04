@@ -488,7 +488,6 @@ function buildWorkshop3D() {
         if (!wsLights.some(l => l.mesh.material === lensMat)) wsLights.push({ mesh: lens });
       };
       for (let x = -6; x <= 6; x += 3) [-4.5, 0, 4.5].forEach(z => fixture(x, WS_EAVE - 1.0, z));
-      for (let x = -2.4; x <= 3.2; x += 2.8) [-5, -1.6, 1.8, 5.2].forEach(z => fixture(x, WS_F2 - 0.4, z));
       // (no real point lights: each one would make every material in the world dearer to draw)
       wsGroup.userData.lamps = [];
 

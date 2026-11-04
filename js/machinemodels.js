@@ -691,7 +691,18 @@ function haasVmcModel(big) {
       mmBox(g, 0.4, 0.5, 0.5, 'haas', -w / 2 - 0.22, 0, -0.2);
       mmRod(g, [-w / 2 - 0.22, 0.5, -0.2], [-w / 2 - 0.45, 1.0, -0.2], 0.08, 'dark');
       const tower = mmLightTower(g, w / 2 - 0.1, h, -d / 2 + 0.1);
-      return mmFinish(g, big ? 'haasvs3' : 'haasvs1', { doors, head, spindle, tool, table, vise, tower, plate: { y: tableY + 0.22, z: 0.05 }, travel: { x: w * 0.25, z: d * 0.14 }, w: w + 0.6, d, headY: h - 0.78 });
+      // The side-mount tool changer: a carousel of tool holders beside the column, and its arm
+      const atc = mmGroup(g, -w / 2 + 0.38, h - 0.95, -d / 2 + 0.45);
+      mmCyl(atc, 0.3, 0.08, 'grey', 0, 0, 0);
+      const carousel = mmGroup(atc, 0, -0.06, 0);
+      for (let i = 0; i < 12; i++) {
+        const a = i / 12 * Math.PI * 2;
+        mmCyl(carousel, 0.03, 0.1, i % 4 ? 'steel' : 'haasRed', Math.cos(a) * 0.25, -0.05, Math.sin(a) * 0.25);
+        mmCyl(carousel, 0.012, 0.08, 'brass', Math.cos(a) * 0.25, -0.13, Math.sin(a) * 0.25);
+      }
+      const atcArm = mmGroup(atc, 0.3, -0.12, 0.2);
+      mmBox(atcArm, 0.5, 0.04, 0.06, 'dark', 0.15, 0, 0, { centre: true });
+      return mmFinish(g, big ? 'haasvs3' : 'haasvs1', { doors, head, spindle, tool, table, vise, tower, carousel, atcArm, plate: { y: tableY + 0.22, z: 0.05 }, travel: { x: w * 0.25, z: d * 0.14 }, w: w + 0.6, d, headY: h - 0.78 });
     }
 
 // --- Waldrich Coburg Taurus: a travelling-gantry mill. Two long rails, a bridge across them riding

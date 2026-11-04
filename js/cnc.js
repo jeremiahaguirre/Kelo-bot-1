@@ -281,6 +281,11 @@ function haasDef(spec) {
                 await machineStep(ctx, 'Clamping the stock in the vise', 1500, null, 'Parallels under it, vise snug, tapped down with a dead blow.');
                 useWorkshopSupply(steel ? 'steelStock' : 'aluStock', 1, `${this.short} job`);
                 await machineStep(ctx, 'Homing, touching off the tools and setting the work offset', 2000, k => { u.head.position.y = u.headY - Math.sin(k * Math.PI) * 0.15; }, 'G54 set from the probe. Tool lengths measured.');
+                await machineStep(ctx, 'Tool change: face mill from the carousel into the spindle', 2200, (k, t) => {
+                  if (u.carousel) u.carousel.rotation.y = k * Math.PI * 0.67;
+                  if (u.atcArm) u.atcArm.rotation.y = Math.sin(k * Math.PI) * 1.4;
+                  u.head.position.y = u.headY + Math.sin(k * Math.PI) * 0.1;
+                }, 'T2 M6: the arm swaps the face mill in. T1, the end mill, goes back in the carousel after.');
                 useWorkshopSupply('faceMill', 1, 'Facing');
                 useWorkshopSupply('endMills', 1, 'Milling');
                 useWorkshopSupply('coolant', 1, 'Flood coolant');

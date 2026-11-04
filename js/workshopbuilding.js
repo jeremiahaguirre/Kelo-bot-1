@@ -810,10 +810,19 @@ function wsOnLift(p) {
 async function wsRideLift(toFloor, riders = []) {
       const from = workshopTrip.liftY, to = toFloor === 2 ? WS_F2 - WS_F1 : 0;
       const ms = Math.max(800, Math.abs(to - from) / 0.9 * 1000);
-      const start = Date.now();
+      let start = Date.now();
       const base = wsGroup.position.y;
+      let held = false;
       await new Promise(resolve => {
         const tick = () => {
+          // (window.__wsHold = 'elevator' stops the ride half way, for a screenshot; see js/machines.js)
+          if (!held && window.__wsHold && /elevator/i.test(window.__wsHold) && Date.now() - start > ms / 2) {
+            window.__wsHeld = 'car elevator';
+            if (window.__wsHold) { setTimeout(tick, 50); return; }
+            held = true;
+            start = Date.now() - ms / 2;
+          }
+          if (window.__wsHeld === 'car elevator' && !window.__wsHold) { held = true; window.__wsHeld = null; start = Date.now() - ms / 2; }
           const t = Math.min(1, (Date.now() - start) / ms), e = t * t * (3 - 2 * t);
           const y = from + (to - from) * e;
           workshopTrip.liftY = y;

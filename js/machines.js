@@ -320,6 +320,16 @@ async function runMachineJob(key, job = {}, originLabel = 'In the Workshop') {
 async function machineStep(ctx, title, ms, anim = null, speech = null) {
       ctx.say(title, speech);
       if (ctx.def) ctx.work();
+      // (for screenshots and debugging: window.__wsHold = 'a title pattern' holds that step mid-way)
+      if (window.__wsHold && new RegExp(window.__wsHold, 'i').test(title)) {
+        window.__wsHeld = title;
+        const t0 = performance.now();
+        while (window.__wsHold && performance.now() - t0 < 600000) {
+          if (anim) { const tt = (performance.now() - t0) / 1000; try { anim(0.35 + 0.3 * ((tt / 6) % 1), tt); } catch (e) {} }
+          await new Promise(r => setTimeout(r, 30));
+        }
+        window.__wsHeld = null;
+      }
       if (anim) await ctx.animate(ms, anim);
       else await ctx.wait(ms);
     }

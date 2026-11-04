@@ -37,7 +37,11 @@ function tryActivity(key, fn) {
       let result;
       try { result = fn(); } catch (e) { coolDownActivity(key, QUICK_COOLDOWN_MS); throw e; }
       Promise.resolve(result).then(r => {
-        if (typeof r === 'string') coolDownActivity(key, ACTIVITY_COOLDOWN_MS);
+        if (typeof r === 'string') {
+          coolDownActivity(key, ACTIVITY_COOLDOWN_MS);
+          // Something that keeps stopping him can turn into a code request (js/coderequests.js)
+          if (typeof noteBlockedActivity === 'function') noteBlockedActivity(key, r);
+        }
         else if (r === false || r === null) coolDownActivity(key, QUICK_COOLDOWN_MS);
       }).catch(() => coolDownActivity(key, QUICK_COOLDOWN_MS));
       return result;

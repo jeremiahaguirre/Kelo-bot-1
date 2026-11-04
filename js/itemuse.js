@@ -19,16 +19,41 @@ const ITEM_KINDS = [
   { kind: 'filament', label: '3D printer filament', re: /filament/i, uses: ['print'], per: 'grams' },
   { kind: 'fuel', label: 'fuel for an engine or burner', re: /diesel|gasoline|petrol|\bgas can\b|\bcans? of gas\b|jet fuel|aviation fuel|kerosene|propane/i, uses: ['fuel'], per: 100, unit: '%' },
   { kind: 'printer', label: 'a 3D printer for printing things', re: /3d printer/i, uses: ['print'] },
-  { kind: 'welding supply', label: 'welding supplies', re: /welding (wire|rods?|gas)|electrodes?|argon|shielding gas|flux.?core/i, uses: ['weld'], per: 5, unit: 'welds' },
+  // Welding: safety gear and the consumables each process burns through (matched to the metal in js/welding.js)
+  { kind: 'welding hood', label: 'a welding hood that guards his eyes and face from the arc', re: /welding (hood|helmet|mask)|auto-?darkening/i, uses: ['weld'] },
+  { kind: 'welding gloves', label: 'leather gloves for welding', re: /welding (gloves|gauntlets)|welder'?s gloves/i, uses: ['weld'] },
+  { kind: 'tungsten', label: 'tungsten electrodes for a TIG torch', re: /tungsten/i, uses: ['weld'], per: 10, unit: 'welds', weldConsumable: true },
+  { kind: 'shielding gas', label: 'shielding gas that keeps the air off a weld', re: /shielding gas|argon|\bco2\b|\bc25\b|tri-?mix|welding gas/i, uses: ['weld'], per: 8, unit: 'welds', weldConsumable: true },
+  { kind: 'welding wire', label: 'filler wire for a MIG welder', re: /welding wire|mig wire|flux.?core|\ber(70s-6|4043|5356|308l?)\b.*wire/i, uses: ['weld'], per: 6, unit: 'welds', weldConsumable: true },
+  { kind: 'filler rods', label: 'filler rods for TIG welding', re: /filler rods?|tig rods?/i, uses: ['weld'], per: 6, unit: 'welds', weldConsumable: true },
+  { kind: 'stick electrodes', label: 'flux-coated electrodes for stick welding', re: /stick electrodes?|welding rods?|\be(6010|6011|6013|7018|7024|308l?-16|4043)\b|\belectrodes?\b/i, uses: ['weld'], per: 5, unit: 'welds', weldConsumable: true },
+  { kind: 'welding supply', label: 'welding supplies', re: /welding (wire|rods?|gas)|electrodes?|argon|shielding gas|flux.?core/i, uses: ['weld'], per: 5, unit: 'welds', weldConsumable: true },
   { kind: 'welder', label: 'a tool for welding and soldering', re: /welding torch|\bwelder\b|soldering iron/i, uses: ['weld', 'fix'] },
   { kind: 'batteries', label: 'batteries to power gadgets', re: /^(?!.*(powered|operated)).*\bbatter(y|ies)\b/i, uses: ['power'], per: 5, unit: 'charges' },
   { kind: 'film', label: 'film for a camera', re: /^(?!.*camera).*\bfilm\b/i, uses: ['camera film'], per: 3, unit: 'photo walks' },
   { kind: 'camera', label: 'a camera for taking photos', re: /camera|polaroid/i, uses: ['photograph'] },
+  { kind: 'fertilizer', label: 'fertilizer to feed plants', re: /fertili[sz]er|compost|bone ?meal|blood ?meal|plant food|manure|worm castings/i, uses: ['fertilize'], per: 4, unit: 'feedings' },
   { kind: 'birdseed', label: 'bird food', re: /bird ?seed/i, uses: ['feed birds', 'build'], per: 3, unit: 'fillings' },
   { kind: 'seeds', label: 'seeds for planting', re: /^(?!.*light ?bulb).*\b(seeds?|saplings?|bulbs?|seedlings?|acorns?|cuttings?)\b/i, uses: ['plant'], per: 4, unit: 'plantings' },
   { kind: 'paving', label: 'paving for roads and paths', re: /gravel|crushed stone|road base|asphalt|paving/i, uses: ['pave'], per: 1, unit: 'road' },
+  // Real painting supplies (js/paintstudio.js). Tools first, then the surfaces (one used per painting),
+  // then the paints, which run down over several paintings.
+  { kind: 'art tool', label: 'a tool for painting pictures', re: /paint ?brush|brushes|easel|palette knife|stay.?wet palette|mixing palette|blending stumps?|tortillons?|kneaded eraser|ink ?stone|suzuri|water jar|brush.?(washing|rinsing)|felt mat/i, uses: ['paint'] },
+  { kind: 'painting canvas', label: 'canvas to paint on in oil or acrylic', re: /stretched canvas|canvas (panels?|boards?)|\bcanvases\b|primed canvas/i, uses: ['paint'], per: n => sheetsInName(n, 3), unit: 'paintings', paintSupply: true },
+  { kind: 'watercolour paper', label: 'watercolour paper to paint on', re: /watercolou?r (paper|block|pad)|cold.?press|hot.?press|illustration board|gouache paper/i, uses: ['paint'], per: n => sheetsInName(n, 12), unit: 'paintings', paintSupply: true },
+  { kind: 'pastel paper', label: 'pastel paper to draw on', re: /pastel paper|sanded paper|mi-?teintes|pastelmat/i, uses: ['paint'], per: n => sheetsInName(n, 12), unit: 'pictures', paintSupply: true },
+  { kind: 'rice paper', label: 'rice paper for ink painting', re: /rice paper|xuan|sumi(-e)? paper|mulberry paper/i, uses: ['paint'], per: n => sheetsInName(n, 20), unit: 'pictures', paintSupply: true },
+  { kind: 'drawing paper', label: 'drawing paper for sketches', re: /sketch ?(pad|book)|drawing (paper|pad)|newsprint|bristol (board|pad)|cartridge paper/i, uses: ['paint'], per: n => sheetsInName(n, 20), unit: 'sketches', paintSupply: true },
+  { kind: 'oil paint', label: 'oil paint for oil paintings', re: /oil (paints?|colou?rs?)/i, uses: ['paint'], per: 6, unit: 'paintings', paintSupply: true },
+  { kind: 'acrylic paint', label: 'acrylic paint for acrylic paintings', re: /acrylic (paints?|colou?rs?)|\bacrylics\b/i, uses: ['paint'], per: 6, unit: 'paintings', paintSupply: true },
+  { kind: 'gouache paint', label: 'gouache paint for gouache paintings', re: /gouache/i, uses: ['paint'], per: 6, unit: 'paintings', paintSupply: true },
+  { kind: 'watercolour paint', label: 'watercolour paint for watercolours', re: /watercolou?r (paints?|pans?|set|tubes?|colou?rs)|\bwatercolou?rs\b/i, uses: ['paint'], per: 10, unit: 'paintings', paintSupply: true },
+  { kind: 'soft pastels', label: 'soft pastels for pastel pictures', re: /soft pastels?|pastel sticks|\bpastels\b/i, uses: ['paint'], per: 8, unit: 'pictures', paintSupply: true },
+  { kind: 'sumi ink', label: 'ink for ink painting', re: /sumi ink|ink sticks?|india ink|chinese ink|\bink\b/i, uses: ['paint'], per: 10, unit: 'pictures', paintSupply: true },
+  { kind: 'charcoal', label: 'charcoal and graphite for drawing', re: /charcoal|graphite|drawing pencils|sketching pencils/i, uses: ['paint'], per: 6, unit: 'drawings', paintSupply: true },
+  { kind: 'painting medium', label: 'oil and solvent for thinning paint and cleaning brushes', re: /linseed|odou?rless|mineral spirits|turpentine|solvent|painting medium|gamsol/i, uses: ['paint'], per: 8, unit: 'paintings', paintSupply: true },
+  { kind: 'fixative', label: 'fixative spray to keep pastel and charcoal from smudging', re: /fixative/i, uses: ['paint'], per: 8, unit: 'pictures', paintSupply: true },
   { kind: 'spray paint', label: 'paint for murals and graffiti', re: /spray ?paint|aerosol|graffiti|paint markers?|chalk/i, uses: ['mural'], per: 3, unit: 'murals' },
-  { kind: 'art tool', label: 'a tool for painting pictures', re: /paint ?brush|brushes|easel|palette knife/i, uses: ['paint'] },
   { kind: 'wood finish', label: 'a finish for woodwork', re: /wood stain|varnish|wood oil|\bstain\b/i, uses: ['build'], per: 2, unit: 'builds' },
   { kind: 'art supply', label: 'paint and paper for pictures', re: /watercolou?rs?|paint ?set|acrylics?|oil paints?|pastels|crayons|\bpaints?\b|canvas|sketchbook|drawing paper/i, uses: ['paint'], per: 5, unit: 'paintings' },
   { kind: 'glue', label: 'glue for building and mending', re: /glue|epoxy|adhesive/i, uses: ['build', 'fix'], per: 3, unit: 'jobs' },
@@ -99,7 +124,8 @@ const PURPOSE_INFO = {
   display: { say: 'decoration', ask: null }, 'feed birds': { say: 'feeding birds', ask: 'A bag of birdseed' }, climb: { say: 'climbing', ask: 'Climbing rope and carabiners' },
   power: { say: 'powering gadgets', ask: 'A pack of AA batteries' }, weapon: { say: 'a weapon', ask: null }, measure: { say: 'measuring', ask: null },
   'watch birds': { say: 'watching birds', ask: 'A pair of binoculars' }, navigate: { say: 'finding the way', ask: 'A compass' }, fish: { say: 'fishing', ask: 'A fishing rod' },
-  'snow travel': { say: 'getting about in snow', ask: 'A pair of snowshoes' }, garden: { say: 'gardening', ask: null }, 'water plants': { say: 'watering plants', ask: 'A watering can' }
+  'snow travel': { say: 'getting about in snow', ask: 'A pair of snowshoes' }, garden: { say: 'gardening', ask: null }, 'water plants': { say: 'watering plants', ask: 'A watering can' },
+  fertilize: { say: 'feeding plants', ask: 'A bag of all-purpose fertilizer' }
 };
 
 // Words in a plan or request that name a purpose (first match wins)
@@ -111,6 +137,7 @@ const PURPOSE_WORDS = [
   [/\beat|\bsnack|\btaste|\bmeal|lunch|breakfast|dinner/i, 'eat'],
   [/\bdrink|\bsip\b|thirst/i, 'drink'],
   [/feed (?:the )?birds/i, 'feed birds'],
+  [/fertili[sz]|feed (?:the |my )?(?:plants|garden|soil)/i, 'fertilize'],
   [/\bplant|\bsow\b|\bgrow\b/i, 'plant'],
   [/\bpave|\broad|\bpath\b/i, 'pave'],
   [/mural|graffiti|\btag\b|spray/i, 'mural'],
@@ -247,8 +274,16 @@ async function lookUpItemUse(name) {
     }
 
 // --- How much is left ---------------------------------------------------------------------------
+// "A pack of 3 stretched canvases", "a block of watercolour paper (20 sheets)": how many in it
+function sheetsInName(name, fallback) {
+      const m = String(name || '').match(/(\d+)\s*(sheets?|canvases|canvas|panels?|boards?)\b/i) || String(name || '').match(/pack of (\d+)/i);
+      const n = m ? parseInt(m[1], 10) : 0;
+      return n >= 1 && n <= 100 ? n : fallback;
+    }
+
 function usesPerItem(name, k = itemKindOf(name)) {
       if (!k || !k.per || k.per === 'grams') return 0;
+      if (typeof k.per === 'function') return k.per(name);
       if (k.per === 'servings') return /basket|\bbag\b|\bbox\b|loaf|wheel|dozen|\bjar\b|crate|\bpack\b|carton|bunch|tray|bucket|\btin\b|\bcase\b|batch|sack|thermos|\bjug\b|\bpie\b|\bcake\b|six|\bset of\b/i.test(name) ? 4 : 1;
       return k.per;
     }
@@ -313,7 +348,9 @@ function stillNeeds(name, k) {
       if (state.hobbies.some(h => k.uses.includes(hobbyPurpose(h)))) return true;
       // Only while a tank that takes it isn't full: an empty can after filling up is no reason to ask again
       if (k.kind === 'fuel') return state.vehicles.some(v => typeof fuelNeededBy === 'function' && fuelNeededBy(v) && FUEL_TYPES[fuelNeededBy(v)] && FUEL_TYPES[fuelNeededBy(v)].re.test(name) && fuelLeft(v) < 100);
-      if (k.kind === 'seeds' || k.kind === 'welding supply') return true;
+      if (k.kind === 'seeds' || k.kind === 'welding supply' || k.kind === 'fertilizer' || k.weldConsumable) return true;
+      // painting supplies for a medium he paints in (js/paintstudio.js)
+      if (k.paintSupply && typeof paintSupplyStillNeeded === 'function') return paintSupplyStillNeeded(name);
       if (k.kind === 'batteries') return ownedItemNames().some(n => itemKindOf(n).needsPower);
       if (k.kind === 'film') return ownedItemNames().some(n => /film camera|polaroid|instant camera/i.test(n));
       return false;
@@ -437,9 +474,10 @@ function usePowerFor(name) {
       return !itemKindOf(name).needsPower;
     }
 
-// Welding: the welding table works on its own, but wire, rods or gas he has get used up
+// Welding: one weld's worth of each consumable the process burns (js/welding.js picks them; this is the fallback)
 function useWeldingSupplies() {
-      const supply = ownedItemNames().find(n => itemKindOf(n).kind === 'welding supply');
+      if (typeof useWeldSupplies === 'function') return useWeldSupplies();
+      const supply = ownedItemNames().find(n => itemKindOf(n).weldConsumable);
       return supply ? useUpItem(supply, 1, { why: 'welding' }) : null;
     }
 

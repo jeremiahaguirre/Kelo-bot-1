@@ -118,6 +118,7 @@ function renderVehicles3D() {
         if (state.riding !== v.id) {
           m.position.set(v.x, vehicleGroundY(v), v.z);
           m.rotation.y = v.rotY || 0;
+          m.rotation.x = 0;   // no lean once parked
         }
         if (m.userData.loadMesh) m.userData.loadMesh.visible = (v.load || 0) > 0;
       });
@@ -224,7 +225,14 @@ function updateVehicles(t) {
       } else {
         keloGroup.position.set(state.botPos.x, y + type.seatY - drop, state.botPos.z);
       }
-      keloGroup.rotation.set(0, state.botRotY, 0);
+      // Lean into turns with the vehicle (js/motion.js): the seat swings out with the lean
+      const bank = typeof keloVehicleBank === 'function' ? keloVehicleBank(m, keloAnim.dt) : 0;
+      if (bank) {
+        const a = m.rotation.y, lean = Math.sin(bank) * (seat ? seat.y : type.seatY);
+        keloGroup.position.x += Math.sin(a) * lean;
+        keloGroup.position.z += Math.cos(a) * lean;
+      }
+      keloGroup.rotation.set(0, state.botRotY, bank);
       if (m.userData.rotor) m.userData.rotor.rotation.y = t * 14;
       if (m.userData.tailRotor) m.userData.tailRotor.rotation.z = t * 20;
       // Hands forward on the wheel or the handlebars

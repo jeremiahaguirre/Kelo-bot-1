@@ -8,7 +8,10 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
-## In progress (helpers resumed 2026-11-03 17:17 UTC; if one stops, resume it)
+## Merged into main locally (2026-11-04, waiting on the regression run before push)
+- Task 1 Paintings (agent/paint), task 2 Accurate welding + work bench (agent/weld), task 3 Humanize/eye cam/fluid motion (agent/body), task 4 Garden (agent/garden), task 6 Code anything + self-upgrades (agent/upgrades), task 10 phase 1 audit (agent/review; plan in .claude/review.md, phase 2 still to do after the rest merge).
+
+## In progress (helpers resumed 2026-11-04 03:12 UTC; if one stops, resume it)
 1. **Paintings** (`agent/paint`): real oil, acrylic, watercolour, gouache, pastel, ink and charcoal paintings.
    - He researches each medium, then requests its supplies. Supplies are used up.
    - He paints at an easel, the paintings hang in the Museum, and visitors can ask for one.
@@ -98,6 +101,17 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
    - Everything is still requested. AI prompt lists his vehicles and a `takeTrip` decision field; the Brain/World tab gets a "His vehicles" list.
    - One of each vehicle kind (trailers included) until he has a friend or pet (`friend`/`pet` unlocked), then two. Owned + open requests + mailbox count; owner gifts always accepted.
    - Status: built and tested on `agent/vehicles` (js/trips.js plus small hooks in vehicles.js, knowhow.js, itemuse.js, skills.js, agent.js, index.html). Refuel loop root cause: AI-named fuel ("Gasoline for the snowmobile") was classed as a vehicle (0 uses, phantom vehicle), and every empty can asked for another. Waiting to be merged into `main`.
+
+10. **Performance, game quality, bug hunt and clean code** (`agent/review`, started):
+    - **Phase 1, now:** measure, find and verify bugs, perf hotspots and cleanup items, and write `.claude/review.md` (tiny safe fixes only).
+    - **Phase 2, after tasks 1-9 are merged:** apply the plan across the merged code, re-profile, and fix new bugs from the merges.
+
+11. **Talk tab clean-up and improvement** (`agent/talk`, started):
+    - A modern chat thread with bubbles, avatars, a typing indicator, auto-scroll, jump-to-latest, lookup cards and status chips for actions you asked for.
+    - One composer with a + menu for photos and gifts.
+    - Suggested reply chips that fit his current situation.
+    - An empty state, "load earlier", and accessibility.
+    - Obsolete controls removed.
 
 ## Owner notes to keep in mind
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.

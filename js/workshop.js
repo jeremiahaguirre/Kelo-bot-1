@@ -4,6 +4,8 @@
 // carries the finished piece to the spot he chose, and sets it down there.
 
 const buildQueue = [];
+// The welding table top's centre (js/weldstudio.js builds the table around it)
+const WELD_TABLE_TOP = { x: -1.2, z: -8.2 };
 let workshopRunning = false;
 let benchWorkpiece = null;
 
@@ -24,9 +26,11 @@ async function runWorkshop() {
         while (buildQueue.length > 0) {
           const job = buildQueue.shift();
           // Still busy with something else after a long wait: try this one again later
-          if (!(await runWeldJob(job.creation, job.placeLabel))) {
+          // Busy, or waiting for welding supplies he has asked for: try this one again later
+          const done = await runWeldJob(job.creation, job.placeLabel);
+          if (done !== true) {
             buildQueue.push(job);
-            await sleep(15000);
+            await sleep(done === 'waiting' ? 30000 : 15000);
           }
         }
       } finally {
@@ -38,7 +42,7 @@ function showBenchWorkpiece(creation) {
       clearBenchWorkpiece();
       if (typeof buildCreationGroup !== 'function' || !scene) return;
       benchWorkpiece = buildCreationGroup(creation);
-      const bx = -1.2, bz = -8.2;
+      const bx = WELD_TABLE_TOP.x, bz = WELD_TABLE_TOP.z - 0.3;
       benchWorkpiece.position.set(bx, getAnalyticalGroundHeight(bx, bz) + 0.92, bz);
       benchWorkpiece.scale.setScalar(0.02);
       scene.add(benchWorkpiece);
@@ -59,6 +63,9 @@ async function runWeldJob(creation, destLabel) {
       const occupied = () => state.isPracticing || state.isSleeping || state.isCollectingMail || state.isBrowsing;
       for (let i = 0; i < 360 && occupied(); i++) await sleep(250);
       if (occupied()) return false;
+      // Welding takes the know-how, the right gas, wire and safety gear (js/welding.js): until he has them,
+      // he researches and asks, and the build waits
+      if (typeof weldingReady === 'function' && !weldingReady(creation)) return 'waiting';
       state.isBuilding = true;
       const title = creation.title || 'something new';
       let dest = { x: clampNumber(creation.x, WORLD_MIN_X, WORLD_MAX_X, 0), z: clampNumber(creation.z, WORLD_MIN_Z, WORLD_MAX_Z, 0) };
@@ -89,19 +96,22 @@ async function runWeldJob(creation, destLabel) {
           if (parts) creation.parts = parts;
         }
 
-        // 2. Weld it; the piece grows on the bench while the sparks fly
-        state.currentLocKey = 'weld';
+        // 2. Weld it: hook up, hood on, then the arc and the bead (js/welding.js); the piece grows on the table
         state.moodEmoji = '👨‍🏭';
         state.moodTitle = `Welding: ${title}`.slice(0, 80);
         state.speechBubble = `Welding "${title}" together, piece by piece.`;
         renderAllUI();
         showBenchWorkpiece(creation);
-        const parts = Array.isArray(creation.parts) ? creation.parts.length : 4;
-        const weldMs = Math.min(9000, 3500 + parts * 300);
-        const started = Date.now();
-        while (Date.now() - started < weldMs) {
-          if (benchWorkpiece) benchWorkpiece.scale.setScalar(0.02 + 0.33 * Math.min(1, (Date.now() - started) / weldMs));
-          await sleep(100);
+        const grow = k => { if (benchWorkpiece) benchWorkpiece.scale.setScalar(0.02 + 0.33 * Math.min(1, k)); };
+        if (typeof weldTheJob === 'function') {
+          await weldTheJob(creation, grow);
+        } else {
+          state.currentLocKey = 'weld';
+          const parts = Array.isArray(creation.parts) ? creation.parts.length : 4;
+          const weldMs = Math.min(9000, 3500 + parts * 300);
+          const started = Date.now();
+          while (Date.now() - started < weldMs) { grow((Date.now() - started) / weldMs); await sleep(100); }
+          if (typeof useWeldingSupplies === 'function') useWeldingSupplies();
         }
         clearBenchWorkpiece();
 
@@ -132,8 +142,6 @@ async function runWeldJob(creation, destLabel) {
         state.pendingBuilds = state.pendingBuilds.filter(j => j.creation !== creation && j.creation.title !== creation.title);
         state.inventedCreations.unshift(creation);
         if (typeof bumpLifeStat === 'function') bumpLifeStat('builds');
-        // Welding wire, rods or gas he has are used up as he welds (js/itemuse.js)
-        if (typeof useWeldingSupplies === 'function') useWeldingSupplies();
         spawnEmergent3DObjectInWorld(creation, false);
         if (creation.inMuseum && typeof renderMuseum3D === 'function') renderMuseum3D();
         state.microPose = 'procedural_custom';

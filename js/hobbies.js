@@ -15,7 +15,7 @@ const HOBBY_RULES = [
   [/kite/, { name: 'Kite Flying', emoji: '🪁', style: 'kite', description: 'Reading the wind and flying kites over the meadow.' }],
   [/harmonica|guitar|ukulele|flute|drum|violin|piano|keyboard|instrument|kazoo|ocarina/, { name: 'Making Music', emoji: '🎵', style: 'music', description: 'Composing little songs about the valley.' }],
   [/seed|sapling|bulb|seedling|cutting/, { name: 'Gardening', emoji: '🌱', style: 'plant', description: 'Planting things and watching them grow.' }],
-  [/watercolor|paint set|paintbrush|easel|canvas|sketchbook|pastels|crayons/, { name: 'Landscape Painting', emoji: '🖼️', style: 'easel', description: 'Painting the lake and mountains on an easel.' }],
+  [/watercolou?r|paint set|paintbrush|easel|canvas|sketchbook|pastels|crayons|oil paints?|acrylic|gouache|sumi ink|charcoal/, { name: 'Landscape Painting', emoji: '🖼️', style: 'easel', description: 'Painting the lake and mountains on an easel.' }],
   [/yo-?yo|juggl|ball|spinning top|skateboard|frisbee/, { name: 'Tricks', emoji: '🤹', style: 'tricks', description: 'Practising tricks until they look effortless.' }],
   [/telescope|binocular|star chart/, { name: 'Stargazing', emoji: '🔭', style: 'other', description: 'Naming his own constellations above the peaks.' }],
   [/camera/, { name: 'Photography', emoji: '📸', style: 'other', description: 'Framing the island from new angles.' }],
@@ -87,7 +87,10 @@ function maybeStartHobbyFromItem(itemName, from) {
     }
 
 // --- Mural painting: a procedural spray-paint texture that improves with skill ---------
-function paintMuralCanvas({ text, palette, skill, seed }) {
+function paintMuralCanvas(m) {
+      // A real painting is a picture he already made (js/paintstudio.js)
+      if (m && m.kind === 'art' && typeof artPaintingCanvas === 'function') return artPaintingCanvas(m);
+      const { text, palette, skill, seed } = m || {};
       const rng = makeRng(`${seed}`);
       const r = (a, b) => a + rng() * (b - a);
       const c = document.createElement('canvas');
@@ -302,6 +305,8 @@ function paintLandscape(skill, seed) {
 // Kelo-1 practises a hobby: goes somewhere fitting, does it for a while, and gets a bit better
 async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
       if (!hobby || state.isBusy || state.isBuilding || state.isPracticing) return false;
+      // Painting is done for real now, in a real medium with its own supplies (js/paintstudio.js)
+      if (hobby.style === 'easel' && typeof paintFromHobby === 'function') return paintFromHobby(hobby, originLabel);
       // No kite, or (once he knows) no wind for it (js/wind.js)
       if (hobby.style === 'kite' && typeof kiteWontFlyToday === 'function' && kiteWontFlyToday(hobby)) return false;
       // The right gear for it (paint for murals, seeds for planting...), or he says so and asks (js/itemuse.js)

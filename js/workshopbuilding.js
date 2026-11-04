@@ -51,7 +51,7 @@ const WORKSHOP_MACHINES = {};            // key -> machine definition (registerW
 // the way the work faces (rotY) and where he stands (stand).
 const WORKSHOP_STATIONS = {
   weld: { local: { x: -2.4, z: 6.55 }, floor: 1, rotY: 0, size: { w: 2.2, d: 1.3 }, label: 'Weld bay' },
-  bench: { local: { x: 2.65, z: 6.6 }, floor: 1, rotY: 0, size: { w: 2.6, d: 0.8 }, label: 'Work bench' },
+  bench: { local: { x: 2.5, z: 6.6 }, floor: 1, rotY: 0, size: { w: 2.6, d: 0.8 }, label: 'Work bench' },
   assembly: { local: { x: -5.9, z: 4.6 }, floor: 1, rotY: 0, size: { w: 17, d: 10.5 }, label: 'Hangar / assembly bay', world: { x: 34.6, z: -15.6 } },
   smallAssembly: { local: { x: -5.9, z: 4.6 }, floor: 1, rotY: 0, size: { w: 3.4, d: 4.6 }, label: 'Small-parts assembly bay' },
   electronics: { local: { x: -2.9, z: -2.75 }, floor: 2, rotY: 0, size: { w: 1.6, d: 0.7 }, label: 'Electronics bench' },

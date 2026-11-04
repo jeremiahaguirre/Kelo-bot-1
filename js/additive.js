@@ -649,3 +649,80 @@ registerWorkshopMachine({
     };
   }
 });
+
+// --- His own 3D printer (js/printer.js) lives in the Workshop ----------------------------------------
+// Once the Workshop is there, the printer he was given stands on its own bench in the bench bay by the
+// desktop printers (not by the outdoor Welding Studio), and he walks in through the door to use it.
+const PRINTER_BAY = { x: WORKSHOP_STATIONS.bench.local.x, z: WORKSHOP_STATIONS.bench.local.z, standZ: WORKSHOP_STATIONS.bench.local.z - 1.3 };
+if (typeof PRINTER_SPOT !== 'undefined' && typeof PRINTER_STAND !== 'undefined') {
+  const spot = workshopToWorld(PRINTER_BAY.x, PRINTER_BAY.z, 1), stand = workshopToWorld(PRINTER_BAY.x, PRINTER_BAY.standZ, 1);
+  PRINTER_SPOT.x = spot.x; PRINTER_SPOT.z = spot.z;
+  PRINTER_STAND.x = stand.x; PRINTER_STAND.z = stand.z;
+}
+
+if (typeof buildPrinterStation3D === 'function') {
+  const basePrinterStation = buildPrinterStation3D;
+  buildPrinterStation3D = function () {
+    basePrinterStation();
+    // Standing on the Workshop floor, facing the aisle he works from
+    if (printerGroup && !printerGroup.userData.inWorkshop) {
+      printerGroup.userData.inWorkshop = true;
+      printerGroup.position.y = WORKSHOP_PAD_Y + WS_F1;
+      printerGroup.rotation.y = Math.PI;
+    }
+  };
+}
+
+// Run one of printer.js's own errands (setting it up, a print) inside the Workshop
+function printerErrandInWorkshop(base, args, after) {
+      if (typeof goIntoWorkshop !== 'function' || workshopTrip.active || typeof wsGroup === 'undefined' || !wsGroup) return base(...args);
+      if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return Promise.resolve(false);
+      let result = false;
+      return goIntoWorkshop({
+        stops: [{
+          stand: { x: PRINTER_BAY.x, z: PRINTER_BAY.standZ },
+          act: async ctx => {
+            ctx.face(PRINTER_BAY.x, PRINTER_BAY.z);
+            const run = base(...args);
+            if (after) after('start');
+            result = await run;
+            if (after) after('end', result);
+            return result !== false;
+          }
+        }]
+      }).then(() => result);
+    }
+
+if (typeof setUpPrinter === 'function') {
+  const baseSetUpPrinter = setUpPrinter;
+  setUpPrinter = function (originLabel) {
+    return printerErrandInWorkshop(baseSetUpPrinter, [originLabel], (phase) => {
+      if (phase === 'start') {
+        state.customPlaceName = 'the printer bench in his Workshop';
+        state.speechBubble = 'A 3D printer! It goes on its own bench in my Workshop, right by the other printers.';
+      } else {
+        const d = state.diaryEntries[0];
+        if (d && /Welding Studio/.test(d.text || '')) {
+          d.text = d.text.replace('on its own bench beside the Welding Studio', 'on its own bench in my Workshop, next to the other printers');
+          d.location = "his Workshop";
+        }
+      }
+    });
+  };
+}
+
+if (typeof printSomething === 'function') {
+  const basePrintSomething = printSomething;
+  printSomething = function (idea, originLabel) {
+    return printerErrandInWorkshop(basePrintSomething, [idea, originLabel], (phase) => {
+      if (phase === 'start') state.customPlaceName = 'his 3D printer in the Workshop';
+    });
+  };
+}
+
+if (typeof printerSummaryForAI === 'function') {
+  const basePrinterSummary = printerSummaryForAI;
+  printerSummaryForAI = function () {
+    return basePrinterSummary().replace('set up by the Welding Studio', 'set up in your Workshop');
+  };
+}

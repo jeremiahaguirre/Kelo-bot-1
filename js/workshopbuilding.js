@@ -14,8 +14,17 @@
 // roofs on "cutaway" you can watch him at work.
 
 // Centre and footprint (world units). Other buildings (the concrete plant) place themselves by it.
-const WORKSHOP_SITE = { x: 51.6, z: -4.0, w: 16, d: 15 };
-const WORKSHOP_PAD_Y = -0.1;            // the levelled ground it stands on
+// It stands north of the concrete and asphalt plant's pad (js/plants.js, z 0.7 to 7.2), cut into the
+// foot of the eastern cliff, with its vehicle lane running down the east side of the plant to the shore.
+const WORKSHOP_SITE = { x: 53.5, z: -7.1, w: 16, d: 15 };
+const WORKSHOP_PAD_Y = 0.05;            // the levelled ground it stands on (level with the plant's pad)
+// The land the Workshop adds and levels: its pad (cut into the cliff behind) and the vehicle lane
+// along the east edge down to a gravel beach. Other land (the plant's pad) joins it along z 0.6.
+const WORKSHOP_LAND = {
+  pad: { minX: WORKSHOP_SITE.x - WORKSHOP_SITE.w / 2 - 1.2, maxX: WORKSHOP_SITE.x + WORKSHOP_SITE.w / 2 + 1.2, minZ: WORKSHOP_SITE.z - WORKSHOP_SITE.d / 2 - 0.8, maxZ: WORKSHOP_SITE.z + WORKSHOP_SITE.d / 2 + 0.3 },
+  lane: { minX: WORKSHOP_SITE.x + 6.05 - 2.4, maxX: WORKSHOP_SITE.x + WORKSHOP_SITE.w / 2 + 1.0, minZ: WORKSHOP_SITE.z, maxZ: 9.0 },
+  y: WORKSHOP_PAD_Y, blend: 3.2, blendNorth: 7.5, shore: 1.4
+};
 const WS_F1 = 0.12;                      // floor 1 top, above the pad
 const WS_F2 = 5.4;                       // floor 2 deck top
 const WS_EAVE = 12.6;
@@ -45,22 +54,34 @@ const WORKSHOP_STATIONS = {
 // getAnalyticalGroundHeight (js/scene.js) asks this for every point: inside the footprint and its
 // apron the ground is flat at WORKSHOP_PAD_Y, and it blends back to the natural slope around it
 // (cutting into the foot of the eastern cliff behind it).
+function workshopRectDist(r, x, z) {
+      return { dx: Math.max(0, r.minX - x, x - r.maxX), dzN: Math.max(0, r.minZ - z), dzS: Math.max(0, z - r.maxZ) };
+    }
+
+// The height of the Workshop's land at (x, z) given the natural ground there (base). Inside the pad
+// or the lane it is flat; round the pad it blends back to the slope (a long cut slope into the cliff
+// to the north); off the end of the lane it shelves down to the lake bed as a beach.
+function workshopLandAt(x, z, base) {
+      const L = WORKSHOP_LAND;
+      let k = 1;
+      [L.pad, L.lane].forEach(r => {
+        const d = workshopRectDist(r, x, z);
+        const blend = d.dzN > 0 ? L.blendNorth : d.dzS > 0 && r === L.lane ? L.shore : L.blend;
+        const out = Math.hypot(d.dx, d.dzN, d.dzS);
+        const t = Math.min(1, out / blend);
+        k = Math.min(k, t * t * (3 - 2 * t));
+      });
+      return k >= 1 ? base : L.y + (base - L.y) * k;
+    }
+
+// (the name scene.js asks for)
 function workshopPadAt(x, z, base) {
-      const s = WORKSHOP_SITE;
-      const dx = Math.max(0, Math.abs(x - s.x) - (s.w / 2 + 1.2));
-      // The apron in front (south) is longer, for the doors and the turn in
-      const front = z > s.z ? s.d / 2 + 3.0 : s.d / 2 + 0.8;
-      const dz = Math.max(0, Math.abs(z - s.z) - front);
-      const out = Math.hypot(dx, dz);
-      const blend = 3.2;
-      if (out >= blend) return base;
-      const t = out / blend, k = t * t * (3 - 2 * t);
-      return WORKSHOP_PAD_Y + (base - WORKSHOP_PAD_Y) * k;
+      return workshopLandAt(x, z, base);
     }
 
 function inWorkshopSite(x, z, pad = 0) {
-      const s = WORKSHOP_SITE;
-      return Math.abs(x - s.x) < s.w / 2 + 1.2 + pad && z > s.z - s.d / 2 - 0.8 - pad && z < s.z + s.d / 2 + 3.0 + pad;
+      const L = WORKSHOP_LAND;
+      return [L.pad, L.lane].some(r => x > r.minX - pad && x < r.maxX + pad && z > r.minZ - pad && z < r.maxZ + pad);
     }
 
 // A point in the building's own coordinates (x across, z towards the front doors), as a world point
@@ -81,7 +102,7 @@ function workshopStation(key) {
 if (typeof TOWN_LOCATIONS !== 'undefined' && !TOWN_LOCATIONS.workshop) {
   TOWN_LOCATIONS.workshop = {
     id: 'workshop', name: 'Workshop', building: "Kelo-1's Workshop", icon: '🏭',
-    x: WORKSHOP_SITE.x + WS_DOORS.person.x, z: WORKSHOP_SITE.z + WORKSHOP_SITE.d / 2 + 1.8, showPin: true,
+    x: WORKSHOP_SITE.x + WS_DOORS.person.x, z: WORKSHOP_SITE.z + WORKSHOP_SITE.d / 2 + 1.2, showPin: true,
     pinColor: 'from-slate-500/90 to-sky-700/90'
   };
 }
@@ -262,7 +283,7 @@ function buildWorkshop3D() {
       slab.castShadow = false;
       const floor1 = wsPanel(wsGroup, W - 0.2, 0.02, D - 0.2, floorMat, 0, WS_F1 - 0.02, 0, 3.2);
       floor1.castShadow = false;
-      const apron = wsPanel(wsGroup, W + 2.4, 0.06, 3.0, floorMat, 0, -0.04, hz + 1.8, 3.2);
+      const apron = wsPanel(wsGroup, W + 2.4, 0.06, 1.0, floorMat, 0, -0.04, hz + 0.6, 3.2);
       apron.castShadow = false;
 
       // Walls: a concrete plinth course, then steel cladding up to the eaves, with a dark band
@@ -563,7 +584,7 @@ function wsMergeStatic(root, keep, keepTrees) {
 // Trees, flowers and rocks that the valley scenery put inside the footprint are cleared away
 function wsClearSceneryInside() {
       const s = WORKSHOP_SITE;
-      const inside = (x, z) => Math.abs(x - s.x) < s.w / 2 + 1.0 && z > s.z - s.d / 2 - 1.0 && z < s.z + s.d / 2 + 3.2;
+      const inside = (x, z) => inWorkshopSite(x, z, 0.8);
       if (typeof valleyTrees !== 'undefined') {
         for (let i = valleyTrees.length - 1; i >= 0; i--) {
           const t = valleyTrees[i];
@@ -770,7 +791,7 @@ function workshopSite() {
       return {
         key: 'workshop', name: 'Workshop', group: wsGroup, w: WORKSHOP_SITE.w, d: WORKSHOP_SITE.d, floorY: WS_F1,
         hatch: { x: WS_LIFT.x, z: WS_LIFT.z }, entryAngle: Math.PI / 2,
-        outside: { x: WS_DOORS.person.x, z: WORKSHOP_SITE.d / 2 + 1.8 },
+        outside: { x: WS_DOORS.person.x, z: WORKSHOP_SITE.d / 2 + 1.2 },
         walkIn: [{ x: WS_DOORS.person.x, z: WORKSHOP_SITE.d / 2 + 0.6, y: 0 }, { x: WS_DOORS.person.x, z: WORKSHOP_SITE.d / 2 - 0.4, y: WS_F1 }, { x: WS_DOORS.person.x, z: WORKSHOP_SITE.d / 2 - 1.2, y: WS_F1 }],
         nodes,
         obstacles: () => wsObstacles(workshopTrip.floor),
@@ -866,6 +887,7 @@ async function runWorkshopVisit(plan) {
       const outside = siteToWorld(site, site.outside.x, site.outside.z, 0);
       outside.y = getIslandGroundHeight(outside.x, outside.z);
       const veh = plan.vehicle || null;
+      const vehHome = veh ? { x: veh.x, z: veh.z, rotY: veh.rotY || 0 } : null;
       if (veh && typeof driveVehicle === 'function') {
         // He drives it round to the vehicle door first
         const door = siteToWorld(site, WS_DOORS.vehicle.x, WORKSHOP_SITE.d / 2 + 4.2, 0);
@@ -886,7 +908,7 @@ async function runWorkshopVisit(plan) {
           active: true, site, pos: { x: state.botPos.x, y: getIslandGroundHeight(state.botPos.x, state.botPos.z), z: state.botPos.z },
           rotY: state.botRotY, path: null, pose: null, crouch: 0, crouchTarget: 0, lastT: null, cutLevel: 0
         });
-        Object.assign(workshopTrip, { active: true, floor: 1, vehicle: veh, vehicleAt: null, liftY: 0 });
+        Object.assign(workshopTrip, { active: true, floor: 1, vehicle: veh, vehicleAt: null, vehicleHome: vehHome, liftY: 0 });
         wsUpdateLift(0);
         roofs.forEach(r => { r.material.opacity = 0.1; });
         wsSetFrontFade(0.12);
@@ -937,7 +959,7 @@ async function runWorkshopVisit(plan) {
         if (veh && workshopTrip.vehicleOut) state.botPos = { ...workshopTrip.vehicleOut };
         else state.botPos = { x: outside.x, z: outside.z };
         state.targetPos = { ...state.botPos };
-        Object.assign(workshopTrip, { active: false, floor: 1, vehicle: null, vehicleAt: null, vehicleOut: null, liftY: 0 });
+        Object.assign(workshopTrip, { active: false, floor: 1, vehicle: null, vehicleAt: null, vehicleOut: null, vehicleHome: null, liftY: 0 });
         wsUpdateLift(0);
         workshopShowUpstairs(false);
         wsSetFrontFade(1);
@@ -1026,18 +1048,17 @@ async function wsDriveAlong(site, v, pts, ms) {
       });
     }
 
-// Back in through door 1 onto the car elevator (so it can drive out forwards), ride up, and reverse
-// on up onto the two-post lift behind the shaft
+// Drive in through door 1 off the east lane, onto the car elevator, ride up and on forwards onto the
+// two-post lift behind the shaft
 async function wsDriveIn(site, v) {
       const mesh = vehicleMeshes[v.id];
       if (!mesh) return;
-      workshopTrip.vehicleOut = { x: v.x, z: v.z };
+      if (!workshopTrip.vehicleHome) workshopTrip.vehicleHome = { x: v.x, z: v.z, rotY: v.rotY || 0 };
       const nm = String(v.name).replace(/^(an?|the)\s+/i, '');
-      const ry = -Math.PI / 2; // nose south, toward the doors
-      // He swings it round on the apron and backs in
-      tripMood(`Backing the ${nm} onto the car elevator`, 'Reverse... slowly... a little more.');
+      const ry = Math.PI / 2; // nose north, into the building
+      tripMood(`Driving the ${nm} onto the car elevator`, 'In through door 1, nice and slow.');
       const ax = WS_DOORS.vehicle.x, az = WORKSHOP_SITE.d / 2 + 4.2;
-      await wsDriveAlong(site, v, [{ x: ax - 2.5, z: az + 1.5, ry: ry + 0.9 }, { x: ax, z: az + 0.8, ry }], 3000);
+      await wsDriveAlong(site, v, [{ x: ax, z: az, ry }], 2500);
       await wsDriveAlong(site, v, [{ x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 1.5, ry }, { x: WS_LIFT.x, z: WS_LIFT.z, ry }], 4200);
       workshopShowUpstairs(true);
       if (wsModels.hoist) wsModels.hoist.visible = false;
@@ -1047,12 +1068,12 @@ async function wsDriveIn(site, v) {
       workshopTrip.floor = 2;
       if (wsModels.hoist) wsModels.hoist.visible = true;
       const car = WORKSHOP_STATIONS.garage.local;
-      tripMood(`Reversing the ${nm} onto the lift`);
+      tripMood(`Driving the ${nm} onto the lift`);
       await wsDriveAlong(site, v, [{ x: car.x, z: car.z, ry }], 3500);
       workshopTrip.vehicleAt = { x: car.x, z: car.z };
       // He climbs out on the driver's side
       indoorTrip.pose = null;
-      const side = siteToWorld(site, car.x - 2.05, car.z + 0.8, WS_F2);
+      const side = siteToWorld(site, car.x - 2.05, car.z - 0.8, WS_F2);
       indoorTrip.pos = { x: side.x, y: side.y, z: side.z };
       await tripPause(400);
     }
@@ -1060,10 +1081,10 @@ async function wsDriveIn(site, v) {
 async function wsDriveOut(site, v) {
       const mesh = vehicleMeshes[v.id];
       const car = WORKSHOP_STATIONS.garage.local;
-      const ry = -Math.PI / 2;
+      const ry = Math.PI / 2;
       if (!mesh) return;
-      // Back in the driver's seat, forwards onto the platform
-      await wsWalkTo(site, { x: indoorTrip.pos.x - wsGroup.position.x, z: indoorTrip.pos.z - wsGroup.position.z }, { x: car.x - 2.05, z: car.z + 0.8 });
+      // Back in the driver's seat, reversing onto the platform
+      await wsWalkTo(site, { x: indoorTrip.pos.x - wsGroup.position.x, z: indoorTrip.pos.z - wsGroup.position.z }, { x: car.x - 2.05, z: car.z - 0.8 });
       await wsDriveAlong(site, v, [{ x: WS_LIFT.x, z: WS_LIFT.z, ry }], 3500);
       if (wsModels.hoist) wsModels.hoist.visible = false;
       tripMood('Riding the car elevator down');
@@ -1071,12 +1092,13 @@ async function wsDriveOut(site, v) {
       workshopTrip.floor = 1;
       wsSetDeck(0.15);
       workshopShowUpstairs(false);
-      // Out through door 1 and onto the apron
-      const apron = { x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 4.2 };
-      await wsDriveAlong(site, v, [{ x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 1.0, ry }, { x: apron.x, z: apron.z, ry }], 4200);
-      v.x = Math.round((wsGroup.position.x + apron.x) * 10) / 10;
-      v.z = Math.round((wsGroup.position.z + apron.z) * 10) / 10;
-      v.rotY = ry;
+      // Reverse out of door 1 into the lane, then home to where it was parked
+      const lane = { x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 4.2 };
+      await wsDriveAlong(site, v, [{ x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 1.0, ry }, { x: lane.x, z: lane.z, ry }], 4200);
+      const home = workshopTrip.vehicleHome || { x: wsGroup.position.x + lane.x, z: wsGroup.position.z + lane.z, rotY: ry };
+      v.x = home.x;
+      v.z = home.z;
+      v.rotY = home.rotY;
       const out = typeof boardingSpot === 'function' ? boardingSpot(v) : { x: v.x - 2, z: v.z };
       workshopTrip.vehicleOut = out;
       indoorTrip.pose = null;

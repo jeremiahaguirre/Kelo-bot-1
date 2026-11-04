@@ -22,10 +22,50 @@
 // Cutting, drilling, welding and soldering for any build happen at the bench or welding table too;
 // fitting, covering and painting happen where the build stands.
 const ASSEMBLY_SITES = {
-  airfield: { x: -27, z: 2.6, rotY: -Math.PI / 2, name: 'his airfield build site' },
+  airfield: { x: -27, z: 9.5, rotY: -Math.PI / 2, name: 'his airfield build site' },
   beach: { x: -8.5, z: 8.3, rotY: 0, name: 'his boat-building spot on the beach' },
   benchFallback: { x: 1.9, z: -7.4, rotY: 0, y: 0, top: 0.92, standX: 1.9, standZ: -6.2, name: 'the bench by the welding studio' }
 };
+// The airfield stands on new land along the shore west of town (the owner's permission): three
+// finished patches of fill, made with the same code as the land he makes from dug dirt
+// (js/landfill.js), so the shoreline, ground height, water depth and the map all follow.
+const AIRFIELD_LAND = { patches: [[-34.5, 11.6], [-27, 11.6], [-19.5, 11.6]], r: 4.8 };
+function ensureAirfieldLand() {
+      if (!Array.isArray(state.landFills) || typeof totalVolumeNeeded !== 'function') return false;
+      let added = 0;
+      AIRFIELD_LAND.patches.forEach(([x, z], i) => {
+        const id = 'airfield-land-' + (i + 1);
+        if (state.landFills.some(f => f.id === id)) return;
+        const f = { id, x, z, r: AIRFIELD_LAND.r, volume: 0, done: false, startedAt: Date.now(), why: 'Room for his airfield (his human said he could add land)', airfield: true };
+        state.landFills.push(f);
+        f.volume = totalVolumeNeeded(f) + 1;
+        Object.assign(f, { done: true, doneAt: Date.now(), loads: 0 });
+        if (typeof refreshTerrainAround === 'function') refreshTerrainAround(f.x, f.z, f.r + 7);
+        added++;
+      });
+      if (!added) return false;
+      // Grass on top (it's an airstrip, not a beach); sand and mud only at the water's edge
+      if (typeof terrainGroundMesh !== 'undefined' && terrainGroundMesh) {
+        const geo = terrainGroundMesh.geometry, pos = geo.attributes.position, col = geo.attributes.color;
+        const grass = new THREE.Color(0x5d7d33), sand = new THREE.Color(0xd9b97a), mud = new THREE.Color(0x5b4128);
+        const fills = state.landFills.filter(f => /^airfield-land-/.test(f.id));
+        for (let i = 0; i < pos.count; i++) {
+          const x = pos.getX(i), z = pos.getZ(i), y = pos.getY(i);
+          if (!fills.some(f => Math.hypot(x - f.x, z - f.z) < f.r + 7)) continue;
+          const ground = bedWithoutFills(x, z);
+          if (landFillRaiseAt(x, z, ground) <= 0.02) continue;
+          const c = (y > WATER_LEVEL + 0.25 ? grass : y > WATER_LEVEL + 0.05 ? sand : mud).clone();
+          if (typeof mottleGround === 'function') mottleGround(c, x, z, 0.07);
+          col.setXYZ(i, c.r, c.g, c.b);
+        }
+        col.needsUpdate = true;
+      }
+      state.diaryEntries.unshift({ time: 'Making Room for an Airfield', location: 'the west shore', mood: '🏝️ New land for an airfield', vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
+        text: 'Dear Diary, an airplane needs room: about 16 m of wing and a clear run to the water. My human said I could add land, so the west shore now reaches out into the lake, level and grassy, for my airfield.' });
+      savePersistentBrainState();
+      return true;
+    }
+
 const ASSEMBLY_LIST_WINDOW = 3;           // sub-assembly lists open at once (plus the tools list)
 const ASSEMBLY_REASK_MS = 2 * 60 * 60 * 1000;
 let ASSEMBLY_PACE = 1;                    // step timing (tests may speed it up)
@@ -156,7 +196,8 @@ function siteFor(p) {
       const kind = p.bom.site;
       let s = workshopBayFor(p);
       if (s) { p.cleared = true; p.site = s; return s; }
-      if (kind === 'airfield' || kind === 'beach') s = { ...ASSEMBLY_SITES[kind] };
+      if (kind === 'airfield') { ensureAirfieldLand(); s = { ...ASSEMBLY_SITES.airfield }; }
+      else if (kind === 'beach') s = { ...ASSEMBLY_SITES.beach };
       else if (kind === 'bench') {
         // Small things go on the bench top; a go-kart (welded frame) on the floor beside the welding table
         const kart = p.bom.templateKey === 'gokart';
@@ -524,45 +565,33 @@ async function openPartsParcel(parcel) {
 function siteTreesInTheWay(p) {
       if (p.bom.site !== 'airfield' || typeof valleyTrees === 'undefined' || (p.site && p.site.inWorkshop)) return [];
       const site = siteFor(p);
-      const rects = [[-0.9, 1.1, -5.2, 5.2], [-4.7, 2.1, -0.6, 0.6], [-4.6, -3.2, -1.5, 1.5]]; // [x0, x1, z0, z1] metres: wings, fuselage, tail
+      const rects = [[-0.9, 1.1, -5.2, 5.2], [-4.7, 2.1, -0.6, 0.6], [-4.6, -3.2, -1.5, 1.5]]; // [x0, x1, z0, z1] metres: wings, fuselage, tail (plus 1.5 m to walk round)
       return valleyTrees.filter(t => !t.removed && !t.hosting && rects.some(([x0, x1, z0, z1]) => {
         const c = Math.cos(-(site.rotY || 0)), s = Math.sin(-(site.rotY || 0));
         const dx = t.x - site.x, dz = t.z - site.z, mx = (dx * c + dz * s) / BUILD_MODEL_SCALE, mz = (-dx * s + dz * c) / BUILD_MODEL_SCALE;
-        return mx > x0 - 0.5 && mx < x1 + 0.5 && mz > z0 - 0.5 && mz < z1 + 0.5;
+        const pad = 1.5 + (t.obstacle ? t.obstacle.r : 0.5) / BUILD_MODEL_SCALE; // walk-around room
+        return mx > x0 - pad && mx < x1 + pad && mz > z0 - pad && mz < z1 + pad;
       }));
     }
 
+// Trees in the way come down the normal way (js/landscape.js chopTree): with an axe he knows how to use,
+// each one a world edit with its stump and a stack of firewood logs
 async function clearAirfield(p) {
       const trees = siteTreesInTheWay(p);
       if (!trees.length) { p.cleared = true; return true; }
-      const cutter = hasItem(/chain ?saw|^(?!.*pick ?ax).*(\baxe\b|hatchet)/i);
-      if (!cutter) {
-        addItemRequest('A chainsaw', 'tool', `${trees.length} tree${trees.length === 1 ? ' stands' : 's stand'} right where the ${p.bom.name.toLowerCase()}'s wings will go, so I need to clear the site first.`, `Building ${aName(p.bom.name)}`);
-        state.speechBubble = `There ${trees.length === 1 ? 'is a tree' : `are ${trees.length} trees`} where the wings will go. I asked for a chainsaw to clear the site.`;
-        renderAllUI();
-        return false;
-      }
-      holdAssemblyTool({ name: cutter, re: cutter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') });
+      if (typeof chopTree !== 'function') return false;
+      state.speechBubble = `There ${trees.length === 1 ? 'is a tree' : `are ${trees.length} trees`} where the ${aName(p.bom.name).replace(/^an? /, '')} will stand. They have to come down first.`;
+      renderAllUI();
       for (const t of trees) {
-        state.targetPos = { x: t.x - 1.2, z: t.z };
-        state.moodEmoji = '🪚';
-        state.moodTitle = 'Clearing the airfield';
-        state.speechBubble = 'This tree is where the wing goes. Down it comes, and the logs are lumber.';
-        state.microPose = 'digging';
-        renderAllUI();
-        await waitForArrival(40000);
-        await sleepPace(1800);
-        removeValleyTree(t.id);
-        const e = { id: newEditId('chop'), type: 'chop', treeId: t.id, x: t.x, z: t.z, at: Date.now(), why: `Clearing the site for the ${p.bom.name.toLowerCase()}` };
-        state.worldEdits.push(e);
-        if (typeof renderEdit === 'function') renderEdit(e);
-        state.belongings.unshift({ name: 'Firewood logs', category: 'material', emoji: '🪵', from: 'clearing the airfield' });
-        state.unstoredItems.push('Firewood logs');
+        state.isPracticing = false; // chopTree starts its own job
+        const r = await chopTree(t.x, t.z, `Clearing the site for the ${p.bom.name.toLowerCase()}`, 'Clearing the Airfield');
+        state.isPracticing = true;
+        if (r !== true) return false; // needs an axe, or to learn it first: he asked and comes back later
       }
       state.microPose = 'normal';
-      p.cleared = true;
+      p.cleared = !siteTreesInTheWay(p).length;
       savePersistentBrainState();
-      return true;
+      return p.cleared;
     }
 
 // --- 3. Building, sub-assembly by sub-assembly -----------------------------------------------------

@@ -44,8 +44,8 @@ function getAnalyticalGroundHeight(x, z) {
       // hills he has raised (js/landscape.js) lift it
       const ground = base - groundDugAt(x, z) + (typeof landscapeRaiseAt === 'function' ? landscapeRaiseAt(x, z) : 0)
         + (typeof dirtPileRaiseAt === 'function' ? dirtPileRaiseAt(x, z) : 0);
-      // Dirt he has dumped into the lake builds up on the bed below it (js/landfill.js)
-      return typeof landFillRaiseAt === 'function' && z > 7.5 ? ground + landFillRaiseAt(x, z, ground) : ground;
+      // Dirt he has dumped into the lake builds up on the bed below it, and new land meets the old shore (js/landfill.js)
+      return typeof landFillRaiseAt === 'function' && z > 4 ? ground + landFillRaiseAt(x, z, ground) : ground;
     }
 
 function groundDugAt(x, z) {

@@ -421,8 +421,20 @@ function finishKeloPose(t) {
       const g = keloGroup.rotation;
       a.groupX = dampTo(a.groupX, g.x, resting ? 4 : 9, dt);
       a.groupZ = dampTo(a.groupZ, g.z, 8, dt);
-      if (a.yaw === null || riding) a.yaw = g.y;
-      else a.yaw += Math.atan2(Math.sin(g.y - a.yaw), Math.cos(g.y - a.yaw)) * (1 - Math.exp(-9 * dt));
+      // Walking, js/motion.js already eases his heading; standing, a new way to face is turned
+      // toward at an eased, limited rate (he shuffles his feet round for a big one, below)
+      const locoOn = walking && typeof keloMotion !== 'undefined' && t - keloMotion.lastCall < 0.2;
+      if (a.yaw === null || riding) { a.yaw = g.y; a.yawVel = 0; }
+      else if (locoOn) { a.yaw = g.y; a.yawVel = keloMotion.yawRate; }
+      else {
+        const err = Math.atan2(Math.sin(g.y - a.yaw), Math.cos(g.y - a.yaw));
+        const wantVel = Math.max(-4.5, Math.min(4.5, err * 7));
+        a.yawVel = (a.yawVel || 0) + Math.max(-28 * dt, Math.min(28 * dt, wantVel - (a.yawVel || 0)));
+        let turn = a.yawVel * dt;
+        if (Math.abs(turn) >= Math.abs(err) && Math.sign(turn) === Math.sign(err)) { turn = err; a.yawVel = 0; }
+        a.yaw += turn;
+      }
+      a.turnErr = Math.atan2(Math.sin(g.y - a.yaw), Math.cos(g.y - a.yaw));
 
       // How fast he really moves over the ground drives the walk cycle, so his feet keep up
       const p = state.botPos;
@@ -430,47 +442,69 @@ function finishKeloPose(t) {
       if (a.lastX !== null && dt > 0) raw = Math.hypot(p.x - a.lastX, p.z - a.lastZ) / dt;
       if (raw > 30) raw = 0;  // a jump to a new place, not a step
       a.lastX = p.x; a.lastZ = p.z;
-      a.speed = dampTo(a.speed, walking ? raw : 0, 8, dt);
-      a.walkW = dampTo(a.walkW, walking ? 1 : 0, 6, dt);
+      a.speed = locoOn ? dampTo(a.speed, keloMotion.speed, 30, dt) : dampTo(a.speed, walking ? raw : 0, 8, dt);
+      a.walkW = dampTo(a.walkW, walking ? 1 : 0, 8, dt);
 
-      // --- Walk cycle
-      const k = a.walkW * clamp01(a.speed / 2);
-      if (k > 0.001) {
-        const run = smoothstep((a.speed - 5.5) / 3);
-        a.phase += Math.PI * 2 * a.speed / (2.6 + run) * dt;
-        const s = Math.sin(a.phase), c = Math.cos(a.phase);
-        const armS = Math.sin(a.phase - 0.25);  // arms trail the legs a little
-        const legA = 0.5 + 0.3 * run, armA = 0.42 + 0.3 * run;
+      // --- Walk cycle. Each leg spends ~60% of a stride planted, sweeping back at exactly his speed
+      // over the ground (so his feet don't skate), then swings forward with the knee folding to clear
+      // the ground. Cadence, stride and arm swing all follow his real speed. Turning on the spot, he
+      // shuffles round in small steps instead.
+      const v = a.speed;
+      const shuffle = riding || resting ? 0 : (locoOn ? (keloMotion.pivot ? clamp01(Math.abs(keloMotion.yawRate) / 2) : 0)
+        : clamp01((Math.abs(a.yawVel || 0) - 0.5) / 1.5)) * (a.mode === 'idle' || a.mode === 'walk' ? 1 : 0);
+      const act = Math.max(a.walkW * clamp01(v / 0.2), shuffle);
+      a.stepAct = act;
+      if (act > 0.001) {
+        const run = smoothstep((v - 5.5) / 3);
+        const f = Math.max(Math.min(3.3, 1.5 + 0.28 * v), 2.2 * shuffle);   // strides per second
+        const sf = 0.6 - 0.18 * run;                                         // share of a stride a foot is planted
+        const A = Math.max(Math.asin(Math.min(0.75, v * sf / f / (2 * 0.98))), 0.09 * shuffle);  // hip sweep
+        a.phase += Math.PI * 2 * f * dt;
+        const uL = ((a.phase / (Math.PI * 2)) % 1 + 1) % 1, uR = (uL + 0.5) % 1;
+        const kneeSwing = (0.3 + 0.95 * clamp01(A / 0.5) + 0.45 * run) * Math.max(clamp01(v / 1.2), shuffle * 0.6);
+        const leg = u => {
+          if (u < sf) {   // planted: forward (negative) to back, at a steady rate
+            const w = u / sf;
+            return { hip: -A + 2 * A * w, knee: 0.1 + 0.12 * Math.sin(Math.PI * w),
+              foot: -0.2 * Math.pow(1 - smoothstep(w / 0.3), 2) + 0.32 * smoothstep((w - 0.7) / 0.3) };
+          }
+          const w = (u - sf) / (1 - sf);   // swinging through, knee folded
+          // the leg reaches forward a little early and the foot comes straight down, so it lands softly
+          return { hip: A - 2 * A * smoothstep(w / 0.82), knee: 0.1 + kneeSwing * Math.sin(Math.PI * Math.min(1, w / 0.9)),
+            foot: 0.32 * (1 - smoothstep(w / 0.35)) - 0.12 * smoothstep((w - 0.6) / 0.4) };
+        };
+        const L = leg(uL), R = leg(uR);
+        out.lLegX += act * L.hip; out.rLegX += act * R.hip;
+        out.lKneeX += act * L.knee; out.rKneeX += act * R.knee;
+        out.lFootX += act * L.foot; out.rFootX += act * R.foot;
+        // Arms swing opposite the legs, wider the faster he goes (a gentle pendulum, trailing a little)
         const holdingTool = (keloDrillToolGroup && keloDrillToolGroup.visible) || (keloWeldTorchGroup && keloWeldTorchGroup.visible);
         const armL = holding ? 0.1 : 1, armR = holding ? 0.1 : holdingTool ? 0.3 : 1;
-        out.lLegX += k * legA * s;
-        out.rLegX -= k * legA * s;
-        // Each knee folds as its leg swings through, and gives a little as the foot lands
-        const swingL = Math.max(0, -c), swingR = Math.max(0, c);
-        out.lKneeX += k * (0.1 + (0.85 + 0.45 * run) * swingL * swingL + 0.12 * Math.max(0, -s) * (1 - swingL));
-        out.rKneeX += k * (0.1 + (0.85 + 0.45 * run) * swingR * swingR + 0.12 * Math.max(0, s) * (1 - swingR));
-        // Heel strikes with the toes up; the back foot rolls onto its toes as it pushes off
-        out.lFootX += k * (-0.18 * Math.max(0, -s) + 0.3 * Math.max(0, s) * (1 - swingL));
-        out.rFootX += k * (-0.18 * Math.max(0, s) + 0.3 * Math.max(0, -s) * (1 - swingR));
-        out.lArmX -= k * armA * armS * armL;
-        out.rArmX += k * armA * armS * armR;
-        // Elbows bend more as each arm swings forward
-        out.lElbowX -= k * (0.12 + 0.3 * Math.max(0, armS) + 0.25 * run) * armL;
-        out.rElbowX -= k * (0.12 + 0.3 * Math.max(0, -armS) + 0.25 * run) * armR;
-        out.lArmZ -= k * 0.06 * armL;
-        out.rArmZ += k * 0.06 * armR;
-        // Up at the passing step, down as each foot lands; lean into the walk, more when running
-        out.lift += k * (0.05 + 0.05 * run) * (1 - Math.abs(s));
-        const lean = 0.07 + 0.1 * run + 0.025 * Math.cos(a.phase * 2);
-        out.bodyX += k * lean;
-        out.bodyY += k * s * (0.09 + 0.05 * run);   // shoulders turn with the arms
-        out.bodyZ += k * c * 0.045;                 // weight rolls over the planted foot
-        out.bodyShift += k * c * 0.035;
-        // Head stays level and looking ahead while the body moves under it
-        out.headX -= k * lean * 0.75;
-        out.headY -= k * s * (0.09 + 0.05 * run) * 0.85;
-        out.headZ -= k * c * 0.045 * 0.8;
-        out.headY += k * Math.sin(t * 0.55) * 0.1;
+        const armA = Math.min(0.75, 0.06 + 0.085 * v + 0.15 * run) * a.walkW;
+        const swingL = -Math.cos(Math.PI * 2 * (uR - 0.05)), swingR = -Math.cos(Math.PI * 2 * (uL - 0.05));
+        out.lArmX += armA * swingL * armL;
+        out.rArmX += armA * swingR * armR;
+        out.lElbowX -= a.walkW * (0.06 + 0.04 * v + 0.25 * run + armA * 0.5 * Math.max(0, -swingL)) * armL;
+        out.rElbowX -= a.walkW * (0.06 + 0.04 * v + 0.25 * run + armA * 0.5 * Math.max(0, -swingR)) * armR;
+        out.lArmZ -= act * 0.05 * armL;
+        out.rArmZ += act * 0.05 * armR;
+        // Low as each heel lands, up over the planted foot; lean into the walk, into speeding up, and into turns
+        const ph2 = (uL * 2) % 1;
+        out.lift += act * ((0.018 + 0.006 * Math.min(v, 6) + 0.03 * run) * (0.5 - 0.5 * Math.cos(Math.PI * 2 * ph2)) - 0.012);
+        const accLean = locoOn ? Math.max(-0.05, Math.min(0.06, keloMotion.acc * 0.012)) : 0;
+        const lean = act * (0.03 + 0.01 * Math.min(v, 6) + 0.1 * run) + accLean;
+        out.bodyX += lean;
+        const twist = act * -Math.cos(Math.PI * 2 * uL) * Math.min(0.1, 0.02 + 0.015 * v);
+        out.bodyY += twist;                         // shoulders turn with the arms
+        const roll = Math.cos(Math.PI * 2 * (uL - sf / 2));
+        out.bodyZ += act * 0.035 * roll;             // weight over the planted foot
+        out.bodyShift -= act * 0.03 * roll;
+        const turnLean = locoOn ? Math.max(-0.08, Math.min(0.08, keloMotion.yawRate * v * 0.008)) : 0;
+        out.bodyZ -= turnLean;
+        // Head stays level while the body moves under it
+        out.headX -= lean * 0.75;
+        out.headY -= twist * 0.85;
+        out.headZ -= (act * 0.035 * roll - turnLean) * 0.8;
       }
 
       // --- Breathing, always (slower when he sleeps)
@@ -526,6 +560,9 @@ function finishKeloPose(t) {
         out.bodyZ += Math.sin(t * 0.9) * 0.02;
       }
 
+      // --- Human touches: gaze, the head leading turns, gestures as he talks, fidgets (js/humanize.js)
+      if (typeof keloHumanize === 'function') keloHumanize(out, t, dt, { walking, riding, resting, idle, holding, locoOn });
+
       // --- Emote on top, faded in and out
       if (keloEmote) {
         const em = keloEmote, e = t - em.start, r = em.dur - e;
@@ -560,6 +597,8 @@ function finishKeloPose(t) {
       keloBody.position.set(out.bodyShift, KELO_HIP_Y + out.bodyLift, 0);
       keloGroup.position.y += out.lift;
       keloGroup.rotation.set(a.groupX, a.yaw + out.yaw, a.groupZ);
+      // Sitting, standing and climbing in or out slide instead of popping (js/motion.js)
+      if (typeof keloSmoothRoot === 'function') keloSmoothRoot(dt);
 
       if (holding) keloHoldInHands(riding || resting ? null : a.mode);
     }

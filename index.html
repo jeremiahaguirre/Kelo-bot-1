@@ -54,6 +54,7 @@
           <div class="flex rounded-xl bg-slate-900/90 p-0.5" role="group" aria-label="Camera">
             <button type="button" data-explore-mode="follow" class="explore-mode-btn" aria-pressed="true" title="The camera stays with Kelo-1 (K)"><span aria-hidden="true">🎯</span><span>Follow<span class="hidden sm:inline"> Kelo-1</span></span></button>
             <button type="button" data-explore-mode="explore" class="explore-mode-btn" aria-pressed="false" title="Move the camera yourself"><span aria-hidden="true">🧭</span><span>Explore</span></button>
+            <button type="button" data-explore-mode="eyes" class="explore-mode-btn" aria-pressed="false" title="See through his eyes (V)"><span aria-hidden="true">👀</span><span>Eyes</span></button>
           </div>
           <button type="button" id="btnPlaces" class="explore-bar-btn" aria-expanded="false" aria-controls="explorePlaces" title="Jump to a place"><span aria-hidden="true">📍</span><span>Places</span></button>
           <button type="button" data-explore-help class="explore-bar-btn explore-round" aria-label="How to explore" title="How to explore (?)">?</button>
@@ -69,6 +70,24 @@
           <div id="explorePlacesList" class="space-y-1"></div>
           <div class="mt-2 pt-2 border-t border-slate-800 flex flex-wrap items-center gap-2 text-[11px] text-slate-300">
             <button id="btnToggleRoof" type="button" class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-mono border border-slate-700/80 transition"><span>Roofs: Cutaway</span></button>
+          </div>
+        </div>
+
+        <!-- Through his eyes (js/eyecam.js): a soft visor edge and what he sees and thinks -->
+        <div id="eyeCamVignette" aria-hidden="true"></div>
+        <div id="eyeCamHud" class="hidden absolute z-20 rounded-2xl bg-slate-950/80 backdrop-blur-md border border-teal-400/40 shadow-xl px-3 py-2" role="status" aria-live="polite">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-[11px] font-bold text-teal-200">👀 Through Kelo-1's eyes</span>
+            <span class="flex items-center gap-1">
+              <button type="button" data-eyecam-hud class="eyecam-btn" aria-pressed="true" title="Show or hide what he sees and thinks">Hide</button>
+              <button type="button" data-eyecam-exit class="eyecam-btn" title="Back to following him (V)">✕</button>
+            </span>
+          </div>
+          <div data-eyecam-body class="mt-1 space-y-0.5 text-[11px] leading-snug">
+            <div class="text-slate-200"><span class="text-slate-400">Looking at</span> <span data-eyecam-look></span></div>
+            <div class="text-slate-300 italic line-clamp-2"><span class="not-italic text-slate-400">Thinking</span> <span data-eyecam-think></span></div>
+            <div class="text-[10px] text-slate-500 hidden sm:block">Drag or use the arrow keys to look around · scroll to zoom</div>
+            <div class="text-[10px] text-slate-500 sm:hidden">Drag to look around · pinch to zoom</div>
           </div>
         </div>
 
@@ -571,6 +590,7 @@
           <div class="flex flex-wrap gap-1.5 text-[11px]">
             <button data-cam="follow" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">🎯 Follow</button>
             <button data-cam="bird" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">🦅 Bird's-Eye</button>
+            <button data-cam="eyes" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">👀 His Eyes</button>
             <button data-cam="overview" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">⛰️ Valley</button>
             <button data-cam="house" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">🏠 House</button>
             <button data-cam="cafes" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">☕ Cafes</button>
@@ -749,6 +769,8 @@
   <script src="./js/weldstudio.js"></script>
   <script src="./js/house.js"></script>
   <script src="./js/animations.js"></script>
+  <script src="./js/motion.js"></script>
+  <script src="./js/humanize.js"></script>
   <script src="./js/items3d.js"></script>
   <script src="./js/gearmodels.js"></script>
   <script src="./js/everydaymodels.js"></script>
@@ -785,6 +807,7 @@
   <script src="./js/main.js"></script>
   <script src="./js/portal.js"></script>
   <script src="./js/explore.js"></script>
+  <script src="./js/eyecam.js"></script>
   <script src="./js/minimap.js"></script>
   <script src="./js/tryit.js"></script>
 </body>

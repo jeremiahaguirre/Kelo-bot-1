@@ -549,6 +549,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btnWaterGarden')?.addEventListener('click', () => {
+    if (typeof visitorWatersGarden === 'function') return visitorWatersGarden(); // real water (js/plantcare.js)
     state.gardenPlots.forEach(p => { p.growth = 100; });
     state.fullness = Math.min(100, state.fullness + 14);
     renderAllUI();

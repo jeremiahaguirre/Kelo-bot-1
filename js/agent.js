@@ -344,6 +344,7 @@ const state = {
   "knowsRain": false,
   "rainLikes": 0,
   "rainShelters": 0,
+  "plantCare": { "can": 0, "waterings": 0, "feedings": 0, "refills": 0, "firstWiltAt": null },
   "knowsIceRule": false,
   "knowsIceSafe": false,
   "iceTestedWinter": null,
@@ -1653,6 +1654,7 @@ function categorizeItem(name, hint) {
       const h = String(hint || '').toLowerCase().trim();
       if (h) return h.slice(0, 24);
       const n = String(name || '').toLowerCase();
+      if (/fertili[sz]er|compost|bone ?meal|blood ?meal|plant food/.test(n)) return 'material'; // not a meal to eat
       // Whole words only, so "Topic" isn't a toy "top" and "team" isn't "tea"
       if (/\b(cherr(y|ies)|apples?|peach(es)?|bread|loaf|loaves|tarts?|cakes?|pies?|ramen|noodles?|soups?|cheeses?|cheddar|fudge|cocoa|coffee|tea|salmon|fish|berr(y|ies)|blueberr(y|ies)|fruits?|snacks?|pizzas?|tacos?|sandwich(es)?|cookies?|chocolates?|honey|food|meals?|carrots?|tomato(es)?|cobbler|stew|desserts?|pastr(y|ies)|buns?|croissants?|muffins?|bagels?)\b/.test(n)) return 'food';
       if (/\b(kites?|yo-?yos?|kaleidoscopes?|puzzles?|balls?|toys?|games?|dolls?|frogs?|spinning tops?|marbles?|lego|blocks?|harmonicas?|kalimbas?|ukuleles?|guitars?|flutes?|drums?)\b/.test(n)) return 'toy';
@@ -1845,6 +1847,7 @@ Current state:
 - New land in the lake: ${typeof landFillSummaryForAI === 'function' ? landFillSummaryForAI() : 'none'}
 - Real things you are building from plans: ${typeof projectsSummaryForAI === 'function' ? projectsSummaryForAI() : 'none'}
 - How you have shaped the valley (you can undo anything but a chopped tree): ${typeof landscapeSummaryForAI === 'function' ? landscapeSummaryForAI() : 'nothing yet'}
+- Your garden: ${typeof gardenStatusForAI === 'function' ? gardenStatusForAI() : 'unknown'} (you water and feed your plants yourself when they need it)
 - Things you know how to use: ${typeof knowHowSummaryForAI === 'function' ? knowHowSummaryForAI() : 'nothing yet'}
 - Your most recent decisions: ${typeof recentDecisionsForAI === 'function' ? recentDecisionsForAI() : 'none yet'}. Choose something genuinely DIFFERENT this time: don't repeat or rephrase any of them, and don't retry something you are still waiting on (tools, materials, fuel or a delivery). Do something else meanwhile.
 - Welding: ${recentlyWelded() ? 'you welded a piece within the last 15 minutes, so do something different this time ("build" should be null)' : 'welding is one of many things you do; most of your decisions should not include a "build"'}. Pieces stand outdoors (never in town); only overflow goes to your Museum.
@@ -2307,6 +2310,8 @@ function runAutonomousLifeTick() {
       if (typeof takeSkillAsk === 'function' && takeSkillAsk()) return;
       // A painting a visitor asked for (or he planned) whose supplies have now arrived (js/paintstudio.js)
       if (typeof paintPlanTick === 'function' && paintPlanTick()) return;
+      // Plants that are dry, hungry or wilting get looked after (js/plantcare.js)
+      if (typeof plantCareJobNow === 'function' && canTryKey('garden')) { const job = plantCareJobNow(); if (job) { tryKey('garden', job); return; } }
       // Getting good at the real things he asked for and was given comes first (js/skills.js)
       if (typeof practiseSkill === 'function' && canTryKey('skill') && Math.random() < skillPracticeChance()) { tryKey('skill', () => practiseSkill(pickSkillToPractise())); return; }
       // Sometimes he feels like digging (and asks for tools if he doesn't have them)

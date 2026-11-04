@@ -138,6 +138,7 @@ Kelo-bot-1/
 │   ├── groundwork.js    # Researching how roads, paving, earthwork and planting are done; the right tools, used in turn
 │   ├── welding.js       # Real welding: the right gas, wire, rods and hood; hooking up hoses and cables; hood down, arc, sparks and a cooling bead
 │   ├── workbench.js     # His wooden work bench with a vise, where woodworking and other non-welded builds are made
+│   ├── plantcare.js     # Soil moisture, nutrients and wilting; plants and garden beds grow with care; watering can, tap and fertilizer
 │   ├── skills.js        # Real skills: practising the vehicles, telescope and hobbies he was given; doing what visitors ask
 │   ├── projects.js      # Real builds: finding plans online, asking for materials (or sawing his own logs), building them
 │   ├── town.js          # Keeps the town free of his builds (the beach is fine)

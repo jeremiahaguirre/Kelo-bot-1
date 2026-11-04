@@ -282,7 +282,7 @@ function updateWeatherLook(t, dt) {
 
 // Rain soaks his plantings and garden beds (checked every few seconds)
 function rainWatersPlants(ms) {
-      if (!isRaining()) return;
+      if (!isRaining() || typeof plantcareLook === 'function') return; // js/plantcare.js soaks the soil itself
       (state.worldEdits || []).forEach(e => { if (e.type === 'plant') e.rainMs = (e.rainMs || 0) + ms * RAIN_GROWTH; });
       (state.gardenPlots || []).forEach(p => { p.growth = Math.min(100, p.growth + ms / 5000 * 0.4); });
     }

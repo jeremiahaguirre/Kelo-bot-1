@@ -81,7 +81,8 @@ function keloLocomote(dist, dt, t) {
       const gait = keloGaitNow();
       // A fresh start: he stood still last frame, or was put somewhere new
       const jumped = m.lastX === null || Math.hypot(p.x - m.lastX, p.z - m.lastZ) > 1.5;
-      if (jumped || t - m.lastCall > dt * 1.5 + 0.02 || m.heading === null) {
+      // (dt is capped at 0.1 s, so on a slow frame rate compare with at least half a second, or every frame looks like a fresh start)
+      if (jumped || t - m.lastCall > Math.max(dt * 1.5 + 0.02, 0.5) || m.heading === null) {
         m.speed = 0; m.acc = 0; m.yawRate = 0; m.pivot = false;
         const shown = typeof keloAnim !== 'undefined' && keloAnim.yaw !== null && !state.riding ? keloAnim.yaw : state.botRotY;
         m.heading = Number.isFinite(shown) ? shown : 0;

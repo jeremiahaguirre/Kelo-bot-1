@@ -108,7 +108,7 @@ if (typeof PURPOSE_INFO !== 'undefined') {
 // "An SLA-printed resin figure" -> "SLA-printed resin figure" (keeps acronyms and brand names as they are)
 function wsThing(name) {
       const t = plainItem(name);
-      return /^[A-Z][a-z]/.test(t) ? t[0].toLowerCase() + t.slice(1) : t;
+      return /^[A-Z][a-z]+\b(?!-)/.test(t) ? t[0].toLowerCase() + t.slice(1) : t;
     }
 
 // --- State ------------------------------------------------------------------------------------------

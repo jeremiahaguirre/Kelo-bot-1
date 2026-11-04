@@ -57,8 +57,9 @@ function skillCandidates() {
         const w = SKILL_WORDS.find(s => s.re.test(v.name)) || null;
         const kind = /balloon/i.test(v.name) ? 'balloon' : v.kind;
         const word = SKILL_WORDS.find(s => s.kind === kind) || w;
-        if (!word) return;
-        if (kind === 'snowmobile' && !(typeof currentSeason === 'function' && currentSeason() === 'winter')) return;
+        if (!word || v.kind === 'trailer') return; // a trailer is towed, not practised
+        // A snowmobile only counts when there's snow it can get to, by itself or on its trailer (js/trips.js)
+        if (kind === 'snowmobile' && !(typeof snowmobileHasSnow === 'function' ? snowmobileHasSnow(v) : /winter/i.test(typeof currentSeason === 'function' ? currentSeason() : ''))) return;
         out.push({ key: `${word.verb} ${word.noun}`, label: `${word.verb} the ${word.noun}`, vehicle: v, kind });
       });
       const scope = typeof hasItem === 'function' ? hasItem(/telescope/i) : null;
@@ -119,6 +120,12 @@ async function practiseSkill(c, visitor = null) {
       if (!v) return false;
       if (typeof readyToOperate === 'function' && !readyToOperate(v.name, v)) return 'not-ready'; // learns first, or asks for fuel
       if (typeof safeToFly === 'function' && !safeToFly(v)) { renderAllUI(); return 'too-windy'; }
+      // Somewhere it can't get to on its own ground (a snowmobile with no snow under it, a boat on its trailer):
+      // the trip planner works out how to haul it there (js/trips.js)
+      if (typeof takeTrip === 'function' && ((c.kind === 'snowmobile' && !(typeof inSnow === 'function' && inSnow(v) && !tripLoadOf(v))) || (c.kind === 'boat' && boatOnLand(v)))) {
+        const ok = await takeTrip(v, c.kind === 'boat' ? 'lake' : 'mountain', visitor ? `${visitor} asked me to.` : 'I wanted the practice.', visitor ? `Asked by ${visitor}` : 'Practising a Skill');
+        return ok;
+      }
       if (c.kind === 'balloon' && typeof flyBalloon === 'function') { const ok = await flyBalloon(visitor ? `Asked by ${visitor}` : 'Practising a Skill'); if (ok) gainSkill(c.key, c.label, 8); return ok; }
       if (c.kind === 'boat' && typeof goBoating === 'function') { const ok = await goBoating(visitor ? `Asked by ${visitor}` : 'Practising a Skill'); if (ok) gainSkill(c.key, c.label, 8); return ok; }
       skillSessionRunning = true;
@@ -184,7 +191,7 @@ function parseUseRequest(message) {
 
 function answerUseRequest(ask, visitor) {
       if (ask.missing) {
-        const season = ask.word && ask.word.kind === 'snowmobile' && typeof currentSeason === 'function' && currentSeason() !== 'winter';
+        const season = ask.word && ask.word.kind === 'snowmobile' && typeof currentSeason === 'function' && !/winter/i.test(currentSeason());
         sayToVisitor(season ? `I'd love to, ${visitor}, but there's no snow for the snowmobile right now.`
           : (state.vehicles || []).some(v => SKILL_WORDS.find(w => w.noun === ask.missing && w.re.test(v.name)))
             ? `I can't right now, ${visitor}, but I will soon.`

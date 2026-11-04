@@ -779,6 +779,19 @@ function buildWorkshopHangar3D() {
       }
     }
 
+// The hangar's assembly bay, for the assembly builds (the ultralight and other big projects):
+// { x, y, z } its centre on the floor, { w, d } the marked bay (w across x), the crane's hook height,
+// and the door it rolls out through (centre, width, height, facing +z onto the helipad).
+function workshopAssemblyBay() {
+      const H = WORKSHOP_HANGAR, st = WORKSHOP_STATIONS.assembly;
+      return {
+        x: st.world.x, y: WORKSHOP_PAD_Y + 0.12, z: st.world.z, w: st.size.w, d: st.size.d, rotY: 0,
+        craneHookY: WORKSHOP_PAD_Y + H.craneY - 3.0,
+        door: { x: H.x, z: H.z + H.d / 2, w: H.door.w, h: H.door.h, facing: 'south' },
+        outside: { x: H.x, z: H.z + H.d / 2 + 2.5 }
+      };
+    }
+
 // Does something of this size (units) fit: through which doors, on the car elevator, in which bays
 function workshopFits(size) {
       const L = Math.max(size.x, size.z), W = Math.min(size.x, size.z), Hh = size.y;

@@ -8,10 +8,12 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
-## Merged into main locally (2026-11-04, waiting on the regression run before push)
-- Task 1 Paintings (agent/paint), task 2 Accurate welding + work bench (agent/weld), task 3 Humanize/eye cam/fluid motion (agent/body), task 4 Garden (agent/garden), task 6 Code anything + self-upgrades (agent/upgrades), task 10 phase 1 audit (agent/review; plan in .claude/review.md, phase 2 still to do after the rest merge).
+## Done and pushed to main (2026-11-04)
+- Task 1 Paintings, task 2 Accurate welding + work bench, task 3 Humanize/eye cam/fluid motion, task 4 Garden, task 6 Code anything + self-upgrades, task 10 phase 1 audit (plan in .claude/review.md).
+- Task 11 Talk tab (pushed).
+- Task 8 plant: built on agent/plant; sent back to keep Kelo-1 out of the lake beside it, then merge.
 
-## In progress (helpers resumed 2026-11-04 03:12 UTC; if one stops, resume it)
+## In progress (helpers resumed 2026-11-04 14:20 UTC; if one stops, resume it). Still open: 5 build anything, 7 workshop, 8 plant, 9 vehicles, then 10 phase 2.
 1. **Paintings** (`agent/paint`): real oil, acrylic, watercolour, gouache, pastel, ink and charcoal paintings.
    - He researches each medium, then requests its supplies. Supplies are used up.
    - He paints at an easel, the paintings hang in the Museum, and visitors can ask for one.
@@ -83,6 +85,8 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
        - CNC plasma cutter
        - parts washer
 
+   - **Owner (2026-11-04):** the workshop must be big enough for his projects (the airplane being built) and vehicles (pickup and trailer, dump truck, mixer truck, cars on the lifts) to fit inside, with doors, bays and the car elevator sized to match. Every 3D printer, CNC machine and floor-2 machine must be visually, mechanically and functionally accurate: real layouts, motion that moves the right way during a job, real steps, materials and post-processing. Assembly builds move into the workshop's assembly bay (`workshopAssemblyBay`).
+
 8. **Concrete and asphalt plant** (`agent/plant`, started), right beside the workshop. It positions itself from `WORKSHOP_SITE`.
    - **Ready-mix concrete batch plant:**
      - cement silos, aggregate bins, a weigh hopper, conveyor, water and admixture tanks, a twin-shaft mixer and a load-out
@@ -109,14 +113,33 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
     - **Phase 1, now:** measure, find and verify bugs, perf hotspots and cleanup items, and write `.claude/review.md` (tiny safe fixes only).
     - **Phase 2, after tasks 1-9 are merged:** apply the plan across the merged code, re-profile, and fix new bugs from the merges.
 
-11. **Talk tab clean-up and improvement** (`agent/talk`, started):
-    - A modern chat thread with bubbles, avatars, a typing indicator, auto-scroll, jump-to-latest, lookup cards and status chips for actions you asked for.
-    - One composer with a + menu for photos and gifts.
-    - Suggested reply chips that fit his current situation.
-    - An empty state, "load earlier", and accessibility.
-    - Obsolete controls removed.
+11. **Talk tab redesign** (`agent/talk`, started): "Clean up and improve the Talk tab of my interaction with him."
+    - A clean chat thread: his and your bubbles with avatars, world day/time separators, a "Kelo-1 is thinking…" indicator, auto-scroll with "Jump to latest", NetNode lookups as inline cards, and status chips (queued → doing → done) for things he does because you asked.
+    - One composer: multiline (Enter sends, Shift+Enter new line), send button, a "+" menu with Attach photo and Send a gift/tool/toy, character count, disabled and sending states.
+    - Suggested reply chips that fit his context (the helicopter one only if he has one); your name saved on the device and edited in one place; an empty state for a fresh Kelo-1; "Load earlier" within MAX_CHAT_LOG.
+    - Accessible (labels, focus, aria-live), re-render only on change, escapeHtml everywhere, no inline handlers (CSP).
+    - New code in `js/talk.js` (after portal.js). Status: done on `agent/talk`, ready to merge. Talk tests pass on desktop (1024x720) and phone (390x844): empty state, saved name, Enter/Shift+Enter, thinking indicator, lookup cards, helicopter chip queued → doing → done (and no chip without one), photo and gift from +, load earlier, jump to latest, reload. Regressions reload, chat and skills: page errors none. Harness note: on a loaded machine use DOM clicks (`el.click()`) rather than `page.click`.
+
+## Final steps (owner, 2026-11-04), in this order, after tasks 5, 7, 8 and 9 are merged
+12. **Full play-through QA.** Run through the entire game and make sure everything works as intended and smoothly, without bugs:
+    - every tab and panel
+    - every building, including the workshop on both floors, the plant, the Museum and the Storehouse
+    - every vehicle and trip
+    - every hobby and skill: paintings, welding, garden, builds and upgrades
+    - requests, the Post tab, the shop website, reload and offline catch-up
+    - phone and desktop layouts
+    Fix what is found.
+13. **Task 10 phase 2:** apply the `.claude/review.md` plan across the merged code, re-profile and fix new bugs.
+14. **Quality upgrade, no new features** (owner, 2026-11-04; after 12 and 13): raise every existing aspect to the polish level of a modern commercial farming and vehicle simulator (the owner's reference: Farming Simulator 25/26). Use it as a quality bar only: no copying its assets, models, UI or look.
+    - Rendering: lighting, shadows, terrain texturing and blending, vegetation, water, sky and weather, post-processing.
+    - Models: vehicles, machines, buildings, Kelo-1 and items, with detail, proper materials and scale.
+    - Animation: vehicles and machines with suspension, wheels, hydraulics and moving parts, plus Kelo-1's motion.
+    - Camera feel, audio polish, UI/HUD clarity and consistency, transitions, loading.
+    - Steady frame rate on desktop and phone, with quality presets.
+    - Polish and fix only what already exists. Add nothing new.
 
 ## Owner notes to keep in mind
+- Owner (2026-11-04): helpers may add as much land as needed for machines, workshops and plants (natural shoreline, walkable, clear of town, one shared land constant/helper). Kelo-1 must never end up standing in water.
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.
 - "He can build anything", he can ask for lists of things, and code upgrades to his world.
 - The shop sells only 3D print files plus his original paintings (once task 1 is merged).

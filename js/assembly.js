@@ -819,14 +819,16 @@ async function learnToFly(originLabel = 'Learning to Fly') {
           renderAllUI();
           if (m) {
             const start = m.position.clone(), dir = new THREE.Vector3(Math.cos(site.rotY), 0, -Math.sin(site.rotY));
-            const steps = 40;
-            for (let i = 0; i <= steps * 2; i++) {
-              const f = i <= steps ? i / steps : 2 - i / steps;
+            // Time-based, so a slow computer takes the same few seconds per run
+            const dur = 5000 * ASSEMBLY_PACE, t0 = Date.now();
+            for (;;) {
+              const k = Math.min(1, (Date.now() - t0) / dur), f = k <= 0.5 ? k * 2 : 2 - k * 2;
               m.position.copy(start).addScaledVector(dir, f * 4.5);
-              m.position.y = start.y + (tr.taxiRuns === 2 && i > steps * 0.6 && i < steps * 1.1 ? 0.35 : 0);
+              m.position.y = start.y + (tr.taxiRuns === 2 && k > 0.3 && k < 0.55 ? 0.35 : 0);
               const prop = m.userData.inner.userData.prop;
               if (prop) prop.rotation.x += 0.9;
-              await new Promise(r => setTimeout(r, 60 * ASSEMBLY_PACE));
+              if (k >= 1) break;
+              await new Promise(r => setTimeout(r, 60));
             }
             m.position.copy(start);
           } else await sleepPace(3000);

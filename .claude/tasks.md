@@ -97,16 +97,14 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
    - His own asphalt can be used for paving, and it is wasted if it cools.
    - Concrete is used to pour pads, paths and foundations, and it cures over days.
 
-9. **Smarter vehicles** (`agent/vehicles`, started):
-   - Fix the snowmobile refuel loop: he kept filling it and it never filled.
-   - Terrain rules for every vehicle:
-     - the snowmobile only on snow
-     - boats only on water
-     - trucks on roads
-     - the excavator hauled for long trips
-   - A trip planner that reasons like a person. Example: no snow between here and the mountain, so he researches, then requests a pickup, a trailer and straps, then loads up, drives to the snow line, unloads and rides.
-   - He still requests every vehicle, trailer and accessory.
-   - **Owner rule:** he may ask for only ONE of each vehicle kind (trailers included) until he has a helper or friend, then up to two (one for the friend). Unrequested gifts are always accepted.
+9. **Smarter vehicles** (`agent/vehicles`, started 2026-11-03):
+   - Fix the refuel loop (he fills the snowmobile again and again and the tank stays empty), for every fuel type.
+   - Terrain rules per vehicle (snowmobile on snow only, boats on water, bikes on roads/gentle ground, trucks off deep snow and steep slopes unless chained, excavator short hops, helicopter anywhere with fuel and a landing spot, balloon by the wind) and fuel range.
+   - A trip planner (`js/trips.js`): picks vehicles per leg, plans truck + trailer transport for ones that can't get there by themselves, checks fuel, know-how and gear (straps, trailer, hitch), explains once and requests exactly what is missing. He researches at NetNode first ("how to transport a snowmobile").
+   - Trailers (snowmobile trailer, boat trailer, lowboy) with models that hitch behind the truck; loading, strapping, hauling and unloading are visible.
+   - Everything is still requested. AI prompt lists his vehicles and a `takeTrip` decision field; the Brain/World tab gets a "His vehicles" list.
+   - One of each vehicle kind (trailers included) until he has a friend or pet (`friend`/`pet` unlocked), then two. Owned + open requests + mailbox count; owner gifts always accepted.
+   - Status: done on `agent/vehicles`, origin/main merged in (js/trips.js plus small hooks in vehicles.js, knowhow.js, itemuse.js, skills.js, agent.js, index.html, and a frame-rate fix in motion.js). Refuel loop root cause: AI-named fuel ("Gasoline for the snowmobile") was classed as a vehicle (0 uses, a phantom vehicle with an empty tank), and every empty can asked for another. Ready to merge into `main`.
 
 10. **Performance, game quality, bug hunt and clean code** (`agent/review`, started):
     - **Phase 1, now:** measure, find and verify bugs, perf hotspots and cleanup items, and write `.claude/review.md` (tiny safe fixes only).

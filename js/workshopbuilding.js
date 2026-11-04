@@ -291,9 +291,9 @@ function buildWorkshop3D() {
       rib.repeat.set(1, 1);
 
       // Slab and the apron in front of the doors
-      const slab = wsPanel(wsGroup, W + 0.6, 0.42, D + 0.6, plinth, 0, -0.3, 0, 3);
+      const slab = wsPanel(wsGroup, W + 0.6, 0.38, D + 0.6, plinth, 0, -0.3, 0, 3);
       slab.castShadow = false;
-      const floor1 = wsPanel(wsGroup, W - 0.2, 0.02, D - 0.2, floorMat, 0, WS_F1 - 0.02, 0, 3.2);
+      const floor1 = wsPanel(wsGroup, W - 0.2, 0.04, D - 0.2, floorMat, 0, WS_F1 - 0.04, 0, 3.2);
       floor1.castShadow = false;
       const apron = wsPanel(wsGroup, W + 2.4, 0.06, 1.0, floorMat, 0, -0.04, hz + 0.6, 3.2);
       apron.castShadow = false;
@@ -493,7 +493,7 @@ function buildWorkshop3D() {
       mmCyl(callBox, 0.04, 0.03, 'lampRed', 0, 1.32, 0.06, { axis: 'z' });
 
       // Floor markings: yellow aisle lines, hatched no-go zones, the bays' outlines
-      const line = (x, z, w, d, mat = yellow) => { const m = mmBox(wsGroup, w, 0.006, d, mat, x, WS_F1, z); m.receiveShadow = true; return m; };
+      const line = (x, z, w, d, mat = yellow) => { const m = mmBox(wsGroup, w, 0.008, d, mat, x, WS_F1 + 0.004, z); m.receiveShadow = true; return m; };
       [-0.45, 1.05].forEach(x => line(x, 0, 0.08, D - 1.0));
       line(-3.95, 0, 0.08, D - 1.0);
       const hb = WORKSHOP_STATIONS.assembly;
@@ -683,8 +683,9 @@ function buildWorkshopHangar3D() {
       const slat = wsSlatTexture();
       const doorMat = new THREE.MeshStandardMaterial({ color: 0xe5e7eb, roughness: 0.45, metalness: 0.45, map: slat, bumpMap: slat, bumpScale: 0.02 });
       const yellow = mmMat('yellow'), navy = mmMat('navy');
-      wsPanel(g, H.w + 0.6, 0.42, H.d + 0.6, plinth, 0, -0.3, 0, 3).castShadow = false;
-      wsPanel(g, H.w - 0.2, 0.02, H.d - 0.2, floorMat, 0, 0.1, 0, 3.2).castShadow = false;
+      wsPanel(g, H.w + 0.6, 0.38, H.d + 0.6, plinth, 0, -0.3, 0, 3).castShadow = false;
+      const hfloor = wsPanel(g, H.w - 0.2, 0.04, H.d - 0.2, floorMat, 0, 0.08, 0, 3.2);
+      hfloor.castShadow = false;
       wsPanel(g, H.door.w + 2, 0.06, 1.2, floorMat, 0, -0.04, hz + 0.6, 3.2).castShadow = false;
       const t = 0.16;
       // Front: the big door; back and sides: windows high up; a dark band under the eaves
@@ -707,7 +708,6 @@ function buildWorkshopHangar3D() {
         mmBox(g, 0.16, H.door.h, 0.2, 'steel', s * (H.door.w / 2 + 0.08), 0, hz);
         mmCyl(g, 0.13, 1.0, yellow, s * (H.door.w / 2 + 0.6), 0.5, hz + 0.9);
       });
-      mmLabel(g, 'HANGAR  •  DOOR 4  •  18 M CLEAR', 4.2, 0.4, 0, H.door.h + 0.6, hz + 0.21, { bg: '#facc15', fg: '#111827' });
       const sign = makeSignMesh('HANGAR & ASSEMBLY', { bg: '#1e3a5f', fg: '#f8fafc', width: 6.4, height: 0.8 });
       sign.position.set(0, H.h - 0.75, hz + 0.1);
       g.add(sign);
@@ -746,12 +746,20 @@ function buildWorkshopHangar3D() {
       for (let x = -hx + 0.3; x <= hx - 0.2; x += H.w / 6) [-3.5, 3.5].forEach(z => { const m = new THREE.Mesh(fixGeo, lens); m.scale.set(0.6, 1, 0.36); m.position.set(x, H.h - 0.82, z); g.add(m); });
       wsLights.push({ mesh: g.children[g.children.length - 1] });
       // Floor markings: the aircraft bay (sized for a 10 m span) and two vehicle bays
-      const line = (x, z, w, d, mat = yellow) => mmBox(g, w, 0.006, d, mat, x, 0.12, z);
+      const line = (x, z, w, d, mat = yellow) => mmBox(g, w, 0.008, d, mat, x, 0.125, z);
       const bay = WORKSHOP_STATIONS.assembly.size, bz = WORKSHOP_STATIONS.assembly.world.z - H.z;
       line(0, bz - bay.d / 2, bay.w, 0.1); line(0, bz + bay.d / 2, bay.w, 0.1);
       line(-bay.w / 2, bz, 0.1, bay.d); line(bay.w / 2, bz, 0.1, bay.d);
       const label = mmLabel(g, 'AIRCRAFT ASSEMBLY  •  10 M SPAN', 5.0, 0.6, 0, 0.13, bz - bay.d / 2 + 0.9, { bg: '#b9bab5', fg: '#a16207' });
       label.rotation.x = -Math.PI / 2;
+      // A painted footprint of a high-wing ultralight (9.5 m span, 5.6 m long) to build it on
+      const span = 15.2, chord = 2.3, fus = 9.0, wingZ = bz - 1.2;
+      [[0, wingZ - chord / 2, span, 0.08], [0, wingZ + chord / 2, span, 0.08]].forEach(([x, z, w, d]) => line(x, z, w, d, mmMat('white')));
+      [-span / 2, span / 2].forEach(x => line(x, wingZ, 0.08, chord, mmMat('white')));
+      [-0.5, 0.5].forEach(x => line(x, wingZ - 1.4 + fus / 2, 0.08, fus, mmMat('white')));
+      line(0, wingZ - 1.4 + fus, 4.2, 0.08, mmMat('white'));
+      line(0, wingZ - 1.4 + fus - 1.1, 4.2, 0.08, mmMat('white'));
+      [-2.1, 2.1].forEach(x => line(x, wingZ - 1.4 + fus - 0.55, 0.08, 1.1, mmMat('white')));
       // Wing span gauge marks (every metre, 1.6 units) along the front of the bay
       for (let i = -5; i <= 5; i++) line(i * 1.6, bz + bay.d / 2 - 0.35, 0.05, i % 5 ? 0.4 : 0.7);
       mmLabel(g, 'KEEP CLEAR  •  CRANE OVERHEAD', 3.4, 0.4, 0, 0.13, hz - 0.9, { bg: '#b9bab5', fg: '#b91c1c' }).rotation.x = -Math.PI / 2;

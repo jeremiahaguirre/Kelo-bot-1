@@ -102,7 +102,7 @@ Kelo-bot-1/
 │   ├── netnode.js       # Real Wikipedia browsing at the NetNode cafe
 │   ├── conversation.js  # Understanding what visitors say; looking up words he doesn't know
 │   ├── postoffice.js    # Mail he picks up when he chooses
-│   ├── workshop.js      # Everything is welded at the workshop, carried and placed
+│   ├── workshop.js      # Creations are welded at the welding table (js/welding.js), carried and placed
 │   ├── hobbies.js       # Hobbies sparked by items (murals, kites, music...)
 │   ├── mining.js        # Digging, equipment needs, hidden finds
 │   ├── growth.js        # Merges what he dreamt while you were away
@@ -136,6 +136,8 @@ Kelo-bot-1/
 │   ├── weather.js       # Spring rain (puddles, wet ground, faster-growing plants) and winter lake ice he learns to test
 │   ├── landscape.js     # Chopping trees, planting, roads and hills, and undoing them
 │   ├── groundwork.js    # Researching how roads, paving, earthwork and planting are done; the right tools, used in turn
+│   ├── welding.js       # Real welding: the right gas, wire, rods and hood; hooking up hoses and cables; hood down, arc, sparks and a cooling bead
+│   ├── workbench.js     # His wooden work bench with a vise, where woodworking and other non-welded builds are made
 │   ├── skills.js        # Real skills: practising the vehicles, telescope and hobbies he was given; doing what visitors ask
 │   ├── projects.js      # Real builds: finding plans online, asking for materials (or sawing his own logs), building them
 │   ├── town.js          # Keeps the town free of his builds (the beach is fine)

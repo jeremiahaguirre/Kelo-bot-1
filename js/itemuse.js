@@ -19,7 +19,15 @@ const ITEM_KINDS = [
   { kind: 'filament', label: '3D printer filament', re: /filament/i, uses: ['print'], per: 'grams' },
   { kind: 'fuel', label: 'fuel for an engine or burner', re: /diesel|gasoline|petrol|\bgas can\b|jet fuel|aviation fuel|kerosene|propane/i, uses: ['fuel'], per: 100, unit: '%' },
   { kind: 'printer', label: 'a 3D printer for printing things', re: /3d printer/i, uses: ['print'] },
-  { kind: 'welding supply', label: 'welding supplies', re: /welding (wire|rods?|gas)|electrodes?|argon|shielding gas|flux.?core/i, uses: ['weld'], per: 5, unit: 'welds' },
+  // Welding: safety gear and the consumables each process burns through (matched to the metal in js/welding.js)
+  { kind: 'welding hood', label: 'a welding hood that guards his eyes and face from the arc', re: /welding (hood|helmet|mask)|auto-?darkening/i, uses: ['weld'] },
+  { kind: 'welding gloves', label: 'leather gloves for welding', re: /welding (gloves|gauntlets)|welder'?s gloves/i, uses: ['weld'] },
+  { kind: 'tungsten', label: 'tungsten electrodes for a TIG torch', re: /tungsten/i, uses: ['weld'], per: 10, unit: 'welds', weldConsumable: true },
+  { kind: 'shielding gas', label: 'shielding gas that keeps the air off a weld', re: /shielding gas|argon|\bco2\b|\bc25\b|tri-?mix|welding gas/i, uses: ['weld'], per: 8, unit: 'welds', weldConsumable: true },
+  { kind: 'welding wire', label: 'filler wire for a MIG welder', re: /welding wire|mig wire|flux.?core|\ber(70s-6|4043|5356|308l?)\b.*wire/i, uses: ['weld'], per: 6, unit: 'welds', weldConsumable: true },
+  { kind: 'filler rods', label: 'filler rods for TIG welding', re: /filler rods?|tig rods?/i, uses: ['weld'], per: 6, unit: 'welds', weldConsumable: true },
+  { kind: 'stick electrodes', label: 'flux-coated electrodes for stick welding', re: /stick electrodes?|welding rods?|\be(6010|6011|6013|7018|7024|308l?-16|4043)\b|\belectrodes?\b/i, uses: ['weld'], per: 5, unit: 'welds', weldConsumable: true },
+  { kind: 'welding supply', label: 'welding supplies', re: /welding (wire|rods?|gas)|electrodes?|argon|shielding gas|flux.?core/i, uses: ['weld'], per: 5, unit: 'welds', weldConsumable: true },
   { kind: 'welder', label: 'a tool for welding and soldering', re: /welding torch|\bwelder\b|soldering iron/i, uses: ['weld', 'fix'] },
   { kind: 'batteries', label: 'batteries to power gadgets', re: /^(?!.*(powered|operated)).*\bbatter(y|ies)\b/i, uses: ['power'], per: 5, unit: 'charges' },
   { kind: 'film', label: 'film for a camera', re: /^(?!.*camera).*\bfilm\b/i, uses: ['camera film'], per: 3, unit: 'photo walks' },
@@ -336,7 +344,7 @@ function stillNeeds(name, k) {
       if (!k) return false;
       if (state.hobbies.some(h => k.uses.includes(hobbyPurpose(h)))) return true;
       if (k.kind === 'fuel') return state.vehicles.some(v => typeof fuelNeededBy === 'function' && fuelNeededBy(v) && FUEL_TYPES[fuelNeededBy(v)] && FUEL_TYPES[fuelNeededBy(v)].re.test(name));
-      if (k.kind === 'seeds' || k.kind === 'welding supply') return true;
+      if (k.kind === 'seeds' || k.kind === 'welding supply' || k.weldConsumable) return true;
       // painting supplies for a medium he paints in (js/paintstudio.js)
       if (k.paintSupply && typeof paintSupplyStillNeeded === 'function') return paintSupplyStillNeeded(name);
       if (k.kind === 'batteries') return ownedItemNames().some(n => itemKindOf(n).needsPower);
@@ -462,9 +470,10 @@ function usePowerFor(name) {
       return !itemKindOf(name).needsPower;
     }
 
-// Welding: the welding table works on its own, but wire, rods or gas he has get used up
+// Welding: one weld's worth of each consumable the process burns (js/welding.js picks them; this is the fallback)
 function useWeldingSupplies() {
-      const supply = ownedItemNames().find(n => itemKindOf(n).kind === 'welding supply');
+      if (typeof useWeldSupplies === 'function') return useWeldSupplies();
+      const supply = ownedItemNames().find(n => itemKindOf(n).weldConsumable);
       return supply ? useUpItem(supply, 1, { why: 'welding' }) : null;
     }
 

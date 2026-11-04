@@ -1,8 +1,9 @@
 // Kelo-bot-1 — js/weldstudio.js
 // Loaded after realism.js. Kelo-1's Welding Studio as a real small fab shop: a concrete slab (scorched
 // round the table), a steel-clad back wall under a lean-to roof, a roll-up door, a heavy steel welding
-// table with clamps and a vise, a MIG welder on its cart, gas bottles chained to the wall, hoses and
-// cables, a bench grinder, a tool pegboard with his helmet and gloves, a fume extractor arm, a rack of
+// table with clamps and a vise, a MIG welder on its cart (with marked spots for the gas cylinder, the
+// regulator, the gun lead, work clamp and gas hose that js/welding.js connects), spare cylinders
+// chained to the wall, a bench grinder, a tool pegboard, a fume extractor arm, a rack of
 // steel stock with an offcut bin, a fire extinguisher and warm shop lights. While he welds, the arc
 // flashes blue-white and lights the room. The table top stays where it always was (centre -1.2, -8.2,
 // 0.92 up), so his walk to the bench, his stand spot and the workpiece are unchanged.
@@ -148,50 +149,75 @@ function buildWeldingStudio3D() {
       cyl(0.012, 0.012, 0.28, std(0x6e4b2a, 0.8), 0.6, 0.935, -0.4, 6, 0, 0.6, Math.PI / 2);
       box(0.12, 0.03, 0.03, blackSteel, 0.68, 0.935, -0.52, 0, 0.6, 0);
 
-      // --- MIG welder on its cart, with a shielding-gas bottle on the back
+      // --- MIG welder on its cart, front facing the open shop. The hoses, cables, regulator, gas
+      // cylinder, wire spool, hood and gloves are put in place by js/welding.js as he sets up; these
+      // empty markers are where each one connects.
       const cart = new THREE.Group();
-      box(0.55, 0.05, 0.75, darkPaint, 0, 0.18, 0, 0, 0, 0, cart);
-      box(0.55, 0.04, 0.75, darkPaint, 0, 0.5, 0, 0, 0, 0, cart);
-      [[-0.25, -0.33], [0.25, -0.33], [-0.25, 0.33], [0.25, 0.33]].forEach(([x, z]) => box(0.03, 0.4, 0.03, darkPaint, x, 0.33, z, 0, 0, 0, cart));
-      [[-0.28, -0.3], [0.28, -0.3], [-0.28, 0.3], [0.28, 0.3]].forEach(([x, z]) => cyl(0.07, 0.07, 0.04, rubber, x, 0.07, z, 10, 0, 0, Math.PI / 2, cart));
-      box(0.45, 0.42, 0.62, welderBlue, 0, 0.73, 0.02, 0, 0, 0, cart);
-      box(0.02, 0.3, 0.4, std(0x1a1a1a, 0.4), 0.235, 0.75, 0.05, 0, 0, 0, cart);   // front panel
-      [[0.8, -0.05], [0.8, 0.12], [0.68, 0.04]].forEach(([y, z]) => cyl(0.025, 0.025, 0.03, std(0xdddddd, 0.4), 0.25, y, z, 10, 0, 0, Math.PI / 2, cart));
-      cyl(0.11, 0.11, 1.1, std(0x46535a, 0.5, 0.4), -0.1, 1.05, -0.28, 12, 0, 0, 0, cart);
-      cyl(0.04, 0.05, 0.1, steel, -0.1, 1.64, -0.28, 8, 0, 0, 0, cart);
-      cart.position.set(1.75, 0.03, 0.45);
-      cart.rotation.y = -0.35;
+      const mark = (name, x, y, z) => { const o = new THREE.Object3D(); o.name = name; o.position.set(x, y, z); cart.add(o); return o; };
+      box(0.7, 0.05, 0.5, darkPaint, 0, 0.18, 0, 0, 0, 0, cart);
+      box(0.7, 0.04, 0.5, darkPaint, 0, 0.5, 0, 0, 0, 0, cart);
+      [[-0.33, -0.23], [0.33, -0.23], [-0.33, 0.23], [0.33, 0.23]].forEach(([x, z]) => box(0.03, 0.4, 0.03, darkPaint, x, 0.33, z, 0, 0, 0, cart));
+      [[-0.3, -0.21], [0.3, -0.21], [-0.3, 0.21], [0.3, 0.21]].forEach(([x, z]) => cyl(0.07, 0.07, 0.04, rubber, x, 0.07, z, 10, 0, 0, Math.PI / 2, cart));
+      // The bottle rack at the back: a low platform, two uprights and the push handle
+      box(0.34, 0.04, 0.3, darkPaint, 0.12, 0.1, -0.42, 0, 0, 0, cart);
+      [-0.05, 0.29].forEach(x => box(0.03, 1.05, 0.03, darkPaint, x, 0.62, -0.57, 0, 0, 0, cart));
+      cyl(0.016, 0.016, 0.42, rubber, 0.12, 1.15, -0.57, 8, 0, 0, Math.PI / 2, cart);
+      // The machine: blue case, black front panel with a display, two knobs and the output sockets
+      box(0.62, 0.42, 0.45, welderBlue, 0, 0.73, 0, 0, 0, 0, cart);
+      box(0.5, 0.32, 0.02, std(0x1a1a1a, 0.4), 0, 0.75, 0.232, 0, 0, 0, cart);
+      box(0.1, 0.045, 0.006, new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x16a34a, emissiveIntensity: 0.8 }), 0.14, 0.86, 0.243, 0, 0, 0, cart);
+      const knobs = [[-0.13, 0.84], [0.0, 0.84]].map(([x, y]) => cyl(0.03, 0.03, 0.03, std(0xdddddd, 0.4), x, y, 0.25, 12, Math.PI / 2, 0, 0, cart));
+      cyl(0.03, 0.03, 0.025, std(0xb08d3c, 0.35, 0.9), -0.15, 0.66, 0.246, 12, Math.PI / 2, 0, 0, cart);   // euro gun socket
+      cyl(0.024, 0.024, 0.025, std(0x111111, 0.6), 0.16, 0.66, 0.246, 12, Math.PI / 2, 0, 0, cart);       // work (-) socket
+      cyl(0.012, 0.014, 0.05, std(0xb08d3c, 0.35, 0.9), 0.2, 0.86, -0.245, 8, Math.PI / 2, 0, 0, cart);   // gas inlet
+      // Wire-feed compartment door on the right side, hinged at the front
+      const door = new THREE.Group();
+      door.position.set(0.313, 0.73, 0.21);
+      box(0.012, 0.38, 0.4, welderBlue, 0, 0, -0.2, 0, 0, 0, door);
+      box(0.014, 0.06, 0.02, std(0x111111, 0.5), 0.004, 0, -0.37, 0, 0, 0, door);
+      cart.add(door);
+      // The spindle the wire spool goes on, and the drive rolls that feed the wire to the gun
+      cyl(0.012, 0.012, 0.12, steel, 0.24, 0.76, -0.08, 8, 0, 0, Math.PI / 2, cart);
+      [0.84, 0.8].forEach(y => cyl(0.022, 0.022, 0.02, std(0xb08d3c, 0.35, 0.9), 0.28, y, 0.14, 10, 0, 0, Math.PI / 2, cart));
+      // Hooks: the hood and gun hang on the left side; the regulator waits on the handle
+      [[-0.32, 1.02, 0.1], [-0.32, 0.86, -0.12]].forEach(([x, y, z]) => cyl(0.008, 0.008, 0.08, steel, x - 0.04, y, z, 6, 0, 0, Math.PI / 2, cart));
+      mark('gunSocket', -0.15, 0.66, 0.26);
+      mark('workSocket', 0.16, 0.66, 0.26);
+      mark('gasInlet', 0.2, 0.86, -0.27);
+      mark('bottle', 0.12, 0.12, -0.42);
+      mark('spool', 0.24, 0.76, -0.08);
+      mark('hoodHook', -0.38, 1.0, 0.1);
+      mark('gunHook', -0.38, 0.84, -0.12);
+      mark('regulatorHook', 0.12, 1.1, -0.6);
+      mark('clampRest', 0.12, 0.215, 0.05);
+      mark('glovesRest', 0.05, 0.95, 0.0);
+      mark('knobs', -0.06, 0.84, 0.27);
+      cart.position.set(1.65, 0.03, 0.35);
       g.add(cart);
-      // MIG gun lead and the work-clamp cable, from the welder to the table
-      hose([[1.95, 0.72, 0.6], [1.6, 0.35, 0.75], [1.25, 0.6, 0.55], [0.6, 0.94, 0.3]], 0.016, rubber);
-      hose([[1.95, 0.62, 0.45], [1.55, 0.2, 0.3], [1.18, 0.45, 0.1], [1.12, 0.88, -0.2]], 0.014, copperRed);
-      box(0.06, 0.06, 0.18, std(0x222222, 0.5), 0.55, 0.95, 0.3, 0, 0.9, 0);     // the gun itself
-      cyl(0.008, 0.008, 0.08, steel, 0.48, 0.95, 0.38, 6, Math.PI / 2, 0.9, 0);
 
-      // --- Gas bottles chained to the back wall: argon mix (grey) and oxygen (green)
-      [[-1.55, 0x5c6b73], [-1.25, 0x2e5e3a]].forEach(([x, col]) => {
-        cyl(0.115, 0.115, 1.35, finish(std(col, 0.45, 0.4), 'painted'), x, 0.72, -1.88, 12);
-        cyl(0.07, 0.11, 0.12, finish(std(col, 0.45, 0.4), 'painted'), x, 1.45, -1.88, 12);
-        cyl(0.025, 0.03, 0.12, std(0xb08d3c, 0.35, 0.9), x, 1.56, -1.88, 8);
-        add(new THREE.TorusGeometry(0.125, 0.01, 4, 16), blackSteel, x, 1.1, -1.88, Math.PI / 2, 0, 0);
+      // --- Spare gas cylinders chained to the back wall (shown when he has a spare one)
+      const spareBottles = [-1.55, -1.25].map(x => {
+        const b = new THREE.Group();
+        const paint = finish(std(0x5c6b73, 0.45, 0.4), 'painted');
+        cyl(0.115, 0.115, 1.35, paint, 0, 0.72, 0, 12, 0, 0, 0, b);
+        cyl(0.07, 0.11, 0.12, finish(std(0x2e6b3a, 0.45, 0.4), 'painted'), 0, 1.45, 0, 12, 0, 0, 0, b);
+        cyl(0.025, 0.03, 0.12, std(0xb08d3c, 0.35, 0.9), 0, 1.56, 0, 8, 0, 0, 0, b);
+        add(new THREE.TorusGeometry(0.125, 0.01, 4, 16), blackSteel, 0, 1.1, 0, Math.PI / 2, 0, 0, b);
+        b.position.set(x, 0, -1.88);
+        b.visible = false;
+        g.add(b);
+        return b;
       });
-      hose([[-1.25, 1.6, -1.85], [-0.9, 1.3, -1.6], [-0.4, 0.4, -1.3], [0.2, 0.25, -0.9]], 0.01, std(0x2f6b3a, 0.6));
 
-      // --- Pegboard with tools, his helmet and gloves on hooks
+      // --- Pegboard with tools (his hood and gloves live on the welder cart once he has them)
       const peg = new THREE.MeshStandardMaterial({ map: pegboardTexture(), roughness: 0.85 });
       box(1.6, 0.9, 0.025, peg, 0.25, 1.75, -2.06);
       [[-0.35, 1.9, 0.26], [-0.15, 1.88, 0.3], [0.05, 1.92, 0.22]].forEach(([x, y, l]) => box(0.03, l, 0.015, steel, x, y, -2.03));
       [[0.3, 1.95], [0.45, 1.95]].forEach(([x, y]) => { cyl(0.012, 0.012, 0.25, std(0x6e4b2a, 0.8), x, y - 0.05, -2.03, 6); box(0.1, 0.035, 0.03, blackSteel, x, y + 0.08, -2.03); });
       cyl(0.04, 0.04, 0.2, yellow, 0.75, 1.6, -2.0, 8, 0, 0, Math.PI / 2);   // a second angle grinder
-      // Welding helmet: a dark shell with a green lens
-      const helmet = add(new THREE.SphereGeometry(0.15, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), std(0x1c1c1c, 0.5), 0.6, 1.95, -1.98, Math.PI / 2 + 0.3, 0, 0);
-      helmet.scale.set(1, 1.25, 0.85);
-      box(0.1, 0.05, 0.01, std(0x1f4d2e, 0.1, 0.3), 0.6, 1.98, -1.85);
-      // A pair of leather gauntlets
-      [-0.55, -0.42].forEach((x, i) => {
-        box(0.09, 0.22, 0.04, leather, x, 1.55 - i * 0.03, -2.02, 0, 0, (i - 0.5) * 0.2);
-        box(0.11, 0.1, 0.045, leather, x, 1.4 - i * 0.03, -2.02, 0, 0, (i - 0.5) * 0.2);
-      });
+      // A chipping hammer and wire brush hanging low, for cleaning slag and spatter off a weld
+      box(0.04, 0.2, 0.02, std(0x6e4b2a, 0.8), -0.55, 1.5, -2.02);
+      box(0.12, 0.04, 0.03, std(0x8a8a86, 0.5, 0.6), -0.55, 1.62, -2.02);
 
       // --- Bench grinder on a pedestal, front-left
       cyl(0.05, 0.12, 0.8, darkPaint, -1.45, 0.42, 0.6, 10);
@@ -221,9 +247,9 @@ function buildWeldingStudio3D() {
       [[0.02, 0.1, 0.4], [0.06, -0.08, 0.3], [-0.08, 0.02, 0.45]].forEach(([dx, dz, l], i) => box(0.04, l, 0.04, steel, -1.5 + dx, 0.45, -0.15 + dz, 0.2 * (i - 1), 0, 0.3 * (i - 1)));
 
       // --- Fire extinguisher by the open side
-      cyl(0.08, 0.08, 0.5, red, 2.7, 0.3, -0.25, 12);
-      cyl(0.03, 0.03, 0.08, blackSteel, 2.7, 0.59, -0.25, 8);
-      hose([[2.73, 0.6, -0.25], [2.78, 0.45, -0.18], [2.78, 0.2, -0.17]], 0.01, rubber);
+      cyl(0.08, 0.08, 0.5, red, -1.72, 0.3, 1.5, 12);
+      cyl(0.03, 0.03, 0.08, blackSteel, -1.72, 0.59, 1.5, 8);
+      hose([[-1.69, 0.6, 1.5], [-1.64, 0.45, 1.57], [-1.64, 0.2, 1.58]], 0.01, rubber);
 
       // The old sign keeps its name
       const sign = makeSignMesh('WELDING STUDIO', { bg: '#0f172a', fg: '#38bdf8', width: 2.2, height: 0.4 });
@@ -259,22 +285,27 @@ function buildWeldingStudio3D() {
       g.add(flare);
 
       scene.add(g);
-      weldStudio = { group: g, shopLight, glow, flare };
+      weldStudio = { group: g, shopLight, glow, flare, cart, door, knobs, spareBottles, gy };
+      // His hoses, cables, regulator, hood and the arc itself (js/welding.js), and the work bench next door (js/workbench.js)
+      if (typeof buildWeldingRig3D === 'function') buildWeldingRig3D();
+      if (typeof buildWorkBench3D === 'function') buildWorkBench3D();
       // Walls, the rack, the cart and the grinder are solid; the front stays open to the bench
       const w = (x, z, r) => worldObstacles.push({ x: WELD_STUDIO.x + x, z: WELD_STUDIO.z + z, r });
       for (let x = -1.6; x <= 2.7; x += 0.6) w(x, -2.15, 0.35);
       [-1.6, -1.0, -0.4].forEach(z => w(-1.88, z, 0.35));
-      w(-1.6, -1.2, 0.4); w(-1.5, -0.15, 0.35); w(-1.45, 0.6, 0.25); w(1.75, 0.45, 0.45); w(2.7, -0.25, 0.15);
+      w(-1.6, -1.2, 0.4); w(-1.5, -0.15, 0.35); w(-1.45, 0.6, 0.25); w(1.65, 0.3, 0.45); w(-1.72, 1.5, 0.15);
       return g;
     }
 
-// Every frame: the shop lights follow the daylight; the arc flare flickers while the arc light is on
+// Every frame: the shop lights follow the daylight; the arc flare flickers while the arc light is on.
+// This runs after his pose is final for the frame, so the welding rig (js/welding.js) updates here too.
 function updateWeldingStudio(t) {
       if (!weldStudio) return;
       const dark = typeof skyDarkness === 'function' ? skyDarkness() : 0;
       const physical = renderer && renderer.physicallyCorrectLights;
       weldStudio.shopLight.intensity = (0.4 + 1.6 * dark) * (physical ? 5 : 0.6);
       weldStudio.glow.emissiveIntensity = 0.4 + 1.4 * dark;
+      if (typeof updateWeldingRigAfterPose === 'function' && updateWeldingRigAfterPose(t)) return; // the rig drives the flare itself
       const arcOn = typeof forgeArcLight !== 'undefined' && forgeArcLight && forgeArcLight.intensity > 0;
       weldStudio.flare.visible = arcOn;
       if (arcOn) {

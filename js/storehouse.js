@@ -33,7 +33,8 @@ function storedItems() {
       // (and a 3D printer that's set up stands on its own bench, js/printer.js; wreck pieces lie where the balloon crashed)
       return all.filter(i => i.name && !unstored.has(i.name.toLowerCase()) && !(typeof vehicleTypeFor === 'function' && vehicleTypeFor(i.name))
         && !(typeof wreckPieceAtCrash === 'function' && wreckPieceAtCrash(i.name))
-        && !(typeof isSetUpMachine === 'function' && isSetUpMachine(i.name)));
+        && !(typeof isSetUpMachine === 'function' && isSetUpMachine(i.name))
+        && !(typeof keptAtWeldStudio === 'function' && keptAtWeldStudio(i.name)));
     }
 
 function buildStorehouse3D() {

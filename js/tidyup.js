@@ -45,6 +45,7 @@ function mustKeep(name) {
       if (state.hobbies.some(h => h.tool === n)) return 'it\'s my hobby gear';
       if (typeof TOOL_NEEDS !== 'undefined' && Object.values(TOOL_NEEDS).some(t => t.re.test(n)) && !(typeof isBrokenItem === 'function' && isBrokenItem(n))) return 'I need it for digging';
       if (typeof vehicleTypeFor === 'function' && vehicleTypeFor(n)) return 'it gets me around';
+      if (typeof keptAtWeldStudio === 'function' && keptAtWeldStudio(n)) return 'I need it for welding';
       if (/telescope|3d printer|axe|snow ?shoes?|skis?\b|kite/i.test(n) && !(typeof isBrokenItem === 'function' && isBrokenItem(n))) return 'I still use it';
       if (state.shop && state.shop.listings && state.shop.listings.some(l => l.name === n || l.ref === n)) return 'it\'s for sale in my shop';
       return null;

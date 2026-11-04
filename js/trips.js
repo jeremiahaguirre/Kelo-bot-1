@@ -587,6 +587,7 @@ const TRIP_PLACES = {
 };
 // Where a trailered boat is backed into the water: the beach below the vehicle yard
 const BOAT_LAUNCH = { x: 24, pullOutZ: -3.5, startZ: 3.0, backZ: 1.6, waterZ: 13.5 };
+const TRIP_RIDE_RANGE = 30; // how far he rides on its own ground before turning back
 const TOW_KINDS = { snowmobile: ['pickup', 'dump truck'], boat: ['pickup', 'dump truck'], excavator: ['dump truck'] };
 const TRIP_VERBS = { snowmobile: 'ride the snowmobile', boat: 'take the boat', excavator: 'take the excavator', bike: 'ride my bike', pickup: 'drive the pickup', 'dump truck': 'drive the dump truck', helicopter: 'fly the helicopter', balloon: 'fly the balloon' };
 
@@ -672,11 +673,12 @@ function planTrip(v, to) {
       const cells = tripGridNow();
       const startAt = tripLoadOf(v) || v;
       const start = tripCellAt(cells, startAt.x, startAt.z);
-      const goalOf = (flood, near = dest) => {
+      // The reachable spot closest to where he wants to be, within a fair ride (fuel for there and back)
+      const goalOf = (flood, near = dest, range = Infinity) => {
         let best = null, bestScore = Infinity;
         cells.forEach((c, k) => {
-          if (!Number.isFinite(flood.dist[k])) return;
-          const score = Math.hypot(c.x - near.x, c.z - near.z) - (key === 'snowmobile' ? c.h * 0.4 : 0);
+          if (!Number.isFinite(flood.dist[k]) || flood.dist[k] > range) return;
+          const score = Math.hypot(c.x - near.x, c.z - near.z) - (key === 'snowmobile' ? Math.min(c.h, 12) * 0.25 : 0);
           if (score < bestScore) { bestScore = score; best = c; }
         });
         return best;
@@ -684,7 +686,7 @@ function planTrip(v, to) {
       // 1. Can it get there by itself?
       if (key !== 'boat') {
         const own = tripFlood(cells, key, [start]);
-        const goal = goalOf(own);
+        const goal = goalOf(own, dest, TRIP_RIDE_RANGE);
         const path = goal && tripPathTo(cells, own, goal);
         const len = path ? tripLength(tripSimplify(path)) : 0;
         const startsOnIt = key === 'snowmobile' ? start.snow : !(key === 'bike' && start.snow);
@@ -750,14 +752,14 @@ function planTrip(v, to) {
         });
         if (sources.length) {
           const flood = tripFlood(cells, key, sources);
-          const goal = goalOf(flood);
+          const goal = goalOf(flood, dest, TRIP_RIDE_RANGE);
           const path = goal && tripPathTo(cells, flood, goal);
           if (path && path.length) {
             drop = from.get(path[0]);
             cargoRoute = tripSimplify(path);
             // A loop on its own ground: out to the far point and back to where it was unloaded
             if (tripLength(cargoRoute) < 8) {
-              const far = cells.filter((c, k) => Number.isFinite(flood.dist[k])).sort((a, b) => Math.hypot(b.x - path[0].x, b.z - path[0].z) - Math.hypot(a.x - path[0].x, a.z - path[0].z))[0];
+              const far = cells.filter((c, k) => Number.isFinite(flood.dist[k]) && flood.dist[k] <= TRIP_RIDE_RANGE).sort((a, b) => Math.hypot(b.x - path[0].x, b.z - path[0].z) - Math.hypot(a.x - path[0].x, a.z - path[0].z))[0];
               const p2 = far && tripPathTo(cells, flood, far);
               if (p2) cargoRoute = tripSimplify(p2);
             }
@@ -788,7 +790,7 @@ function planTrip(v, to) {
       if (!tripHasStraps(heavy)) plan.missing.push({ item: heavy ? 'A set of chains and load binders' : 'A set of ratchet straps', category: 'tool', why: `So the ${plain.toLowerCase()} can't shift or fall off on the way.` });
       if (tow) { learnFor(tow); fuelFor(tow, plan.towLength); }
       if (trailer) learnFor(trailer);
-      if (key !== 'boat') fuelFor(v, plan.length / 2 + 4);
+      if (key !== 'boat') fuelFor(v, plan.length + 4);
       plan.reasoning = `I want to ${TRIP_VERBS[key] || 'go'} ${dest.label}, but ${why0}. I need to haul it: on a ${tk.label} behind ${tow ? 'my ' + tripPlain(tow.name).toLowerCase() : 'a ' + VEHICLE_KIND_WORDS[towKey]}, strapped down, and unload it ${key === 'snowmobile' ? 'where the snow starts' : key === 'boat' ? 'at the water' : 'where the work is'}.`;
       return plan;
     }
@@ -873,8 +875,10 @@ function tripFwd(b) {
     }
 
 // Get to a point, even if something else nudges where he's headed
-async function tripGoTo(p, ms = 70000) {
+async function tripGoTo(p, ms = null) {
       const started = Date.now();
+      // Long legs get long enough: about a unit every four seconds even on a slow computer
+      if (!ms) ms = Math.max(40000, Math.hypot(p.x - state.botPos.x, p.z - state.botPos.z) * 4000);
       state.targetPos = { x: p.x, z: p.z };
       while (Date.now() - started < ms && Math.hypot(state.botPos.x - p.x, state.botPos.z - p.z) > 1.0) {
         if (Math.hypot(state.targetPos.x - p.x, state.targetPos.z - p.z) > 0.1) state.targetPos = { x: p.x, z: p.z };
@@ -907,7 +911,7 @@ async function tripDrive(v, pts, label) {
       await tripBoard(v, label);
       let driven = 0, last = { ...state.botPos };
       for (const p of pts) {
-        await tripGoTo(p, 70000);
+        await tripGoTo(p);
         driven += Math.hypot(state.botPos.x - last.x, state.botPos.z - last.z);
         last = { ...state.botPos };
       }

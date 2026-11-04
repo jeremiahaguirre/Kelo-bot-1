@@ -23,8 +23,15 @@ const WORKSHOP_PAD_Y = 0.05;            // the levelled ground it stands on (lev
 const WORKSHOP_LAND = {
   pad: { minX: WORKSHOP_SITE.x - WORKSHOP_SITE.w / 2 - 1.2, maxX: WORKSHOP_SITE.x + WORKSHOP_SITE.w / 2 + 1.2, minZ: WORKSHOP_SITE.z - WORKSHOP_SITE.d / 2 - 0.8, maxZ: WORKSHOP_SITE.z + WORKSHOP_SITE.d / 2 + 0.3 },
   lane: { minX: WORKSHOP_SITE.x + 6.05 - 2.4, maxX: WORKSHOP_SITE.x + WORKSHOP_SITE.w / 2 + 1.0, minZ: WORKSHOP_SITE.z, maxZ: 9.0 },
-  y: WORKSHOP_PAD_Y, blend: 3.2, blendNorth: 7.5, shore: 1.4
+  // The hangar's pad (js/workshopbuilding.js, buildWorkshopHangar3D) and its apron down to the helipad
+  hangar: { minX: 23.6, maxX: 45.6, minZ: -22.9, maxZ: -6.9 },
+  y: WORKSHOP_PAD_Y, blend: 3.2, blendNorth: 9, shore: 1.4
 };
+// The hangar and assembly high bay: a single big bay beside the Workshop (west, north of the
+// helipad) for his biggest projects and vehicles: an ultralight with a 10 m span (16 units), a
+// pickup with its trailer, the dump truck, the mixer truck. A wide, tall roll-up door faces the
+// helipad so a finished plane rolls straight out onto it; a bridge crane spans the whole bay.
+const WORKSHOP_HANGAR = { x: 34.6, z: -15.0, w: 21, d: 14, h: 10.5, door: { w: 18.4, h: 8.0 }, craneY: 9.2 };
 const WS_F1 = 0.12;                      // floor 1 top, above the pad
 const WS_F2 = 5.4;                       // floor 2 deck top
 const WS_EAVE = 12.6;
@@ -45,7 +52,8 @@ const WORKSHOP_MACHINES = {};            // key -> machine definition (registerW
 const WORKSHOP_STATIONS = {
   weld: { local: { x: -2.4, z: 6.55 }, floor: 1, rotY: 0, size: { w: 2.2, d: 1.3 }, label: 'Weld bay' },
   bench: { local: { x: 2.65, z: 6.6 }, floor: 1, rotY: 0, size: { w: 2.6, d: 0.8 }, label: 'Work bench' },
-  assembly: { local: { x: -5.9, z: 4.6 }, floor: 1, rotY: 0, size: { w: 3.4, d: 4.6 }, label: 'Hangar / assembly bay' },
+  assembly: { local: { x: -5.9, z: 4.6 }, floor: 1, rotY: 0, size: { w: 17, d: 10.5 }, label: 'Hangar / assembly bay', world: { x: 34.6, z: -15.6 } },
+  smallAssembly: { local: { x: -5.9, z: 4.6 }, floor: 1, rotY: 0, size: { w: 3.4, d: 4.6 }, label: 'Small-parts assembly bay' },
   electronics: { local: { x: -2.9, z: -2.75 }, floor: 2, rotY: 0, size: { w: 1.6, d: 0.7 }, label: 'Electronics bench' },
   garage: { local: { x: 6.05, z: -2.0 }, floor: 2, rotY: 0, size: { w: 3.5, d: 8.4 }, label: 'Garage lift bay' }
 };
@@ -64,7 +72,7 @@ function workshopRectDist(r, x, z) {
 function workshopLandAt(x, z, base) {
       const L = WORKSHOP_LAND;
       let k = 1;
-      [L.pad, L.lane].forEach(r => {
+      [L.pad, L.lane, L.hangar].forEach(r => {
         const d = workshopRectDist(r, x, z);
         const blend = d.dzN > 0 ? L.blendNorth : d.dzS > 0 && r === L.lane ? L.shore : L.blend;
         const out = Math.hypot(d.dx, d.dzN, d.dzS);
@@ -81,7 +89,7 @@ function workshopPadAt(x, z, base) {
 
 function inWorkshopSite(x, z, pad = 0) {
       const L = WORKSHOP_LAND;
-      return [L.pad, L.lane].some(r => x > r.minX - pad && x < r.maxX + pad && z > r.minZ - pad && z < r.maxZ + pad);
+      return [L.pad, L.lane, L.hangar].some(r => x > r.minX - pad && x < r.maxX + pad && z > r.minZ - pad && z < r.maxZ + pad);
     }
 
 // A point in the building's own coordinates (x across, z towards the front doors), as a world point
@@ -93,6 +101,10 @@ function workshopToWorld(lx, lz, floor = 1) {
 function workshopStation(key) {
       const st = WORKSHOP_STATIONS[key];
       if (!st) return null;
+      if (st.world) {
+        const y = WORKSHOP_PAD_Y + 0.12;
+        return { key, label: st.label, x: st.world.x, y, z: st.world.z, rotY: st.rotY, floor: 1, size: st.size, stand: { x: st.world.x, y, z: st.world.z + st.size.d / 2 + 0.8 } };
+      }
       const w = workshopToWorld(st.local.x, st.local.z, st.floor);
       return { key, label: st.label, x: w.x, y: w.y, z: w.z, rotY: st.rotY, floor: st.floor, size: st.size,
         stand: workshopToWorld(st.local.x, st.local.z - (st.size.d / 2 + 0.55), st.floor) };
@@ -547,6 +559,7 @@ function buildWorkshop3D() {
         });
       } else wsShowFloor1(true);
       wsInitHover();
+      try { buildWorkshopHangar3D(); } catch (e) { console.warn('hangar', e); }
       wsUpdateLighting();
       setInterval(wsUpdateLighting, 4000);
     }
@@ -652,6 +665,131 @@ function buildWorkshopStations() {
       [-0.28, 0.28].forEach(x => mmBox(cart, 0.03, 0.85, 0.03, 'red', x, 0, 0.18));
       ag.userData.station = 'assembly';
       WORKSHOP_STATIONS.assembly.group = ag;
+    }
+
+// --- The hangar and assembly high bay ----------------------------------------------------------------
+let wsHangar = null;
+function buildWorkshopHangar3D() {
+      if (wsHangar || !scene) return;
+      const H = WORKSHOP_HANGAR, hx = H.w / 2, hz = H.d / 2;
+      const g = wsHangar = new THREE.Group();
+      g.position.set(H.x, WORKSHOP_PAD_Y, H.z);
+      g.userData.isWorkshop = true;
+      const rib = wsRibTexture();
+      const clad = new THREE.MeshStandardMaterial({ color: 0xd3d8de, roughness: 0.5, metalness: 0.22, map: rib, bumpMap: rib, bumpScale: 0.03 });
+      const band = new THREE.MeshStandardMaterial({ color: 0x3b4a5e, roughness: 0.5, metalness: 0.25, map: rib, bumpMap: rib, bumpScale: 0.03 });
+      const plinth = new THREE.MeshStandardMaterial({ color: 0x8f8f8a, roughness: 0.92 });
+      const floorMat = new THREE.MeshStandardMaterial({ color: 0xb9bab5, roughness: 0.55, metalness: 0.05, map: wsConcreteTexture() });
+      const slat = wsSlatTexture();
+      const doorMat = new THREE.MeshStandardMaterial({ color: 0xe5e7eb, roughness: 0.45, metalness: 0.45, map: slat, bumpMap: slat, bumpScale: 0.02 });
+      const yellow = mmMat('yellow'), navy = mmMat('navy');
+      wsPanel(g, H.w + 0.6, 0.42, H.d + 0.6, plinth, 0, -0.3, 0, 3).castShadow = false;
+      wsPanel(g, H.w - 0.2, 0.02, H.d - 0.2, floorMat, 0, 0.1, 0, 3.2).castShadow = false;
+      wsPanel(g, H.door.w + 2, 0.06, 1.2, floorMat, 0, -0.04, hz + 0.6, 3.2).castShadow = false;
+      const t = 0.16;
+      // Front: the big door; back and sides: windows high up; a dark band under the eaves
+      wsWallWithOpenings(g, 'x', hz, -hx, hx, H.h - 1.5, t, clad, [{ c: 0, w: H.door.w, h: H.door.h }], 1.28);
+      wsWallWithOpenings(g, 'x', -hz, -hx, hx, H.h - 1.5, t, clad, [{ c: 0, w: H.w - 3, h: 1.4, y0: 6.6 }], 1.28);
+      [-hx, hx].forEach(x => wsWallWithOpenings(g, 'z', x, -hz, hz, H.h - 1.5, t, clad, [{ c: 0, w: H.d - 3, h: 1.4, y0: 6.6 }], 1.28));
+      const top = mmGroup(g, 0, H.h - 1.5, 0);
+      wsWallWithOpenings(top, 'x', hz, -hx, hx, 1.5, t, band, [], 1.28);
+      wsWallWithOpenings(top, 'x', -hz, -hx, hx, 1.5, t, band, [], 1.28);
+      [-hx, hx].forEach(x => wsWallWithOpenings(top, 'z', x, -hz, hz, 1.5, t, band, [], 1.28));
+      const glass = new THREE.MeshStandardMaterial({ color: 0x9cc7e6, roughness: 0.06, metalness: 0.3, transparent: true, opacity: 0.38 });
+      mmBox(g, H.w - 3, 1.4, 0.04, glass, 0, 6.6, -hz);
+      [-hx, hx].forEach(x => mmBox(g, 0.04, 1.4, H.d - 3, glass, x, 6.6, 0));
+      // The door: header, guide rails, the rolled-up curtain and yellow bollards
+      mmBox(g, H.door.w + 0.8, 0.9, 0.6, navy, 0, H.door.h, hz - 0.1);
+      const curtain = new THREE.Mesh(wsUV(new THREE.BoxGeometry(H.door.w, 0.7, 0.05), 1.2), doorMat);
+      curtain.position.set(0, H.door.h - 0.35, hz + 0.05);
+      g.add(curtain);
+      [-1, 1].forEach(s => {
+        mmBox(g, 0.16, H.door.h, 0.2, 'steel', s * (H.door.w / 2 + 0.08), 0, hz);
+        mmCyl(g, 0.13, 1.0, yellow, s * (H.door.w / 2 + 0.6), 0.5, hz + 0.9);
+      });
+      mmLabel(g, 'HANGAR  •  DOOR 4  •  18 M CLEAR', 4.2, 0.4, 0, H.door.h + 0.6, hz + 0.21, { bg: '#facc15', fg: '#111827' });
+      const sign = makeSignMesh('HANGAR & ASSEMBLY', { bg: '#1e3a5f', fg: '#f8fafc', width: 6.4, height: 0.8 });
+      sign.position.set(0, H.h - 0.75, hz + 0.1);
+      g.add(sign);
+      // Roof (see-through with the cutaway switch), trusses, the bridge crane
+      const roofMat = new THREE.MeshStandardMaterial({ color: 0x8b98a6, roughness: 0.55, metalness: 0.5, transparent: true, opacity: state.roofCutaway ? 0.18 : 0.95, side: THREE.DoubleSide });
+      const pitch = Math.atan2(1.0, hz);
+      [-1, 1].forEach(s => {
+        const roof = new THREE.Mesh(wsUV(new THREE.BoxGeometry(H.w + 0.8, 0.08, Math.hypot(hz + 0.5, 1.0)), 1.0), roofMat);
+        roof.position.set(0, H.h + 0.5, s * (hz + 0.5) / 2);
+        roof.rotation.x = s * pitch;
+        g.add(roof);
+        if (typeof cutawayRoofMeshes !== 'undefined') cutawayRoofMeshes.push(roof);
+      });
+      for (let x = -hx + 0.3; x <= hx - 0.2; x += H.w / 6) {
+        [-hz + 0.2, hz - 0.2].forEach(z => { if (Math.abs(x) > H.door.w / 2 + 0.2 || z < 0) mmBox(g, 0.24, H.h - 0.1, 0.24, navy, x, 0, z); });
+        mmBox(g, 0.16, 0.5, H.d - 0.4, navy, x, H.h - 0.55, 0);
+      }
+      [-hz + 0.5, hz - 0.5].forEach(z => mmBox(g, H.w - 0.6, 0.3, 0.3, yellow, 0, H.craneY, z));
+      const crane = mmGroup(g, 0, H.craneY + 0.3, 0);
+      mmBox(crane, 0.4, 0.55, H.d - 1.0, yellow, -0.4, 0, 0);
+      mmBox(crane, 0.4, 0.55, H.d - 1.0, yellow, 0.4, 0, 0);
+      const trolley = mmGroup(crane, 0, -0.2, 0);
+      mmBox(trolley, 1.2, 0.5, 0.8, mmMat('dark'), 0, 0, 0);
+      const hook = mmGroup(trolley, 0, -0.1, 0);
+      mmCyl(hook, 0.012, 3.0, 'steel', 0, -1.5, 0);
+      mmBox(hook, 0.3, 0.3, 0.15, yellow, 0, -3.1, 0);
+      mmLabel(crane, '20 T', 0.6, 0.3, 0.62, 0.3, 0, { bg: '#facc15', fg: '#111827', ry: Math.PI / 2 });
+      g.userData.crane = crane;
+      g.userData.hook = hook;
+      // Lights under the trusses, facing down
+      const fixGeo = new THREE.PlaneGeometry(1, 1);
+      fixGeo.rotateX(Math.PI / 2);
+      const lens = mmGlow('window');
+      lens.emissive.setHex(0xf1f5ff);
+      lens.emissiveIntensity = 1.2;
+      for (let x = -hx + 0.3; x <= hx - 0.2; x += H.w / 6) [-3.5, 3.5].forEach(z => { const m = new THREE.Mesh(fixGeo, lens); m.scale.set(0.6, 1, 0.36); m.position.set(x, H.h - 0.82, z); g.add(m); });
+      wsLights.push({ mesh: g.children[g.children.length - 1] });
+      // Floor markings: the aircraft bay (sized for a 10 m span) and two vehicle bays
+      const line = (x, z, w, d, mat = yellow) => mmBox(g, w, 0.006, d, mat, x, 0.12, z);
+      const bay = WORKSHOP_STATIONS.assembly.size, bz = WORKSHOP_STATIONS.assembly.world.z - H.z;
+      line(0, bz - bay.d / 2, bay.w, 0.1); line(0, bz + bay.d / 2, bay.w, 0.1);
+      line(-bay.w / 2, bz, 0.1, bay.d); line(bay.w / 2, bz, 0.1, bay.d);
+      const label = mmLabel(g, 'AIRCRAFT ASSEMBLY  •  10 M SPAN', 5.0, 0.6, 0, 0.13, bz - bay.d / 2 + 0.9, { bg: '#b9bab5', fg: '#a16207' });
+      label.rotation.x = -Math.PI / 2;
+      // Wing span gauge marks (every metre, 1.6 units) along the front of the bay
+      for (let i = -5; i <= 5; i++) line(i * 1.6, bz + bay.d / 2 - 0.35, 0.05, i % 5 ? 0.4 : 0.7);
+      mmLabel(g, 'KEEP CLEAR  •  CRANE OVERHEAD', 3.4, 0.4, 0, 0.13, hz - 0.9, { bg: '#b9bab5', fg: '#b91c1c' }).rotation.x = -Math.PI / 2;
+      // A parts cart and two trestles in the bay
+      const cart = mmGroup(g, hx - 1.6, 0.1, -hz + 1.6);
+      mmBox(cart, 0.9, 0.05, 0.6, 'red', 0, 0.35, 0);
+      mmBox(cart, 0.9, 0.05, 0.6, 'red', 0, 0.9, 0);
+      [-0.42, 0.42].forEach(x => mmBox(cart, 0.04, 0.95, 0.04, 'red', x, 0, 0.27));
+      [-3, 3].forEach(x => { mmBox(g, 1.2, 0.08, 0.3, 'wood', x, 0.95, bz); [-0.5, 0.5].forEach(dx => mmBox(g, 0.06, 0.95, 0.4, 'wood', x + dx, 0.1, bz)); });
+      if (typeof dressBuilding === 'function') dressBuilding(g, [[roofMat, 'metalroof', 1.2], [plinth, 'stone', 2]]);
+      scene.add(g);
+      // Walls are solid; the inside and the door are open to walk and drive through
+      for (let x = -hx; x <= hx; x += 1.2) worldObstacles.push({ x: H.x + x, z: H.z - hz, r: 0.5, workshop: true });
+      [-hx, hx].forEach(x => { for (let z = -hz; z <= hz; z += 1.2) worldObstacles.push({ x: H.x + x, z: H.z + z, r: 0.5, workshop: true }); });
+      for (let x = -hx; x <= hx; x += 1.2) if (Math.abs(x) > H.door.w / 2 + 0.3) worldObstacles.push({ x: H.x + x, z: H.z + hz, r: 0.5, workshop: true });
+      // Trees that grew where it now stands are gone
+      if (typeof valleyTrees !== 'undefined') {
+        for (let i = valleyTrees.length - 1; i >= 0; i--) {
+          const tr = valleyTrees[i];
+          if (Math.abs(tr.x - H.x) > hx + 1.5 || Math.abs(tr.z - H.z) > hz + 1.5) continue;
+          if (tr.group && tr.group.parent) tr.group.parent.remove(tr.group);
+          worldObstacles = worldObstacles.filter(o => o !== tr.obstacle);
+          valleyTrees.splice(i, 1);
+        }
+      }
+    }
+
+// Does something of this size (units) fit: through which doors, on the car elevator, in which bays
+function workshopFits(size) {
+      const L = Math.max(size.x, size.z), W = Math.min(size.x, size.z), Hh = size.y;
+      const bay = WORKSHOP_STATIONS.assembly.size;
+      return {
+        hangarDoor: W < WORKSHOP_HANGAR.door.w - 0.6 && Hh < WORKSHOP_HANGAR.door.h - 0.3,
+        hangarBay: L < bay.w + 0.01 && W < bay.d + 0.01 && Hh < WORKSHOP_HANGAR.craneY - 0.5,
+        door1: W < WS_DOORS.vehicle.w - 0.3 && Hh < WS_DOORS.vehicle.h - 0.2,
+        carElevator: L < WS_LIFT.d - 0.2 && W < WS_LIFT.w - 0.1 && Hh < WS_F2 - 0.3 - WS_F1,
+        garageLift: W < 3.3 && Hh + 1.9 < WS_EAVE - WS_F2
+      };
     }
 
 // --- Floor 1 machines: built in full only while the camera is near ------------------------------------

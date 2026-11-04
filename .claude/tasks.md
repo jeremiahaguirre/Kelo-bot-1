@@ -119,6 +119,17 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
     - Accessible (labels, focus, aria-live), re-render only on change, escapeHtml everywhere, no inline handlers (CSP).
     - New code in `js/talk.js` (after portal.js). Status: done on `agent/talk`, ready to merge. Talk tests pass on desktop (1024x720) and phone (390x844): empty state, saved name, Enter/Shift+Enter, thinking indicator, lookup cards, helicopter chip queued → doing → done (and no chip without one), photo and gift from +, load earlier, jump to latest, reload. Regressions reload, chat and skills: page errors none. Harness note: on a loaded machine use DOM clicks (`el.click()`) rather than `page.click`.
 
+## Final steps (owner, 2026-11-04), in this order, after tasks 5, 7, 8 and 9 are merged
+12. **Full play-through QA.** Run through the entire game and make sure everything works as intended and smoothly, without bugs:
+    - every tab and panel
+    - every building, including the workshop on both floors, the plant, the Museum and the Storehouse
+    - every vehicle and trip
+    - every hobby and skill: paintings, welding, garden, builds and upgrades
+    - requests, the Post tab, the shop website, reload and offline catch-up
+    - phone and desktop layouts
+    Fix what is found.
+13. **Task 10 phase 2:** apply the `.claude/review.md` plan across the merged code, re-profile and fix new bugs.
+
 ## Owner notes to keep in mind
 - Owner (2026-11-04): helpers may add as much land as needed for machines, workshops and plants (natural shoreline, walkable, clear of town, one shared land constant/helper). Kelo-1 must never end up standing in water.
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.

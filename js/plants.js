@@ -677,7 +677,15 @@ function unpavedRoad() { return (state.worldEdits || []).filter(e => e.type === 
 async function paveWithOwnAsphalt(why = '', originLabel = 'Paving With His Own Asphalt') {
       const road = unpavedRoad();
       if (!road) { state.speechBubble = 'All my roads are paved or I have none. Making asphalt now would just cool and go to waste.'; renderAllUI(); return 'nothing-to-pave'; }
-      if (!groundworkReady('paving', 'Paving a road')) return 'getting-ready';
+      // The paving tools he needs; the asphalt itself he makes (so he doesn't ask for it)
+      if (!jobKnown('paving')) { groundworkReady('paving', 'Paving a road'); return 'researching'; }
+      const tools = missingForJob('paving').filter(m => m.kind === 'tool');
+      if (tools.length) {
+        tools.forEach(m => addItemRequest(m.ask, 'tool', `For paving a road I need ${m.ask.toLowerCase()} ${m.why}.`, 'Paving a road'));
+        state.speechBubble = `To lay my own asphalt I still need ${tools.map(m => m.ask.replace(/^an?\s+/i, '').toLowerCase()).join(', ')}. I asked for ${tools.length === 1 ? 'it' : 'them'}.`;
+        renderAllUI();
+        return 'getting-ready';
+      }
       if (!hotMixName()) {
         const r = await runAsphaltPlant(why || 'For my gravel road.', originLabel);
         if (r !== true) return r;

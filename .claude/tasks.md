@@ -8,10 +8,11 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
-## Merged into main locally (2026-11-04, waiting on the regression run before push)
-- Task 1 Paintings (agent/paint), task 2 Accurate welding + work bench (agent/weld), task 3 Humanize/eye cam/fluid motion (agent/body), task 4 Garden (agent/garden), task 6 Code anything + self-upgrades (agent/upgrades), task 10 phase 1 audit (agent/review; plan in .claude/review.md, phase 2 still to do after the rest merge).
+## Done and pushed to main (2026-11-04)
+- Task 1 Paintings, task 2 Accurate welding + work bench, task 3 Humanize/eye cam/fluid motion, task 4 Garden, task 6 Code anything + self-upgrades, task 10 phase 1 audit (plan in .claude/review.md).
+- Task 11 Talk tab: merged, push after the regression run passes.
 
-## In progress (helpers resumed 2026-11-04 03:12 UTC; if one stops, resume it)
+## In progress (helpers resumed 2026-11-04 14:20 UTC; if one stops, resume it). Still open: 5 build anything, 7 workshop, 8 plant, 9 vehicles, then 10 phase 2.
 1. **Paintings** (`agent/paint`): real oil, acrylic, watercolour, gouache, pastel, ink and charcoal paintings.
    - He researches each medium, then requests its supplies. Supplies are used up.
    - He paints at an easel, the paintings hang in the Museum, and visitors can ask for one.

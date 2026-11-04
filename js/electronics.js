@@ -163,10 +163,15 @@ registerWorkshopMachine({
           boardThrough(m, b, 0.5);
           mmSetTower(u.tower, 'run');
           await machineStep(ctx, 'Placing the components from their reels', 5000, (k, t) => {
-            const n = b.userData.parts.length, placed = Math.floor(k * n);
-            b.userData.parts.forEach((p, i) => { p.visible = i < placed; });
-            u.head.position.x = Math.sin(t * 7) * 0.3;
-            u.head.position.z = 0.25 * Math.cos(t * 5) * (k < 0.95 ? 1 : 0);
+            // Each part: the head goes to its feeder reel at the front, picks, comes back and places it
+            const n = b.userData.parts.length, f = k * n, i = Math.min(n - 1, Math.floor(f)), c = f - i;
+            b.userData.parts.forEach((p, j) => { p.visible = j < i || (j === i && c > 0.9); });
+            const reelX = -0.48 + (i % 9) * 0.12, part = b.userData.parts[i];
+            const boardX = b.position.x + part.position.x, boardZ = b.position.z + part.position.z;
+            const go = c < 0.45 ? c / 0.45 : c < 0.55 ? 1 : 1 - (c - 0.55) / 0.45;
+            u.head.position.x = boardX + (reelX - boardX) * go;
+            u.head.position.z = boardZ + (0.33 - boardZ) * go;
+            u.head.position.y = 1.15 - (Math.abs(c - 0.5) < 0.05 || c > 0.88 ? 0.06 : 0);
           }, 'Click-click-click: a part every fraction of a second.');
           mmSetTower(u.tower, 'idle');
           await ctx.animate(800, k => boardThrough(m, b, 0.5 + k * 0.5));

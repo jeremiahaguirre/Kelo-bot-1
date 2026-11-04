@@ -977,6 +977,8 @@ async function tripHitchUp(tow, trailer) {
       const spot = { x: coupler.x - f.x * hx, z: coupler.z - f.z * hx };
       const approach = { x: spot.x + f.x * 3.5, z: spot.z + f.z * 3.5 };
       await tripDrive(tow, [approach], `Backing the ${tripPlain(tow.name).toLowerCase()} up to the ${tripPlain(trailer.name).toLowerCase()}`);
+      // Couldn't get the truck lined up (something in the way): no hitching from across the yard
+      if (Math.hypot(state.botPos.x - approach.x, state.botPos.z - approach.z) > 3) return false;
       await tripTurnTo(b);
       state.speechBubble = 'Back... back... a little more... stop.';
       renderAllUI();
@@ -985,6 +987,7 @@ async function tripHitchUp(tow, trailer) {
       state.speechBubble = 'Clunk. Coupler on the ball, latch locked, safety chains crossed, lights plugged in.';
       renderAllUI();
       await tripSleep(1800);
+      return true;
     }
 
 function tripUnhitch() {
@@ -1205,9 +1208,13 @@ async function takeTrip(name, to = null, why = '', originLabel = 'Taking a Trip'
       state.customPlaceName = plan.dest.label;
       state.moodEmoji = '🧭';
       try {
-        if (plan.mode === 'haul') await runHaulTrip(plan, why);
-        else if (plan.mode === 'fly') await runFlyTrip(plan);
-        else await runDirectTrip(plan);
+        if (plan.mode === 'haul' && !(await runHaulTrip(plan, why))) {
+          if (typeof coolDownActivity === 'function') coolDownActivity(`trip:${plan.key}`);
+          renderAllUI();
+          return 'turned-back';
+        }
+        if (plan.mode === 'fly') await runFlyTrip(plan);
+        else if (plan.mode !== 'haul') await runDirectTrip(plan);
         const skill = typeof skillCandidates === 'function' && skillCandidates().find(c => c.vehicle === v);
         if (skill && typeof gainSkill === 'function') gainSkill(skill.key, skill.label, 8);
         state.happiness = Math.min(100, state.happiness + 8);
@@ -1265,7 +1272,11 @@ async function runHaulTrip(plan) {
       renderAllUI();
       await tripSleep(2500);
       // 1. Hitch up and load
-      await tripHitchUp(tow, trailer);
+      if (await tripHitchUp(tow, trailer) === false) {
+        tripExitVehicle(tow);
+        state.speechBubble = `I couldn't get the ${tp} lined up with the ${trp}. Something's in the way, so the trip will have to wait.`;
+        return false;
+      }
       if (tripLoadOf(cargo) !== trailer) {
         await tripLoad(cargo, trailer);
         await tripStrap(trailer, true);
@@ -1295,6 +1306,13 @@ async function runHaulTrip(plan) {
         await tripDrive(tow, [{ x: L.x, z: L.pullOutZ }], `Pulling the ${cp} out of the water`);
       } else {
         await tripDrive(tow, plan.towRoute, `Towing the ${cp} on the ${trp}`);
+        // Didn't make it to where its ground starts: don't unload it on the wrong ground, take it home
+        if (Math.hypot(state.botPos.x - plan.drop.x, state.botPos.z - plan.drop.z) > 5) {
+          state.speechBubble = `The ${tp} couldn't get through to ${key === 'snowmobile' ? 'the snow line' : 'the spot'} today. I'll take the ${cp} home and try another time.`;
+          renderAllUI();
+          await tripSleep(2500);
+          plan.turnedBack = true;
+        } else {
         state.speechBubble = key === 'snowmobile' ? "This is as far as the truck should go. The snow starts right here." : 'Here we are.';
         renderAllUI();
         tripExitVehicle(tow);
@@ -1321,6 +1339,7 @@ async function runHaulTrip(plan) {
         await tripDrive(cargo, [foot], `Lining the ${cp} up with the ramp`);
         await tripLoad(cargo, trailer);
         await tripStrap(trailer, true);
+        }
       }
       // 4. Home, unhitch, park the truck
       const hitchHome = (tripStateNow().hitch || {}).home || { x: towHome.x, z: towHome.z };
@@ -1339,6 +1358,7 @@ async function runHaulTrip(plan) {
       tripExitVehicle(tow);
       tow.x = towHome.x; tow.z = towHome.z; tow.rotY = towHome.rotY;
       renderVehicles3D();
+      return !plan.turnedBack;
     }
 
 // --- Snow within reach? (cached: the skills list asks often) ---------------------------------------

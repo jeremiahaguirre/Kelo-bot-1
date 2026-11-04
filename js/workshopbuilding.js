@@ -503,12 +503,22 @@ function buildWorkshop3D() {
       // point lights that are only bright while the camera is near
       const lensMat = mmGlow('window');
       lensMat.emissive.setHex(0xf1f5ff);
+      // Each LED high-bay hangs right under a roof truss: a thin housing and a lens that face down, so
+      // from above (roof cut away) there is nothing loose to see, only the truss
+      const fixGeo = new THREE.PlaneGeometry(1, 1);
+      fixGeo.rotateX(Math.PI / 2); // facing down
+      const housingMat = new THREE.MeshStandardMaterial({ color: 0x2b3038, roughness: 0.6, metalness: 0.4 });
       const fixture = (x, y, z) => {
-        mmBox(wsGroup, 0.6, 0.08, 0.6, mmMat('dark'), x, y, z);
-        const lens = mmBox(wsGroup, 0.5, 0.02, 0.5, lensMat, x, y - 0.02, z);
+        const housing = new THREE.Mesh(fixGeo, housingMat);
+        housing.scale.set(0.7, 1, 0.45);
+        housing.position.set(x, y, z);
+        const lens = new THREE.Mesh(fixGeo, lensMat);
+        lens.scale.set(0.6, 1, 0.36);
+        lens.position.set(x, y - 0.03, z);
+        wsGroup.add(housing, lens);
         if (!wsLights.some(l => l.mesh.material === lensMat)) wsLights.push({ mesh: lens });
       };
-      for (let x = -6; x <= 6; x += 3) [-4.5, 0, 4.5].forEach(z => fixture(x, WS_EAVE - 1.0, z));
+      for (let x = -hx + 0.3; x <= hx - 0.2; x += W / 5) [-4.5, 0, 4.5].forEach(z => fixture(x, WS_EAVE - 0.63, z));
       // (no real point lights: each one would make every material in the world dearer to draw)
       wsGroup.userData.lamps = [];
 

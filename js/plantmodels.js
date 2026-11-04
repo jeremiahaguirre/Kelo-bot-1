@@ -360,9 +360,19 @@ function buildAggregatePlantGround() {
         const gravel = new THREE.Color(0x9a948a), dark = new THREE.Color(0x7d786f);
         for (let i = 0; i < pos.count; i++) {
           const vx = pos.getX(i), vz = pos.getZ(i);
-          const walk = Math.abs(vx - S.x) < S.w / 2 + 0.2 && vz > S.z + S.d / 2 && vz < PLANT_SHORE_Z + 0.1;
-          if (!walk && !inAggregatePlantSite(vx, vz, 0.2)) continue;
-          const c = walk ? new THREE.Color(0xb3a58c).lerp(dark, (Math.sin(vx * 3.7) + 1) / 8) : gravel.clone().lerp(dark, (Math.sin(vx * 2.3) * Math.cos(vz * 3.1) + 1) / 3);
+          const wob = (Math.sin(vx * 2.3) * Math.cos(vz * 3.1) + 1) / 2;
+          let c;
+          if (inAggregatePlantSite(vx, vz, 0.2)) c = gravel.clone().lerp(dark, wob / 1.5);
+          else {
+            // The made land: a gravel walkway along the plant, meadow, then a sand beach into the water
+            const d = KELO_ADDED_LAND.reduce((m, L) => Math.min(m, addedLandDistance(L, vx, vz)), Infinity);
+            if (d > 4.3) continue;
+            if (d > -1.3) c = (pos.getY(i) > WATER_LEVEL + 0.02 ? new THREE.Color(0xd2bf93) : new THREE.Color(0x8a7a5c)).lerp(new THREE.Color(0xc8b48c), wob * 0.4);
+            else if (vz < S.z + S.d / 2 + 2.2 && Math.abs(vx - S.x) < S.w / 2 + 0.6) c = new THREE.Color(0xb3a58c).lerp(dark, wob / 4);
+            else if (vz > S.z + S.d / 2) c = new THREE.Color(0x5d7d33).lerp(new THREE.Color(0x46662a), wob * 0.6).lerp(new THREE.Color(0x87884a), (1 - wob) * 0.3);
+            else continue;
+          }
+          if (typeof mottleGround === 'function') mottleGround(c, vx, vz, 0.05);
           col.setXYZ(i, c.r, c.g, c.b);
         }
         col.needsUpdate = true;
@@ -1270,7 +1280,7 @@ function initAggregatePlant3D() {
       });
       if (typeof refreshTerrainAround === 'function') {
         const S = aggregatePlantSite();
-        for (let x = S.x - S.w / 2; x <= S.x + S.w / 2; x += 4) refreshTerrainAround(x, S.z, S.d / 2 + 4);
+        for (let x = S.x - S.w / 2; x <= S.x + S.w / 2; x += 4) refreshTerrainAround(x, S.z + 2, S.d / 2 + 8);
       }
       aggregatePlantGroup = new THREE.Group();
       aggregatePlantGroup.name = 'aggregatePlant';
@@ -1312,9 +1322,14 @@ function aggregatePlantObstacles() {
       const a = [[-6.75, -1.85 + N, 0.95], [-5.55, -1.85 + N, 0.95], [-4.35, -1.85 + N, 0.95], [-2.2, -1.75 + N, 0.6], [0.6, -1.65 + N, 1.0], [2.2, -1.65 + N, 1.0], [3.7, -1.65 + N, 1.0], [5.2, -1.65 + N, 0.8],
         [1.5, -3.05 + N, 1.3], [5.35, -3.0 + N, 0.9], [3.35, -0.3, 0.9], [5.35, L - 0.1, 1.0], [-6.55, L - 0.5, 1.0], [-6.55, L + 0.6, 1.0],
         [-2.15, L - 1.3, 0.25], [-0.25, L - 1.3, 0.25], [-2.15, L + 1.3, 0.25], [-0.25, L + 1.3, 0.25]];
-      // A line out in the shallows: nobody's path past the plant cuts through the water
+      // The water's edge around the plant's land: posts in the shallows (where the ground is under the
+      // lake but dry land is close) so no path past the plant cuts through the water
       const shore = [];
-      for (let x = AGGREGATE_PLANT_SITE.x - AGGREGATE_PLANT_SITE.w / 2 - 2; x <= WORLD_MAX_X; x += 1.2) shore.push({ x, z: PLANT_SHORE_Z + 1.0, r: 0.8 });
+      const wet = (x, z) => getAnalyticalGroundHeight(x, z) < WATER_LEVEL + 0.02;
+      for (let x = 24; x <= WORLD_MAX_X + 1; x += 1.0) for (let z = 6; z <= 14; z += 1.0) {
+        if (!wet(x, z)) continue;
+        if ([[1.5, 0], [-1.5, 0], [0, 1.5], [0, -1.5]].some(([dx, dz]) => !wet(x + dx, z + dz))) shore.push({ x, z, r: 0.55 });
+      }
       return [...b.map(([x, z, r]) => ({ x: B.x + x, z: B.z + z, r })), ...a.map(([x, z, r]) => ({ x: A.x + x, z: A.z + z, r })), ...shore];
     }
 

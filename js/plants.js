@@ -17,16 +17,17 @@
 // --- Where it is --------------------------------------------------------------------------------
 // South of the big workshop (assumed at x 44-56, z -10 to 2), between the helipad and the lake.
 // If js has a WORKSHOP_SITE, the plant lines up with it (the lake stops it moving further south).
-// The pad runs from z 0.7 to 7.2; south of it a levelled gravel walkway 2 units wide runs to the
-// water (the lake starts at z 9.2). oz is where the plants' own layouts are centred.
+// The pad runs from z 0.7 to 7.2. The beach here sat just under the lake's level, so new land was
+// added south of it (KELO_ADDED_LAND below): a wide walkway and meadow to a sand beach at z 11.5.
+// oz is where the plants' own layouts are centred.
 const AGGREGATE_PLANT_SITE = { x: 45.5, z: 3.95, w: 26, d: 6.5, y: 0.05, oz: 4.05 };
-const PLANT_SHORE_Z = 9.2;          // where the lake begins
+const PLANT_SHORE_Z = 11.5;         // where the lake begins now, off the plant's new land
 const PLANT_DRY_Z = 7.7;            // walk targets and parking stay north of this (1.5 inland)
 const BATCH_PLANT_OFFSET = -6.5;    // the batch plant's origin, east of the site centre
 const ASPHALT_PLANT_OFFSET = 6.5;   // the asphalt plant's origin
 const PLANT_LANE_Z = 1.45;          // the truck lane, south of the machines (local z)
 const ASPHALT_NORTH_SHIFT = 0.35;   // the asphalt plant's north machines sit this much further south
-const PLANT_BLEND = 1.8, PLANT_BLEND_SOUTH = 0.7;
+const PLANT_BLEND = 1.8;
 let aggregatePlantSiteDone = false;
 
 function aggregatePlantSite() {
@@ -51,16 +52,52 @@ function inAggregatePlantSite(x, z, pad = 0) {
       return Math.abs(x - S.x) < S.w / 2 + pad && Math.abs(z - S.z) < S.d / 2 + pad;
     }
 
+// --- Land added to the lake ------------------------------------------------------------------------
+// One shared registry of made land: rounded rectangles of level ground { id, minX, maxX, minZ, maxZ,
+// y, corner, beach }. Other builders (the workshop, say) can push their own; overlapping pieces join
+// up because the ground is the highest of them. Each ends in a natural sand beach that slopes under
+// the water and blends into the lake bed. (js/landfill.js is his own dirt-by-dirt land; this is land
+// that was built with the plant.)
+window.KELO_ADDED_LAND = window.KELO_ADDED_LAND || [];
+KELO_ADDED_LAND.push({ id: 'aggregate-plant', minX: 30.5, maxX: 60.5, minZ: 2.0, maxZ: PLANT_SHORE_Z, y: AGGREGATE_PLANT_SITE.y, corner: 2.5, beach: 1.8 });
+
+// How far outside a piece a point is (negative inside), with rounded corners
+function addedLandDistance(L, x, z) {
+      const r = L.corner || 0;
+      const qx = Math.abs(x - (L.minX + L.maxX) / 2) - ((L.maxX - L.minX) / 2 - r);
+      const qz = Math.abs(z - (L.minZ + L.maxZ) / 2) - ((L.maxZ - L.minZ) / 2 - r);
+      return Math.hypot(Math.max(qx, 0), Math.max(qz, 0)) + Math.min(Math.max(qx, qz), 0) - r;
+    }
+
+// The made land's surface at a point, or -Infinity where there is none: level, then a beach that
+// drops 0.6 below the water over `beach` units, then eases down to the lake bed
+function addedLandHeightAt(x, z, bed) {
+      let best = -Infinity;
+      for (const L of KELO_ADDED_LAND) {
+        const d = addedLandDistance(L, x, z);
+        const beach = L.beach || 1.5;
+        let h;
+        if (d <= 0) h = L.y;
+        else if (d < beach) { const t = d / beach; h = L.y - (L.y - (WATER_LEVEL - 0.45)) * t * t * (3 - 2 * t) * 0.999 - 0.0005; }
+        else if (d < beach + 2.5) h = (WATER_LEVEL - 0.45) - (d - beach) * 0.5;
+        else continue;
+        if (h > best) best = h;
+      }
+      return Math.max(best, bed);
+    }
+
+function onAddedLand(x, z, margin = 0) {
+      return KELO_ADDED_LAND.some(L => addedLandDistance(L, x, z) < -margin);
+    }
+
 // The ground under the plant is levelled (scene.js asks getAnalyticalGroundHeight everywhere)
 const plantOrigGround = getAnalyticalGroundHeight;
 getAnalyticalGroundHeight = function (x, z) {
-      const h = plantOrigGround(x, z);
+      const h = addedLandHeightAt(x, z, plantOrigGround(x, z));
       const S = aggregatePlantSite();
       const dx = Math.max(0, Math.abs(x - S.x) - S.w / 2);
-      // South of the pad the level ground carries on as a dry gravel walkway to the shore (z 9.2): the
-      // natural beach here sits just under the lake's level
-      const dzN = Math.max(0, (S.z - S.d / 2) - z), dzS = Math.max(0, z - PLANT_SHORE_Z);
-      const d = Math.hypot(dx, dzN, dzS * (PLANT_BLEND / PLANT_BLEND_SOUTH));
+      const dzN = Math.max(0, (S.z - S.d / 2) - z), dzS = Math.max(0, z - (S.z + S.d / 2));
+      const d = Math.hypot(dx, dzN, dzS);
       if (d >= PLANT_BLEND) return h;
       const t = d / PLANT_BLEND, s = t * t * (3 - 2 * t);
       return S.y + (h - S.y) * s;

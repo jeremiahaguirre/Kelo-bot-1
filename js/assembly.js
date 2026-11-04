@@ -85,6 +85,19 @@ function aName(n) {
       return `${/^[aeiou]/.test(t) ? 'an' : 'a'} ${t}`;
     }
 
+// A sub-assembly's name in a sentence ("the wings", not "the wings (pair)"), and whether it takes
+// "are" ("the wings are done", "the engine and propeller are done", "the landing gear is done")
+function subProse(name) {
+      return String(name || '').replace(/\s*\(.*?\)\s*/g, ' ').trim().toLowerCase();
+    }
+
+function subIsPlural(name) {
+      const t = subProse(name);
+      if (/\band\b|,/.test(t)) return true;
+      const last = t.split(/\s+/).pop() || '';
+      return /s$/.test(last) && !/(ss|us|is)$/.test(last);
+    }
+
 function plainName(n) {
       return String(n || '').replace(/^(an?|the)\s+/i, '');
     }
@@ -339,7 +352,7 @@ function addListRequest(p, subKey) {
         category: 'bomlist', icon: tools ? '🧰' : '📋', urgency: 'Parts list',
         title: tools ? `Tools for the ${p.bom.name.toLowerCase()}` : `Parts list: ${sub.name} (${p.bom.name.toLowerCase()})`,
         question: tools ? `To build the ${p.bom.name.toLowerCase()} properly I need the right tools. ${lines.map(l => plainName(l.name)).slice(0, 3).join(', ')}${lines.length > 3 ? ' and the rest' : ''}. Could you send whichever you can?`
-          : `Here's everything the ${sub.name.toLowerCase()} takes, counted down to the last fastener (${bomFmtQty(bomFastenerCount(sub))} of them). Send all of it or just some, and I'll start as soon as it's all here.`,
+          : `Here's everything the ${subProse(sub.name)} ${subIsPlural(sub.name) ? 'take' : 'takes'}, counted down to the last fastener (${bomFmtQty(bomFastenerCount(sub))} of them). Send all of it or just some, and I'll start as soon as it's all here.`,
         listProject: p.id, listSub: subKey, listRev: Date.now(), fulfilled: false, declined: false, userAnswer: ''
       };
       state.requestsToUser.unshift(req);
@@ -490,13 +503,13 @@ async function openPartsParcel(parcel) {
       state.moodEmoji = p.bom.emoji;
       state.moodTitle = `Unpacked ${parcel.name.toLowerCase()}`.slice(0, 80);
       state.speechBubble = toolsGot.length ? `New tools for the ${p.bom.name.toLowerCase()}: ${toolsGot.map(n => n.toLowerCase()).join(', ')}. Thank you, ${parcel.from}!`
-        : complete ? `Everything for the ${sub.name.toLowerCase()} is here: ${sub.lines.length} lines and ${bomFmtQty(bomFastenerCount(sub))} fasteners, all counted. Thank you, ${parcel.from}!`
+        : complete ? `Everything for the ${subProse(sub.name)} is here: ${sub.lines.length} lines and ${bomFmtQty(bomFastenerCount(sub))} fasteners, all counted. Thank you, ${parcel.from}!`
           : `${lines} lines of the ${sub ? sub.name.toLowerCase() : 'parts'} list arrived. ${sub ? `I have ${bomSubReceived(sub)} of ${sub.lines.length} now.` : ''} Thank you, ${parcel.from}!`;
       state.giftLog[0].reaction = state.speechBubble;
       state.chatLog.push({ sender: 'Kelo-1', text: state.speechBubble, time: 'Just now', isBot: true });
       state.requestsToUser.forEach(r => { if (r.category === 'bomlist' && r.listProject === p.id) r.listRev = Date.now(); });
       if (complete) state.diaryEntries.unshift({ time: 'Parts Arrived', location: 'Okanagan Post Office', mood: `📦 ${sub.name} kit complete`.slice(0, 80), vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
-        text: `Dear Diary, ${parcel.from} sent the last of the ${sub.name.toLowerCase()} parts. I checked every line against my bill of materials: ${sub.lines.length} lines, ${bomFmtQty(bomFastenerCount(sub))} fasteners. Nothing missing.` });
+        text: `Dear Diary, ${parcel.from} sent the last of the ${subProse(sub.name)} parts. I checked every line against my bill of materials: ${sub.lines.length} lines, ${bomFmtQty(bomFastenerCount(sub))} fasteners. Nothing missing.` });
       state.happiness = Math.min(100, state.happiness + 4);
       if (assemblyMeshes[p.id]) placeAssemblyMesh(p);
       savePersistentBrainState();
@@ -582,8 +595,8 @@ async function buildNextSubAssembly(id, originLabel = 'Building Something Big') 
         state.customPlaceName = site.name;
         state.targetPos = spot;
         state.moodEmoji = p.bom.emoji;
-        state.moodTitle = `Building the ${sub.name.toLowerCase()}`.slice(0, 80);
-        state.speechBubble = `Everything for the ${sub.name.toLowerCase()} is here. Measure twice, cut once.`;
+        state.moodTitle = `Building the ${subProse(sub.name)}`.slice(0, 80);
+        state.speechBubble = `Everything for the ${subProse(sub.name)} is here. Measure twice, cut once.`;
         renderAllUI();
         await waitForArrival(90000);
         const face = siteToWorld(site, 0, 0);
@@ -597,7 +610,7 @@ async function buildNextSubAssembly(id, originLabel = 'Building Something Big') 
             state.microPose = 'normal';
             state.currentLocKey = ws.locKey && TOWN_LOCATIONS[ws.locKey] ? ws.locKey : 'custom';
             state.customPlaceName = state.currentLocKey === 'custom' ? ws.place : null;
-            state.moodTitle = ws.bench ? `Taking the ${sub.name.toLowerCase()} parts to ${ws.place}`.slice(0, 80) : `Back to the ${p.bom.name.toLowerCase()}`.slice(0, 80);
+            state.moodTitle = ws.bench ? `Taking the ${subProse(sub.name)} parts to ${ws.place}`.slice(0, 80) : `Back to the ${p.bom.name.toLowerCase()}`.slice(0, 80);
             state.targetPos = { ...ws.pos };
             renderAllUI();
             await waitForArrival(90000);
@@ -636,13 +649,13 @@ async function buildNextSubAssembly(id, originLabel = 'Building Something Big') 
         if (sub.key === 'fuel' || sub.lines.some(l => l.stepAt >= 0 && sub.steps[l.stepAt].verb === 'fuel' && /fuel|gasoline/i.test(l.name)))
           p.fuelGal = sub.lines.filter(l => /fuel|gasoline/i.test(l.name) && l.kind === 'c').reduce((n2, l) => n2 + l.qty, 0);
         const pct = bomPercentBuilt(p.bom);
-        state.speechBubble = `The ${sub.name.toLowerCase()} is done! The ${p.bom.name.toLowerCase()} is ${pct}% built.`;
-        state.changedLatelySummary = `Built the ${sub.name.toLowerCase()} of his ${p.bom.name.toLowerCase()}`;
+        state.speechBubble = `The ${subProse(sub.name)} ${subIsPlural(sub.name) ? 'are' : 'is'} done! The ${p.bom.name.toLowerCase()} is ${pct}% built.`;
+        state.changedLatelySummary = `Built the ${subProse(sub.name)} of his ${p.bom.name.toLowerCase()}`;
         state.happiness = Math.min(100, state.happiness + 5);
         state.diaryEntries.unshift({
           time: originLabel, location: site.name || currentPlaceLabel(), mood: `${p.bom.emoji} ${sub.name} built (${pct}%)`.slice(0, 80),
           vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
-          text: `Dear Diary, I built the ${sub.name.toLowerCase()} of my ${p.bom.name.toLowerCase()}: ${sub.steps.map(s => s.say.toLowerCase()).join('; ')}. ${bomFastenerCount(sub) ? `${bomFmtQty(bomFastenerCount(sub))} fasteners went in, every one counted. ` : ''}${sub.lines.some(l => l.kind === 'c') ? `I used up ${sub.lines.filter(l => l.kind === 'c').map(l => `${bomFmtQty(l.qty)}${l.unit ? ' ' + l.unit : ''} of ${l.name.toLowerCase()}`).join(', ')}. ` : ''}It's ${pct}% built now.`
+          text: `Dear Diary, I built the ${subProse(sub.name)} of my ${p.bom.name.toLowerCase()}: ${sub.steps.map(s => s.say.toLowerCase()).join('; ')}. ${bomFastenerCount(sub) ? `${bomFmtQty(bomFastenerCount(sub))} fasteners went in, every one counted. ` : ''}${sub.lines.some(l => l.kind === 'c') ? `I used up ${sub.lines.filter(l => l.kind === 'c').map(l => `${bomFmtQty(l.qty)}${l.unit ? ' ' + l.unit : ''} of ${l.name.toLowerCase()}`).join(', ')}. ` : ''}It's ${pct}% built now.`
         });
         if (p.bom.subs.every(s => s.built)) { p.status = 'testing'; state.speechBubble += ' Every part is on. Next: the inspections and tests.'; }
         else askForLists(p);
@@ -998,7 +1011,7 @@ function assemblySummaryForAI() {
         const b = p.bom, sub = nextSubToBuild(p);
         const missing = b.subs.filter(s => !s.built).flatMap(s => s.lines.filter(l => l.got < l.qty).map(l => `${bomLineLabel(l)} (${s.name.toLowerCase()})`));
         const tools = b.tools.filter(t => !bomToolOwned(t)).map(t => t.name.toLowerCase());
-        parts.push(`active build: ${b.name.toLowerCase()} (${p.status}), ${bomPercentBuilt(b)}% built, ${bomPercentReceived(b)}% of parts received${sub ? `, next sub-assembly: ${sub.name.toLowerCase()}` : ''}`);
+        parts.push(`active build: ${b.name.toLowerCase()} (${p.status}), ${bomPercentBuilt(b)}% built, ${bomPercentReceived(b)}% of parts received${sub ? `, next sub-assembly: ${subProse(sub.name)}` : ''}`);
         parts.push(missing.length ? `parts still missing (${missing.length} lines): ${missing.slice(0, 12).join('; ')}${missing.length > 12 ? '; …' : ''}` : 'all parts are here');
         if (tools.length) parts.push(`tools still missing: ${tools.join(', ')}`);
         if (b.vehicle === 'plane') parts.push(pilotTrained() ? 'you have learned to fly' : 'you must pass ground school and taxi practice before flying it');

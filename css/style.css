@@ -110,3 +110,12 @@ body {
 .try-btn.try-btn-on { background: rgba(56, 189, 248, 0.25); border-color: #38bdf8; color: #e0f2fe; }
 .try-gift { display: flex; gap: 8px; align-items: flex-start; width: 100%; text-align: left; padding: 7px 9px; border-radius: 12px; background: #0f172a; border: 1px solid #1e293b; }
 .try-gift:hover { background: rgba(245, 158, 11, 0.12); border-color: rgba(251, 191, 36, 0.45); }
+
+/* Through his eyes (js/eyecam.js) */
+#eyeCamHud { top: calc(var(--explore-top) + 46px); left: 50%; transform: translateX(-50%); width: min(400px, calc(100% - 1rem)); pointer-events: auto; }
+@media (max-width: 639px) { #eyeCamHud { top: calc(var(--explore-top) + 50px); } }
+.eyecam-btn { padding: 3px 8px; border-radius: 9px; background: #0f172a; border: 1px solid #334155; color: #e2e8f0; font-size: 11px; font-weight: 600; min-height: 26px; }
+.eyecam-btn:hover { background: rgba(45, 212, 191, 0.2); border-color: rgba(45, 212, 191, 0.6); }
+#eyeCamVignette { position: absolute; inset: 0; pointer-events: none; z-index: 5; opacity: 0; transition: opacity 0.6s; background: radial-gradient(ellipse 85% 80% at 50% 50%, transparent 62%, rgba(2, 6, 23, 0.55) 100%); border-radius: 28px; }
+body.eyecam-on #eyeCamVignette { opacity: 1; }
+body.eyecam-on #explorePad .explore-pad-btn[data-hold="zoomOut"], body.eyecam-on #explorePad .explore-pad-btn[data-hold="zoomIn"] { opacity: 0.85; }

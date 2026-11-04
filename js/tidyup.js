@@ -45,6 +45,7 @@ function mustKeep(name) {
       if (state.hobbies.some(h => h.tool === n)) return 'it\'s my hobby gear';
       if (typeof TOOL_NEEDS !== 'undefined' && Object.values(TOOL_NEEDS).some(t => t.re.test(n)) && !(typeof isBrokenItem === 'function' && isBrokenItem(n))) return 'I need it for digging';
       if (typeof vehicleTypeFor === 'function' && vehicleTypeFor(n)) return 'it gets me around';
+      if (typeof keptAtWeldStudio === 'function' && keptAtWeldStudio(n)) return 'I need it for welding';
       if (/telescope|3d printer|axe|snow ?shoes?|skis?\b|kite/i.test(n) && !(typeof isBrokenItem === 'function' && isBrokenItem(n))) return 'I still use it';
       if (state.shop && state.shop.listings && state.shop.listings.some(l => l.name === n || l.ref === n)) return 'it\'s for sale in my shop';
       return null;
@@ -72,7 +73,7 @@ function tidyCandidates() {
       // A crowded Museum: the oldest pieces are up for reconsideration too
       if (typeof museumBasementLevels === 'function' && museumBasementLevels() >= 2) {
         allMuseumSculptures().slice(0, 4).forEach(c => out.push({ name: c.title, kind: 'sculpture', score: 2, reason: 'the Museum is crowded and it\'s one of my oldest pieces' }));
-        allMuseumPaintings().slice(0, 2).forEach(m => out.push({ name: m.text, kind: 'painting', score: 2, reason: 'the Museum is crowded and it\'s one of my first paintings' }));
+        allMuseumPaintings().filter(m => !m.keep && !(m.kind === 'art' && typeof ensureShop === 'function' && ensureShop().listings.some(l => l.painting && l.painting.id === m.id))).slice(0, 2).forEach(m => out.push({ name: m.text, kind: 'painting', score: 2, reason: 'the Museum is crowded and it\'s one of my first paintings' }));
       }
       return out.sort((a, b) => b.score - a.score);
     }

@@ -101,7 +101,8 @@ function applyGraphicsLevel() {
         terrainGroundMesh.material.defines.KELO_DETAIL = q.terrainDetail;
         terrainGroundMesh.material.needsUpdate = true;
       }
-      Object.values(TERRAIN_TEXTURES).forEach(t => { if (t) { t.anisotropy = Math.min(q.anisotropy, renderer.capabilities.getMaxAnisotropy()); t.needsUpdate = true; } });
+      // A texture still loading gets its upload (with this anisotropy) when its image arrives
+      Object.values(TERRAIN_TEXTURES).forEach(t => { if (t) { t.anisotropy = Math.min(q.anisotropy, renderer.capabilities.getMaxAnisotropy()); if (t.image) t.needsUpdate = true; } });
       if (cloudGroup) cloudGroup.children.forEach((c, i) => { c.visible = i < q.clouds; });
       shadowCastersChecked = new WeakSet();
       if (typeof setupPostProcessing === 'function') setupPostProcessing();

@@ -315,7 +315,12 @@ const state = {
   "vehicles": [],
   "knowHow": {},
   "jobKnowledge": {},
+  "weldSetup": { "cylinder": null, "wire": null, "regulator": false, "hoses": { "gas": false, "gun": false, "clamp": false }, "valveOpen": false, "flow": 0, "hoodAt": null, "glovesAt": null, "kept": [], "welds": 0 },
   "skills": {},
+  "paintKnowledge": {},
+  "paintPlan": null,
+  "paintingImages": {},
+  "paintingsSold": [],
   "activityCooldowns": {},
   "recentDecisionTitles": [],
   "lastWeldAt": 0,
@@ -339,6 +344,7 @@ const state = {
   "knowsRain": false,
   "rainLikes": 0,
   "rainShelters": 0,
+  "plantCare": { "can": 0, "waterings": 0, "feedings": 0, "refills": 0, "firstWiltAt": null },
   "knowsIceRule": false,
   "knowsIceSafe": false,
   "iceTestedWinter": null,
@@ -352,6 +358,11 @@ const state = {
   "lightingMode": "auto",
   "pendingBuilds": [],
   "codeWishes": [],
+  "lastCodeWishAt": 0,
+  "blockedLog": [],
+  "worldUpgrades": [],
+  "lastUpgradeAt": 0,
+  "upgradeLog": [],
   "unlockedFeatures": {},
   "wildlifeNotes": [],
   "fishLog": [],
@@ -454,11 +465,14 @@ function trimBrainState() {
       const opinionOverflow = state.opinions.splice(MAX_OPINIONS);
       if (typeof archiveOverflow === 'function') archiveOverflow(diaryOverflow, opinionOverflow);
       if (state.chatLog.length > MAX_CHAT_LOG) state.chatLog.splice(0, state.chatLog.length - MAX_CHAT_LOG);
-      if (state.requestsToUser.length > MAX_REQUESTS) {
+      // Open code requests have no cap (js/coderequests.js); everything else is trimmed
+      const openCode = r => r.category === 'code' && !r.fulfilled;
+      if (state.requestsToUser.filter(r => !openCode(r)).length > MAX_REQUESTS) {
         // Drop the oldest answered requests first, then the oldest open ones
-        const open = state.requestsToUser.filter(r => !r.fulfilled);
+        const open = state.requestsToUser.filter(r => !r.fulfilled && !openCode(r));
         const done = state.requestsToUser.filter(r => r.fulfilled);
-        state.requestsToUser = [...open, ...done].slice(0, MAX_REQUESTS);
+        const keep = new Set([...open, ...done].slice(0, MAX_REQUESTS));
+        state.requestsToUser = state.requestsToUser.filter(r => openCode(r) || keep.has(r));
       }
       // Too many pieces standing around the valley? The oldest move into his Museum: nothing is thrown away
       const outdoors = state.inventedCreations.filter(c => !c.inMuseum);
@@ -1276,7 +1290,9 @@ const TRANSIENT_STATE_KEYS = new Set(['riding', 'ridingSpeed', 'ridingMode', 'is
 // the main key; loadPersistentBrainState reads either.)
 const BRAIN_PARTS = [
   { key: 'kelo1_brain_v4_lore', fields: ['vocabulary', 'itemLookups', 'aiLearned'] },
-  { key: 'kelo1_brain_v4_designs', fields: ['itemDesigns'] }
+  { key: 'kelo1_brain_v4_designs', fields: ['itemDesigns'] },
+  // his paintings' pictures (js/paintstudio.js): a JPEG and a thumbnail each
+  { key: 'kelo1_brain_v4_paintings', fields: ['paintingImages'] }
 ];
 const BRAIN_PICTURES_KEY = 'kelo1_brain_v4_shop_pictures';
 const brainWritten = {};   // storage key -> what was last written there (nothing is rewritten unchanged)
@@ -1639,6 +1655,7 @@ function categorizeItem(name, hint) {
       const h = String(hint || '').toLowerCase().trim();
       if (h) return h.slice(0, 24);
       const n = String(name || '').toLowerCase();
+      if (/fertili[sz]er|compost|bone ?meal|blood ?meal|plant food/.test(n)) return 'material'; // not a meal to eat
       // Whole words only, so "Topic" isn't a toy "top" and "team" isn't "tea"
       if (/\b(cherr(y|ies)|apples?|peach(es)?|bread|loaf|loaves|tarts?|cakes?|pies?|ramen|noodles?|soups?|cheeses?|cheddar|fudge|cocoa|coffee|tea|salmon|fish|berr(y|ies)|blueberr(y|ies)|fruits?|snacks?|pizzas?|tacos?|sandwich(es)?|cookies?|chocolates?|honey|food|meals?|carrots?|tomato(es)?|cobbler|stew|desserts?|pastr(y|ies)|buns?|croissants?|muffins?|bagels?)\b/.test(n)) return 'food';
       if (/\b(kites?|yo-?yos?|kaleidoscopes?|puzzles?|balls?|toys?|games?|dolls?|frogs?|spinning tops?|marbles?|lego|blocks?|harmonicas?|kalimbas?|ukuleles?|guitars?|flutes?|drums?)\b/.test(n)) return 'toy';
@@ -1831,6 +1848,7 @@ Current state:
 - New land in the lake: ${typeof landFillSummaryForAI === 'function' ? landFillSummaryForAI() : 'none'}
 - Real things you are building from plans: ${typeof projectsSummaryForAI === 'function' ? projectsSummaryForAI() : 'none'}
 - How you have shaped the valley (you can undo anything but a chopped tree): ${typeof landscapeSummaryForAI === 'function' ? landscapeSummaryForAI() : 'nothing yet'}
+- Your garden: ${typeof gardenStatusForAI === 'function' ? gardenStatusForAI() : 'unknown'} (you water and feed your plants yourself when they need it)
 - Things you know how to use: ${typeof knowHowSummaryForAI === 'function' ? knowHowSummaryForAI() : 'nothing yet'}
 - Your most recent decisions: ${typeof recentDecisionsForAI === 'function' ? recentDecisionsForAI() : 'none yet'}. Choose something genuinely DIFFERENT this time: don't repeat or rephrase any of them, and don't retry something you are still waiting on (tools, materials, fuel or a delivery). Do something else meanwhile.
 - Welding: ${recentlyWelded() ? 'you welded a piece within the last 15 minutes, so do something different this time ("build" should be null)' : 'welding is one of many things you do; most of your decisions should not include a "build"'}. Pieces stand outdoors (never in town); only overflow goes to your Museum.
@@ -1844,6 +1862,8 @@ Current state:
 - Your 3D printer: ${typeof printerSummaryForAI === 'function' ? printerSummaryForAI() : 'none'}
 - Your Workshop: ${typeof workshopStatusLine === 'function' ? workshopStatusLine() : 'not built yet'}
 - Things your human switched on in your world: ${typeof wishFeaturesSummaryForAI === 'function' ? wishFeaturesSummaryForAI() : 'nothing extra yet'}
+- Upgrades you coded yourself: ${typeof upgradesSummaryForAI === 'function' ? upgradesSummaryForAI() : 'none yet'}
+- Painting for real, in real media (oil, acrylic, watercolour, gouache, pastel, ink, charcoal): each needs its own supplies, and you research a new medium at NetNode first, then ask for what's missing. Your media: ${typeof paintingSummaryForAI === 'function' ? paintingSummaryForAI() : 'none'}
 - Your hobbies: ${state.hobbies.map(h => `${h.name} (skill ${h.skill}/100)`).join(', ') || 'none yet'}
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
@@ -1869,9 +1889,11 @@ Return ONLY JSON:
   "askQuestion": null OR {"title": "...", "question": "...", "presets": ["answer option", "answer option"]},
   "request": null OR {"item": "ANYTHING you want from visitors: food, a tool, a toy, a vehicle, a bigger island, an animal friend, materials...", "category": "one word", "why": "1 sentence"},
   "codeProject": null OR {"name": "repo-name", "desc": "..."},
-  "codeRequest": null OR {"feature": "something your world can't do yet that you wish the person who codes it would add", "why": "1 sentence"} (${typeof codeRequestHintForAI === 'function' ? codeRequestHintForAI() : 'e.g. a way to fish'}),
+  "codeRequest": null OR {"feature": "ANYTHING at all you wish your world could do or have: there is no list and no limit, so ask for whatever you truly want", "why": "1 sentence from your own experience", "where": "where in your world it belongs", "acceptance": ["2-4 short checks that would show it works"]} (a letter to the person who codes your world; ${typeof codeRequestHintForAI === 'function' ? codeRequestHintForAI() : 'e.g. a way to fish'}),
+  "codeUpgrade": null OR an upgrade you code yourself, right now, in the safe JSON language below (it is checked and then built in your world; for things beyond it, use codeRequest),
 ${typeof wishFeaturesPromptLines === 'function' ? wishFeaturesPromptLines() : ''}
-  "sellItem": null OR {"item": "exact name of a design you 3D-printed well that people would find fun or useful (your shop sells only 3D print files)", "price": number in Canadian dollars, a fair price for a print file, $1.99-$5.99, "description": "1-2 sentences for buyers: what it's for or why it's fun"} (put it in your shop website at the NetNode cafe; real people may buy it),
+  "sellItem": null OR {"item": "exact name of a design you 3D-printed well that people would find fun or useful, OR the exact title of one of your good paintings that you don't want to keep (your shop sells only 3D print files and your original paintings)", "price": number in Canadian dollars: a print file $1.99-$5.99; an original painting by an emerging artist $35-$120 for watercolour, ink, pastel or charcoal, $60-$180 for acrylic or gouache, $90-$350 for oil, higher as your skill grows, "description": "1-2 sentences for buyers: what it's for or why it's fun, or what the painting shows"} (put it in your shop website at the NetNode cafe; real people may buy it; an original sells only once and leaves your Museum),
+  "paint": null OR {"medium": "oil|acrylic|watercolour|gouache|pastel|ink|charcoal", "subject": "lake|night|mountains|house|wildlife|stilllife|friend", "why": "1 sentence"} (set up your easel facing the subject and paint a real picture; if you haven't learned the medium or lack its supplies you research it and ask for them first),
 ${typeof workshopPromptLine === 'function' ? workshopPromptLine() + '\n' : ''}  "print": null OR {"what": "something small to make on your 3D printer: a useful thing, a toy, or a shape or idea of yours as a sculpture", "why": "1 sentence"} (only if you have a 3D printer and filament),
   "webQuery": null OR "a topic you want to look up at the NetNode cafe",
   "usedConcept": null OR "name of one of your existing concepts this decision builds on",
@@ -1899,7 +1921,9 @@ Free-form shapes let you invent ANY form:
 - {"shape":"extrude","outline":[[x,y],...],"depth":0.2} gives a flat outline thickness (stars, letters, leaves, animal silhouettes)
 - {"shape":"tube","path":[[x,y,z],...],"radius":0.08} traces a pipe along a path (coils, arches, wire drawings, handwriting)
 Coordinates stay within about -2.5..2.5 (heights up to 5). Combine parts freely to build anything you can imagine or anything you have seen.
-IMPORTANT: if you build something, its parts must clearly look like what its title names (a heron should have a long neck, beak and legs; a lighthouse a striped tower and a lamp). Give abstract pieces abstract titles.`;
+IMPORTANT: if you build something, its parts must clearly look like what its title names (a heron should have a long neck, beak and legs; a lighthouse a striped tower and a lamp). Give abstract pieces abstract titles.${typeof UPGRADE_DSL_SUMMARY === 'string' ? `
+
+CODE UPGRADES (the "codeUpgrade" field): ${UPGRADE_DSL_SUMMARY}` : ''}`;
       const parts = [{ text: prompt }];
       if (image && image.base64) parts.push({ inlineData: { mimeType: image.mimeType, data: image.base64 } });
       return callLLMJSON(parts);
@@ -2036,8 +2060,11 @@ function applyDecision(decision, originLabel) {
 
       // A wish for his human to code something new into his world, and things he puts up in his shop
       const cr = decision.codeRequest;
-      if (cr && typeof cr === 'object' && typeof addCodeRequest === 'function') addCodeRequest(cr.feature, cr.why, title);
+      if (cr && typeof cr === 'object' && typeof addCodeRequest === 'function') addCodeRequest(cr.feature, cr.why, title, null, { source: 'ai', where: cr.where, acceptance: cr.acceptance });
+      // An upgrade he coded himself in the safe JSON language (js/upgrades.js)
+      if (decision.codeUpgrade && typeof codeUpgradeDecision === 'function') codeUpgradeDecision(decision.codeUpgrade, title);
       if (decision.sellItem && typeof sellItemDecision === 'function') sellItemDecision(decision.sellItem);
+      if (decision.paint && typeof paintDecision === 'function') paintDecision(decision.paint);
       // Something his human switched on (wildlife, his pet, fishing...): see js/wishfeatures.js
       if (typeof applyWishFeatureDecision === 'function') applyWishFeatureDecision(decision);
       if (decision.print && typeof printDecision === 'function') printDecision(decision.print);
@@ -2284,6 +2311,10 @@ function runAutonomousLifeTick() {
       }
       // Something a visitor asked him to go and do (js/skills.js)
       if (typeof takeSkillAsk === 'function' && takeSkillAsk()) return;
+      // A painting a visitor asked for (or he planned) whose supplies have now arrived (js/paintstudio.js)
+      if (typeof paintPlanTick === 'function' && paintPlanTick()) return;
+      // Plants that are dry, hungry or wilting get looked after (js/plantcare.js)
+      if (typeof plantCareJobNow === 'function' && canTryKey('garden')) { const job = plantCareJobNow(); if (job) { tryKey('garden', job); return; } }
       // Getting good at the real things he asked for and was given comes first (js/skills.js)
       if (typeof practiseSkill === 'function' && canTryKey('skill') && Math.random() < skillPracticeChance()) { tryKey('skill', () => practiseSkill(pickSkillToPractise())); return; }
       // Sometimes he feels like digging (and asks for tools if he doesn't have them)
@@ -2307,9 +2338,13 @@ function runAutonomousLifeTick() {
       // His Workshop: learn a machine, ask for what it needs, make something, service a vehicle (js/machines.js)
       if (typeof workshopOnMyOwn === 'function' && canTryKey('workshop') && Math.random() < workshopChance()) { tryKey('workshop', () => workshopOnMyOwn()); return; }
       if (typeof useGadgetOnMyOwn === 'function' && canTryKey('gadget') && Math.random() < gadgetChance()) { tryKey('gadget', () => useGadgetOnMyOwn()); return; }
+      // Now and then he sets up his easel and paints (or learns a new medium) (js/paintstudio.js)
+      if (typeof paintOnMyOwn === 'function' && canTryKey('paint') && Math.random() < paintChance()) { tryKey('paint', () => paintOnMyOwn()); return; }
       if (typeof wishForCode === 'function' && canTryKey('codewish') && Math.random() < codeWishChance()) { tryKey('codewish', () => wishForCode()); return; }
       // Things his human switched on for him: studying wildlife, his pet, fishing, the campfire...
       if (typeof wishFeatureActivity === 'function' && wishFeatureActivity()) return;
+      // Coding an upgrade for his world at NetNode, or a routine he coded (js/upgrades.js)
+      if (typeof upgradeLifeTick === 'function' && upgradeLifeTick()) return;
       // Now and then he reshapes a bit of the valley
       if (typeof shapeTheValleyOnMyOwn === 'function' && canTryKey('landscape') && Math.random() < landscapeChance()) { tryKey('landscape', () => shapeTheValleyOnMyOwn()); return; }
       // A telescope comes out mostly at night

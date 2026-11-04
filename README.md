@@ -102,7 +102,7 @@ Kelo-bot-1/
 │   ├── netnode.js       # Real Wikipedia browsing at the NetNode cafe
 │   ├── conversation.js  # Understanding what visitors say; looking up words he doesn't know
 │   ├── postoffice.js    # Mail he picks up when he chooses
-│   ├── workshop.js      # Everything is welded at the workshop, carried and placed
+│   ├── workshop.js      # Creations are welded at the welding table (js/welding.js), carried and placed
 │   ├── hobbies.js       # Hobbies sparked by items (murals, kites, music...)
 │   ├── mining.js        # Digging, equipment needs, hidden finds
 │   ├── growth.js        # Merges what he dreamt while you were away
@@ -112,6 +112,8 @@ Kelo-bot-1/
 │   ├── weldstudio.js    # The Welding Studio as a real fab shop: steel table, MIG welder, gas bottles, grinder, fume arm, arc glow
 │   ├── house.js         # Kelo-1's cottage: walls, windows, porch, roof, furniture, night lights
 │   ├── animations.js    # Kelo-1's body animation: smooth pose blending, walk cycle, idle life, emotes
+│   ├── motion.js        # Fluid movement: easing speed and turns, turning on the spot, smooth paths round obstacles, vehicles leaning into turns, no popping
+│   ├── humanize.js      # Human body language: gaze, head-first turns, blinks, talking hands, stretches, head scratches, sighs, hums, fidgets
 │   ├── items3d.js       # 3D models of items, the pick-up counter, carrying
 │   ├── gearmodels.js    # Detailed vehicles and tools, sized against Kelo-1
 │   ├── everydaymodels.js # Food, toys, instruments and books at real size
@@ -134,15 +136,20 @@ Kelo-bot-1/
 │   ├── weather.js       # Spring rain (puddles, wet ground, faster-growing plants) and winter lake ice he learns to test
 │   ├── landscape.js     # Chopping trees, planting, roads and hills, and undoing them
 │   ├── groundwork.js    # Researching how roads, paving, earthwork and planting are done; the right tools, used in turn
+│   ├── welding.js       # Real welding: the right gas, wire, rods and hood; hooking up hoses and cables; hood down, arc, sparks and a cooling bead
+│   ├── workbench.js     # His wooden work bench with a vise, where woodworking and other non-welded builds are made
+│   ├── plantcare.js     # Soil moisture, nutrients and wilting; plants and garden beds grow with care; watering can, tap and fertilizer
 │   ├── skills.js        # Real skills: practising the vehicles, telescope and hobbies he was given; doing what visitors ask
 │   ├── projects.js      # Real builds: finding plans online, asking for materials (or sawing his own logs), building them
 │   ├── town.js          # Keeps the town free of his builds (the beach is fine)
-│   ├── coderequests.js  # Code requests: features he asks his human to code into his world
+│   ├── coderequests.js  # Code requests for anything he wants (no cap, paced), each with a copyable spec
 │   ├── wishfeatures.js  # Which code requests match a built feature: "Ready to switch on" or "Needs new code"
 │   ├── wildlife.js      # Songbird flocks and mule deer in the meadow; walking up quietly to study them
 │   ├── companions.js    # His robot friend (follows, carries, hands tools, keeps watch) and his pet dog or cat
 │   ├── pastimes.js      # Fishing, the stove, real music sounds, swimming, the campfire, named constellations
-│   ├── shopkeeping.js   # His shop in the game: listing things for sale, "Sold", earnings, Export shop
+│   ├── paintrender.js   # How his paintings look: the scene from simple shapes, painted again in oil, acrylic, watercolour, gouache, pastel, ink or charcoal
+│   ├── paintstudio.js   # Real painting: researching a medium, asking for its supplies, painting at an easel, the Museum, visitor requests
+│   ├── shopkeeping.js   # His shop in the game: print files and original paintings for sale, "Sold", earnings, Export shop
 │   ├── printer.js       # His 3D printer: setting it up, learning it, filament spools, prints that fail and succeed
 │   ├── machinemodels.js # The Workshop's machine models (printers, routers, Haas, Taurus, SMT line, garage), shared materials
 │   ├── workshopbuilding.js # His two-storey Workshop east of the helipad: levelled pad, steel shell, car elevator, indoor trips, stations
@@ -151,9 +158,11 @@ Kelo-bot-1/
 │   ├── cnc.js           # Avid, AltMill, ShopSaber and Laguna routers, Haas VS-1/VS-3 and the Waldrich Coburg Taurus
 │   ├── electronics.js   # Floor 2 PCB line (mill, paste, place, reflow, AOI, wave, laser, enclosures) and the gadgets he builds
 │   ├── garage.js        # Floor 2 garage: lifts, tire changer, balancer, brake lathe, hoist, press, welder, compressor, plasma; vehicle wear
+│   ├── upgrades.js      # World upgrades he codes himself in a safe, validated JSON language (never JavaScript)
 │   ├── main.js          # UI wiring
 │   ├── portal.js        # Send-him-something panel
 │   ├── explore.js       # Looking around: Follow Kelo-1 or Explore freely, Places, the click menu, help card, touch joystick
+│   ├── eyecam.js        # "Through his eyes": a first-person camera at Kelo-1's eyes with look-around and a small HUD
 │   ├── minimap.js       # The live minimap: terrain, buildings, his vehicles, digs and builds, Kelo-1 and the camera's view, and the Map tab of everything he has changed
 │   ├── tryit.js         # The World tab's Try it panel: preview seasons, night and wind, send sample gifts
 │   ├── shop.js          # The shop website itself (shop.html)

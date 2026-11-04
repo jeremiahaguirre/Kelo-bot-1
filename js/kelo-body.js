@@ -478,6 +478,8 @@ function updateKeloFace(t, dt, resting) {
       });
       // smile wide when happy, flip into a frown when sad
       keloMouth.scale.set(1 + 0.45 * happy - 0.2 * sad, (1 + 0.3 * happy) * (1 - 2 * sad), 1);
+      // his mouth moves while he talks (js/humanize.js)
+      if (typeof keloTalkMouth === 'function') keloMouth.scale.y *= keloTalkMouth(t);
       keloCheeks.forEach(c => { c.material.opacity = 0.35 + 0.45 * happy - 0.25 * sad; });
 
       // Antenna: a damped spring pushed by how his head speeds up and slows down

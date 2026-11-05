@@ -120,7 +120,8 @@ function buildStorehouse3D() {
       // Real board siding, painted trim and a steel roof (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(storehouseGroup, [[barnRed, 'siding', 2], [trim, 'paintedwood'], [roofMat, 'metalroof', 2], [woodFloor, 'wood']]);
       scene.add(storehouseGroup);
-      worldObstacles.push({ x: cx, z: cz, r: 3.0 });
+      // Its walls (going in and out is the indoor trip's job, js/basements.js); he waits at the doorway
+      addObstacle(obstacleBox(cx, cz, w / 2 + 0.08, d / 2 + 0.08, { placeR: 3.0, building: 'storehouse', door: { x: cx - 0.75, z: cz + 3.7 } }));
       renderStorehouseShelves3D();
       if (typeof perfWatchBuilding === 'function') {
         perfWatchBuilding({

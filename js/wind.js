@@ -503,6 +503,7 @@ function safeToFly(v) {
 // and the balloon comes down hard in pieces
 async function crashInWind(v, target) {
       const w = windNow();
+      let crashAt = null;
       const type = vehicleTypeFor(v.name);
       const plain = v.name.replace(/^(an?|the)\s+/i, '');
       try {
@@ -513,14 +514,13 @@ async function crashInWind(v, target) {
         // Blown downwind of where he meant to go, but kept over land (not the lake, not the high peaks)
         const blow = w.key === 'gale' ? 22 : 15;
         const mid = { x: (state.botPos.x + target.x) / 2, z: (state.botPos.z + target.z) / 2 };
-        let bx = Math.max(WORLD_MIN_X + 6, Math.min(WORLD_MAX_X - 6, mid.x + w.dx * blow));
-        let bz = Math.max(-11, Math.min(6, mid.z + w.dz * blow));
-        if (typeof offLimits === 'function' && offLimits(bx, bz, 2)) {
-          // Not on top of a building or the pit: a little further on
-          for (let k = 1; k < 8 && offLimits(bx, bz, 2); k++) { bx += w.dx * 3 * (k % 2 ? 1 : -1) + 3; bz = Math.max(-11, Math.min(6, bz - 1.5)); }
-        }
+        const bx = Math.max(WORLD_MIN_X + 6, Math.min(WORLD_MAX_X - 6, mid.x + w.dx * blow));
+        const bz = Math.max(-11, Math.min(6, mid.z + w.dz * blow));
+        // It comes down on open, dry ground with room for every piece: never on a building, its
+        // grounds, the town, the yard, the pit or the water (the nearest such spot downwind)
+        const spot = balloonCrashSpot({ x: bx, z: bz }) || { x: bx, z: bz };
         state.ridingSpeed = type.speed * 1.7;
-        state.targetPos = { x: bx, z: bz };
+        state.targetPos = { x: spot.x, z: spot.z };
         const shout = setTimeout(() => {
           state.moodEmoji = '😨';
           state.moodTitle = `Blown off course in the ${plain}!`;
@@ -528,7 +528,10 @@ async function crashInWind(v, target) {
           renderAllUI();
         }, 2500);
         await waitForArrival(60000);
+        if (Math.hypot(state.botPos.x - spot.x, state.botPos.z - spot.z) > 1) await waitForArrival(60000);
         clearTimeout(shout);
+        // However far it really got, the heap lands on open ground
+        crashAt = Math.hypot(state.botPos.x - spot.x, state.botPos.z - spot.z) < 1 ? spot : (balloonCrashSpot(state.botPos) || spot);
         // Down it comes: it drops fast and tips over as it hits the ground
         state.speechBubble = "I'm going down! Hold on!";
         renderAllUI();
@@ -550,12 +553,33 @@ async function crashInWind(v, target) {
         state.ridingSpeed = 1;
         state.ridingMode = null;
       }
-      wreckBalloon(v, w);
+      wreckBalloon(v, w, crashAt);
+    }
+
+// Where a wrecked balloon's pieces can lie (they spread about 3.2 units round the basket)
+const BALLOON_WRECK_RADIUS = 3.4;
+function balloonCrashSpot(near) {
+      return typeof openGroundNear === 'function' ? openGroundNear(near, BALLOON_WRECK_RADIUS, { offLimits: true, pad: 1 }) : null;
+    }
+
+// An old save's wreck lying inside a building or on something solid moves to the nearest open spot
+function relocateBlockedWreck() {
+      const wreck = state.balloonWreck;
+      if (!wreck || wreck.gathered || typeof openGroundAt !== 'function') return false;
+      if (openGroundAt(wreck.x, wreck.z, BALLOON_WRECK_RADIUS, { offLimits: true, pad: 1 })) return false;
+      const spot = balloonCrashSpot(wreck);
+      if (!spot) return false;
+      wreck.x = spot.x;
+      wreck.z = spot.z;
+      renderWreckPile3D();
+      if (typeof savePersistentBrainState === 'function') savePersistentBrainState();
+      return true;
     }
 
 // The balloon is gone: in its place, a heap of pieces he owns and has to deal with
-function wreckBalloon(v, w = windNow()) {
-      const x = Math.round(state.botPos.x * 10) / 10, z = Math.round(state.botPos.z * 10) / 10;
+function wreckBalloon(v, w = windNow(), at = null) {
+      const spot = at || balloonCrashSpot(state.botPos) || state.botPos;
+      const x = Math.round(spot.x * 10) / 10, z = Math.round(spot.z * 10) / 10;
       const plain = v.name.replace(/^(an?|the)\s+/i, '');
       // Off the list of vehicles and out of everything he owns (or vehicles.js would park it again)
       state.vehicles = state.vehicles.filter(o => o.id !== v.id);
@@ -624,7 +648,8 @@ async function flyBalloon(originLabel = 'Up in the Balloon') {
         await new Promise(r => setTimeout(r, 1500));
         await driveVehicle(v, home, `Flying the ${plain} home to the balloon field`);
         if (!state.vehicles.includes(v)) return true;
-        Object.assign(v, { x: home.x, z: home.z, rotY: 0 });
+        // Back on its pad (it set down there, or right beside it if something was in the way)
+        if (Math.hypot(v.x - home.x, v.z - home.z) < 1.5) Object.assign(v, { x: home.x, z: home.z, rotY: 0 });
         renderVehicles3D();
         state.happiness = Math.min(100, state.happiness + 10);
         state.wonderLevel = Math.min(100, state.wonderLevel + 6);
@@ -760,7 +785,10 @@ window.addEventListener('DOMContentLoaded', () => {
   // After main.js has loaded his state and built the scene
   setTimeout(() => {
     buildWindSock3D();
+    // (a wreck saved inside the Workshop or another building moves out once everything is built)
+    relocateBlockedWreck();
     renderWreckPile3D();
+    setTimeout(() => { try { relocateBlockedWreck(); } catch (e) { console.warn('wreck', e); } }, 3000);
     const w = windNow();
     windShown = { s: w.strength, angle: w.angle };
     let last = performance.now();

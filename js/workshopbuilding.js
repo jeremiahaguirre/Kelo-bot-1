@@ -664,10 +664,9 @@ function buildWorkshop3D() {
       scene.add(wsGroup);
       wsUpdateLift(0);
       wsClearSceneryInside();
-      // Paths go round it (a row of circles over the footprint, clear of the doors outside)
-      for (let x = -hx + 1.8; x <= hx - 1.6; x += 2.6) {
-        for (let z = -hz + 1.8; z <= hz - 1.6; z += 2.6) worldObstacles.push({ x: S.x + x, z: S.z + z, r: 2.0, workshop: true });
-      }
+      // Paths go round it: one solid box over the footprint (trips inside walk on their own); a walk
+      // "to the Workshop" ends at the person door out front
+      addObstacle(obstacleBox(S.x, S.z, hx, hz, { workshop: true, building: 'workshop', door: { x: S.x + WS_DOORS.person.x, z: S.z + hz + 1.2 } }));
       wsBuildStandIns();
       if (typeof perfWatchBuilding === 'function') {
         perfWatchBuilding({
@@ -886,12 +885,10 @@ function buildWorkshopWing3D(m) {
       mmLabel(rg, 'BAR STOCK  •  6061 / 1018', 1.4, 0.18, 0, 2.35, 0.1, { bg: '#1e3a5f', fg: '#fff' });
       // Outside: the wing's walls keep paths off it (the doors stay open)
       const S = WORKSHOP_SITE;
-      for (let x = b.x0; x <= b.x1 + 0.01; x += 1.2) worldObstacles.push({ x: S.x + x, z: S.z + b.z0, r: 0.5, workshop: true });
-      for (let z = b.z0; z <= b.z1 + 0.01; z += 1.2) {
-        worldObstacles.push({ x: S.x + b.x1, z: S.z + z, r: 0.5, workshop: true });
-        if (Math.abs(z - hd.z) > hd.w / 2 + 0.2) worldObstacles.push({ x: S.x + b.x0, z: S.z + z, r: 0.5, workshop: true });
-      }
-      for (let x = b.x0; x <= b.x1 + 0.01; x += 1.2) if (Math.abs(x - sd.x) > sd.w / 2 + 0.2) worldObstacles.push({ x: S.x + x, z: S.z + b.z1, r: 0.5, workshop: true });
+      const X0 = S.x + b.x0, X1 = S.x + b.x1, Z0 = S.z + b.z0, Z1 = S.z + b.z1, ws = { workshop: true };
+      addObstacle(obstacleWall(X0, Z0, X1, Z0, 0.6, [], ws), obstacleWall(X1, Z0, X1, Z1, 0.6, [], ws),
+        obstacleWall(X0, Z0, X0, Z1, 0.6, [[hd.z - b.z0 - hd.w / 2 - 0.2, hd.z - b.z0 + hd.w / 2 + 0.2]], ws),
+        obstacleWall(X0, Z1, X1, Z1, 0.6, [[sd.x - b.x0 - sd.w / 2 - 0.2, sd.x - b.x0 + sd.w / 2 + 0.2]], ws));
     }
 
 // --- The hangar and assembly high bay ----------------------------------------------------------------
@@ -1012,9 +1009,12 @@ function buildWorkshopHangar3D() {
       // crane and hook (userData), the see-through roof and the light fixtures stay separate
       if (typeof mergeStaticMeshesSoon === 'function') mergeStaticMeshesSoon(g, () => [...(typeof cutawayRoofMeshes !== 'undefined' ? cutawayRoofMeshes : []), ...wsLights.map(l => l && (l.mesh || l)).filter(Boolean)]);
       // Walls are solid; the inside and the door are open to walk and drive through
-      for (let x = -hx; x <= hx; x += 1.2) worldObstacles.push({ x: H.x + x, z: H.z - hz, r: 0.5, workshop: true });
-      [-hx, hx].forEach(x => { for (let z = -hz; z <= hz; z += 1.2) if (x < 0 || Math.abs(z - wingDoorZ) > wingDoor.w / 2 + 0.2) worldObstacles.push({ x: H.x + x, z: H.z + z, r: 0.5, workshop: true }); });
-      for (let x = -hx; x <= hx; x += 1.2) if (Math.abs(x) > H.door.w / 2 + 0.3) worldObstacles.push({ x: H.x + x, z: H.z + hz, r: 0.5, workshop: true });
+      // (thin wall boxes, js/scene.js obstacleWall; the door gaps stay open)
+      const ws = { workshop: true };
+      addObstacle(obstacleWall(H.x - hx, H.z - hz, H.x + hx, H.z - hz, 0.6, [], ws),
+        obstacleWall(H.x - hx, H.z - hz, H.x - hx, H.z + hz, 0.6, [], ws),
+        obstacleWall(H.x + hx, H.z - hz, H.x + hx, H.z + hz, 0.6, [[wingDoorZ + hz - wingDoor.w / 2 - 0.2, wingDoorZ + hz + wingDoor.w / 2 + 0.2]], ws),
+        obstacleWall(H.x - hx, H.z + hz, H.x + hx, H.z + hz, 0.6, [[hx - H.door.w / 2 - 0.3, hx + H.door.w / 2 + 0.3]], ws));
       // Trees that grew where it now stands are gone
       if (typeof valleyTrees !== 'undefined') {
         for (let i = valleyTrees.length - 1; i >= 0; i--) {

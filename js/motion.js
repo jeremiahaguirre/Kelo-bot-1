@@ -97,7 +97,7 @@ function keloLocomote(dist, dt, t) {
       }
 
       // Which way the path wants him to go: a point a little way along it, so corners are rounded
-      const [dx, dz] = nextPathDirection(p.x, p.z, state.targetPos);
+      const [dx, dz] = nextPathDirection(p.x, p.z, state.targetPos, dt);
       let wantX = dx, wantZ = dz;
       const straight = state.riding && (state.ridingMode === 'water' || state.ridingMode === 'air');
       if (!straight) {
@@ -109,15 +109,20 @@ function keloLocomote(dist, dt, t) {
         m.aim = aim;
       }
       // Looking ahead: if where he will be in a moment is too close to something solid, ease away from it
-      if (!straight && typeof worldObstacles !== 'undefined' && m.speed > 0.5) {
+      // (not in the last few units: there he brakes onto the spot, often right beside a wall)
+      if (!straight && typeof worldObstacles !== 'undefined' && m.speed > 0.5 && dist > 3) {
         const ahead = Math.min(2.5, m.speed * 0.35);
         const fx = p.x + Math.sin(m.heading) * ahead, fz = p.z + Math.cos(m.heading) * ahead;
+        const goal = walkGoalFor(state.targetPos);
         for (const o of worldObstacles) {
           if (typeof obstacleHoldsTarget === 'function' && obstacleHoldsTarget(o, state.targetPos)) continue;
-          const ox = fx - o.x, oz = fz - o.z, d = Math.hypot(ox, oz), clear = o.r + KELO_RADIUS + 0.25;
-          if (d > 0 && d < clear + 0.5) {
-            const push = Math.min(1, (clear + 0.5 - d) / 0.8) * 0.9;
-            wantX += ox / d * push; wantZ += oz / d * push;
+          // Not the thing he is walking up to (a building whose door is his goal)
+          if (obstacleProbe(o, goal.x, goal.z).d < KELO_RADIUS + 0.4) continue;
+          // Distance from its edge (boxes and circles alike, js/scene.js obstacleProbe)
+          const P = obstacleProbe(o, fx, fz), gap = P.d - KELO_RADIUS - 0.25;
+          if (gap < 0.5) {
+            const push = Math.min(1, (0.5 - gap) / 0.8) * 0.9;
+            wantX += P.nx * push; wantZ += P.nz * push;
           }
         }
         const l = Math.hypot(wantX, wantZ) || 1; wantX /= l; wantZ /= l;
@@ -148,8 +153,10 @@ function keloLocomote(dist, dt, t) {
       const facing = Math.max(0, Math.cos(err));
       const accel = (gait ? gait.accel : KELO_GAIT.accel) * Math.sqrt(factor);
       const decel = (gait ? gait.decel : KELO_GAIT.decel) * Math.sqrt(factor);
-      const arriveR = typeof arrivalRadius === 'function' ? arrivalRadius(state.targetPos) : 0.16;
-      const brakeDist = Math.max(0, dist - arriveR);
+      // Braking for where he really stops: the door or edge of a building whose middle is the target
+      const goal = walkGoalFor(state.targetPos), goalOff = Math.hypot(goal.x - state.targetPos.x, goal.z - state.targetPos.z);
+      const arriveR = goalOff > 0.01 ? 0.16 : (typeof arrivalRadius === 'function' ? arrivalRadius(state.targetPos) : 0.16);
+      const brakeDist = Math.max(0, (goalOff > 0.01 ? Math.hypot(goal.x - p.x, goal.z - p.z) : dist) - arriveR);
       const stopSpeed = Math.sqrt(2 * decel * 0.8 * brakeDist);
       let want = m.pivot ? 0 : Math.min(cruise * facing * facing, stopSpeed);
       if (!m.pivot && brakeDist > 0) want = Math.max(want, Math.min(0.2, cruise) * facing);  // creep the last bit
@@ -171,9 +178,9 @@ function keloLocomote(dist, dt, t) {
       if (typeof worldObstacles !== 'undefined') {
         for (const o of worldObstacles) {
           if (typeof obstacleHoldsTarget === 'function' && obstacleHoldsTarget(o, state.targetPos)) continue;
-          const nx = p.x + sx * step - o.x, nz = p.z + sz * step - o.z, d = Math.hypot(nx, nz);
-          if (d > 0 && d < o.r + KELO_RADIUS + 0.02) {
-            const ux = nx / d, uz = nz / d, inward = sx * ux + sz * uz;
+          const P = obstacleProbe(o, p.x + sx * step, p.z + sz * step);
+          if (P.d < KELO_RADIUS + 0.02) {
+            const ux = P.nx, uz = P.nz, inward = sx * ux + sz * uz;
             if (inward < 0) { sx -= inward * ux; sz -= inward * uz; const l = Math.hypot(sx, sz) || 1; sx /= l; sz /= l; }
           }
         }

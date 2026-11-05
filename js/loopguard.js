@@ -9,6 +9,7 @@
 const ACTIVITY_COOLDOWN_MS = 15 * 60 * 1000; // a job that's blocked waits this long before he tries again
 const QUICK_COOLDOWN_MS = 4 * 60 * 1000;     // a job that just didn't start (busy, nothing to do)
 const recentActivities = [];                 // this session only
+let currentActivityKey = null;               // the activity running now (a walk that can't get there cools it down, js/scene.js)
 
 function activityCoolingDown(key) {
       const until = state.activityCooldowns && state.activityCooldowns[key];
@@ -33,9 +34,11 @@ function coolDownActivity(key, ms = ACTIVITY_COOLDOWN_MS) {
 // blocked for a while; false/null means it simply didn't start, so a short pause.
 function tryActivity(key, fn) {
       recentActivities.push(key);
+      currentActivityKey = key;
       if (recentActivities.length > 12) recentActivities.shift();
       let result;
       try { result = fn(); } catch (e) { coolDownActivity(key, QUICK_COOLDOWN_MS); throw e; }
+      Promise.resolve(result).finally(() => { if (currentActivityKey === key) currentActivityKey = null; }).catch(() => {});
       Promise.resolve(result).then(r => {
         if (typeof r === 'string') {
           coolDownActivity(key, ACTIVITY_COOLDOWN_MS);

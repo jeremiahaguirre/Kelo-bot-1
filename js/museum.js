@@ -84,7 +84,9 @@ function buildMuseum3D() {
       museumArtGroup = new THREE.Group();
       museumGroup.add(museumArtGroup);
       scene.add(museumGroup);
-      worldObstacles.push({ x: cx, z: cz, r: Math.max(w, d) / 2 + 0.6 });
+      // The stone base and walls, and the front steps (he climbs them only on a trip inside, js/basements.js)
+      addObstacle(obstacleBox(cx, cz, (w + 1) / 2, (d + 1) / 2, { placeR: Math.max(w, d) / 2 + 0.6, building: 'museum', door: { x: cx, z: cz + 7.3 } }),
+        obstacleBox(cx, cz + d / 2 + 1.0, 2.55, 0.55, { placeR: -Infinity, building: 'museum', door: { x: cx, z: cz + 7.3 } }));
       renderMuseum3D();
       if (typeof perfWatchBuilding === 'function') {
         perfWatchBuilding({

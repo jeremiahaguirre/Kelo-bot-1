@@ -498,7 +498,7 @@ if (typeof addMadeThing === 'function') {
     }
     const out = baseAddMadeThing(name, from, opts);
     if (!opts.gadget && k && k.kind !== 'made part' && state.diaryEntries[0] && /goes on the shelf until a build needs it/.test(state.diaryEntries[0].text)) {
-      state.diaryEntries[0].text = state.diaryEntries[0].text.replace('It goes on the shelf until a build needs it.', `It's ${k.label}, so it goes in my Storehouse and I'll use it for ${k.uses.filter(u => u !== 'display').map(purposeSay).join(' and ') || 'decoration'}.`);
+      state.diaryEntries[0].text = state.diaryEntries[0].text.replace(`I made ${wsThing(name)} on`, `I made ${(/^[aeiou]/i.test(plainItem(name)) ? 'an ' : 'a ') + plainItem(name).replace(/^[A-Z][a-z]+\b(?!-)/, w => w.toLowerCase())} on`).replace('It goes on the shelf until a build needs it.', `It's ${k.label}, so it goes in my Storehouse and I'll use it for ${k.uses.filter(u => u !== 'display').map(purposeSay).join(' and ') || 'decoration'}.`);
     }
     if (job && job.order) { job.order.madeAt = Date.now(); job.order.where = 'storehouse'; }
     if (typeof putAwayItems === 'function') doWhenFree(putAwayItems, { key: 'putaway-made' });
@@ -578,7 +578,9 @@ async function sitOnMadeSeat(name, originLabel = 'Sitting Down') {
       try {
         if (typeof fetchFromStorehouse === 'function') await fetchFromStorehouse(name);
         const fire = PASTIME_SPOTS.campfire;
-        const spot = openGroundNear({ x: fire.x - 1.8, z: fire.z + 1.6 }, 0.7) || { x: fire.x - 1.8, z: fire.z + 1.6 };
+        // A spot beside the fire ring with room for the seat and him
+        const ring = [0.75, 0.5, 1, 0.25, 1.25, 0, 1.5, 1.75].map(f => f * Math.PI * 2).map(a => ({ x: fire.x + Math.cos(a) * 1.9, z: fire.z + Math.sin(a) * 1.9 }));
+        const spot = ring.find(p => obstacleClearAt(p.x, p.z, 0.45) && getAnalyticalGroundHeight(p.x, p.z) > WATER_LEVEL + 0.1) || openGroundNear({ x: fire.x - 1.8, z: fire.z + 1.6 }, 0.7) || { x: fire.x - 1.8, z: fire.z + 1.6 };
         state.currentLocKey = 'custom';
         state.customPlaceName = 'the fire ring by his house';
         state.targetPos = { x: spot.x, z: spot.z + 0.6 };
@@ -601,7 +603,9 @@ async function sitOnMadeSeat(name, originLabel = 'Sitting Down') {
         state.moodTitle = `Sitting on the ${plain} he made`.slice(0, 80);
         state.speechBubble = pick([`I made this ${plain} myself, and it holds me. That's the best test there is.`, `Sitting on my own ${plain}. Steady as anything.`, `A seat I made with my own hands, by my own fire ring.`]);
         renderAllUI();
-        await new Promise(r => setTimeout(r, 12000));
+        await new Promise(r => setTimeout(r, 15000));
+        // (screenshots: window.__makerHold keeps him seated until cleared)
+        for (let i = 0; i < 600 && window.__makerHold; i++) await new Promise(r => setTimeout(r, 500));
         state.calmLevel = Math.min(100, state.calmLevel + 12);
         state.happiness = Math.min(100, state.happiness + 6);
         makerNoteUse(name, 'sat on it by the fire ring');

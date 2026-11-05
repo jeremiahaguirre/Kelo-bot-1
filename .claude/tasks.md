@@ -28,6 +28,7 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
   - When a build needs a part a machine can make, he makes it in the shop instead of asking.
   - Visitor asks are routed to the right machine or declined.
   - **Owner:** builds and machine jobs must NOT be limited to hard-coded lists. He also takes ideas from the real internet (his NetNode research, with or without an AI key, e.g. Wikipedia and the existing web search): reads about a real thing, works out which machine and materials it needs from what the article says and what his machines can do, then asks for supplies and builds it. Hard-coded plans stay as the fallback and the examples.
+  - **Owner:** things he builds or prints in the Workshop are real, usable items. A stool is something he sits on; a shelf holds things; a cup holds drinks, and so on. Anything practical goes to his **Storehouse** (with the item-use rules for what it is for), and he takes it out to use it. Only art or abstract pieces go to the **Museum**.
 - Kelo-1 notices the new Workshop and plant once (`state.placesNoticed`, plants.js), and the AI prompt now describes the workshop layout.
 - **This week's plan is done.** Next, after the weekly reset: 7b runway field, map growth and bigger garage, then QA, audit phase 2, and the quality upgrade.
 - Task 8 plant: built on agent/plant; sent back to keep Kelo-1 out of the lake beside it, then merge.

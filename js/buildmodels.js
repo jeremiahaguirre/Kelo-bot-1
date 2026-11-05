@@ -486,7 +486,8 @@ function buildFootprint(bomOrKey) {
       const size = new THREE.Vector3();
       box.getSize(size);
       const k = BUILD_MODEL_SCALE, r = v => Math.round(v * 100) / 100;
-      const out = { length: r(size.x), width: r(size.z), height: r(size.y), metres: { length: r(size.x / k), width: r(size.z / k), height: r(size.y / k) } };
+      const ctr = new THREE.Vector3(); box.getCenter(ctr);
+      const out = { length: r(size.x), width: r(size.z), height: r(size.y), centerX: r(ctr.x), metres: { length: r(size.x / k), width: r(size.z / k), height: r(size.y / k) } };
       m.traverse(o => { if (o.geometry) o.geometry.dispose(); });
       return (buildFootprintCache[key] = out);
     }

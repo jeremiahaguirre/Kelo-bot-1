@@ -171,17 +171,27 @@ function stepWorkSpot(p, sub, step) {
       return { pos: siteToWorld(site, stand[0], stand[1]), face: siteToWorld(site, 0, 0), place: site.name, locKey: null };
     }
 
-// The workshop's assembly bay (js/workshop.js on the workshop branch), if there is one and the build
-// fits: workshopAssemblyBay({ key, name, length, width, height }) -> { x, z, rotY, name } or null.
-// Sizes are world units (see buildFootprint in js/buildmodels.js). Airplanes, boats and go-karts go there.
+// The Workshop hangar's build bays (js/workshopbuilding.js): workshopAssemblyBay(1) is the big bay
+// for the airplane, workshopAssemblyBay(2) the smaller one (go-kart, and anything else that fits;
+// a build too big for bay 2 takes bay 1). The build faces the hangar door (+z, onto the helipad) and
+// sits in its bay with any overhang toward the door, never through the back wall.
 function workshopBayFor(p) {
       if (typeof workshopAssemblyBay !== 'function' || !p.bom) return null;
       const big = p.bom.site === 'airfield' || p.bom.site === 'beach' || p.bom.templateKey === 'gokart';
       if (!big) return null;
+      const fp = buildFootprint(p.bom);
+      if (!fp) return null;
+      let n = p.bom.vehicle === 'plane' ? 1 : 2;
+      if (n === 2 && typeof workshopFits === 'function') {
+        try { const f = workshopFits({ x: fp.length, y: fp.height, z: fp.width }); if (!f.bays || !f.bays.build2) n = 1; } catch (e) {}
+      }
       let bay = null;
-      try { bay = workshopAssemblyBay({ key: p.bom.templateKey, name: p.bom.name, ...buildFootprint(p.bom) }); } catch (e) { bay = null; }
+      try { bay = workshopAssemblyBay(n); } catch (e) { bay = null; }
       if (!bay || !Number.isFinite(bay.x) || !Number.isFinite(bay.z)) return null;
-      return { x: bay.x, z: bay.z, rotY: Number.isFinite(bay.rotY) ? bay.rotY : 0, y: bay.y || 0, name: bay.name || 'the workshop assembly bay', inWorkshop: true };
+      const rotY = -Math.PI / 2; // model +x (its nose) toward the door
+      const over = Math.max(0, fp.length - (bay.d || fp.length)) / 2;
+      return { x: bay.x, z: bay.z - fp.centerX + over, rotY, floorY: Number.isFinite(bay.y) ? bay.y : null, bay: n, door: bay.door || null, outside: bay.outside || null,
+        name: n === 1 ? 'build bay 1 in his hangar' : 'build bay 2 in his hangar', inWorkshop: true };
     }
 
 function siteFor(p) {
@@ -222,6 +232,7 @@ function siteToWorld(site, mx, mz) {
     }
 
 function siteGroundY(site) {
+      if (Number.isFinite(site.floorY)) return site.floorY;
       if (site.treeId && typeof valleyTrees !== 'undefined') { const t = valleyTrees.find(v => v.id === site.treeId); if (t && t.group) return t.group.position.y; }
       return getIslandGroundHeight(site.x, site.z) + (site.y || 0);
     }
@@ -935,10 +946,14 @@ async function flyBuiltAirplane(originLabel = 'Flying His Own Airplane') {
         const site = siteFor(p);
         state.speechBubble = 'Preflight walk-around: fuel, oil, controls, prop, tyres. All good. Clear prop!';
         renderAllUI();
-        await driveVehicle(v, { x: site.x + 10, z: site.z + 32 }, 'Flying his home-built airplane');
+        // From the hangar he pushes it out through the big door onto the apron first
+        const start = site.inWorkshop ? hangarExitFor(site) : { x: site.x, z: site.z };
+        if (site.inWorkshop) await pushPlane(v, start, 'Pushing his airplane out of the hangar');
+        await driveVehicle(v, { x: start.x + 10, z: start.z + 32 }, 'Flying his home-built airplane');
         state.isPracticing = true;
-        await driveVehicle(v, { x: site.x, z: site.z }, 'Bringing his airplane home');
-        Object.assign(v, { x: site.x, z: site.z, rotY: site.rotY });
+        await driveVehicle(v, { x: start.x, z: start.z }, 'Bringing his airplane home');
+        Object.assign(v, { x: start.x, z: start.z, rotY: site.rotY });
+        if (site.inWorkshop) await pushPlane(v, { x: site.x, z: site.z }, 'Pushing his airplane back into the hangar');
         if (typeof renderVehicles3D === 'function') renderVehicles3D();
         const first = !p.firstFlightAt;
         if (first) p.firstFlightAt = Date.now();
@@ -954,6 +969,42 @@ async function flyBuiltAirplane(originLabel = 'Flying His Own Airplane') {
       } finally {
         state.isPracticing = false;
       }
+    }
+
+// Out on the apron in front of the hangar door, lined up so both wing tips clear the door frame
+function hangarExitFor(site) {
+      const d = site.door, fp = buildFootprint('ultralight');
+      if (!d) return { x: site.x, z: site.z + 12 };
+      const half = fp.width / 2 + 0.3;
+      const x = Math.min(d.x + d.w / 2 - half, Math.max(d.x - d.w / 2 + half, site.x));
+      return { x, z: d.z + 3.2 };
+    }
+
+// An ultralight is light enough to push by hand: he walks it in or out, the plane rolling ahead of him
+async function pushPlane(v, to, label) {
+      const from = { x: v.x, z: v.z }, dist = Math.hypot(to.x - from.x, to.z - from.z);
+      if (dist < 0.1) return;
+      state.moodEmoji = '✈️';
+      state.moodTitle = label;
+      state.speechBubble = /out/.test(label) ? 'Big door up. Slowly now: watch the wing tips past the door frame.' : 'Back into its bay, nice and slow.';
+      renderAllUI();
+      const dur = dist * 450, t0 = Date.now();
+      for (;;) {
+        const k = Math.min(1, (Date.now() - t0) / dur);
+        v.x = from.x + (to.x - from.x) * k;
+        v.z = from.z + (to.z - from.z) * k;
+        if (typeof renderVehicles3D === 'function') renderVehicles3D();
+        // He walks behind the tail, hands on the fuselage
+        const back = { x: v.x - Math.cos(v.rotY || 0) * 7.6, z: v.z + Math.sin(v.rotY || 0) * 7.6 };
+        state.botPos = { ...back };
+        state.targetPos = { ...back };
+        state.botRotY = Math.atan2(v.x - back.x, v.z - back.z);
+        if (k >= 1) break;
+        await new Promise(r => setTimeout(r, 80));
+      }
+      v.x = Math.round(to.x * 10) / 10;
+      v.z = Math.round(to.z * 10) / 10;
+      if (typeof renderVehicles3D === 'function') renderVehicles3D();
     }
 
 // Fixed-wing flight (called from airAltitude in js/vehicles.js): roll first, then climb, glide in

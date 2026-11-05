@@ -284,9 +284,8 @@ function haasDef(spec) {
           const steel = /steel/i.test(job.make || '');
           const name = job.make ? madeName(`${spec.brand}-machined`, steel ? 'steel' : 'aluminium', job.make, this.products[0]) : wsPick(this.products);
           const what = wsWhat(name).replace(/^[A-Za-z]+-machined /, '');
-          const an = /^[aeiou]/i.test(what) ? 'an' : 'a';
           return {
-            title: `Machining ${an} ${what} on the ${this.short}`, product: name, speech: 'Safety glasses on. Let\'s make chips.',
+            title: `Machining ${what} on the ${this.short}`, product: name, speech: 'Safety glasses on. Let\'s make chips.',
             stops: [{
               key, act: async ctx => {
                 const u = ctx.model.userData;
@@ -302,7 +301,7 @@ function haasDef(spec) {
                 useWorkshopSupply('faceMill', 1, 'Facing');
                 useWorkshopSupply('endMills', 1, 'Milling');
                 useWorkshopSupply('coolant', 1, 'Flood coolant');
-                await haasCycle(ctx, u, `Machining ${an} ${what} with flood coolant`, 9000, name);
+                await haasCycle(ctx, u, `Machining ${what} with flood coolant`, 9000, name);
                 await machineStep(ctx, 'Deburring and checking it with calipers', 1500, null, 'Within two hundredths of a millimetre. Nice.');
                 return true;
               }

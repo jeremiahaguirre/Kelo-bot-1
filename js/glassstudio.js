@@ -134,7 +134,7 @@ Object.assign(WORKSHOP_SUPPLIES, {
 });
 if (typeof ITEM_KINDS !== 'undefined') {
   ITEM_KINDS.unshift(
-    { kind: 'glasswork', label: 'a piece of hand-blown glass', re: /hand-blown glass/i, uses: ['display', 'drink'] },
+    { kind: 'glasswork', label: 'a piece of hand-blown glass', re: /hand-blown glass/i, uses: ['display'] },
     { kind: 'ws glassBatch', label: 'cullet for the glass furnace', re: /cullet|glass batch/i, uses: ['make glass'], per: 4, unit: 'pieces' },
     { kind: 'ws colourFrit', label: 'colour frit and rod', re: /frit|colou?r rod/i, uses: ['make glass'], per: 6, unit: 'pieces' },
     { kind: 'ws furnaceGas', label: 'gas for the glass furnace', re: /furnace gas|gas meter/i, uses: ['make glass'], per: 4, unit: 'firings' },

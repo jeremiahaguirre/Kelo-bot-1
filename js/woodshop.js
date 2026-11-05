@@ -325,8 +325,19 @@ const WOODSHOP_PROJECT_STEPS = [
   ['woodbench', 'Cutting the joints and dry-fitting the', 2200]
 ];
 
+// The project brings its own lumber; the machines still need their safety gear, and he must know the shop
+const WOODSHOP_MILLING_NEEDS = ['pushSticks', 'earDefenders', 'safetyGlasses'];
+function woodshopMillingReady() {
+      const def = WORKSHOP_MACHINES.woodshop;
+      if (!def || !machineKnown('woodshop')) return false;
+      const missing = WOODSHOP_MILLING_NEEDS.filter(k => !supplyOwned(k));
+      if (missing.length) { requestSupplies(def, missing, 'Milling the parts for a build'); return false; }
+      return true;
+    }
+
 async function millProjectInWoodshop(plan) {
       if (typeof goIntoWorkshop !== 'function' || typeof wsGroup === 'undefined' || !wsGroup || plan.welded) return false;
+      if (!woodshopMillingReady()) return false;
       const what = String(plan.name || 'project').toLowerCase();
       const stops = WOODSHOP_PROJECT_STEPS.map(([key, title, ms]) => ({
         floor: 3, key, act: async ctx => {

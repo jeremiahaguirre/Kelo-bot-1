@@ -345,6 +345,18 @@ function disposePerfStandIns(mesh) {
       if (mesh.dispose) mesh.dispose();
     }
 
+// --- Lines that follow things -------------------------------------------------------------------
+// Moving a 2-point line (a kite string, a fishing line) by setFromPoints made a new GPU buffer every
+// frame and never freed the old one. This moves the two ends of the one it has.
+function setLineEnds(line, a, b) {
+      const geo = line.geometry, p = geo.attributes.position;
+      if (!p || p.count !== 2) { geo.setFromPoints([new THREE.Vector3(a.x, a.y, a.z), new THREE.Vector3(b.x, b.y, b.z)]); geo.computeBoundingSphere(); return; }
+      p.setXYZ(0, a.x, a.y, a.z);
+      p.setXYZ(1, b.x, b.y, b.z);
+      p.needsUpdate = true;
+      geo.computeBoundingSphere();
+    }
+
 // --- Static parts drawn together ---------------------------------------------------------------
 // A building made of hundreds of boxes costs hundreds of draw calls (twice: once more for shadows).
 // Parts that never move are joined into one mesh per material, so a building costs about one draw

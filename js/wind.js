@@ -395,7 +395,7 @@ function windKiteProps(kite, line) {
           const ky = getAnalyticalGroundHeight(kx, kz) + 0.25 + hop;
           kite.position.set(kx, ky, kz);
           kite.rotation.set(-1.2 + hop * 0.6, 0, Math.sin(t * 5) * 0.3);
-          line.geometry.setFromPoints([hand(), new THREE.Vector3(kx, ky, kz)]);
+          setLineEnds(line, hand(), { x: kx, y: ky, z: kz });
         };
       }
       const strong = { breeze: 0, windy: 1, gale: 2 }[w.key];
@@ -414,7 +414,7 @@ function windKiteProps(kite, line) {
           const kx = f.x + w.dx * k * 14, kz = f.z + w.dz * k * 14;
           kite.position.set(kx, Math.max(getAnalyticalGroundHeight(kx, kz) + 0.2, f.y + Math.sin(k * Math.PI) * 2 - k * k * f.y), kz);
           kite.rotation.set(t * 6, t * 4, t * 5);
-          line.geometry.setFromPoints([hand(), new THREE.Vector3(state.botPos.x + 0.3, state.botAltitudeY + 0.2, state.botPos.z)]);
+          setLineEnds(line, hand(), { x: state.botPos.x + 0.3, y: state.botAltitudeY + 0.2, z: state.botPos.z });
           return;
         }
         const jerk = strong === 2 ? Math.sin(t * 7.3) * 1.2 + Math.sin(t * 11.1) * 0.6 : 0;
@@ -424,7 +424,7 @@ function windKiteProps(kite, line) {
         const ky = state.botAltitudeY + up + Math.sin(t * 1.3 + strong) * (0.5 + strong * 0.5) + jerk * 0.4;
         kite.position.set(kx, ky, kz);
         kite.rotation.set(0, Math.atan2(w.dx, w.dz), Math.sin(t * (1.7 + strong * 2)) * (0.3 + strong * 0.25));
-        line.geometry.setFromPoints([hand(), new THREE.Vector3(kx, ky, kz)]);
+        setLineEnds(line, hand(), { x: kx, y: ky, z: kz });
       };
     }
 

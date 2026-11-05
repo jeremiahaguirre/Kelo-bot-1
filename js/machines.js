@@ -437,6 +437,9 @@ function workshopChance() {
     }
 
 function workshopOnMyOwn() {
+      // The forklift: charge it when it's low, move a pallet now and then, or ask for one
+      if (typeof forkliftOnMyOwn === 'function' && Math.random() < forkliftChance()) return forkliftOnMyOwn();
+      if (typeof forkliftWanted === 'function' && Math.random() < 0.08 && forkliftWanted()) return true;
       const pick = pickWorkshopActivity();
       if (!pick) return false;
       const def = WORKSHOP_MACHINES[pick.key];

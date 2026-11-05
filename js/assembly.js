@@ -1004,7 +1004,7 @@ function hangarExitFor(site) {
     }
 
 // Where he holds the airplane to push or turn it: at the tail, hands on the fuselage
-const PLANE_TAIL_HOLD = 7.6;
+const PLANE_TAIL_HOLD = 6.5;
 function planeTailSpot(v, rotY = v.rotY || 0) {
       return { x: v.x - Math.cos(rotY) * PLANE_TAIL_HOLD, z: v.z + Math.sin(rotY) * PLANE_TAIL_HOLD };
     }
@@ -1268,7 +1268,7 @@ async function flyPlaneCircuit(v, start, u) {
         mesh.userData.alt = 0;
         if (mesh.userData.mini) mesh.userData.mini.rotation.z = 0;
         const flownTo = { x: state.botPos.x, z: state.botPos.z };
-        if (typeof burnFuel === 'function') burnFuel(v, f ? f.s : 0);
+        if (typeof burnFuel === 'function') burnFuel(v, f ? f.s * 0.12 : 0); // a light aircraft goes a long way on a tank
         if (typeof wearVehicle === 'function') wearVehicle(v, f ? f.s : 0);
         if (typeof gainSkill === 'function') gainSkill('flying airplane', 'flying the airplane', 3);
         v.x = flownTo.x;

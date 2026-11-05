@@ -75,7 +75,7 @@ const DIG_OPEN_PINS = ['mountain_peak', 'east_cliff', 'meadow', 'shoreline'];
 const DIG_HOLE_R = 1.6, DIG_PILE_R = 2.6;
 function earthworkBlocked(x, z, r = DIG_HOLE_R) {
       if (typeof worldObstacles !== 'undefined' && typeof obstacleProbe === 'function') {
-        for (const o of worldObstacles) if (o.hw !== undefined && obstacleProbe(o, x, z).d < r) return o.building ? (TOWN_LOCATIONS[o.building] || {}).name || 'a building' : 'a building';
+        for (const o of worldObstacles) if (o.hw !== undefined && obstacleProbe(o, x, z).d < r) return o.building && TOWN_LOCATIONS[o.building] ? 'the ' + TOWN_LOCATIONS[o.building].name : 'a building';
       }
       if (typeof inWorkshopSite === 'function' && inWorkshopSite(x, z, r)) return 'the Workshop';
       if (typeof inTown === 'function' && inTown(x, z)) return 'town';

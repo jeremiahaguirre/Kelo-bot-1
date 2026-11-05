@@ -185,22 +185,18 @@ function perfCheckOutdoors() {
       });
     }
 
-// --- Auto: step down to Low when frames are slow for a while ---------------------------------------
-let perfFrameAvg = 16, perfSlowSince = 0, perfLastFrame = 0;
+// --- Auto: step down to Low when frames stay slow -----------------------------------------------
+// There is one frame-rate watcher (trackFrameRate in js/realism.js). It lowers the Graphics level
+// first (High, Balanced, Fast); if frames are still slow on Fast, it asks for this step.
+function perfCanAutoStep() {
+      return perfChoice === 'auto' && perfAutoLevel !== 'low';
+    }
 
-function perfWatchFrames(now) {
-      const dt = perfLastFrame ? now - perfLastFrame : 16;
-      perfLastFrame = now;
-      if (dt > 500 || document.visibilityState !== 'visible') return; // a hidden tab or a pause, not slowness
-      perfFrameAvg += (dt - perfFrameAvg) * 0.05;
-      if (perfChoice !== 'auto' || perfAutoLevel === 'low') return;
-      if (perfFrameAvg > 45) {
-        if (!perfSlowSince) perfSlowSince = now;
-        else if (now - perfSlowSince > 8000) {
-          perfAutoLevel = 'low';
-          perfChanged();
-        }
-      } else perfSlowSince = 0;
+function perfAutoStepDown() {
+      if (!perfCanAutoStep()) return false;
+      perfAutoLevel = 'low';
+      perfChanged();
+      return true;
     }
 
 // --- The loop: a few checks a second, on its own animation frame ----------------------------------
@@ -209,7 +205,6 @@ let perfTickCount = 0;
 function perfLoop(now) {
       requestAnimationFrame(perfLoop);
       if (typeof camera === 'undefined' || !camera || typeof scene === 'undefined' || !scene) return;
-      perfWatchFrames(now);
       perfBuildingsWork();
       perfTickCount++;
       if (perfTickCount % 6 === 0) {

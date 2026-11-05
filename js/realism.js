@@ -598,7 +598,9 @@ function watchFrameRate() {
     }
 
 function trackFrameRate(dt) {
-      if (graphicsChosen || !fpsWatch.startAt || performance.now() < fpsWatch.startAt || document.hidden) return;
+      // The one frame-rate watcher: Graphics steps down first, then Performance (Auto) goes to Low (js/perf.js)
+      const perfCan = typeof perfCanAutoStep === 'function' && perfCanAutoStep();
+      if ((graphicsChosen && !perfCan) || !fpsWatch.startAt || performance.now() < fpsWatch.startAt || document.hidden) return;
       fpsWatch.frames++;
       fpsWatch.time += dt;
       if (fpsWatch.time < 8) return;
@@ -606,11 +608,14 @@ function trackFrameRate(dt) {
       fpsWatch.frames = 0;
       fpsWatch.time = 0;
       fpsWatch.checks++;
-      if (fps < 32 && graphicsLevel !== 'fast') {
+      if (fps < 32 && !graphicsChosen && graphicsLevel !== 'fast') {
         setGraphicsLevel(graphicsLevel === 'high' ? 'balanced' : 'fast', false);
         if (typeof showToast === 'function') showToast(`🖥️ Graphics set to ${graphics().label} to keep things smooth`);
         fpsWatch.startAt = performance.now() + 4000;
-      } else if (fpsWatch.checks >= 3) {
+      } else if (fps < 32 && perfCan && perfAutoStepDown()) {
+        if (typeof showToast === 'function') showToast('🖥️ Drawing less of the far valley to keep things smooth');
+        fpsWatch.startAt = performance.now() + 4000;
+      } else if (fpsWatch.checks >= 3 || fps < 32) {
         fpsWatch.startAt = 0; // it runs fine: stop watching
       }
     }

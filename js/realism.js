@@ -167,6 +167,7 @@ function finishRealisticWorld() {
       watchFrameRate();
       // Things added later (items, vehicles, his builds) get shadows too
       setInterval(updateShadowCasters, 3000);
+      setInterval(updateSmallCasters, 400);
       setTimeout(updateShadowCasters, 500);
     }
 
@@ -198,6 +199,24 @@ function updateShadowCasters() {
         if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
         const s = o.geometry.boundingSphere ? o.geometry.boundingSphere.radius * Math.max(o.scale.x, o.scale.y, o.scale.z) : 0;
         if (s >= min) o.castShadow = true;
+        // Small casters (cups, tools, fingers, flowers...) only matter where the camera is looking
+        if (o.castShadow && o.geometry.boundingSphere && o.geometry.boundingSphere.radius * o.matrixWorld.getMaxScaleOnAxis() < SMALL_CASTER_SIZE) smallCasters.add(o);
+      });
+    }
+
+// Half the frame's draw calls are the shadow pass, and a fifth of the casters are small things whose
+// shadows are a few texels anywhere but close up. They cast only near where the camera looks.
+const SMALL_CASTER_SIZE = 0.3, SMALL_CASTER_NEAR = 14;
+const smallCasters = new Set();
+function updateSmallCasters() {
+      if (!scene || typeof controls === 'undefined' || !controls) return;
+      const t = controls.target, near2 = SMALL_CASTER_NEAR * SMALL_CASTER_NEAR;
+      smallCasters.forEach(o => {
+        let root = o;
+        while (root.parent) root = root.parent;
+        if (root !== scene) { smallCasters.delete(o); return; } // gone from the world
+        const e = o.matrixWorld.elements, dx = e[12] - t.x, dz = e[14] - t.z;
+        o.castShadow = dx * dx + dz * dz < near2;
       });
     }
 

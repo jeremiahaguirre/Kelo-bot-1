@@ -361,7 +361,7 @@ function mergeStaticMeshes(root, skip = []) {
       Object.values(root.userData || {}).forEach(v => [].concat(v).forEach(x => { if (x && x.isObject3D) keepTree(x); else if (x && typeof x === 'object') Object.values(x).forEach(keepTree); }));
       const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
       const m = new THREE.Matrix4();
-      const sets = new Map();
+      const sets = new Map(), casts = new Map();
       root.traverse(o => {
         if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || keep.has(o) || Array.isArray(o.material) || !o.visible) return;
         if (Object.keys(o.userData).length || o.morphTargetInfluences || o.onBeforeRender !== THREE.Object3D.prototype.onBeforeRender) return;
@@ -370,9 +370,12 @@ function mergeStaticMeshes(root, skip = []) {
         if (!g || !g.isBufferGeometry || !g.attributes.position || Object.keys(g.morphAttributes).length) return;
         if (o.matrixWorld.determinant() < 0) return; // mirrored: its faces would turn inside out
         const names = Object.keys(g.attributes).sort();
-        const key = `${o.material.uuid}|${o.castShadow}|${o.receiveShadow}|${o.renderOrder}|${names.map(n => n + g.attributes[n].itemSize).join(',')}`;
+        // A small part that is out of shadow range right now still means to cast (js/realism.js)
+        const cast = o.castShadow || (typeof smallCasters !== 'undefined' && smallCasters.has(o));
+        const key = `${o.material.uuid}|${cast}|${o.receiveShadow}|${o.renderOrder}|${names.map(n => n + g.attributes[n].itemSize).join(',')}`;
         if (!sets.has(key)) sets.set(key, []);
         sets.get(key).push(o);
+        casts.set(o, cast);
       });
       let joined = 0;
       sets.forEach(list => {
@@ -393,12 +396,12 @@ function mergeStaticMeshes(root, skip = []) {
         parts.forEach(p => p.dispose());
         const first = list[0];
         const mesh = new THREE.Mesh(out, first.material);
-        mesh.castShadow = first.castShadow;
+        mesh.castShadow = casts.get(first);
         mesh.receiveShadow = first.receiveShadow;
         mesh.renderOrder = first.renderOrder;
         mesh.matrixAutoUpdate = false;
         // Its shadow choice is made: js/realism.js mustn't turn a joined non-caster into a big caster
-        mesh.userData.noShadow = !first.castShadow;
+        mesh.userData.noShadow = !mesh.castShadow;
         mesh.userData.joinedParts = list.length;
         root.add(mesh);
         mesh.updateMatrix();

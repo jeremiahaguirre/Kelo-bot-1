@@ -1128,7 +1128,7 @@ async function runWorkshopVisit(plan) {
         if (veh && workshopTrip.vehicleOut) state.botPos = { ...workshopTrip.vehicleOut };
         else state.botPos = { x: outside.x, z: outside.z };
         state.targetPos = { ...state.botPos };
-        Object.assign(workshopTrip, { active: false, floor: 1, vehicle: null, vehicleAt: null, vehicleOut: null, vehicleHome: null, liftY: 0 });
+        Object.assign(workshopTrip, { active: false, floor: 1, vehicle: null, vehicleAt: null, vehicleOut: null, vehicleHome: null, vehPose: null, liftY: 0 });
         wsUpdateLift(0);
         workshopShowUpstairs(false);
         wsSetFrontFade(1);
@@ -1213,9 +1213,26 @@ async function wsDriveAlong(site, v, pts, ms) {
         mesh.position.y = wsGroup.position.y + WS_F1 + workshopTrip.liftY;
         mesh.rotation.y = a.ry + (b.ry - a.ry) * e;
         workshopTrip.vehicleAt = { x: mesh.position.x - wsGroup.position.x, z: mesh.position.z - wsGroup.position.z };
+        wsHoldVehicle(mesh);
         wsSeatKelo(mesh);
       });
     }
+
+// While a vehicle is inside, its pose is kept here: if anything re-places the parked vehicles
+// (renderVehicles3D), it is put straight back where it is in the Workshop
+function wsHoldVehicle(mesh) {
+      workshopTrip.vehPose = { x: mesh.position.x, y: mesh.position.y, z: mesh.position.z, ry: mesh.rotation.y };
+    }
+
+if (typeof renderVehicles3D === 'function') {
+  const baseRenderVehicles3D = renderVehicles3D;
+  renderVehicles3D = function () {
+    baseRenderVehicles3D();
+    const v = workshopTrip.active && workshopTrip.vehicle, p = workshopTrip.vehPose;
+    const mesh = v && typeof vehicleMeshes !== 'undefined' && vehicleMeshes[v.id];
+    if (mesh && p) { mesh.position.set(p.x, p.y, p.z); mesh.rotation.y = p.ry; }
+  };
+}
 
 // Drive in through door 1 off the east lane, onto the car elevator, ride up and on forwards onto the
 // two-post lift behind the shaft
@@ -1233,7 +1250,7 @@ async function wsDriveIn(site, v) {
       if (wsModels.hoist) wsModels.hoist.visible = false;
       wsSetDeck(0.98);
       tripMood('Taking the car elevator up', `Going up with the ${nm}. This is the best part.`);
-      await wsRideLift(2, [y => { mesh.position.y = y; wsSeatKelo(mesh); }]);
+      await wsRideLift(2, [y => { mesh.position.y = y; wsHoldVehicle(mesh); wsSeatKelo(mesh); }]);
       workshopTrip.floor = 2;
       if (wsModels.hoist) wsModels.hoist.visible = true;
       const car = WORKSHOP_STATIONS.garage.local;
@@ -1257,7 +1274,7 @@ async function wsDriveOut(site, v) {
       await wsDriveAlong(site, v, [{ x: WS_LIFT.x, z: WS_LIFT.z, ry }], 3500);
       if (wsModels.hoist) wsModels.hoist.visible = false;
       tripMood('Riding the car elevator down');
-      await wsRideLift(1, [y => { mesh.position.y = y; wsSeatKelo(mesh); }]);
+      await wsRideLift(1, [y => { mesh.position.y = y; wsHoldVehicle(mesh); wsSeatKelo(mesh); }]);
       workshopTrip.floor = 1;
       wsSetDeck(0.15);
       workshopShowUpstairs(false);

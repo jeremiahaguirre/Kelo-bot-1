@@ -111,7 +111,7 @@ async function liftTo(ctx, h, ms = 2500) {
       await ctx.animate(ms, k => {
         const e = k * k * (3 - 2 * k), y = from + (h - from) * e;
         u.carriages.forEach(c => { c.position.y = u.liftY + y; });
-        if (mesh) mesh.position.y = base + y;
+        if (mesh) { mesh.position.y = base + y; if (typeof wsHoldVehicle === 'function') wsHoldVehicle(mesh); }
       });
     }
 

@@ -211,7 +211,7 @@ registerWorkshopMachine({
       }
     });
     return {
-      title: `Blowing ${job.product ? wsWhat(job.product) : `a glass ${kind}`} in the glass studio`, product: piece.name,
+      title: `Blowing ${job.product ? wsWhat(job.product).replace(/hand-blown /i, "") : `a glass ${kind}`} in the glass studio`, product: piece.name,
       speech: 'Didymium glasses and Kevlar gloves on. The furnace is at 2100 degrees.',
       stops: [
         step('glassfurnace', 'Gathering molten glass from the crucible', 3500, 'Dip the blowpipe, turn, turn, lift: a honey-bright gather.', (k, t, ctx) => {

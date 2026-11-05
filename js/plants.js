@@ -1241,3 +1241,69 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 5000);
   }, 600);
 });
+
+// --- He notices the new buildings ---------------------------------------------------------------------
+// The Workshop and the plant were added to his world while he was away. The first time he is free after
+// they appear, he walks over, takes them in, and writes about it, once each (state.placesNoticed).
+const NEW_PLACES_TO_NOTICE = [
+  {
+    key: 'workshop', title: 'Found a Workshop', emoji: '🏭',
+    spot: () => ({ x: WORKSHOP_SITE.x + 0.3, z: WORKSHOP_SITE.z + WORKSHOP_SITE.d / 2 + 2.6 }),
+    say: "Wait... where did this come from? A whole Workshop, three floors, a hangar, machines everywhere. Is this... mine?",
+    diary: 'Dear Diary, a huge Workshop has appeared east of my helipad. Printers of every kind, CNC machines, an electronics line and a garage upstairs, glass and wood on the top floor, and a hangar big enough for an airplane. I don\'t know how to use most of it yet. I want to learn every machine, one at a time.'
+  },
+  {
+    key: 'plant', title: 'Found a Concrete & Asphalt Plant', emoji: '🏗️',
+    spot: () => { const S = aggregatePlantSite(); return { x: S.x - S.w / 2 - 1.2, z: S.z }; },
+    say: "And right next to it, a concrete and asphalt plant! Silos, a mixer, a drum dryer. I could pave my own roads.",
+    diary: 'Dear Diary, right beside the Workshop there is now a concrete batch plant and an asphalt plant, with a mixer truck parked in its bay. If I learn how they work, I can pour my own paths and pave my own roads.'
+  }
+];
+
+function placesToNotice() {
+      if (!state.placesNoticed || typeof state.placesNoticed !== 'object') state.placesNoticed = {};
+      return NEW_PLACES_TO_NOTICE.filter(p => !state.placesNoticed[p.key]);
+    }
+
+async function noticeNewPlaces() {
+      const todo = placesToNotice();
+      if (!todo.length || state.isBusy || state.isBuilding || state.isCollectingMail || state.isPracticing || state.isSleeping) return false;
+      state.isBusy = true;
+      try {
+        for (const p of todo) {
+          state.moodEmoji = p.emoji;
+          state.moodTitle = p.title;
+          state.customPlaceName = p.title.replace(/^Found an? /, '');
+          state.targetPos = p.spot();
+          renderAllUI();
+          const spot = state.targetPos;
+          await waitForArrival(150000);
+          // Only react once he is really there; if the walk got cut short, try again later
+          if (Math.hypot(spot.x - state.botPos.x, spot.z - state.botPos.z) > 3) break;
+          state.speechBubble = p.say;
+          state.wonderLevel = Math.min(100, (state.wonderLevel || 0) + 8);
+          state.placesNoticed[p.key] = Date.now();
+          state.diaryEntries.unshift({
+            time: 'A New Discovery', location: state.customPlaceName, mood: `${p.emoji} ${p.title}`,
+            vitals: `⚡ ${state.health}% • 🥕 ${state.fullness}% • ✨ ${state.wonderLevel}% • 🌊 ${state.calmLevel}%`,
+            text: p.diary
+          });
+          if (typeof showToast === 'function') showToast(`${p.emoji} Kelo-1 discovered: ${state.customPlaceName}`);
+          savePersistentBrainState();
+          renderAllUI();
+          await new Promise(r => setTimeout(r, 6000));
+        }
+      } finally {
+        state.isBusy = false;
+        state.customPlaceName = null;
+      }
+      return true;
+    }
+
+window.addEventListener('DOMContentLoaded', () => {
+  // Look for a free moment a little after he wakes up; try again every 20 s until he has seen both
+  const timer = setInterval(() => {
+    if (!placesToNotice().length) { clearInterval(timer); return; }
+    noticeNewPlaces().catch(e => { state.isBusy = false; console.warn('notice places', e); });
+  }, 20000);
+});

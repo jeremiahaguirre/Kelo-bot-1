@@ -17,8 +17,12 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - Task 5 Build anything (pushed 2026-11-05): BOMs down to the screw, list cards, builds in hangar bays 1 and 2, and the plane flies after training. Name clashes fixed at merge (buildSiteToWorld, buildGuitarModel).
 - Plant moved EAST of the workshop (pushed 2026-11-05): WORLD_MAX_X is now 86, `AGGREGATE_PLANT_SITE` x 62.5 to 81.5, and the old site is meadow.
 - Task 12 play-through QA done: all 34 harness scenarios clean (landscape test updated for research-first).
-- **In progress (agent/shopview):** a visitor walk-around of the workshop (pick the hangar, wing or floors 1 to 3) with machine status cards. Kelo-1 keeps living meanwhile.
-- Next: task 13 audit phase 2, after shopview merges.
+- **Owner's order (2026-11-05):**
+  1. Task 13 audit phase 2 (`.claude/review.md`) NOW.
+  2. Then a full run-through of the game: Kelo-1, his tools, environment, machines and vehicles all work as intended. Fix what's found.
+  3. Then 7b (runway field, map growth, bigger garage) and the quality upgrade.
+  4. The workshop viewer (`agent/shopview`, paused WIP) is LAST.
+- Kelo-1 notices the new Workshop and plant once (`state.placesNoticed`, plants.js), and the AI prompt now describes the workshop layout.
 - **This week's plan is done.** Next, after the weekly reset: 7b runway field, map growth and bigger garage, then QA, audit phase 2, and the quality upgrade.
 - Task 8 plant: built on agent/plant; sent back to keep Kelo-1 out of the lake beside it, then merge.
 

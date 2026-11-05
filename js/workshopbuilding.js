@@ -1778,7 +1778,15 @@ function wsWorkPose(t) {
     }
 
 function workshopSummaryForAI() {
-      return `a big two-storey workshop east of your helipad (floor 1: fabrication shop with 3D printers, CNC routers and mills, welding and a work bench; floor 2 by car elevator: an electronics line and a garage)`;
+      const lift = (state.vehicles || []).find(v => /forklift/i.test(v.name || v.type || ''));
+      const liftNote = lift ? `; your electric forklift is at ${Math.round(typeof forkliftCharge === 'function' ? forkliftCharge(lift) : 80)}% charge` : '; no forklift yet';
+      return 'a big Workshop east of your helipad. '
+        + 'Floor 1: 3D printers of every type, CNC routers and mills, welding and a work bench. '
+        + 'North wing: the CNC hall with the Haas mills and pallet racking. '
+        + 'Hangar & Assembly: two build bays and vehicle parking with a bridge crane. '
+        + 'Floor 2 (car elevator or stairs): the electronics line and the garage. '
+        + 'Floor 3: a glass blowing studio and a woodshop'
+        + liftNote;
     }
 
 window.addEventListener('DOMContentLoaded', () => {

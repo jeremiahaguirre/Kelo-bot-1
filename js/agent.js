@@ -330,6 +330,7 @@ const state = {
   "batchPlant": {},
   "asphaltPlant": {},
   "concretePours": [],
+  "placesNoticed": {},
   "basementDepth": 0,
   "projects": [],
   "buildProjects": [],
@@ -1864,14 +1865,14 @@ Current state:
 - Welding: ${recentlyWelded() ? 'you welded a piece within the last 15 minutes, so do something different this time ("build" should be null)' : 'welding is one of many things you do; most of your decisions should not include a "build"'}. Pieces stand outdoors (never in town); only overflow goes to your Museum.
 - Your real skills (practise with the things you asked for and were given; this matters more than welding): ${typeof skillsSummaryForAI === 'function' ? skillsSummaryForAI() : 'none yet'}
 - Groundwork you've researched (roads, asphalt paving, moving earth, planting): ${typeof groundworkSummaryForAI === 'function' ? groundworkSummaryForAI() : 'nothing yet'}
-- Your concrete and asphalt plant (beside the big workshop): ${typeof plantSummaryForAI === 'function' ? plantSummaryForAI() : 'none'}
+- Your concrete and asphalt plant (right beside the Workshop, to its east): ${typeof plantSummaryForAI === 'function' ? plantSummaryForAI() : 'none'}
 - In your Storehouse: ${typeof storehouseSummaryForAI === 'function' ? storehouseSummaryForAI() : 'empty'}
 - Tidying up: ${typeof tidySummaryForAI === 'function' ? tidySummaryForAI() : 'nothing to tidy'}
 - Thrown into your Disposal Pit (gone forever): ${typeof disposalSummaryForAI === 'function' ? disposalSummaryForAI() : 'nothing yet'}
 - Your shop website, where real people can buy your things: ${typeof shopSummaryForAI === 'function' ? shopSummaryForAI() : 'none'}
 - Your sense of taste: ${typeof tastesSummaryForAI === 'function' ? tastesSummaryForAI() : 'unknown'}
 - Your 3D printer: ${typeof printerSummaryForAI === 'function' ? printerSummaryForAI() : 'none'}
-- Your Workshop: ${typeof workshopStatusLine === 'function' ? workshopStatusLine() : 'not built yet'}
+- Your Workshop: ${typeof workshopSummaryForAI === 'function' ? workshopSummaryForAI() + ' | ' : ''}${typeof workshopStatusLine === 'function' ? workshopStatusLine() : 'not built yet'}
 - Things your human switched on in your world: ${typeof wishFeaturesSummaryForAI === 'function' ? wishFeaturesSummaryForAI() : 'nothing extra yet'}
 - Upgrades you coded yourself: ${typeof upgradesSummaryForAI === 'function' ? upgradesSummaryForAI() : 'none yet'}
 - Painting for real, in real media (oil, acrylic, watercolour, gouache, pastel, ink, charcoal): each needs its own supplies, and you research a new medium at NetNode first, then ask for what's missing. Your media: ${typeof paintingSummaryForAI === 'function' ? paintingSummaryForAI() : 'none'}

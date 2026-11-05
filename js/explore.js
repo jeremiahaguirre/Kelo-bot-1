@@ -50,10 +50,6 @@ function exploreSavePrefs() {
       try { localStorage.setItem(EXPLORE_PREFS_KEY, JSON.stringify(exploreCam.prefs)); } catch (e) {}
     }
 
-function exploreIsTouch() {
-      return window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-    }
-
 // The ground (or the lake surface) at a spot. Inside the island this is the exact terrain; beyond
 // it, the backdrop lands are measured with a ray now and then
 function exploreGroundAt(x, z) {

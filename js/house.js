@@ -449,6 +449,9 @@ function buildKeloHouse3D() {
       if (typeof dressBuilding === 'function') dressBuilding(house, [[wallMat, 'siding', 1.6], [frontWallMat, 'siding', 1.6], [roofMat, 'shingles', 1.6], [stoneMat, 'stone', 1.2], [trimMat, 'paintedwood'], [darkWood, 'wood'], [lightWood, 'wood']]);
       scene.add(house);
       terrainSwapGroup.add(ground);
+      // Its few hundred static boards, bricks and trims draw as one mesh per material (js/perf.js); the
+      // roof stays separate for the cutaway
+      if (typeof mergeStaticMeshesSoon === 'function') mergeStaticMeshesSoon(house, () => cutawayRoofMeshes);
       // The foothill firs (scattered at random from z -11 northward) mustn't grow through the back
       // wall: any that landed on the house or tight behind it are moved back a little
       const backZ = HOUSE.z - d / 2 - 1.5;

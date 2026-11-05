@@ -457,7 +457,22 @@ function clampNumber(value, min, max, fallback) {
       return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
     }
 
+// Lookups grow by one entry per new word or thing he meets. Past `max`, the oldest are forgotten
+// (he can look them up again); anything about something he owns is always kept.
+function trimLookupMap(map, max, keep) {
+      if (!map || typeof map !== 'object') return map;
+      const keys = Object.keys(map);
+      if (keys.length <= max) return map;
+      keys.sort((a, b) => ((map[b] && map[b].at) || 0) - ((map[a] && map[a].at) || 0));
+      const out = {};
+      keys.forEach((k, i) => { if (i < max || keep.has(k)) out[k] = map[k]; });
+      return out;
+    }
+
+const LOOKUP_LIMITS = { vocabulary: 800, itemLookups: 600, itemPurposes: 600 };
 function trimBrainState() {
+      const owned = new Set(ownedItemNames().map(n => String(n).toLowerCase()));
+      Object.entries(LOOKUP_LIMITS).forEach(([k, max]) => { state[k] = trimLookupMap(state[k], max, owned); });
       if (state.visitorMemories.length > 50) state.visitorMemories.length = 50;
       if (state.webHistory.length > 12) state.webHistory.length = 12;
       if (state.giftLog.length > 30) state.giftLog.length = 30;
@@ -1049,11 +1064,11 @@ Return ONLY valid JSON matching this schema:
 
         // If Kelo-1 requested new gear on this tick, add it to his Supply Broker Requisitions inbox!
         if (synth.gearRequested && synth.gearRequested !== 'None') {
-          const alreadyAsked = state.requestsToUser.some(r => r.requestedGear === synth.gearRequested)
+          const alreadyAsked = hasOpenRequest(r => r.requestedGear === synth.gearRequested)
             || (typeof vehicleRequestCheck === 'function' && vehicleRequestCheck(synth.gearRequested).blocked);
           if (!alreadyAsked) {
             state.requestsToUser.unshift({
-              id: 'req-gear-' + Date.now(),
+              id: newRequestId('gear'),
               category: 'Supply Broker Tool Demand',
               icon: '🛠️',
               urgency: 'Gear Requested',
@@ -1863,6 +1878,7 @@ Current state:
 - Things you know how to use: ${typeof knowHowSummaryForAI === 'function' ? knowHowSummaryForAI() : 'nothing yet'}
 - Your most recent decisions: ${typeof recentDecisionsForAI === 'function' ? recentDecisionsForAI() : 'none yet'}. Choose something genuinely DIFFERENT this time: don't repeat or rephrase any of them, and don't retry something you are still waiting on (tools, materials, fuel or a delivery). Do something else meanwhile.
 - Welding: ${recentlyWelded() ? 'you welded a piece within the last 15 minutes, so do something different this time ("build" should be null)' : 'welding is one of many things you do; most of your decisions should not include a "build"'}. Pieces stand outdoors (never in town); only overflow goes to your Museum.
+- Your welding setup (gas, wire, hoses): ${typeof weldingSummaryForAI === 'function' ? weldingSummaryForAI() : 'unknown'}
 - Your real skills (practise with the things you asked for and were given; this matters more than welding): ${typeof skillsSummaryForAI === 'function' ? skillsSummaryForAI() : 'none yet'}
 - Groundwork you've researched (roads, asphalt paving, moving earth, planting): ${typeof groundworkSummaryForAI === 'function' ? groundworkSummaryForAI() : 'nothing yet'}
 - Your concrete and asphalt plant (right beside the Workshop, to its east): ${typeof plantSummaryForAI === 'function' ? plantSummaryForAI() : 'none'}
@@ -2038,9 +2054,9 @@ function applyDecision(decision, originLabel) {
       }
 
       const q = decision.askQuestion;
-      if (q && typeof q === 'object' && str(q.question, 300)) {
+      if (q && typeof q === 'object' && str(q.question, 300) && !hasOpenRequest(r => r.question === str(q.question, 300))) {
         state.requestsToUser.unshift({
-          id: 'req-free-' + Date.now(),
+          id: newRequestId('free'),
           category: 'Open Question',
           icon: emoji,
           urgency: 'Wondering',
@@ -2167,23 +2183,60 @@ function applyDecision(decision, originLabel) {
     }
 
 // Run an activity as soon as Kelo-1 is free (mid-build, mid-errand...), giving up after ~3 minutes
-function doWhenFree(fn, attempt = 0) {
-      setTimeout(() => {
-        if (state.isBusy || state.isBuilding || state.isPracticing || state.isCollectingMail) {
-          if (attempt < 36) doWhenFree(fn, attempt + 1);
-          return;
-        }
-        fn();
-      }, attempt === 0 ? 3000 : 5000);
+// Things he means to do once he is free, oldest first, one at a time. (They used to retry on their own
+// and were silently dropped after about 3 minutes, so anything asked during a night's sleep or a long
+// build was lost.) Each waits up to `maxWaitMs` (45 minutes unless the caller says otherwise). The same
+// job asked again while it is waiting is kept once: jobs match by `key`, or else by their code, so
+// callers whose arguments matter (a visitor's ask) pass a key. Jobs are functions, so the queue lasts
+// for this visit to the page; anything he really wants survives a reload in his saved state anyway.
+const freeQueue = [];
+let freeQueueTimer = null, freeQueueDropped = 0;
+function keloIsFree() {
+      return !(state.isBusy || state.isBuilding || state.isPracticing || state.isCollectingMail || state.isSleeping);
+    }
+
+function doWhenFree(fn, opts = {}) {
+      if (typeof fn !== 'function') return false;
+      const key = opts.key ? String(opts.key) : 'code:' + fn.toString();
+      if (freeQueue.some(j => j.key === key)) return false;
+      const now = Date.now();
+      freeQueue.push({ fn, key, notBefore: now + (opts.delayMs ?? 3000), expires: now + (opts.maxWaitMs || 45 * 60000) });
+      if (!freeQueueTimer) freeQueueTimer = setInterval(runFreeQueue, 2500);
+      return true;
+    }
+
+function runFreeQueue() {
+      const now = Date.now();
+      for (let i = freeQueue.length - 1; i >= 0; i--) if (freeQueue[i].expires < now) { freeQueue.splice(i, 1); freeQueueDropped++; }
+      if (!freeQueue.length) { clearInterval(freeQueueTimer); freeQueueTimer = null; return; }
+      if (!keloIsFree()) return;
+      const i = freeQueue.findIndex(j => j.notBefore <= now);
+      if (i < 0) return;
+      const job = freeQueue.splice(i, 1)[0];
+      try {
+        const r = job.fn();
+        if (r && typeof r.catch === 'function') r.catch(e => console.warn('A job he waited to do failed:', e));
+      } catch (e) { console.warn('A job he waited to do failed:', e); }
+    }
+
+// A request id that never repeats, even for two requests made in the same millisecond
+let requestIdCount = 0;
+function newRequestId(kind) {
+      return `req-${kind}-${Date.now().toString(36)}-${(++requestIdCount).toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`;
+    }
+
+// Is he already waiting on an answer to this? (Answered or declined ones may be asked again later.)
+function hasOpenRequest(test) {
+      return state.requestsToUser.some(r => !r.fulfilled && test(r));
     }
 
 // Add something Kelo-1 wants to the requests inbox
 function addItemRequest(item, category, why, context) {
-      if (!item || state.requestsToUser.some(r => !r.fulfilled && r.requestedGear === item)) return;
+      if (!item || hasOpenRequest(r => r.requestedGear === item)) return;
       // One of each kind of vehicle until he has a friend to share with (js/trips.js)
       if (typeof vehicleRequestCheck === 'function') { const cap = vehicleRequestCheck(item, why); if (cap.blocked) return; why = cap.why; }
       state.requestsToUser.unshift({
-        id: 'req-item-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        id: newRequestId('item'),
         category,
         icon: CATEGORY_ICONS[category] || '🎁',
         urgency: `Wants: ${category}`,

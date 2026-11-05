@@ -481,18 +481,6 @@ function useWeldingSupplies() {
       return supply ? useUpItem(supply, 1, { why: 'welding' }) : null;
     }
 
-// A real build (js/projects.js) uses one of each material it takes, plus glue if he has some
-function useBuildSupplies(plan) {
-      const used = [];
-      plan.materials.forEach(m => {
-        const name = [...new Set(ownedItemNames())].find(n => m.re.test(n) && usableFor(n, 'build'));
-        if (name) { useUpItem(name, 1, { why: `on the ${plan.name.toLowerCase()}` }); used.push(name); }
-      });
-      const glue = ownedItemNames().find(n => itemKindOf(n).kind === 'glue');
-      if (glue) { useUpItem(glue, 1, { why: `on the ${plan.name.toLowerCase()}` }); used.push(glue); }
-      return used;
-    }
-
 // Things he owns that a build can use (food, toys and the like never go into a build)
 function buildableOwnedNames() {
       return ownedItemNames().filter(n => usableFor(n, 'build'));

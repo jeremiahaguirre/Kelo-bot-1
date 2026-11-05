@@ -93,7 +93,7 @@ async function goFishing(originLabel = 'Gone Fishing') {
           const tt = performance.now() / 1000;
           const dip = bite ? Math.abs(Math.sin(tt * 9)) * 0.12 : Math.sin(tt * 1.6) * 0.02;
           bobber.position.set(cast.x, WATER_LEVEL + 0.03 - dip, cast.z);
-          line.geometry.setFromPoints([tip, bobber.position.clone()]);
+          setLineEnds(line, tip, bobber.position);
           requestAnimationFrame(tick);
         };
         tick();

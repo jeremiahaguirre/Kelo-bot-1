@@ -1050,7 +1050,6 @@ function takeoffRunFor(v) {
 
 // Spin the propeller whenever he's riding his airplane
 function assemblyFrame() {
-      requestAnimationFrame(assemblyFrame);
       if (!state.riding || typeof vehicleMeshes === 'undefined') return;
       const m = vehicleMeshes[state.riding];
       if (m && m.userData.prop) m.userData.prop.rotation.x += 0.9;
@@ -1148,7 +1147,7 @@ function answerBuildRequest(ask, visitor) {
       const cur = activeBuild();
       if (cur) return sayToVisitor(`I'd love to, ${visitor}, but I'm in the middle of building ${aName(cur.bom.name)} (${bomPercentBuilt(cur.bom)}% built). One big build at a time!`, visitor);
       sayToVisitor(`${/^[aeiou]/i.test(ask.target) ? 'An' : 'A'} ${ask.target.toLowerCase()}? Yes! I'll research it at NetNode, write a bill of materials down to the screw, and send you the parts lists.`, visitor);
-      doWhenFree(() => researchBuild(ask.target, `${visitor} asked me to`, `Asked by ${visitor}`));
+      doWhenFree(() => researchBuild(ask.target, `${visitor} asked me to`, `Asked by ${visitor}`), { key: `build:${ask.target}`, maxWaitMs: 3 * 3600000 });
     }
 
 // --- 7. The autonomous tick (js/agent.js) ------------------------------------------------------------
@@ -1192,7 +1191,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!Array.isArray(state.buildProjects)) state.buildProjects = [];
     state.buildProjects.forEach(p => { if (p.bom && p.status !== 'abandoned') { p.partial = null; placeAssemblyMesh(p); } });
     renderBuildProjectsList();
-    requestAnimationFrame(assemblyFrame);
+    if (typeof keloEveryFrame === 'function') keloEveryFrame(assemblyFrame);
+    else (function loop() { assemblyFrame(); requestAnimationFrame(loop); })();
     // Once a sub-assembly's parts and tools are all here, he gets building (and keeps his lists going)
     setInterval(() => {
       renderBuildProjectsList();

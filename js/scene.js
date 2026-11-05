@@ -57,16 +57,47 @@ function groundDugAt(x, z) {
         + (typeof pitDepressionAt === 'function' ? pitDepressionAt(x, z) : 0);
     }
 
+// Height of the drawn ground mesh at (x, z), read straight from its grid (the same two triangles
+// per cell that a raycast would hit), or null off the mesh. Raycasting all ~70k triangles cost
+// several milliseconds a call; this is a handful of array reads.
+let terrainGrid = null;
+function terrainMeshHeightAt(x, z) {
+      const mesh = terrainGroundMesh;
+      if (!mesh) return null;
+      const geo = mesh.geometry, a = geo.attributes.position.array;
+      if (!terrainGrid || terrainGrid.geo !== geo) {
+        const cols = geo.parameters.widthSegments + 1, rows = geo.parameters.heightSegments + 1;
+        // Cell size from the whole span: one float32 cell's difference drifts across 250 cells
+        terrainGrid = { geo, cols, rows, x0: a[0], z0: a[2], dx: (a[(cols - 1) * 3] - a[0]) / (cols - 1), dz: (a[(rows - 1) * cols * 3 + 2] - a[2]) / (rows - 1) };
+      }
+      const g = terrainGrid;
+      const fx = (x - mesh.position.x - g.x0) / g.dx, fz = (z - mesh.position.z - g.z0) / g.dz;
+      if (!(fx >= 0 && fz >= 0 && fx <= g.cols - 1 && fz <= g.rows - 1)) return null;
+      const ix = Math.min(g.cols - 2, Math.floor(fx)), iz = Math.min(g.rows - 2, Math.floor(fz));
+      const u = fx - ix, v = fz - iz;
+      // PlaneGeometry splits each cell along the a(ix,iz)..c(ix+1,iz+1) square's b-d diagonal
+      const ya = a[(ix + g.cols * iz) * 3 + 1], yb = a[(ix + g.cols * (iz + 1)) * 3 + 1];
+      const yc = a[(ix + 1 + g.cols * (iz + 1)) * 3 + 1], yd = a[(ix + 1 + g.cols * iz) * 3 + 1];
+      const y = u + v <= 1 ? ya + (yd - ya) * u + (yb - ya) * v : yc + (yb - yc) * (1 - u) + (yd - yc) * (1 - v);
+      return y + mesh.position.y;
+    }
+
+const groundRayFrom = new THREE.Vector3(), groundRayDown = new THREE.Vector3(0, -1, 0);
 function getIslandGroundHeight(x, z) {
-      const analyticalY = getAnalyticalGroundHeight(x, z);
-      if (terrainSwapGroup && terrainSwapGroup.children.length > 0) {
-        downRaycaster.set(new THREE.Vector3(x, 65, z), new THREE.Vector3(0, -1, 0));
-        const hits = downRaycaster.intersectObjects(terrainSwapGroup.children, true);
-        if (hits.length > 0) {
-          return Math.max(analyticalY, hits[0].point.y);
+      let y = getAnalyticalGroundHeight(x, z);
+      // Stand on whatever is drawn if it is higher: the ground mesh (a dig not yet re-shaped)...
+      const meshY = terrainMeshHeightAt(x, z);
+      if (meshY !== null && meshY > y) y = meshY;
+      // ...or the few other things lying on the ground (the house's floor boards, js/house.js)
+      if (terrainSwapGroup && terrainSwapGroup.children.length > 1) {
+        downRaycaster.set(groundRayFrom.set(x, 65, z), groundRayDown);
+        for (const c of terrainSwapGroup.children) {
+          if (c === terrainGroundMesh) continue;
+          const hit = downRaycaster.intersectObject(c, true)[0];
+          if (hit && hit.point.y > y) y = hit.point.y;
         }
       }
-      return analyticalY;
+      return y;
     }
 
 function initDiorama3D() {
@@ -466,12 +497,12 @@ const DRAGON_RINGS = 72;
 const DRAGON_SIDES = 12;
 
 // Where the body runs at a point along its length (0 = tail tip, 1 = neck), rising in coils
-function dragonSpine(u, t) {
+function dragonSpine(u, t, out = new THREE.Vector3()) {
       const x = (u - 0.5) * DRAGON_LENGTH;
       const wave = Math.sin(u * Math.PI * 3.2 - t * 1.6);
       // The neck lifts high out of the water; the coils break the surface in arches
       const neckLift = Math.pow(Math.max(0, u - 0.82) / 0.18, 1.6) * 2.2;
-      return new THREE.Vector3(x, wave * 0.75 + neckLift, Math.sin(u * Math.PI * 2 + t * 0.7) * 0.35);
+      return out.set(x, wave * 0.75 + neckLift, Math.sin(u * Math.PI * 2 + t * 0.7) * 0.35);
     }
 
 // Thickest in the middle, tapering to a thin tail and a slimmer neck
@@ -555,17 +586,36 @@ function buildSeaDragon3D() {
     }
 
 // Re-shape the body each frame so it swims in rolling coils
+// Scratch vectors: the body is re-shaped every frame it is seen, so nothing is allocated per frame
+const DRAGON_UP = new THREE.Vector3(0, 1, 0);
+const dragonTmp = { p: new THREE.Vector3(), a: new THREE.Vector3(), b: new THREE.Vector3(), side: new THREE.Vector3(), normal: new THREE.Vector3() };
+const dragonView = { frustum: new THREE.Frustum(), m: new THREE.Matrix4(), sphere: new THREE.Sphere() };
+
+// Is the swimming dragon anywhere the camera can see? (It is off-screen most of the time.)
+function dragonOnScreen(dragon) {
+      if (!dragon.visible || typeof camera === 'undefined' || !camera) return dragon.visible;
+      const v = dragonView;
+      v.m.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+      v.frustum.setFromProjectionMatrix(v.m);
+      dragon.getWorldPosition(v.sphere.center);
+      v.sphere.center.y += 1;
+      v.sphere.radius = DRAGON_LENGTH * 0.6 + 2;
+      return v.frustum.intersectsSphere(v.sphere) && camera.position.distanceTo(v.sphere.center) < 220;
+    }
+
 function updateSeaDragon(t, dragon = ogopogoGroup) {
       if (!dragon || !dragon.userData.body) return;
+      // The lake's own dragon is only re-shaped while it can be seen (a new one is always shaped once)
+      if (dragon === ogopogoGroup && !dragonOnScreen(dragon)) return;
       const { body, head, spines, tailFin } = dragon.userData;
       const pos = body.geometry.attributes.position;
-      const up = new THREE.Vector3(0, 1, 0);
+      const T = dragonTmp;
       for (let i = 0; i <= DRAGON_RINGS; i++) {
         const u = i / DRAGON_RINGS;
-        const p = dragonSpine(u, t);
-        const tangent = dragonSpine(Math.min(1, u + 0.01), t).sub(dragonSpine(Math.max(0, u - 0.01), t)).normalize();
-        const side = new THREE.Vector3().crossVectors(tangent, up).normalize();
-        const normal = new THREE.Vector3().crossVectors(side, tangent).normalize();
+        const p = dragonSpine(u, t, T.p);
+        const tangent = dragonSpine(Math.min(1, u + 0.01), t, T.a).sub(dragonSpine(Math.max(0, u - 0.01), t, T.b)).normalize();
+        const side = T.side.crossVectors(tangent, DRAGON_UP).normalize();
+        const normal = T.normal.crossVectors(side, tangent).normalize();
         const r = dragonRadius(u);
         for (let j = 0; j <= DRAGON_SIDES; j++) {
           const ang = (j / DRAGON_SIDES) * Math.PI * 2;
@@ -579,16 +629,16 @@ function updateSeaDragon(t, dragon = ogopogoGroup) {
       body.geometry.computeVertexNormals();
       body.geometry.computeBoundingSphere();
 
-      const neck = dragonSpine(1, t);
+      const neck = dragonSpine(1, t, T.p);
       head.position.set(neck.x + 0.25, neck.y + 0.1, neck.z);
       head.rotation.z = Math.sin(t * 0.9) * 0.12 - 0.1;
       head.rotation.y = Math.sin(t * 0.6) * 0.25;
       spines.forEach(s => {
-        const p = dragonSpine(s.userData.u, t);
+        const p = dragonSpine(s.userData.u, t, T.p);
         s.position.set(p.x, p.y + dragonRadius(s.userData.u) + 0.1, p.z);
         s.rotation.z = 0.35;
       });
-      const tail = dragonSpine(0, t);
+      const tail = dragonSpine(0, t, T.p);
       tailFin.position.set(tail.x, tail.y, tail.z);
       tailFin.rotation.z = Math.sin(t * 1.6) * 0.3;
     }
@@ -1527,6 +1577,20 @@ function pushOutOfObstacles(pos, target) {
       }
     }
 
+// Per-frame updates from other files (wind, weather, snow, plant care, perf checks...). They run in
+// order inside this one loop just before the frame is drawn, instead of each on its own
+// requestAnimationFrame after it (which drew them a frame late). A hook that throws is reported once.
+const keloFrameHooks = [];
+function keloEveryFrame(fn) {
+      if (typeof fn === 'function') keloFrameHooks.push({ fn, failed: false });
+    }
+
+function runKeloFrameHooks(now) {
+      for (const h of keloFrameHooks) {
+        try { h.fn(now); } catch (e) { if (!h.failed) { h.failed = true; console.warn('A per-frame update failed:', e); } }
+      }
+    }
+
 function animateDiorama() {
       requestAnimationFrame(animateDiorama);
       const t = clock.getElapsedTime();
@@ -1887,6 +1951,7 @@ function animateDiorama() {
 
       controls.update();
       // Sky, haze, shadows and water follow the camera; then draw (with post-processing on High)
+      runKeloFrameHooks(performance.now());
       if (typeof updateRealism === 'function') updateRealism(t, dt);
       if (typeof renderWorld === 'function') renderWorld();
       else renderer.render(scene, camera);

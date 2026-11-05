@@ -551,10 +551,6 @@ function artMeadow(ctx, rng, spec, top, look) {
       }
     }
 
-function artShadowSnowTint(spec) {
-      return spec.season === 'Winter' ? '#eef3f8' : null;
-    }
-
 // Mule deer: big ears, a grey-brown coat, a white rump with a black-tipped tail
 function artDeer(ctx, x, y, s, facing, grazing, rng, wob = 0) {
       ctx.save();

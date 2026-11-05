@@ -1008,6 +1008,9 @@ function buildWorkshopHangar3D() {
       [-1.6, 1.6].forEach(x => { mmBox(g, 0.12, 0.06, 1.0, 'wood', b2.x + x, 0.8, b2.z - 0.2); [-0.4, 0.4].forEach(dz => mmBox(g, 0.3, 0.75, 0.05, 'wood', b2.x + x, 0.1, b2.z - 0.2 + dz)); });
       if (typeof dressBuilding === 'function') dressBuilding(g, [[roofMat, 'metalroof', 1.2], [plinth, 'stone', 2]]);
       scene.add(g);
+      // Its static walls, trusses, markings and carts draw as one mesh per material (js/perf.js); the
+      // crane and hook (userData), the see-through roof and the light fixtures stay separate
+      if (typeof mergeStaticMeshesSoon === 'function') mergeStaticMeshesSoon(g, () => [...(typeof cutawayRoofMeshes !== 'undefined' ? cutawayRoofMeshes : []), ...wsLights.map(l => l && (l.mesh || l)).filter(Boolean)]);
       // Walls are solid; the inside and the door are open to walk and drive through
       for (let x = -hx; x <= hx; x += 1.2) worldObstacles.push({ x: H.x + x, z: H.z - hz, r: 0.5, workshop: true });
       [-hx, hx].forEach(x => { for (let z = -hz; z <= hz; z += 1.2) if (x < 0 || Math.abs(z - wingDoorZ) > wingDoor.w / 2 + 0.2) worldObstacles.push({ x: H.x + x, z: H.z + z, r: 0.5, workshop: true }); });

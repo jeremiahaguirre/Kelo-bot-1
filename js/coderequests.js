@@ -190,11 +190,6 @@ function experienceCodeWishes() {
       return out.filter(w => !codeWishAlreadyAsked(w.feature, w.key));
     }
 
-// Kept for older callers: the built-in wishes he could still ask for
-function availableCodeWishes() {
-      return experienceCodeWishes().filter(w => w.source === 'builtin');
-    }
-
 function codeWishChance() {
       if (codeWishPaced() || !experienceCodeWishes().length) return 0;
       return 0.06;

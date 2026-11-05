@@ -105,10 +105,6 @@ function keloCapsuleProfile(rTop, rBot, len, bulge = 0) {
       return p;
     }
 
-function keloCapsule(rTop, rBot, len, mat, seg = 16, bulge = 0) {
-      return keloLathe(keloCapsuleProfile(rTop, rBot, len, bulge), mat, { seg });
-    }
-
 // A box with rounded edges, centred on the origin
 function keloRoundedBox(w, h, d, r, bevel = 0.012) {
       const s = new THREE.Shape();

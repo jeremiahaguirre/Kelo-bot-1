@@ -115,10 +115,6 @@ function addedLandHeightAt(x, z, bed) {
       return Math.max(best, bed);
     }
 
-function onAddedLand(x, z, margin = 0) {
-      return KELO_ADDED_LAND.some(L => addedLandDistance(L, x, z) < -margin);
-    }
-
 // The ground under the plant is levelled (scene.js asks getAnalyticalGroundHeight everywhere)
 const plantOrigGround = getAnalyticalGroundHeight;
 getAnalyticalGroundHeight = function (x, z) {

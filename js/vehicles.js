@@ -213,9 +213,12 @@ function updateVehicles(t) {
       const m = v && vehicleMeshes[v.id];
       if (!m) return;
       const type = vehicleTypeFor(v.name);
+      // An aircraft's height is measured above the ground or the water, whichever is higher, so it never
+      // sits on the lake bed (a planned airplane circuit moves him first, so it goes before the ground)
+      const air = type.mode === 'air' ? airAltitude(m, v, t) : 0;
       let y = getIslandGroundHeight(state.botPos.x, state.botPos.z);
       if (type.mode === 'water') y = Math.max(y, WATER_LEVEL) + Math.sin(t * 2.2) * 0.04;
-      if (type.mode === 'air') y += airAltitude(m, v, t);
+      if (type.mode === 'air') y = Math.max(y, WATER_LEVEL) + air;
       m.position.set(state.botPos.x, y, state.botPos.z);
       m.rotation.y = state.botRotY - Math.PI / 2;
       // Sit him in the seat: the seat offset turns with the vehicle. Seats are KELO_SIT_OFFSET
@@ -229,7 +232,8 @@ function updateVehicles(t) {
         keloGroup.position.set(state.botPos.x, y + type.seatY - drop, state.botPos.z);
       }
       // Lean into turns with the vehicle (js/motion.js): the seat swings out with the lean
-      const bank = typeof keloVehicleBank === 'function' ? keloVehicleBank(m, keloAnim.dt) : 0;
+      let bank = typeof keloVehicleBank === 'function' ? keloVehicleBank(m, keloAnim.dt) : 0;
+      if (m.userData.flight) { bank = m.userData.flight.bank; m.rotation.order = 'YXZ'; m.rotation.x = bank; }
       if (bank) {
         const a = m.rotation.y, lean = Math.sin(bank) * (seat ? seat.y : type.seatY);
         keloGroup.position.x += Math.sin(a) * lean;
@@ -288,6 +292,29 @@ function boardingSpot(v) {
       return { x: v.x + Math.cos(a) * seat.x + Math.sin(a) * sideZ, z: v.z - Math.sin(a) * seat.x + Math.cos(a) * sideZ };
     }
 
+// Where a vehicle can really stop for this target: an aircraft sets down on open, dry, gentle ground
+// (never on a roof, in a building or in the lake); a boat stays on the water short of the beach
+function vehicleDestination(v, type, target) {
+      const dest = { x: target.x, z: target.z };
+      if (type.mode === 'air' && type.kind !== 'plane' && typeof openGroundNear === 'function') {
+        return openGroundNear(dest, /balloon/i.test(v.name) ? 2.2 : 3.0) || dest;
+      }
+      if (type.mode === 'water') {
+        const from = { x: state.botPos.x, z: state.botPos.z };
+        const wet = (x, z) => getAnalyticalGroundHeight(x, z) < WATER_LEVEL - 0.02;
+        if (!wet(dest.x, dest.z)) {
+          // Back along the way it came until there is water under the hull
+          const len = Math.hypot(dest.x - from.x, dest.z - from.z), steps = Math.ceil(len / 0.25);
+          for (let i = 1; i <= steps; i++) {
+            const k = 1 - i / steps, x = from.x + (dest.x - from.x) * k, z = from.z + (dest.z - from.z) * k;
+            if (wet(x, z)) return { x, z };
+          }
+          return from;
+        }
+      }
+      return dest;
+    }
+
 // Walk to a vehicle, climb in, drive to a target, and park there
 async function driveVehicle(v, target, label) {
       const type = vehicleTypeFor(v.name);
@@ -314,7 +341,7 @@ async function driveVehicle(v, target, label) {
       }
       // A balloon in strong wind is blown off course and comes down in pieces (js/wind.js)
       if (typeof windWillCrash === 'function' && windWillCrash(v)) return crashInWind(v, target);
-      state.targetPos = { x: target.x, z: target.z };
+      state.targetPos = vehicleDestination(v, type, target);
       await waitForArrival(90000);
       if (air && mesh) {
         // A gentle descent onto the spot

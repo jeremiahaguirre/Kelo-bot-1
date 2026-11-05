@@ -109,7 +109,8 @@ function keloLocomote(dist, dt, t) {
         m.aim = aim;
       }
       // Looking ahead: if where he will be in a moment is too close to something solid, ease away from it
-      if (!straight && typeof worldObstacles !== 'undefined' && m.speed > 0.5) {
+      // (not in the last few units: there he brakes onto the spot, often right beside a wall)
+      if (!straight && typeof worldObstacles !== 'undefined' && m.speed > 0.5 && dist > 3) {
         const ahead = Math.min(2.5, m.speed * 0.35);
         const fx = p.x + Math.sin(m.heading) * ahead, fz = p.z + Math.cos(m.heading) * ahead;
         const goal = walkGoalFor(state.targetPos);
@@ -152,8 +153,10 @@ function keloLocomote(dist, dt, t) {
       const facing = Math.max(0, Math.cos(err));
       const accel = (gait ? gait.accel : KELO_GAIT.accel) * Math.sqrt(factor);
       const decel = (gait ? gait.decel : KELO_GAIT.decel) * Math.sqrt(factor);
-      const arriveR = typeof arrivalRadius === 'function' ? arrivalRadius(state.targetPos) : 0.16;
-      const brakeDist = Math.max(0, dist - arriveR);
+      // Braking for where he really stops: the door or edge of a building whose middle is the target
+      const goal = walkGoalFor(state.targetPos), goalOff = Math.hypot(goal.x - state.targetPos.x, goal.z - state.targetPos.z);
+      const arriveR = goalOff > 0.01 ? 0.16 : (typeof arrivalRadius === 'function' ? arrivalRadius(state.targetPos) : 0.16);
+      const brakeDist = Math.max(0, (goalOff > 0.01 ? Math.hypot(goal.x - p.x, goal.z - p.z) : dist) - arriveR);
       const stopSpeed = Math.sqrt(2 * decel * 0.8 * brakeDist);
       let want = m.pivot ? 0 : Math.min(cruise * facing * facing, stopSpeed);
       if (!m.pivot && brakeDist > 0) want = Math.max(want, Math.min(0.2, cruise) * facing);  // creep the last bit

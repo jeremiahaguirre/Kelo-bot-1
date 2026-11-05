@@ -62,8 +62,70 @@ function siteNear(x, z) {
     }
 
 // The spoil pile sits beside the hole, far enough out that it doesn't slide back in
+// (site.pile, when set, is the side chosen so the pile stays off buildings and their grounds)
 function pileOffset(site) {
+      if (site.pile && Number.isFinite(site.pile.dx)) return { x: site.x + site.pile.dx, z: site.z + site.pile.dz };
       return { x: site.x + 4.2, z: site.z + 0.8 };
+    }
+
+// --- Never in or against a building -------------------------------------------------------------
+// Pins that are just places (the summit, the cliff, the shore...) may be dug; buildings, their
+// grounds (Workshop pad, north wing, hangar, the plant) and the town may not
+const DIG_OPEN_PINS = ['mountain_peak', 'east_cliff', 'meadow', 'shoreline'];
+const DIG_HOLE_R = 1.6, DIG_PILE_R = 2.6;
+function earthworkBlocked(x, z, r = DIG_HOLE_R) {
+      if (typeof worldObstacles !== 'undefined' && typeof obstacleProbe === 'function') {
+        for (const o of worldObstacles) if (o.hw !== undefined && obstacleProbe(o, x, z).d < r) return o.building ? (TOWN_LOCATIONS[o.building] || {}).name || 'a building' : 'a building';
+      }
+      if (typeof inWorkshopSite === 'function' && inWorkshopSite(x, z, r)) return 'the Workshop';
+      if (typeof inTown === 'function' && inTown(x, z)) return 'town';
+      const why = typeof offLimits === 'function' ? offLimits(x, z, Math.max(0, r - 1.2)) : null;
+      if (why && !DIG_OPEN_PINS.some(k => TOWN_LOCATIONS[k] && TOWN_LOCATIONS[k].name === why) && why !== 'the lake') return why;
+      return null;
+    }
+
+// Which side of the hole the spoil goes: the first side with room for the pile
+const PILE_SIDES = [[4.2, 0.8], [-4.2, 0.8], [0.8, 4.2], [0.8, -4.2], [3.2, 3.2], [-3.2, -3.2], [3.2, -3.2], [-3.2, 3.2]];
+function pileSideFor(x, z) {
+      for (const [dx, dz] of PILE_SIDES) if (!earthworkBlocked(x + dx, z + dz, DIG_PILE_R) && !(typeof pointBlocked === 'function' && pointBlocked(x + dx, z + dz, { x: 999, z: 999 }))) return { dx, dz };
+      return null;
+    }
+
+// Old saves: a hole or a pile inside a building's footprint (from before these checks) is put right:
+// a hole there is filled back in with its own dirt; a pile there moves to a free side of its hole.
+function tidyEarthworksInBuildings() {
+      let fixed = 0;
+      const before = state.digSites.length;
+      state.digSites = state.digSites.filter(site => {
+        if (!earthworkBlocked(site.x, site.z, 0.8)) return true;
+        const p = pileOffset(site);
+        if (dirtPileMeshes[site.id]) { scene.remove(dirtPileMeshes[site.id]); delete dirtPileMeshes[site.id]; }
+        site.dirt = 0;
+        refreshTerrainAround(site.x, site.z, 1.6 + site.depth * 0.45);
+        refreshTerrainAround(p.x, p.z, 6);
+        fixed++;
+        return false;
+      });
+      state.digSites.forEach(site => {
+        const p = pileOffset(site);
+        if (!(site.dirt > 0) || !earthworkBlocked(p.x, p.z, 1.2)) return;
+        const side = pileSideFor(site.x, site.z);
+        if (side) site.pile = side;
+        else {
+          const spot = typeof openGroundNear === 'function' ? openGroundNear(p, DIG_PILE_R, {}) : null;
+          if (!spot || earthworkBlocked(spot.x, spot.z, DIG_PILE_R)) return;
+          site.pile = { dx: spot.x - site.x, dz: spot.z - site.z };
+        }
+        refreshTerrainAround(p.x, p.z, 6);
+        updateDirtPile3D(site);
+        fixed++;
+      });
+      if (fixed) {
+        state.diaryEntries.unshift({ time: 'Tidying Up', location: 'around my buildings', mood: '🧹 Tidied the dirt', vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
+          text: `Dear Diary, I tidied the dirt out of my Workshop and away from my buildings: ${before - state.digSites.length ? 'I filled in a hole that had no business inside a building' : ''}${before - state.digSites.length && fixed > before - state.digSites.length ? ' and ' : ''}${fixed > before - state.digSites.length ? 'I shovelled a dirt pile out onto open ground beside its hole' : ''}. Holes and piles belong outside.` });
+        if (typeof savePersistentBrainState === 'function') savePersistentBrainState();
+      }
+      return fixed;
     }
 
 // Loose dirt heaps up at its angle of repose (about 35°), so the pile's shape follows from how much
@@ -171,6 +233,13 @@ async function digAt(x, z, originLabel = 'Digging') {
         return 'blocked';
       }
       let site = siteNear(x, z);
+      // Never in, against or beside a building (its footprint, its grounds, or where the pile would go)
+      const nearBuilding = !site && (earthworkBlocked(x, z) || (!pileSideFor(x, z) && 'its walls'));
+      if (nearBuilding) {
+        state.speechBubble = `That's too close to ${nearBuilding}. I'll dig somewhere open instead.`;
+        renderAllUI();
+        return 'blocked';
+      }
 
       const missing = missingEquipmentFor(site);
       if (missing) {
@@ -201,7 +270,7 @@ async function digAt(x, z, originLabel = 'Digging') {
           await fetchFromStorehouse(site && site.depth >= ROCK_DEPTH && hasEquipment('rock') ? TOOL_NEEDS.rock.re : TOOL_NEEDS.dig.re);
         }
         if (!site) {
-          site = { id: 'dig-' + Date.now(), x, z, depth: 0, dirt: 0, finds: [], startedAt: Date.now() };
+          site = { id: 'dig-' + Date.now(), x, z, depth: 0, dirt: 0, finds: [], startedAt: Date.now(), pile: pileSideFor(x, z) || undefined };
           state.digSites.unshift(site);
           if (state.digSites.length > MAX_DIG_SITES) state.digSites.length = MAX_DIG_SITES;
         }
@@ -314,8 +383,13 @@ async function digAt(x, z, originLabel = 'Digging') {
 function chooseDigSpot() {
       const unfinished = state.digSites.filter(s => s.depth < MAX_DEPTH);
       if (unfinished.length && Math.random() < 0.6) return pick(unfinished);
-      const x = Math.round(randRange(WORLD_MIN_X + 6, WORLD_MAX_X - 6) * 10) / 10;
-      const z = Math.round(randRange(-36, TOWN.minZ - 0.5) * 10) / 10;
+      // Somewhere open: off every building, its grounds, and with room for the pile beside it
+      let x = 0, z = 0;
+      for (let i = 0; i < 40; i++) {
+        x = Math.round(randRange(WORLD_MIN_X + 6, WORLD_MAX_X - 6) * 10) / 10;
+        z = Math.round(randRange(-36, TOWN.minZ - 0.5) * 10) / 10;
+        if (!earthworkBlocked(x, z) && pileSideFor(x, z) && !(typeof pointBlocked === 'function' && pointBlocked(x, z, { x: 999, z: 999 }))) break;
+      }
       return { x, z };
     }
 
@@ -450,4 +524,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     renderMiningUI();
   }, 0);
+  // Once the Workshop, hangar and plant stand (their footprints are known), old holes and piles
+  // inside them are put right
+  setTimeout(() => { try { if (tidyEarthworksInBuildings()) renderMiningUI(); } catch (e) { console.warn('tidy digs', e); } }, 2500);
 });

@@ -944,16 +944,39 @@ async function flyBuiltAirplane(originLabel = 'Flying His Own Airplane') {
       state.isPracticing = true;
       try {
         const site = siteFor(p);
+        // From the hangar he pushes it out through the big door onto the apron first; the strip runs
+        // from there straight out toward the lake
+        const start = site.inWorkshop ? hangarExitFor(site) : { x: site.x, z: site.z };
+        const run = planeRunwayDir(site);
+        // Trees on the takeoff strip come down first (the normal way, with his axe)
+        const trees = runwayTreesInTheWay(start, run);
+        if (trees.length) {
+          state.speechBubble = `There ${trees.length === 1 ? 'is a tree' : `are ${trees.length} trees`} on my takeoff strip. ${trees.length === 1 ? 'It has' : 'They have'} to come down before I fly.`;
+          renderAllUI();
+          for (const t of trees) {
+            state.isPracticing = false; // chopTree starts its own job
+            const r = typeof chopTree === 'function' ? await chopTree(t.x, t.z, 'Clearing his takeoff strip', 'Clearing the Strip') : 'no-axe';
+            state.isPracticing = true;
+            if (r !== true) return 'clearing-strip';
+          }
+          if (runwayTreesInTheWay(start, run).length) return 'clearing-strip';
+        }
+        state.moodEmoji = '✈️';
+        state.moodTitle = 'Preflight check';
         state.speechBubble = 'Preflight walk-around: fuel, oil, controls, prop, tyres. All good. Clear prop!';
         renderAllUI();
-        // From the hangar he pushes it out through the big door onto the apron first
-        const start = site.inWorkshop ? hangarExitFor(site) : { x: site.x, z: site.z };
         if (site.inWorkshop) await pushPlane(v, start, 'Pushing his airplane out of the hangar');
-        await driveVehicle(v, site.inWorkshop ? { x: start.x - 14, z: start.z + 34 } : { x: start.x + 10, z: start.z + 32 }, 'Flying his home-built airplane');
-        state.isPracticing = true;
-        await driveVehicle(v, { x: start.x, z: start.z }, 'Bringing his airplane home');
-        Object.assign(v, { x: start.x, z: start.z, rotY: site.rotY });
-        if (site.inWorkshop) await pushPlane(v, { x: site.x, z: site.z }, 'Pushing his airplane back into the hangar');
+        // Nose down the strip (it already is, coming out of the hangar)
+        await turnPlaneTo(v, Math.atan2(-run.z, run.x), 'Lining his airplane up on the strip');
+        const flown = await flyPlaneCircuit(v, start, run);
+        if (!flown) return false;
+        // Rolled out facing home: he swings the tail round so the nose points away from the door again,
+        // then pushes it back in tail first
+        await turnPlaneTo(v, site.rotY || 0, 'Turning his airplane around');
+        if (site.inWorkshop) {
+          await pushPlane(v, start, 'Pushing his airplane back to the hangar door');
+          await pushPlane(v, { x: site.x, z: site.z }, 'Pushing his airplane back into the hangar');
+        }
         if (typeof renderVehicles3D === 'function') renderVehicles3D();
         const first = !p.firstFlightAt;
         if (first) p.firstFlightAt = Date.now();
@@ -980,36 +1003,292 @@ function hangarExitFor(site) {
       return { x, z: d.z + 3.2 };
     }
 
+// Where he holds the airplane to push or turn it: at the tail, hands on the fuselage
+const PLANE_TAIL_HOLD = 7.6;
+function planeTailSpot(v, rotY = v.rotY || 0) {
+      return { x: v.x - Math.cos(rotY) * PLANE_TAIL_HOLD, z: v.z + Math.sin(rotY) * PLANE_TAIL_HOLD };
+    }
+
+// He walks over to the tail (no jumping there), then holds on
+async function walkToPlaneTail(v) {
+      const tail = planeTailSpot(v);
+      if (Math.hypot(state.botPos.x - tail.x, state.botPos.z - tail.z) > 0.4) {
+        state.targetPos = { ...tail };
+        await waitForArrival(30000);
+      }
+    }
+
+// Moving him along with the plane he is pushing: small steps only (anything bigger he walks)
+function holdPlaneTail(v) {
+      const tail = planeTailSpot(v);
+      state.botPos = { ...tail };
+      state.targetPos = { ...tail };
+      state.botRotY = Math.atan2(v.x - tail.x, v.z - tail.z);
+    }
+
 // An ultralight is light enough to push by hand: he walks it in or out, the plane rolling ahead of him
 async function pushPlane(v, to, label) {
       const from = { x: v.x, z: v.z }, dist = Math.hypot(to.x - from.x, to.z - from.z);
       if (dist < 0.1) return;
       state.moodEmoji = '✈️';
       state.moodTitle = label;
-      state.speechBubble = /out/.test(label) ? 'Big door up. Slowly now: watch the wing tips past the door frame.' : 'Back into its bay, nice and slow.';
+      state.speechBubble = /out/.test(label) ? 'Big door up. Slowly now: watch the wing tips past the door frame.' : /into/.test(label) ? 'Back into its bay, nice and slow.' : 'Rolling it back to the hangar door.';
       renderAllUI();
+      await walkToPlaneTail(v);
       const dur = dist * 450, t0 = Date.now();
       for (;;) {
-        const k = Math.min(1, (Date.now() - t0) / dur);
-        v.x = from.x + (to.x - from.x) * k;
-        v.z = from.z + (to.z - from.z) * k;
+        const k = Math.min(1, (Date.now() - t0) / dur), e = k * k * (3 - 2 * k); // eased start and stop
+        v.x = from.x + (to.x - from.x) * e;
+        v.z = from.z + (to.z - from.z) * e;
         if (typeof renderVehicles3D === 'function') renderVehicles3D();
-        // He walks behind the tail, hands on the fuselage
-        const back = { x: v.x - Math.cos(v.rotY || 0) * 7.6, z: v.z + Math.sin(v.rotY || 0) * 7.6 };
-        state.botPos = { ...back };
-        state.targetPos = { ...back };
-        state.botRotY = Math.atan2(v.x - back.x, v.z - back.z);
+        holdPlaneTail(v);
         if (k >= 1) break;
-        await new Promise(r => setTimeout(r, 80));
+        await new Promise(r => setTimeout(r, 60));
       }
-      v.x = Math.round(to.x * 10) / 10;
-      v.z = Math.round(to.z * 10) / 10;
+      v.x = to.x;
+      v.z = to.z;
       if (typeof renderVehicles3D === 'function') renderVehicles3D();
     }
 
-// Fixed-wing flight (called from airAltitude in js/vehicles.js): roll first, then climb, glide in
+// Swinging the plane round by its tail to face `rotY`: a smooth turn about its main wheels, him
+// walking the tail round (never a snap)
+async function turnPlaneTo(v, rotY, label) {
+      let d = Math.atan2(Math.sin(rotY - (v.rotY || 0)), Math.cos(rotY - (v.rotY || 0)));
+      if (Math.abs(d) < 0.02) { v.rotY = rotY; return; }
+      // A half turn goes round through the west side (the helicopter pad is east of the apron)
+      if (Math.abs(Math.abs(d) - Math.PI) < 0.05) d = Math.cos(v.rotY || 0) < 0 ? -Math.abs(d) : Math.abs(d);
+      state.moodEmoji = '✈️';
+      state.moodTitle = label;
+      state.speechBubble = Math.abs(d) > 2 ? 'Swinging the tail round by hand.' : 'Lining the nose up.';
+      renderAllUI();
+      await walkToPlaneTail(v);
+      const from = v.rotY || 0, dur = Math.abs(d) * 2600, t0 = Date.now();
+      for (;;) {
+        const k = Math.min(1, (Date.now() - t0) / dur), e = k * k * (3 - 2 * k);
+        v.rotY = from + d * e;
+        if (typeof renderVehicles3D === 'function') renderVehicles3D();
+        holdPlaneTail(v);
+        if (k >= 1) break;
+        await new Promise(r => setTimeout(r, 60));
+      }
+      v.rotY = Math.atan2(Math.sin(rotY), Math.cos(rotY));
+      if (typeof renderVehicles3D === 'function') renderVehicles3D();
+    }
+
+// --- Flying a circuit ---------------------------------------------------------------------------------
+// The strip runs from the hangar apron straight out to the lake. The circuit (in strip coordinates:
+// `a` metres along the strip, `b` across it to the west): out over the lake climbing, west along the
+// shore, north over the town, east along the valley floor south of the hangar, south over the
+// meadow, back west over the lake, then a long straight final to land on the meadow and roll out
+// just short of the apron. All of it inside the valley, well clear of the mountains.
+const PLANE_FLIGHT = {
+  cruise: 13,        // height above the ground or the water, units
+  vCruise: 10,       // units/s
+  accel: 3,          // takeoff run
+  vRotate: 7,        // lifts off at this speed
+  vTouch: 5.5,       // touchdown speed
+  climbLen: 45,      // the climb takes this far
+  glide: 0.25,       // approach slope
+  flare: 5,          // the flare takes the last few units
+  stopAt: 6,         // the roll-out ends this far out from the apron (room to turn it round)
+  rollout: 5.5,      // ...after this much roll on the wheels
+  corners: [[0, 0], [30, 0], [30, 32], [1, 32], [1, -14], [36, -14], [36, 0]]
+};
+
+// Which way the strip runs from the apron: straight out of the hangar door (or the old airfield's heading)
+function planeRunwayDir(site) {
+      if (site && site.inWorkshop && site.door) return { x: 0, z: 1 };
+      const a = (site && site.rotY) || 0;
+      return { x: Math.cos(a), z: -Math.sin(a) };
+    }
+
+// Valley trees where the wings sweep along the strip on the ground and low on the climb and final
+function runwayTreesInTheWay(start, u) {
+      if (typeof valleyTrees === 'undefined') return [];
+      const half = buildFootprint('ultralight').width / 2 + 1.2;
+      return valleyTrees.filter(t => {
+        if (t.removed || t.hosting) return false;
+        const dx = t.x - start.x, dz = t.z - start.z, a = dx * u.x + dz * u.z, b = dx * -u.z + dz * u.x;
+        return a > -2 && a < 22 && Math.abs(b) < half && getIslandGroundHeight(t.x, t.z) > WATER_LEVEL;
+      });
+    }
+
+// The whole flight planned up front: a smooth line (corners rounded off), and along it the ground,
+// a smoothed floor (never below the water), how high and how fast he is at every point
+function planeCircuitFor(start, u) {
+      const F = PLANE_FLIGHT, w = { x: -u.z, z: u.x };
+      const at = ([a, b]) => ({ x: start.x + u.x * a + w.x * b, z: start.z + u.z * a + w.z * b });
+      const corners = [...F.corners, [F.stopAt, 0]].map(at);
+      // Split long legs, then round the corners (Chaikin), keeping both ends where they are
+      let pts = [corners[0]];
+      for (let i = 1; i < corners.length; i++) {
+        const p = corners[i - 1], q = corners[i], n = Math.max(1, Math.ceil(Math.hypot(q.x - p.x, q.z - p.z) / 14));
+        for (let k = 1; k <= n; k++) pts.push({ x: p.x + (q.x - p.x) * k / n, z: p.z + (q.z - p.z) * k / n });
+      }
+      for (let it = 0; it < 5; it++) {
+        const out = [pts[0]];
+        for (let i = 0; i < pts.length - 1; i++) {
+          const p = pts[i], q = pts[i + 1];
+          if (i > 0) out.push({ x: p.x * 0.75 + q.x * 0.25, z: p.z * 0.75 + q.z * 0.25 });
+          if (i < pts.length - 2) out.push({ x: p.x * 0.25 + q.x * 0.75, z: p.z * 0.25 + q.z * 0.75 });
+        }
+        out.push(pts[pts.length - 1]);
+        pts = out;
+      }
+      // Even samples every half unit
+      const STEP = 0.5, X = [], Z = [];
+      let carry = 0;
+      X.push(pts[0].x); Z.push(pts[0].z);
+      for (let i = 1; i < pts.length; i++) {
+        const p = pts[i - 1], q = pts[i], len = Math.hypot(q.x - p.x, q.z - p.z);
+        let d = STEP - carry;
+        while (d <= len) { X.push(p.x + (q.x - p.x) * d / len); Z.push(p.z + (q.z - p.z) * d / len); d += STEP; }
+        carry = len - (d - STEP);
+      }
+      X.push(pts[pts.length - 1].x); Z.push(pts[pts.length - 1].z);
+      const n = X.length, G = [], B = [];
+      for (let i = 0; i < n; i++) G.push(getIslandGroundHeight(X[i], Z[i]));
+      // The floor he flies over: the ground or the water, whichever is higher, smoothed out
+      const raw = G.map(g => Math.max(g, WATER_LEVEL)), W = 8, mx = [];
+      for (let i = 0; i < n; i++) { let m = -Infinity; for (let k = Math.max(0, i - W); k <= Math.min(n - 1, i + W); k++) m = Math.max(m, raw[k]); mx.push(m); }
+      for (let i = 0; i < n; i++) { let s = 0, c = 0; for (let k = Math.max(0, i - W); k <= Math.min(n - 1, i + W); k++) { s += mx[k]; c++; } B.push(Math.max(raw[i], s / c)); }
+      const sEnd = (n - 1) * STEP, sTouch = sEnd - F.rollout, sLift = F.vRotate * F.vRotate / (2 * F.accel);
+      return { X, Z, G, B, STEP, sEnd, sTouch, sLift };
+    }
+
+function planeSmoothMin(a, b, k = 3) {
+      const h = Math.max(k - Math.abs(a - b), 0) / k;
+      return Math.min(a, b) - h * h * k * 0.25;
+    }
+
+// Height above the floor at distance s along the circuit: a smooth climb, cruise, and a glide that
+// flares onto the wheels at the touchdown point
+function planeAltAt(plan, s) {
+      const F = PLANE_FLIGHT;
+      if (s <= plan.sLift || s >= plan.sTouch) return 0;
+      const k = Math.min(1, (s - plan.sLift) / F.climbLen), climb = F.cruise * k * k * (3 - 2 * k);
+      const d = plan.sTouch - s, desc = d < F.flare ? F.glide * F.flare / 2 * (d / F.flare) ** 2 : F.glide * (d - F.flare / 2);
+      return Math.max(0, planeSmoothMin(planeSmoothMin(climb, desc), F.cruise));
+    }
+
+function planeSpeedAt(plan, s) {
+      const F = PLANE_FLIGHT;
+      const acc = Math.sqrt(2 * F.accel * s + 0.36);
+      const app = s < plan.sTouch ? Math.sqrt(F.vTouch * F.vTouch + 2 * 0.8 * (plan.sTouch - s)) : F.vTouch * Math.sqrt(Math.max(0, (plan.sEnd - s) / (plan.sEnd - plan.sTouch)));
+      return Math.max(0.35, Math.min(F.vCruise, acc, app));
+    }
+
+function planeSample(plan, arr, s) {
+      const f = Math.max(0, Math.min(arr.length - 1, s / plan.STEP)), i = Math.floor(f), j = Math.min(arr.length - 1, i + 1), k = f - i;
+      return arr[i] + (arr[j] - arr[i]) * k;
+    }
+
+// Where the plane is (x, z, its height in the world) at s
+function planePoseAt(plan, s) {
+      const x = planeSample(plan, plan.X, s), z = planeSample(plan, plan.Z, s);
+      const g = planeSample(plan, plan.G, s), b = planeSample(plan, plan.B, s), alt = planeAltAt(plan, s);
+      // On the wheels it rides the ground; once up it follows the smoothed floor (never below the water)
+      const lift = Math.min(1, alt / 1.5);
+      return { x, z, y: g + (b - g) * lift + alt, alt };
+    }
+
+// One frame of the flight (from planeAltitude). Moves him and the plane along the circuit, says what
+// is happening, and returns the height above the floor under him that vehicles.js adds
+function planeFlightStep(m, v, u) {
+      const f = u.flight, plan = f.plan;
+      const now = performance.now() / 1000;
+      const dt = Math.min(0.1, Math.max(0, now - (f.lastT ?? now)));
+      f.lastT = now;
+      const before = f.s;
+      if (!f.done) f.s = Math.min(plan.sEnd, f.s + planeSpeedAt(plan, f.s) * dt);
+      if (f.s >= plan.sEnd - 1e-6) f.done = true;
+      const p = planePoseAt(plan, f.s), ahead = planePoseAt(plan, Math.min(plan.sEnd, f.s + 1)), back = planePoseAt(plan, Math.max(0, f.s - 1));
+      // Heading along the line; pitch from the climb or descent; bank into the turns
+      let heading = f.heading;
+      if (Math.hypot(ahead.x - back.x, ahead.z - back.z) > 0.2) heading = Math.atan2(ahead.x - back.x, ahead.z - back.z);
+      const turn = dt > 0 && f.heading !== undefined ? Math.atan2(Math.sin(heading - f.heading), Math.cos(heading - f.heading)) / dt : 0;
+      f.heading = heading;
+      const slope = (ahead.y - back.y) / Math.max(0.5, Math.hypot(ahead.x - back.x, ahead.z - back.z));
+      const k = 1 - Math.exp(-dt * 4);
+      f.pitch += (Math.max(-0.25, Math.min(0.3, Math.atan(slope))) - f.pitch) * k;
+      const airborne = p.alt > 0.3;
+      f.bank += ((airborne ? Math.max(-0.45, Math.min(0.45, -turn * planeSpeedAt(plan, f.s) * 0.05)) : 0) - f.bank) * k;
+      state.botPos = { x: p.x, z: p.z };
+      state.targetPos = { x: p.x, z: p.z };
+      state.botRotY = heading;
+      f.y = p.y;
+      f.alt = p.alt;
+      // What he says, once per phase
+      const d = plan.sTouch - f.s;
+      const phase = f.done ? 'stopped' : f.s >= plan.sTouch ? 'rollout' : d < 60 && before > plan.sLift + 30 ? 'approach' : p.alt > PLANE_FLIGHT.cruise * 0.8 ? 'cruise' : f.s > plan.sLift ? 'takeoff' : 'roll';
+      if (phase !== f.phase) {
+        f.phase = phase;
+        const say = {
+          roll: ['Taking off in his airplane', 'Full power. Rolling down the strip...'],
+          takeoff: ['Taking off in his airplane', 'Lifting off!'],
+          cruise: ['Flying his home-built airplane', 'Level at circuit height. The whole valley is down there!'],
+          approach: ['Bringing his airplane home', 'Lining up for the landing.'],
+          rollout: ['Landing his airplane', 'Touchdown!'],
+          stopped: ['Landed his airplane', 'And stopped. What a flight.']
+        }[phase];
+        state.moodEmoji = '✈️';
+        state.moodTitle = say[0];
+        state.speechBubble = say[1];
+        if (typeof renderAllUI === 'function') renderAllUI();
+      }
+      // Never under the water, whatever happens: the floor under him right now
+      const floor = Math.max(getIslandGroundHeight(p.x, p.z), WATER_LEVEL);
+      u.alt = Math.max(0, p.y - floor);
+      if (u.mini) u.mini.rotation.z = f.pitch;
+      return u.alt;
+    }
+
+// Climb in, fly the circuit, roll out and climb out beside it. True once he is back on the ground.
+async function flyPlaneCircuit(v, start, u) {
+      const type = vehicleTypeFor(v.name), mesh = typeof vehicleMeshes !== 'undefined' ? vehicleMeshes[v.id] : null;
+      if (!type || !mesh) return false;
+      state.moodTitle = 'Climbing into his airplane';
+      state.targetPos = boardingSpot(v);
+      renderAllUI();
+      await waitForArrival(60000);
+      const plan = planeCircuitFor(start, u);
+      state.riding = v.id;
+      state.ridingSpeed = type.speed;
+      state.ridingMode = 'air';
+      state.botPos = { x: v.x, z: v.z };
+      state.targetPos = { ...state.botPos };
+      state.botRotY = Math.atan2(u.x, u.z);
+      Object.assign(mesh.userData, { alt: 0, landing: false, lift: 1, flight: { plan, s: 0, lastT: null, phase: null, pitch: 0, bank: 0, heading: Math.atan2(u.x, u.z), done: false } });
+      const t0 = Date.now();
+      try {
+        while (!mesh.userData.flight.done && Date.now() - t0 < 30 * 60 * 1000) await new Promise(r => setTimeout(r, 150));
+      } finally {
+        const f = mesh.userData.flight;
+        mesh.userData.flight = null;
+        mesh.userData.alt = 0;
+        if (mesh.userData.mini) mesh.userData.mini.rotation.z = 0;
+        const flownTo = { x: state.botPos.x, z: state.botPos.z };
+        if (typeof burnFuel === 'function') burnFuel(v, f ? f.s : 0);
+        if (typeof wearVehicle === 'function') wearVehicle(v, f ? f.s : 0);
+        if (typeof gainSkill === 'function') gainSkill('flying airplane', 'flying the airplane', 3);
+        v.x = flownTo.x;
+        v.z = flownTo.z;
+        v.rotY = state.botRotY - Math.PI / 2;
+        state.riding = null;
+        state.ridingSpeed = 1;
+        state.ridingMode = null;
+        if (typeof renderVehicles3D === 'function') renderVehicles3D();
+        state.botPos = boardingSpot(v);
+        state.targetPos = { ...state.botPos };
+      }
+      return true;
+    }
+
+// Fixed-wing flight (called from airAltitude in js/vehicles.js): a planned circuit when one is running
+// (flyPlaneCircuit), otherwise the old roll, climb and glide
 const PLANE_CRUISE = 12, PLANE_ROLL = 4;
 function planeAltitude(m, v, t, u) {
+      if (u.flight) return planeFlightStep(m, v, u);
       const now = performance.now() / 1000;
       const dt = Math.min(0.5, Math.max(0, now - (u.lastT ?? now)));
       u.lastT = now;

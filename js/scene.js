@@ -1539,6 +1539,42 @@ function obstacleClearAt(x, z, pad = 0) {
       return true;
     }
 
+// Is a round patch `radius` across this spot open, dry, gentle ground with nothing solid on it?
+// opts.offLimits also keeps it off buildings' grounds, the town, the yard and the pit (landscape.js).
+function openGroundAt(x, z, radius = 2, opts = {}) {
+      if (x < WORLD_MIN_X + 2 || x > WORLD_MAX_X - 2 || z < WORLD_MIN_Z + 2 || z > WORLD_MAX_Z + 2 || !islandContains(x, z, 2)) return false;
+      const h = getAnalyticalGroundHeight;
+      for (const k of [0, 0.5, 1]) {
+        const n = k ? 10 : 1;
+        for (let i = 0; i < n; i++) {
+          const a = i / n * Math.PI * 2, px = x + Math.cos(a) * radius * k, pz = z + Math.sin(a) * radius * k;
+          if (h(px, pz) < WATER_LEVEL + 0.08) return false;
+        }
+      }
+      if (groundTooSteep(x, z, opts.slope || 0.6, Math.max(0.8, radius * 0.6))) return false;
+      if (!obstacleClearAt(x, z, radius)) return false;
+      if (opts.offLimits && typeof offLimits === 'function' && offLimits(x, z, opts.pad || 0)) return false;
+      if (typeof inWorkshopSite === 'function' && inWorkshopSite(x, z, opts.offLimits ? radius : 0)) return false;
+      return true;
+    }
+
+// The open spot nearest to `near` (rings outward); `near` itself if it is already open
+function openGroundNear(near, radius = 2, opts = {}) {
+      if (openGroundAt(near.x, near.z, radius, opts)) return { x: near.x, z: near.z };
+      for (let r = 1; r <= 60; r += 1) {
+        const n = Math.max(8, Math.round(r * 2 * Math.PI / 1.5));
+        let best = null, bestD = Infinity;
+        for (let i = 0; i < n; i++) {
+          const a = i / n * Math.PI * 2, x = near.x + Math.cos(a) * r, z = near.z + Math.sin(a) * r;
+          if (!openGroundAt(x, z, radius, opts)) continue;
+          const d = opts.toward ? Math.hypot(x - opts.toward.x, z - opts.toward.z) : 0;
+          if (d < bestD) { bestD = d; best = { x: Math.round(x * 10) / 10, z: Math.round(z * 10) / 10 }; }
+        }
+        if (best && openGroundAt(best.x, best.z, radius, opts)) return best;
+      }
+      return null;
+    }
+
 // Circles that contain the target (a tree he is chopping, a post he walks up to) don't block the
 // approach. Boxes never do: a target inside one is moved out first (walkGoalFor).
 function obstacleHoldsTarget(o, target) {
@@ -1592,9 +1628,13 @@ function boxEdgeSpot(o, target, from) {
 // He has arrived when he is next to the target, or as close as a solid object allows
 function arrivalRadius(target) {
       let r = 0.16;
+      // A target inside a building counts as reached once he stands at its door or edge (walkGoalFor),
+      // and not before, whichever side of the building he happens to be on
       const goal = walkGoalFor(target);
-      const off = Math.hypot(goal.x - target.x, goal.z - target.z);
-      if (off > 0.01) r = off + 0.16;
+      if (Math.hypot(goal.x - target.x, goal.z - target.z) > 0.01) {
+        const p = state.botPos;
+        return Math.hypot(p.x - goal.x, p.z - goal.z) < 0.3 ? Math.hypot(p.x - target.x, p.z - target.z) + 0.05 : 0.16;
+      }
       for (const o of worldObstacles) {
         if (obstacleHoldsTarget(o, target)) {
           r = Math.max(r, o.r + KELO_RADIUS + 0.1 - Math.hypot(target.x - o.x, target.z - o.z));
@@ -1610,7 +1650,8 @@ const PATH_COLS = Math.ceil((PATH_MAX_X - PATH_MIN_X) / PATH_CELL);
 const PATH_ROWS = Math.ceil((PATH_MAX_Z - PATH_MIN_Z) / PATH_CELL);
 let currentPath = [];
 let currentPathKey = '';
-let currentPathPartial = false;   // no way all the way there: the path ends as close as he can get
+let currentPathPartial = false;
+let pathLastPos = null;           // where he was when the path was last followed   // no way all the way there: the path ends as close as he can get
 
 function pointBlocked(x, z, target) {
       for (const o of worldObstacles) {
@@ -1629,22 +1670,45 @@ function segmentClear(ax, az, bx, bz, target) {
       return true;
     }
 
-// Which grid cells he can't stand in (each obstacle marks only the cells under it)
-function pathBlockedGrid(to) {
+// Which grid cells he can't stand in (each obstacle marks only the cells under it). Cells keep a
+// little extra room (PATH_MARGIN), so a path never squeezes through a gap he only just fits.
+// Near the start, something he is already brushing against only blocks cells deeper into it,
+// so he can always step away from it.
+const PATH_MARGIN = 0.12;
+function pathBlockedGrid(to, from = null) {
       const blocked = new Uint8Array(PATH_COLS * PATH_ROWS);
+      const R = KELO_RADIUS + PATH_MARGIN;
+      const touching = new Map();
+      if (from) for (const o of worldObstacles) { if (!obstacleHoldsTarget(o, to)) { const d = obstacleProbe(o, from.x, from.z).d; if (d < R) touching.set(o, d); } }
       for (const o of worldObstacles) {
-        if (obstacleHoldsTarget(o, to)) continue;
-        const reach = (o.r || 0) + KELO_RADIUS + PATH_CELL;
+        if (obstacleHoldsTarget(o, to) || touching.has(o)) continue;
+        const reach = (o.r || 0) + R + PATH_CELL;
         const c0 = Math.max(0, Math.floor((o.x - reach - PATH_MIN_X) / PATH_CELL)), c1 = Math.min(PATH_COLS - 1, Math.floor((o.x + reach - PATH_MIN_X) / PATH_CELL));
         const r0 = Math.max(0, Math.floor((o.z - reach - PATH_MIN_Z) / PATH_CELL)), r1 = Math.min(PATH_ROWS - 1, Math.floor((o.z + reach - PATH_MIN_Z) / PATH_CELL));
         for (let r = r0; r <= r1; r++) {
           const z = PATH_MIN_Z + (r + 0.5) * PATH_CELL;
           for (let c = c0; c <= c1; c++) {
             const i = r * PATH_COLS + c;
-            if (!blocked[i] && obstacleProbe(o, PATH_MIN_X + (c + 0.5) * PATH_CELL, z).d < KELO_RADIUS) blocked[i] = 1;
+            if (!blocked[i] && obstacleProbe(o, PATH_MIN_X + (c + 0.5) * PATH_CELL, z).d < R) blocked[i] = 1;
           }
         }
       }
+      touching.forEach((d0, o) => {
+        const reach = (o.r || 0) + R + PATH_CELL;
+        const c0 = Math.max(0, Math.floor((o.x - reach - PATH_MIN_X) / PATH_CELL)), c1 = Math.min(PATH_COLS - 1, Math.floor((o.x + reach - PATH_MIN_X) / PATH_CELL));
+        const r0 = Math.max(0, Math.floor((o.z - reach - PATH_MIN_Z) / PATH_CELL)), r1 = Math.min(PATH_ROWS - 1, Math.floor((o.z + reach - PATH_MIN_Z) / PATH_CELL));
+        for (let r = r0; r <= r1; r++) {
+          const z = PATH_MIN_Z + (r + 0.5) * PATH_CELL;
+          for (let c = c0; c <= c1; c++) {
+            const i = r * PATH_COLS + c, x = PATH_MIN_X + (c + 0.5) * PATH_CELL;
+            if (blocked[i]) continue;
+            const d = obstacleProbe(o, x, z).d;
+            // Within 2.5 units of him only what is deeper in than he is now; further away the usual room
+            const near = Math.hypot(x - from.x, z - from.z) < 2.5;
+            if (d < (near ? Math.min(R, d0 - 0.05) : R)) blocked[i] = 1;
+          }
+        }
+      });
       return blocked;
     }
 
@@ -1660,7 +1724,7 @@ function findPath(from, to) {
       const cz = r => PATH_MIN_Z + (r + 0.5) * PATH_CELL;
       const start = row(from.z) * PATH_COLS + col(from.x);
       const goal = row(to.z) * PATH_COLS + col(to.x);
-      const blocked = pathBlockedGrid(to);
+      const blocked = pathBlockedGrid(to, from);
       blocked[start] = 0;
       if (!pointBlocked(to.x, to.z, to)) blocked[goal] = 0;
       const g = new Float32Array(N).fill(Infinity);
@@ -1800,9 +1864,13 @@ function nextPathDirection(px, pz, target, dt = 0) {
       }
       const goal = walkGoalFor(target, { x: px, z: pz });
       const key = `${goal.x.toFixed(2)},${goal.z.toFixed(2)},${obstacleSignature()}`;
-      if (key !== currentPathKey) {
+      // ...and when he was put somewhere else since the last step (a scripted move, a vehicle ride)
+      const moved = !pathLastPos || Math.hypot(px - pathLastPos.x, pz - pathLastPos.z) > 1.5;
+      pathLastPos = { x: px, z: pz };
+      if (key !== currentPathKey || moved) {
         currentPath = findPath({ x: px, z: pz }, goal);
         currentPathKey = key;
+        Object.assign(walkStuck, { key: '', wp: null, fails: 0, secs: 0 });
       }
       while (currentPath.length > 1 && Math.hypot(currentPath[0].x - px, currentPath[0].z - pz) < 0.45) currentPath.shift();
       // The way is shut: he got as close as he can

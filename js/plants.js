@@ -1277,8 +1277,17 @@ async function noticeNewPlaces() {
           state.targetPos = p.spot();
           renderAllUI();
           const spot = state.targetPos;
-          await waitForArrival(150000);
-          // Only react once he is really there; if the walk got cut short, try again later
+          // Keep walking as long as he is still getting closer (slow devices take minutes), and give up
+          // only if he stops making progress for 30 s; then try again later
+          let best = Infinity, lastGain = Date.now();
+          while (true) {
+            await waitForArrival(5000);
+            const d = Math.hypot(spot.x - state.botPos.x, spot.z - state.botPos.z);
+            if (d <= 3) break;
+            if (d < best - 0.3) { best = d; lastGain = Date.now(); }
+            else if (Date.now() - lastGain > 30000) break;
+            if (state.targetPos !== spot) state.targetPos = spot;
+          }
           if (Math.hypot(spot.x - state.botPos.x, spot.z - state.botPos.z) > 3) break;
           state.speechBubble = p.say;
           state.wonderLevel = Math.min(100, (state.wonderLevel || 0) + 8);

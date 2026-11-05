@@ -88,6 +88,13 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 
    - **Owner (2026-11-04):** the workshop must be big enough for his projects (the airplane being built) and vehicles (pickup and trailer, dump truck, mixer truck, cars on the lifts) to fit inside, with doors, bays and the car elevator sized to match. Every 3D printer, CNC machine and floor-2 machine must be visually, mechanically and functionally accurate: real layouts, motion that moves the right way during a job, real steps, materials and post-processing. Assembly builds move into the workshop's assembly bay (`workshopAssemblyBay`).
 
+   - **Owner (2026-11-05):**
+     - **Space:** a ton of space. The CNC shop must fit several big jobs at once with forklift aisles. The garage needs 4+ vehicle bays, including a drive-through bay for the pickup and trailer. The hangar needs room for 2+ builds plus vehicle parking.
+     - **New FLOOR 3:**
+       - **Glass blowing studio:** furnace with crucible, glory hole, annealer, marver, bench, blowpipes and punties, jacks, shears, blocks, frit and colour, fume hood, safety gear and gas. The real gather → blow → reheat → shape → punty → anneal process, with supplies used up.
+       - **Woodworking shop:** table saw, jointer, planer, bandsaw, drill press, router table, mitre saw, lathe, sanders, dust collection, benches, clamps, hand tools, finishing booth and a lumber rack. Real milling, joinery, glue-up, sanding and finishing, with supplies used up. It becomes the main path, ahead of the outdoor `WORK_BENCH`.
+     - **Electric forklift with charging station:** the battery drains and he recharges it. It has pallets and racking, uses the car elevator between floors, follows the vehicle and one-of-each rules, and needs training know-how first.
+
 8. **Concrete and asphalt plant** (`agent/plant`, started), right beside the workshop. It positions itself from `WORKSHOP_SITE`.
    - **Ready-mix concrete batch plant:**
      - cement silos, aggregate bins, a weigh hopper, conveyor, water and admixture tanks, a twin-shaft mixer and a load-out

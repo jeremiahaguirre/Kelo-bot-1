@@ -18,10 +18,27 @@
 // foot of the eastern cliff, with its vehicle lane running down the east side of the plant to the shore.
 const WORKSHOP_SITE = { x: 53.5, z: -7.1, w: 16, d: 15 };
 const WORKSHOP_PAD_Y = 0.05;            // the levelled ground it stands on (level with the plant's pad)
+// The north wing (Workshop-local coordinates, x across, z towards the front): a single-storey CNC
+// hall behind the main building, level with the hangar's back wall. The Haas mills, the pallet racking
+// and the forklift charger are in it, and an east-west forklift aisle runs its length. That aisle is
+// also the drive-through: hangar door -> hangar lane -> wing (door from the hangar) -> through the
+// shop's back wall -> the floor-1 east aisle over the car elevator -> out of door 1 onto the lane.
+// (7b, once the map grows: the wing can lengthen west or grow a storey; its contents are listed in
+// WS_WING.spots and the machine defs, not baked into the walls.)
+const WS_WING = {
+  x: 0, z: -11.45, w: 16, d: 7.9, h: 5.6,
+  aisleZ: -10.9, aisleW: 4.2,                                  // the forklift aisle / drive-through lane
+  doors: { shop: { x: 5.85, w: 4.15, h: 4.9 }, hangar: { z: -10.9, w: 4.4, h: 4.9 } },
+  spots: {
+    rack: { x: -5.3, z: -14.7, w: 4.6 },                       // pallet racking on the back wall
+    charger: { x: -7.55, z: -8.45, park: { x: -5.5, z: -8.45 } },
+    barRack: { x: 6.75, z: -14.6, w: 1.8 }                       // cantilever rack for bar stock and sheet
+  }
+};
 // The land the Workshop adds and levels: its pad (cut into the cliff behind) and the vehicle lane
 // along the east edge down to a gravel beach. Other land (the plant's pad) joins it along z 0.6.
 const WORKSHOP_LAND = {
-  pad: { minX: WORKSHOP_SITE.x - WORKSHOP_SITE.w / 2 - 1.2, maxX: WORKSHOP_SITE.x + WORKSHOP_SITE.w / 2 + 1.2, minZ: WORKSHOP_SITE.z - WORKSHOP_SITE.d / 2 - 0.8, maxZ: WORKSHOP_SITE.z + WORKSHOP_SITE.d / 2 + 0.3 },
+  pad: { minX: WORKSHOP_SITE.x - WORKSHOP_SITE.w / 2 - 1.2, maxX: WORKSHOP_SITE.x + WORKSHOP_SITE.w / 2 + 1.2, minZ: WORKSHOP_SITE.z + WS_WING.z - WS_WING.d / 2 - 0.45, maxZ: WORKSHOP_SITE.z + WORKSHOP_SITE.d / 2 + 0.3 },
   lane: { minX: WORKSHOP_SITE.x + 5.85 - 2.6, maxX: WORKSHOP_SITE.x + WORKSHOP_SITE.w / 2 + 1.0, minZ: WORKSHOP_SITE.z, maxZ: 9.0 },
   // The hangar's pad (js/workshopbuilding.js, buildWorkshopHangar3D) and its apron down to the helipad
   hangar: { minX: 23.6, maxX: 45.6, minZ: -22.9, maxZ: -6.9 },
@@ -32,6 +49,16 @@ const WORKSHOP_LAND = {
 // pickup with its trailer, the dump truck, the mixer truck. A wide, tall roll-up door faces the
 // helipad so a finished plane rolls straight out onto it; a bridge crane spans the whole bay.
 const WORKSHOP_HANGAR = { x: 34.6, z: -15.0, w: 21, d: 14, h: 10.5, door: { w: 18.4, h: 8.0 }, craneY: 9.2 };
+// What is marked out on the hangar floor (hangar-local x, z; w across x, d along z). Build bays take
+// the assembly builds, parking bays take vehicles, the lane is the drive-through and forklift lane
+// to the north wing (its door is in the hangar's east wall). 7b can widen the hangar and add bays here.
+const WORKSHOP_HANGAR_BAYS = [
+  { key: 'build1', kind: 'build', label: 'BUILD BAY 1  •  AIRCRAFT, 10 M SPAN', x: -2.15, z: -2.0, w: 16, d: 9.7 },
+  { key: 'build2', kind: 'build', label: 'BUILD BAY 2', x: -6.6, z: 4.9, w: 7.0, d: 3.6 },
+  { key: 'park1', kind: 'parking', label: 'PARKING 1', x: 1.5, z: 4.9, w: 8.8, d: 3.6, ry: 0 },
+  { key: 'park2', kind: 'parking', label: 'PARKING 2', x: 8.3, z: 2.9, w: 4.0, d: 7.6, ry: Math.PI / 2, lane: true },
+  { key: 'lane', kind: 'lane', label: 'DRIVE-THROUGH  •  FORKLIFT', x: 8.3, z: -3.9, w: 4.0, d: 5.8 }
+];
 const WS_F1 = 0.12;                      // floor 1 top, above the pad
 const WS_F2 = 5.4;                       // floor 2 deck top
 const WS_F3 = 13.0;                      // floor 3 deck top (glass studio and woodshop)
@@ -57,7 +84,8 @@ const WORKSHOP_MACHINES = {};            // key -> machine definition (registerW
 const WORKSHOP_STATIONS = {
   weld: { local: { x: -2.4, z: 6.55 }, floor: 1, rotY: 0, size: { w: 2.2, d: 1.3 }, label: 'Weld bay' },
   bench: { local: { x: 2.5, z: 6.6 }, floor: 1, rotY: 0, size: { w: 2.6, d: 0.8 }, label: 'Work bench' },
-  assembly: { local: { x: -5.9, z: 4.6 }, floor: 1, rotY: 0, size: { w: 17, d: 10.5 }, label: 'Hangar / assembly bay', world: { x: 34.6, z: -15.6 } },
+  assembly: { local: { x: -5.9, z: 4.6 }, floor: 1, rotY: 0, size: { w: 16, d: 9.7 }, label: 'Hangar build bay 1', world: { x: 34.6 - 2.15, z: -15.0 - 2.0 } },
+  assembly2: { local: { x: -5.9, z: 4.6 }, floor: 1, rotY: 0, size: { w: 7.0, d: 3.6 }, label: 'Hangar build bay 2', world: { x: 34.6 - 6.6, z: -15.0 + 4.9 } },
   smallAssembly: { local: { x: -5.9, z: 4.6 }, floor: 1, rotY: 0, size: { w: 3.4, d: 4.6 }, label: 'Small-parts assembly bay' },
   electronics: { local: { x: -2.9, z: -2.75 }, floor: 2, rotY: 0, size: { w: 1.6, d: 0.7 }, label: 'Electronics bench' },
   garage: { local: { x: 5.85, z: -2.0 }, floor: 2, rotY: 0, size: { w: 3.8, d: 8.4 }, label: 'Garage lift bay' }
@@ -318,9 +346,11 @@ function buildWorkshop3D() {
       const frontBand = mmGroup(wsGroup, 0, WS_EAVE - 2.0, 0);
       wsWallWithOpenings(frontBand, 'x', hz, -hx, hx, 2.0, wallT, cladFrontDark, [{ c: 0, w: W - 1.2, h: 1.1, y0: 0.45 }], 1.28, wsFrontFade);
       // Back (north)
-      wsWallWithOpenings(wsGroup, 'x', -hz, -hx, hx, 0.9, wallT + 0.04, plinth, [], 2.4);
+      // (door 4 through to the north wing, on the line of door 1 and the car elevator)
+      const backDoor = WS_WING.doors.shop;
+      wsWallWithOpenings(wsGroup, 'x', -hz, -hx, hx, 0.9, wallT + 0.04, plinth, [{ c: backDoor.x, w: backDoor.w, h: 0.9 }], 2.4);
       const backGroup = mmGroup(wsGroup, 0, 0.9, 0);
-      wsWallWithOpenings(backGroup, 'x', -hz, -hx, hx, WS_EAVE - 2.9, wallT, cladding, [{ c: -1.5, w: 9, h: 1.3, y0: 2.2 }, { c: 0, w: W - 1.4, h: 1.3, y0: 7.0 }, { c: 0, w: W - 1.4, h: 1.3, y0: 13.9 }], 1.28);
+      wsWallWithOpenings(backGroup, 'x', -hz, -hx, hx, WS_EAVE - 2.9, wallT, cladding, [{ c: backDoor.x, w: backDoor.w, h: backDoor.h - 0.9 }, { c: -1.5, w: 9, h: 1.3, y0: 2.2 }, { c: 0, w: W - 1.4, h: 1.3, y0: 7.0 }, { c: 0, w: W - 1.4, h: 1.3, y0: 13.9 }], 1.28);
       const backBand = mmGroup(wsGroup, 0, WS_EAVE - 2.0, 0);
       wsWallWithOpenings(backBand, 'x', -hz, -hx, hx, 2.0, wallT, cladDark, [{ c: 0, w: W - 1.2, h: 1.1, y0: 0.45 }], 1.28);
       // Sides: the west wall has a loading door facing the helipad, both have strip windows
@@ -568,12 +598,17 @@ function buildWorkshop3D() {
       const line = (x, z, w, d, mat = yellow) => { const m = mmBox(wsGroup, w, 0.008, d, mat, x, WS_F1 + 0.004, z); m.receiveShadow = true; return m; };
       [-0.45, 1.05].forEach(x => line(x, 0, 0.08, D - 1.0));
       line(-3.95, 0, 0.08, D - 1.0);
-      const hb = WORKSHOP_STATIONS.assembly;
+      const hb = WORKSHOP_STATIONS.smallAssembly;
       [[0, -hb.size.d / 2], [0, hb.size.d / 2]].forEach(([dx, dz]) => line(hb.local.x + dx, hb.local.z + dz, hb.size.w, 0.08));
       [[-hb.size.w / 2, 0], [hb.size.w / 2, 0]].forEach(([dx]) => line(hb.local.x + dx, hb.local.z, 0.08, hb.size.d));
       for (let i = 0; i < 7; i++) line(L.x, L.z + L.d / 2 + 0.25, L.w, 0.08, i % 2 ? mmMat('hazard') : yellow).position.z = L.z + L.d / 2 + 0.06 + i * 0.03;
       mmLabel(wsGroup, 'ASSEMBLY BAY', 2.0, 0.4, hb.local.x, WS_F1 + 0.01, hb.local.z + 1.6, { bg: '#b9bab5', fg: '#a16207' }).rotation.x = -Math.PI / 2;
       mmLabel(wsGroup, 'KEEP CLEAR', 1.6, 0.35, L.x, WS_F1 + 0.01, L.z + L.d / 2 + 0.55, { bg: '#b9bab5', fg: '#b91c1c' }).rotation.x = -Math.PI / 2;
+      // The east aisle from door 4 (the wing) down to the car elevator: the drive-through and forklift way
+      const sdw = WS_WING.doors.shop, aisleZ1 = L.z - L.d / 2;
+      [-1, 1].forEach(sx => line(sdw.x + sx * (sdw.w / 2 - 0.05), (-hz + aisleZ1) / 2, 0.08, aisleZ1 + hz));
+      const ea = mmLabel(wsGroup, 'DRIVE-THROUGH', 1.8, 0.35, sdw.x, WS_F1 + 0.01, -hz + 1.4, { bg: '#b9bab5', fg: '#a16207' });
+      ea.rotation.x = -Math.PI / 2;
       // Area signs hanging inside
       const hang = (text, x, y, z, ry = 0, bg = '#0f172a', fg = '#facc15') => { const s = makeSignMesh(text, { bg, fg, width: 2.6, height: 0.42 }); s.position.set(x, y, z); s.rotation.y = ry; wsGroup.add(s); return s; };
       hang('HIGH BAY  •  TAURUS', -5.9, 7.4, -hz + 0.25);
@@ -608,6 +643,8 @@ function buildWorkshop3D() {
 
       // The work stations other systems can move into
       buildWorkshopStations();
+      // The north wing: the CNC hall with the forklift aisle and the drive-through
+      buildWorkshopWing3D({ cladding, cladDark, plinth, floorMat, doorMat, trim, glassMat, roofMat, lensMat });
 
       wsMergeStatic(wsGroup, new Set([...wsFrontFade, ...wsDeckMeshes, ...wsDeck3Meshes, ...(typeof cutawayRoofMeshes !== 'undefined' ? cutawayRoofMeshes : [])]),
         [wsLift, crane, ...Object.values(doors), ...Object.values(WORKSHOP_STATIONS).map(st => st.group).filter(Boolean), wsGroup.userData.ram]);
@@ -740,6 +777,113 @@ function buildWorkshopStations() {
       WORKSHOP_STATIONS.assembly.group = ag;
     }
 
+// --- The north wing: CNC hall, forklift aisle, drive-through ------------------------------------------
+// Built into wsGroup (Workshop-local coordinates) behind the shop's back wall, from WS_WING.
+function wsWingBounds() {
+      const Wg = WS_WING;
+      return { x0: Wg.x - Wg.w / 2, x1: Wg.x + Wg.w / 2, z0: Wg.z - Wg.d / 2, z1: Wg.z + Wg.d / 2 };
+    }
+
+function buildWorkshopWing3D(m) {
+      const Wg = WS_WING, b = wsWingBounds(), t = 0.16;
+      const cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
+      const yellow = mmMat('yellow'), navy = mmMat('navy');
+      // Slab and floor (the floor stops short of the shared wall so the two slabs never fight)
+      wsPanel(wsGroup, Wg.w + 0.6, 0.38, Wg.d + 0.3, m.plinth, cx, -0.3, cz - 0.15, 3).castShadow = false;
+      wsPanel(wsGroup, Wg.w - 0.2, 0.04, Wg.d - 0.25, m.floorMat, cx, WS_F1 - 0.04, cz - 0.05, 3.2).castShadow = false;
+      // Walls: north (back) with a strip of windows, east solid with one window, west with the door
+      // from the hangar. Plinth course first, cladding above, a dark band at the top.
+      const hd = Wg.doors.hangar;
+      const wall = (axis, fixed, a0, a1, openings) => {
+        wsWallWithOpenings(wsGroup, axis, fixed, a0, a1, 0.9, t + 0.04, m.plinth, openings.filter(o => !o.y0).map(o => ({ ...o, h: 0.9 })), 2.4);
+        const g = mmGroup(wsGroup, 0, 0.9, 0);
+        wsWallWithOpenings(g, axis, fixed, a0, a1, Wg.h - 0.9 - 0.9, t, m.cladding, openings.map(o => ({ ...o, h: o.y0 ? o.h : o.h - 0.9, y0: o.y0 ? o.y0 - 0.9 : 0 })), 1.28);
+        wsWallWithOpenings(mmGroup(wsGroup, 0, Wg.h - 0.9, 0), axis, fixed, a0, a1, 0.9, t, m.cladDark, [], 1.28);
+      };
+      wall('x', b.z0, b.x0, b.x1, [{ c: cx, w: Wg.w - 2.4, h: 1.0, y0: 3.4 }]);
+      wall('z', b.x1, b.z0, b.z1, [{ c: cz, w: 3.0, h: 1.0, y0: 3.4 }]);
+      wall('z', b.x0, b.z0, b.z1, [{ c: hd.z, w: hd.w, h: hd.h }]);
+      mmBox(wsGroup, Wg.w - 2.4, 1.0, 0.04, m.glassMat, cx, 3.4, b.z0);
+      mmBox(wsGroup, 0.04, 1.0, 3.0, m.glassMat, b.x1, 3.4, cz);
+      // The short link to the hangar's east wall: jambs, a header and a floor plate over the gap
+      const H = WORKSHOP_HANGAR, gapX0 = H.x + H.w / 2 - WORKSHOP_SITE.x;
+      const linkW = b.x0 - gapX0;
+      if (linkW > 0.02) {
+        [-1, 1].forEach(s => wsPanel(wsGroup, linkW + 0.1, hd.h + 0.5, 0.3, m.trim, (gapX0 + b.x0) / 2, 0, hd.z + s * (hd.w / 2 + 0.15)));
+        wsPanel(wsGroup, linkW + 0.1, 0.5, hd.w + 0.6, m.trim, (gapX0 + b.x0) / 2, hd.h, hd.z);
+        wsPanel(wsGroup, linkW + 0.2, 0.05, hd.w, m.floorMat, (gapX0 + b.x0) / 2, WS_F1 - 0.05, hd.z, 3.2).castShadow = false;
+      }
+      // Roll-up doors (open): door 5 from the hangar, door 4 through to the shop
+      const rollUp = (g, w, h, along) => {
+        mmBox(g, along === 'x' ? w + 0.4 : 0.5, 0.55, along === 'x' ? 0.5 : w + 0.4, m.trim, 0, h, 0);
+        const c = new THREE.Mesh(wsUV(new THREE.BoxGeometry(along === 'x' ? w : 0.05, 0.6, along === 'x' ? 0.05 : w), 1.2), m.doorMat);
+        c.position.y = h - 0.3;
+        g.add(c);
+        [-1, 1].forEach(s => mmBox(g, along === 'x' ? 0.12 : 0.18, h, along === 'x' ? 0.18 : 0.12, 'steel', along === 'x' ? s * (w / 2 + 0.06) : 0, 0, along === 'x' ? 0 : s * (w / 2 + 0.06)));
+      };
+      const dHangar = mmGroup(wsGroup, b.x0 + 0.02, 0, hd.z);
+      rollUp(dHangar, hd.w, hd.h, 'z');
+      mmLabel(dHangar, 'DOOR 5  HANGAR', 1.8, 0.2, 0.3, hd.h + 0.62, 0, { bg: '#facc15', fg: '#111827', ry: Math.PI / 2 });
+      const sd = Wg.doors.shop;
+      const dShop = mmGroup(wsGroup, sd.x, 0, b.z1 - 0.02);
+      rollUp(dShop, sd.w, sd.h, 'x');
+      mmLabel(dShop, 'DOOR 4  DRIVE-THROUGH', 2.2, 0.2, 0, sd.h + 0.62, -0.3, { bg: '#facc15', fg: '#111827', ry: Math.PI });
+      // Roof: a low mono-pitch falling to the north, see-through with the cutaway switch
+      const rise = 0.5, len = Math.hypot(Wg.d + 0.6, rise);
+      const roof = new THREE.Mesh(wsUV(new THREE.BoxGeometry(Wg.w + 0.6, 0.08, len), 1.0), m.roofMat);
+      roof.position.set(cx, Wg.h + rise / 2, cz - 0.1);
+      roof.rotation.x = -Math.atan2(rise, Wg.d);
+      roof.castShadow = true;
+      wsGroup.add(roof);
+      if (typeof cutawayRoofMeshes !== 'undefined') cutawayRoofMeshes.push(roof);
+      // Columns and beams, LED fixtures facing down under the beams
+      const fixGeo = new THREE.PlaneGeometry(1, 1);
+      fixGeo.rotateX(Math.PI / 2);
+      for (let x = b.x0 + 0.3; x <= b.x1 - 0.2; x += Wg.w / 4) {
+        mmBox(wsGroup, 0.22, Wg.h - 0.1, 0.22, navy, x, 0, b.z0 + 0.2);
+        mmBox(wsGroup, 0.14, 0.4, Wg.d - 0.3, navy, x, Wg.h - 0.45, cz);
+        [cz - 1.8, cz + 1.8].forEach(z => {
+          const l = new THREE.Mesh(fixGeo, m.lensMat);
+          l.scale.set(0.6, 1, 0.36);
+          l.position.set(x + Wg.w / 8, Wg.h - 0.5, z);
+          wsGroup.add(l);
+        });
+      }
+      // Floor markings: the forklift aisle (also the drive-through) and its turn to door 4
+      const line = (x, z, w, d, mat = yellow) => mmBox(wsGroup, w, 0.008, d, mat, x, WS_F1 + 0.004, z);
+      const az = Wg.aisleZ, aw = Wg.aisleW;
+      const nEnd = sd.x + sd.w / 2, sEnd = sd.x - sd.w / 2;
+      line((b.x0 + nEnd) / 2, az - aw / 2, nEnd - b.x0, 0.1);
+      line((b.x0 + sEnd) / 2, az + aw / 2, sEnd - b.x0, 0.1);
+      line(sd.x + sd.w / 2, (az - aw / 2 + b.z1) / 2, 0.1, b.z1 - (az - aw / 2));
+      line(sd.x - sd.w / 2, (az + aw / 2 + b.z1) / 2, 0.1, b.z1 - (az + aw / 2));
+      for (let x = b.x0 + 1.4; x < sd.x - 2; x += 2.4) line(x, az, 1.0, 0.12, mmMat('white'));
+      const lab = (text, x, z, w = 2.6, ry = 0) => { const l = mmLabel(wsGroup, text, w, 0.42, x, WS_F1 + 0.012, z, { bg: '#b9bab5', fg: '#a16207' }); l.rotation.x = -Math.PI / 2; l.rotation.z = ry; return l; };
+      lab('FORKLIFT AISLE  •  DRIVE-THROUGH', -2.0, az + 1.2, 3.6);
+      // Signs
+      const hang = (text, x, y, z, ry = 0) => { const s = makeSignMesh(text, { bg: '#0f172a', fg: '#facc15', width: 2.8, height: 0.42 }); s.position.set(x, y, z); s.rotation.y = ry; wsGroup.add(s); return s; };
+      hang('CNC HALL  •  HAAS MILLS', 1.8, Wg.h - 1.3, b.z0 + 0.3);
+      hang('FORKLIFTS  •  WATCH THE AISLE', -4.0, Wg.h - 1.3, b.z1 - 0.3, Math.PI);
+      // The cantilever rack for bar stock and sheet (static; the pallet racking and the charger are js/forklift.js)
+      const br = Wg.spots.barRack, rg = mmGroup(wsGroup, br.x, WS_F1, br.z);
+      [-br.w / 2 + 0.1, br.w / 2 - 0.1].forEach(x => {
+        mmBox(rg, 0.12, 2.6, 0.12, 'blue', x, 0, -0.35);
+        mmBox(rg, 0.3, 0.1, 0.6, 'blue', x, 0, -0.15);
+        [0.6, 1.3, 2.0].forEach(y => mmBox(rg, 0.08, 0.06, 0.75, 'blue', x, y, 0.05));
+      });
+      [0.68, 1.38].forEach((y, i) => { for (let k = 0; k < 5; k++) mmCyl(rg, 0.035, br.w, i ? 'steel' : 'chrome', 0, y + 0.04, -0.15 + k * 0.08, { axis: 'x' }); });
+      mmBox(rg, br.w - 0.1, 0.03, 0.6, 'steel', 0, 2.08, 0.05);
+      mmLabel(rg, 'BAR STOCK  •  6061 / 1018', 1.4, 0.18, 0, 2.35, 0.1, { bg: '#1e3a5f', fg: '#fff' });
+      // Outside: the wing's walls keep paths off it (the doors stay open)
+      const S = WORKSHOP_SITE;
+      for (let x = b.x0; x <= b.x1 + 0.01; x += 1.2) worldObstacles.push({ x: S.x + x, z: S.z + b.z0, r: 0.5, workshop: true });
+      for (let z = b.z0; z <= b.z1 + 0.01; z += 1.2) {
+        worldObstacles.push({ x: S.x + b.x1, z: S.z + z, r: 0.5, workshop: true });
+        if (Math.abs(z - hd.z) > hd.w / 2 + 0.2) worldObstacles.push({ x: S.x + b.x0, z: S.z + z, r: 0.5, workshop: true });
+      }
+      for (let x = b.x0; x <= b.x1 + 0.01; x += 1.2) if (Math.abs(x - sd.x) > sd.w / 2 + 0.2) worldObstacles.push({ x: S.x + x, z: S.z + b.z1, r: 0.5, workshop: true });
+    }
+
 // --- The hangar and assembly high bay ----------------------------------------------------------------
 let wsHangar = null;
 function buildWorkshopHangar3D() {
@@ -764,7 +908,9 @@ function buildWorkshopHangar3D() {
       // Front: the big door; back and sides: windows high up; a dark band under the eaves
       wsWallWithOpenings(g, 'x', hz, -hx, hx, H.h - 1.5, t, clad, [{ c: 0, w: H.door.w, h: H.door.h }], 1.28);
       wsWallWithOpenings(g, 'x', -hz, -hx, hx, H.h - 1.5, t, clad, [{ c: 0, w: H.w - 3, h: 1.4, y0: 6.6 }], 1.28);
-      [-hx, hx].forEach(x => wsWallWithOpenings(g, 'z', x, -hz, hz, H.h - 1.5, t, clad, [{ c: 0, w: H.d - 3, h: 1.4, y0: 6.6 }], 1.28));
+      // (the east wall has door 5 through to the Workshop's north wing, on the line of its aisle)
+      const wingDoorZ = WORKSHOP_SITE.z + WS_WING.doors.hangar.z - H.z, wingDoor = { c: wingDoorZ, w: WS_WING.doors.hangar.w, h: WS_WING.doors.hangar.h };
+      [-hx, hx].forEach(x => wsWallWithOpenings(g, 'z', x, -hz, hz, H.h - 1.5, t, clad, [{ c: 0, w: H.d - 3, h: 1.4, y0: 6.6 }, ...(x > 0 ? [wingDoor] : [])], 1.28));
       const top = mmGroup(g, 0, H.h - 1.5, 0);
       wsWallWithOpenings(top, 'x', hz, -hx, hx, 1.5, t, band, [], 1.28);
       wsWallWithOpenings(top, 'x', -hz, -hx, hx, 1.5, t, band, [], 1.28);
@@ -818,35 +964,43 @@ function buildWorkshopHangar3D() {
       lens.emissiveIntensity = 1.2;
       for (let x = -hx + 0.3; x <= hx - 0.2; x += H.w / 6) [-3.5, 3.5].forEach(z => { const m = new THREE.Mesh(fixGeo, lens); m.scale.set(0.6, 1, 0.36); m.position.set(x, H.h - 0.82, z); g.add(m); });
       wsLights.push({ mesh: g.children[g.children.length - 1] });
-      // Floor markings: the aircraft bay (sized for a 10 m span) and two vehicle bays
+      // Floor markings from WORKSHOP_HANGAR_BAYS: build bays in yellow, parking in white, the lane hatched
       const line = (x, z, w, d, mat = yellow) => mmBox(g, w, 0.008, d, mat, x, 0.125, z);
-      const bay = WORKSHOP_STATIONS.assembly.size, bz = WORKSHOP_STATIONS.assembly.world.z - H.z;
-      line(0, bz - bay.d / 2, bay.w, 0.1); line(0, bz + bay.d / 2, bay.w, 0.1);
-      line(-bay.w / 2, bz, 0.1, bay.d); line(bay.w / 2, bz, 0.1, bay.d);
-      const label = mmLabel(g, 'AIRCRAFT ASSEMBLY  •  10 M SPAN', 5.0, 0.6, 0, 0.13, bz - bay.d / 2 + 0.9, { bg: '#b9bab5', fg: '#a16207' });
-      label.rotation.x = -Math.PI / 2;
-      // A painted footprint of a high-wing ultralight (9.5 m span, 5.6 m long) to build it on
-      const span = 15.2, chord = 2.3, fus = 9.0, wingZ = bz - 1.2;
-      [[0, wingZ - chord / 2, span, 0.08], [0, wingZ + chord / 2, span, 0.08]].forEach(([x, z, w, d]) => line(x, z, w, d, mmMat('white')));
-      [-span / 2, span / 2].forEach(x => line(x, wingZ, 0.08, chord, mmMat('white')));
-      [-0.5, 0.5].forEach(x => line(x, wingZ - 1.4 + fus / 2, 0.08, fus, mmMat('white')));
-      line(0, wingZ - 1.4 + fus, 4.2, 0.08, mmMat('white'));
-      line(0, wingZ - 1.4 + fus - 1.1, 4.2, 0.08, mmMat('white'));
-      [-2.1, 2.1].forEach(x => line(x, wingZ - 1.4 + fus - 0.55, 0.08, 1.1, mmMat('white')));
-      // Wing span gauge marks (every metre, 1.6 units) along the front of the bay
-      for (let i = -5; i <= 5; i++) line(i * 1.6, bz + bay.d / 2 - 0.35, 0.05, i % 5 ? 0.4 : 0.7);
-      mmLabel(g, 'KEEP CLEAR  •  CRANE OVERHEAD', 3.4, 0.4, 0, 0.13, hz - 0.9, { bg: '#b9bab5', fg: '#b91c1c' }).rotation.x = -Math.PI / 2;
-      // A parts cart and two trestles in the bay
-      const cart = mmGroup(g, hx - 1.6, 0.1, -hz + 1.6);
+      const flat = (text, w, x, z, fg = '#a16207', rz = 0) => { const l = mmLabel(g, text, w, w * 0.11, x, 0.13, z, { bg: '#b9bab5', fg }); l.rotation.x = -Math.PI / 2; l.rotation.z = rz; return l; };
+      WORKSHOP_HANGAR_BAYS.forEach(bay => {
+        const mat = bay.kind === 'build' ? yellow : bay.kind === 'parking' ? mmMat('white') : mmMat('hazard');
+        line(bay.x, bay.z - bay.d / 2, bay.w, 0.1, mat); line(bay.x, bay.z + bay.d / 2, bay.w, 0.1, mat);
+        line(bay.x - bay.w / 2, bay.z, 0.1, bay.d, mat); line(bay.x + bay.w / 2, bay.z, 0.1, bay.d, mat);
+        if (bay.kind === 'lane') for (let k = 0; k < 5; k++) line(bay.x, bay.z - bay.d / 2 + 0.7 + k * (bay.d - 1.4) / 4, bay.w - 0.6, 0.12, mmMat('hazard'));
+        const lw = Math.min(bay.w - 0.6, bay.kind === 'build' && bay.w > 10 ? 5.0 : 2.6);
+        if (bay.w >= bay.d || bay.kind === 'build') flat(bay.label, lw, bay.x, bay.z + bay.d / 2 - 0.55);
+        else flat(bay.label, Math.min(bay.d - 0.6, 3.6), bay.x + bay.w / 2 - 0.6, bay.z, '#a16207', Math.PI / 2);
+      });
+      // A painted footprint of a high-wing ultralight (9.5 m span, 5.6 m long) in build bay 1, nose to the door
+      const b1 = WORKSHOP_HANGAR_BAYS.find(b => b.key === 'build1');
+      const span = 15.2, chord = 2.3, fus = 9.0, nose = b1.z + b1.d / 2 - 0.25, wingZ = nose - 2.4;
+      [[b1.x, wingZ - chord / 2, span, 0.08], [b1.x, wingZ + chord / 2, span, 0.08]].forEach(([x, z, w, d]) => line(x, z, w, d, mmMat('white')));
+      [-span / 2, span / 2].forEach(x => line(b1.x + x, wingZ, 0.08, chord, mmMat('white')));
+      [-0.5, 0.5].forEach(x => line(b1.x + x, nose - fus / 2, 0.08, fus, mmMat('white')));
+      line(b1.x, nose - fus, 4.2, 0.08, mmMat('white'));
+      line(b1.x, nose - fus + 1.1, 4.2, 0.08, mmMat('white'));
+      [-2.1, 2.1].forEach(x => line(b1.x + x, nose - fus + 0.55, 0.08, 1.1, mmMat('white')));
+      // Wing span gauge marks (every metre, 1.6 units) along the back of the bay
+      for (let i = -5; i <= 5; i++) line(b1.x + i * 1.6, b1.z - b1.d / 2 + 0.35, 0.05, i % 5 ? 0.4 : 0.7);
+      flat('KEEP CLEAR  •  CRANE OVERHEAD', 3.4, -2.0, hz - 0.5, '#b91c1c');
+      // A parts cart and two trestles in build bay 1, a pair of sawhorses in build bay 2
+      const cart = mmGroup(g, b1.x + b1.w / 2 - 1.0, 0.1, b1.z - b1.d / 2 + 1.2);
       mmBox(cart, 0.9, 0.05, 0.6, 'red', 0, 0.35, 0);
       mmBox(cart, 0.9, 0.05, 0.6, 'red', 0, 0.9, 0);
       [-0.42, 0.42].forEach(x => mmBox(cart, 0.04, 0.95, 0.04, 'red', x, 0, 0.27));
-      [-3, 3].forEach(x => { mmBox(g, 1.2, 0.08, 0.3, 'wood', x, 0.95, bz); [-0.5, 0.5].forEach(dx => mmBox(g, 0.06, 0.95, 0.4, 'wood', x + dx, 0.1, bz)); });
+      [-3, 3].forEach(x => { mmBox(g, 1.2, 0.08, 0.3, 'wood', b1.x + x, 0.95, b1.z - 1.5); [-0.5, 0.5].forEach(dx => mmBox(g, 0.06, 0.95, 0.4, 'wood', b1.x + x + dx, 0.1, b1.z - 1.5)); });
+      const b2 = WORKSHOP_HANGAR_BAYS.find(b => b.key === 'build2');
+      [-1.6, 1.6].forEach(x => { mmBox(g, 0.12, 0.06, 1.0, 'wood', b2.x + x, 0.8, b2.z - 0.2); [-0.4, 0.4].forEach(dz => mmBox(g, 0.3, 0.75, 0.05, 'wood', b2.x + x, 0.1, b2.z - 0.2 + dz)); });
       if (typeof dressBuilding === 'function') dressBuilding(g, [[roofMat, 'metalroof', 1.2], [plinth, 'stone', 2]]);
       scene.add(g);
       // Walls are solid; the inside and the door are open to walk and drive through
       for (let x = -hx; x <= hx; x += 1.2) worldObstacles.push({ x: H.x + x, z: H.z - hz, r: 0.5, workshop: true });
-      [-hx, hx].forEach(x => { for (let z = -hz; z <= hz; z += 1.2) worldObstacles.push({ x: H.x + x, z: H.z + z, r: 0.5, workshop: true }); });
+      [-hx, hx].forEach(x => { for (let z = -hz; z <= hz; z += 1.2) if (x < 0 || Math.abs(z - wingDoorZ) > wingDoor.w / 2 + 0.2) worldObstacles.push({ x: H.x + x, z: H.z + z, r: 0.5, workshop: true }); });
       for (let x = -hx; x <= hx; x += 1.2) if (Math.abs(x) > H.door.w / 2 + 0.3) worldObstacles.push({ x: H.x + x, z: H.z + hz, r: 0.5, workshop: true });
       // Trees that grew where it now stands are gone
       if (typeof valleyTrees !== 'undefined') {
@@ -860,30 +1014,79 @@ function buildWorkshopHangar3D() {
       }
     }
 
+// The hangar's bays as world rectangles: { key, kind, label, x, y, z (centre on the floor), w, d, rotY }
+function workshopHangarBays(kind) {
+      const H = WORKSHOP_HANGAR;
+      return WORKSHOP_HANGAR_BAYS.filter(b => !kind || b.kind === kind).map(b => ({
+        key: b.key, kind: b.kind, label: b.label, x: H.x + b.x, y: WORKSHOP_PAD_Y + 0.12, z: H.z + b.z, w: b.w, d: b.d, rotY: b.ry || 0, lane: Boolean(b.lane)
+      }));
+    }
+
 // The hangar's assembly bay, for the assembly builds (the ultralight and other big projects):
 // { x, y, z } its centre on the floor, { w, d } the marked bay (w across x), the crane's hook height,
 // and the door it rolls out through (centre, width, height, facing +z onto the helipad).
-function workshopAssemblyBay() {
-      const H = WORKSHOP_HANGAR, st = WORKSHOP_STATIONS.assembly;
+// workshopAssemblyBay(2) is the second, smaller build bay.
+function workshopAssemblyBay(n = 1) {
+      const H = WORKSHOP_HANGAR, bay = workshopHangarBays('build')[n - 1] || workshopHangarBays('build')[0];
       return {
-        x: st.world.x, y: WORKSHOP_PAD_Y + 0.12, z: st.world.z, w: st.size.w, d: st.size.d, rotY: 0,
+        key: bay.key, x: bay.x, y: bay.y, z: bay.z, w: bay.w, d: bay.d, rotY: 0,
         craneHookY: WORKSHOP_PAD_Y + H.craneY - 3.0,
         door: { x: H.x, z: H.z + H.d / 2, w: H.door.w, h: H.door.h, facing: 'south' },
         outside: { x: H.x, z: H.z + H.d / 2 + 2.5 }
       };
     }
 
-// Does something of this size (units) fit: through which doors, on the car elevator, in which bays
-function workshopFits(size) {
+function workshopAssemblyBays() {
+      return workshopHangarBays('build').map((_, i) => workshopAssemblyBay(i + 1));
+    }
+
+// Where vehicles park inside (world): the hangar's parking bays, then the wing's aisle
+function workshopParkingSpots() {
+      const S = WORKSHOP_SITE;
+      return [...workshopHangarBays('parking'),
+        { key: 'wing', kind: 'parking', label: 'Wing aisle (drive-through)', x: S.x + (WS_WING.x - WS_WING.w / 2 + WS_WING.doors.shop.x - WS_WING.doors.shop.w / 2) / 2, y: WORKSHOP_PAD_Y + 0.12, z: S.z + WS_WING.aisleZ, w: WS_WING.doors.shop.x - WS_WING.doors.shop.w / 2 - (WS_WING.x - WS_WING.w / 2), d: WS_WING.aisleW, rotY: 0, lane: true }];
+    }
+
+// Does something of this size (units, {x, y, z}) fit: through which doors, on the car elevator, in
+// which bays. Given a list of sizes (or { name, size } items) it also packs them: each item gets a bay
+// of its own (biggest first, build bays for builds, parking for vehicles) and the answer says where
+// each one goes and what is left over. workshopFits([plane, pickupAndTrailer, dumpTruck]).
+function wsFitsOne(size) {
       const L = Math.max(size.x, size.z), W = Math.min(size.x, size.z), Hh = size.y;
-      const bay = WORKSHOP_STATIONS.assembly.size;
+      const inBay = b => L < Math.max(b.w, b.d) + 0.01 && W < Math.min(b.w, b.d) + 0.01;
+      const bays = {};
+      WORKSHOP_HANGAR_BAYS.forEach(b => { bays[b.key] = inBay(b) && Hh < WORKSHOP_HANGAR.craneY - 0.5; });
+      const wingLen = WS_WING.doors.shop.x + WS_WING.doors.shop.w / 2 - (WS_WING.x - WS_WING.w / 2);
       return {
         hangarDoor: W < WORKSHOP_HANGAR.door.w - 0.6 && Hh < WORKSHOP_HANGAR.door.h - 0.3,
-        hangarBay: L < bay.w + 0.01 && W < bay.d + 0.01 && Hh < WORKSHOP_HANGAR.craneY - 0.5,
+        hangarBay: bays.build1,
+        bays,
         door1: W < WS_DOORS.vehicle.w - 0.3 && Hh < WS_DOORS.vehicle.h - 0.2,
+        wingDoor: W < WS_WING.doors.hangar.w - 0.3 && Hh < WS_WING.doors.hangar.h - 0.2,
+        wingAisle: L < wingLen && W < WS_WING.aisleW - 0.2 && Hh < WS_WING.h - 0.6,
+        driveThrough: W < Math.min(WS_WING.doors.hangar.w, WS_WING.doors.shop.w, WS_DOORS.vehicle.w, WS_LIFT.w + 0.2) - 0.3 && Hh < Math.min(WS_WING.doors.hangar.h, WS_WING.doors.shop.h, WS_DOORS.vehicle.h, WS_F2 - 0.3) - 0.2,
         carElevator: L < WS_LIFT.d - 0.2 && W < WS_LIFT.w - 0.1 && Hh < WS_F2 - 0.3 - WS_F1,
         garageLift: W < 3.6 && Hh + 1.9 < WS_F3 - 0.3 - WS_F2
       };
+    }
+
+function workshopFits(sizeOrList) {
+      if (!Array.isArray(sizeOrList)) return wsFitsOne(sizeOrList);
+      const items = sizeOrList.map((it, i) => {
+        const size = it && it.size ? it.size : it;
+        return { name: (it && it.name) || `item ${i + 1}`, size, build: Boolean(it && it.build), area: size.x * size.z, fits: wsFitsOne(size) };
+      });
+      const free = WORKSHOP_HANGAR_BAYS.filter(b => b.kind !== 'lane').map(b => ({ ...b }));
+      free.push({ key: 'wing', kind: 'parking', w: WS_WING.doors.shop.x + WS_WING.doors.shop.w / 2 - (WS_WING.x - WS_WING.w / 2), d: WS_WING.aisleW });
+      const placements = [], left = [];
+      items.slice().sort((a, b) => b.area - a.area).forEach(it => {
+        const ok = b => (it.fits.bays[b.key] !== undefined ? it.fits.bays[b.key] : it.fits.wingAisle) && (it.fits.hangarDoor || (b.key === 'wing' && it.fits.door1));
+        const order = it.build ? ['build', 'parking'] : ['parking', 'build'];
+        let bay = null;
+        for (const kind of order) { bay = free.find(b => b.kind === kind && ok(b)); if (bay) break; }
+        if (bay) { free.splice(free.indexOf(bay), 1); placements.push({ name: it.name, bay: bay.key }); } else left.push(it.name);
+      });
+      return { fits: left.length === 0, placements, left, each: items.map(it => ({ name: it.name, ...it.fits })) };
     }
 
 // --- Floor 1 machines: built in full only while the camera is near ------------------------------------
@@ -1035,12 +1238,17 @@ function workshopSite() {
       if (!wsGroup) return null;
       const nodes = [];
       for (let x = -WS_IN.x + 0.6; x <= WS_IN.x - 0.5; x += 0.9) for (let z = -WS_IN.z + 0.6; z <= WS_IN.z - 0.5; z += 0.9) nodes.push({ x, z });
+      // the north wing (floor 1 only: upstairs these are off the deck and never reachable), and the
+      // way through door 4
+      const wb = wsWingBounds();
+      for (let x = wb.x0 + 0.6; x <= wb.x1 - 0.5; x += 0.9) for (let z = wb.z0 + 0.6; z <= wb.z1 - 0.5; z += 0.9) nodes.push({ x, z, wing: true });
+      [-1, 0, 1].forEach(k => nodes.push({ x: WS_WING.doors.shop.x + k * 1.2, z: wb.z1, wing: true }));
       return {
         key: 'workshop', name: 'Workshop', group: wsGroup, w: WORKSHOP_SITE.w, d: WORKSHOP_SITE.d, floorY: WS_F1,
         hatch: { x: WS_LIFT.x, z: WS_LIFT.z }, entryAngle: Math.PI / 2,
         outside: { x: WS_DOORS.person.x, z: WORKSHOP_SITE.d / 2 + 1.2 },
         walkIn: [{ x: WS_DOORS.person.x, z: WORKSHOP_SITE.d / 2 + 0.6, y: 0 }, { x: WS_DOORS.person.x, z: WORKSHOP_SITE.d / 2 - 0.4, y: WS_F1 }, { x: WS_DOORS.person.x, z: WORKSHOP_SITE.d / 2 - 1.2, y: WS_F1 }],
-        nodes,
+        get nodes() { return workshopTrip.floor === 1 ? nodes : nodes.filter(n => !n.wing); },
         obstacles: () => wsObstacles(workshopTrip.floor),
         levels: () => 0, camDist: 15, cutFlat: 8
       };
@@ -1053,6 +1261,9 @@ function wsObstacles(floor) {
         // The deck columns, the Taurus bay edge, the stations
         for (let z = -WS_IN.z + 1.45; z < WS_IN.z - 0.4; z += 3.5) out.push({ x: -3.8, z, r: 0.35 });
         ['weld'].forEach(k => { const st = WORKSHOP_STATIONS[k]; out.push({ x: st.local.x - 0.6, z: st.local.z, r: 0.55 }, { x: st.local.x + 0.6, z: st.local.z, r: 0.55 }); });
+        // The back wall between the shop and the wing, open at door 4
+        const sd = WS_WING.doors.shop;
+        for (let x = -WS_IN.x; x <= WS_IN.x; x += 0.5) if (Math.abs(x - sd.x) > sd.w / 2 - 0.2) out.push({ x, z: -WORKSHOP_SITE.d / 2, r: 0.32 });
       } else {
         // The open edge over the high bay
         for (let z = -WS_IN.z; z <= WS_IN.z; z += 0.8) out.push({ x: -4.4, z, r: 0.5 });
@@ -1137,7 +1348,8 @@ async function runWorkshopVisit(plan) {
       const vehHome = veh ? { x: veh.x, z: veh.z, rotY: veh.rotY || 0 } : null;
       if (veh && typeof driveVehicle === 'function') {
         // He drives it round to the vehicle door first
-        const door = siteToWorld(site, WS_DOORS.vehicle.x, WORKSHOP_SITE.d / 2 + 4.2, 0);
+        const H = WORKSHOP_HANGAR, lane = WORKSHOP_HANGAR_BAYS.find(b => b.key === 'lane');
+        const door = plan.driveThrough ? { x: H.x + lane.x, z: H.z + H.d / 2 + 3.0 } : siteToWorld(site, WS_DOORS.vehicle.x, WORKSHOP_SITE.d / 2 + 4.2, 0);
         if (Math.hypot(veh.x - door.x, veh.z - door.z) > 3) await driveVehicle(veh, { x: door.x, z: door.z }, `Driving the ${String(veh.name).replace(/^(an?|the)\s+/i, '')} to the Workshop`);
         // (he climbed out by the driver's door; he gets straight back in to back it inside)
         if (state.riding || Math.hypot(veh.x - door.x, veh.z - door.z) > 3) return false;
@@ -1163,7 +1375,10 @@ async function runWorkshopVisit(plan) {
         wsShowFloor1(true);
         wsBuildQueued(Infinity);
         wsUpdateLighting();
-        if (veh && plan.vehicleTour) {
+        if (veh && plan.driveThrough) {
+          await wsDriveThrough(site, veh, plan.driveThrough === true ? {} : plan.driveThrough);
+          cur = null;
+        } else if (veh && plan.vehicleTour) {
           await wsVehicleTour(site, veh, plan.vehicleTour);
           cur = null;
         } else if (veh) {
@@ -1187,7 +1402,7 @@ async function runWorkshopVisit(plan) {
           indoorTrip.pose = null;
           indoorTrip.crouchTarget = 0;
         }
-        if (veh && plan.vehicleTour) {
+        if (veh && (plan.vehicleTour || plan.driveThrough)) {
           // (the tour drove back out already)
         } else if (veh) {
           await wsDriveOut(site, veh);
@@ -1211,6 +1426,7 @@ async function runWorkshopVisit(plan) {
         if (veh && workshopTrip.vehicleOut) state.botPos = { ...workshopTrip.vehicleOut };
         else state.botPos = { x: outside.x, z: outside.z };
         state.targetPos = { ...state.botPos };
+        wsUnhitchTrailer();
         Object.assign(workshopTrip, { active: false, floor: 1, vehicle: null, vehicleAt: null, vehicleOut: null, vehicleHome: null, vehPose: null, liftY: 0 });
         wsUpdateLift(0);
         workshopShowUpstairs(false);
@@ -1293,7 +1509,13 @@ async function wsDriveAlong(site, v, pts, ms) {
       const mesh = vehicleMeshes[v.id];
       if (!mesh) return;
       const p0 = { x: mesh.position.x - wsGroup.position.x, z: mesh.position.z - wsGroup.position.z, ry: mesh.rotation.y };
-      const all = [p0, ...pts];
+      const all = [p0, ...pts.map(p => ({ ...p }))];
+      // each heading the short way round from the one before
+      for (let i = 1; i < all.length; i++) {
+        let d = all[i].ry - all[i - 1].ry;
+        d = Math.atan2(Math.sin(d), Math.cos(d));
+        all[i].ry = all[i - 1].ry + d;
+      }
       indoorTrip.pose = () => wsDrivePose();
       await wsAnimate(ms, k => {
         const f = k * (all.length - 1), i = Math.min(all.length - 2, Math.floor(f)), u = f - i;
@@ -1306,7 +1528,99 @@ async function wsDriveAlong(site, v, pts, ms) {
         workshopTrip.vehicleAt = { x: mesh.position.x - wsGroup.position.x, z: mesh.position.z - wsGroup.position.z };
         wsHoldVehicle(mesh);
         wsSeatKelo(mesh);
+        wsTowTrailer(mesh);
       });
+    }
+
+// A trailer on the hitch follows the truck: its axle is dragged towards the ball, so it swings
+// wide through the turns the way a real one does
+function wsTowTrailer(truck) {
+      const tr = workshopTrip.trailer;
+      if (!tr || !tr.mesh) return;
+      const ry = truck.rotation.y, fx = Math.cos(ry), fz = -Math.sin(ry);
+      const hitch = { x: truck.position.x - fx * tr.hitchBack, z: truck.position.z - fz * tr.hitchBack };
+      if (!tr.axle) tr.axle = { x: hitch.x - fx * tr.len, z: hitch.z - fz * tr.len };
+      const dx = hitch.x - tr.axle.x, dz = hitch.z - tr.axle.z, d = Math.hypot(dx, dz) || 1;
+      tr.axle = { x: hitch.x - dx / d * tr.len, z: hitch.z - dz / d * tr.len };
+      const heading = Math.atan2(-(hitch.z - tr.axle.z), hitch.x - tr.axle.x);
+      tr.mesh.rotation.y = heading + (tr.flip ? Math.PI : 0);
+      tr.mesh.position.set((hitch.x + tr.axle.x) / 2 - Math.cos(heading) * tr.centreBack, truck.position.y, (hitch.z + tr.axle.z) / 2 + Math.sin(heading) * tr.centreBack);
+    }
+
+// Hitch a trailer model on behind the vehicle for a drive (the game has no hitched trailers of its own)
+function wsHitchTrailer(v, name = 'A utility trailer') {
+      const truck = vehicleMeshes[v.id];
+      if (!truck || typeof buildItemModel3D !== 'function') return null;
+      const m = buildItemModel3D(name, { label: false });
+      if (m.userData.mini) m.userData.mini.scale.setScalar(1);
+      m.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(m), size = new THREE.Vector3();
+      box.getSize(size);
+      const tb = new THREE.Box3().setFromObject(truck), ts = new THREE.Vector3();
+      tb.getSize(ts);
+      const truckLen = Math.max(ts.x, ts.z);
+      m.userData.isWorkshop = true;
+      scene.add(m);
+      workshopTrip.trailer = { mesh: m, hitchBack: truckLen / 2 + 0.2, len: size.x, centreBack: 0, axle: null, flip: false, size: { x: size.x, y: size.y, z: size.z } };
+      wsTowTrailer(truck);
+      return workshopTrip.trailer;
+    }
+
+function wsUnhitchTrailer() {
+      const tr = workshopTrip.trailer;
+      if (tr && tr.mesh && tr.mesh.parent) tr.mesh.parent.remove(tr.mesh);
+      workshopTrip.trailer = null;
+    }
+
+// The drive-through: in at the hangar door, up the hangar's lane, through door 5 into the north
+// wing, along the forklift aisle, through door 4 into the shop, down the east aisle over the car
+// elevator and out of door 1 onto the lane. (With { trailer: true } the pickup tows its trailer.)
+// window.__wsHold = 'drive' holds at each named point for a picture.
+async function wsDriveThrough(site, v, opts = {}) {
+      const mesh = vehicleMeshes[v.id];
+      if (!mesh) return;
+      const S = WORKSHOP_SITE, H = WORKSHOP_HANGAR;
+      const lane = WORKSHOP_HANGAR_BAYS.find(b => b.key === 'lane');
+      const lx = H.x + lane.x - S.x, doorZ = H.z + H.d / 2 - S.z;
+      const az = WS_WING.aisleZ, wx0 = WS_WING.x - WS_WING.w / 2, sd = WS_WING.doors.shop;
+      const N = Math.PI / 2, E = 0, Sth = -Math.PI / 2;
+      const nm = String(v.name).replace(/^(an?|the)\s+/i, '');
+      if (opts.trailer) wsHitchTrailer(v);
+      const hold = async name => {
+        if (window.__wsHold && /drive/i.test(window.__wsHold)) {
+          window.__wsHeld = `drive ${name}`;
+          const t0 = Date.now();
+          while (window.__wsHold && /drive/i.test(window.__wsHold) && window.__wsHeld === `drive ${name}` && Date.now() - t0 < 600000) await tripPause(50);
+          window.__wsHeld = null;
+        }
+      };
+      const legs = [
+        { mood: `Drive-through: the ${nm} in at the hangar door`, say: 'Big door up. Nice and slow past the build bays.', ms: 5000, name: 'hangar',
+          pts: [{ x: lx, z: doorZ + 1.0, ry: N }, { x: lx, z: az + 2.6, ry: N }] },
+        { mood: `Drive-through: turning the ${nm} into the north wing`, say: 'Door 5. Swing wide so the trailer clears.', ms: 3500, name: 'wing',
+          pts: [{ x: lx + 0.5, z: az + 0.6, ry: N * 0.5 }, { x: wx0 + 1.5, z: az, ry: E }] },
+        { mood: `Drive-through: the ${nm} along the CNC hall aisle`, say: 'Forklift aisle. Haas mills on the left.', ms: 6000, name: 'aisle',
+          pts: [{ x: sd.x - 2.6, z: az, ry: E }] },
+        { mood: `Drive-through: the ${nm} through door 4 into the shop`, say: 'Into the shop and over the car elevator.', ms: 6500, name: 'shop',
+          pts: [{ x: sd.x - 0.6, z: az + 1.2, ry: -N * 0.5 }, { x: sd.x, z: -S.d / 2 + 1.5, ry: Sth }, { x: sd.x, z: WS_LIFT.z, ry: Sth }] },
+        { mood: `Drive-through: the ${nm} out of door 1`, say: 'Out onto the lane. Straight through, no reversing.', ms: 5500, name: 'out',
+          pts: [{ x: WS_DOORS.vehicle.x, z: S.d / 2 + 1.5, ry: Sth }, { x: WS_DOORS.vehicle.x, z: S.d / 2 + 4.2 + (opts.trailer ? 6.5 : 0), ry: Sth }] }
+      ];
+      wsUpdateLift(0);
+      for (const leg of legs) {
+        tripMood(leg.mood, leg.say);
+        await wsDriveAlong(site, v, leg.pts, leg.ms);
+        await hold(leg.name);
+      }
+      wsUnhitchTrailer();
+      const end = legs[legs.length - 1].pts.slice(-1)[0];
+      v.x = S.x + end.x; v.z = S.z + end.z; v.rotY = end.ry;
+      workshopTrip.vehicleHome = { x: v.x, z: v.z, rotY: v.rotY };
+      const out = typeof boardingSpot === 'function' ? boardingSpot(v) : { x: v.x - 2, z: v.z };
+      workshopTrip.vehicleOut = out;
+      indoorTrip.pose = null;
+      indoorTrip.pos = { x: out.x, y: getIslandGroundHeight(out.x, out.z), z: out.z };
+      if (typeof gainSkill === 'function') gainSkill('ws-drivethrough', 'Driving through the Workshop', 1);
     }
 
 // While a vehicle is inside, its pose is kept here: if anything re-places the parked vehicles

@@ -11,8 +11,15 @@
 //     needed and set it down. It can ride the car elevator between floors like any vehicle.
 
 const FORKLIFT_RE = /fork ?lift|lift truck/i;
-const FORKLIFT_CHARGER = { x: 44.55, z: -20.6, park: { x: 42.4, z: -20.6 } };
-const PALLET_RACK = { x: 29.5, z: -21.1, w: 8.0 };
+// The charger and the pallet racking stand in the Workshop's north wing (WS_WING.spots, js/workshopbuilding.js)
+const FORKLIFT_CHARGER = (() => {
+  const S = WORKSHOP_SITE, c = WS_WING.spots.charger;
+  return { x: S.x + c.x, z: S.z + c.z, park: { x: S.x + c.park.x, z: S.z + c.park.z }, flip: c.park.x > c.x };
+})();
+const PALLET_RACK = (() => {
+  const S = WORKSHOP_SITE, r = WS_WING.spots.rack;
+  return { x: S.x + r.x, z: S.z + r.z, w: r.w };
+})();
 const PALLET_GOODS = ['glass batch', 'maple lumber', 'aluminium sheet stock', 'a truck engine', 'machine parts'];
 
 // --- The model -------------------------------------------------------------------------------------
@@ -120,6 +127,10 @@ function buildForkliftCharger3D() {
       const g = forkliftChargerGroup = new THREE.Group();
       const C = FORKLIFT_CHARGER, y = (typeof WORKSHOP_PAD_Y !== 'undefined' ? WORKSHOP_PAD_Y : 0) + 0.12;
       g.position.set(C.x, y, C.z);
+      g.userData.isWorkshop = true;
+      // (it stands against a west wall, facing east, when its parking box is east of it)
+      if (C.flip) g.rotation.y = Math.PI;
+      const sgn = C.flip ? -1 : 1;
       mmBox(g, 0.25, 0.8, 0.55, 'navy', 0, 1.0, 0);
       const bar = mmBox(g, 0.02, 0.5, 0.08, mmGlow('window'), -0.13, 1.15, 0.15);
       bar.material.emissive.setHex(0x22c55e);
@@ -127,20 +138,22 @@ function buildForkliftCharger3D() {
       const cable = mmRod(g, [-0.13, 1.0, -0.1], [-0.4, 0.3, -0.1], 0.02, 'black');
       const plug = mmBox(g, 0.12, 0.1, 0.16, 'red', -0.42, 0.25, -0.1);
       // Parking box on the floor
-      const P = { x: C.park.x - C.x, z: C.park.z - C.z };
+      const P = { x: sgn * (C.park.x - C.x), z: sgn * (C.park.z - C.z) };
       [[0, -1.0, 2.6, 0.08], [0, 1.0, 2.6, 0.08], [-1.3, 0, 0.08, 2.0], [1.3, 0, 0.08, 2.0]].forEach(([dx, dz, w, d]) => mmBox(g, w, 0.01, d, 'stripe', P.x + dx, 0.006, P.z + dz));
       mmLabel(g, 'FORKLIFT CHARGING', 1.6, 0.3, P.x, 0.02, P.z + 0.6, { bg: '#b9bab5', fg: '#1d4ed8' }).rotation.x = -Math.PI / 2;
       g.userData = { bar, cable, plug };
       // Pallet racking along the hangar's back wall, two levels of pallets
       const r = PALLET_RACK;
-      const rack = mmGroup(g, r.x - C.x, 0, r.z - C.z);
-      for (let i = 0; i <= 4; i++) mmBox(rack, 0.1, 3.4, 1.1, 'blue', -r.w / 2 + i * r.w / 4, 0, 0);
+      const rack = mmGroup(g, sgn * (r.x - C.x), 0, sgn * (r.z - C.z));
+      rack.rotation.y = C.flip ? Math.PI : 0;
       [0.15, 1.6].forEach(yy => mmBox(rack, r.w, 0.12, 1.1, 'orange', 0, yy, 0));
-      PALLET_GOODS.forEach((what, i) => { if (i < 4) { const p = palletModel(what); p.scale.setScalar(1.3); p.position.set(-r.w / 2 + 1.0 + i * 2.0, 1.72, 0); rack.add(p); } });
+      const bays = Math.max(1, Math.floor(r.w / 2.0));
+      for (let i = 0; i <= bays; i++) mmBox(rack, 0.1, 3.4, 1.1, 'blue', -r.w / 2 + i * r.w / bays, 0, 0);
+      PALLET_GOODS.forEach((what, i) => { if (i < bays) { const p = palletModel(what); p.scale.setScalar(1.3); p.position.set(-r.w / 2 + r.w / bays * (i + 0.5), 1.72, 0); rack.add(p); } });
       mmLabel(rack, 'PALLET RACKING', 1.4, 0.25, 0, 3.0, 0.56, { bg: '#ea580c', fg: '#fff' });
       g.userData.rack = rack;
       scene.add(g);
-      worldObstacles.push({ x: r.x - 2, z: r.z, r: 0.9 }, { x: r.x + 2, z: r.z, r: 0.9 }, { x: C.x, z: C.z, r: 0.4 });
+      worldObstacles.push({ x: r.x - r.w / 4, z: r.z, r: 0.9, workshop: true }, { x: r.x + r.w / 4, z: r.z, r: 0.9, workshop: true }, { x: C.x, z: C.z, r: 0.4, workshop: true });
       setInterval(forkliftChargeTick, 5000);
     }
 

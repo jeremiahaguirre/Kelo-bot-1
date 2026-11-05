@@ -764,11 +764,12 @@ window.addEventListener('DOMContentLoaded', () => {
     const w = windNow();
     windShown = { s: w.strength, angle: w.angle };
     let last = performance.now();
-    (function frame(now) {
-      const dt = Math.min(0.1, (now - last) / 1000);
+    const frame = now => {
+      const dt = Math.max(0, Math.min(0.1, (now - last) / 1000));
       last = now;
       updateWindLook(now / 1000, dt);
-      requestAnimationFrame(frame);
-    })(last);
+    };
+    if (typeof keloEveryFrame === 'function') keloEveryFrame(frame);
+    else (function loop(now) { frame(now); requestAnimationFrame(loop); })(last);
   }, 400);
 });

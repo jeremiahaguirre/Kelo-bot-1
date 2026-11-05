@@ -1050,7 +1050,6 @@ function takeoffRunFor(v) {
 
 // Spin the propeller whenever he's riding his airplane
 function assemblyFrame() {
-      requestAnimationFrame(assemblyFrame);
       if (!state.riding || typeof vehicleMeshes === 'undefined') return;
       const m = vehicleMeshes[state.riding];
       if (m && m.userData.prop) m.userData.prop.rotation.x += 0.9;
@@ -1192,7 +1191,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!Array.isArray(state.buildProjects)) state.buildProjects = [];
     state.buildProjects.forEach(p => { if (p.bom && p.status !== 'abandoned') { p.partial = null; placeAssemblyMesh(p); } });
     renderBuildProjectsList();
-    requestAnimationFrame(assemblyFrame);
+    if (typeof keloEveryFrame === 'function') keloEveryFrame(assemblyFrame);
+    else (function loop() { assemblyFrame(); requestAnimationFrame(loop); })();
     // Once a sub-assembly's parts and tools are all here, he gets building (and keeps his lists going)
     setInterval(() => {
       renderBuildProjectsList();

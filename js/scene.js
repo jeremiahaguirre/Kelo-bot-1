@@ -1577,6 +1577,20 @@ function pushOutOfObstacles(pos, target) {
       }
     }
 
+// Per-frame updates from other files (wind, weather, snow, plant care, perf checks...). They run in
+// order inside this one loop just before the frame is drawn, instead of each on its own
+// requestAnimationFrame after it (which drew them a frame late). A hook that throws is reported once.
+const keloFrameHooks = [];
+function keloEveryFrame(fn) {
+      if (typeof fn === 'function') keloFrameHooks.push({ fn, failed: false });
+    }
+
+function runKeloFrameHooks(now) {
+      for (const h of keloFrameHooks) {
+        try { h.fn(now); } catch (e) { if (!h.failed) { h.failed = true; console.warn('A per-frame update failed:', e); } }
+      }
+    }
+
 function animateDiorama() {
       requestAnimationFrame(animateDiorama);
       const t = clock.getElapsedTime();
@@ -1937,6 +1951,7 @@ function animateDiorama() {
 
       controls.update();
       // Sky, haze, shadows and water follow the camera; then draw (with post-processing on High)
+      runKeloFrameHooks(performance.now());
       if (typeof updateRealism === 'function') updateRealism(t, dt);
       if (typeof renderWorld === 'function') renderWorld();
       else renderer.render(scene, camera);

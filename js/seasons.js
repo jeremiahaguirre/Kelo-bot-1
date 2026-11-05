@@ -218,10 +218,9 @@ window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     buildSnowfall();
     applySeasonLook();
-    (function frame(t) {
-      updateSnowfall(t / 1000);
-      requestAnimationFrame(frame);
-    })(0);
+    const frame = now => updateSnowfall(now / 1000);
+    if (typeof keloEveryFrame === 'function') keloEveryFrame(frame);
+    else (function loop(now) { frame(now); requestAnimationFrame(loop); })(performance.now());
     setInterval(() => {
       if (currentSeason() !== seasonApplied) applySeasonLook();
       checkSnowStuck();

@@ -203,7 +203,6 @@ function perfAutoStepDown() {
 let perfTickCount = 0;
 
 function perfLoop(now) {
-      requestAnimationFrame(perfLoop);
       if (typeof camera === 'undefined' || !camera || typeof scene === 'undefined' || !scene) return;
       perfBuildingsWork();
       perfTickCount++;
@@ -440,5 +439,9 @@ window.addEventListener('DOMContentLoaded', () => {
     sel.addEventListener('change', () => setPerfLevel(sel.value));
   }
   // After scene.js has made the renderer (its own DOMContentLoaded handler runs first)
-  setTimeout(() => { perfChanged(); requestAnimationFrame(perfLoop); }, 0);
+  setTimeout(() => {
+    perfChanged();
+    if (typeof keloEveryFrame === 'function') keloEveryFrame(perfLoop);
+    else (function loop(now) { perfLoop(now); requestAnimationFrame(loop); })(performance.now());
+  }, 0);
 });

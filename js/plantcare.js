@@ -1120,12 +1120,13 @@ window.addEventListener('DOMContentLoaded', () => {
     pcDressBeds();
     refreshPlantLooks();
     let last = performance.now();
-    (function plantCareFrame(now) {
-      const real = Math.min(0.5, (now - last) / 1000);
+    const plantCareFrame = now => {
+      const real = Math.max(0, Math.min(0.5, (now - last) / 1000));
       last = now;
       pcFrame(Math.min(0.1, real), real);
-      requestAnimationFrame(plantCareFrame);
-    })(last);
+    };
+    if (typeof keloEveryFrame === 'function') keloEveryFrame(plantCareFrame);
+    else (function loop(now) { plantCareFrame(now); requestAnimationFrame(loop); })(last);
     setInterval(() => { pcSyncAll(); refreshPlantLooks(); }, 3000);
   }, 500);
 });

@@ -640,12 +640,13 @@ window.addEventListener('DOMContentLoaded', () => {
     buildIceSheet();
     applyIceLook();
     let last = performance.now();
-    (function weatherFrame(now) {
-      const dt = Math.min(0.1, (now - last) / 1000);
+    const weatherFrame = now => {
+      const dt = Math.max(0, Math.min(0.1, (now - last) / 1000));
       last = now;
       updateWeatherLook(now / 1000, dt);
-      requestAnimationFrame(weatherFrame);
-    })(last);
+    };
+    if (typeof keloEveryFrame === 'function') keloEveryFrame(weatherFrame);
+    else (function loop(now) { weatherFrame(now); requestAnimationFrame(loop); })(last);
     setInterval(() => {
       applyIceLook();
       rainWatersPlants(4000);

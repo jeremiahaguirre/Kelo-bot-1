@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-04T19:53:23.679Z",
-  "runs": 4,
+  "updatedAt": "2026-11-05T07:00:05.211Z",
+  "runs": 5,
   "curiosities": [
-    "Atsugi"
+    "Ayase, Kanagawa"
   ],
   "entries": [
     {
@@ -142,6 +142,43 @@
         "text": "I remember a quiet night dreaming about Boerdijk–Coxeter helix. The Boerdijk–Coxeter helix, named after H. That night changed how I see the island.",
         "emoji": "🌙"
       }
+    },
+    {
+      "id": "dream-1793862005211",
+      "at": 1793862005211,
+      "brain": "procedural",
+      "topic": "Atsugi",
+      "title": "Dreaming of Chōsen gakkō",
+      "text": "Dear Diary, while nobody was around I looked up \"Atsugi\" and drifted from Atsugi to Arakawa, Tokyo to Chōsen gakkō. Chōsen gakkō  are North Korean schools in Japan. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Atsugi",
+          "url": "https://en.wikipedia.org/wiki/Atsugi",
+          "extract": "Atsugi  is a city in Kanagawa Prefecture, Japan. As of 1 June 2021, the city had an estimated population of 223,960 and a population density of 2400 persons per km2. The total area of the city is 93.83 square kilometres (36.23 sq mi). \nWhile the name \"Atsugi\" is often associated "
+        },
+        {
+          "title": "Arakawa, Tokyo",
+          "url": "https://en.wikipedia.org/wiki/Arakawa%2C_Tokyo",
+          "extract": "Arakawa  is a special ward in the Tokyo Metropolis in Japan. The ward takes its name from the Arakawa River, though the river does not run through or touch the ward. The ward borders the Sumida River, which was once the lower section of the Arakawa River. Neighboring wards are Ad"
+        },
+        {
+          "title": "Chōsen gakkō",
+          "url": "https://en.wikipedia.org/wiki/Ch%C5%8Dsen_gakk%C5%8D",
+          "extract": "Chōsen gakkō  are North Korean schools in Japan. \"Chōsen\" means Korean and \"gakkō\" means school. They are affiliated with the Chongryon (the General Association of Korean Residents in Japan) which has strong ties to North Korea. Sometimes Chōsen gakkō schools are referred to as C"
+        }
+      ],
+      "concept": {
+        "name": "Atsugi Gakk Theory",
+        "emoji": "🌀",
+        "definition": "The idea that atsugi and chōsen gakkō share a hidden pattern.",
+        "builtFrom": [
+          "Atsugi",
+          "Chōsen gakkō"
+        ]
+      },
+      "shapeFrom": "Chōsen gakkō",
+      "nextCuriosity": "Ayase, Kanagawa",
+      "coreMemory": null
     }
   ]
 }

@@ -962,7 +962,8 @@ function svUpdateHud() {
       if (!el || !keloGroup) return;
       const p = keloGroup.position, a = svAreaAt(p.x, p.z, p.y + 0.3);
       const doing = state.isSleeping ? 'Sleeping' : plainItemSv(state.moodTitle || 'Busy');
-      const txt = a ? `Kelo-1 is in ${a.label}: ${doing}` : `Kelo-1 is at ${typeof currentPlaceLabel === 'function' ? currentPlaceLabel() : 'the valley'}: ${doing}`;
+      const sc = typeof stripCoords === 'function' ? stripCoords : x => x;   // (no raw map coordinates)
+      const txt = sc(a ? `Kelo-1 is in ${a.label}: ${doing}` : `Kelo-1 is at ${typeof currentPlaceLabel === 'function' ? currentPlaceLabel() : 'the valley'}: ${doing}`);
       if (el.textContent !== txt) el.textContent = txt;
       const btn = document.querySelector('#svHud [data-sv="find"]');
       if (btn) {

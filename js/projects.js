@@ -61,7 +61,10 @@ function activeProject() {
 // stands in for any lumber that is still missing (he rips the logs into rough boards).
 function allocateMaterials(plan) {
       // Only things meant for building count (no food or toys: js/itemuse.js); logs can stand in for lumber
-      const pool = ownedItemNames().filter(n => FIREWOOD_RE.test(n) || typeof usableFor !== 'function' || usableFor(n, 'build'));
+      // Anything the plan itself asks for counts too (a coil of rope is for climbing and tying, but the
+      // treehouse plan needs exactly that), as long as it is the same kind of thing as what was asked for
+      const asked = n => typeof itemKindOf === 'function' && plan.materials.some(m => m.re.test(n) && itemKindOf(n) && itemKindOf(m.ask) && itemKindOf(n).kind === itemKindOf(m.ask).kind);
+      const pool = ownedItemNames().filter(n => FIREWOOD_RE.test(n) || typeof usableFor !== 'function' || usableFor(n, 'build') || asked(n));
       const take = re => {
         const i = pool.findIndex(n => re.test(n) && !FIREWOOD_RE.test(n));
         return i >= 0 ? pool.splice(i, 1)[0] : null;
@@ -663,6 +666,34 @@ function firewoodModel() {
       return realSize(g);
     }
 
+// A project still waiting for things is not forgotten: every 20 minutes he checks what is missing, asks
+// again for anything that has no open request (a request can be answered, trimmed or lost), and now and
+// then says out loud what he is waiting for so it stays on his mind and in his diary.
+function projectNudge(p, plan) {
+      const now = Date.now();
+      if (now - (p.nudgedAt || p.startedAt || 0) < 20 * 60 * 1000) return;
+      p.nudgedAt = now;
+      const miss = missingFor(plan);
+      const wants = [...miss.materials.map(m => m.ask), ...miss.tools.map(t => BUILD_TOOLS[t].ask)];
+      if (!wants.length) return;
+      const before = state.requestsToUser.length;
+      requestMissing(plan);
+      const asked = state.requestsToUser.length > before;
+      if (!asked && now - (p.remindedAt || 0) < 2 * 60 * 60 * 1000) return;
+      p.remindedAt = now;
+      const list = wants.map(w => w.replace(/^(an?|some|the)\s+/i, '').toLowerCase()).slice(0, 4).join(', ');
+      if (!(state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping)) {
+        state.speechBubble = `I haven't forgotten my ${plan.name.toLowerCase()}. I'm still waiting for ${list}.`;
+        renderAllUI();
+      }
+      state.diaryEntries.unshift({
+        time: 'Still Planning', location: currentPlaceLabel(), mood: `${plan.emoji} Waiting to build a ${plan.name.toLowerCase()}`,
+        vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
+        text: `Dear Diary, my ${plan.name.toLowerCase()} is still on my mind. I'm waiting for ${list}.${asked ? ' I asked for it again in case my letter got lost.' : ''}`
+      });
+      savePersistentBrainState();
+    }
+
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     state.projects.filter(p => p.status === 'built').forEach(placeProjectMesh);
@@ -672,6 +703,7 @@ window.addEventListener('DOMContentLoaded', () => {
       renderProjectsList();
       const p = activeProject();
       const plan = p && planFor(p.key);
+      if (plan) projectNudge(p, plan);
       // doWhenFree gives up after about 3 minutes, so an older entry is queued again
       if (plan && Date.now() - (buildsQueued.get(p.id) || 0) > 240000) {
         const miss = missingFor(plan);

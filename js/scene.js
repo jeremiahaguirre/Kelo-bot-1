@@ -309,7 +309,10 @@ function buildAlpineTerrainAndMountains3D() {
         const tz = -11 - Math.random() * 24;
         if (Math.hypot(tx - (-15.5), tz - (-26.5)) < 4.0) continue; // Keep gold vein clear
         if (typeof DISPOSAL_PIT !== 'undefined' && Math.hypot(tx - DISPOSAL_PIT.x, tz - DISPOSAL_PIT.z) < DISPOSAL_PIT.r + 1.5) continue; // Keep the pit clear
-        const ty = getAnalyticalGroundHeight(tx, tz);
+        // Not on a near-vertical face (the cliffs and the Workshop's cut behind town) and not on the
+        // Workshop's or hangar's levelled land and its cut slopes, where a tree would hang in the air
+        if (groundTooSteep(tx, tz) || (typeof inWorkshopSite === 'function' && inWorkshopSite(tx, tz, 9))) continue;
+        const ty = groundUnderTrunk(tx, tz);
         if (ty > 9.5) continue;
         let tree;
         if (typeof buildNaturalFir === 'function') {
@@ -802,11 +805,24 @@ function roundCartoonTree(trunkMat, leafColor) {
       return tree;
     }
 
+// Is the ground here steeper than `limit` (rise over run)? Trees and rocks never stand on a cliff face.
+function groundTooSteep(x, z, limit = 0.85, e = 0.8) {
+      const h = getAnalyticalGroundHeight;
+      return Math.max(Math.abs(h(x + e, z) - h(x - e, z)), Math.abs(h(x, z + e) - h(x, z - e))) / (2 * e) > limit;
+    }
+
+// The lowest ground under a trunk, so it never hangs over the downhill side of a slope
+function groundUnderTrunk(x, z, r = 0.3) {
+      const h = getAnalyticalGroundHeight;
+      return Math.min(h(x, z), h(x + r, z), h(x - r, z), h(x, z + r), h(x, z - r));
+    }
+
 // Deciduous trees, flowers and boulders around the valley (kept off paths and buildings)
 function buildValleyScenery3D() {
       const leafColors = [0x4cc93b, 0x7ad94a, 0x36b37e, 0xf2a93b];
       const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8a5a2b, roughness: 0.9 });
-      const clearOf = (x, z, r) => !worldObstacles.some(o => Math.hypot(x - o.x, z - o.z) < o.r + r)
+      // (boxes use the circle their building had before (placeR / legacy), so every seeded tree keeps its spot and id)
+      const clearOf = (x, z, r) => !worldObstacles.some(o => o.legacy ? o.legacy.some(c => Math.hypot(x - c.x, z - c.z) < c.r + r) : Math.hypot(x - o.x, z - o.z) < (o.placeR ?? o.r) + r)
         && !Object.values(TOWN_LOCATIONS).some(l => Math.hypot(x - l.x, z - l.z) < r + 2.2)
         && !(typeof inParkingArea === 'function' && inParkingArea(x, z, r))
         && Math.abs(x + 2) > 3 && z < 7.5;
@@ -817,7 +833,7 @@ function buildValleyScenery3D() {
         const x = Math.round((treeRng() - 0.5) * 64 * 10) / 10;
         const z = Math.round((-11 + treeRng() * 18) * 10) / 10;
         if (!clearOf(x, z, 1.4) || Math.hypot(x + 9.5, z + 7.8) < 5) continue;
-        const gy = getAnalyticalGroundHeight(x, z);
+        const gy = groundUnderTrunk(x, z);
         // Its shape has its own seed, so the placement sequence (and every tree's id) stays the same
         const tree = typeof buildNaturalLeafyTree === 'function' ? buildNaturalLeafyTree(makeRng('kelo1-tree-shape-' + placed), placed) : roundCartoonTree(trunkMat, leafColors[placed % leafColors.length]);
         tree.position.set(x, gy, z);
@@ -837,7 +853,7 @@ function buildValleyScenery3D() {
         const z = Math.round((-11 + outerRng() * 18) * 10) / 10;
         if (!clearOf(x, z, 1.4)) continue;
         const tree = typeof buildNaturalLeafyTree === 'function' ? buildNaturalLeafyTree(makeRng('kelo1-outer-tree-shape-' + outer), outer + 3) : roundCartoonTree(trunkMat, leafColors[outer % leafColors.length]);
-        tree.position.set(x, getAnalyticalGroundHeight(x, z), z);
+        tree.position.set(x, groundUnderTrunk(x, z), z);
         tree.rotation.y = outerRng() * Math.PI;
         scene.add(tree);
         const obstacle = { x, z, r: 0.75 };
@@ -867,7 +883,7 @@ function buildValleyScenery3D() {
       for (let i = 0; i < 14; i++) {
         const x = (Math.random() - 0.5) * 60;
         const z = -10 + Math.random() * 17;
-        if (!clearOf(x, z, 1.0)) continue;
+        if (!clearOf(x, z, 1.0) || groundTooSteep(x, z)) continue;
         const rockGeo = new THREE.DodecahedronGeometry(0.4 + Math.random() * 0.4, 1);
         const rock = new THREE.Mesh(typeof roughenGeometry === 'function' ? roughenGeometry(rockGeo, 0.18, i + 3) : rockGeo, rockMat);
         rock.scale.y = 0.6;
@@ -1026,7 +1042,8 @@ function buildCafe3D() {
       // Stucco walls, a steel roof and a wooden door (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(cafe, [[walls.material, 'plaster', 2], [roof.material, 'metalroof', 2], [door.material, 'paintedwood']]);
       scene.add(cafe);
-      worldObstacles.push({ x: cx, z: cz, r: 2.3 }, { x: cx - 1.3, z: cz + 2.5, r: 0.6 });
+      // Solid walls (3.8 x 2.8); he stands at the counter door out front. The patio table is a circle.
+      addObstacle(obstacleBox(cx, cz, 1.95, 1.45, { placeR: 2.3, building: 'cafe', door: { x: TOWN_LOCATIONS.cafe.x, z: TOWN_LOCATIONS.cafe.z } }), { x: cx - 1.3, z: cz + 2.5, r: 0.6 });
     }
 
 function buildNetNode3D() {
@@ -1061,7 +1078,8 @@ function buildNetNode3D() {
       // Modern metal wall panels (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(net, [[body.material, 'cladding', 2.5]]);
       scene.add(net);
-      worldObstacles.push({ x: cx, z: cz, r: 2.5 });
+      // Its walls (4.2 x 3.0): he walks up to the glass front, never through a corner
+      addObstacle(obstacleBox(cx, cz, 2.12, 1.52, { placeR: 2.5, building: 'cyber', door: { x: TOWN_LOCATIONS.cyber.x, z: TOWN_LOCATIONS.cyber.z } }));
     }
 
 // The Okanagan Post Office, where mail for Kelo-1 waits and his letters go out
@@ -1120,7 +1138,8 @@ function buildPostOffice3D() {
       // Real brick, slate shingles and painted trim (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(po, [[brick, 'brick', 1.2], [slate, 'shingles', 1.4], [trim, 'paintedwood']]);
       scene.add(po);
-      worldObstacles.push({ x: cx, z: cz, r: 2.5 }, { x: cx - 1.9, z: cz + 2.1, r: 0.4 });
+      // Brick walls (4.2 x 3.2); the red street mailbox out front is a circle
+      addObstacle(obstacleBox(cx, cz, 2.12, 1.62, { placeR: 2.5, building: 'post_office', door: { x: TOWN_LOCATIONS.post_office.x, z: TOWN_LOCATIONS.post_office.z } }), { x: cx - 1.9, z: cz + 2.1, r: 0.4 });
     }
 
 // Kelo-1's body and rig are built by buildKelo1Character3D() in js/kelo-body.js
@@ -1429,16 +1448,153 @@ function createPOILabelsDOM() {
     }
 
 // --- Walking around obstacles ----------------------------------------------------
+// worldObstacles holds two shapes:
+//   circles {x, z, r}                          trees, posts, small things
+//   boxes   {x, z, hw, hd, rot?, door?, r}     building footprints and wall segments: a solid
+//           rectangle hw across its own x and hd along its own z (half sizes), turned by rot about y
+//           like a THREE rotation.y. `door` {x, z} is the spot outside where he stands when he walks
+//           "to" the building. A box also carries r (its bounding circle), so code that only knows
+//           circles stays on the safe side. Make boxes with obstacleBox() / obstacleWall().
+// He never walks into a box: a walk target inside one is moved to its door, or to its edge on the
+// side he comes from (walkGoalFor). Interior trips (js/basements.js, the Workshop) walk on their own.
 const KELO_RADIUS = 0.55;
+let obstacleVersion = 0;
 
-// Obstacles that contain the target (e.g. he is walking up to a building) don't block the approach
+function obstacleBox(x, z, hw, hd, extra = {}) {
+      return { x, z, hw, hd, rot: 0, r: Math.hypot(hw, hd), ...extra };
+    }
+
+// A straight, axis-aligned wall from (ax, az) to (bx, bz), `t` thick, left open over each gap
+// [from, to] (distances along the wall from a): a list of boxes
+function obstacleWall(ax, az, bx, bz, t = 0.5, gaps = [], extra = {}) {
+      const len = Math.hypot(bx - ax, bz - az);
+      if (len < 1e-6) return [];
+      const ux = (bx - ax) / len, uz = (bz - az) / len;
+      const cuts = gaps.map(([g0, g1]) => [Math.max(0, Math.min(g0, g1)), Math.min(len, Math.max(g0, g1))]).filter(([g0, g1]) => g1 > g0).sort((p, q) => p[0] - q[0]);
+      const out = [];
+      let at = 0;
+      const piece = (s0, s1) => {
+        if (s1 - s0 < 0.05) return;
+        const m = (s0 + s1) / 2, cx = ax + ux * m, cz = az + uz * m;
+        const alongX = Math.abs(ux) >= Math.abs(uz);
+        out.push(obstacleBox(cx, cz, alongX ? (s1 - s0) / 2 + t / 2 : t / 2, alongX ? t / 2 : (s1 - s0) / 2 + t / 2, extra));
+      };
+      cuts.forEach(([g0, g1]) => { piece(at, g0); at = Math.max(at, g1); });
+      piece(at, len);
+      return out;
+    }
+
+// Adding or removing obstacles through these bumps the version, so paths are planned again at once
+// (direct pushes and filters are noticed too: see obstacleSignature)
+function addObstacle(...list) {
+      list.flat().forEach(o => { if (o) worldObstacles.push(o); });
+      obstacleVersion++;
+      return list[0];
+    }
+
+function removeObstacle(o) {
+      const n = worldObstacles.length;
+      worldObstacles = worldObstacles.filter(x => x !== o);
+      if (worldObstacles.length !== n) obstacleVersion++;
+    }
+
+// Changes whenever an obstacle is added, removed or moved, whoever did it
+function obstacleSignature() {
+      let sum = 0;
+      for (const o of worldObstacles) sum += o.x * 3.1 + o.z * 7.3 + (o.r || 0) * 1.7 + (o.hw || 0) * 0.37;
+      return `${obstacleVersion}|${worldObstacles.length}|${sum.toFixed(3)}`;
+    }
+
+// How far a point is from an obstacle's edge (negative inside) and the outward direction there
+const obstacleProbeOut = { d: 0, nx: 1, nz: 0 };
+function obstacleProbe(o, x, z) {
+      const P = obstacleProbeOut;
+      if (o.hw === undefined) {
+        const dx = x - o.x, dz = z - o.z, d = Math.hypot(dx, dz);
+        P.d = d - o.r;
+        P.nx = d > 1e-9 ? dx / d : 1;
+        P.nz = d > 1e-9 ? dz / d : 0;
+        return P;
+      }
+      const c = o.rot ? Math.cos(o.rot) : 1, s = o.rot ? Math.sin(o.rot) : 0;
+      const wx = x - o.x, wz = z - o.z;
+      const lx = wx * c - wz * s, lz = wx * s + wz * c;
+      const qx = Math.abs(lx) - o.hw, qz = Math.abs(lz) - o.hd;
+      let nlx, nlz;
+      if (qx > 0 || qz > 0) {
+        const ox = Math.max(qx, 0), oz = Math.max(qz, 0), l = Math.hypot(ox, oz);
+        P.d = l;
+        nlx = ox / l * (lx < 0 ? -1 : 1);
+        nlz = oz / l * (lz < 0 ? -1 : 1);
+      } else if (qx > qz) { P.d = qx; nlx = lx < 0 ? -1 : 1; nlz = 0; }
+      else { P.d = qz; nlx = 0; nlz = lz < 0 ? -1 : 1; }
+      P.nx = nlx * c + nlz * s;
+      P.nz = -nlx * s + nlz * c;
+      return P;
+    }
+
+// Is (x, z) at least `pad` clear of every obstacle (boxes and circles alike)?
+function obstacleClearAt(x, z, pad = 0) {
+      for (const o of worldObstacles) if (obstacleProbe(o, x, z).d < pad) return false;
+      return true;
+    }
+
+// Circles that contain the target (a tree he is chopping, a post he walks up to) don't block the
+// approach. Boxes never do: a target inside one is moved out first (walkGoalFor).
 function obstacleHoldsTarget(o, target) {
+      if (o.hw !== undefined) return false;
       return Math.hypot(target.x - o.x, target.z - o.z) < o.r + KELO_RADIUS;
+    }
+
+// Where he really walks to for this target: the target itself, or (when it lies inside a building
+// box) the building's door or the edge of the box on the side he comes from
+let walkGoalCache = { key: '', goal: null };
+function walkGoalFor(target, from = state.botPos) {
+      const key = `${target.x.toFixed(2)},${target.z.toFixed(2)}|${obstacleSignature()}`;
+      if (walkGoalCache.key === key && walkGoalCache.goal) return walkGoalCache.goal;
+      let goal = { x: target.x, z: target.z };
+      const box = worldObstacles.find(o => o.hw !== undefined && obstacleProbe(o, target.x, target.z).d < KELO_RADIUS);
+      if (box) goal = boxEdgeSpot(box, target, from || target);
+      walkGoalCache = { key, goal };
+      return goal;
+    }
+
+function boxEdgeSpot(o, target, from) {
+      const free = p => !pointBlocked(p.x, p.z, p);
+      if (o.door && free(o.door)) return { x: o.door.x, z: o.door.z };
+      // Out along the line from the target back toward where he is
+      const pad = KELO_RADIUS + 0.12;
+      let dx = from.x - target.x, dz = from.z - target.z;
+      if (Math.hypot(dx, dz) < 0.05) { const P = obstacleProbe(o, target.x, target.z); dx = P.nx; dz = P.nz; }
+      const l = Math.hypot(dx, dz) || 1;
+      dx /= l; dz /= l;
+      let edge = null;
+      for (let s = 0; s < 60; s += 0.1) {
+        const x = target.x + dx * s, z = target.z + dz * s;
+        if (obstacleProbe(o, x, z).d >= pad) { edge = { x, z }; break; }
+      }
+      if (!edge) edge = { x: target.x + dx * 60, z: target.z + dz * 60 };
+      if (free(edge)) return edge;
+      // Something else stands there: the nearest free spot around it
+      for (let rad = 0.3; rad <= 8; rad += 0.3) {
+        let best = null, bestD = Infinity;
+        for (let k = 0; k < 24; k++) {
+          const a = k / 24 * Math.PI * 2, p = { x: edge.x + Math.cos(a) * rad, z: edge.z + Math.sin(a) * rad };
+          if (!free(p)) continue;
+          const d = Math.hypot(p.x - target.x, p.z - target.z);
+          if (d < bestD) { bestD = d; best = p; }
+        }
+        if (best) return best;
+      }
+      return edge;
     }
 
 // He has arrived when he is next to the target, or as close as a solid object allows
 function arrivalRadius(target) {
       let r = 0.16;
+      const goal = walkGoalFor(target);
+      const off = Math.hypot(goal.x - target.x, goal.z - target.z);
+      if (off > 0.01) r = off + 0.16;
       for (const o of worldObstacles) {
         if (obstacleHoldsTarget(o, target)) {
           r = Math.max(r, o.r + KELO_RADIUS + 0.1 - Math.hypot(target.x - o.x, target.z - o.z));
@@ -1454,11 +1610,12 @@ const PATH_COLS = Math.ceil((PATH_MAX_X - PATH_MIN_X) / PATH_CELL);
 const PATH_ROWS = Math.ceil((PATH_MAX_Z - PATH_MIN_Z) / PATH_CELL);
 let currentPath = [];
 let currentPathKey = '';
+let currentPathPartial = false;   // no way all the way there: the path ends as close as he can get
 
 function pointBlocked(x, z, target) {
       for (const o of worldObstacles) {
         if (obstacleHoldsTarget(o, target)) continue;
-        if (Math.hypot(x - o.x, z - o.z) < o.r + KELO_RADIUS) return true;
+        if (obstacleProbe(o, x, z).d < KELO_RADIUS) return true;
       }
       return false;
     }
@@ -1472,60 +1629,105 @@ function segmentClear(ax, az, bx, bz, target) {
       return true;
     }
 
+// Which grid cells he can't stand in (each obstacle marks only the cells under it)
+function pathBlockedGrid(to) {
+      const blocked = new Uint8Array(PATH_COLS * PATH_ROWS);
+      for (const o of worldObstacles) {
+        if (obstacleHoldsTarget(o, to)) continue;
+        const reach = (o.r || 0) + KELO_RADIUS + PATH_CELL;
+        const c0 = Math.max(0, Math.floor((o.x - reach - PATH_MIN_X) / PATH_CELL)), c1 = Math.min(PATH_COLS - 1, Math.floor((o.x + reach - PATH_MIN_X) / PATH_CELL));
+        const r0 = Math.max(0, Math.floor((o.z - reach - PATH_MIN_Z) / PATH_CELL)), r1 = Math.min(PATH_ROWS - 1, Math.floor((o.z + reach - PATH_MIN_Z) / PATH_CELL));
+        for (let r = r0; r <= r1; r++) {
+          const z = PATH_MIN_Z + (r + 0.5) * PATH_CELL;
+          for (let c = c0; c <= c1; c++) {
+            const i = r * PATH_COLS + c;
+            if (!blocked[i] && obstacleProbe(o, PATH_MIN_X + (c + 0.5) * PATH_CELL, z).d < KELO_RADIUS) blocked[i] = 1;
+          }
+        }
+      }
+      return blocked;
+    }
+
+// A* with a binary heap over the whole grid. If the goal can't be reached, the path leads to the
+// reachable cell nearest to it (currentPathPartial tells the walker).
 function findPath(from, to) {
+      currentPathPartial = false;
       if (segmentClear(from.x, from.z, to.x, to.z, to)) return [{ x: to.x, z: to.z }];
+      const N = PATH_COLS * PATH_ROWS;
       const col = x => Math.max(0, Math.min(PATH_COLS - 1, Math.floor((x - PATH_MIN_X) / PATH_CELL)));
       const row = z => Math.max(0, Math.min(PATH_ROWS - 1, Math.floor((z - PATH_MIN_Z) / PATH_CELL)));
       const cx = c => PATH_MIN_X + (c + 0.5) * PATH_CELL;
       const cz = r => PATH_MIN_Z + (r + 0.5) * PATH_CELL;
       const start = row(from.z) * PATH_COLS + col(from.x);
       const goal = row(to.z) * PATH_COLS + col(to.x);
-      const blocked = new Uint8Array(PATH_COLS * PATH_ROWS);
-      for (let r = 0; r < PATH_ROWS; r++) {
-        for (let c = 0; c < PATH_COLS; c++) {
-          if (pointBlocked(cx(c), cz(r), to)) blocked[r * PATH_COLS + c] = 1;
-        }
-      }
+      const blocked = pathBlockedGrid(to);
       blocked[start] = 0;
-      blocked[goal] = 0;
-      const g = new Float32Array(PATH_COLS * PATH_ROWS).fill(Infinity);
-      const came = new Int32Array(PATH_COLS * PATH_ROWS).fill(-1);
-      const open = [start];
-      const inOpen = new Uint8Array(PATH_COLS * PATH_ROWS);
+      if (!pointBlocked(to.x, to.z, to)) blocked[goal] = 0;
+      const g = new Float32Array(N).fill(Infinity);
+      const came = new Int32Array(N).fill(-1);
+      const closed = new Uint8Array(N);
+      const h = i => Math.hypot(cx(i % PATH_COLS) - to.x, cz((i / PATH_COLS) | 0) - to.z);
+      // Binary heap of [f, cell]
+      const heapF = [], heapI = [];
+      const push = (f, i) => {
+        let k = heapF.length;
+        heapF.push(f); heapI.push(i);
+        while (k > 0) { const p = (k - 1) >> 1; if (heapF[p] <= f) break; heapF[k] = heapF[p]; heapI[k] = heapI[p]; k = p; }
+        heapF[k] = f; heapI[k] = i;
+      };
+      const pop = () => {
+        const top = heapI[0], lastF = heapF.pop(), lastI = heapI.pop();
+        const n = heapF.length;
+        if (n) {
+          let k = 0;
+          for (;;) {
+            const a = 2 * k + 1, b = a + 1;
+            let m = k, mf = lastF;
+            if (a < n && heapF[a] < mf) { m = a; mf = heapF[a]; }
+            if (b < n && heapF[b] < mf) { m = b; mf = heapF[b]; }
+            if (m === k) break;
+            heapF[k] = heapF[m]; heapI[k] = heapI[m]; k = m;
+          }
+          heapF[k] = lastF; heapI[k] = lastI;
+        }
+        return top;
+      };
       g[start] = 0;
-      inOpen[start] = 1;
-      const h = i => Math.hypot(cx(i % PATH_COLS) - to.x, cz(Math.floor(i / PATH_COLS)) - to.z);
-      let found = false;
-      for (let iter = 0; open.length > 0 && iter < 20000; iter++) {
-        let bi = 0;
-        for (let k = 1; k < open.length; k++) if (g[open[k]] + h(open[k]) < g[open[bi]] + h(open[bi])) bi = k;
-        const cur = open.splice(bi, 1)[0];
-        inOpen[cur] = 0;
+      push(h(start), start);
+      let found = false, best = start, bestH = h(start);
+      for (let iter = 0; heapF.length && iter < N * 4; iter++) {
+        const cur = pop();
+        if (closed[cur]) continue;
+        closed[cur] = 1;
+        const hc = h(cur);
+        if (hc < bestH) { bestH = hc; best = cur; }
         if (cur === goal) { found = true; break; }
-        const cc = cur % PATH_COLS, cr = Math.floor(cur / PATH_COLS);
+        const cc = cur % PATH_COLS, cr = (cur / PATH_COLS) | 0;
         for (let dr = -1; dr <= 1; dr++) {
           for (let dc = -1; dc <= 1; dc++) {
             if (!dr && !dc) continue;
             const nc = cc + dc, nr = cr + dr;
             if (nc < 0 || nr < 0 || nc >= PATH_COLS || nr >= PATH_ROWS) continue;
             const n = nr * PATH_COLS + nc;
-            if (blocked[n]) continue;
+            if (blocked[n] || closed[n]) continue;
             // No cutting corners between two blocked cells
             if (dr && dc && (blocked[cr * PATH_COLS + nc] || blocked[nr * PATH_COLS + cc])) continue;
             const cost = g[cur] + (dr && dc ? 1.414 : 1) * PATH_CELL;
             if (cost < g[n]) {
               g[n] = cost;
               came[n] = cur;
-              if (!inOpen[n]) { open.push(n); inOpen[n] = 1; }
+              push(cost + h(n), n);
             }
           }
         }
       }
-      if (!found) return [{ x: to.x, z: to.z }];
+      const end = found ? goal : best;
+      if (!found) currentPathPartial = true;
+      if (end === start) return [found ? { x: to.x, z: to.z } : { x: from.x, z: from.z }];
       const cells = [];
-      for (let c = goal; c !== -1 && c !== start; c = came[c]) cells.push({ x: cx(c % PATH_COLS), z: cz(Math.floor(c / PATH_COLS)) });
+      for (let c = end; c !== -1 && c !== start; c = came[c]) cells.push({ x: cx(c % PATH_COLS), z: cz((c / PATH_COLS) | 0) });
       cells.reverse();
-      cells[cells.length - 1] = { x: to.x, z: to.z };
+      if (found) cells[cells.length - 1] = { x: to.x, z: to.z };
       // Smooth the path: skip waypoints he can walk straight past
       const smooth = [];
       let anchor = { x: from.x, z: from.z };
@@ -1538,20 +1740,78 @@ function findPath(from, to) {
       return smooth;
     }
 
+// Stuck watch: little progress toward the waypoint for a while means the path is planned again;
+// after that a sidestep; after that he stops as close as he got and lets the activity go
+const WALK_STUCK_SECS = 2.5, WALK_STUCK_PROGRESS = 0.3;
+const walkStuck = { key: '', wp: null, bestD: Infinity, secs: 0, fails: 0 };
+
+function walkGiveUp(why) {
+      const p = state.botPos;
+      state.walkBlocked = { x: Math.round(state.targetPos.x * 10) / 10, z: Math.round(state.targetPos.z * 10) / 10, at: Date.now(), why };
+      state.targetPos = { x: p.x, z: p.z };
+      currentPath = [];
+      currentPathKey = '';
+      walkStuck.fails = 0;
+      walkStuck.key = '';
+      // Whatever sent him there is blocked for a while instead of being tried again and again
+      if (typeof currentActivityKey !== 'undefined' && currentActivityKey && typeof coolDownActivity === 'function') {
+        coolDownActivity(currentActivityKey, typeof QUICK_COOLDOWN_MS === 'number' ? QUICK_COOLDOWN_MS : 4 * 60 * 1000);
+      }
+      if (!state.riding && !state.isSleeping) {
+        state.speechBubble = "I can't find a way through there, so I'll stop here.";
+        if (typeof renderAllUI === 'function') renderAllUI();
+      }
+    }
+
+function walkWatch(px, pz, dt, goalKey) {
+      const S = walkStuck;
+      if (S.key !== goalKey) { S.key = goalKey; S.fails = 0; S.wp = null; }
+      const wp = currentPath[0];
+      if (!wp) return;
+      if (!S.wp || S.wp.x !== wp.x || S.wp.z !== wp.z) { S.wp = { x: wp.x, z: wp.z }; S.bestD = Infinity; S.secs = 0; }
+      const d = Math.hypot(wp.x - px, wp.z - pz);
+      if (d < S.bestD - WALK_STUCK_PROGRESS) { S.bestD = d; S.secs = 0; return; }
+      S.bestD = Math.min(S.bestD, d);
+      S.secs += Math.min(0.25, Math.max(0, dt || 0));
+      if (S.secs < WALK_STUCK_SECS) return;
+      S.fails += 1;
+      S.secs = 0;
+      S.bestD = d;
+      if (S.fails === 1) {
+        const partial = currentPathPartial;
+        currentPath = findPath({ x: px, z: pz }, currentPath[currentPath.length - 1] || wp);
+        currentPathPartial = partial || currentPathPartial;
+      } else if (S.fails === 2) {
+        // A sidestep to whichever side is free, then on along the path
+        const dx = wp.x - px, dz = wp.z - pz, l = Math.hypot(dx, dz) || 1;
+        for (const side of [1, -1]) {
+          const sx = px - dz / l * 1.2 * side, sz = pz + dx / l * 1.2 * side;
+          if (!pointBlocked(sx, sz, { x: 999, z: 999 }) && segmentClear(px, pz, sx, sz, { x: 999, z: 999 })) { currentPath.unshift({ x: sx, z: sz }); break; }
+        }
+      } else walkGiveUp('stuck');
+    }
+
 // Direction toward the next waypoint, recomputing the path when the target or the world changes
-function nextPathDirection(px, pz, target) {
+function nextPathDirection(px, pz, target, dt = 0) {
       // Boats and aircraft go straight; there is nothing to walk around out there
       if (state.riding && (state.ridingMode === 'water' || state.ridingMode === 'air')) {
         const dx = target.x - px, dz = target.z - pz, len = Math.hypot(dx, dz) || 1;
         return [dx / len, dz / len];
       }
-      const key = `${target.x.toFixed(2)},${target.z.toFixed(2)},${worldObstacles.length}`;
+      const goal = walkGoalFor(target, { x: px, z: pz });
+      const key = `${goal.x.toFixed(2)},${goal.z.toFixed(2)},${obstacleSignature()}`;
       if (key !== currentPathKey) {
-        currentPath = findPath({ x: px, z: pz }, target);
+        currentPath = findPath({ x: px, z: pz }, goal);
         currentPathKey = key;
       }
       while (currentPath.length > 1 && Math.hypot(currentPath[0].x - px, currentPath[0].z - pz) < 0.45) currentPath.shift();
-      const wp = currentPath[0] || target;
+      // The way is shut: he got as close as he can
+      if (currentPathPartial && currentPath.length <= 1) {
+        const end = currentPath[0];
+        if (!end || Math.hypot(end.x - px, end.z - pz) < 0.35) { walkGiveUp('no-path'); return [0, 0]; }
+      }
+      walkWatch(px, pz, dt, `${goal.x.toFixed(2)},${goal.z.toFixed(2)}`);
+      const wp = currentPath[0] || goal;
       const dx = wp.x - px, dz = wp.z - pz;
       const len = Math.hypot(dx, dz) || 1;
       return [dx / len, dz / len];
@@ -1559,20 +1819,21 @@ function nextPathDirection(px, pz, target) {
 
 // Hard guarantee: never end a step inside something solid
 function pushOutOfObstacles(pos, target) {
-      for (const o of worldObstacles) {
-        if (obstacleHoldsTarget(o, target)) {
-          // Still keep him out of the building's footprint itself
-          const minD = o.r * 0.75;
-          const d = Math.hypot(pos.x - o.x, pos.z - o.z);
-          if (d < minD && d > 0) { pos.x = o.x + ((pos.x - o.x) / d) * minD; pos.z = o.z + ((pos.z - o.z) / d) * minD; }
-          continue;
-        }
-        const minD = o.r + KELO_RADIUS;
-        const d = Math.hypot(pos.x - o.x, pos.z - o.z);
-        if (d < minD) {
-          const nx = d > 0 ? (pos.x - o.x) / d : 1, nz = d > 0 ? (pos.z - o.z) / d : 0;
-          pos.x = o.x + nx * minD;
-          pos.z = o.z + nz * minD;
+      for (let pass = 0; pass < 2; pass++) {
+        for (const o of worldObstacles) {
+          if (obstacleHoldsTarget(o, target)) {
+            // Still keep him out of the thing itself
+            const minD = o.r * 0.75;
+            const d = Math.hypot(pos.x - o.x, pos.z - o.z);
+            if (d < minD && d > 0) { pos.x = o.x + ((pos.x - o.x) / d) * minD; pos.z = o.z + ((pos.z - o.z) / d) * minD; }
+            continue;
+          }
+          const P = obstacleProbe(o, pos.x, pos.z);
+          if (P.d < KELO_RADIUS) {
+            const k = KELO_RADIUS - P.d + 1e-4;
+            pos.x += P.nx * k;
+            pos.z += P.nz * k;
+          }
         }
       }
     }

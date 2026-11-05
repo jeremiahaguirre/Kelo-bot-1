@@ -291,8 +291,15 @@ function buildWeldingStudio3D() {
       if (typeof buildWorkBench3D === 'function') buildWorkBench3D();
       // Walls, the rack, the cart and the grinder are solid; the front stays open to the bench
       const w = (x, z, r) => worldObstacles.push({ x: WELD_STUDIO.x + x, z: WELD_STUDIO.z + z, r });
-      for (let x = -1.6; x <= 2.7; x += 0.6) w(x, -2.15, 0.35);
-      [-1.6, -1.0, -0.4].forEach(z => w(-1.88, z, 0.35));
+      // The back and left walls are straight boxes (js/scene.js obstacleWall), with the corner posts
+      const X = WELD_STUDIO.x, Z = WELD_STUDIO.z;
+      // (`legacy` keeps the circles they replaced for placing the seeded scenery, js/scene.js clearOf)
+      const legacy = [];
+      for (let x = -1.6; x <= 2.7; x += 0.6) legacy.push({ x: X + x, z: Z - 2.15, r: 0.35 });
+      [-1.6, -1.0, -0.4].forEach(z => legacy.push({ x: X - 1.88, z: Z + z, r: 0.35 }));
+      const walls = [...obstacleWall(X - 1.95, Z - 2.12, X + 2.95, Z - 2.12, 0.3), ...obstacleWall(X - 1.88, Z - 2.12, X - 1.88, Z + 0.06, 0.3)];
+      walls.forEach((o, i) => { o.legacy = i ? [] : legacy; });
+      addObstacle(walls, { x: X + 2.88, z: Z, r: 0.12, legacy: [] }, { x: X + 2.88, z: Z - 2.12, r: 0.12, legacy: [] });
       w(-1.6, -1.2, 0.4); w(-1.5, -0.15, 0.35); w(-1.45, 0.6, 0.25); w(1.65, 0.3, 0.45); w(-1.72, 1.5, 0.15);
       return g;
     }

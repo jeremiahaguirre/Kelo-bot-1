@@ -34,9 +34,11 @@ function getAnalyticalGroundHeight(x, z) {
         const mtnRise = Math.pow(depthIntoMtn, 1.32) * 0.42 + Math.max(0, ridgeWave) * (depthIntoMtn * 0.12);
         h += mtnRise;
       }
-      // Eastern cliff overlook rise
+      // Eastern cliff overlook rise. East of the Workshop (the land added for the concrete plant) it
+      // climbs out of the meadow over a few units instead of standing up as a wall at z -6.
       if (x > 14 && z < -6) {
-        h += (x - 14) * 0.28 * Math.max(0.2, Math.abs(z) / 14);
+        const east = Math.max(0, Math.min(1, (x - 58) / 4)), t = Math.min(1, (-6 - z) / 5);
+        h += (x - 14) * 0.28 * Math.max(0.2, Math.abs(z) / 14) * (1 - east + east * t * t * (3 - 2 * t));
       }
       // The valley floor never dips below the waterline; the lake bed does
       const natural = z > 7.5 ? h : Math.max(-0.25, h);

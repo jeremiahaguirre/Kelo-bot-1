@@ -375,6 +375,8 @@ function buildAggregatePlantGround() {
           }
           if (typeof mottleGround === 'function') mottleGround(c, vx, vz, 0.05);
           col.setXYZ(i, c.r, c.g, c.b);
+          // The seasons (js/seasons.js) repaint the ground from these, so the gravel stays gravel
+          if (typeof terrainBaseColors !== 'undefined' && terrainBaseColors) terrainBaseColors.set([c.r, c.g, c.b], i * 3);
         }
         col.needsUpdate = true;
       }

@@ -12,6 +12,16 @@ Everything he gets (tools, vehicles, seeds, materials) arrives **only** through 
 He may change the world freely. He can never move or change the buildings, and he can't build new ones.
 
 ## Recently shipped (on `main`, pushed)
+- **Performance and bug pass** (branch `agent/review`; plan and numbers in `.claude/review.md`).
+  - `getIslandGroundHeight` reads the terrain mesh's grid (`terrainMeshHeightAt`, two triangles per cell) instead of raycasting ~70k triangles; it still raycasts the other `terrainSwapGroup` children (house floor). Matches a raycast to 6e-5. Ground is still `max(getAnalyticalGroundHeight, drawn mesh, floors)`.
+  - Per-frame updates from other files register with `keloEveryFrame(fn)` (scene.js) and run in order just before the frame is drawn. Don't start new `requestAnimationFrame` loops.
+  - `mergeStaticMeshes(root, skip)` / `mergeStaticMeshesSoon` (perf.js) join a building's static parts into one mesh per material. It skips anything with userData, anything the root's userData points at, and listed parts. Used for the house, the yard lines and the hangar; give parts you move later userData or pass them in `skip`.
+  - Small shadow casters (radius < 0.3) cast only within 14 units of the camera target (`updateSmallCasters`, realism.js).
+  - `setLineEnds(line, a, b)` (perf.js) moves a 2-point line without leaking a GPU buffer. Don't call `setFromPoints` every frame.
+  - `doWhenFree(fn, { key, maxWaitMs, delayMs })` is a queue: oldest first, one at a time when `keloIsFree()`, kept up to 45 min, de-duplicated by key or code. Pass a key when the arguments matter.
+  - `newRequestId(kind)` and `hasOpenRequest(test)` (agent.js) for every request in the inbox.
+  - One frame-rate watcher (`trackFrameRate`, realism.js): Graphics steps down first, then Performance Auto goes to Low (`perfAutoStepDown`).
+  - `trimBrainState` caps `vocabulary` (800), `itemLookups` and `itemPurposes` (600 each), always keeping entries about owned things.
 - **Build anything from a bill of materials** (`js/bom.js`, `js/buildmodels.js`, `js/assembly.js`, branch `agent/assembly`).
   - `BOM_TEMPLATES` (bom.js): ultralight airplane, go-kart, cedar-strip canoe, garden shed, quadcopter drone, electric guitar, wooden sea kayak, tree fort. Each has sub-assemblies with lines `[name, qty, unit, kind 'p'|'f'|'c', step?]`, steps `[verb, tool key, text]`, tools, skills, tests (and `cg` weight-and-balance limits for the airplane). `bomFromAI(target)` asks the AI for strict JSON; `normalizeBom` validates and caps everything (`BOM_LIMITS`). `bomLineStep` decides which step uses a fastener or consumable up.
   - `researchBuild(target, why)` (NetNode, wikiSummary) creates `state.buildProjects[]` `{ id, status: gathering|testing|complete|finished, bom, site, tests, parcels, fuelGal }`. One big build at a time.

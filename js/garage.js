@@ -146,6 +146,7 @@ registerWorkshopMachine({
     const at = (key, stand, act) => stops.push({ floor: 2, key, stand, act });
     // Up it goes
     at('lift2', side, async ctx => {
+      useWorkshopSupply('gloves', 1, 'Garage work');
       await machineStep(ctx, 'Setting the lift arms under the jacking points', 1800, null, 'Pads under the pinch welds, all four.');
       await machineStep(ctx, `Raising the ${vname}`, 100);
       await liftTo(ctx, service === 'oil' || service === 'engine' ? 1.9 : 1.2, 2800);

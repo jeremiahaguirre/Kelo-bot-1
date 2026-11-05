@@ -249,7 +249,8 @@ registerWorkshopMachine({
   plan(job) {
     const key = this.key;
     const pk = Object.keys(WOOD_PROJECTS).find(k => WOOD_PROJECTS[k].words.test(job.make || '')) || wsPick(Object.keys(WOOD_PROJECTS));
-    const pr = WOOD_PROJECTS[pk];
+    // A named order (js/shopmaker.js: a stool from an article, a visitor's ask) keeps its own name
+    const pr = job.product ? { ...WOOD_PROJECTS[pk], name: job.product } : WOOD_PROJECTS[pk];
     const at = (k, title, ms, speech, fn) => ({ floor: 3, key: k, act: async ctx => { await machineStep(ctx, title, ms, (kk, t) => fn && fn(ctx.model.userData, kk, t, ctx), speech); machineSkill(k, 2); return true; } });
     return {
       title: `Making ${wsWhat(pr.name)} in the woodshop`, product: pr.name, speech: 'Ear defenders, safety glasses, dust collector on.',
@@ -289,7 +290,7 @@ registerWorkshopMachine({
   plan(job) {
     const key = this.key;
     return {
-      title: 'Turning a cherry bowl on the lathe', product: 'A turned cherry bowl', speech: 'Face shield down. Slow speed to start.',
+      title: `Turning ${job.product ? wsWhat(job.product) : 'a cherry bowl'} on the lathe`, product: job.product || 'A turned cherry bowl', speech: 'Face shield down. Slow speed to start.',
       stops: [{
         floor: 3, key: 'woodlathe', act: async ctx => {
           const u = ctx.model.userData;
@@ -308,7 +309,7 @@ registerWorkshopMachine({
           return true;
         }
       }],
-      finish: () => { addMadeThing('A turned cherry bowl', 'wood lathe', { emoji: '🥣' }); machineSkill(key, 8); }
+      finish: () => { addMadeThing(job.product || 'A turned cherry bowl', 'wood lathe', { emoji: '🥣' }); machineSkill(key, 8); }
     };
   }
 });

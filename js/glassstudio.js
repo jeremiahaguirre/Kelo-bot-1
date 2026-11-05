@@ -197,7 +197,8 @@ registerWorkshopMachine({
   plan(job) {
     const key = this.key;
     const kind = Object.keys(GLASS_PIECES).find(k => new RegExp(k, 'i').test(job.make || '')) || wsPick(Object.keys(GLASS_PIECES));
-    const piece = GLASS_PIECES[kind];
+    // A named order keeps its name and goes where its kind says (js/shopmaker.js), never the coin-flip museum
+    const piece = job.product ? { ...GLASS_PIECES[kind], name: job.product, museum: false } : GLASS_PIECES[kind];
     const rush = Boolean(job.rush);
     let gather = null, heat = 1, size = 0.06;
     const follow = ctx => glassPipeFollow(gather, ctx, heat, size);
@@ -210,7 +211,7 @@ registerWorkshopMachine({
       }
     });
     return {
-      title: `Blowing a glass ${kind} in the glass studio`, product: piece.name,
+      title: `Blowing ${job.product ? wsWhat(job.product) : `a glass ${kind}`} in the glass studio`, product: piece.name,
       speech: 'Didymium glasses and Kevlar gloves on. The furnace is at 2100 degrees.',
       stops: [
         step('glassfurnace', 'Gathering molten glass from the crucible', 3500, 'Dip the blowpipe, turn, turn, lift: a honey-bright gather.', (k, t, ctx) => {

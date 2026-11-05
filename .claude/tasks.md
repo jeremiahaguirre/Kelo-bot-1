@@ -93,6 +93,7 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
      - **New FLOOR 3:**
        - **Glass blowing studio:** furnace with crucible, glory hole, annealer, marver, bench, blowpipes and punties, jacks, shears, blocks, frit and colour, fume hood, safety gear and gas. The real gather → blow → reheat → shape → punty → anneal process, with supplies used up.
        - **Woodworking shop:** table saw, jointer, planer, bandsaw, drill press, router table, mitre saw, lathe, sanders, dust collection, benches, clamps, hand tools, finishing booth and a lumber rack. Real milling, joinery, glue-up, sanding and finishing, with supplies used up. It becomes the main path, ahead of the outdoor `WORK_BENCH`.
+     - **Car elevator:** serves every level (1, 2 and 3), with landing doors and call buttons on each floor.
      - **Electric forklift with charging station:** the battery drains and he recharges it. It has pallets and racking, uses the car elevator between floors, follows the vehicle and one-of-each rules, and needs training know-how first.
 
 8. **Concrete and asphalt plant** (`agent/plant`, started), right beside the workshop. It positions itself from `WORKSHOP_SITE`.

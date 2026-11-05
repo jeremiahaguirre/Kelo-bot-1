@@ -673,7 +673,7 @@ function buildWorkshop3D() {
         perfWatchBuilding({
           key: 'workshop', radius: 11,
           center: () => wsGroup.position.clone().setY(WORKSHOP_PAD_Y + 3),
-          forced: () => Boolean(workshopTrip.active),
+          forced: () => Boolean(workshopTrip.active) || (typeof shopVisitActive === 'function' && shopVisitActive()),
           show: near => wsShowFloor1(near),
           tick: near => { if (near) wsBuildQueued(2); }
         });
@@ -1332,6 +1332,7 @@ function wsAnimate(ms, fn) {
         const step = () => {
           if (done) return;
           const t = performance.now() - start, k = Math.min(1, t / ms);
+          workshopTrip.anim = { t0: start, ms };   // (how far through the step, for the visitor's status card)
           try { fn(k, t / 1000); } catch (e) { console.warn(e); }
           if (k >= 1 || !workshopTrip.active) { done = true; resolve(); return; }
           if (document.hidden) setTimeout(step, 50); else requestAnimationFrame(step);
@@ -1401,6 +1402,7 @@ async function runWorkshopVisit(plan) {
         }
         for (const stop of plan.stops || []) {
           const floor = stop.floor || 1;
+          workshopTrip.stop = { key: stop.key || null, i: plan.stops.indexOf(stop), n: plan.stops.length, t0: performance.now() };
           if (floor !== workshopTrip.floor && !veh) cur = await wsChangeFloor(site, cur, floor);
           const def = stop.key ? WORKSHOP_MACHINES[stop.key] : null;
           const stand = stop.stand || (def ? machineStand(def) : null);
@@ -1412,6 +1414,7 @@ async function runWorkshopVisit(plan) {
           indoorTrip.pose = null;
           indoorTrip.crouchTarget = 0;
         }
+        workshopTrip.stop = null;
         if (veh && (plan.vehicleTour || plan.driveThrough)) {
           // (the tour drove back out already)
         } else if (veh) {
@@ -1437,7 +1440,7 @@ async function runWorkshopVisit(plan) {
         else state.botPos = { x: outside.x, z: outside.z };
         state.targetPos = { ...state.botPos };
         wsUnhitchTrailer();
-        Object.assign(workshopTrip, { active: false, floor: 1, vehicle: null, vehicleAt: null, vehicleOut: null, vehicleHome: null, vehPose: null, liftY: 0 });
+        Object.assign(workshopTrip, { active: false, floor: 1, vehicle: null, vehicleAt: null, vehicleOut: null, vehicleHome: null, vehPose: null, liftY: 0, stop: null, anim: null });
         wsUpdateLift(0);
         workshopShowUpstairs(false);
         wsSetFrontFade(1);

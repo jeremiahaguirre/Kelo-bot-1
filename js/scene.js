@@ -167,6 +167,8 @@ function initDiorama3D() {
         const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(mouse, camera);
 
+        // Inside the Workshop as a visitor a click picks a machine; outside, a click on it offers a visit (js/shopvisit.js)
+        if (typeof shopVisitClick === 'function' && shopVisitClick(raycaster, e)) return;
         // Clicking the Storehouse or the Museum opens a look at everything inside (js/viewer.js)
         const building = typeof buildingAtClick === 'function' ? buildingAtClick(raycaster) : null;
         if (building) {

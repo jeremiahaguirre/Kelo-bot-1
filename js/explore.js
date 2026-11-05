@@ -152,7 +152,7 @@ function exploreKeloSpot() {
 function exploreTakeOver(kind) {
       exploreCam.lastInput = Date.now();
       exploreHideSpotMenu();
-      if (state.cameraMode === 'eyes') return;   // looking around through his eyes stays there
+      if (state.cameraMode === 'eyes' || state.cameraMode === 'visit') return;   // his eyes and a Workshop visit stay put
       const mode = state.cameraMode;
       if (exploreCam.fly) {
         exploreCam.fly = null;
@@ -226,6 +226,8 @@ function exploreCameraUpdate() {
       const mode = state.cameraMode;
       // Through his eyes (js/eyecam.js) places the camera itself
       if (typeof eyeCamFrame === 'function' && eyeCamFrame(dt)) { exploreCam.driving = false; return true; }
+      // Walking round the Workshop as a visitor (js/shopvisit.js) places it too
+      if (typeof shopVisitFrame === 'function' && shopVisitFrame(dt)) { exploreCam.driving = false; return true; }
 
       if (!exploreCam.fly) {
         if (mode === 'follow') {
@@ -361,10 +363,12 @@ function exploreBindPointer() {
         exploreTakeOver('zoom');
         const factor = Math.exp(exploreClamp(e.deltaY, -120, 120) * 0.0022);
         if (state.cameraMode === 'eyes' && typeof eyeCamZoom === 'function') return eyeCamZoom(factor);
+        if (state.cameraMode === 'visit' && typeof shopVisitZoom === 'function') return shopVisitZoom(factor);
         exploreZoomAbout(exploreTerrainPoint(e.clientX, e.clientY), factor);
       }, { passive: false });
 
       el.addEventListener('dblclick', (e) => {
+        if (state.cameraMode === 'visit') return;
         clearTimeout(exploreSpotTimer);
         exploreHideSpotMenu();
         const p = exploreTerrainPoint(e.clientX, e.clientY);
@@ -400,6 +404,10 @@ function exploreMoveDrag(e, px, py) {
         exploreTakeOver(d.kind === 'pan' ? 'pan' : 'turn');
       }
       exploreCam.lastInput = Date.now();
+      if (state.cameraMode === 'visit' && typeof shopVisitLook === 'function') {
+        if (d.kind !== 'pinch') shopVisitLook(e.clientX - px, e.clientY - py);
+        return;
+      }
       if (state.cameraMode === 'eyes' && typeof eyeCamLook === 'function') {
         // Through his eyes: a drag looks around, a pinch zooms
         if (d.kind === 'pinch' && pts.length >= 2) {
@@ -458,6 +466,7 @@ function exploreBindKeys() {
       window.addEventListener('keydown', (e) => {
         if (exploreTyping(e) || e.ctrlKey || e.metaKey || e.altKey) return;
         if (document.getElementById('keloViewer')) return; // the arrows page through the viewer
+        if (state.cameraMode === 'visit' && typeof shopVisitKey === 'function' && shopVisitKey(e)) { e.stopPropagation(); return; }
         if (e.key === '?') { exploreShowHelp(true); return; }
         if (e.code === 'Escape') { exploreHideSpotMenu(); exploreTogglePlaces(false); exploreShowHelp(false); return; }
         if (e.code === 'KeyK' || e.code === 'Home') { exploreFlyToKelo(); e.stopPropagation(); return; }
@@ -640,6 +649,7 @@ function explorePlaces() {
 function exploreGoToPlace(id) {
       if (id === 'kelo') return exploreFlyToKelo();
       if (id === 'eyes' && typeof eyeCamStart === 'function') { exploreTogglePlaces(false); return eyeCamStart(); }
+      if (id === 'shopvisit' && typeof shopVisitOpenChooser === 'function') { exploreTogglePlaces(false); return shopVisitOpenChooser(); }
       const p = explorePlaces().find(pl => pl.id === id);
       if (p) exploreFlyTo(p);
       exploreTogglePlaces(false);
@@ -654,6 +664,7 @@ function exploreRenderPlaces() {
         <div class="grid grid-cols-2 gap-1">
           <button type="button" data-place="kelo" class="explore-place explore-place-kelo"><span aria-hidden="true">🤖</span><span>Where is Kelo-1?</span></button>
           <button type="button" data-place="eyes" class="explore-place explore-place-kelo"><span aria-hidden="true">👀</span><span>Through his eyes</span></button>
+          ${typeof shopVisitOpenChooser === 'function' ? '<button type="button" data-place="shopvisit" class="explore-place explore-place-kelo col-span-2"><span aria-hidden="true">🏭</span><span>Visit the Workshop</span></button>' : ''}
         </div>
         ${Object.entries(groups).map(([g, items]) => `
           <div class="explore-place-group">${escapeHtml(g)}</div>
@@ -743,6 +754,7 @@ function exploreBindButtons() {
         const cam = b.id === 'btnFocusKelo' ? 'follow' : b.getAttribute('data-cam');
         if (cam === 'follow') return exploreFlyToKelo();
         if (cam === 'eyes' && typeof eyeCamStart === 'function') return eyeCamStart();
+        if (cam === 'visit' && typeof shopVisitOpenChooser === 'function') return shopVisitOpenChooser();
         if (cam === 'bird') {
           const k = exploreKeloSpot();
           return exploreFlyTo({ x: k.x, z: k.z, dist: 60, pitch: 1.2 });

@@ -172,12 +172,30 @@ registerWorkshopMachine({
       at('tirechanger', null, async ctx => {
         const u = ctx.model.userData;
         useWorkshopSupply('tires', 1, 'Tire change');
+        // 1. The wheel stood against the rubber pad, the bead breaker blade pushes the bead off the rim
+        if (u.sideWheel) u.sideWheel.visible = true;
+        await machineStep(ctx, 'Breaking the bead on the tire changer', 3000, k => {
+          const push = Math.sin(Math.min(1, k * 2.5) * Math.PI);
+          u.breaker.rotation.z = -0.32 * push;
+          if (u.sideWheel) u.sideWheel.scale.x = 1 - 0.08 * push;
+        }, 'Valve core out, wheel against the pad, step on the bead breaker. Both sides.');
+        if (u.sideWheel) u.sideWheel.visible = false;
+        // 2. On the turntable: jaws clamp the rim, the column tilts in, the head comes down, it turns
         u.wheel.visible = true;
-        await machineStep(ctx, 'Breaking the bead and changing the tire', 5000, (k, t) => {
-          u.breaker.rotation.z = k < 0.2 ? -k * 2 : 0;
-          u.turntable.rotation.y = k > 0.2 ? t * 3 : 0;
-          u.mountHead.position.y = -0.38 - (k > 0.25 ? 0.06 : 0);
-        }, 'Bead breaker, then the mount head walks the old tire off and the new one on.');
+        await machineStep(ctx, 'Demounting the old tire and mounting the new one', 4500, (k, t) => {
+          const clamp = Math.min(1, k * 5);
+          (u.jaws || []).forEach(j => { j.position.x = 0.27 - 0.06 * clamp; });
+          if (u.column) u.column.rotation.x = k < 0.12 ? -0.35 * (1 - k / 0.12) : k > 0.92 ? -0.35 * (k - 0.92) / 0.08 : 0;
+          u.mountHead.position.y = -0.6 - (k > 0.15 && k < 0.9 ? 0.05 : 0);
+          u.turntable.rotation.y = k > 0.2 && k < 0.9 ? t * 3 : u.turntable.rotation.y;
+        }, 'Rim clamped, head set a hair off the rim, tire iron over the head... turntable round. Then the new one on.');
+        // 3. Inflating to the door-sticker pressure on the gauge
+        await machineStep(ctx, 'Seating the beads and inflating the tire', 2200, k => {
+          u.wheel.scale.set(1 + 0.03 * Math.min(1, k * 1.5), 1, 1 + 0.03 * Math.min(1, k * 1.5));
+          if (u.gauge) u.gauge.rotation.x = k * 2.2;
+        }, 'Pop, pop: both beads seated. Valve core back in, 35 psi.');
+        u.wheel.scale.set(1, 1, 1);
+        (u.jaws || []).forEach(j => { j.position.x = 0.27; });
         u.wheel.visible = false;
         machineSkill('tirechanger', 4);
         return true;

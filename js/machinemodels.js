@@ -690,12 +690,13 @@ function haasVmcModel(big) {
       mmLabel(g, big ? 'VS-3' : 'VS-1', 0.3, 0.1, w / 2 - 0.35, h - 0.2, d / 2 + 0.04, { bg: '#d2d5d9', fg: '#111827' });
       const doors = [-1, 1].map(s => {
         const door = mmGroup(g, s * w / 4, 0.35, d / 2 + 0.01);
-        // A sheet-metal frame round a big window, so you can watch the cut
-        const dw = w / 2 - 0.02, dh = h - 0.82, ww = w / 2 - 0.28, wh = h - 1.3;
+        // A narrow sheet-metal frame round a big polycarbonate window, so you can watch the cut
+        const dw = w / 2 - 0.02, dh = h - 0.82, ww = dw - 0.14, wh = dh - 0.52;
         mmBox(door, dw, 0.3, 0.04, 'haas', 0, 0, 0);
         mmBox(door, dw, dh - 0.3 - wh, 0.04, 'haas', 0, 0.3 + wh, 0);
         [-1, 1].forEach(sx => mmBox(door, (dw - ww) / 2, wh, 0.04, 'haas', sx * (ww + (dw - ww) / 2) / 2, 0.3, 0));
         mmBox(door, ww, wh, 0.01, 'glass', 0, 0.3, 0.005);
+        mmBox(door, ww, 0.015, 0.02, 'dark', 0, 0.3 + wh * 0.5, 0.012);   // the window's centre bar
         mmBox(door, 0.04, 0.4, 0.06, 'chrome', -s * (w / 4 - 0.12), 0.4, 0.04);
         door.userData.closedX = s * w / 4;
         door.position.x = s * w / 4 * 1.85; // open
@@ -714,8 +715,20 @@ function haasVmcModel(big) {
       mmBox(head, 0.36, 0.4, 0.36, 'grey', 0, 0, -0.1);
       const spindle = mmCyl(head, 0.07, 0.18, 'chrome', 0, -0.05, 0);
       const tool = mmCyl(head, 0.018, 0.12, 'brass', 0, -0.2, 0);
-      // Coolant nozzles beside the spindle
+      // Coolant nozzles beside the spindle, and the streams they throw at the tool (shown while cutting)
       [-0.1, 0.1].forEach(x => mmRod(head, [x, 0, 0.05], [x * 0.4, -0.18, 0.03], 0.008, 'blue'));
+      const coolMat = new THREE.MeshStandardMaterial({ color: 0x7dd3fc, roughness: 0.1, metalness: 0, transparent: true, opacity: 0.55, emissive: 0x0ea5e9, emissiveIntensity: 0.25, depthWrite: false });
+      const streams = mmGroup(head, 0, 0, 0);
+      [-1, 1].forEach(sx => mmRod(streams, [sx * 0.04, -0.18, 0.03], [0, -0.27, 0], 0.012, coolMat));
+      streams.visible = false;
+      // Chips and coolant collect on the table round the vise while it cuts
+      const chips = mmGroup(table, 0, 0, 0);
+      for (let i = 0; i < 18; i++) {
+        const a = i * 2.39, r = 0.12 + (i % 5) * 0.035;
+        mmBox(chips, 0.03, 0.006, 0.012, i % 3 ? 'alu' : 'steel', Math.cos(a) * r, 0.003, Math.sin(a) * r * 0.6, { ry: a });
+      }
+      mmBox(chips, w * 0.62, 0.004, d * 0.36, coolMat, 0, 0.001, 0);
+      chips.visible = false;
       // The control pendant on its swing arm, the chip conveyor and coolant tank
       const pendant = mmGroup(g, w / 2 + 0.12, 1.25, d / 2 - 0.1);
       mmBox(pendant, 0.42, 0.55, 0.08, 'dark', 0, 0, 0, { centre: true });
@@ -738,7 +751,7 @@ function haasVmcModel(big) {
       }
       const atcArm = mmGroup(atc, 0.3, -0.12, 0.2);
       mmBox(atcArm, 0.5, 0.04, 0.06, 'dark', 0.15, 0, 0, { centre: true });
-      return mmFinish(g, big ? 'haasvs3' : 'haasvs1', { doors, head, spindle, tool, table, vise, tower, carousel, atcArm, plate: { y: tableY + 0.22, z: 0.05 }, travel: { x: w * 0.25, z: d * 0.14 }, w: w + 0.6, d, headY: h - 0.78 });
+      return mmFinish(g, big ? 'haasvs3' : 'haasvs1', { doors, head, spindle, tool, table, vise, tower, carousel, atcArm, streams, chips, plate: { y: tableY + 0.22, z: 0.05 }, travel: { x: w * 0.25, z: d * 0.14 }, w: w + 0.6, d, headY: h - 0.78 });
     }
 
 // --- Waldrich Coburg Taurus: a travelling-gantry mill. Two long rails, a bridge across them riding
@@ -943,29 +956,85 @@ function fourPostLiftModel(len = 6.4, gauge = 2.2) {
       return mmFinish(g, 'lift4', { runways, liftY: 0.1, w: gauge + 1.6, d: len + 0.6 });
     }
 
+// A rim-clamp tire changer (the Coats / Hunter shape): a low cabinet with the clamping turntable on
+// top, a tilt-back column at the rear with the swing arm and the hex shaft carrying the mount/demount
+// head, the bead breaker on the right side (a long arm with its blade, the rubber pad on the cabinet
+// and the air cylinder behind), the inflation gauge on the column and the foot pedals at the front.
+// Front is +z.
 function tireChangerModel() {
       const g = new THREE.Group();
-      mmBox(g, 0.8, 0.7, 0.6, 'red', 0, 0, 0);
-      const turntable = mmGroup(g, 0, 0.72, 0.05);
-      mmCyl(turntable, 0.32, 0.05, 'dark', 0, 0, 0);
-      for (let i = 0; i < 4; i++) mmBox(turntable, 0.06, 0.06, 0.12, 'steel', Math.cos(i * Math.PI / 2) * 0.24, 0.04, Math.sin(i * Math.PI / 2) * 0.24);
-      const wheel = mmGroup(turntable, 0, 0.18, 0);
-      mmCyl(wheel, 0.38, 0.24, 'tire', 0, 0, 0);
-      mmCyl(wheel, 0.22, 0.26, 'chrome', 0, 0, 0);
+      const cw = 0.68, cd = 0.82, ch = 0.82;
+      // Cabinet: red sheet steel with a dark kick plate and a lid
+      mmBox(g, cw, ch - 0.06, cd, 'red', 0, 0.06, 0);
+      mmBox(g, cw + 0.04, 0.06, cd + 0.04, 'dark', 0, 0, 0);
+      mmBox(g, cw + 0.02, 0.03, cd + 0.02, 'dark', 0, ch, 0);
+      mmLabel(g, 'TIRE CHANGER', 0.42, 0.07, 0, 0.56, cd / 2 + 0.002, { bg: '#991b1b', fg: '#fff' });
+      // The turntable: a disc with four sliding rim jaws in their slots
+      const turntable = mmGroup(g, 0, ch + 0.03, 0.06);
+      mmCyl(turntable, 0.31, 0.05, 'dark', 0, 0.025, 0);
+      mmCyl(turntable, 0.06, 0.07, 'chrome', 0, 0.06, 0);
+      const jaws = [];
+      for (let i = 0; i < 4; i++) {
+        const a = i * Math.PI / 2 + Math.PI / 4;
+        const slot = mmGroup(turntable, 0, 0.05, 0);
+        slot.rotation.y = a;
+        mmBox(slot, 0.32, 0.012, 0.05, 'black', 0.15, 0, 0);
+        const jaw = mmGroup(slot, 0.27, 0, 0);
+        mmBox(jaw, 0.08, 0.06, 0.07, 'steel', 0, 0, 0);
+        mmBox(jaw, 0.02, 0.05, 0.05, 'chrome', -0.04, 0.06, 0);
+        jaws.push(jaw);
+      }
+      // The wheel being worked on (on the turntable), and one stood at the bead breaker
+      const wheel = mmGroup(turntable, 0, 0.2, 0);
+      mmCyl(wheel, 0.36, 0.22, 'tire', 0, 0, 0);
+      mmCyl(wheel, 0.24, 0.235, 'chrome', 0, 0, 0);
+      mmCyl(wheel, 0.06, 0.24, 'dark', 0, 0, 0);
       wheel.visible = false;
-      mmBox(g, 0.12, 1.1, 0.12, 'red', 0, 0.7, -0.28);
-      const arm = mmGroup(g, 0, 1.6, -0.28);
-      mmBox(arm, 0.08, 0.08, 0.4, 'dark', 0, 0, 0.2);
-      const mountHead = mmBox(arm, 0.06, 0.4, 0.06, 'steel', 0, -0.38, 0.38);
-      // Bead breaker on the side
-      const breaker = mmGroup(g, 0.42, 0.3, 0);
-      mmBox(breaker, 0.05, 0.6, 0.05, 'dark', 0.06, 0, 0, { rz: -0.4 });
-      mmBox(breaker, 0.12, 0.1, 0.2, 'steel', 0.25, 0.5, 0);
-      // The pedal bank (turntable, clamps, bead breaker) and the air hose to the wall drop
-      [-0.18, 0, 0.18].forEach((x, i) => mmBox(g, 0.1, 0.04, 0.22, i === 1 ? 'chrome' : 'dark', x, 0.02, 0.38, { rx: -0.25 }));
-      mmRod(g, [0.35, 0.5, -0.2], [0.6, 1.6, -0.4], 0.015, 'yellow');
-      mmLabel(g, 'TIRE CHANGER', 0.4, 0.06, 0, 0.45, 0.301, { bg: '#991b1b', fg: '#fff' });
-      return mmFinish(g, 'tirechanger', { turntable, wheel, arm, mountHead, breaker, w: 1.0, d: 0.8 });
+      const sideWheel = mmGroup(g, cw / 2 + 0.16, 0.37, 0.12);
+      mmCyl(sideWheel, 0.36, 0.22, 'tire', 0, 0, 0, { axis: 'x' });
+      mmCyl(sideWheel, 0.24, 0.235, 'chrome', 0, 0, 0, { axis: 'x' });
+      sideWheel.visible = false;
+      // The tilt-back column at the rear, the swing arm over the turntable, the hex shaft and the head
+      const column = mmGroup(g, 0, ch, -cd / 2 + 0.06);
+      mmBox(g, 0.2, 0.08, 0.16, 'dark', 0, ch - 0.02, -cd / 2 + 0.06);
+      mmBox(column, 0.13, 0.95, 0.13, 'red', 0, 0, 0);
+      mmBox(column, 0.16, 0.12, 0.16, 'dark', 0, 0.88, 0);
+      const arm = mmGroup(column, 0, 0.88, 0);
+      mmBox(arm, 0.11, 0.1, 0.5, 'red', 0, 0, 0.27);
+      mmBox(arm, 0.12, 0.14, 0.1, 'dark', 0, -0.02, 0.5);
+      mmBox(arm, 0.05, 0.05, 0.08, 'black', 0.07, 0.03, 0.5);             // the shaft lock
+      const shaft = mmGroup(arm, 0, 0, 0.5);
+      mmCyl(shaft, 0.025, 0.62, 'chrome', 0, -0.28, 0, { seg8: true });
+      const mountHead = mmGroup(shaft, 0, -0.6, 0);
+      mmBox(mountHead, 0.07, 0.07, 0.06, 'dark', 0, 0, 0);
+      mmBox(mountHead, 0.03, 0.05, 0.12, 'black', 0.03, -0.05, 0.05, { rx: 0.35 });   // the duck head's nylon toe
+      mmBox(mountHead, 0.04, 0.02, 0.06, 'black', -0.03, -0.06, -0.02);
+      mountHead.position.y = -0.6;
+      // Inflation: the gauge on the column with its hose and chuck
+      const gauge = mmGroup(column, 0.09, 0.55, 0.0);
+      mmCyl(gauge, 0.055, 0.03, 'white', 0, 0, 0, { axis: 'x' });
+      mmCyl(gauge, 0.06, 0.02, 'dark', -0.012, 0, 0, { axis: 'x' });
+      mmRod(column, [0.09, 0.5, 0], [0.22, -0.2, 0.15], 0.01, 'black');
+      mmBox(column, 0.03, 0.06, 0.03, 'chrome', 0.22, -0.25, 0.15);
+      // The bead breaker: blade on a long arm hinged at the back of the right side, the rubber pad
+      // on the cabinet it pushes the tire against, and the air cylinder driving it
+      const side = cw / 2;
+      mmBox(g, 0.03, 0.42, 0.34, 'black', side + 0.015, 0.16, 0.12);       // rubber pad
+      const breaker = mmGroup(g, side + 0.1, 0.72, -0.3);
+      mmBox(g, 0.12, 0.14, 0.12, 'dark', side + 0.06, 0.66, -0.3);          // the hinge bracket
+      mmRod(breaker, [0, 0, 0], [0.42, -0.42, 0.42], 0.03, 'red');
+      mmRod(breaker, [0.42, -0.42, 0.42], [0.42, -0.5, 0.42], 0.02, 'red');
+      mmBox(breaker, 0.03, 0.16, 0.2, 'steel', 0.36, -0.52, 0.42);         // the blade
+      mmRod(breaker, [0.42, -0.42, 0.42], [0.55, -0.12, 0.62], 0.012, 'black'); // the handle
+      mmRod(g, [side + 0.02, 0.25, -0.3], [side + 0.32, 0.38, -0.05], 0.045, 'chrome'); // the cylinder
+      // The pedals: clamp jaws, bead breaker, turntable (forward / reverse)
+      [-0.2, -0.05, 0.1, 0.24].forEach((x, i) => mmBox(g, 0.09, 0.035, 0.2, i === 3 ? 'chrome' : 'dark', x, 0.04, cd / 2 + 0.08, { rx: -0.22 }));
+      // A tire iron on its hooks and the air line to the wall drop
+      mmBox(g, 0.03, 0.05, 0.05, 'dark', -cw / 2 - 0.02, 0.62, 0.15);
+      mmBox(g, 0.03, 0.05, 0.05, 'dark', -cw / 2 - 0.02, 0.62, -0.15);
+      mmBox(g, 0.02, 0.025, 0.55, 'chrome', -cw / 2 - 0.04, 0.66, 0);
+      mmRod(g, [-0.2, 0.3, -cd / 2], [-0.35, 1.7, -cd / 2 - 0.2], 0.015, 'yellow');
+      return mmFinish(g, 'tirechanger', { turntable, jaws, wheel, sideWheel, column, arm, shaft, mountHead, breaker, gauge, w: 1.0, d: 0.8 });
     }
 
 function wheelBalancerModel() {

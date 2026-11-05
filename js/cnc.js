@@ -249,7 +249,11 @@ async function haasCycle(ctx, u, title, ms, name) {
       const stock = u.vise.userData.stock || (u.vise.userData.stock = mmBox(u.vise, 0.24, 0.12, 0.12, /steel/i.test(name) ? 'steel' : 'alu', 0, 0.12, 0));
       stock.visible = true;
       const pts = strokePoints(PART_STROKES, 0.26, 0.12);
+      if (u.streams) u.streams.visible = true;
+      if (u.chips) { u.chips.visible = true; u.chips.scale.set(0.2, 1, 0.2); }
       await machineStep(ctx, title, ms, (k, t) => {
+        if (u.chips) u.chips.scale.set(0.2 + 0.8 * k, 1, 0.2 + 0.8 * k);
+        if (u.streams) u.streams.children.forEach((c, i) => { c.material.opacity = 0.45 + 0.15 * Math.sin(t * 20 + i); });
         const f = k * (pts.length - 1), i = Math.min(pts.length - 2, Math.floor(f)), uu = f - i;
         const a = pts[i], b = pts[i + 1];
         u.head.position.x = a.x + (b.x - a.x) * uu;
@@ -265,12 +269,15 @@ async function haasCycle(ctx, u, title, ms, name) {
         wsSpray(m, tip.clone().add(new THREE.Vector3(0, 0.12, 0.04)), { mat: u.coolMat, rate: 3, speed: 0.4, up: 0.1, size: 0.02, gravity: 6, floor: u.plate.y - 0.15, life: 0.45, max: 70 });
       });
       wsClearSpray(m);
+      if (u.streams) u.streams.visible = false;
       mmSetTower(u.tower, 'idle');
       u.head.position.set(0, u.headY, 0.05);
       // Open the doors again
       await ctx.animate(900, k => u.doors.forEach((d, i) => { const s = i ? 1 : -1; d.position.x = d.userData.closedX + s * (w / 4) * 0.85 * k; }));
       stock.visible = false;
       stock.scale.y = 1;
+      // (he blows the chips off the table and squeegees the coolant back into the tank)
+      if (u.chips) u.chips.visible = false;
     }
 
 function haasDef(spec) {

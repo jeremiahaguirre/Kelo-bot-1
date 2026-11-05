@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-05T07:00:05.211Z",
-  "runs": 5,
+  "updatedAt": "2026-11-05T20:06:08.633Z",
+  "runs": 6,
   "curiosities": [
-    "Ayase, Kanagawa"
+    "Aikō District, Kanagawa"
   ],
   "entries": [
     {
@@ -178,6 +178,38 @@
       },
       "shapeFrom": "Chōsen gakkō",
       "nextCuriosity": "Ayase, Kanagawa",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1793909168633",
+      "at": 1793909168633,
+      "brain": "procedural",
+      "topic": "Ayase, Kanagawa",
+      "title": "Dreaming of Hadano, Kanagawa",
+      "text": "Dear Diary, while nobody was around I looked up \"Ayase, Kanagawa\" and drifted from Ayase, Kanagawa to Hadano, Kanagawa. Hadano  is a city in Kanagawa Prefecture, Japan. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Ayase, Kanagawa",
+          "url": "https://en.wikipedia.org/wiki/Ayase%2C_Kanagawa",
+          "extract": "Ayase  is a city located in Kanagawa Prefecture, Japan. As of 1 June 2021, the city had an estimated population of 83,709 and a population density of 3800 persons per km2. The total area of the city is 22.28 km2 (8.60 sq mi)."
+        },
+        {
+          "title": "Hadano, Kanagawa",
+          "url": "https://en.wikipedia.org/wiki/Hadano%2C_Kanagawa",
+          "extract": "Hadano  is a city in Kanagawa Prefecture, Japan. As of 1 June 2021, the city had an estimated population of 163,787 and a population density of 1600 persons per km2. The total area of the city is 103.76 square kilometres (40.06 sq mi)."
+        }
+      ],
+      "concept": {
+        "name": "Kanagawa Kanagawa Loop",
+        "emoji": "🌀",
+        "definition": "The idea that ayase, kanagawa and hadano, kanagawa share a hidden pattern.",
+        "builtFrom": [
+          "Ayase, Kanagawa",
+          "Hadano, Kanagawa"
+        ]
+      },
+      "shapeFrom": "Hadano, Kanagawa",
+      "nextCuriosity": "Aikō District, Kanagawa",
       "coreMemory": null
     }
   ]

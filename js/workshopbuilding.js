@@ -38,7 +38,7 @@ const WS_WING = {
 // The land the Workshop adds and levels: its pad (cut into the cliff behind) and the vehicle lane
 // along the east edge down to a gravel beach. Other land (the plant's pad) joins it along z 0.6.
 const WORKSHOP_LAND = {
-  pad: { minX: WORKSHOP_SITE.x - WORKSHOP_SITE.w / 2 - 1.2, maxX: WORKSHOP_SITE.x + WORKSHOP_SITE.w / 2 + 1.2, minZ: WORKSHOP_SITE.z + WS_WING.z - WS_WING.d / 2 - 0.45, maxZ: WORKSHOP_SITE.z + WORKSHOP_SITE.d / 2 + 0.3 },
+  pad: { minX: WORKSHOP_SITE.x - WORKSHOP_SITE.w / 2 - 1.2, maxX: WORKSHOP_SITE.x + WORKSHOP_SITE.w / 2 + 1.2, minZ: WORKSHOP_SITE.z + WS_WING.z - WS_WING.d / 2 - 1.0, maxZ: WORKSHOP_SITE.z + WORKSHOP_SITE.d / 2 + 0.3 },
   lane: { minX: WORKSHOP_SITE.x + 5.85 - 2.6, maxX: WORKSHOP_SITE.x + WORKSHOP_SITE.w / 2 + 1.0, minZ: WORKSHOP_SITE.z, maxZ: 9.0 },
   // The hangar's pad (js/workshopbuilding.js, buildWorkshopHangar3D) and its apron down to the helipad
   hangar: { minX: 23.6, maxX: 45.6, minZ: -22.9, maxZ: -6.9 },

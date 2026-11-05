@@ -15,6 +15,8 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - Task 7 Workshop (pushed 2026-11-05): floors 1 to 3, hangar, north wing, forklift and three-stop elevator. The bigger garage hall and two full-size build bays move to 7b.
 - Task 8 Concrete and asphalt plant (pushed 2026-11-05): on `KELO_ADDED_LAND` beside the workshop. Smooth paved road (fixed in landscape.js roadMesh), pale cured concrete.
 - Task 5 Build anything (pushed 2026-11-05): BOMs down to the screw, list cards, builds in hangar bays 1 and 2, and the plane flies after training. Name clashes fixed at merge (buildSiteToWorld, buildGuitarModel).
+- **In progress (agent/plant-east):** the owner wants the plant to the RIGHT (east, +x) of the workshop. That means growing the map east (WORLD_MAX_X) and adding land through `KELO_ADDED_LAND`, moving `AGGREGATE_PLANT_SITE` there, and freeing the old site south of the workshop.
+- **In progress (me):** the full play-through QA (task 12), all the remaining harness scenarios.
 - **This week's plan is done.** Next, after the weekly reset: 7b runway field, map growth and bigger garage, then QA, audit phase 2, and the quality upgrade.
 - Task 8 plant: built on agent/plant; sent back to keep Kelo-1 out of the lake beside it, then merge.
 

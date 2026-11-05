@@ -1044,7 +1044,7 @@ function workshopAssemblyBays() {
 function workshopParkingSpots() {
       const S = WORKSHOP_SITE;
       return [...workshopHangarBays('parking'),
-        { key: 'wing', kind: 'parking', label: 'Wing aisle (drive-through)', x: S.x + (WS_WING.x - WS_WING.w / 2 + WS_WING.doors.shop.x - WS_WING.doors.shop.w / 2) / 2, y: WORKSHOP_PAD_Y + 0.12, z: S.z + WS_WING.aisleZ, w: WS_WING.doors.shop.x - WS_WING.doors.shop.w / 2 - (WS_WING.x - WS_WING.w / 2), d: WS_WING.aisleW, rotY: 0, lane: true }];
+        { key: 'wing', kind: 'parking', label: 'Wing aisle (drive-through)', x: S.x + (WS_WING.x - WS_WING.w / 2 + WS_WING.doors.shop.x + WS_WING.doors.shop.w / 2) / 2, y: WORKSHOP_PAD_Y + 0.12, z: S.z + WS_WING.aisleZ, w: WS_WING.doors.shop.x + WS_WING.doors.shop.w / 2 - (WS_WING.x - WS_WING.w / 2), d: WS_WING.aisleW, rotY: 0, lane: true }];
     }
 
 // Does something of this size (units, {x, y, z}) fit: through which doors, on the car elevator, in

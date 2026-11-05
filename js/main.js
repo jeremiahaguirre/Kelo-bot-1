@@ -600,6 +600,21 @@ window.addEventListener('DOMContentLoaded', () => {
       span.textContent = i.getAttribute('data-tab-emoji');
       i.replaceWith(span);
     });
+    // Buttons that are only an icon (menu, settings, close...) get an emoji too instead of a blank square
+    const ICON_EMOJI = { 'x': '✕', 'list': '☰', 'gear-six': '⚙️', 'gear': '⚙️', 'map-trifold': '🗺️', 'caret-right': '›', 'github-logo': '🐙', 'warehouse': '🏚️',
+      'upload-simple': '⬆️', 'download-simple': '⬇️', 'sun-horizon': '🌅', 'sliders-horizontal': '🎚️', 'notebook': '📓', 'lightning': '⚡', 'images': '🖼️',
+      'image-square': '🖼️', 'gift': '🎁', 'envelope-simple': '✉️', 'drop': '💧', 'cpu': '🖥️', 'copy': '📋', 'clock-counter-clockwise': '🕘',
+      'chat-circle-dots': '💬', 'brain': '🧠', 'archive': '🗄️', 'crosshair': '⌖', 'plus': '+', 'minus': '−' };
+    document.querySelectorAll('button i[class*="ph-"]').forEach(i => {
+      const btn = i.closest('button');
+      if (!btn || btn.innerText.trim()) return; // it has (visible) words; the icon is only decoration
+      const name = [...i.classList].map(c => c.replace(/^ph-/, '')).find(c => ICON_EMOJI[c]);
+      const span = document.createElement('span');
+      span.className = 'leading-none';
+      span.setAttribute('aria-hidden', 'true');
+      span.textContent = name ? ICON_EMOJI[name] : '•';
+      i.replaceWith(span);
+    });
   }, 6000);
   let savedTab = 'talk';
   try { savedTab = localStorage.getItem('kelo1_menu_tab') || 'talk'; } catch (e) {}

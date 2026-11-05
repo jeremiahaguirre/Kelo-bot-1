@@ -22,6 +22,10 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
   2. Then a full run-through of the game: Kelo-1, his tools, environment, machines and vehicles all work as intended. Fix what's found.
   3. Then 7b (runway field, map growth, bigger garage) and the quality upgrade.
   4. The workshop viewer (`agent/shopview`, paused WIP) is LAST.
+- Pushed 2026-11-05:
+  - Audit phase 2 (perf: JS 5.83 to 0.94 ms per frame).
+  - Movement fixes: box obstacles, robust A*, stuck watch, balloon on open ground, plane circuit over max(ground, water), no digging in buildings, no floating trees.
+  - Treehouse rope fix.
 - **Next: full run-through (owner, 2026-11-05)** of Kelo-1, tools, environment, machines and vehicles. Fix what's found. Specific checks:
   - Every shop machine asks for its real supplies, waits, and uses them up.
   - Products land in his inventory as real items he can use for their real purpose.

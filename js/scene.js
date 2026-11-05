@@ -311,7 +311,7 @@ function buildAlpineTerrainAndMountains3D() {
         if (typeof DISPOSAL_PIT !== 'undefined' && Math.hypot(tx - DISPOSAL_PIT.x, tz - DISPOSAL_PIT.z) < DISPOSAL_PIT.r + 1.5) continue; // Keep the pit clear
         // Not on a near-vertical face (the cliffs and the Workshop's cut behind town) and not on the
         // Workshop's or hangar's levelled land and its cut slopes, where a tree would hang in the air
-        if (groundTooSteep(tx, tz) || (typeof inWorkshopSite === 'function' && inWorkshopSite(tx, tz, 9))) continue;
+        if (groundTooSteep(tx, tz, 1.2) || (typeof inWorkshopSite === 'function' && inWorkshopSite(tx, tz, 3))) continue;
         const ty = groundUnderTrunk(tx, tz);
         if (ty > 9.5) continue;
         let tree;

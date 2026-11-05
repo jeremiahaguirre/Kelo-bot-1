@@ -445,7 +445,7 @@ function bomListCardHtml(req) {
         </div>`;
         return `<label class="flex items-start gap-2 px-2 py-1 rounded-lg ${got ? 'bg-emerald-500/10' : sent ? 'bg-sky-500/10' : 'hover:bg-slate-800/60'} cursor-pointer">
           <input type="checkbox" class="bom-line-cb mt-0.5 accent-amber-400" data-req-id="${id}" data-line-id="${escapeHtml(l.id)}" ${sent || got ? 'disabled' : 'checked'} />
-          <span class="flex-1 text-[11px] text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="font-mono font-bold text-amber-300">× ${escapeHtml(bomFmtQty(l.qty))}${l.unit ? ' ' + escapeHtml(l.unit) : ''}</span>${kindTag[l.kind] ? ` <span class="text-[9px] uppercase text-slate-500">${kindTag[l.kind]}</span>` : ''}</span>
+          <span class="flex-1 text-[11px] text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="font-mono font-bold text-amber-300">× ${escapeHtml(bomFmtQty(l.qty))}${l.unit ? ' ' + escapeHtml(l.unit) : ''}</span>${kindTag[l.kind] ? ` <span class="text-[9px] uppercase text-slate-500">${kindTag[l.kind]}</span>` : ''}${l.forShop ? ` <span class="text-[9px] text-violet-300">for my ${escapeHtml(typeof makerShopName === 'function' ? makerShopName(l.forShop) : l.forShop)}</span>` : ''}</span>
           <span class="text-[10px] font-mono shrink-0 ${got ? 'text-emerald-300' : sent ? 'text-sky-300' : 'text-slate-500'}">${got ? '✓ here' : sent ? '📮 sent' : `${bomFmtQty(Math.min(l.got, l.qty))}/${bomFmtQty(l.qty)}`}</span>
         </label>`;
       }).join('');
@@ -453,7 +453,7 @@ function bomListCardHtml(req) {
       return `<div class="p-4 rounded-2xl border ${req.fulfilled ? 'bg-slate-950/60 border-emerald-500/30' : 'bg-slate-950 border-amber-500/50 shadow-lg'} space-y-2.5" data-bom-card="${id}">
         <div class="flex items-center justify-between gap-2">
           <span class="text-xs font-bold text-white flex items-center gap-1.5"><span class="text-lg">${escapeHtml(req.icon)}</span><span>${escapeHtml(req.title)}</span></span>
-          <span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${req.fulfilled ? 'bg-emerald-500/20 text-emerald-300' : req.declined ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/25 text-amber-300 border border-amber-400/40'}">${req.declined ? '✗ Not now' : req.fulfilled ? '📮 All sent' : `${lines.length - left}/${lines.length} sent`}</span>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${req.fulfilled ? 'bg-emerald-500/20 text-emerald-300' : req.declined ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/25 text-amber-300 border border-amber-400/40'}">${req.declined ? '✗ Not now' : req.fulfilled ? '📮 All sent' : `${lines.filter(l => !l.make).length - left}/${lines.filter(l => !l.make).length} sent`}</span>
         </div>
         <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
         ${sub ? `<div class="text-[10px] font-mono text-slate-400">${lines.length} lines · ${escapeHtml(bomFmtQty(bomFastenerCount(sub)))} fasteners · ${bomSubReceived(sub)}/${lines.length} received</div>` : ''}

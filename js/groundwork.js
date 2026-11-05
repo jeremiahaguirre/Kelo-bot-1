@@ -25,7 +25,7 @@ const GROUND_JOBS = {
       { re: /asphalt rake|lute|\brake\b/i, ask: 'An asphalt rake', why: 'to smooth the asphalt before it cools' },
       { re: /road roller|plate compactor|compactor/i, ask: 'A walk-behind road roller', why: 'to roll the asphalt flat and hard' }
     ],
-    materials: [{ re: /asphalt|blacktop|tarmac/i, ask: 'A load of hot-mix asphalt', why: 'to pave over my gravel road' }]
+    materials: [{ re: /^(?!.*(rake|lute|roller)).*(asphalt|blacktop|tarmac)/i, ask: 'A load of hot-mix asphalt', why: 'to pave over my gravel road' }]
   },
   earthwork: {
     title: 'moving earth into hills and hollows', wiki: ['Earthworks (engineering)'],
@@ -174,7 +174,7 @@ async function paveRoad(id = 'any', why = '', originLabel = 'Paving a Road') {
         return 'needs-road';
       }
       if (!groundworkReady('paving', 'Paving a road')) return 'getting-ready';
-      const asphalt = hasItem(/asphalt|blacktop|tarmac/i);
+      const asphalt = hasItem(/^(?!.*(rake|lute|roller)).*(asphalt|blacktop|tarmac)/i);
       if (!startJob(e.x, e.z)) return false;
       try {
         if (typeof fetchFromStorehouse === 'function') await fetchFromStorehouse(hasItem(/wheelbarrow/i));

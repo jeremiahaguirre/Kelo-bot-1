@@ -112,6 +112,7 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
    - He researches each plant, requests materials, and uses them up.
    - His own asphalt can be used for paving, and it is wasted if it cools.
    - Concrete is used to pour pads, paths and foundations, and it cures over days.
+   - Status: done and tested on the merged main (with the Workshop): plantflow, reload, chat, haul pass with no page errors. The plant sits west of the Workshop's lane on added land (`KELO_ADDED_LAND`) with a dry walkway; roads are a continuous ribbon; cured concrete is pale with forms off.
 
 9. **Smarter vehicles** (`agent/vehicles`, started 2026-11-03):
    - Fix the refuel loop (he fills the snowmobile again and again and the tank stays empty), for every fuel type.

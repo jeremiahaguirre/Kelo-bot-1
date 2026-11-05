@@ -167,6 +167,8 @@ Kelo-bot-1/
 │   ├── eyecam.js        # "Through his eyes": a first-person camera at Kelo-1's eyes with look-around and a small HUD
 │   ├── minimap.js       # The live minimap: terrain, buildings, his vehicles, digs and builds, Kelo-1 and the camera's view, and the Map tab of everything he has changed
 │   ├── tryit.js         # The World tab's Try it panel: preview seasons, night and wind, send sample gifts
+│   ├── plants.js        # His concrete and asphalt plant beside the workshop: research, materials, mix designs, batches, hot mix that cools, concrete pours that cure, wear and service
+│   ├── plantmodels.js   # The plant in 3D: batch plant, asphalt plant, mixer truck, concrete pours, hover labels, built only when the camera is near
 │   ├── shop.js          # The shop website itself (shop.html)
 │   └── vendor/          # The other three.js r128 add-ons (Sky, RGBELoader, bloom post-processing), kept in the repo
 ├── assets/

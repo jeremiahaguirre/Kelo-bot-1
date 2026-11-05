@@ -7,6 +7,7 @@
 
 // Models come from js/gearmodels.js at full size; `scale` and `seatY` are only for anything without one
 const VEHICLE_TYPES = [
+  { kind: 'mixer', re: /concrete mixer truck|cement mixer truck|ready.?mix truck|transit mixer/i, mode: 'land', speed: 1.8, scale: 3.2, seatY: 1.1 },
   { kind: 'truck', re: /dump ?truck/i, mode: 'land', speed: 2.0, scale: 3.2, seatY: 1.1 },
   { kind: 'excavator', re: /excavator|digger|backhoe/i, mode: 'land', speed: 1.1, scale: 3.2, seatY: 1.0 },
   { kind: 'boat', re: /\b(boat|canoe|kayak|raft|rowboat|sailboat|paddle ?board)\b/i, mode: 'water', speed: 1.6, scale: 2.6, seatY: 0.25 },
@@ -393,7 +394,9 @@ async function haulDirt(site) {
         exMesh.userData.house.rotation.y = 0;
         exMesh.userData.boom.rotation.z = 0.75;
       } else if (exMesh) exMesh.rotation.y = excavator.rotY || 0;
-      // 4. Where does the dirt go? Into the lake if he is making new land (js/landfill.js), otherwise the Disposal Pit
+      // 4. Where does the dirt go? His plant's bins if they want aggregate (js/plants.js), into the lake if he is
+      // making new land (js/landfill.js), otherwise the Disposal Pit
+      if (typeof tipDugAggregateAtPlant === 'function' && await tipDugAggregateAtPlant(truck, amount, site)) return amount;
       // Now and then, rather than throw good dirt away, he decides to build land with it
       if (typeof startLandFill === 'function' && !activeLandFill() && Math.random() < 0.25) startLandFill(null, 'It seemed a waste to throw good dirt in a pit.');
       if (typeof dumpIntoLake === 'function' && activeLandFill()) {

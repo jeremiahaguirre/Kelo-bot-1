@@ -92,6 +92,16 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 
    - **Owner (2026-11-04):** the workshop must be big enough for his projects (the airplane being built) and vehicles (pickup and trailer, dump truck, mixer truck, cars on the lifts) to fit inside, with doors, bays and the car elevator sized to match. Every 3D printer, CNC machine and floor-2 machine must be visually, mechanically and functionally accurate: real layouts, motion that moves the right way during a job, real steps, materials and post-processing. Assembly builds move into the workshop's assembly bay (`workshopAssemblyBay`).
 
+   - **Owner (2026-11-05):**
+     - **Space:** a ton of space. The CNC shop must fit several big jobs at once with forklift aisles. The garage needs 4+ vehicle bays, including a drive-through bay for the pickup and trailer. The hangar needs room for 2+ builds plus vehicle parking.
+     - **New FLOOR 3:**
+       - **Glass blowing studio:** furnace with crucible, glory hole, annealer, marver, bench, blowpipes and punties, jacks, shears, blocks, frit and colour, fume hood, safety gear and gas. The real gather → blow → reheat → shape → punty → anneal process, with supplies used up.
+       - **Woodworking shop:** table saw, jointer, planer, bandsaw, drill press, router table, mitre saw, lathe, sanders, dust collection, benches, clamps, hand tools, finishing booth and a lumber rack. Real milling, joinery, glue-up, sanding and finishing, with supplies used up. It becomes the main path, ahead of the outdoor `WORK_BENCH`.
+     - **Large site:** a big yard and aprons around the building.
+     - **Runway field:** moved to its own task, 7b, after the workshop merge (2,000 m). Exposed as `RUNWAY_FIELD`, `developed: false`. It is reserved: off limits except for future runway jobs. The map size may grow if needed (owner): extend from the WORLD_* constants, keep existing content in place, keep old saves working and check frame time. He develops it later (clear, grade, compact, base, asphalt from his plant, markings, lights).
+     - **Car elevator:** serves every level (1, 2 and 3), with landing doors and call buttons on each floor.
+     - **Electric forklift with charging station:** the battery drains and he recharges it. It has pallets and racking, uses the car elevator between floors, follows the vehicle and one-of-each rules, and needs training know-how first.
+
 8. **Concrete and asphalt plant** (`agent/plant`, started), right beside the workshop. It positions itself from `WORKSHOP_SITE`.
    - **Ready-mix concrete batch plant:**
      - cement silos, aggregate bins, a weigh hopper, conveyor, water and admixture tanks, a twin-shaft mixer and a load-out
@@ -123,7 +133,8 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
     - New code in `js/talk.js` (after portal.js). Status: done on `agent/talk`, ready to merge. Talk tests pass on desktop (1024x720) and phone (390x844): empty state, saved name, Enter/Shift+Enter, thinking indicator, lookup cards, helicopter chip queued → doing → done (and no chip without one), photo and gift from +, load earlier, jump to latest, reload. Regressions reload, chat and skills: page errors none. Harness note: on a loaded machine use DOM clicks (`el.click()`) rather than `page.click`.
 
 ## Order of work (owner, 2026-11-05): one task at a time, in this order, to keep merge conflicts to a minimum
-1. Task 7 workshop (only helper running). It exposes `WORKSHOP_SITE`, its land constant and `workshopAssemblyBay()`.
+1. Task 7 workshop (only helper running). It exposes `WORKSHOP_SITE`, its land constant and `workshopAssemblyBay()`. Merge as soon as it is done.
+1b. **Task 7b: runway field and map growth** (owner, 2026-11-05). This comes after the workshop merge. A 2,000 m undeveloped field (about 3,200 units at 1.6 units per metre, plus a cleared strip) behind the workshop, exposed as `RUNWAY_FIELD` with `developed: false`, off limits except for runway jobs. Grow the map from the WORLD_* constants: keep content in place, use a coarse far-field terrain or LOD, update A* and the minimap and Map tab, keep old saves working, and measure frame time.
 2. Task 8 plant: resume `agent/plant`, rebase onto main after the workshop merge, join its site and land to the workshop's, then finish the road and concrete fixes.
 3. Task 5 build anything: resume `agent/assembly`, rebase, move the build into `workshopAssemblyBay()`, then finish the label, site, grammar and flight-shot fixes.
 4. Task 12 full play-through QA, done directly on main.

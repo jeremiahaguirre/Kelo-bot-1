@@ -348,7 +348,8 @@ function makerAdvance(o) {
       if (missing.length) {
         o.status = 'waiting';
         o.waitingFor = missing.slice();
-        requestSupplies(def, missing, `Making ${wsWhat(o.name)}`);
+        // Ask once for what isn't asked for yet; otherwise just keep waiting (no speech every tick)
+        if (missing.some(k => !supplyAwaited(k) && Date.now() - (workshopState().asked[k] || 0) > 2 * 3600000)) requestSupplies(def, missing, `Making ${wsWhat(o.name)}`);
         return o.status;
       }
       o.status = 'ready';

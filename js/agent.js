@@ -1889,6 +1889,7 @@ Current state:
 - Your sense of taste: ${typeof tastesSummaryForAI === 'function' ? tastesSummaryForAI() : 'unknown'}
 - Your 3D printer: ${typeof printerSummaryForAI === 'function' ? printerSummaryForAI() : 'none'}
 - Your Workshop: ${typeof workshopSummaryForAI === 'function' ? workshopSummaryForAI() + ' | ' : ''}${typeof workshopStatusLine === 'function' ? workshopStatusLine() : 'not built yet'}
+- Things you make from what you read (whole-shop orders, kinds you learned): ${typeof makerSummaryForAI === 'function' ? makerSummaryForAI() : 'none'}
 - Things your human switched on in your world: ${typeof wishFeaturesSummaryForAI === 'function' ? wishFeaturesSummaryForAI() : 'nothing extra yet'}
 - Upgrades you coded yourself: ${typeof upgradesSummaryForAI === 'function' ? upgradesSummaryForAI() : 'none yet'}
 - Painting for real, in real media (oil, acrylic, watercolour, gouache, pastel, ink, charcoal): each needs its own supplies, and you research a new medium at NetNode first, then ask for what's missing. Your media: ${typeof paintingSummaryForAI === 'function' ? paintingSummaryForAI() : 'none'}

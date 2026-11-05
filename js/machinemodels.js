@@ -641,7 +641,8 @@ function cncRouterModel(spec) {
       const shoe = mmCyl(zSlide, 0.1, 0.06, 'glass', 0.04, -0.46, 0);
       mmCyl(zSlide, 0.1, 0.03, 'black', 0.04, -0.5, 0);
       mmRod(zSlide, [0.12, -0.42, 0], [0.3, -0.05, 0.05], 0.035, 'black');
-      mmRod(gantry, [0.45, beamY - 0.05, 0.05], [0.25, beamY + 0.6, -d / 2], 0.035, 'black');
+      // (the hose goes up into the chain and back along it to the collector)
+      mmRod(gantry, [0.3, beamY + 0.05, 0.05], [0.05, beamY + 0.3, 0.05], 0.035, 'black');
       if (atc) {
         // Automatic tool changer rack along the back
         mmBox(g, 0.75, 0.05, 0.12, 'alu', -w / 2 + 0.5, bedTop + 0.02, -d / 2 + railW + 0.1);

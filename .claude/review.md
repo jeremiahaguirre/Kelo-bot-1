@@ -6,6 +6,56 @@ This review was done on branch `agent/review`, a copy of `main` at `9e25e49`. It
 - the fix
 - whether it is **safe now** or must **wait** until the nine branches are merged
 
+
+## Phase 2 status (2026-11-05, after all nine branches merged into `main` 0709fa4)
+
+Before/after: the same profiler on the same idle machine, default state, overview camera. "Before" is a pristine export of `0709fa4`.
+
+| | before (0709fa4) | after |
+|---|---|---|
+| JS per frame, render stubbed | 5.83 ms | **0.94 ms** |
+| script time in 20 s (render stubbed) | 7705 ms | **1284 ms** |
+| `getIslandGroundHeight` per call (direct timing) | 3.39 ms | **0.0017 ms** |
+| new `Vector3` per frame | 417 | **32** (30 of them are POI pins, see below) |
+| minor GCs in 20 s (render stubbed) | 246 (630 ms) | **98 (60 ms)** |
+| draw calls per full frame, incl. shadow pass | 2890 | **2181** |
+| close to Kelo-1 | 1999 | **1481** |
+| meshes / shadow casters | 2167 / 1800 | 1785 / 1353 |
+| triangles | 337 k | 335 k |
+| requestAnimationFrame loops | 7 | **1** |
+| stress save: lore key / one save | 466 KB / 10.1 ms | 325 KB / 6.1 ms |
+
+Done (one commit each on `agent/review`):
+- Hotspot 1, ground height from the terrain grid: **done**.
+- Hotspot 2, Ogopogo with scratch vectors and an off-screen skip: **done**.
+- Hotspots 3–5, draw calls:
+  - house, yard lines and hangar joined per material (`mergeStaticMeshes`): **done**
+  - small casters only near the camera target: **done**
+  - the workshop already merged itself (`wsMergeStatic`)
+  - the plant loads its detail on demand and animates, so it was left alone
+- Hotspot 6, material de-duplication: **skipped**. No draw-call gain on its own, and shared materials are mutated (seasons, lights).
+- Hotspot 7, one frame loop (`keloEveryFrame`): **done**. Wind, weather, snow, plant care, perf checks and the propeller no longer lag a frame.
+- Hotspot 8, lookup maps capped: **done**. Splitting the 300 KB main brain is still open.
+- Hotspot 12, kite and fishing-line GPU leak (`setLineEnds`): **done**.
+- B2, `doWhenFree` as a queue with expiry and de-dupe: **done**.
+- B3, the glint no longer overwrites a busy mood: **done**.
+- B4, unique request ids: **done**.
+- B5, one de-dupe rule (`hasOpenRequest`), plus no repeat AI questions: **done**.
+- B6, emoji on icon-only buttons when the icon font fails: **done**.
+- B7, Follow button 60×40 on phones: **done**.
+- Diary vitals are rounded on display.
+- The two auto-quality systems are merged into one watcher: **done**.
+- Dead code: 12 functions removed. `weldingSummaryForAI` is now used in the AI prompt.
+  - Kept as unused APIs: `storehouseLevelOf` (test harnesses), `hasReadyMix`/`useReadyMixFor` (nothing pours concrete with them yet), `workshopMakePart`, `workshopStation`, `workshopAssemblyBays`, `workshopParkingSpots`.
+- Skipped:
+  - one shared sleep helper (77 call sites of churn)
+  - splitting agent.js and scene.js (not purely mechanical: shared top-level state and load order)
+
+Still open:
+- hotspots 9–11 (the remaining per-frame `Vector3`s in `projectLabelsToScreen`, the per-frame text regex, the spinner traversal)
+- 13–15 (minimap redraw rate, `exploreFitToPanel` polling, cloud drift tied to frame rate)
+- splitting the main save key
+
 ## How it was measured
 
 The tools live in the scratchpad (`/tmp/claude-0/-home-user/11ef1b8d-4709-5592-8d3c-d96184b34ee6/scratchpad/review/`):

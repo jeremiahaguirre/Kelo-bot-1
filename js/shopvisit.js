@@ -356,7 +356,13 @@ function svMachineInfo(def) {
       const run = typeof workshopJobRunning !== 'undefined' ? workshopJobRunning : null;
       const trip = typeof workshopTrip !== 'undefined' ? workshopTrip : {};
       const stop = trip.active ? trip.stop : null;
-      const here = Boolean(stop && stop.key === def.key);
+      // he is working at it: the trip's stop names it, or (stops that only name a spot) he stands at it
+      // during its job
+      let here = Boolean(stop && stop.key === def.key);
+      if (!here && trip.active && run && run.key === job.key && def.at && typeof indoorTrip !== 'undefined' && indoorTrip.pos && trip.floor === def.floor) {
+        const sd = machineStand(def), kx = indoorTrip.pos.x - WORKSHOP_SITE.x, kz = indoorTrip.pos.z - WORKSHOP_SITE.z;
+        here = Math.hypot(kx - sd.x, kz - sd.z) < 1.3 || Math.hypot(kx - def.at.x, kz - def.at.z) < Math.max(def.size ? Math.max(def.size.w, def.size.d) / 2 : 0.6, 0.6) + 0.9;
+      }
       const supplies = svSupplies(job);
       const missing = supplies.filter(s => !s.have);
       const worn = supplies.filter(s => s.have && s.kind === 'tooling' && /^([01]) of \d+ left/.test(s.note));
@@ -1001,6 +1007,8 @@ function svBuildDom() {
       while (wrap.firstElementChild) host.appendChild(wrap.firstElementChild);
 
       host.addEventListener('click', ev => {
+        // a tap on the small look-at card opens it in full
+        if (!shopVisit.pinned && shopVisit.looked && ev.target.closest && ev.target.closest('#svCard')) { shopVisit.pinned = shopVisit.looked; return svRenderCard(); }
         const t = ev.target.closest && ev.target.closest('[data-sv], [data-sv-area], [data-sv-floor], [data-sv-chip], [data-sv-go]');
         if (!t || !host.contains(t)) return;
         const act = t.getAttribute('data-sv');

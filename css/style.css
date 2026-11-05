@@ -300,6 +300,7 @@ body.shopvisit-on #btnShowMinimap, body.shopvisit-on [data-where-kelo], body.sho
 #svCross { position: absolute; z-index: 15; left: 50%; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 9999px; background: rgba(255, 255, 255, 0.75); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5); pointer-events: none; transition: transform 0.15s, background 0.15s; }
 #svCross.sv-cross-on { background: #fbbf24; transform: scale(1.6); }
 @media (pointer: coarse) { .sv-help { display: none; } }
+#svCard:not(.sv-card-pinned) { cursor: pointer; }
 @media (max-width: 639px) {
   #svHud { left: 8px; right: 8px; width: auto; transform: none; }
   .sv-area-txt { display: none; }
@@ -308,3 +309,4 @@ body.shopvisit-on #btnShowMinimap, body.shopvisit-on [data-where-kelo], body.sho
   #svCard { left: 8px; right: 8px; width: auto; bottom: calc(var(--explore-above-panel) + 124px); max-height: 36%; }
   #svCard:not(.sv-card-pinned) .sv-sect, #svCard:not(.sv-card-pinned) .sv-supplies, #svCard:not(.sv-card-pinned) .sv-facts, #svCard:not(.sv-card-pinned) .sv-muted { display: none; }
 }
+@media (pointer: coarse) and (max-width: 639px) { #svCard { right: 68px; } }

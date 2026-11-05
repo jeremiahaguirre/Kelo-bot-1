@@ -302,7 +302,7 @@ body.shopvisit-on #btnShowMinimap, body.shopvisit-on [data-where-kelo], body.sho
 @media (pointer: coarse) { .sv-help { display: none; } }
 #svCard:not(.sv-card-pinned) { cursor: pointer; }
 @media (max-width: 639px) {
-  #svHud { left: 8px; right: 8px; width: auto; transform: none; }
+  #svHud { left: 8px; right: 8px; width: auto; transform: none; top: max(var(--explore-top), 68px); }
   .sv-area-txt { display: none; }
   .sv-where { flex-basis: 100%; padding: 2px 6px; }
   #svList { left: 8px; right: 8px; width: auto; top: calc(var(--explore-top) + 136px); max-height: 42%; }

@@ -567,7 +567,8 @@ function svGoToTarget(t) {
         // a step back from where he stands to work it, so you see the whole machine
         const st = machineStand(t.def), ax = S.x + t.def.at.x, az = S.z + t.def.at.z;
         const ex = S.x + st.x - ax, ez = S.z + st.z - az, el = Math.hypot(ex, ez) || 1;
-        spot = svFindFree(S.x + st.x + ex / el * 0.9, S.z + st.z + ez / el * 0.9, floor, 0.8) || svFindFree(S.x + st.x, S.z + st.z, floor, 2.5);
+        const back = camera && camera.aspect < 0.8 ? 1.7 : 0.9;   // (a tall phone screen sees less across)
+        spot = svFindFree(S.x + st.x + ex / el * back, S.z + st.z + ez / el * back, floor, 0.8) || svFindFree(S.x + st.x, S.z + st.z, floor, 2.5);
       }
       if (!spot) {
         const r = Math.max(t.box.max.x - t.box.min.x, t.box.max.z - t.box.min.z) / 2 + 0.7;

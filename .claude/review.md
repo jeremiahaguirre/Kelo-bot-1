@@ -51,6 +51,12 @@ Done (one commit each on `agent/review`):
   - one shared sleep helper (77 call sites of churn)
   - splitting agent.js and scene.js (not purely mechanical: shared top-level state and load order)
 
+Found in the final watch: `noticeNewPlaces` (plants.js) gives up if he hasn't reached the Workshop within 150 s and retries every 20 s.
+- At normal frame rates he gets there and notices both places in 26 s.
+- Under the SwiftShader harness (about 1 fps) he never arrived, so he spent the whole 10 minutes walking to the Workshop.
+- A device below about 10 fps would loop the same way.
+- Fix later: compute the walk time from the distance and speed, or keep walking instead of breaking off.
+
 Still open:
 - hotspots 9–11 (the remaining per-frame `Vector3`s in `projectLabelsToScreen`, the per-frame text regex, the spinner traversal)
 - 13–15 (minimap redraw rate, `exploreFitToPanel` polling, cloud drift tied to frame rate)

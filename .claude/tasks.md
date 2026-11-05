@@ -128,6 +128,11 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
     - Accessible (labels, focus, aria-live), re-render only on change, escapeHtml everywhere, no inline handlers (CSP).
     - New code in `js/talk.js` (after portal.js). Status: done on `agent/talk`, ready to merge. Talk tests pass on desktop (1024x720) and phone (390x844): empty state, saved name, Enter/Shift+Enter, thinking indicator, lookup cards, helicopter chip queued → doing → done (and no chip without one), photo and gift from +, load earlier, jump to latest, reload. Regressions reload, chat and skills: page errors none. Harness note: on a loaded machine use DOM clicks (`el.click()`) rather than `page.click`.
 
+## Usage budget (2026-11-05): the owner is at 76% of weekly usage
+- This week: merge the workshop, then finish the concrete and asphalt plant (task 8), then build anything (task 5). Both are nearly done.
+- After the weekly reset: 7b runway field, map growth and the bigger garage, then the full play-through QA, audit phase 2, and the quality upgrade.
+- Keep helper runs lean: one helper at a time, a final test pass only, and few re-shoots.
+
 ## Order of work (owner, 2026-11-05): one task at a time, in this order, to keep merge conflicts to a minimum
 1. Task 7 workshop (only helper running). It exposes `WORKSHOP_SITE`, its land constant and `workshopAssemblyBay()`. Merge as soon as it is done.
 1b. **Task 7b: runway field and map growth** (owner, 2026-11-05). This comes after the workshop merge. A 2,000 m undeveloped field (about 3,200 units at 1.6 units per metre, plus a cleared strip) behind the workshop, exposed as `RUNWAY_FIELD` with `developed: false`, off limits except for runway jobs. Grow the map from the WORLD_* constants: keep content in place, use a coarse far-field terrain or LOD, update A* and the minimap and Map tab, keep old saves working, and measure frame time. **Then expand the workshop on the new land:** a full 4+ bay garage hall (drive-through bay for the pickup and trailer, room for the dump and mixer trucks) and room for two full-size builds. The current site (x 24 to 62, z -22.9 to -6.8) is full, so these could not fit before.

@@ -69,7 +69,7 @@ async function pcbMillStep(ctx) {
       useWorkshopSupply('pcbs', 1, 'PCB milling');
       useWorkshopSupply('millBits', 1, 'PCB milling');
       const board = mmBox(ctx.model.userData.inner, 0.3, 0.01, 0.2, 'copper', 0, 0.46, 0);
-      await machineStep(ctx, 'Milling the traces out of copper-clad FR-4', 6000, (k, t) => {
+      await machineStep(ctx, 'Milling the traces', 6000, (k, t) => {
         u.gantry.position.x = Math.sin(t * 3.1) * u.travel.x;
         u.head.position.z = Math.sin(t * 4.7) * u.travel.z;
         board.material = k > 0.5 ? mmMat('pcb') : mmMat('copper');
@@ -83,7 +83,7 @@ async function laserStep(ctx, name) {
       const u = ctx.model.userData;
       useWorkshopSupply('acrylic', 1, 'Laser cutting');
       const sheet = mmBox(ctx.model, 0.7, 0.01, 0.45, 'glass', 0, 0.76, 0);
-      await machineStep(ctx, 'Lid shut, fume extraction on, cutting the acrylic', 6000, (k, t) => {
+      await machineStep(ctx, 'Laser cutting the acrylic', 6000, (k, t) => {
         u.gantry.position.x = Math.sin(t * 2.3) * u.travel.x;
         u.head.position.z = Math.cos(t * 3.4) * u.travel.z;
         wsGlowSet(u.beam, Math.random() > 0.15 ? 1 : 0.2);
@@ -146,7 +146,7 @@ registerWorkshopMachine({
           const m = ctx.model, u = m.userData;
           useWorkshopSupply('solderPaste', 1, 'Paste printing');
           const b = carry(m);
-          await machineStep(ctx, 'Printing solder paste through the stencil', 3500, (k, t) => {
+          await machineStep(ctx, 'Solder paste through the stencil', 3500, (k, t) => {
             boardThrough(m, b, Math.min(1, k * 2.2) * 0.5);
             if (k > 0.45 && k < 0.8) u.squeegee.position.x = -0.15 + (k - 0.45) / 0.35 * 0.3;
             b.userData.paste.visible = k > 0.6;
@@ -183,7 +183,7 @@ registerWorkshopMachine({
           const m = ctx.model, u = m.userData;
           const b = carry(m);
           mmSetTower(u.tower, 'run');
-          await machineStep(ctx, 'Reflow: preheat, soak, 245 degree peak, cool', 6000, (k) => {
+          await machineStep(ctx, 'Reflow: preheat, soak, peak, cool', 6000, (k) => {
             boardThrough(m, b, k);
             u.zones.forEach((z, i) => wsGlowSet(z, i < 6 ? 0.3 + i * 0.12 : 0.15));
           }, 'The paste goes grey, then shiny: every joint wets at once.');
@@ -212,7 +212,7 @@ registerWorkshopMachine({
           useWorkshopSupply('flux', 1, 'Wave soldering');
           useWorkshopSupply('solderBar', 1, 'Wave soldering');
           const b = carry(m);
-          await machineStep(ctx, 'Flux, preheat, then over the solder wave for the connectors', 4500, (k, t) => {
+          await machineStep(ctx, 'Over the solder wave', 4500, (k, t) => {
             boardThrough(m, b, k);
             wsGlowSet(u.preheat, 0.6);
             wsGlowSet(u.pot, 0.8);
@@ -242,7 +242,7 @@ registerWorkshopMachine({
           return true;
         } },
         { floor: 2, key: 'esd', act: async ctx => {
-          if (aoiFound) await machineStep(ctx, 'Reworking the tombstoned resistor with the iron', 1800);
+          if (aoiFound) await machineStep(ctx, 'Reworking the tombstoned resistor', 1800);
           await machineStep(ctx, 'Assembling it and flashing the firmware', 2600, null, 'Board in, panel on, screws in. Flashing... done!');
           await machineStep(ctx, `Testing ${plainItem(gadget.name).toLowerCase()}`, 1800, null, `It works! ${gadget.emoji}`);
           return true;

@@ -222,7 +222,7 @@ function resinPlan(def, job, prefix, products, label) {
             key, act: async ctx => {
               const u = ctx.model.userData.inner.userData;
               useWorkshopSupply('gloves', 1, 'Resin printing');
-              await machineStep(ctx, 'Gloves on, shaking the resin and filling the tank', 2000, () => {}, 'Nitrile gloves on. Shake the resin well, fill the tank to the line.');
+              await machineStep(ctx, 'Shaking the resin, filling the tank', 2000, () => {}, 'Nitrile gloves on. Shake the resin well, fill the tank to the line.');
               useWorkshopSupply('resin', 1, `${label} print`);
               const part = wsPartOn(ctx.model.userData.inner, name, 0.1, { y: -0.012 });
               part.rotation.x = Math.PI;
@@ -357,7 +357,7 @@ registerWorkshopMachine({
           key, act: async ctx => {
             const u = ctx.model.userData;
             useWorkshopSupply('gloves', 1, 'Metal powder');
-            await machineStep(ctx, 'Respirator and gloves on, loading 316L powder', 2200, null, 'The powder goes in through the glove ports.');
+            await machineStep(ctx, 'Loading 316L powder (respirator on)', 2200, null, 'The powder goes in through the glove ports.');
             useWorkshopSupply('steelPowder', 1, 'DMLS build');
             useWorkshopSupply('argonHP', 1, 'Argon purge');
             mmSetTower(u.tower, 'wait');
@@ -404,12 +404,12 @@ registerWorkshopMachine({
         {
           key, act: async ctx => {
             const u = ctx.model.userData;
-            await machineStep(ctx, 'Loading powder and checking the agent cartridges', 2000);
+            await machineStep(ctx, 'Loading powder, checking the agents', 2000);
             useWorkshopSupply('pa12', 1, 'MJF build');
             useWorkshopSupply('fusingAgent', 1, 'MJF build');
             useWorkshopSupply('detailingAgent', 1, 'MJF build');
             mmSetTower(u.tower, 'run');
-            await machineStep(ctx, `Jetting agents and fusing ${wsWhat(name)}`, 8000, (k, t) => {
+            await machineStep(ctx, `Fusing ${wsWhat(name)}`, 8000, (k, t) => {
               const sweep = Math.sin(t * 2.2);
               u.recoater.position.x = sweep * 0.24;
               u.dot.position.x = -sweep * 0.24;
@@ -460,7 +460,7 @@ registerWorkshopMachine({
             const full = part.scale.x;
             part.scale.y = 0.01;
             mmSetTower(u.tower, 'run');
-            await machineStep(ctx, `Jetting ${wsWhat(name)} and UV curing each pass`, 8000, (k, t) => {
+            await machineStep(ctx, `Jetting ${wsWhat(name)}`, 8000, (k, t) => {
               u.block.position.x = Math.sin(t * 2.6) * 0.38;
               wsGlowSet(u.lamp, 0.7 + Math.random() * 0.3);
               u.tray.position.y = 1.06 - k * 0.02;
@@ -501,8 +501,8 @@ registerWorkshopMachine({
             useWorkshopSupply('bjPowder', 1, 'Binder jet build');
             useWorkshopSupply('binder', 1, 'Binder jet build');
             mmSetTower(u.tower, 'run');
-            await machineStep(ctx, `Jetting binder into the powder for ${wsWhat(name)}`, 7000, (k, t) => powderBedFrame(u, k, t, { noBeam: true, glow: 0.25 }));
-            await machineStep(ctx, 'Curing the bed so the green part holds together', 2200, k => wsGlowSet(u.window, 0.6 * Math.sin(k * Math.PI)));
+            await machineStep(ctx, `Binder jetting ${wsWhat(name)}`, 7000, (k, t) => powderBedFrame(u, k, t, { noBeam: true, glow: 0.25 }));
+            await machineStep(ctx, 'Curing the bed (green part)', 2200, k => wsGlowSet(u.window, 0.6 * Math.sin(k * Math.PI)));
             wsMachineIdle(u);
             return true;
           }
@@ -594,7 +594,7 @@ registerWorkshopMachine({
             await machineStep(ctx, 'Pumping the chamber down to a vacuum', 3000, k => { if (u.vac) u.vac.rotation.z = -k * 2.6; }, 'An electron beam only works in a vacuum.');
             await machineStep(ctx, 'Preheating the powder bed', 2000, k => wsGlowSet(u.window, k * 0.8));
             mmSetTower(u.tower, 'run');
-            await machineStep(ctx, `Melting ${wsWhat(name)} with the electron beam`, 8000, (k, t) => powderBedFrame(u, k, t, { layers: 36, glow: 0.95 }));
+            await machineStep(ctx, `EBM melting ${wsWhat(name)}`, 8000, (k, t) => powderBedFrame(u, k, t, { layers: 36, glow: 0.95 }));
             await machineStep(ctx, 'Cooling down under helium', 1800, k => wsGlowSet(u.window, 0.9 * (1 - k)));
             wsMachineIdle(u);
             return true;

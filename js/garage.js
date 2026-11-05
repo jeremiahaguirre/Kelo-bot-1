@@ -147,7 +147,7 @@ registerWorkshopMachine({
     // Up it goes
     at('lift2', side, async ctx => {
       useWorkshopSupply('gloves', 1, 'Garage work');
-      await machineStep(ctx, 'Setting the lift arms under the jacking points', 1800, null, 'Pads under the pinch welds, all four.');
+      await machineStep(ctx, 'Lift arms under the jacking points', 1800, null, 'Pads under the pinch welds, all four.');
       await machineStep(ctx, `Raising the ${vname}`, 100);
       await liftTo(ctx, service === 'oil' || service === 'engine' ? 1.9 : 1.2, 2800);
       machineSkill('lift2', 2);
@@ -157,13 +157,13 @@ registerWorkshopMachine({
       at('compressor', null, async ctx => {
         const u = ctx.model.userData;
         useWorkshopSupply('airToolOil', 1, 'Air tools');
-        await machineStep(ctx, 'Starting the compressor and oiling the impact wrench', 2200, (k, t) => { u.fan.rotation.y = t * 30; if (u.gauge) u.gauge.rotation.z = -k * 2; }, 'Tank up to 175 psi. A few drops of air tool oil in the wrench.');
+        await machineStep(ctx, 'Starting the compressor', 2200, (k, t) => { u.fan.rotation.y = t * 30; if (u.gauge) u.gauge.rotation.z = -k * 2; }, 'Tank up to 175 psi. A few drops of air tool oil in the wrench.');
         machineSkill('compressor', 2);
         return true;
       });
       at('airtools', side, async ctx => {
         ctx.face(LIFT2.x, LIFT2.z + 1.5);
-        await machineStep(ctx, 'Zipping the lug nuts off with the impact wrench', 2400, null, 'Brrrrt! Brrrrt! Four wheels off.');
+        await machineStep(ctx, 'Lug nuts off with the impact wrench', 2400, null, 'Brrrrt! Brrrrt! Four wheels off.');
         machineSkill('airtools', 2);
         return true;
       });
@@ -182,7 +182,7 @@ registerWorkshopMachine({
         if (u.sideWheel) u.sideWheel.visible = false;
         // 2. On the turntable: jaws clamp the rim, the column tilts in, the head comes down, it turns
         u.wheel.visible = true;
-        await machineStep(ctx, 'Demounting the old tire and mounting the new one', 4500, (k, t) => {
+        await machineStep(ctx, 'Demounting the old tire, new one on', 4500, (k, t) => {
           const clamp = Math.min(1, k * 5);
           (u.jaws || []).forEach(j => { j.position.x = 0.27 - 0.06 * clamp; });
           if (u.column) u.column.rotation.x = k < 0.12 ? -0.35 * (1 - k / 0.12) : k > 0.92 ? -0.35 * (k - 0.92) / 0.08 : 0;
@@ -217,7 +217,7 @@ registerWorkshopMachine({
       at('brakelathe', null, async ctx => {
         const u = ctx.model.userData;
         u.rotor.visible = true;
-        await machineStep(ctx, 'Turning the brake rotors true on the lathe', 4500, (k, t) => { u.arbor.rotation.x = t * 20; u.bits.position.y = 1.12 + Math.sin(k * Math.PI) * 0.02; });
+        await machineStep(ctx, 'Turning the brake rotors true', 4500, (k, t) => { u.arbor.rotation.x = t * 20; u.bits.position.y = 1.12 + Math.sin(k * Math.PI) * 0.02; });
         u.rotor.visible = false;
         machineSkill('brakelathe', 4);
         return true;
@@ -225,7 +225,7 @@ registerWorkshopMachine({
       at('lift2', side, async ctx => {
         useWorkshopSupply('brakeCleaner', 1, 'Brakes');
         useWorkshopSupply('brakePads', 1, 'Brakes');
-        await machineStep(ctx, 'Cleaning the calipers and fitting the new pads', 3500, null, 'Brake cleaner, new pads, a dab of grease on the slides.');
+        await machineStep(ctx, 'Calipers cleaned, new pads in', 3500, null, 'Brake cleaner, new pads, a dab of grease on the slides.');
         return true;
       });
     }
@@ -240,21 +240,21 @@ registerWorkshopMachine({
         pan.position.set(-0.2, 0, -1.6);
         lift.add(pan);
         ctx.reach(2.2);
-        await machineStep(ctx, 'Pulling the drain plug: old oil into the drain pan', 4000, (k, t) => { stream.visible = k < 0.85; stream.scale.y = 1.6 * (1 - k * 0.3); stream.position.y = 0.11 + stream.scale.y / 2; }, 'Dark and thin. It was overdue.');
+        await machineStep(ctx, 'Pulling the drain plug', 4000, (k, t) => { stream.visible = k < 0.85; stream.scale.y = 1.6 * (1 - k * 0.3); stream.position.y = 0.11 + stream.scale.y / 2; }, 'Dark and thin. It was overdue.');
         useWorkshopSupply('oilFilter', 1, 'Oil change');
-        await machineStep(ctx, 'Spinning off the old filter, a new one on', 2500, null, 'A smear of fresh oil on the gasket, hand tight plus a quarter.');
+        await machineStep(ctx, 'Changing the oil filter', 2500, null, 'A smear of fresh oil on the gasket, hand tight plus a quarter.');
         lift.remove(pan);
         ctx.idle();
         await liftTo(ctx, 0, 2200);
         useWorkshopSupply('engineOil', 1, 'Oil change');
-        await machineStep(ctx, 'Filling it with fresh 5W-30 and checking the dipstick', 3000, null, 'Right on the full mark.');
+        await machineStep(ctx, 'Filling with fresh 5W-30', 3000, null, 'Right on the full mark.');
         return true;
       });
     }
     if (service === 'engine') {
       at('hoist', null, async ctx => {
         const u = ctx.model.userData;
-        await machineStep(ctx, 'Disconnecting hoses, wiring and the motor mounts', 2500);
+        await machineStep(ctx, 'Disconnecting hoses, wiring, mounts', 2500);
         await liftTo(ctx, 0, 2000);
         u.engine.visible = true;
         await machineStep(ctx, 'Pulling the engine with the hoist', 4500, (k) => { u.boom.rotation.x = -0.2 * k; u.hook.position.y = 0.5 * k; ctx.model.position.z = 4.6 - Math.sin(k * Math.PI) * 0.9; });
@@ -271,14 +271,14 @@ registerWorkshopMachine({
       at('press', null, async ctx => {
         const u = ctx.model.userData;
         useWorkshopSupply('gasketSet', 1, 'Engine rebuild');
-        await machineStep(ctx, 'Pressing new bearings in on the shop press', 3000, k => { u.ram.position.y = 1.4 - Math.sin(k * Math.PI) * 0.45; });
+        await machineStep(ctx, 'Pressing new bearings in', 3000, k => { u.ram.position.y = 1.4 - Math.sin(k * Math.PI) * 0.45; });
         machineSkill('press', 3);
         return true;
       });
       at('hoist', null, async ctx => {
         const u = ctx.model.userData;
         useWorkshopSupply('engineOil', 1, 'Engine rebuild');
-        await machineStep(ctx, 'New gaskets, then lowering the engine back in', 4000, (k) => { u.boom.rotation.x = -0.2 * (1 - k); u.hook.position.y = 0.5 * (1 - k); });
+        await machineStep(ctx, 'New gaskets, engine back in', 4000, (k) => { u.boom.rotation.x = -0.2 * (1 - k); u.hook.position.y = 0.5 * (1 - k); });
         u.engine.visible = false;
         return true;
       });
@@ -289,7 +289,7 @@ registerWorkshopMachine({
         useWorkshopSupply('migWire', 1, 'Frame repair');
         useWorkshopSupply('shieldGas', 1, 'Frame repair');
         ctx.face(LIFT2.x, LIFT2.z);
-        await machineStep(ctx, 'Grinding the crack and MIG welding the frame', 4500, (k, t) => { wsGlowSet(u.tip, Math.random()); }, 'Helmet down. A nice stack of dimes.');
+        await machineStep(ctx, 'MIG welding the cracked frame', 4500, (k, t) => { wsGlowSet(u.tip, Math.random()); }, 'Helmet down. A nice stack of dimes.');
         wsGlowSet(u.tip, 0);
         machineSkill('migtig', 4);
         return true;
@@ -297,7 +297,7 @@ registerWorkshopMachine({
     }
     if (service === 'tires' || service === 'brakes') {
       at('airtools', side, async ctx => {
-        await machineStep(ctx, 'Wheels back on, torqued to spec in a star pattern', 2500, null, 'Impact wrench to snug, then the torque wrench: 140 ft-lb.');
+        await machineStep(ctx, 'Wheels on, torqued in a star pattern', 2500, null, 'Impact wrench to snug, then the torque wrench: 140 ft-lb.');
         return true;
       });
     }

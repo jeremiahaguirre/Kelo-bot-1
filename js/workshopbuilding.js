@@ -565,6 +565,8 @@ function buildWorkshop3D() {
         mmCyl(call, 0.035, 0.03, 'lampGreen', -0.06, 1.47, 0, { axis: 'x' });
         mmCyl(call, 0.035, 0.03, 'lampAmber', -0.06, 1.35, 0, { axis: 'x' });
         mmLabel(call, String(i + 1), 0.22, 0.22, -0.06, 1.75, 0, { bg: '#111827', fg: '#facc15', ry: -Math.PI / 2 });
+        // a big floor sign over the landing gate, facing the landing
+        mmLabel(wsGroup, `FLOOR ${i + 1}  •  CAR ELEVATOR`, 1.6, 0.34, gx - 0.12, y + 2.55, WS_LIFT_GATE, { bg: '#facc15', fg: '#111827', ry: -Math.PI / 2 });
         // the landing gate, folded open to one side of the doorway
         const gate = mmGroup(wsGroup, gx + 0.1, y, WS_LIFT_GATE - 0.95);
         for (let k = 0; k < 4; k++) mmBox(gate, 0.03, 1.9, 0.12, i === 0 ? 'steel' : yellow, 0, 0, k * 0.08);

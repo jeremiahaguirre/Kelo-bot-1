@@ -57,16 +57,47 @@ function groundDugAt(x, z) {
         + (typeof pitDepressionAt === 'function' ? pitDepressionAt(x, z) : 0);
     }
 
+// Height of the drawn ground mesh at (x, z), read straight from its grid (the same two triangles
+// per cell that a raycast would hit), or null off the mesh. Raycasting all ~70k triangles cost
+// several milliseconds a call; this is a handful of array reads.
+let terrainGrid = null;
+function terrainMeshHeightAt(x, z) {
+      const mesh = terrainGroundMesh;
+      if (!mesh) return null;
+      const geo = mesh.geometry, a = geo.attributes.position.array;
+      if (!terrainGrid || terrainGrid.geo !== geo) {
+        const cols = geo.parameters.widthSegments + 1, rows = geo.parameters.heightSegments + 1;
+        // Cell size from the whole span: one float32 cell's difference drifts across 250 cells
+        terrainGrid = { geo, cols, rows, x0: a[0], z0: a[2], dx: (a[(cols - 1) * 3] - a[0]) / (cols - 1), dz: (a[(rows - 1) * cols * 3 + 2] - a[2]) / (rows - 1) };
+      }
+      const g = terrainGrid;
+      const fx = (x - mesh.position.x - g.x0) / g.dx, fz = (z - mesh.position.z - g.z0) / g.dz;
+      if (!(fx >= 0 && fz >= 0 && fx <= g.cols - 1 && fz <= g.rows - 1)) return null;
+      const ix = Math.min(g.cols - 2, Math.floor(fx)), iz = Math.min(g.rows - 2, Math.floor(fz));
+      const u = fx - ix, v = fz - iz;
+      // PlaneGeometry splits each cell along the a(ix,iz)..c(ix+1,iz+1) square's b-d diagonal
+      const ya = a[(ix + g.cols * iz) * 3 + 1], yb = a[(ix + g.cols * (iz + 1)) * 3 + 1];
+      const yc = a[(ix + 1 + g.cols * (iz + 1)) * 3 + 1], yd = a[(ix + 1 + g.cols * iz) * 3 + 1];
+      const y = u + v <= 1 ? ya + (yd - ya) * u + (yb - ya) * v : yc + (yb - yc) * (1 - u) + (yd - yc) * (1 - v);
+      return y + mesh.position.y;
+    }
+
+const groundRayFrom = new THREE.Vector3(), groundRayDown = new THREE.Vector3(0, -1, 0);
 function getIslandGroundHeight(x, z) {
-      const analyticalY = getAnalyticalGroundHeight(x, z);
-      if (terrainSwapGroup && terrainSwapGroup.children.length > 0) {
-        downRaycaster.set(new THREE.Vector3(x, 65, z), new THREE.Vector3(0, -1, 0));
-        const hits = downRaycaster.intersectObjects(terrainSwapGroup.children, true);
-        if (hits.length > 0) {
-          return Math.max(analyticalY, hits[0].point.y);
+      let y = getAnalyticalGroundHeight(x, z);
+      // Stand on whatever is drawn if it is higher: the ground mesh (a dig not yet re-shaped)...
+      const meshY = terrainMeshHeightAt(x, z);
+      if (meshY !== null && meshY > y) y = meshY;
+      // ...or the few other things lying on the ground (the house's floor boards, js/house.js)
+      if (terrainSwapGroup && terrainSwapGroup.children.length > 1) {
+        downRaycaster.set(groundRayFrom.set(x, 65, z), groundRayDown);
+        for (const c of terrainSwapGroup.children) {
+          if (c === terrainGroundMesh) continue;
+          const hit = downRaycaster.intersectObject(c, true)[0];
+          if (hit && hit.point.y > y) y = hit.point.y;
         }
       }
-      return analyticalY;
+      return y;
     }
 
 function initDiorama3D() {

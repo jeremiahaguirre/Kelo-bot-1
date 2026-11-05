@@ -70,11 +70,6 @@ function missingForJob(key) {
       ];
     }
 
-function jobGear(key) {
-      const job = GROUND_JOBS[key];
-      return job ? job.tools.map(t => hasItem(t.re)).filter(Boolean) : [];
-    }
-
 // Can he do this job right now? If not, he goes and learns how, or asks for what's missing.
 function groundworkReady(key, context = 'Shaping the valley', { quiet = false } = {}) {
       const job = GROUND_JOBS[key];

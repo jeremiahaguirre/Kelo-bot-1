@@ -1023,11 +1023,6 @@ function plantCareJobNow() {
       return null;
     }
 
-function tendPlantsOnMyOwn() {
-      const job = plantCareJobNow();
-      return job ? job() : false;
-    }
-
 // The visitor's "water the garden" button: real water for the beds, not instant fruit
 function visitorWatersGarden() {
       pcSyncAll();

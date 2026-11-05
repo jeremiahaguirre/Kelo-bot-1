@@ -33,10 +33,6 @@ let perfAutoLevel = (() => {
   return phone || cores <= 2 || mem <= 2 ? 'low' : 'high';
 })();
 
-function perfLevel() {
-      return perfChoice;
-    }
-
 // The level in use right now ('high' or 'low'; Auto resolves to one of them)
 function perfActiveLevel() {
       return perfChoice === 'auto' ? perfAutoLevel : perfChoice;

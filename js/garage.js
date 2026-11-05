@@ -115,14 +115,6 @@ async function liftTo(ctx, h, ms = 2500) {
       });
     }
 
-function wheelOff(ctx) {
-      // A loose wheel by the truck's front corner (where he takes it off)
-      const g = new THREE.Group();
-      mmCyl(g, 0.62, 0.45, 'tire', 0, 0, 0, { axis: 'z' });
-      mmCyl(g, 0.36, 0.47, 'chrome', 0, 0, 0, { axis: 'z' });
-      return g;
-    }
-
 // --- The garage job ----------------------------------------------------------------------------------
 registerWorkshopMachine({
   key: 'garage', name: 'Garage lift bay', short: 'garage', kind: 'garage', floor: 2, learnAs: 'garage', emoji: '🔧', skill: 'Servicing vehicles',

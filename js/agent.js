@@ -1878,6 +1878,7 @@ Current state:
 - Things you know how to use: ${typeof knowHowSummaryForAI === 'function' ? knowHowSummaryForAI() : 'nothing yet'}
 - Your most recent decisions: ${typeof recentDecisionsForAI === 'function' ? recentDecisionsForAI() : 'none yet'}. Choose something genuinely DIFFERENT this time: don't repeat or rephrase any of them, and don't retry something you are still waiting on (tools, materials, fuel or a delivery). Do something else meanwhile.
 - Welding: ${recentlyWelded() ? 'you welded a piece within the last 15 minutes, so do something different this time ("build" should be null)' : 'welding is one of many things you do; most of your decisions should not include a "build"'}. Pieces stand outdoors (never in town); only overflow goes to your Museum.
+- Your welding setup (gas, wire, hoses): ${typeof weldingSummaryForAI === 'function' ? weldingSummaryForAI() : 'unknown'}
 - Your real skills (practise with the things you asked for and were given; this matters more than welding): ${typeof skillsSummaryForAI === 'function' ? skillsSummaryForAI() : 'none yet'}
 - Groundwork you've researched (roads, asphalt paving, moving earth, planting): ${typeof groundworkSummaryForAI === 'function' ? groundworkSummaryForAI() : 'nothing yet'}
 - Your concrete and asphalt plant (right beside the Workshop, to its east): ${typeof plantSummaryForAI === 'function' ? plantSummaryForAI() : 'none'}

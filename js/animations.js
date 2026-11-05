@@ -99,16 +99,6 @@ function keloSitKnee(a, hipH) {
       return -a - shin;
     }
 
-// How far he walks this frame (before vehicle and snow speed): he eases up to speed as he sets
-// off, lengthens into a quicker stride on long trips, and slows for the last step as he arrives
-function keloWalkStep(dist, dt) {
-      keloAnim.ramp = Math.min(1, keloAnim.ramp + dt / 0.45);
-      const cruise = 0.082 + 0.058 * smoothstep((dist - 8) / 8);
-      const setOff = 0.3 + 0.7 * smoothstep(keloAnim.ramp);
-      const arrive = 0.45 + 0.55 * clamp01(dist / 1.2);
-      return cruise * setOff * arrive * dt * 60;
-    }
-
 // --- Action poses, called by scene.js -------------------------------------------------------
 
 // Digging. With a hand tool he lifts it and drives it down with his whole body; with the built-in

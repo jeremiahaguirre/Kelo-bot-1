@@ -678,7 +678,7 @@ function bakeSeaDepth() {
         const z = b.z + (j + 0.5) / b.rows * b.d;
         for (let i = 0; i < b.cols; i++) {
           const x = b.x + (i + 0.5) / b.cols * b.w;
-          const inside = Math.abs(x) < ISLAND_HALF_X && Math.abs(z) < ISLAND_HALF_Z;
+          const inside = islandContains(x, z);
           const bed = inside ? getAnalyticalGroundHeight(x, z) : outerTerrainHeight(x, z);
           const depth = Math.max(0, Math.min(8, -0.18 - bed));
           data[(j * b.cols + i) * 4] = Math.round(depth / 8 * 255);

@@ -151,7 +151,7 @@ function tripHasHitch(tow) {
     }
 
 // A coarse grid over the island: ground height, snow, water, roads. Built fresh for each plan.
-const TRIP_GRID = { x0: -60, z0: -44, step: 2, nx: 61, nz: 29 };
+const TRIP_GRID = { x0: WORLD_MIN_X, z0: WORLD_MIN_Z, step: 2, nx: Math.round((WORLD_MAX_X - WORLD_MIN_X) / 2) + 1, nz: 29 };
 
 function tripOnRoad(x, z) {
       if (typeof inParkingArea === 'function' && inParkingArea(x, z, 1)) return true;

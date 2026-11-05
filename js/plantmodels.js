@@ -348,11 +348,10 @@ function plantTwinShaft(len, wid, hgt, label, mat) {
 
 // --- The site ---------------------------------------------------------------------------------------
 function plantSiteLocal(kind) {
-      const S = aggregatePlantSite();
-      return kind === 'batch' ? { x: S.x + BATCH_PLANT_OFFSET, z: S.oz } : { x: S.x + ASPHALT_PLANT_OFFSET, z: S.oz };
+      return plantOrigin(kind);
     }
 
-// Gravel ground on the pad, a concrete apron under each plant, the truck lane, signs
+// Gravel ground on the pad and its yard, a concrete apron under each plant, the truck lanes, signs
 function buildAggregatePlantGround() {
       const S = aggregatePlantSite(), M = plantMats();
       if (typeof terrainGroundMesh !== 'undefined' && terrainGroundMesh) {
@@ -364,16 +363,20 @@ function buildAggregatePlantGround() {
           let c;
           if (inAggregatePlantSite(vx, vz, 0.2)) c = gravel.clone().lerp(dark, wob / 1.5);
           else {
-            // The made land: a gravel walkway along the plant, meadow, then a sand beach into the water
+            // The made land: a gravel walkway along the plant (and the trailer row, js/trips.js), meadow,
+            // then a sand beach into the water
             const d = KELO_ADDED_LAND.reduce((m, L) => Math.min(m, addedLandDistance(L, vx, vz)), Infinity);
             if (d > 4.3) continue;
+            const walk = (vz < S.z + S.d / 2 + 2.2 && vz > S.z && Math.abs(vx - S.x) < S.w / 2 + 0.6)
+              || (typeof TRAILER_SLOTS !== 'undefined' && TRAILER_SLOTS.some(([tx, tz]) => tz > 9 && Math.abs(vx - tx) < 3.4 && Math.abs(vz - tz) < 1.5));
             if (d > -1.3) c = (pos.getY(i) > WATER_LEVEL + 0.02 ? new THREE.Color(0xd2bf93) : new THREE.Color(0x8a7a5c)).lerp(new THREE.Color(0xc8b48c), wob * 0.4);
-            else if (vz < S.z + S.d / 2 + 2.2 && Math.abs(vx - S.x) < S.w / 2 + 0.6) c = new THREE.Color(0xb3a58c).lerp(dark, wob / 4);
-            else if (vz > S.z + S.d / 2) c = new THREE.Color(0x5d7d33).lerp(new THREE.Color(0x46662a), wob * 0.6).lerp(new THREE.Color(0x87884a), (1 - wob) * 0.3);
-            else continue;
+            else if (walk) c = new THREE.Color(0xb3a58c).lerp(dark, wob / 4);
+            else c = new THREE.Color(0x5d7d33).lerp(new THREE.Color(0x46662a), wob * 0.6).lerp(new THREE.Color(0x87884a), (1 - wob) * 0.3);
           }
           if (typeof mottleGround === 'function') mottleGround(c, vx, vz, 0.05);
           col.setXYZ(i, c.r, c.g, c.b);
+          // The seasons (js/seasons.js) repaint the ground from these, so the gravel stays gravel
+          if (typeof terrainBaseColors !== 'undefined' && terrainBaseColors) terrainBaseColors.set([c.r, c.g, c.b], i * 3);
         }
         col.needsUpdate = true;
       }
@@ -382,16 +385,18 @@ function buildAggregatePlantGround() {
       const y = S.y;
       // Concrete aprons where the trucks load, and slabs under the plants
       const B = plantSiteLocal('batch'), A = plantSiteLocal('asphalt');
-      k.box(M.concrete, 11.6, 0.08, 2.8, B.x + 0.2, y + 0.03, S.oz + PLANT_LANE_Z, 'Concrete loading apron');
-      k.box(M.concrete, 13.4, 0.08, 2.8, A.x - 0.4, y + 0.03, S.oz + PLANT_LANE_Z, 'Concrete loading apron');
-      // Painted lane edges
-      for (let x = S.x - S.w / 2 + 0.6; x < S.x + S.w / 2 - 0.6; x += 1.2) {
-        k.box(M.paint, 0.7, 0.01, 0.08, x, y + 0.075, S.oz + PLANT_LANE_Z - 1.4, 'Truck lane marking');
-      }
-      // Jersey barriers along the lake edge
-      for (let x = S.x - S.w / 2 + 1.2; x < S.x + S.w / 2 - 0.8; x += 2.1) {
-        k.box(M.concrete, 1.9, 0.55, 0.32, x, y + 0.28, S.z + S.d / 2 - 0.05, 'Concrete jersey barrier');
-      }
+      k.box(M.concrete, 11.6, 0.08, 2.8, B.x + 0.2, y + 0.03, B.z + PLANT_LANE_Z, 'Concrete loading apron');
+      k.box(M.concrete, 13.4, 0.08, 2.8, A.x - 0.4, y + 0.03, A.z + PLANT_LANE_Z, 'Concrete loading apron');
+      // Painted edges on each row's truck lane, from the yard strip to the east end
+      const x0 = S.x - S.w / 2 + PLANT_YARD_W, x1 = S.x + S.w / 2;
+      [B, A].forEach(O => {
+        for (let x = x0 + 0.6; x < x1 - 0.6; x += 1.2) k.box(M.paint, 0.7, 0.01, 0.08, x, y + 0.075, O.z + PLANT_LANE_Z - 1.4, 'Truck lane marking');
+      });
+      // The yard strip's edge, along the plants
+      for (let z = S.z - S.d / 2 + 0.8; z < S.z + S.d / 2 - 0.6; z += 1.2) k.box(M.paint, 0.08, 0.01, 0.7, x0 - 0.2, y + 0.075, z, 'Yard marking');
+      // Jersey barriers along the lake edge and the east edge
+      for (let x = x0 + 0.6; x < x1 - 0.8; x += 2.1) k.box(M.concrete, 1.9, 0.55, 0.32, x, y + 0.28, S.z + S.d / 2 - 0.05, 'Concrete jersey barrier');
+      for (let z = S.z - S.d / 2 + 1.2; z < S.z + S.d / 2 - 0.8; z += 2.1) k.box(M.concrete, 0.32, 0.55, 1.9, x1 - 0.05, y + 0.28, z, 'Concrete jersey barrier');
       k.flush();
       // Signs
       const sign = (text, x, z, ry, bg = '#1d4ed8') => {
@@ -403,9 +408,9 @@ function buildAggregatePlantGround() {
         s.userData.plantLabel = text.charAt(0) + text.slice(1).toLowerCase();
         g.add(post, s);
       };
-      // On the walkway, facing the lake
-      sign('KELO-1 READY-MIX', S.x + BATCH_PLANT_OFFSET - 1.0, S.z + S.d / 2 + 0.8, 0);
-      sign('KELO-1 HOT MIX ASPHALT', S.x + ASPHALT_PLANT_OFFSET - 1.0, S.z + S.d / 2 + 0.8, 0, '#c2410c');
+      // Facing the lake: the batch plant's at the back of the yard strip, the asphalt plant's on the walkway
+      sign('KELO-1 READY-MIX', S.x - S.w / 2 + 1.6, S.z - S.d / 2 + 0.9, 0);
+      sign('KELO-1 HOT MIX ASPHALT', A.x - 1.0, S.z + S.d / 2 + 0.8, 0, '#c2410c');
       return g;
     }
 
@@ -1282,7 +1287,7 @@ function initAggregatePlant3D() {
       });
       if (typeof refreshTerrainAround === 'function') {
         const S = aggregatePlantSite();
-        for (let x = S.x - S.w / 2; x <= S.x + S.w / 2; x += 4) refreshTerrainAround(x, S.z + 3, S.d / 2 + 9);
+        for (let x = S.x - S.w / 2; x <= S.x + S.w / 2; x += 4) refreshTerrainAround(x, S.z, S.d / 2 + PLANT_BLEND_NORTH);
       }
       aggregatePlantGroup = new THREE.Group();
       aggregatePlantGroup.name = 'aggregatePlant';
@@ -1328,7 +1333,7 @@ function aggregatePlantObstacles() {
       // lake but dry land is close) so no path past the plant cuts through the water
       const shore = [];
       const wet = (x, z) => getAnalyticalGroundHeight(x, z) < WATER_LEVEL + 0.02;
-      for (let x = 24; x <= WORLD_MAX_X + 1; x += 1.0) for (let z = 6; z <= 16; z += 1.0) {
+      for (let x = 24; x <= WORLD_MAX_X + 1; x += 1.0) for (let z = 6; z <= PLANT_SHORE_Z + 3; z += 1.0) {
         if (!wet(x, z)) continue;
         if ([[1.5, 0], [-1.5, 0], [0, 1.5], [0, -1.5]].some(([dx, dz]) => !wet(x + dx, z + dz))) shore.push({ x, z, r: 0.55 });
       }

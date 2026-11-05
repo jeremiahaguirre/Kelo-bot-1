@@ -72,7 +72,7 @@ const UPGRADE_SCHEMA = {
     name: UPG_TEXT(40, 2),
     kind: { type: 'string', enum: UPGRADE_KINDS },
     about: UPG_TEXT(160),
-    place: { type: 'object', props: { near: { type: 'string', enum: UPGRADE_PLACE_KEYS }, x: UPG_NUM(-60, 60), z: UPG_NUM(-44, 10), facing: UPG_NUM(-3.2, 3.2) } },
+    place: { type: 'object', props: { near: { type: 'string', enum: UPGRADE_PLACE_KEYS }, x: UPG_NUM(WORLD_MIN_X, WORLD_MAX_X), z: UPG_NUM(WORLD_MIN_Z, WORLD_MAX_Z), facing: UPG_NUM(-3.2, 3.2) } },
     scale: UPG_NUM(0.3, 2.5),
     parts: { type: 'array', maxItems: MAX_SCULPTURE_PARTS, items: UPG_PART_SCHEMA },
     lights: { type: 'array', maxItems: 4, items: { type: 'object', props: { x: UPG_NUM(-2.5, 2.5), y: UPG_NUM(0, 6), z: UPG_NUM(-2.5, 2.5), color: UPG_COLOR, intensity: UPG_NUM(0, 3), range: UPG_NUM(1, 12), on: { type: 'string', enum: ['night', 'always'] } } } },

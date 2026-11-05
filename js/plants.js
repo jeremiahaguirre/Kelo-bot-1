@@ -15,32 +15,45 @@
 // State: state.batchPlant, state.asphaltPlant, state.concretePours (defaults in js/agent.js).
 
 // --- Where it is --------------------------------------------------------------------------------
-// South of the Workshop (js/workshopbuilding.js, WORKSHOP_SITE / WORKSHOP_LAND), between the helipad
-// and the lake, west of the Workshop's vehicle lane (its east edge stays 0.55 short of the lane). The
-// pad runs from z 2.75 to 9.2 on land added to the lake (KELO_ADDED_LAND below): the natural beach sat
-// just under the water, so the made land carries on south as a gravel walkway and meadow to a sand
-// beach at z 13.3. oz is where the plants' own layouts are centred.
-const AGGREGATE_PLANT_SITE = { x: 43.2, z: 5.95, w: 26, d: 6.5, y: 0.05, oz: 6.05 };
-const PLANT_SHORE_Z = 13.3;         // where the lake begins now, off the plant's new land
+// East of the Workshop (js/workshopbuilding.js, WORKSHOP_SITE / WORKSHOP_LAND), right beside it at the
+// island's east end and facing the same yard: the site's west edge meets the Workshop's vehicle lane, so
+// trucks drive straight from the lane onto a gravel yard strip (PLANT_YARD_W) along the plant's west side
+// and from there into each plant's truck lane. The plants stand in two rows: the batch plant north, cut
+// into the eastern cliff behind it, and the asphalt plant south, with a gravel aisle between them. The
+// south row stands on land added to the lake (KELO_ADDED_LAND below) that carries on as a gravel walkway
+// and meadow to a sand beach at z 14. Each plant's model is laid out around its own origin
+// (BATCH_PLANT_OFFSET / ASPHALT_PLANT_OFFSET from the site centre; z is north-, its truck lane at +z).
+// The world's east bound (WORLD_MAX_X, js/agent.js) was moved out to make room for it.
+const AGGREGATE_PLANT_SITE = { x: 72.0, z: 1.55, w: 19, d: 17.3, y: 0.05 };
+const PLANT_SHORE_Z = 14.0;         // where the lake begins now, off the plant's new land
 const PLANT_DRY_Z = PLANT_SHORE_Z - 1.5; // walk targets and parking at the plant stay north of this
-const BATCH_PLANT_OFFSET = -6.5;    // the batch plant's origin, east of the site centre
-const ASPHALT_PLANT_OFFSET = 6.5;   // the asphalt plant's origin
-const PLANT_LANE_Z = 1.45;          // the truck lane, south of the machines (local z)
+const BATCH_PLANT_OFFSET = { x: 2.0, z: -4.05 };  // the batch plant's origin from the site centre
+const ASPHALT_PLANT_OFFSET = { x: 2.0, z: 5.35 }; // the asphalt plant's origin
+const PLANT_YARD_W = 4.0;           // the gravel yard strip between the Workshop's lane and the machines
+const PLANT_LANE_Z = 1.45;          // each plant's truck lane, south of its machines (local z)
 const ASPHALT_NORTH_SHIFT = 0.35;   // the asphalt plant's north machines sit this much further south
 const PLANT_BLEND = 1.8;
+const PLANT_BLEND_NORTH = 9;        // the cut slope into the cliff behind the batch plant
+// Where the plant stood before it moved east (south of the Workshop): trucks parked there in old saves
+// are moved to the new bays
+const PLANT_OLD_SITE = { minX: 29.5, maxX: 57.0, minZ: 2.0, maxZ: 10.5 };
 let aggregatePlantSiteDone = false;
 
 function aggregatePlantSite() {
       if (aggregatePlantSiteDone) return AGGREGATE_PLANT_SITE;
       aggregatePlantSiteDone = true;
       const S = AGGREGATE_PLANT_SITE;
-      // Never onto the Workshop's vehicle lane
-      if (typeof WORKSHOP_LAND !== 'undefined' && WORKSHOP_LAND.lane) S.x = Math.min(S.x, WORKSHOP_LAND.lane.minX - 0.55 - S.w / 2);
-      // Level with the lowest dry ground around it, never below the lake
-      let sum = 0, n = 0;
-      for (let x = S.x - S.w / 2; x <= S.x + S.w / 2; x += 2) for (let z = S.z - S.d / 2; z <= Math.min(7.5, S.z + S.d / 2); z += 1) if (z < 7.5) { sum += plantOrigGround(x, z); n++; }
-      S.y = Math.max(0.05, Math.round((sum / Math.max(1, n)) * 100) / 100);
+      // Its yard starts where the Workshop's vehicle lane ends, never on it
+      if (typeof WORKSHOP_LAND !== 'undefined' && WORKSHOP_LAND.lane) S.x = Math.max(S.x, WORKSHOP_LAND.lane.maxX + S.w / 2);
+      // Level with the Workshop's pad and lane, so the yards join flush
+      S.y = typeof WORKSHOP_PAD_Y === 'number' ? WORKSHOP_PAD_Y : 0.05;
       return S;
+    }
+
+// Where each plant's own layout is centred (world)
+function plantOrigin(kind) {
+      const S = aggregatePlantSite(), o = kind === 'batch' ? BATCH_PLANT_OFFSET : ASPHALT_PLANT_OFFSET;
+      return { x: S.x + o.x, z: S.z + o.z };
     }
 
 function inAggregatePlantSite(x, z, pad = 0) {
@@ -55,9 +68,15 @@ function inAggregatePlantSite(x, z, pad = 0) {
 // the water and blends into the lake bed. (js/landfill.js is his own dirt-by-dirt land; this is land
 // that was built with the plant.)
 window.KELO_ADDED_LAND = window.KELO_ADDED_LAND || [];
-// Joins the Workshop's lane along its west edge (both level at y 0.05) and stays clear of the boat launch
-KELO_ADDED_LAND.push({ id: 'aggregate-plant', minX: 30.0, maxX: typeof WORKSHOP_LAND !== 'undefined' && WORKSHOP_LAND.lane ? WORKSHOP_LAND.lane.minX - 0.25 : 56.5,
-  minZ: 2.0, maxZ: PLANT_SHORE_Z, y: AGGREGATE_PLANT_SITE.y, corner: 2.5, beach: 1.8 });
+// The plant's land: from the cliff foot down past the asphalt row to the beach, from just east of the
+// Workshop's lane (the boat launch at its end stays open water) to a strip of meadow past the plant
+KELO_ADDED_LAND.push({ id: 'aggregate-plant', minX: typeof WORKSHOP_LAND !== 'undefined' && WORKSHOP_LAND.lane ? WORKSHOP_LAND.lane.maxX + 0.25 : 62.75,
+  maxX: AGGREGATE_PLANT_SITE.x + AGGREGATE_PLANT_SITE.w / 2 + 2.5, minZ: -3.0, maxZ: PLANT_SHORE_Z, y: AGGREGATE_PLANT_SITE.y, corner: 2.5, beach: 1.8 });
+// Where the plant first stood, south of the Workshop: the land stays, now a meadow and beach with the
+// trailer row (js/trips.js TRAILER_SLOTS) and his concrete pours on it. It joins the Workshop's lane
+// along its west edge and stays clear of the boat launch.
+KELO_ADDED_LAND.push({ id: 'workshop-south-meadow', minX: 30.0, maxX: typeof WORKSHOP_LAND !== 'undefined' && WORKSHOP_LAND.lane ? WORKSHOP_LAND.lane.minX - 0.25 : 56.5,
+  minZ: 2.0, maxZ: 13.3, y: 0.05, corner: 2.5, beach: 1.8 });
 
 // Solid ground here and 1.5 further toward the lake? (walk targets, parking, pours)
 function plantDryAt(x, z) {
@@ -105,12 +124,14 @@ const plantOrigGround = getAnalyticalGroundHeight;
 getAnalyticalGroundHeight = function (x, z) {
       const h = addedLandHeightAt(x, z, plantOrigGround(x, z));
       const S = aggregatePlantSite();
-      const dx = Math.max(0, Math.abs(x - S.x) - S.w / 2);
       const dzN = Math.max(0, (S.z - S.d / 2) - z), dzS = Math.max(0, z - (S.z + S.d / 2));
-      const d = Math.hypot(dx, dzN, dzS);
-      if (d >= PLANT_BLEND) return h;
-      const t = d / PLANT_BLEND, s = t * t * (3 - 2 * t);
-      return S.y + (h - S.y) * s;
+      // The sides of the cut into the cliff widen as it climbs, so it is a slope, not a wall
+      const bx = PLANT_BLEND + dzN;
+      const dx = Math.max(0, Math.abs(x - S.x) - S.w / 2);
+      if (dx >= bx || dzN >= PLANT_BLEND_NORTH || dzS >= PLANT_BLEND) return h;
+      const ease = (d, b) => { const t = d / b; return t * t * (3 - 2 * t); };
+      const level = (1 - ease(dx, bx)) * (1 - ease(dzN, PLANT_BLEND_NORTH)) * (1 - ease(dzS, PLANT_BLEND));
+      return h + (S.y - h) * level;
     };
 
 // Nobody digs, plants or builds roads through it
@@ -122,13 +143,12 @@ if (plantOrigOffLimits) offLimits = function (x, z, pad = 0) {
 
 TOWN_LOCATIONS.aggregate_plant = {
   id: 'aggregate_plant', name: 'Concrete & Asphalt Plant', building: 'Kelo-1 Concrete & Asphalt Plant', icon: '🏗️',
-  x: AGGREGATE_PLANT_SITE.x, z: AGGREGATE_PLANT_SITE.oz, showPin: true, pinColor: 'from-slate-500/90 to-blue-800/90'
+  x: AGGREGATE_PLANT_SITE.x, z: AGGREGATE_PLANT_SITE.z, showPin: true, pinColor: 'from-slate-500/90 to-blue-800/90'
 };
 
 // World positions of the spots that matter
 function plantSpot(kind, what) {
-      const S = aggregatePlantSite();
-      const B = { x: S.x + BATCH_PLANT_OFFSET, z: S.oz }, A = { x: S.x + ASPHALT_PLANT_OFFSET, z: S.oz };
+      const B = plantOrigin('batch'), A = plantOrigin('asphalt');
       const spots = {
         batch: { control: { x: B.x - 2.7, z: B.z - 2.2 }, bay: { x: B.x + 0.25, z: B.z + PLANT_LANE_Z, rotY: 0 }, bins: { x: B.x + 4.05, z: B.z + 0.0 },
           silo: { x: B.x - 4.3, z: B.z - 2.6 }, mixer: { x: B.x - 3.0, z: B.z + 0.0 }, stockpile: { x: B.x + 5.9, z: B.z - 2.9 } },
@@ -1177,12 +1197,24 @@ if (typeof minimapBuildings === 'function') {
   const plantOrigBuildings = minimapBuildings;
   minimapBuildings = function () {
       const b = plantOrigBuildings();
-      const S = aggregatePlantSite();
-      b.push({ x: S.x + BATCH_PLANT_OFFSET - 0.5, z: S.oz - 0.1, w: 12, d: 5.6, color: '#1d4ed8', icon: '🏗️' });
-      b.push({ x: S.x + ASPHALT_PLANT_OFFSET - 0.5, z: S.oz - 0.3, w: 13, d: 6.2, color: '#c2410c', icon: '🛢️' });
+      const B = plantOrigin('batch'), A = plantOrigin('asphalt');
+      b.push({ x: B.x - 0.5, z: B.z - 0.1, w: 12, d: 5.6, color: '#1d4ed8', icon: '🏗️' });
+      b.push({ x: A.x - 0.5, z: A.z - 0.3, w: 13, d: 6.2, color: '#c2410c', icon: '🛢️' });
       return b;
     };
 }
+
+// Saves from before the plant moved east: its trucks parked at the old bays go to the new ones
+// (concrete he poured stays where it is: that land is still there)
+function plantMoveOldParking() {
+      const O = PLANT_OLD_SITE;
+      (state.vehicles || []).forEach(v => {
+        if (!(v.x > O.minX && v.x < O.maxX && v.z > O.minZ && v.z < O.maxZ)) return;
+        const bay = v.kind === 'mixer' ? plantSpot('batch', 'bay') : v.kind === 'truck' ? plantSpot('asphalt', 'bay') : null;
+        if (!bay || (state.riding && state.riding === v.id)) return;
+        v.x = bay.x; v.z = bay.z; v.rotY = bay.rotY || 0;
+      });
+    }
 
 function plantRefresh3D() {
       if (typeof plantShowStock === 'function') { plantShowStock('batch'); plantShowStock('asphalt'); }
@@ -1191,6 +1223,7 @@ function plantRefresh3D() {
 window.addEventListener('DOMContentLoaded', () => {
   ensureAggregatePlantState();
   (state.vehicles || []).forEach(v => { v.charging = false; v.pouring = false; });
+  plantMoveOldParking();
   // A pour left half-done when the page closed: its forms came up
   state.concretePours = (state.concretePours || []).filter(p => p.stage === 'curing' || p.stage === 'cured');
   setTimeout(() => {

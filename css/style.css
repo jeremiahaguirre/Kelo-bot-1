@@ -76,8 +76,8 @@ body {
 .explore-place-group { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #94a3b8; padding: 6px 2px 2px; }
 .explore-mini-btn { width: 22px; height: 22px; border-radius: 7px; background: #1e293b; color: #e2e8f0; font-size: 13px; line-height: 1; display: flex; align-items: center; justify-content: center; }
 .explore-mini-btn:hover { background: #334155; }
-#exploreMinimap { width: 156px; height: 117px; }
-@media (min-width: 1100px) { #exploreMinimap { width: 200px; height: 150px; } }
+#exploreMinimap { width: 156px; height: 97px; } /* the island is 154 x 96 (js/minimap.js) */
+@media (min-width: 1100px) { #exploreMinimap { width: 200px; height: 125px; } }
 #exploreMinimapWrap, #btnShowMinimap { bottom: 12px; }
 @media (min-width: 640px) { body.menu-open #exploreMinimapWrap, body.menu-open #btnShowMinimap { bottom: 108px; } }
 .explore-where { padding: 7px 12px; border-radius: 14px; background: rgba(245, 158, 11, 0.92); color: #0f172a; font-size: 12px; font-weight: 800; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35); }

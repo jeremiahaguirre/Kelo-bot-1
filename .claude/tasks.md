@@ -13,6 +13,7 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - Task 11 Talk tab (pushed).
 - Task 9 Smarter vehicles (pushed 2026-11-05).
 - Task 7 Workshop (pushed 2026-11-05): floors 1 to 3, hangar, north wing, forklift and three-stop elevator. The bigger garage hall and two full-size build bays move to 7b.
+- Task 8 Concrete and asphalt plant (pushed 2026-11-05): on `KELO_ADDED_LAND` beside the workshop. Smooth paved road (fixed in landscape.js roadMesh), pale cured concrete.
 - Task 8 plant: built on agent/plant; sent back to keep Kelo-1 out of the lake beside it, then merge.
 
 ## In progress (helpers resumed 2026-11-04 14:20 UTC; if one stops, resume it). Still open: 5 build anything, 7 workshop, 8 plant, 9 vehicles, then 10 phase 2.

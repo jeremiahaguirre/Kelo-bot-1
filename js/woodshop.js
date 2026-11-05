@@ -312,3 +312,54 @@ registerWorkshopMachine({
     };
   }
 });
+
+// --- Project builds go through the woodshop (js/projects.js) ---------------------------------------
+// Once the Workshop is up, a wooden project's parts are milled and cut here first (jointer, planer,
+// table saw, mitre saw, joinery at the bench), then js/projects.js assembles and places it as before.
+// Welded builds still go to the weld studio. Nothing in projects.js is duplicated.
+const WOODSHOP_PROJECT_STEPS = [
+  ['jointer', 'Jointing the boards for the', 1800],
+  ['planer', 'Planing them to thickness for the', 1800],
+  ['tablesaw', 'Ripping the parts on the table saw for the', 2200],
+  ['mitresaw', 'Crosscutting the parts for the', 1600],
+  ['woodbench', 'Cutting the joints and dry-fitting the', 2200]
+];
+
+async function millProjectInWoodshop(plan) {
+      if (typeof goIntoWorkshop !== 'function' || typeof wsGroup === 'undefined' || !wsGroup || plan.welded) return false;
+      const what = String(plan.name || 'project').toLowerCase();
+      const stops = WOODSHOP_PROJECT_STEPS.map(([key, title, ms]) => ({
+        floor: 3, key, act: async ctx => {
+          const u = ctx.model.userData;
+          await machineStep(ctx, `${title} ${what}`, ms, (k, t) => {
+            if (u.blade && u.blade.rotation) u.blade.rotation.x = t * 60;
+            if (u.head && key === 'jointer') u.head.rotation.y = t * 40;
+            if (u.roller) u.roller.rotation.x = t * 30;
+            if (u.arm) u.arm.rotation.x = -0.4 + Math.sin(k * Math.PI) * 0.5;
+            if (key !== 'woodbench') sawdust(ctx.model, new THREE.Vector3(0, 0.9, 0));
+          }, key === 'tablesaw' ? 'Push stick, riving knife, guard down.' : null);
+          machineSkill(key, 2);
+          return true;
+        }
+      }));
+      state.moodEmoji = '🪵';
+      state.moodTitle = `Milling the parts for the ${what} in the woodshop`.slice(0, 80);
+      renderAllUI();
+      const r = await goIntoWorkshop({ stops });
+      if (r) machineSkill('woodshop', 3);
+      return Boolean(r);
+    }
+
+if (typeof buildProject === 'function') {
+  const baseBuildProject = buildProject;
+  buildProject = async function (id, originLabel) {
+    const p = state.projects && state.projects.find(q => q.id === id && q.status === 'gathering');
+    const plan = p && typeof planFor === 'function' ? planFor(p.key) : null;
+    if (plan && !plan.welded && !p.milledInWoodshop && !(state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping)
+      && typeof missingFor === 'function' && !missingFor(plan).materials.length && !missingFor(plan).tools.length) {
+      state.isPracticing = true;
+      try { p.milledInWoodshop = await millProjectInWoodshop(plan); } finally { state.isPracticing = false; }
+    }
+    return baseBuildProject(id, originLabel);
+  };
+}

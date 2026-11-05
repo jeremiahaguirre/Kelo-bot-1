@@ -265,6 +265,7 @@ function forkliftOnMyOwn() {
       const v = theForklift();
       if (!v) return false;
       if (forkliftCharge(v) < 15 && !v.plugged) return forkliftToCharger(v);
+      if (Math.random() < 0.35) return forkliftDeliverUpstairs(Math.random() < 0.5 ? 2 : 3, PALLET_GOODS[Math.floor(Math.random() * PALLET_GOODS.length)]);
       return forkliftMovePallet();
     }
 
@@ -279,3 +280,34 @@ function forkliftWanted() {
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => { try { buildForkliftCharger3D(); const v = theForklift(); if (v) forkliftChargerShow(v); } catch (e) { console.warn('forklift', e); } }, 50);
 });
+
+// Take a pallet up to another floor of the Workshop: down the lane, onto the car elevator, up, and back
+async function forkliftDeliverUpstairs(floor = 3, what = 'glass batch') {
+      const v = theForklift();
+      if (!v || forkliftBusy || typeof goIntoWorkshop !== 'function') return false;
+      if (typeof readyToOperate === 'function' && !readyToOperate(v.name, v)) return 'learning';
+      if (forkliftCharge(v) < 25) { await forkliftToCharger(v, 'The forklift needs charging first'); return 'charging'; }
+      forkliftBusy = true;
+      try {
+        v.plugged = false;
+        const m = vehicleMeshes[v.id];
+        const pallet = palletModel(what);
+        if (m && m.userData.load) m.userData.load.add(pallet);
+        forkliftMast(v, 0.15, 0.08);
+        state.moodEmoji = '🏗️';
+        state.moodTitle = `Taking a pallet of ${what} up to floor ${floor} on the forklift`.slice(0, 80);
+        renderAllUI();
+        const r = await goIntoWorkshop({ vehicle: v, vehicleTour: [floor, 1], stops: [] });
+        if (pallet.parent) pallet.parent.remove(pallet);
+        v.charge = Math.max(0, forkliftCharge(v) - 15);
+        state.speechBubble = `Pallet of ${what} delivered to floor ${floor}. Battery at ${Math.round(v.charge)}%.`;
+        if (typeof gainSkill === 'function') gainSkill('vehicle-forklift', 'Driving the forklift', 4);
+        // back to the hangar, and onto the charger if it's getting low
+        if (v.charge < 30) await forkliftToCharger(v);
+        savePersistentBrainState();
+        renderAllUI();
+        return Boolean(r);
+      } finally {
+        forkliftBusy = false;
+      }
+    }

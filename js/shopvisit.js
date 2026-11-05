@@ -568,7 +568,15 @@ function svGoToTarget(t) {
         const st = machineStand(t.def), ax = S.x + t.def.at.x, az = S.z + t.def.at.z;
         const ex = S.x + st.x - ax, ez = S.z + st.z - az, el = Math.hypot(ex, ez) || 1;
         const back = camera && camera.aspect < 0.8 ? 1.7 : 0.9;   // (a tall phone screen sees less across)
-        spot = svFindFree(S.x + st.x + ex / el * back, S.z + st.z + ez / el * back, floor, 0.8) || svFindFree(S.x + st.x, S.z + st.z, floor, 2.5);
+        spot = svFindFree(S.x + st.x + ex / el * back, S.z + st.z + ez / el * back, floor, 0.4);
+        // else a free spot round it at that distance, the front first, then the operator's own spot
+        const a0 = Math.atan2(ex, ez), sz = t.def.size || { w: 1, d: 1 }, rr = Math.max(sz.w, sz.d) / 2 + back + 0.5;
+        for (let k = 1; k < 16 && !spot; k++) {
+          const ang = a0 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * Math.PI / 8;
+          const px = ax + Math.sin(ang) * rr, pz = az + Math.cos(ang) * rr;
+          if (svFree(px, pz, floor)) spot = { x: px, z: pz };
+        }
+        if (!spot) spot = svFindFree(S.x + st.x, S.z + st.z, floor, 2.5);
       }
       if (!spot) {
         const r = Math.max(t.box.max.x - t.box.min.x, t.box.max.z - t.box.min.z) / 2 + 0.7;

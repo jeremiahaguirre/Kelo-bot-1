@@ -173,6 +173,8 @@ function buildVehicleYard3D() {
       sign.position.set(sx, sy + 2.15, sz + 0.08);
       lines.add(post, sign);
       scene.add(lines);
+      // The painted lines and bars never move: one draw per material (js/perf.js)
+      if (typeof mergeStaticMeshesSoon === 'function') mergeStaticMeshesSoon(lines);
     }
 
 // Vehicles saved in the old yard beside the Storehouse, or at the old dock spots, move to the new ones

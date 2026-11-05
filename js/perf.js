@@ -345,6 +345,83 @@ function disposePerfStandIns(mesh) {
       if (mesh.dispose) mesh.dispose();
     }
 
+// --- Static parts drawn together ---------------------------------------------------------------
+// A building made of hundreds of boxes costs hundreds of draw calls (twice: once more for shadows).
+// Parts that never move are joined into one mesh per material, so a building costs about one draw
+// per material. Left alone: anything with userData, anything the root's userData points at (doors,
+// cranes...), anything in `skip` (and what is inside them), mirrored parts, and arrays of materials.
+function mergeStaticMeshes(root, skip = []) {
+      if (!root) return 0;
+      // First let the Graphics level decide who casts shadows, so the joined meshes keep that choice
+      if (typeof updateShadowCasters === 'function') updateShadowCasters();
+      root.updateMatrixWorld(true);
+      const keep = new Set();
+      const keepTree = o => o && o.isObject3D && o.traverse(c => keep.add(c));
+      skip.forEach(keepTree);
+      Object.values(root.userData || {}).forEach(v => [].concat(v).forEach(x => { if (x && x.isObject3D) keepTree(x); else if (x && typeof x === 'object') Object.values(x).forEach(keepTree); }));
+      const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
+      const m = new THREE.Matrix4();
+      const sets = new Map();
+      root.traverse(o => {
+        if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || keep.has(o) || Array.isArray(o.material) || !o.visible) return;
+        if (Object.keys(o.userData).length || o.morphTargetInfluences || o.onBeforeRender !== THREE.Object3D.prototype.onBeforeRender) return;
+        for (let a = o.parent; a && a !== root; a = a.parent) if (!a.visible || Object.keys(a.userData).length) return;
+        const g = o.geometry;
+        if (!g || !g.isBufferGeometry || !g.attributes.position || Object.keys(g.morphAttributes).length) return;
+        if (o.matrixWorld.determinant() < 0) return; // mirrored: its faces would turn inside out
+        const names = Object.keys(g.attributes).sort();
+        const key = `${o.material.uuid}|${o.castShadow}|${o.receiveShadow}|${o.renderOrder}|${names.map(n => n + g.attributes[n].itemSize).join(',')}`;
+        if (!sets.has(key)) sets.set(key, []);
+        sets.get(key).push(o);
+      });
+      let joined = 0;
+      sets.forEach(list => {
+        if (list.length < 2) return;
+        const parts = list.map(o => {
+          const geo = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone();
+          return geo.applyMatrix4(m.multiplyMatrices(inv, o.matrixWorld));
+        });
+        const names = Object.keys(parts[0].attributes);
+        const out = new THREE.BufferGeometry();
+        names.forEach(n => {
+          const size = parts[0].attributes[n].itemSize;
+          const arr = new Float32Array(parts.reduce((s, p) => s + p.attributes[n].count * size, 0));
+          let off = 0;
+          parts.forEach(p => { const a = p.attributes[n]; for (let i = 0; i < a.count; i++) for (let k = 0; k < size; k++) arr[off++] = a.getComponent ? a.getComponent(i, k) : a.array[i * size + k]; });
+          out.setAttribute(n, new THREE.BufferAttribute(arr, size, parts[0].attributes[n].normalized));
+        });
+        parts.forEach(p => p.dispose());
+        const first = list[0];
+        const mesh = new THREE.Mesh(out, first.material);
+        mesh.castShadow = first.castShadow;
+        mesh.receiveShadow = first.receiveShadow;
+        mesh.renderOrder = first.renderOrder;
+        mesh.matrixAutoUpdate = false;
+        // Its shadow choice is made: js/realism.js mustn't turn a joined non-caster into a big caster
+        mesh.userData.noShadow = !first.castShadow;
+        mesh.userData.joinedParts = list.length;
+        root.add(mesh);
+        mesh.updateMatrix();
+        const gone = new Set(list.map(o => o.geometry));
+        list.forEach(o => o.parent.remove(o));
+        // Free the old parts' buffers unless something still draws them
+        if (typeof scene !== 'undefined' && scene) scene.traverse(o => { if (o.geometry) gone.delete(o.geometry); });
+        gone.forEach(g => g.dispose());
+        joined += list.length - 1;
+      });
+      return joined;
+    }
+
+// Join a building's static parts once the world has settled (shadows decided, materials dressed)
+function mergeStaticMeshesSoon(root, skip = [], delay = 1500) {
+      setTimeout(() => {
+        try {
+          const n = mergeStaticMeshes(root, typeof skip === 'function' ? skip() : skip);
+          if (n && window.KELO_DEBUG) console.log(`Joined ${n} static parts`);
+        } catch (e) { console.warn('mergeStaticMeshes failed:', e); }
+      }, delay);
+    }
+
 // --- Settings ---------------------------------------------------------------------------------
 window.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('perfLevelSelect');

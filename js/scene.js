@@ -497,12 +497,12 @@ const DRAGON_RINGS = 72;
 const DRAGON_SIDES = 12;
 
 // Where the body runs at a point along its length (0 = tail tip, 1 = neck), rising in coils
-function dragonSpine(u, t) {
+function dragonSpine(u, t, out = new THREE.Vector3()) {
       const x = (u - 0.5) * DRAGON_LENGTH;
       const wave = Math.sin(u * Math.PI * 3.2 - t * 1.6);
       // The neck lifts high out of the water; the coils break the surface in arches
       const neckLift = Math.pow(Math.max(0, u - 0.82) / 0.18, 1.6) * 2.2;
-      return new THREE.Vector3(x, wave * 0.75 + neckLift, Math.sin(u * Math.PI * 2 + t * 0.7) * 0.35);
+      return out.set(x, wave * 0.75 + neckLift, Math.sin(u * Math.PI * 2 + t * 0.7) * 0.35);
     }
 
 // Thickest in the middle, tapering to a thin tail and a slimmer neck
@@ -586,17 +586,36 @@ function buildSeaDragon3D() {
     }
 
 // Re-shape the body each frame so it swims in rolling coils
+// Scratch vectors: the body is re-shaped every frame it is seen, so nothing is allocated per frame
+const DRAGON_UP = new THREE.Vector3(0, 1, 0);
+const dragonTmp = { p: new THREE.Vector3(), a: new THREE.Vector3(), b: new THREE.Vector3(), side: new THREE.Vector3(), normal: new THREE.Vector3() };
+const dragonView = { frustum: new THREE.Frustum(), m: new THREE.Matrix4(), sphere: new THREE.Sphere() };
+
+// Is the swimming dragon anywhere the camera can see? (It is off-screen most of the time.)
+function dragonOnScreen(dragon) {
+      if (!dragon.visible || typeof camera === 'undefined' || !camera) return dragon.visible;
+      const v = dragonView;
+      v.m.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+      v.frustum.setFromProjectionMatrix(v.m);
+      dragon.getWorldPosition(v.sphere.center);
+      v.sphere.center.y += 1;
+      v.sphere.radius = DRAGON_LENGTH * 0.6 + 2;
+      return v.frustum.intersectsSphere(v.sphere) && camera.position.distanceTo(v.sphere.center) < 220;
+    }
+
 function updateSeaDragon(t, dragon = ogopogoGroup) {
       if (!dragon || !dragon.userData.body) return;
+      // The lake's own dragon is only re-shaped while it can be seen (a new one is always shaped once)
+      if (dragon === ogopogoGroup && !dragonOnScreen(dragon)) return;
       const { body, head, spines, tailFin } = dragon.userData;
       const pos = body.geometry.attributes.position;
-      const up = new THREE.Vector3(0, 1, 0);
+      const T = dragonTmp;
       for (let i = 0; i <= DRAGON_RINGS; i++) {
         const u = i / DRAGON_RINGS;
-        const p = dragonSpine(u, t);
-        const tangent = dragonSpine(Math.min(1, u + 0.01), t).sub(dragonSpine(Math.max(0, u - 0.01), t)).normalize();
-        const side = new THREE.Vector3().crossVectors(tangent, up).normalize();
-        const normal = new THREE.Vector3().crossVectors(side, tangent).normalize();
+        const p = dragonSpine(u, t, T.p);
+        const tangent = dragonSpine(Math.min(1, u + 0.01), t, T.a).sub(dragonSpine(Math.max(0, u - 0.01), t, T.b)).normalize();
+        const side = T.side.crossVectors(tangent, DRAGON_UP).normalize();
+        const normal = T.normal.crossVectors(side, tangent).normalize();
         const r = dragonRadius(u);
         for (let j = 0; j <= DRAGON_SIDES; j++) {
           const ang = (j / DRAGON_SIDES) * Math.PI * 2;
@@ -610,16 +629,16 @@ function updateSeaDragon(t, dragon = ogopogoGroup) {
       body.geometry.computeVertexNormals();
       body.geometry.computeBoundingSphere();
 
-      const neck = dragonSpine(1, t);
+      const neck = dragonSpine(1, t, T.p);
       head.position.set(neck.x + 0.25, neck.y + 0.1, neck.z);
       head.rotation.z = Math.sin(t * 0.9) * 0.12 - 0.1;
       head.rotation.y = Math.sin(t * 0.6) * 0.25;
       spines.forEach(s => {
-        const p = dragonSpine(s.userData.u, t);
+        const p = dragonSpine(s.userData.u, t, T.p);
         s.position.set(p.x, p.y + dragonRadius(s.userData.u) + 0.1, p.z);
         s.rotation.z = 0.35;
       });
-      const tail = dragonSpine(0, t);
+      const tail = dragonSpine(0, t, T.p);
       tailFin.position.set(tail.x, tail.y, tail.z);
       tailFin.rotation.z = Math.sin(t * 1.6) * 0.3;
     }

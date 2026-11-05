@@ -22,6 +22,12 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
   2. Then a full run-through of the game: Kelo-1, his tools, environment, machines and vehicles all work as intended. Fix what's found.
   3. Then 7b (runway field, map growth, bigger garage) and the quality upgrade.
   4. The workshop viewer (`agent/shopview`, paused WIP) is LAST.
+- **Next: full run-through (owner, 2026-11-05)** of Kelo-1, tools, environment, machines and vehicles. Fix what's found. Specific checks:
+  - Every shop machine asks for its real supplies, waits, and uses them up.
+  - Products land in his inventory as real items he can use for their real purpose.
+  - When a build needs a part a machine can make, he makes it in the shop instead of asking.
+  - Visitor asks are routed to the right machine or declined.
+  - **Owner:** builds and machine jobs must NOT be limited to hard-coded lists. He also takes ideas from the real internet (his NetNode research, with or without an AI key, e.g. Wikipedia and the existing web search): reads about a real thing, works out which machine and materials it needs from what the article says and what his machines can do, then asks for supplies and builds it. Hard-coded plans stay as the fallback and the examples.
 - Kelo-1 notices the new Workshop and plant once (`state.placesNoticed`, plants.js), and the AI prompt now describes the workshop layout.
 - **This week's plan is done.** Next, after the weekly reset: 7b runway field, map growth and bigger garage, then QA, audit phase 2, and the quality upgrade.
 - Task 8 plant: built on agent/plant; sent back to keep Kelo-1 out of the lake beside it, then merge.

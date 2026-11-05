@@ -34,7 +34,12 @@ const WORKSHOP_LAND = {
 const WORKSHOP_HANGAR = { x: 34.6, z: -15.0, w: 21, d: 14, h: 10.5, door: { w: 18.4, h: 8.0 }, craneY: 9.2 };
 const WS_F1 = 0.12;                      // floor 1 top, above the pad
 const WS_F2 = 5.4;                       // floor 2 deck top
-const WS_EAVE = 12.6;
+const WS_F3 = 13.0;                      // floor 3 deck top (glass studio and woodshop)
+const WS_EAVE = 19.4;
+
+function wsFloorY(floor) {
+      return floor === 3 ? WS_F3 : floor === 2 ? WS_F2 : WS_F1;
+    }
 const WS_IN = { x: WORKSHOP_SITE.w / 2 - 0.15, z: WORKSHOP_SITE.d / 2 - 0.15 };
 // The car elevator platform (local coordinates): a truck drives straight in through the east door
 const WS_LIFT = { x: 5.85, z: 2.65, w: 4.0, d: 9.3 };
@@ -95,7 +100,7 @@ function inWorkshopSite(x, z, pad = 0) {
 // A point in the building's own coordinates (x across, z towards the front doors), as a world point
 function workshopToWorld(lx, lz, floor = 1) {
       const s = WORKSHOP_SITE;
-      return { x: s.x + lx, z: s.z + lz, y: WORKSHOP_PAD_Y + (floor === 2 ? WS_F2 : WS_F1) };
+      return { x: s.x + lx, z: s.z + lz, y: WORKSHOP_PAD_Y + wsFloorY(floor) };
     }
 
 function workshopStation(key) {
@@ -158,6 +163,8 @@ let wsFloor1 = null;           // floor 1 machines (full models while near)
 let wsFloor2 = null;           // floor 2 machines (only during a trip upstairs)
 let wsStandIns = null;
 let wsDeckMeshes = [];
+let wsDeck3Meshes = [];
+let wsFloor3 = null;           // floor 3 machines (only during a trip up there)
 let wsFrontFade = [];          // the front wall panels that fade so the camera can see in during a trip
 let wsLift = null;             // the car elevator platform group
 let wsLights = [];
@@ -303,7 +310,7 @@ function buildWorkshop3D() {
       const wallT = 0.16;
       const doorOpen = Object.values(WS_DOORS).map(d => ({ c: d.x, w: d.w, h: d.h }));
       // Front (south): doors, windows on floor 2
-      const frontWin = [{ c: -1.9, w: 3.2, h: 1.4, y0: 7.2 }, { c: 1.9, w: 2.6, h: 1.4, y0: 7.2 }];
+      const frontWin = [{ c: -1.9, w: 3.2, h: 1.4, y0: 7.2 }, { c: 1.9, w: 2.6, h: 1.4, y0: 7.2 }, { c: -1.9, w: 3.2, h: 1.4, y0: 14.8 }, { c: 1.9, w: 2.6, h: 1.4, y0: 14.8 }];
       wsWallWithOpenings(wsGroup, 'x', hz, -hx, hx, 0.9, wallT + 0.04, plinth, doorOpen.map(o => ({ ...o, h: 0.9 })), 2.4, wsFrontFade);
       const frontGroup = mmGroup(wsGroup, 0, 0.9, 0);
       wsWallWithOpenings(frontGroup, 'x', hz, -hx, hx, WS_EAVE - 0.9 - 2.0, wallT, cladFront,
@@ -313,16 +320,16 @@ function buildWorkshop3D() {
       // Back (north)
       wsWallWithOpenings(wsGroup, 'x', -hz, -hx, hx, 0.9, wallT + 0.04, plinth, [], 2.4);
       const backGroup = mmGroup(wsGroup, 0, 0.9, 0);
-      wsWallWithOpenings(backGroup, 'x', -hz, -hx, hx, WS_EAVE - 2.9, wallT, cladding, [{ c: -1.5, w: 9, h: 1.3, y0: 2.2 }, { c: 0, w: W - 1.4, h: 1.3, y0: 7.0 }], 1.28);
+      wsWallWithOpenings(backGroup, 'x', -hz, -hx, hx, WS_EAVE - 2.9, wallT, cladding, [{ c: -1.5, w: 9, h: 1.3, y0: 2.2 }, { c: 0, w: W - 1.4, h: 1.3, y0: 7.0 }, { c: 0, w: W - 1.4, h: 1.3, y0: 13.9 }], 1.28);
       const backBand = mmGroup(wsGroup, 0, WS_EAVE - 2.0, 0);
       wsWallWithOpenings(backBand, 'x', -hz, -hx, hx, 2.0, wallT, cladDark, [{ c: 0, w: W - 1.2, h: 1.1, y0: 0.45 }], 1.28);
       // Sides: the west wall has a loading door facing the helipad, both have strip windows
       wsWallWithOpenings(wsGroup, 'z', -hx, -hz, hz, 0.9, wallT + 0.04, plinth, [{ c: 0.5, w: 3.0, h: 0.9 }], 2.4);
       const westGroup = mmGroup(wsGroup, 0, 0.9, 0);
-      wsWallWithOpenings(westGroup, 'z', -hx, -hz, hz, WS_EAVE - 2.9, wallT, cladding, [{ c: 0.5, w: 3.0, h: 2.8 }, { c: -4.5, w: 4.0, h: 1.2, y0: 1.4 }, { c: 0, w: D - 2, h: 1.3, y0: 7.0 }], 1.28);
+      wsWallWithOpenings(westGroup, 'z', -hx, -hz, hz, WS_EAVE - 2.9, wallT, cladding, [{ c: 0.5, w: 3.0, h: 2.8 }, { c: -4.5, w: 4.0, h: 1.2, y0: 1.4 }, { c: 0, w: D - 2, h: 1.3, y0: 7.0 }, { c: 0, w: D - 2, h: 1.3, y0: 13.9 }], 1.28);
       wsWallWithOpenings(mmGroup(wsGroup, 0, WS_EAVE - 2.0, 0), 'z', -hx, -hz, hz, 2.0, wallT, cladDark, [], 1.28);
       wsWallWithOpenings(wsGroup, 'z', hx, -hz, hz, 0.9, wallT + 0.04, plinth, [], 2.4);
-      wsWallWithOpenings(mmGroup(wsGroup, 0, 0.9, 0), 'z', hx, -hz, hz, WS_EAVE - 2.9, wallT, cladding, [{ c: -4.6, w: 4.4, h: 1.2, y0: 1.4 }, { c: 0, w: D - 2, h: 1.3, y0: 7.0 }], 1.28);
+      wsWallWithOpenings(mmGroup(wsGroup, 0, 0.9, 0), 'z', hx, -hz, hz, WS_EAVE - 2.9, wallT, cladding, [{ c: -4.6, w: 4.4, h: 1.2, y0: 1.4 }, { c: 0, w: D - 2, h: 1.3, y0: 7.0 }, { c: 0, w: D - 2, h: 1.3, y0: 13.9 }], 1.28);
       wsWallWithOpenings(mmGroup(wsGroup, 0, WS_EAVE - 2.0, 0), 'z', hx, -hz, hz, 2.0, wallT, cladDark, [], 1.28);
 
       // Glazing in all the window openings (one pane each, with mullions)
@@ -343,6 +350,9 @@ function buildWorkshop3D() {
       glaze('x', -hz, 0, W - 1.2, WS_EAVE - 2.0 + 0.45, 1.1);
       glaze('x', -hz, -1.5, 9, 3.1, 1.3);
       glaze('x', -hz, 0, W - 1.4, 7.9, 1.3);
+      glaze('x', -hz, 0, W - 1.4, 14.8, 1.3);
+      glaze('z', -hx, 0, D - 2, 14.8, 1.3);
+      glaze('z', hx, 0, D - 2, 14.8, 1.3);
       glaze('z', -hx, -4.5, 4.0, 2.3, 1.2);
       glaze('z', -hx, 0, D - 2, 7.9, 1.3);
       glaze('z', hx, -4.6, 4.4, 2.3, 1.2);
@@ -431,8 +441,8 @@ function buildWorkshop3D() {
         mmBox(wsGroup, 0.14, 0.5, D - 0.4, mmMat('navy'), x, WS_EAVE - 0.6, 0);
       }
       // A bridge crane over the high bay (the Taurus and the hangar)
-      [-hz + 0.45, hz - 0.45].forEach(z => mmBox(wsGroup, 3.8, 0.25, 0.25, yellow, -5.9, WS_EAVE - 1.6, z));
-      const crane = mmGroup(wsGroup, -5.9, WS_EAVE - 1.4, 0.4);
+      [-hz + 0.45, hz - 0.45].forEach(z => mmBox(wsGroup, 3.8, 0.25, 0.25, yellow, -5.9, WS_F3 - 1.6, z));
+      const crane = mmGroup(wsGroup, -5.9, WS_F3 - 1.4, 0.4);
       mmBox(crane, 0.3, 0.45, D - 1.0, yellow, -1.6, 0, 0);
       mmBox(crane, 0.3, 0.45, D - 1.0, yellow, 1.6, 0, 0);
       mmBox(crane, 3.5, 0.3, 0.5, yellow, 0, 0.1, -2.0).rotation.y = 0;
@@ -465,15 +475,72 @@ function buildWorkshop3D() {
       rail(liftX0 - 0.05, liftZ0, liftX0 - 0.05, WS_LIFT_GATE - 0.8);
       rail(liftX0 - 0.05, WS_LIFT_GATE + 0.8, liftX0 - 0.05, WS_IN.z - 0.1);
 
+      // Floor 3 deck over everything but the lift shaft and the stairwell in the north-west corner
+      const deck3Mat = deckMat.clone();
+      const stairX1 = -6.15, stairZ0 = 2.35;
+      const d3a = wsPanel(wsGroup, stairX1 + WS_IN.x, 0.3, stairZ0 + WS_IN.z, deck3Mat, (-WS_IN.x + stairX1) / 2, WS_F3 - 0.3, (stairZ0 - WS_IN.z) / 2, 3.2);
+      const d3b = wsPanel(wsGroup, liftX0 - stairX1, 0.3, D - 0.3, deck3Mat, (stairX1 + liftX0) / 2, WS_F3 - 0.3, 0, 3.2);
+      const d3c = wsPanel(wsGroup, WS_IN.x - liftX0, 0.3, liftZ0 + WS_IN.z, deck3Mat, (liftX0 + WS_IN.x) / 2, WS_F3 - 0.3, (liftZ0 - WS_IN.z) / 2, 3.2);
+      wsDeck3Meshes = [d3a, d3b, d3c];
+      wsDeck3Meshes.forEach(m => { m.castShadow = false; if (typeof cutawayRoofMeshes !== 'undefined') cutawayRoofMeshes.push(m); });
+      mmBox(wsGroup, D - 0.3, 0.5, 0.3, mmMat('navy'), 0, WS_F3 - 0.8, 0, { ry: Math.PI / 2 });
+      [-6.0, -2.0, 2.0, 6.0].forEach(z => [-3.95, liftX0 - 0.1].forEach(x => mmBox(wsGroup, 0.22, WS_F3 - WS_F2 - 0.4, 0.22, mmMat('navy'), x, WS_F2, z)));
+      const rail3 = (x0, z0, x1, z1) => {
+        const len = Math.hypot(x1 - x0, z1 - z0), ry = Math.atan2(x1 - x0, z1 - z0);
+        [0.55, 1.1].forEach(y => mmBox(wsGroup, 0.05, 0.05, len, yellow, (x0 + x1) / 2, WS_F3 + y, (z0 + z1) / 2, { ry }));
+        const n = Math.max(1, Math.round(len / 1.4));
+        for (let i = 0; i <= n; i++) mmBox(wsGroup, 0.05, 1.12, 0.05, yellow, x0 + (x1 - x0) * i / n, WS_F3, z0 + (z1 - z0) * i / n);
+      };
+      rail3(liftX0, liftZ0 - 0.05, WS_IN.x, liftZ0 - 0.05);
+      rail3(liftX0 - 0.05, liftZ0, liftX0 - 0.05, WS_LIFT_GATE - 0.8);
+      rail3(liftX0 - 0.05, WS_LIFT_GATE + 0.8, liftX0 - 0.05, WS_IN.z - 0.1);
+      rail3(stairX1 + 0.05, stairZ0, stairX1 + 0.05, WS_IN.z - 0.1);
+      // The stair tower: switchback steel flights from floor 1 to 2 and 2 to 3, a walkway bridge to the floor-2 deck
+      const flight = (x, z0, z1, y0, y1) => {
+        const n = Math.round((y1 - y0) / 0.2), dz = (z1 - z0) / n, dy = (y1 - y0) / n;
+        for (let i = 0; i < n; i++) mmBox(wsGroup, 0.75, 0.04, Math.abs(dz) + 0.02, 'steel', x, y0 + dy * (i + 1) - 0.04, z0 + dz * (i + 0.5));
+        const len = Math.hypot(z1 - z0, y1 - y0), ang = Math.atan2(y1 - y0, z1 - z0);
+        [-0.4, 0.4].forEach(ox => {
+          const st = mmBox(wsGroup, 0.05, 0.22, len, yellow, x + ox, (y0 + y1) / 2, (z0 + z1) / 2, { centre: true });
+          st.rotation.x = -ang;
+          const hr = mmBox(wsGroup, 0.04, 0.04, len, yellow, x + ox, (y0 + y1) / 2 + 1.0, (z0 + z1) / 2, { centre: true });
+          hr.rotation.x = -ang;
+        });
+      };
+      const sx1 = -7.35, sx2 = -6.55, sz0 = 6.9, sz1 = 3.0;
+      [[WS_F1, WS_F2], [WS_F2, WS_F3]].forEach(([ya, yb]) => {
+        const mid = (ya + yb) / 2;
+        flight(sx1, sz0, sz1, ya, mid);
+        mmBox(wsGroup, 1.6, 0.08, 0.8, 'steel', (sx1 + sx2) / 2, mid - 0.08, sz1 - 0.4);
+        flight(sx2, sz1, sz0, mid, yb);
+        mmBox(wsGroup, 1.6, 0.08, 0.8, 'steel', (sx1 + sx2) / 2, yb - 0.08, sz0 + 0.4);
+      });
+      mmBox(wsGroup, -3.95 - sx2 + 0.4, 0.08, 0.9, 'steel', (sx2 - 0.4 - 3.95) / 2, WS_F2 - 0.08, sz0 + 0.3);
+      [-0.45, 0.45].forEach(dz => mmBox(wsGroup, -3.95 - sx2 + 0.4, 0.05, 0.05, yellow, (sx2 - 0.4 - 3.95) / 2, WS_F2 + 1.0, sz0 + 0.3 + dz));
+      mmLabel(wsGroup, 'STAIRS  1 • 2 • 3', 1.2, 0.25, (sx1 + sx2) / 2, 2.6, 7.2, { bg: '#facc15', fg: '#111827', ry: Math.PI });
+      // Landings: a folding gate, call buttons and a floor number at the platform's door on every floor
+      [WS_F1, WS_F2, WS_F3].forEach((y, i) => {
+        const gx = liftX0 - 0.2;
+        const call = mmGroup(wsGroup, gx - 0.25, y, WS_LIFT_GATE + 1.05);
+        mmBox(call, 0.06, 1.3, 0.06, mmMat('dark'), 0, 0, 0);
+        mmBox(call, 0.1, 0.32, 0.22, yellow, 0, 1.25, 0);
+        mmCyl(call, 0.035, 0.03, 'lampGreen', -0.06, 1.47, 0, { axis: 'x' });
+        mmCyl(call, 0.035, 0.03, 'lampAmber', -0.06, 1.35, 0, { axis: 'x' });
+        mmLabel(call, String(i + 1), 0.22, 0.22, -0.06, 1.75, 0, { bg: '#111827', fg: '#facc15', ry: -Math.PI / 2 });
+        // the landing gate, folded open to one side of the doorway
+        const gate = mmGroup(wsGroup, gx + 0.1, y, WS_LIFT_GATE - 0.95);
+        for (let k = 0; k < 4; k++) mmBox(gate, 0.03, 1.9, 0.12, i === 0 ? 'steel' : yellow, 0, 0, k * 0.08);
+        mmBox(gate, 0.05, 0.05, 1.6, 'steel', 0, 1.95, 0.8);
+      });
       // The car elevator: four tall yellow masts, a diamond-plate platform with hazard edges,
       // a hydraulic ram under it, gates and the call box
       const L = WS_LIFT;
       [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => {
-        mmBox(wsGroup, 0.32, WS_F2 + 2.6, 0.32, yellow, L.x + sx * (L.w / 2 + 0.16), WS_F1, L.z + sz * (L.d / 2 - 0.2));
-        mmBox(wsGroup, 0.08, WS_F2 + 2.5, 0.1, steel, L.x + sx * (L.w / 2 - 0.02), WS_F1, L.z + sz * (L.d / 2 - 0.2));
+        mmBox(wsGroup, 0.32, WS_F3 + 2.6, 0.32, yellow, L.x + sx * (L.w / 2 + 0.16), WS_F1, L.z + sz * (L.d / 2 - 0.2));
+        mmBox(wsGroup, 0.08, WS_F3 + 2.5, 0.1, steel, L.x + sx * (L.w / 2 - 0.02), WS_F1, L.z + sz * (L.d / 2 - 0.2));
       });
-      [-1, 1].forEach(sz => mmBox(wsGroup, L.w + 0.64, 0.4, 0.4, yellow, L.x, WS_F2 + 2.6, L.z + sz * (L.d / 2 - 0.2)));
-      mmLabel(wsGroup, 'CAR ELEVATOR  4,500 KG', 2.6, 0.3, L.x, WS_F2 + 2.8, L.z + L.d / 2, { bg: '#facc15', fg: '#111827' });
+      [-1, 1].forEach(sz => mmBox(wsGroup, L.w + 0.64, 0.4, 0.4, yellow, L.x, WS_F3 + 2.6, L.z + sz * (L.d / 2 - 0.2)));
+      mmLabel(wsGroup, 'CAR ELEVATOR  4,500 KG  •  FLOORS 1-2-3', 3.2, 0.3, L.x, WS_F3 + 2.8, L.z + L.d / 2, { bg: '#facc15', fg: '#111827' });
       wsLift = mmGroup(wsGroup, L.x, WS_F1, L.z);
       const plate = new THREE.Mesh(wsUV(new THREE.BoxGeometry(L.w, 0.14, L.d), 0.8), new THREE.MeshStandardMaterial({ color: 0x9aa3ad, roughness: 0.35, metalness: 0.85, map: wsConcreteTexture() }));
       plate.position.y = -0.07;
@@ -483,6 +550,11 @@ function buildWorkshop3D() {
         mmBox(wsLift, 0.05, 1.0, L.d, 'fence', s * (L.w / 2 - 0.03), 0.02, 0);
         mmBox(wsLift, 0.06, 0.06, L.d, yellow, s * (L.w / 2 - 0.03), 1.0, 0);
       });
+      // The floor selector on the platform (1, 2, 3)
+      const sel = mmGroup(wsLift, -L.w / 2 + 0.15, 0, L.d / 2 - 1.0);
+      mmBox(sel, 0.06, 1.2, 0.06, mmMat('dark'), 0, 0, 0);
+      mmBox(sel, 0.12, 0.45, 0.22, yellow, 0, 1.15, 0);
+      ['lampGreen', 'lampAmber', 'lampRed'].forEach((c, i) => mmCyl(sel, 0.03, 0.03, c, 0.07, 1.48 - i * 0.12, 0, { axis: 'x' }));
       // The ram (stretches as the platform rises)
       const ram = mmCyl(wsGroup, 0.2, 1, mmMat('chrome'), L.x, WS_F1 / 2, L.z);
       wsGroup.userData.ram = ram;
@@ -537,10 +609,11 @@ function buildWorkshop3D() {
       // The work stations other systems can move into
       buildWorkshopStations();
 
-      wsMergeStatic(wsGroup, new Set([...wsFrontFade, ...wsDeckMeshes, ...(typeof cutawayRoofMeshes !== 'undefined' ? cutawayRoofMeshes : [])]),
+      wsMergeStatic(wsGroup, new Set([...wsFrontFade, ...wsDeckMeshes, ...wsDeck3Meshes, ...(typeof cutawayRoofMeshes !== 'undefined' ? cutawayRoofMeshes : [])]),
         [wsLift, crane, ...Object.values(doors), ...Object.values(WORKSHOP_STATIONS).map(st => st.group).filter(Boolean), wsGroup.userData.ram]);
       wsFloor1 = mmGroup(wsGroup, 0, WS_F1, 0);
       wsFloor2 = mmGroup(wsGroup, 0, WS_F2, 0);
+      wsFloor3 = mmGroup(wsGroup, 0, WS_F3, 0);
       scene.add(wsGroup);
       wsUpdateLift(0);
       wsClearSceneryInside();
@@ -809,7 +882,7 @@ function workshopFits(size) {
         hangarBay: L < bay.w + 0.01 && W < bay.d + 0.01 && Hh < WORKSHOP_HANGAR.craneY - 0.5,
         door1: W < WS_DOORS.vehicle.w - 0.3 && Hh < WS_DOORS.vehicle.h - 0.2,
         carElevator: L < WS_LIFT.d - 0.2 && W < WS_LIFT.w - 0.1 && Hh < WS_F2 - 0.3 - WS_F1,
-        garageLift: W < 3.6 && Hh + 1.9 < WS_EAVE - WS_F2
+        garageLift: W < 3.6 && Hh + 1.9 < WS_F3 - 0.3 - WS_F2
       };
     }
 
@@ -855,7 +928,7 @@ function wsBuildModel(def) {
       m.position.set(def.at.x, 0, def.at.z);
       m.rotation.y = def.at.ry || 0;
       m.userData.machineKey = def.key;
-      (def.floor === 2 ? wsFloor2 : wsFloor1).add(m);
+      (def.floor === 3 ? wsFloor3 : def.floor === 2 ? wsFloor2 : wsFloor1).add(m);
       wsModels[def.key] = m;
       if (typeof def.onBuilt === 'function') def.onBuilt(m);
       return m;
@@ -876,17 +949,22 @@ function workshopModel(key) {
       return wsModels[key] || wsBuildModel(def);
     }
 
-// Floor 2: built when he goes up, taken down when he comes back
-let wsUpstairsBuilt = false;
-function workshopShowUpstairs(on) {
-      if (!wsGroup) return;
-      if (on && !wsUpstairsBuilt) {
-        workshopMachinesOn(2).forEach(def => wsBuildModel(def));
-        wsUpstairsBuilt = true;
-      } else if (!on && wsUpstairsBuilt) {
-        workshopMachinesOn(2).forEach(def => wsDropModel(def.key));
-        wsUpstairsBuilt = false;
+// Floors 2 and 3: built when he goes up, taken down when he comes back
+const wsUpperBuilt = { 2: false, 3: false };
+function workshopShowFloor(floor, on) {
+      if (!wsGroup || !wsUpperBuilt.hasOwnProperty(floor)) return;
+      if (on && !wsUpperBuilt[floor]) {
+        workshopMachinesOn(floor).forEach(def => wsBuildModel(def));
+        wsUpperBuilt[floor] = true;
+      } else if (!on && wsUpperBuilt[floor]) {
+        workshopMachinesOn(floor).forEach(def => wsDropModel(def.key));
+        wsUpperBuilt[floor] = false;
       }
+    }
+
+function workshopShowUpstairs(on) {
+      workshopShowFloor(2, on);
+      if (!on) workshopShowFloor(3, false);
     }
 
 // --- Lights and day/night -------------------------------------------------------------------------------
@@ -988,7 +1066,7 @@ function wsObstacles(floor) {
 
 // Walk inside to a local point on the floor he is on
 function wsWalkTo(site, from, to) {
-      const y = workshopTrip.floor === 2 ? WS_F2 : WS_F1;
+      const y = wsFloorY(workshopTrip.floor);
       return tripWalk(routeInside(site, from, to).map(p => siteToWorld(site, p.x, p.z, y + (workshopTrip.liftY && wsOnLift(p) ? 0 : 0))));
     }
 
@@ -998,7 +1076,7 @@ function wsOnLift(p) {
 
 // Ride the car elevator between floors. Whatever stands on the platform (him, a vehicle) rides with it.
 async function wsRideLift(toFloor, riders = []) {
-      const from = workshopTrip.liftY, to = toFloor === 2 ? WS_F2 - WS_F1 : 0;
+      const from = workshopTrip.liftY, to = wsFloorY(toFloor) - WS_F1;
       const ms = Math.max(800, Math.abs(to - from) / 0.9 * 1000);
       let start = Date.now(), pausedAt = 0, held = false;
       const base = wsGroup.position.y;
@@ -1081,11 +1159,14 @@ async function runWorkshopVisit(plan) {
         wsUpdateLift(0);
         roofs.forEach(r => { r.material.opacity = 0.1; });
         wsSetFrontFade(0.12);
-        wsSetDeck(1);
+        wsSetDecksFor(1);
         wsShowFloor1(true);
         wsBuildQueued(Infinity);
         wsUpdateLighting();
-        if (veh) {
+        if (veh && plan.vehicleTour) {
+          await wsVehicleTour(site, veh, plan.vehicleTour);
+          cur = null;
+        } else if (veh) {
           await wsDriveIn(site, veh);
           cur = { x: WS_LIFT.x - WS_LIFT.w / 2 - 0.45, z: WORKSHOP_STATIONS.garage.local.z + 0.8 };
         } else {
@@ -1106,7 +1187,9 @@ async function runWorkshopVisit(plan) {
           indoorTrip.pose = null;
           indoorTrip.crouchTarget = 0;
         }
-        if (veh) {
+        if (veh && plan.vehicleTour) {
+          // (the tour drove back out already)
+        } else if (veh) {
           await wsDriveOut(site, veh);
         } else {
           if (workshopTrip.floor !== 1) cur = await wsChangeFloor(site, cur, 1);
@@ -1155,28 +1238,36 @@ function wsSetDeck(opacity) {
         m.material.opacity = opacity === null ? (state.roofCutaway ? 0.18 : 0.95) : opacity;
         m.visible = opacity === null || opacity > 0.12; // (hidden outright while he works downstairs)
       });
+      if (opacity === null) wsDeck3Meshes.forEach(m => { m.material.opacity = state.roofCutaway ? 0.18 : 0.95; m.visible = true; });
     }
 
 // Walk onto the platform, ride it, walk off onto the other floor
 async function wsChangeFloor(site, cur, floor) {
+      const from = workshopTrip.floor;
       const onLift = { x: WS_LIFT.x, z: WS_LIFT_GATE };
       await wsWalkTo(site, cur, { x: WS_LIFT.x - WS_LIFT.w / 2 - 0.5, z: WS_LIFT_GATE });
-      await tripWalk([siteToWorld(site, onLift.x, onLift.z, workshopTrip.floor === 2 ? WS_F2 : WS_F1)]);
+      await tripWalk([siteToWorld(site, onLift.x, onLift.z, wsFloorY(from))]);
       tripFace(siteToWorld(site, onLift.x, onLift.z + 2, 0));
-      if (floor === 2) workshopShowUpstairs(true);
-      wsSetDeck(floor === 2 ? 0.98 : 0.15);
-      tripMood(floor === 2 ? 'Taking the car elevator up' : 'Riding the car elevator down', floor === 2 ? 'Up to the second floor!' : null);
+      if (floor > 1) workshopShowFloor(floor, true);
+      wsSetDecksFor(floor);
+      tripMood(`Taking the car elevator to floor ${floor}`, floor > from ? `Up to floor ${floor}!` : null);
       await tripPause(400);
-      // (the engine hoist parks over the shaft upstairs: it's only there while the platform is up)
+      // (the engine hoist parks over the shaft on floor 2: it's only there while the platform is up there)
       if (wsModels.hoist) wsModels.hoist.visible = false;
       await wsRideLift(floor, [y => { if (indoorTrip.pos) indoorTrip.pos.y = y; }]);
       workshopTrip.floor = floor;
       if (floor === 2 && wsModels.hoist) wsModels.hoist.visible = true;
       await tripPause(300);
       const off = { x: WS_LIFT.x - WS_LIFT.w / 2 - 0.6, z: WS_LIFT_GATE };
-      await tripWalk([siteToWorld(site, off.x, off.z, floor === 2 ? WS_F2 : WS_F1)]);
-      if (floor === 1) workshopShowUpstairs(false);
+      await tripWalk([siteToWorld(site, off.x, off.z, wsFloorY(floor))]);
+      [2, 3].forEach(f => { if (f !== floor) workshopShowFloor(f, false); });
       return off;
+    }
+
+// Which decks show: the floor he is on and those below; the ones above him are hidden so you can see in
+function wsSetDecksFor(floor) {
+      wsSetDeck(floor >= 2 ? 0.98 : 0.1);
+      wsDeck3Meshes.forEach(m => { m.material.opacity = 0.98; m.visible = floor >= 3; });
     }
 
 // Him in the driver's seat of a vehicle he is moving inside (not the outdoor riding code)
@@ -1248,7 +1339,7 @@ async function wsDriveIn(site, v) {
       await wsDriveAlong(site, v, [{ x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 1.5, ry }, { x: WS_LIFT.x, z: WS_LIFT.z, ry }], 4200);
       workshopShowUpstairs(true);
       if (wsModels.hoist) wsModels.hoist.visible = false;
-      wsSetDeck(0.98);
+      wsSetDecksFor(2);
       tripMood('Taking the car elevator up', `Going up with the ${nm}. This is the best part.`);
       await wsRideLift(2, [y => { mesh.position.y = y; wsHoldVehicle(mesh); wsSeatKelo(mesh); }]);
       workshopTrip.floor = 2;
@@ -1276,7 +1367,7 @@ async function wsDriveOut(site, v) {
       tripMood('Riding the car elevator down');
       await wsRideLift(1, [y => { mesh.position.y = y; wsHoldVehicle(mesh); wsSeatKelo(mesh); }]);
       workshopTrip.floor = 1;
-      wsSetDeck(0.15);
+      wsSetDecksFor(1);
       workshopShowUpstairs(false);
       // Reverse out of door 1 into the lane, then home to where it was parked
       const lane = { x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 4.2 };
@@ -1291,9 +1382,47 @@ async function wsDriveOut(site, v) {
       indoorTrip.pos = { x: out.x, y: getIslandGroundHeight(out.x, out.z), z: out.z };
     }
 
+// A ride with a vehicle aboard between any floors (e.g. [3, 2, 1]): on at floor 1, stop at each
+// landing, and off again at floor 1. (window.__wsHold = 'landing' holds each stop for a picture.)
+async function wsVehicleTour(site, v, floors) {
+      const mesh = vehicleMeshes[v.id];
+      if (!mesh) return;
+      const nm = String(v.name).replace(/^(an?|the)\s+/i, '');
+      const ry = Math.PI / 2;
+      tripMood(`Driving the ${nm} onto the car elevator`);
+      await wsDriveAlong(site, v, [{ x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 4.2, ry }], 2000);
+      await wsDriveAlong(site, v, [{ x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 1.5, ry }, { x: WS_LIFT.x, z: WS_LIFT.z, ry }], 3800);
+      for (const f of floors) {
+        if (f > 1) workshopShowFloor(f, true);
+        wsSetDecksFor(f);
+        tripMood(`Car elevator: riding to floor ${f} with the ${nm}`);
+        await wsRideLift(f, [y => { mesh.position.y = y; wsHoldVehicle(mesh); wsSeatKelo(mesh); }]);
+        workshopTrip.floor = f;
+        tripMood(`Car elevator: at the floor ${f} landing`, `Floor ${f}. Doors open.`);
+        if (window.__wsHold && /landing/i.test(window.__wsHold)) {
+          window.__wsHeld = `landing ${f}`;
+          const t0 = Date.now();
+          while (window.__wsHold && /landing/i.test(window.__wsHold) && window.__wsHeld === `landing ${f}` && Date.now() - t0 < 600000) await tripPause(50);
+          window.__wsHeld = null;
+        } else await tripPause(2500);
+        [2, 3].forEach(k => { if (k !== f) workshopShowFloor(k, false); });
+      }
+      if (workshopTrip.floor !== 1) await wsRideLift(1, [y => { mesh.position.y = y; wsHoldVehicle(mesh); wsSeatKelo(mesh); }]);
+      workshopTrip.floor = 1;
+      wsSetDecksFor(1);
+      const lane = { x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 4.2 };
+      await wsDriveAlong(site, v, [{ x: lane.x, z: WORKSHOP_SITE.d / 2 + 1.0, ry }, { x: lane.x, z: lane.z, ry }], 3800);
+      const home = workshopTrip.vehicleHome || { x: wsGroup.position.x + lane.x, z: wsGroup.position.z + lane.z, rotY: ry };
+      v.x = home.x; v.z = home.z; v.rotY = home.rotY;
+      const out = typeof boardingSpot === 'function' ? boardingSpot(v) : { x: v.x - 2, z: v.z };
+      workshopTrip.vehicleOut = out;
+      indoorTrip.pose = null;
+      indoorTrip.pos = { x: out.x, y: getIslandGroundHeight(out.x, out.z), z: out.z };
+    }
+
 // What a machine's act(ctx) gets: its model, the world point of the machine, ways to pose and wait
 function wsContext(site, def, model, stop) {
-      const floorY = workshopTrip.floor === 2 ? WS_F2 : WS_F1;
+      const floorY = wsFloorY(workshopTrip.floor);
       return {
         site, def, model, stop,
         world: (lx, lz, ly = 0) => siteToWorld(site, lx, lz, floorY + ly),

@@ -42,6 +42,7 @@ const MM_MAT_DEFS = {
   mdf: { color: 0xa47f55, roughness: 0.92, metalness: 0 },
   bench: { color: 0x8a6a45, roughness: 0.75, metalness: 0 },
   concrete: { color: 0x9a9a94, roughness: 0.95, metalness: 0 },
+  firebrick: { color: 0xb5651d, roughness: 0.95, metalness: 0 },
   powder: { color: 0xe8e6df, roughness: 1, metalness: 0 },
   metalPowder: { color: 0x8e9298, roughness: 0.8, metalness: 0.6 },
   tiPowder: { color: 0x7b7f86, roughness: 0.75, metalness: 0.65 },
@@ -960,6 +961,9 @@ function tireChangerModel() {
       const breaker = mmGroup(g, 0.42, 0.3, 0);
       mmBox(breaker, 0.05, 0.6, 0.05, 'dark', 0.06, 0, 0, { rz: -0.4 });
       mmBox(breaker, 0.12, 0.1, 0.2, 'steel', 0.25, 0.5, 0);
+      // The pedal bank (turntable, clamps, bead breaker) and the air hose to the wall drop
+      [-0.18, 0, 0.18].forEach((x, i) => mmBox(g, 0.1, 0.04, 0.22, i === 1 ? 'chrome' : 'dark', x, 0.02, 0.38, { rx: -0.25 }));
+      mmRod(g, [0.35, 0.5, -0.2], [0.6, 1.6, -0.4], 0.015, 'yellow');
       mmLabel(g, 'TIRE CHANGER', 0.4, 0.06, 0, 0.45, 0.301, { bg: '#991b1b', fg: '#fff' });
       return mmFinish(g, 'tirechanger', { turntable, wheel, arm, mountHead, breaker, w: 1.0, d: 0.8 });
     }

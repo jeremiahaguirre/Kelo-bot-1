@@ -403,8 +403,9 @@ function buildAggregatePlantGround() {
         s.userData.plantLabel = text.charAt(0) + text.slice(1).toLowerCase();
         g.add(post, s);
       };
-      sign('KELO-1 READY-MIX', S.x - S.w / 2 - 0.4, S.oz + PLANT_LANE_Z + 0.4, 0.7);
-      sign('KELO-1 HOT MIX ASPHALT', S.x + S.w / 2 + 0.9, S.oz + PLANT_LANE_Z + 0.4, -1.1, '#c2410c');
+      // On the walkway, facing the lake
+      sign('KELO-1 READY-MIX', S.x + BATCH_PLANT_OFFSET - 1.0, S.z + S.d / 2 + 0.8, 0);
+      sign('KELO-1 HOT MIX ASPHALT', S.x + ASPHALT_PLANT_OFFSET - 1.0, S.z + S.d / 2 + 0.8, 0, '#c2410c');
       return g;
     }
 
@@ -1281,7 +1282,7 @@ function initAggregatePlant3D() {
       });
       if (typeof refreshTerrainAround === 'function') {
         const S = aggregatePlantSite();
-        for (let x = S.x - S.w / 2; x <= S.x + S.w / 2; x += 4) refreshTerrainAround(x, S.z + 2, S.d / 2 + 8);
+        for (let x = S.x - S.w / 2; x <= S.x + S.w / 2; x += 4) refreshTerrainAround(x, S.z + 3, S.d / 2 + 9);
       }
       aggregatePlantGroup = new THREE.Group();
       aggregatePlantGroup.name = 'aggregatePlant';
@@ -1327,7 +1328,7 @@ function aggregatePlantObstacles() {
       // lake but dry land is close) so no path past the plant cuts through the water
       const shore = [];
       const wet = (x, z) => getAnalyticalGroundHeight(x, z) < WATER_LEVEL + 0.02;
-      for (let x = 24; x <= WORLD_MAX_X + 1; x += 1.0) for (let z = 6; z <= 14; z += 1.0) {
+      for (let x = 24; x <= WORLD_MAX_X + 1; x += 1.0) for (let z = 6; z <= 16; z += 1.0) {
         if (!wet(x, z)) continue;
         if ([[1.5, 0], [-1.5, 0], [0, 1.5], [0, -1.5]].some(([dx, dz]) => !wet(x + dx, z + dz))) shore.push({ x, z, r: 0.55 });
       }

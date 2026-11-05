@@ -322,6 +322,7 @@ const state = {
   "paintingImages": {},
   "paintingsSold": [],
   "activityCooldowns": {},
+  "tripState": {},
   "recentDecisionTitles": [],
   "lastWeldAt": 0,
   "knowsSnow": false,
@@ -372,6 +373,7 @@ const state = {
   "mealsCooked": [],
   "soundMuted": false,
   "shop": { "listings": [], "sold": [], "earnings": 0, "builtAt": null },
+  "workshop": { "known": {}, "made": [], "jobs": 0, "programs": {}, "log": [], "asked": {}, "gadgetUses": 0 },
   "printer": { "setUp": false, "skill": 0, "prints": 0, "fails": 0, "spools": [], "loadedSpoolId": null, "lessons": {}, "history": [], "designs": {}, "welcomeSent": false }
 };
 
@@ -1043,7 +1045,8 @@ Return ONLY valid JSON matching this schema:
 
         // If Kelo-1 requested new gear on this tick, add it to his Supply Broker Requisitions inbox!
         if (synth.gearRequested && synth.gearRequested !== 'None') {
-          const alreadyAsked = state.requestsToUser.some(r => r.requestedGear === synth.gearRequested);
+          const alreadyAsked = state.requestsToUser.some(r => r.requestedGear === synth.gearRequested)
+            || (typeof vehicleRequestCheck === 'function' && vehicleRequestCheck(synth.gearRequested).blocked);
           if (!alreadyAsked) {
             state.requestsToUser.unshift({
               id: 'req-gear-' + Date.now(),
@@ -1843,7 +1846,8 @@ Current state:
 - How your body feels: ${typeof bodySymptoms === 'function' && bodySymptoms().length ? bodySymptoms().join('; ') : 'fine'}
 - Days you have been alive: ${typeof daysAlive === 'function' ? daysAlive() : 1}${typeof worldNow === 'function' ? ` (it is ${worldNow().season.toLowerCase()}, ${clockLabel(worldNow().hour)}${worldNow().isNight ? ', night' : ''})` : ''}
 - Digging: ${state.digSites.length ? state.digSites.map(d => `site (${d.x}, ${d.z}) ${d.depth.toFixed(1)} m deep, pile ${d.dirt.toFixed(1)}`).join('; ') : 'no digs yet'}; equipment: ${typeof hasEquipment === 'function' ? ['dig', 'rock', 'truck', 'excavator'].filter(hasEquipment).join(', ') || 'none' : 'none'}; finds so far: ${state.foundItems.map(f => f.name).join(', ') || 'none'}
-- Vehicles parked and ready: ${state.vehicles.map(v => typeof fuelNeededBy === 'function' && fuelNeededBy(v) ? `${v.name} (${Math.round(fuelLeft(v))}% ${fuelNeededBy(v)})` : v.name).join(', ') || 'none'}${state.knowsLakeDanger ? ' (you know you cannot breathe in deep water)' : ''}
+- Your vehicles (fuel, where, ready?, the ground each can go on): ${typeof vehiclesSummaryForAI === 'function' ? vehiclesSummaryForAI() : state.vehicles.map(v => v.name).join(', ') || 'none'}${state.knowsLakeDanger ? ' (you know you cannot breathe in deep water)' : ''}. A vehicle that can't go somewhere by itself gets hauled on a trailer behind a truck; ${typeof tripSummaryForAI === 'function' ? tripSummaryForAI() : ''}
+- Vehicle rule: ${typeof vehicleCapLineForAI === 'function' ? vehicleCapLineForAI() : 'one of each kind'}
 - The season: ${typeof seasonSummaryForAI === 'function' ? seasonSummaryForAI() : 'unknown'}
 - The wind: ${typeof windSummaryForAI === 'function' ? windSummaryForAI() : 'unknown'}
 - The weather: ${typeof weatherSummaryForAI === 'function' ? weatherSummaryForAI() : 'unknown'} (spring rain soaks plants so they grow faster; winter freezes the lake, and you only walk on ice you have measured at 10 cm or more: open water still drowns you)
@@ -1863,6 +1867,7 @@ Current state:
 - Your shop website, where real people can buy your things: ${typeof shopSummaryForAI === 'function' ? shopSummaryForAI() : 'none'}
 - Your sense of taste: ${typeof tastesSummaryForAI === 'function' ? tastesSummaryForAI() : 'unknown'}
 - Your 3D printer: ${typeof printerSummaryForAI === 'function' ? printerSummaryForAI() : 'none'}
+- Your Workshop: ${typeof workshopStatusLine === 'function' ? workshopStatusLine() : 'not built yet'}
 - Things your human switched on in your world: ${typeof wishFeaturesSummaryForAI === 'function' ? wishFeaturesSummaryForAI() : 'nothing extra yet'}
 - Upgrades you coded yourself: ${typeof upgradesSummaryForAI === 'function' ? upgradesSummaryForAI() : 'none yet'}
 - Painting for real, in real media (oil, acrylic, watercolour, gouache, pastel, ink, charcoal): each needs its own supplies, and you research a new medium at NetNode first, then ask for what's missing. Your media: ${typeof paintingSummaryForAI === 'function' ? paintingSummaryForAI() : 'none'}
@@ -1896,7 +1901,7 @@ Return ONLY JSON:
 ${typeof wishFeaturesPromptLines === 'function' ? wishFeaturesPromptLines() : ''}
   "sellItem": null OR {"item": "exact name of a design you 3D-printed well that people would find fun or useful, OR the exact title of one of your good paintings that you don't want to keep (your shop sells only 3D print files and your original paintings)", "price": number in Canadian dollars: a print file $1.99-$5.99; an original painting by an emerging artist $35-$120 for watercolour, ink, pastel or charcoal, $60-$180 for acrylic or gouache, $90-$350 for oil, higher as your skill grows, "description": "1-2 sentences for buyers: what it's for or why it's fun, or what the painting shows"} (put it in your shop website at the NetNode cafe; real people may buy it; an original sells only once and leaves your Museum),
   "paint": null OR {"medium": "oil|acrylic|watercolour|gouache|pastel|ink|charcoal", "subject": "lake|night|mountains|house|wildlife|stilllife|friend", "why": "1 sentence"} (set up your easel facing the subject and paint a real picture; if you haven't learned the medium or lack its supplies you research it and ask for them first),
-  "print": null OR {"what": "something small to make on your 3D printer: a useful thing, a toy, or a shape or idea of yours as a sculpture", "why": "1 sentence"} (only if you have a 3D printer and filament),
+${typeof workshopPromptLine === 'function' ? workshopPromptLine() + '\n' : ''}  "print": null OR {"what": "something small to make on your 3D printer: a useful thing, a toy, or a shape or idea of yours as a sculpture", "why": "1 sentence"} (only if you have a 3D printer and filament),
   "webQuery": null OR "a topic you want to look up at the NetNode cafe",
   "usedConcept": null OR "name of one of your existing concepts this decision builds on",
   "newConcept": null OR {"name": "2-4 word name for a brand-new idea you just invented", "emoji": "one emoji", "definition": "1 sentence", "builtFrom": ["ideas or things it grew out of"]},
@@ -1904,6 +1909,7 @@ ${typeof wishFeaturesPromptLines === 'function' ? wishFeaturesPromptLines() : ''
   "discard": null OR {"item": "exact name of something you own that you no longer want", "why": "1 sentence"} (you carry or drive it to your Disposal Pit and throw it in; it is gone forever),
   "shape": null OR {"action": "chop" | "plant" | "road" | "pave" | "hill" | "hollow" | "undo", "x": number, "z": number, "toX": number, "toZ": number, "id": "an id from your list, for undo", "why": "1 sentence"} (change your world yourself, anywhere except town: the meadows, woods, mountain slopes, beach and land you made are all yours. Chop a tree with an axe, plant seeds you have, lay a gravel road, pave one of your gravel roads with asphalt (give its id), raise a hill or dig a hollow with a shovel, or undo something you added; town and the buildings are never touched. x runs ${WORLD_MIN_X} to ${WORLD_MAX_X}, z runs ${WORLD_MIN_Z} (mountain) to 9 (beach); town is x ${TOWN.minX} to ${TOWN.maxX}, z ${TOWN.minZ} to ${TOWN.maxZ}),
   "runPlant": null OR {"plant": "concrete" | "asphalt", "pour": "path" | "pad", "why": "1 sentence"} (run your own plant: concrete is batched into your mixer truck and poured as a path or pad that cures over days; asphalt is made only to pave one of your gravel roads, because it cools and is wasted if it waits),
+  "takeTrip": null OR {"vehicle": "one of your vehicles", "to": "the mountain | the lake | a place you know", "why": "1 sentence"} (you plan it like a person: if it can't get there on its own ground you haul it on a trailer, and ask for anything missing),
   "practise": null OR "one of your vehicles, your telescope or a hobby to go and practise for real right now (e.g. 'the helicopter')",
   "buildProject": null OR "one of the real things you know how to build" (look it up and ask for the materials it takes; one project at a time),
   "expandLand": null OR {"x": number, "why": "1 sentence"} (from now on, tip the dirt you dig into the lake off the beach near x to make new land, instead of the Disposal Pit; deeper water needs more dirt),
@@ -2072,6 +2078,7 @@ function applyDecision(decision, originLabel) {
       if (typeof applyWishFeatureDecision === 'function') applyWishFeatureDecision(decision);
       if (typeof applyPlantDecision === 'function') applyPlantDecision(decision);
       if (decision.print && typeof printDecision === 'function') printDecision(decision.print);
+      if (decision.useMachine && typeof useMachineDecision === 'function') useMachineDecision(decision.useMachine);
 
       const used = findConcept(decision.usedConcept);
       if (used) used.uses = (used.uses || 0) + 1;
@@ -2112,6 +2119,7 @@ function applyDecision(decision, originLabel) {
       }
       if (decision.expandLand && typeof startLandFill === 'function') startLandFill(decision.expandLand.x, str(decision.expandLand.why, 160));
       if (typeof decision.practise === 'string' && typeof practiseNamed === 'function') practiseNamed(decision.practise);
+      if (decision.takeTrip && typeof applyTripDecision === 'function') applyTripDecision(decision);
       if (typeof startProject === 'function' && typeof decision.buildProject === 'string' && planFor(decision.buildProject.toLowerCase().trim())) {
         doWhenFree(() => startProject(decision.buildProject.toLowerCase().trim(), 'Decided to Build Something Real'));
       }
@@ -2165,6 +2173,8 @@ function doWhenFree(fn, attempt = 0) {
 // Add something Kelo-1 wants to the requests inbox
 function addItemRequest(item, category, why, context) {
       if (!item || state.requestsToUser.some(r => !r.fulfilled && r.requestedGear === item)) return;
+      // One of each kind of vehicle until he has a friend to share with (js/trips.js)
+      if (typeof vehicleRequestCheck === 'function') { const cap = vehicleRequestCheck(item, why); if (cap.blocked) return; why = cap.why; }
       state.requestsToUser.unshift({
         id: 'req-item-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
         category,
@@ -2339,6 +2349,9 @@ function runAutonomousLifeTick() {
       // Now and then he puts something in his shop, or wishes his world could do something new
       if (typeof tendShop === 'function' && canTryKey('shop') && Math.random() < shopChance()) { tryKey('shop', () => tendShop()); return; }
       if (typeof printOnMyOwn === 'function' && canTryKey('print') && Math.random() < printChance()) { tryKey('print', () => printOnMyOwn()); return; }
+      // His Workshop: learn a machine, ask for what it needs, make something, service a vehicle (js/machines.js)
+      if (typeof workshopOnMyOwn === 'function' && canTryKey('workshop') && Math.random() < workshopChance()) { tryKey('workshop', () => workshopOnMyOwn()); return; }
+      if (typeof useGadgetOnMyOwn === 'function' && canTryKey('gadget') && Math.random() < gadgetChance()) { tryKey('gadget', () => useGadgetOnMyOwn()); return; }
       // Now and then he sets up his easel and paints (or learns a new medium) (js/paintstudio.js)
       if (typeof paintOnMyOwn === 'function' && canTryKey('paint') && Math.random() < paintChance()) { tryKey('paint', () => paintOnMyOwn()); return; }
       if (typeof wishForCode === 'function' && canTryKey('codewish') && Math.random() < codeWishChance()) { tryKey('codewish', () => wishForCode()); return; }

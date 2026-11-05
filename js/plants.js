@@ -15,14 +15,14 @@
 // State: state.batchPlant, state.asphaltPlant, state.concretePours (defaults in js/agent.js).
 
 // --- Where it is --------------------------------------------------------------------------------
-// South of the big workshop (assumed at x 44-56, z -10 to 2), between the helipad and the lake.
-// If js has a WORKSHOP_SITE, the plant lines up with it (the lake stops it moving further south).
-// The pad runs from z 0.7 to 7.2. The beach here sat just under the lake's level, so new land was
-// added south of it (KELO_ADDED_LAND below): a wide walkway and meadow to a sand beach at z 11.5.
-// oz is where the plants' own layouts are centred.
-const AGGREGATE_PLANT_SITE = { x: 45.5, z: 3.95, w: 26, d: 6.5, y: 0.05, oz: 4.05 };
-const PLANT_SHORE_Z = 11.5;         // where the lake begins now, off the plant's new land
-const PLANT_DRY_Z = 7.7;            // walk targets and parking stay north of this (1.5 inland)
+// South of the Workshop (js/workshopbuilding.js, WORKSHOP_SITE / WORKSHOP_LAND), between the helipad
+// and the lake, west of the Workshop's vehicle lane (its east edge stays 0.55 short of the lane). The
+// pad runs from z 2.75 to 9.2 on land added to the lake (KELO_ADDED_LAND below): the natural beach sat
+// just under the water, so the made land carries on south as a gravel walkway and meadow to a sand
+// beach at z 13.3. oz is where the plants' own layouts are centred.
+const AGGREGATE_PLANT_SITE = { x: 43.2, z: 5.95, w: 26, d: 6.5, y: 0.05, oz: 6.05 };
+const PLANT_SHORE_Z = 13.3;         // where the lake begins now, off the plant's new land
+const PLANT_DRY_Z = PLANT_SHORE_Z - 1.5; // walk targets and parking at the plant stay north of this
 const BATCH_PLANT_OFFSET = -6.5;    // the batch plant's origin, east of the site centre
 const ASPHALT_PLANT_OFFSET = 6.5;   // the asphalt plant's origin
 const PLANT_LANE_Z = 1.45;          // the truck lane, south of the machines (local z)
@@ -34,15 +34,11 @@ function aggregatePlantSite() {
       if (aggregatePlantSiteDone) return AGGREGATE_PLANT_SITE;
       aggregatePlantSiteDone = true;
       const S = AGGREGATE_PLANT_SITE;
-      if (typeof WORKSHOP_SITE !== 'undefined' && WORKSHOP_SITE) {
-        const W = WORKSHOP_SITE;
-        const cx = Number.isFinite(W.x) ? W.x : (W.minX + W.maxX) / 2;
-        const maxZ = Number.isFinite(W.maxZ) ? W.maxZ : (Number.isFinite(W.z) && Number.isFinite(W.d) ? W.z + W.d / 2 : null);
-        if (Number.isFinite(cx)) S.x = Math.max(32.5 + S.w / 2, Math.min(58.5 - S.w / 2, cx));
-      }
+      // Never onto the Workshop's vehicle lane
+      if (typeof WORKSHOP_LAND !== 'undefined' && WORKSHOP_LAND.lane) S.x = Math.min(S.x, WORKSHOP_LAND.lane.minX - 0.55 - S.w / 2);
       // Level with the lowest dry ground around it, never below the lake
       let sum = 0, n = 0;
-      for (let x = S.x - S.w / 2; x <= S.x + S.w / 2; x += 2) for (let z = S.z - S.d / 2; z <= Math.min(7.5, S.z + S.d / 2); z += 1) { sum += plantOrigGround(x, z); n++; }
+      for (let x = S.x - S.w / 2; x <= S.x + S.w / 2; x += 2) for (let z = S.z - S.d / 2; z <= Math.min(7.5, S.z + S.d / 2); z += 1) if (z < 7.5) { sum += plantOrigGround(x, z); n++; }
       S.y = Math.max(0.05, Math.round((sum / Math.max(1, n)) * 100) / 100);
       return S;
     }
@@ -59,7 +55,21 @@ function inAggregatePlantSite(x, z, pad = 0) {
 // the water and blends into the lake bed. (js/landfill.js is his own dirt-by-dirt land; this is land
 // that was built with the plant.)
 window.KELO_ADDED_LAND = window.KELO_ADDED_LAND || [];
-KELO_ADDED_LAND.push({ id: 'aggregate-plant', minX: 30.5, maxX: 60.5, minZ: 2.0, maxZ: PLANT_SHORE_Z, y: AGGREGATE_PLANT_SITE.y, corner: 2.5, beach: 1.8 });
+// Joins the Workshop's lane along its west edge (both level at y 0.05) and stays clear of the boat launch
+KELO_ADDED_LAND.push({ id: 'aggregate-plant', minX: 30.0, maxX: typeof WORKSHOP_LAND !== 'undefined' && WORKSHOP_LAND.lane ? WORKSHOP_LAND.lane.minX - 0.25 : 56.5,
+  minZ: 2.0, maxZ: PLANT_SHORE_Z, y: AGGREGATE_PLANT_SITE.y, corner: 2.5, beach: 1.8 });
+
+// Solid ground here and 1.5 further toward the lake? (walk targets, parking, pours)
+function plantDryAt(x, z) {
+      return getAnalyticalGroundHeight(x, z) > WATER_LEVEL + 0.05 && getAnalyticalGroundHeight(x, z + 1.5) > WATER_LEVEL + 0.05;
+    }
+
+// The same spot, moved inland (north) until it is dry with a margin
+function plantDrySpot(p) {
+      const q = { ...p };
+      for (let i = 0; i < 30 && !plantDryAt(q.x, q.z); i++) q.z -= 0.5;
+      return q;
+    }
 
 // How far outside a piece a point is (negative inside), with rounded corners
 function addedLandDistance(L, x, z) {
@@ -126,7 +136,7 @@ function plantSpot(kind, what) {
           baghouse: { x: A.x + 0.0, z: A.z - 0.6 }, burner: { x: A.x + 5.0, z: A.z - 0.1 }, stockpile: { x: A.x - 7.4, z: A.z - 2.9 } }
       };
       const p = spots[kind][what];
-      return { ...p, z: Math.min(PLANT_DRY_Z, p.z) };
+      return plantDrySpot({ ...p, z: Math.min(PLANT_DRY_Z, p.z) });
     }
 
 // --- The jobs he researches (js/groundwork.js: researchJob / groundworkReady) -------------------
@@ -739,7 +749,7 @@ async function paveWithOwnAsphalt(why = '', originLabel = 'Paving With His Own A
       if (truck && plantFree()) {
         state.isPracticing = true;
         try {
-          const spot = { x: road.x - Math.sign(road.toX - road.x || 1) * 2.5, z: Math.min(PLANT_DRY_Z, road.z + 2.2) };
+          const spot = plantDrySpot({ x: road.x - Math.sign(road.toX - road.x || 1) * 2.5, z: road.z + 2.2 });
           await driveVehicle(truck, spot, 'Trucking the hot asphalt to the road');
           const m = vehicleMeshes[truck.id];
           if (m && m.userData.bed) { m.userData.bed.rotation.z = 0.55; await plantWait(1500); m.userData.bed.rotation.z = 0; }
@@ -752,14 +762,14 @@ async function paveWithOwnAsphalt(why = '', originLabel = 'Paving With His Own A
 
 // Where a new concrete path could go: open ground outside town, clear of roads, pours and buildings
 const CONCRETE_PATH_SEEDS = [
-  [31.0, 7.0, 19.8, 7.0], [-18.5, -1.5, -32.0, -1.5], [-18.5, -5.0, -32.0, -5.0], [-20.0, 1.5, -33.0, 1.5],
+  [28.6, 6.8, 19.8, 6.8], [-18.5, -1.5, -32.0, -1.5], [-18.5, -5.0, -32.0, -5.0], [-20.0, 1.5, -33.0, 1.5],
   [24.0, -9.0, 24.0, -16.0], [-22.0, -9.5, -34.0, -9.5], [30.0, -9.0, 34.0, -16.0]
 ];
 function concretePathSpotOk(x, z, toX, toZ, w = 1.2) {
       const len = Math.hypot(toX - x, toZ - z);
       for (let d = 0; d <= len; d += 0.6) {
         const px = x + (toX - x) * d / len, pz = z + (toZ - z) * d / len;
-        if (offLimits(px, pz, w / 2) || pz + w / 2 > PLANT_DRY_Z || px < WORLD_MIN_X + 2 || px > WORLD_MAX_X - 2 || pz < WORLD_MIN_Z + 2) return false;
+        if (offLimits(px, pz, w / 2) || !plantDryAt(px, pz + w / 2) || px < WORLD_MIN_X + 2 || px > WORLD_MAX_X - 2 || pz < WORLD_MIN_Z + 2) return false;
         if ((state.concretePours || []).some(p => segDist(px, pz, p) < (p.w || 1.2) / 2 + w / 2 + 0.3)) return false;
         if ((state.worldEdits || []).some(e => e.type === 'road' && segDist(px, pz, e) < 1.6)) return false;
       }
@@ -846,7 +856,7 @@ async function pourConcrete(kind = 'path', x = null, z = null, toX = null, toZ =
         concretePourActive = p.id;
         // 1. Truck the concrete over (it keeps turning), then set out the forms
         if (truck && readyToOperate(truck.name, truck, { quiet: true })) {
-          const side = { x: p.x - Math.sin(Math.atan2(p.toX - p.x, p.toZ - p.z)) * 4.5 + 1.5, z: Math.min(PLANT_DRY_Z, p.z - 2.4) };
+          const side = plantDrySpot({ x: p.x - Math.sin(Math.atan2(p.toX - p.x, p.toZ - p.z)) * 4.5 + 1.5, z: p.z - 2.4 });
           await driveVehicle(truck, side, 'Driving the mixer truck to the pour');
         }
         const len = Math.hypot(p.toX - p.x, p.toZ - p.z);

@@ -140,6 +140,7 @@ Kelo-bot-1/
 │   ├── workbench.js     # His wooden work bench with a vise, where woodworking and other non-welded builds are made
 │   ├── plantcare.js     # Soil moisture, nutrients and wilting; plants and garden beds grow with care; watering can, tap and fertilizer
 │   ├── skills.js        # Real skills: practising the vehicles, telescope and hobbies he was given; doing what visitors ask
+│   ├── trips.js         # Vehicle terrain rules, a trip planner, trailers (snowmobile, boat, lowboy) with hitch physics, one of each vehicle
 │   ├── projects.js      # Real builds: finding plans online, asking for materials (or sawing his own logs), building them
 │   ├── town.js          # Keeps the town free of his builds (the beach is fine)
 │   ├── coderequests.js  # Code requests for anything he wants (no cap, paced), each with a copyable spec
@@ -151,6 +152,13 @@ Kelo-bot-1/
 │   ├── paintstudio.js   # Real painting: researching a medium, asking for its supplies, painting at an easel, the Museum, visitor requests
 │   ├── shopkeeping.js   # His shop in the game: print files and original paintings for sale, "Sold", earnings, Export shop
 │   ├── printer.js       # His 3D printer: setting it up, learning it, filament spools, prints that fail and succeed
+│   ├── machinemodels.js # The Workshop's machine models (printers, routers, Haas, Taurus, SMT line, garage), shared materials
+│   ├── workshopbuilding.js # His two-storey Workshop east of the helipad: levelled pad, steel shell, car elevator, indoor trips, stations
+│   ├── machines.js      # Using the machines: research at NetNode, supplies and requests, jobs, made parts, AI field, Brain tab
+│   ├── additive.js      # Every kind of 3D printer (FDM, SLA, DLP, MSLA, SLS, DMLS, MJF, PolyJet, binder jet, DED, EBM, LOM) and post-processing
+│   ├── cnc.js           # Avid, AltMill, ShopSaber and Laguna routers, Haas VS-1/VS-3 and the Waldrich Coburg Taurus
+│   ├── electronics.js   # Floor 2 PCB line (mill, paste, place, reflow, AOI, wave, laser, enclosures) and the gadgets he builds
+│   ├── garage.js        # Floor 2 garage: lifts, tire changer, balancer, brake lathe, hoist, press, welder, compressor, plasma; vehicle wear
 │   ├── upgrades.js      # World upgrades he codes himself in a safe, validated JSON language (never JavaScript)
 │   ├── main.js          # UI wiring
 │   ├── portal.js        # Send-him-something panel

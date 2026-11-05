@@ -44,6 +44,9 @@ const vehicleMeshes = {};
 let dockGroup = null;
 
 function vehicleTypeFor(name) {
+      // Trailers and pickups are vehicles; fuel, straps and other accessories named after one are not (js/trips.js)
+      const sorted = typeof tripVehicleType === 'function' ? tripVehicleType(name) : undefined;
+      if (sorted !== undefined) return sorted;
       return VEHICLE_TYPES.find(v => v.re.test(String(name || ''))) || null;
     }
 
@@ -54,12 +57,13 @@ function findVehicle(kind) {
 // A new vehicle arrives: give it a parking spot instead of a shelf
 function registerVehicle(name) {
       const type = vehicleTypeFor(name);
-      if (!type || state.vehicles.some(v => v.name === name)) return null;
+      // A second gift with the same name gets its own spot too
+      if (!type || state.vehicles.filter(v => v.name === name).length >= Math.max(1, ownedItemNames().filter(n => n === name).length)) return null;
       const slots = parkingSlotsFor(type, name);
       const used = new Set(state.vehicles.map(v => `${v.x},${v.z}`));
       const [x, z] = slots.find(([sx, sz]) => !used.has(`${sx},${sz}`)) || slots[0];
       // New vehicles arrive with an empty tank (js/knowhow.js)
-      const v = { id: 'veh-' + Date.now() + '-' + Math.floor(Math.random() * 1000), name, kind: type.kind, x, z, rotY: type.mode === 'water' ? BOAT_ROT_Y : 0, load: 0, fuel: 0 };
+      const v = { id: 'veh-' + Date.now() + '-' + Math.floor(Math.random() * 1000), name, kind: type.kind, x, z, rotY: type.mode === 'water' ? BOAT_ROT_Y : 0, load: 0, fuel: 0, wear: 0 };
       state.vehicles.push(v);
       state.unstoredItems = state.unstoredItems.filter(n => n !== name);
       renderVehicles3D();
@@ -314,6 +318,8 @@ async function driveVehicle(v, target, label) {
         await waitForAltitude(v, a => a < 0.05);
       }
       if (typeof burnFuel === 'function') burnFuel(v, Math.hypot(state.botPos.x - v.x, state.botPos.z - v.z));
+      // Wear and tear, kept apart from fuel (js/garage.js services it away)
+      if (typeof wearVehicle === 'function') wearVehicle(v, Math.hypot(state.botPos.x - v.x, state.botPos.z - v.z));
       // Every real trip is a little practice (js/skills.js)
       if (typeof gainSkill === 'function' && typeof skillCandidates === 'function') {
         const c = skillCandidates().find(x => x.vehicle === v);
@@ -337,7 +343,8 @@ async function driveVehicle(v, target, label) {
 async function travelTo(target, label) {
       const dist = Math.hypot(target.x - state.botPos.x, target.z - state.botPos.z);
       // Only something he knows how to use and that has fuel in it (otherwise he walks)
-      const usable = v => (typeof readyToOperate !== 'function' || readyToOperate(v.name, v, { quiet: true })) && (typeof safeToFly !== 'function' || safeToFly(v));
+      const usable = v => (typeof readyToOperate !== 'function' || readyToOperate(v.name, v, { quiet: true })) && (typeof safeToFly !== 'function' || safeToFly(v))
+        && (typeof canDriveThere !== 'function' || canDriveThere(v, target)); // its terrain all the way (js/trips.js)
       const ride = dist > 14 && (state.vehicles.find(v => v.kind === 'air' && usable(v)) || state.vehicles.find(v => v.kind === 'bike' && usable(v))
         || (typeof inSnow === 'function' && inSnow(target) ? state.vehicles.find(v => v.kind === 'snowmobile' && usable(v)) : null));
       if (ride) {
@@ -413,6 +420,8 @@ async function goBoating(originLabel = 'Out on the Lake') {
         return false;
       }
       if (typeof readyToOperate === 'function' && !readyToOperate(boat.name, boat)) return false;
+      // A boat on its trailer in the yard is towed to the water first (js/trips.js)
+      if (typeof boatOnLand === 'function' && boatOnLand(boat)) return takeTrip(boat.name, 'lake', 'I want to go out on the lake.', originLabel);
       state.isPracticing = true;
       try {
         const spots = Array.from({ length: 3 }, () => ({ x: randRange(-20, 20), z: randRange(14, 32) }));

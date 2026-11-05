@@ -39,7 +39,9 @@ function getAnalyticalGroundHeight(x, z) {
         h += (x - 14) * 0.28 * Math.max(0.2, Math.abs(z) / 14);
       }
       // The valley floor never dips below the waterline; the lake bed does
-      const base = z > 7.5 ? h : Math.max(-0.25, h);
+      const natural = z > 7.5 ? h : Math.max(-0.25, h);
+      // The Workshop stands on levelled ground (js/workshopbuilding.js)
+      const base = typeof workshopPadAt === 'function' ? workshopPadAt(x, z, natural) : natural;
       // Holes Kelo-1 has dug (js/mining.js) and the Disposal Pit (js/disposal.js) lower the ground;
       // hills he has raised (js/landscape.js) lift it
       const ground = base - groundDugAt(x, z) + (typeof landscapeRaiseAt === 'function' ? landscapeRaiseAt(x, z) : 0)

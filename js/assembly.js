@@ -1148,7 +1148,7 @@ function answerBuildRequest(ask, visitor) {
       const cur = activeBuild();
       if (cur) return sayToVisitor(`I'd love to, ${visitor}, but I'm in the middle of building ${aName(cur.bom.name)} (${bomPercentBuilt(cur.bom)}% built). One big build at a time!`, visitor);
       sayToVisitor(`${/^[aeiou]/i.test(ask.target) ? 'An' : 'A'} ${ask.target.toLowerCase()}? Yes! I'll research it at NetNode, write a bill of materials down to the screw, and send you the parts lists.`, visitor);
-      doWhenFree(() => researchBuild(ask.target, `${visitor} asked me to`, `Asked by ${visitor}`));
+      doWhenFree(() => researchBuild(ask.target, `${visitor} asked me to`, `Asked by ${visitor}`), { key: `build:${ask.target}`, maxWaitMs: 3 * 3600000 });
     }
 
 // --- 7. The autonomous tick (js/agent.js) ------------------------------------------------------------

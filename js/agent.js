@@ -2167,14 +2167,40 @@ function applyDecision(decision, originLabel) {
     }
 
 // Run an activity as soon as Kelo-1 is free (mid-build, mid-errand...), giving up after ~3 minutes
-function doWhenFree(fn, attempt = 0) {
-      setTimeout(() => {
-        if (state.isBusy || state.isBuilding || state.isPracticing || state.isCollectingMail) {
-          if (attempt < 36) doWhenFree(fn, attempt + 1);
-          return;
-        }
-        fn();
-      }, attempt === 0 ? 3000 : 5000);
+// Things he means to do once he is free, oldest first, one at a time. (They used to retry on their own
+// and were silently dropped after about 3 minutes, so anything asked during a night's sleep or a long
+// build was lost.) Each waits up to `maxWaitMs` (45 minutes unless the caller says otherwise). The same
+// job asked again while it is waiting is kept once: jobs match by `key`, or else by their code, so
+// callers whose arguments matter (a visitor's ask) pass a key. Jobs are functions, so the queue lasts
+// for this visit to the page; anything he really wants survives a reload in his saved state anyway.
+const freeQueue = [];
+let freeQueueTimer = null, freeQueueDropped = 0;
+function keloIsFree() {
+      return !(state.isBusy || state.isBuilding || state.isPracticing || state.isCollectingMail || state.isSleeping);
+    }
+
+function doWhenFree(fn, opts = {}) {
+      if (typeof fn !== 'function') return false;
+      const key = opts.key ? String(opts.key) : 'code:' + fn.toString();
+      if (freeQueue.some(j => j.key === key)) return false;
+      const now = Date.now();
+      freeQueue.push({ fn, key, notBefore: now + (opts.delayMs ?? 3000), expires: now + (opts.maxWaitMs || 45 * 60000) });
+      if (!freeQueueTimer) freeQueueTimer = setInterval(runFreeQueue, 2500);
+      return true;
+    }
+
+function runFreeQueue() {
+      const now = Date.now();
+      for (let i = freeQueue.length - 1; i >= 0; i--) if (freeQueue[i].expires < now) { freeQueue.splice(i, 1); freeQueueDropped++; }
+      if (!freeQueue.length) { clearInterval(freeQueueTimer); freeQueueTimer = null; return; }
+      if (!keloIsFree()) return;
+      const i = freeQueue.findIndex(j => j.notBefore <= now);
+      if (i < 0) return;
+      const job = freeQueue.splice(i, 1)[0];
+      try {
+        const r = job.fn();
+        if (r && typeof r.catch === 'function') r.catch(e => console.warn('A job he waited to do failed:', e));
+      } catch (e) { console.warn('A job he waited to do failed:', e); }
     }
 
 // Add something Kelo-1 wants to the requests inbox

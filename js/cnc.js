@@ -104,7 +104,7 @@ async function writeCam(ctx, def, name, pts) {
       const prog = cncProgram(def, name, pts);
       const w = workshopState();
       w.programs[def.key] = { name, at: Date.now(), gcode: prog };
-      await machineStep(ctx, `Writing the CAM toolpaths for ${wsThing(name)}`, 2200, null, `Toolpaths done: ${prog.split('\n').length} lines of G-code. Feeds and speeds checked twice.`);
+      await machineStep(ctx, `Writing the CAM toolpaths for ${wsWhat(name)}`, 2200, null, `Toolpaths done: ${prog.split('\n').length} lines of G-code. Feeds and speeds checked twice.`);
     }
 
 // Move a router's head to a local (x, z) and height (0 = up)
@@ -121,7 +121,7 @@ function routerPlan(def, job) {
       const name = job.make ? madeName(def.prefix, mdf ? 'MDF' : 'plywood', job.make, def.products[0]) : (sign ? def.products[0] : wsPick(def.products));
       const strokes = sign ? SIGN_STROKES : PART_STROKES;
       return {
-        title: `Routing ${wsThing(name).replace(/^[A-Za-z]+-routed /, '')} on the ${def.name}`, product: name,
+        title: `Routing ${wsWhat(name)} on the ${def.name}`, product: name,
         speech: `Safety glasses and ear defenders on. Router day!`,
         stops: [{
           key, act: async ctx => {
@@ -149,7 +149,7 @@ function routerPlan(def, job) {
             const grooves = [];
             const total = pts.length - 1;
             let lastSeg = -1;
-            await machineStep(ctx, `Routing ${wsThing(name).replace(/^[A-Za-z]+-routed /, '')} on the ${def.name}`, 9000, (k, t) => {
+            await machineStep(ctx, `Routing ${wsWhat(name)} on the ${def.name}`, 9000, (k, t) => {
               const f = k * total, i = Math.min(total - 1, Math.floor(f)), uu = f - i;
               const a = pts[i], b = pts[i + 1];
               const x = a.x + (b.x - a.x) * uu, z = a.z + (b.z - a.z) * uu;
@@ -283,7 +283,7 @@ function haasDef(spec) {
           const key = this.key;
           const steel = /steel/i.test(job.make || '');
           const name = job.make ? madeName(`${spec.brand}-machined`, steel ? 'steel' : 'aluminium', job.make, this.products[0]) : wsPick(this.products);
-          const what = wsThing(name).replace(/^[A-Za-z]+-machined /, '');
+          const what = wsWhat(name).replace(/^[A-Za-z]+-machined /, '');
           const an = /^[aeiou]/i.test(what) ? 'an' : 'a';
           return {
             title: `Machining ${an} ${what} on the ${this.short}`, product: name, speech: 'Safety glasses on. Let\'s make chips.',
@@ -338,7 +338,7 @@ registerWorkshopMachine({
     const key = this.key;
     const name = /spar|wing/i.test(job.make || '') ? this.products[1] : this.products[0];
     return {
-      title: `Machining ${wsThing(name)} on the Taurus`, product: name, speech: 'The big one. The bridge crane brings the casting in.',
+      title: `Machining ${wsWhat(name)} on the Taurus`, product: name, speech: 'The big one. The bridge crane brings the casting in.',
       stops: [{
         key, act: async ctx => {
           const u = ctx.model.userData, m = ctx.model;
@@ -351,7 +351,7 @@ registerWorkshopMachine({
           await machineStep(ctx, 'Homing the gantry and probing the casting', 2000, k => { u.gantry.position.z = -u.len / 2 + 1.2 + Math.sin(k * Math.PI) * 1.0; });
           mmSetTower(u.tower, 'run');
           const work = u.work;
-          await machineStep(ctx, `Milling ${wsThing(name)} with flood coolant`, 10000, (k, t) => {
+          await machineStep(ctx, `Milling ${wsWhat(name)} with flood coolant`, 10000, (k, t) => {
             const pass = Math.floor(k * 6), pk = k * 6 - pass;
             u.gantry.position.z = -1.4 + (pass % 2 ? 1 - pk : pk) * 3.2;
             u.slide.position.x = -0.45 + pass * 0.18;

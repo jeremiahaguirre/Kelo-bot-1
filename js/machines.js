@@ -111,6 +111,13 @@ function wsThing(name) {
       return /^[A-Z][a-z]+\b(?!-)/.test(t) ? t[0].toLowerCase() + t.slice(1) : t;
     }
 
+// "An SLA-printed resin miniature figure" -> "a resin miniature figure", for plain job titles
+function wsWhat(name) {
+      const t = plainItem(name).replace(/^\S+-(printed|built|machined|routed|milled|cut|jetted)\s+/i, '');
+      const low = /^[A-Z][a-z]+\b(?!-)/.test(t) ? t[0].toLowerCase() + t.slice(1) : t;
+      return (/^[aeiou]/i.test(low) ? 'an ' : 'a ') + low;
+    }
+
 // --- State ------------------------------------------------------------------------------------------
 function workshopState() {
       if (!state.workshop || typeof state.workshop !== 'object') state.workshop = {};
@@ -528,7 +535,7 @@ function workshopPromptLine() {
 function renderWorkshopBrain() {
       const el = document.getElementById('workshopListContainer');
       if (!el) return;
-      const groups = [['🖨️ 3D printers', 'printer'], ['🧽 Post-processing', 'post'], ['🛠️ CNC', 'cnc'], ['🔌 Electronics (floor 2)', 'electronics'], ['🚗 Garage (floor 2)', 'garage']];
+      const groups = [['🖨️ 3D printers', 'printer'], ['🧽 Post-processing', 'post'], ['🛠️ CNC', 'cnc'], ['🔌 Electronics (floor 2)', 'electronics'], ['🚗 Garage (floor 2)', 'garage'], ['🔥 Glass studio (floor 3)', 'glass'], ['🪵 Woodshop (floor 3)', 'wood']];
       const w = workshopState();
       const html = groups.map(([title, kind]) => {
         const defs = Object.values(WORKSHOP_MACHINES).filter(d => d.kind === kind && d.key !== 'printbench');

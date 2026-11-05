@@ -24,7 +24,7 @@ const LIFT2 = { x: 5.85, z: -2.6 };      // the two-post lift, behind the car el
 const LIFT2_CAR = { x: 5.85, z: -2.0 };  // where the vehicle sits on it (nose south, toward the elevator)
 g2({ key: 'lift2', name: 'Two-post lift', short: 'two-post lift', at: { x: LIFT2.x, z: LIFT2.z, ry: 0 }, size: { w: 4.3, h: 3.6, d: 0.6 }, skill: 'Using a two-post lift', model: () => twoPostLiftModel(3.8, 1.6), stand: { x: 3.9, z: -1.2 } });
 g2({ key: 'lift4', name: 'Four-post lift', short: 'four-post lift', at: { x: -2.0, z: 2.0, ry: 0 }, size: { w: 3.8, h: 2.9, d: 7.0 }, skill: 'Using a four-post lift', model: () => fourPostLiftModel(6.8, 2.1), stand: { x: -0.1, z: 5.9 } });
-g2({ key: 'tirechanger', name: 'Tire changer', short: 'tire changer', at: { x: 0.9, z: 4.55, ry: Math.PI }, size: { w: 1.0, h: 1.8, d: 0.8 }, skill: 'Changing tires', model: tireChangerModel, stand: { x: 0.9, z: 3.6 } });
+g2({ key: 'tirechanger', name: 'Tire changer', short: 'tire changer', at: { x: 0.9, z: 4.55, ry: Math.PI }, size: { w: 1.0, h: 1.8, d: 0.8 }, skill: 'Changing tires', model: tireChangerModel, stand: { x: 0.9, z: 3.45 } });
 g2({ key: 'balancer', name: 'Wheel balancer', short: 'wheel balancer', at: { x: 2.55, z: 4.6, ry: Math.PI }, size: { w: 1.2, h: 1.4, d: 0.6 }, skill: 'Balancing wheels', model: wheelBalancerModel, stand: { x: 2.55, z: 3.65 } });
 g2({ key: 'brakelathe', name: 'Brake lathe', short: 'brake lathe', at: { x: 3.5, z: 2.6, ry: -Math.PI / 2 }, size: { w: 1.0, h: 1.3, d: 0.5 }, skill: 'Turning brake rotors', model: brakeLatheModel, stand: { x: 2.7, z: 2.6 } });
 g2({ key: 'hoist', name: 'Engine hoist (cherry picker)', short: 'engine hoist', at: { x: 5.85, z: 4.6, ry: Math.PI }, size: { w: 0.8, h: 1.8, d: 1.6 }, skill: 'Pulling engines', model: engineHoistModel, stand: { x: 2.6, z: 3.7 } });
@@ -324,7 +324,7 @@ registerWorkshopMachine({
     const key = this.key;
     const name = job.make ? madeName('plasma-cut', 'steel', job.make, this.products[0]) : wsPick(this.products);
     return {
-      title: `Plasma cutting ${wsThing(name)}`, product: name,
+      title: `Plasma cutting ${wsWhat(name)}`, product: name,
       stops: [{ floor: 2, key, act: async ctx => {
         const u = ctx.model.userData, m = ctx.model;
         await writeCam(ctx, WORKSHOP_MACHINES.plasma, name, strokePoints(PART_STROKES, 1.0, 0.6));
@@ -332,7 +332,7 @@ registerWorkshopMachine({
         useWorkshopSupply('plasmaKit', 1, 'Plasma');
         const plate = mmBox(m, 1.2, 0.02, 0.7, 'steel', 0, 0.61, 0);
         const pts = strokePoints(PART_STROKES, 1.0, 0.6);
-        await machineStep(ctx, `Cutting ${wsThing(name)} out of the plate`, 7000, (k, t) => {
+        await machineStep(ctx, `Cutting ${wsWhat(name)} out of the plate`, 7000, (k, t) => {
           const f = k * (pts.length - 1), i = Math.min(pts.length - 2, Math.floor(f)), uu = f - i;
           const a = pts[i], b = pts[i + 1];
           u.gantry.position.x = a.x + (b.x - a.x) * uu;

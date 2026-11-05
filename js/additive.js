@@ -145,7 +145,7 @@ function deskSpot(i) {
     }
 
 registerWorkshopMachine({
-  key: 'printbench', name: 'Desktop printer bench', kind: 'post', floor: 1, at: { x: DESK.x, z: DESK.z, ry: Math.PI }, size: { w: 3.0, h: 1.4, d: 0.8 }, color: 0x8a6a45,
+  key: 'printbench', name: 'Desktop printer bench', kind: 'post', floor: 1, at: { x: DESK.x, z: DESK.z, ry: Math.PI }, size: { w: 3.0, h: 1.4, d: 0.8 }, color: 0x8a6a45, stand: { x: DESK.x, z: DESK.z - 0.85 },
   model: () => { const g = workBenchModel(3.0, 0.8); g.userData.machineKey = 'printbench'; return g; }
 });
 
@@ -153,7 +153,7 @@ function deskPrinterDef(key, name, short, modelFn, i, extra) {
       const at = deskSpot(i);
       return registerWorkshopMachine({
         key, name, short, kind: 'printer', floor: 1, at: { x: at.x, z: at.z, ry: Math.PI }, size: { w: 0.45, h: 0.6, d: 0.45 }, color: 0xf26b1d,
-        stand: { x: at.x, z: at.z - 0.95 }, model: () => { const m = modelFn(); m.position.y = 0.98; const g = new THREE.Group(); g.add(m); g.userData = { ...m.userData, inner: m }; return g; },
+        stand: { x: at.x, z: at.z - 0.85 }, model: () => { const m = modelFn(); m.position.y = 0.98; const g = new THREE.Group(); g.add(m); g.userData = { ...m.userData, inner: m }; return g; },
         ...extra
       });
     }
@@ -289,19 +289,19 @@ deskPrinterDef('msla', 'Elegoo Saturn (MSLA/LCD)', 'MSLA printer', msslaPrinterM
 
 registerWorkshopMachine({
   key: 'wash', name: 'Form Wash (IPA)', short: 'wash station', kind: 'post', floor: 1, at: { x: deskSpot(4).x, z: DESK.z, ry: Math.PI }, size: { w: 0.35, h: 0.6, d: 0.35 },
-  stand: { x: deskSpot(4).x, z: DESK.z - 0.95 }, learnAs: 'wash', skill: 'Washing resin prints',
+  stand: { x: deskSpot(4).x, z: DESK.z - 0.85 }, learnAs: 'wash', skill: 'Washing resin prints',
   model: () => { const m = washStationModel(); m.position.y = 0.98; const g = new THREE.Group(); g.add(m); g.userData = { ...m.userData, inner: m }; return g; }
 });
 registerWorkshopMachine({
   key: 'cure', name: 'Form Cure (UV)', short: 'cure station', kind: 'post', floor: 1, at: { x: deskSpot(5).x, z: DESK.z, ry: Math.PI }, size: { w: 0.35, h: 0.5, d: 0.35 },
-  stand: { x: deskSpot(5).x, z: DESK.z - 0.95 }, learnAs: 'cure', skill: 'UV curing',
+  stand: { x: deskSpot(5).x, z: DESK.z - 0.85 }, learnAs: 'cure', skill: 'UV curing',
   model: () => { const m = cureStationModel(); m.position.y = 0.98; const g = new THREE.Group(); g.add(m); g.userData = { ...m.userData, inner: m }; return g; }
 });
 
 // SLS: a nylon powder bed fused by a laser, cooled, then depowdered and bead blasted
 registerWorkshopMachine({
   key: 'sls', name: 'EOS Formiga P 110 (SLS)', short: 'SLS printer', kind: 'printer', floor: 1, at: { x: -3.15, z: 2.3, ry: 0 }, size: { w: 1.3, h: 1.6, d: 0.9 }, color: 0xeef0f2,
-  emoji: '🟫', skill: 'SLS printing', teaches: ['depowder', 'beadblast'], model: slsPrinterModel,
+  emoji: '🟫', skill: 'SLS printing', teaches: ['depowder', 'beadblast'], model: slsPrinterModel, stand: { x: -2.1, z: 2.95 },
   wiki: ['Selective laser sintering'], learned: 'SLS spreads thin layers of nylon PA12 powder and a laser sinters each slice; the loose powder holds the part up, so it needs no supports. Afterwards it cools, is dug out and depowdered, then bead blasted smooth. Fine powder means a respirator.',
   needs: ['pa12', 'respirator', 'blastMedia'], words: [/\bsls\b|selective laser sinter|formiga/i],
   products: ['An SLS-printed nylon hinge', 'An SLS-printed nylon drone arm', 'An SLS-printed nylon go-kart duct'], makes: [/hinge|duct|drone arm|clip/],
@@ -440,7 +440,7 @@ registerWorkshopMachine({
 // PolyJet: jetted photopolymer droplets cured by UV, with gel support that a waterjet washes off
 registerWorkshopMachine({
   key: 'polyjet', name: 'Stratasys J850 (PolyJet)', short: 'PolyJet printer', kind: 'printer', floor: 1, at: { x: 3.2, z: 2.3, ry: 0 }, size: { w: 1.35, h: 1.4, d: 0.9 }, color: 0xeef0f2,
-  emoji: '🌈', skill: 'PolyJet printing', teaches: ['waterjet'], model: polyjetPrinterModel,
+  emoji: '🌈', skill: 'PolyJet printing', teaches: ['waterjet'], model: polyjetPrinterModel, stand: { x: 3.2, z: 3.15 },
   wiki: ['Material jetting'], learned: 'PolyJet material jetting sprays tiny drops of photopolymer like an inkjet and cures each layer with UV lamps, in many colours at once. Gel support fills the gaps and is blasted off with a waterjet afterwards.',
   needs: ['polyjetCart', 'supportCart', 'gloves'], words: [/polyjet|material jetting|stratasys|j850/i],
   products: ['A PolyJet-printed multi-colour prototype', 'A PolyJet-printed clear enclosure'], makes: [/prototype|clear/],
@@ -479,14 +479,14 @@ registerWorkshopMachine({
   }
 });
 registerWorkshopMachine({
-  key: 'waterjet', name: 'Support-removal waterjet', short: 'waterjet', kind: 'post', floor: 1, at: { x: 3.35, z: 5.45, ry: Math.PI }, size: { w: 0.8, h: 1.4, d: 0.6 },
+  key: 'waterjet', name: 'Support-removal waterjet', short: 'waterjet', kind: 'post', floor: 1, at: { x: 3.35, z: 5.45, ry: Math.PI }, size: { w: 0.8, h: 1.4, d: 0.6 }, stand: { x: 3.35, z: 4.75 },
   learnAs: 'waterjet', skill: 'Support removal', model: waterjetBoothModel
 });
 
 // Binder jetting: powder glued by a jetted binder, cured, depowdered as a fragile "green" part, sintered
 registerWorkshopMachine({
   key: 'binder', name: 'ExOne InnoventX (binder jetting)', short: 'binder jet printer', kind: 'printer', floor: 1, at: { x: 1.9, z: 5.45, ry: Math.PI }, size: { w: 1.1, h: 1.5, d: 0.85 }, color: 0xb8bec6,
-  emoji: '⚙️', skill: 'Binder jetting', teaches: ['furnace', 'depowder'], model: binderJetModel,
+  emoji: '⚙️', skill: 'Binder jetting', teaches: ['furnace', 'depowder'], model: binderJetModel, stand: { x: 1.9, z: 4.75 },
   wiki: ['Binder jetting', 'Sintering'], learned: 'Binder jetting glues metal powder layer by layer with a liquid binder from an inkjet head, no laser. The "green" part is cured, gently depowdered, then sintered in a furnace near melting point, where it shrinks about a fifth into solid metal.',
   needs: ['bjPowder', 'binder', 'respirator'], words: [/binder.?jet|exone|innovent/i],
   products: ['A binder-jetted stainless impeller', 'A binder-jetted stainless gear'], makes: [/impeller|gear/],
@@ -643,7 +643,7 @@ registerWorkshopMachine({
             return true;
           }
         },
-        { key: 'printbench', stand: { x: DESK.x, z: DESK.z - 0.95 }, act: async ctx => { await machineStep(ctx, 'Decubing: breaking away the waste cubes', 3000, null, 'Snap, snap... the part is in here somewhere.'); return true; } }
+        { key: 'printbench', stand: { x: DESK.x, z: DESK.z - 0.85 }, act: async ctx => { await machineStep(ctx, 'Decubing: breaking away the waste cubes', 3000, null, 'Snap, snap... the part is in here somewhere.'); return true; } }
       ],
       finish: printerFinish(key, name, 'LOM printer')
     };

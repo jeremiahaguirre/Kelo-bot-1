@@ -104,7 +104,7 @@ async function writeCam(ctx, def, name, pts) {
       const prog = cncProgram(def, name, pts);
       const w = workshopState();
       w.programs[def.key] = { name, at: Date.now(), gcode: prog };
-      await machineStep(ctx, `Writing the CAM toolpaths for ${wsWhat(name)}`, 2200, null, `Toolpaths done: ${prog.split('\n').length} lines of G-code. Feeds and speeds checked twice.`);
+      await machineStep(ctx, `Writing CAM for ${wsWhat(name)}`, 2200, null, `Toolpaths done: ${prog.split('\n').length} lines of G-code. Feeds and speeds checked twice.`);
     }
 
 // Move a router's head to a local (x, z) and height (0 = up)
@@ -121,7 +121,7 @@ function routerPlan(def, job) {
       const name = job.make ? madeName(def.prefix, mdf ? 'MDF' : 'plywood', job.make, def.products[0]) : (sign ? def.products[0] : wsPick(def.products));
       const strokes = sign ? SIGN_STROKES : PART_STROKES;
       return {
-        title: `Routing ${wsWhat(name)} on the ${def.name}`, product: name,
+        title: `Routing ${wsWhat(name)}`, product: name,
         speech: `Safety glasses and ear defenders on. Router day!`,
         stops: [{
           key, act: async ctx => {
@@ -133,7 +133,7 @@ function routerPlan(def, job) {
             const sheet = mmBox(m, sw, 0.04, sd, mdf ? 'mdf' : 'ply', 0, u.bedTop, 0);
             const holds = [];
             if (def.vacuum) {
-              await machineStep(ctx, 'Laying the sheet on the vacuum table and switching the pump on', 1600, null, 'The vacuum pump pulls it down flat. No clamps in the way.');
+              await machineStep(ctx, 'Sheet on the vacuum table, pump on', 1600, null, 'The vacuum pump pulls it down flat. No clamps in the way.');
             } else {
               [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => holds.push(routerClamp(m, sx * (sw / 2 + 0.1), u.bedTop, sz * (sd / 2 - 0.12), sx)));
               await machineStep(ctx, 'Clamping the sheet to the spoilboard', 1600, null, 'Four hold-down clamps, well clear of the toolpath.');
@@ -149,7 +149,7 @@ function routerPlan(def, job) {
             const grooves = [];
             const total = pts.length - 1;
             let lastSeg = -1;
-            await machineStep(ctx, `Routing ${wsWhat(name)} on the ${def.name}`, 9000, (k, t) => {
+            await machineStep(ctx, `Routing ${wsWhat(name)}`, 9000, (k, t) => {
               const f = k * total, i = Math.min(total - 1, Math.floor(f)), uu = f - i;
               const a = pts[i], b = pts[i + 1];
               const x = a.x + (b.x - a.x) * uu, z = a.z + (b.z - a.z) * uu;
@@ -299,8 +299,8 @@ function haasDef(spec) {
                 await writeCam(ctx, this, name, strokePoints(PART_STROKES, 0.26, 0.12));
                 await machineStep(ctx, 'Clamping the stock in the vise', 1500, null, 'Parallels under it, vise snug, tapped down with a dead blow.');
                 useWorkshopSupply(steel ? 'steelStock' : 'aluStock', 1, `${this.short} job`);
-                await machineStep(ctx, 'Homing, touching off the tools and setting the work offset', 2000, k => { u.head.position.y = u.headY - Math.sin(k * Math.PI) * 0.15; }, 'G54 set from the probe. Tool lengths measured.');
-                await machineStep(ctx, 'Tool change: face mill from the carousel into the spindle', 2200, (k, t) => {
+                await machineStep(ctx, 'Homing, tool lengths, work offset', 2000, k => { u.head.position.y = u.headY - Math.sin(k * Math.PI) * 0.15; }, 'G54 set from the probe. Tool lengths measured.');
+                await machineStep(ctx, 'Tool change: face mill in', 2200, (k, t) => {
                   if (u.carousel) u.carousel.rotation.y = k * Math.PI * 0.67;
                   if (u.atcArm) u.atcArm.rotation.y = Math.sin(k * Math.PI) * 1.4;
                   u.head.position.y = u.headY + Math.sin(k * Math.PI) * 0.1;
@@ -308,7 +308,7 @@ function haasDef(spec) {
                 useWorkshopSupply('faceMill', 1, 'Facing');
                 useWorkshopSupply('endMills', 1, 'Milling');
                 useWorkshopSupply('coolant', 1, 'Flood coolant');
-                await haasCycle(ctx, u, `Machining ${what} with flood coolant`, 9000, name);
+                await haasCycle(ctx, u, 'Cutting with flood coolant', 9000, name);
                 await machineStep(ctx, 'Deburring and checking it with calipers', 1500, null, 'Within two hundredths of a millimetre. Nice.');
                 return true;
               }
@@ -354,10 +354,10 @@ registerWorkshopMachine({
           useWorkshopSupply('bigCasting', 1, 'Taurus job');
           useWorkshopSupply('faceMill', 1, 'Taurus job');
           useWorkshopSupply('coolant', 1, 'Taurus job');
-          await machineStep(ctx, 'Homing the gantry and probing the casting', 2000, k => { u.gantry.position.z = -u.len / 2 + 1.2 + Math.sin(k * Math.PI) * 1.0; });
+          await machineStep(ctx, 'Homing the gantry, probing the casting', 2000, k => { u.gantry.position.z = -u.len / 2 + 1.2 + Math.sin(k * Math.PI) * 1.0; });
           mmSetTower(u.tower, 'run');
           const work = u.work;
-          await machineStep(ctx, `Milling ${wsWhat(name)} with flood coolant`, 10000, (k, t) => {
+          await machineStep(ctx, `Milling ${wsWhat(name)}`, 10000, (k, t) => {
             const pass = Math.floor(k * 6), pk = k * 6 - pass;
             u.gantry.position.z = -1.4 + (pass % 2 ? 1 - pk : pk) * 3.2;
             u.slide.position.x = -0.45 + pass * 0.18;

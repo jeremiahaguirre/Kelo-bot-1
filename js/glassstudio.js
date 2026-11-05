@@ -230,7 +230,7 @@ registerWorkshopMachine({
               ctx.model.remove(pieceMesh);
               return false;
             }
-            await machineStep(ctx, 'Annealing: 900 °F, then a slow cool overnight', 5000, (k) => {
+            await machineStep(ctx, 'Annealing: 900 °F, slow cool', 5000, (k) => {
               if (u.lid) u.lid.rotation.x = k < 0.1 ? -1 * (1 - k * 10) : 0;
               wsGlowSet(u.inside, 0.8 * (1 - k * 0.7));
               wsGlowSet(pieceMesh, 0.8 * (1 - k));

@@ -310,7 +310,7 @@ async function runMachineJob(key, job = {}, originLabel = 'In the Workshop') {
         state.currentLocKey = 'workshop';
         state.customPlaceName = "his Workshop";
         state.moodEmoji = def.emoji || '🏭';
-        state.moodTitle = (plan.title || `Using the ${def.name}`).slice(0, 80);
+        state.moodTitle = wsBadgeTitle(plan.title || `Using the ${def.name}`);
         state.speechBubble = plan.speech || `Off to the Workshop to use the ${def.name}.`;
         renderAllUI();
         const results = await goIntoWorkshop({ vehicle: job.vehicle || null, stops: plan.stops });
@@ -335,7 +335,17 @@ async function runMachineJob(key, job = {}, originLabel = 'In the Workshop') {
     }
 
 // A step at a machine: say what's happening, animate, and earn some skill in it
+// Titles fit the status badge (about 40 characters): a long one loses its "on the <machine>" tail,
+// then is cut at a word
+function wsBadgeTitle(t, max = 42) {
+      let s = String(t || '');
+      if (s.length > max) s = s.replace(/\s+(on|in|with|at) the [^,]+$/i, '');
+      if (s.length > max) s = s.slice(0, max).replace(/\s+\S*$/, '');
+      return s;
+    }
+
 async function machineStep(ctx, title, ms, anim = null, speech = null) {
+      title = wsBadgeTitle(title);
       ctx.say(title, speech);
       if (ctx.def) ctx.work();
       // (for screenshots and debugging: window.__wsHold = 'a title pattern' holds that step mid-way)

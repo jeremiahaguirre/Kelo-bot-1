@@ -295,7 +295,7 @@ registerWorkshopMachine({
           const u = ctx.model.userData;
           useWorkshopSupply('bowlBlank', 1, 'Turning');
           await machineStep(ctx, 'Truing the blank round', 2400, (k, t) => { u.work.rotation.x = t * 25; sawdust(ctx.model, new THREE.Vector3(0.05, 1.05, 0.2), 0xb45309); });
-          await machineStep(ctx, 'Turning the bowl with the gouge (the lathe spins the work)', 4000, (k, t) => {
+          await machineStep(ctx, 'Turning the bowl with the gouge', 4000, (k, t) => {
             u.work.rotation.x = t * 35;
             u.work.children[0].scale.set(0.15 - k * 0.03, 0.22, 0.15 - k * 0.03);
             u.gouge.position.x = 0.05 + Math.sin(t * 2) * 0.08;

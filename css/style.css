@@ -310,3 +310,11 @@ body.shopvisit-on #btnShowMinimap, body.shopvisit-on [data-where-kelo], body.sho
   #svCard:not(.sv-card-pinned) .sv-sect, #svCard:not(.sv-card-pinned) .sv-supplies, #svCard:not(.sv-card-pinned) .sv-facts, #svCard:not(.sv-card-pinned) .sv-muted { display: none; }
 }
 @media (pointer: coarse) and (max-width: 639px) { #svCard { right: 68px; } }
+.sv-stats-btn { display: none; }
+@media (max-width: 639px) {
+  .sv-stats-btn { display: inline-flex; }
+  body.shopvisit-on:not(.sv-stats-on) .sv-stats-card { display: none !important; }
+  .sv-stats-btn[aria-pressed="true"] { background: rgba(245, 158, 11, 0.25); border-color: rgba(251, 191, 36, 0.7); }
+  /* a pinned card is a bottom sheet that scrolls inside */
+  #svCard.sv-card-pinned { left: 0; right: 0; bottom: 0; width: auto; max-height: 45vh; border-radius: 18px 18px 0 0; z-index: 32; padding-bottom: calc(12px + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
+}

@@ -75,11 +75,11 @@ function svGeo() {
         3: workshopMachinesOn(3).flatMap(d => machineCircles(d)).map(toW)
       };
       const starts = {
-        hangar: { floor: 1, x: H.x + 0.5, z: H.z + H.d / 2 - 1.2, yaw: Math.PI },
+        hangar: { floor: 1, x: H.x + 5.5, z: H.z + 0.5, yaw: -Math.PI / 2 },
         wing: { floor: 1, ...P(-6.0, WS_WING.aisleZ, Math.PI / 2) },
         f1: { floor: 1, ...P(WS_DOORS.person.x, 6.4, Math.PI) },
-        f2: { floor: 2, ...liftSpot(2) },
-        f3: { floor: 3, ...liftSpot(3) }
+        f2: { floor: 2, ...P(-3.3, 6.8, Math.PI - 0.45) },
+        f3: { floor: 3, ...P(-1.0, 6.6, Math.PI) }
       };
       // Boxes round the buildings, for a click from outside
       const shopBox = new THREE.Box3(new THREE.Vector3(S.x - S.w / 2, WORKSHOP_PAD_Y, S.z + b.z0), new THREE.Vector3(S.x + S.w / 2, WORKSHOP_PAD_Y + WS_EAVE + 1.4, S.z + S.d / 2));
@@ -191,7 +191,7 @@ function svAreaAt(x, z, y) {
           const dd = (WORKSHOP_SITE.x + d.at.x - x) ** 2 + (WORKSHOP_SITE.z + d.at.z - z) ** 2;
           if (dd < bd && SV_KIND[d.kind]) { bd = dd; best = d; }
         });
-        if (best) label += `: ${SV_KIND[best.kind]}`;
+        if (best) label += ` (${SV_KIND[best.kind]})`;
       }
       return { key, floor, label };
     }
@@ -328,11 +328,6 @@ function svAgo(at) {
       return h < 36 ? `${h} h ago` : `${Math.round(h / 24)} days ago`;
     }
 
-function svLcFirst(s) {
-      s = String(s || '');
-      return /^[A-Z][a-z]/.test(s) ? s[0].toLowerCase() + s.slice(1) : s;
-    }
-
 // The supplies a machine takes and what he has of each: [{ label, have, awaited, note, kind }]
 function svSupplies(job) {
       if (typeof jobNeeds !== 'function') return [];
@@ -381,14 +376,14 @@ function svMachineInfo(def) {
       } else if (!known) {
         st = 'off'; text = "Off: Kelo-1 hasn't learned this machine yet";
       } else if (missing.length) {
-        st = 'needs'; text = `Needs supplies: ${missing.map(s => s.label.toLowerCase()).slice(0, 3).join(', ')}${missing.length > 3 ? ` and ${missing.length - 3} more` : ''}`;
+        st = 'needs'; text = `Needs supplies: ${missing.map(s => s.label).slice(0, 3).join(', ')}${missing.length > 3 ? ` and ${missing.length - 3} more` : ''}`;
       } else if (worn.length) {
-        st = 'worn'; text = `Worn: ${worn.map(s => `${s.label.toLowerCase()} (${s.note})`).join(', ')}`;
+        st = 'worn'; text = `Worn: ${worn.map(s => `${s.label} (${s.note})`).join(', ')}`;
       }
       const log = typeof workshopState === 'function' ? workshopState().log : [];
       const last = log.find(l => l.key === def.key || l.key === job.key) || null;
       const lvl = typeof machineLevel === 'function' ? Math.max(machineLevel(def.key), machineLevel(job.key)) : 0;
-      let condition = worn.length ? `Tooling worn: ${worn.map(s => s.label.toLowerCase()).join(', ')}` : '';
+      let condition = worn.length ? `Tooling worn: ${worn.map(s => s.label).join(', ')}` : '';
       if (def.kind === 'garage' && typeof garageServiceDue === 'function') {
         const due = garageServiceDue();
         if (due) condition = (condition ? condition + '. ' : '') + `Waiting work: ${due.why}`;
@@ -488,6 +483,21 @@ function svCardHtml(t, pinned) {
         ${rows.join('')}`;
     }
 
+function svPhone() { return window.matchMedia('(max-width: 639px)').matches; }
+
+// Pin (or unpin) the full card. On a phone the card and the machines list share the screen, so the
+// list steps aside while a card is open and comes back when it closes.
+function svPin(t) {
+      const was = shopVisit.pinned;
+      shopVisit.pinned = t || null;
+      if (svPhone()) {
+        if (t && !was && shopVisit.listOpen) { shopVisit.listBehind = true; svToggleList(false); }
+        else if (!t && was && shopVisit.listBehind) { shopVisit.listBehind = false; svToggleList(true); }
+      }
+      if (!t) shopVisit.listBehind = false;
+      svRenderCard();
+    }
+
 function svRenderCard() {
       const el = document.getElementById('svCard');
       if (!el) return;
@@ -540,7 +550,10 @@ function svToggleList(open) {
       shopVisit.listOpen = open === undefined ? !shopVisit.listOpen : open;
       el.classList.toggle('hidden', !shopVisit.listOpen);
       document.querySelector('[data-sv="list"]')?.setAttribute('aria-expanded', String(shopVisit.listOpen));
-      if (shopVisit.listOpen) svRenderList(true);
+      if (shopVisit.listOpen) {
+        if (svPhone() && shopVisit.pinned) { shopVisit.pinned = null; shopVisit.listBehind = false; svRenderCard(); }
+        svRenderList(true);
+      }
     }
 
 // Walk (glide) over to a thing from the list, face it and show its card
@@ -567,9 +580,8 @@ function svGoToTarget(t) {
       }
       if (!spot) spot = svFindFree(c.x, c.z, floor, 5);
       if (!spot) return;
-      shopVisit.pinned = t;
+      svPin(t);
       svTravel({ floor, x: spot.x, z: spot.z, yaw: Math.atan2(c.x - spot.x, c.z - spot.z), pitch: 0.28 });
-      svRenderCard();
     }
 
 // --- Moving between places --------------------------------------------------------------------------
@@ -714,6 +726,7 @@ function shopVisitStart(areaKey = 'f1') {
       document.getElementById('svCross')?.classList.remove('hidden');
       svUpdateFloorButtons();
       svUpdateHud(true);
+      if (typeof exploreFitToPanel === 'function') setTimeout(exploreFitToPanel, 30);
       if (typeof exploreUpdateUI === 'function') exploreUpdateUI();
       if (typeof wsUpdateLighting === 'function') wsUpdateLighting();
       if (document.activeElement && document.activeElement !== document.body && document.activeElement.blur) document.activeElement.blur();
@@ -736,9 +749,12 @@ function svLeave(restore) {
         if (restore) { camera.position.copy(s.pos); controls.target.copy(s.target); }
       }
       if (typeof exploreCam !== 'undefined') exploreCam.driving = false;
-      document.body.classList.remove('shopvisit-on');
+      document.body.classList.remove('shopvisit-on', 'sv-stats-on');
+      document.querySelector('#svHud [data-sv="stats"]')?.setAttribute('aria-pressed', 'false');
+      if (typeof exploreFitToPanel === 'function') setTimeout(exploreFitToPanel, 30);
       ['svHud', 'svCard', 'svList', 'svCross'].forEach(id => document.getElementById(id)?.classList.add('hidden'));
       v.listOpen = false;
+      v.listBehind = false;
       v.pinned = v.looked = null;
       if (typeof wsSetHover === 'function') wsSetHover(null);
     }
@@ -799,7 +815,7 @@ function shopVisitFrame(dt) {
       const pos = _svV.set(v.x, v.eyeBase + SV_EYE + v.bob, v.z);
       _svDir.set(Math.sin(yaw) * Math.cos(pitch), -Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch));
       const target = _svT.copy(pos).addScaledVector(_svDir, 2.5);
-      const fov = Math.max(35, Math.min(90, SV_FOV * v.zoom));
+      const fov = Math.max(35, Math.min(95, (camera.aspect < 0.8 ? 84 : SV_FOV) * v.zoom));
       // glide in from the previous view for the first moment
       const u = Math.min(1, (now - v.enterT) / 800);
       if (u < 1 && v.saved) {
@@ -865,7 +881,7 @@ function shopVisitZoom(factor) {
 function shopVisitKey(e) {
       if (!shopVisit.on) return false;
       if (e.code === 'Escape') {
-        if (shopVisit.pinned) { shopVisit.pinned = null; svRenderCard(); return true; }
+        if (shopVisit.pinned) { svPin(null); return true; }
         if (shopVisit.listOpen) { svToggleList(false); return true; }
         shopVisitExit(true);
         return true;
@@ -873,7 +889,7 @@ function shopVisitKey(e) {
       if (e.code === 'KeyK' || e.code === 'Home') { svFindKelo(); return true; }
       if (e.code === 'Digit1' || e.code === 'Digit2' || e.code === 'Digit3') { svGoFloor(+e.code.slice(-1)); return true; }
       if (e.code === 'KeyM') { svToggleList(); return true; }
-      if ((e.code === 'Enter' || e.code === 'KeyI') && shopVisit.looked && e.target === document.body) { shopVisit.pinned = shopVisit.looked; svRenderCard(); return true; }
+      if ((e.code === 'Enter' || e.code === 'KeyI') && shopVisit.looked && e.target === document.body) { svPin(shopVisit.looked); return true; }
       return false;
     }
 
@@ -881,9 +897,7 @@ function shopVisitKey(e) {
 // click, so nobody is sent anywhere). Outside: a click on the Workshop or the hangar offers a visit.
 function shopVisitClick(raycaster, e) {
       if (shopVisit.on) {
-        const t = svPick(raycaster.ray, 25);
-        shopVisit.pinned = t || null;
-        svRenderCard();
+        svPin(svPick(raycaster.ray, 25));
         return true;
       }
       const g = svGeo();
@@ -946,8 +960,8 @@ function svUpdateHud() {
       const el = document.getElementById('svKeloText');
       if (!el || !keloGroup) return;
       const p = keloGroup.position, a = svAreaAt(p.x, p.z, p.y + 0.3);
-      const doing = state.isSleeping ? 'asleep' : svLcFirst(state.moodTitle || 'busy');
-      const txt = a ? `Kelo-1 is in ${a.label}, ${doing}` : `Kelo-1 is out at ${typeof currentPlaceLabel === 'function' ? currentPlaceLabel() : 'the valley'}, ${doing}`;
+      const doing = state.isSleeping ? 'Sleeping' : plainItemSv(state.moodTitle || 'Busy');
+      const txt = a ? `Kelo-1 is in ${a.label}: ${doing}` : `Kelo-1 is at ${typeof currentPlaceLabel === 'function' ? currentPlaceLabel() : 'the valley'}: ${doing}`;
       if (el.textContent !== txt) el.textContent = txt;
       const btn = document.querySelector('#svHud [data-sv="find"]');
       if (btn) {
@@ -978,6 +992,7 @@ function svBuildDom() {
             <div class="sv-areas" role="group" aria-label="Go to">
               ${SV_AREAS.map(a => `<button type="button" data-sv-area="${e(a.key)}" class="sv-area-btn" title="${e(a.name)}" aria-label="Go to ${e(a.name)}">${a.key[0] === 'f' ? e(a.icon) : `<span aria-hidden="true">${e(a.icon)}</span><span class="sv-area-txt">${e(a.short)}</span>`}</button>`).join('')}
             </div>
+            <button type="button" data-sv="stats" class="sv-btn sv-stats-btn" aria-pressed="false" aria-label="Show his stats panel" title="His stats">📊</button>
             <button type="button" data-sv="list" class="sv-btn" aria-expanded="false" aria-controls="svList" title="Machines here (M)">☰<span class="sv-area-txt"> Machines</span></button>
             <button type="button" data-sv="exit" class="sv-btn sv-exit" title="Leave the Workshop (Esc)">✕<span class="sv-area-txt"> Exit</span></button>
           </div>
@@ -1005,10 +1020,12 @@ function svBuildDom() {
         <div id="svCard" class="hidden sv-panel" role="region" aria-live="polite" aria-label="Status"></div>
         <div id="svCross" class="hidden" aria-hidden="true"></div>`;
       while (wrap.firstElementChild) host.appendChild(wrap.firstElementChild);
+      // (the stats card at the top steps aside on a phone while you visit; 📊 brings it back)
+      document.getElementById('worldClockText')?.closest('.pointer-events-auto')?.classList.add('sv-stats-card');
 
       host.addEventListener('click', ev => {
         // a tap on the small look-at card opens it in full
-        if (!shopVisit.pinned && shopVisit.looked && ev.target.closest && ev.target.closest('#svCard')) { shopVisit.pinned = shopVisit.looked; return svRenderCard(); }
+        if (!shopVisit.pinned && shopVisit.looked && ev.target.closest && ev.target.closest('#svCard')) return svPin(shopVisit.looked);
         const t = ev.target.closest && ev.target.closest('[data-sv], [data-sv-area], [data-sv-floor], [data-sv-chip], [data-sv-go]');
         if (!t || !host.contains(t)) return;
         const act = t.getAttribute('data-sv');
@@ -1025,7 +1042,13 @@ function svBuildDom() {
         if (act === 'find') return svFindKelo();
         if (act === 'list') return svToggleList();
         if (act === 'list-close') return svToggleList(false);
-        if (act === 'card-close') { shopVisit.pinned = null; return svRenderCard(); }
+        if (act === 'card-close') return svPin(null);
+        if (act === 'stats') {
+          const on = document.body.classList.toggle('sv-stats-on');
+          t.setAttribute('aria-pressed', String(on));
+          if (typeof exploreFitToPanel === 'function') setTimeout(exploreFitToPanel, 30);
+          return;
+        }
       });
       document.getElementById('svFilter')?.addEventListener('input', ev => { shopVisit.filter = ev.target.value || ''; svRenderList(true); });
       // Esc closes the chooser (and the list, when typing in its filter)

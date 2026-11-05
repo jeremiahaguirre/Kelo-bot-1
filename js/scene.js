@@ -1834,8 +1834,8 @@ function walkWatch(px, pz, dt, goalKey) {
       if (!wp) return;
       if (!S.wp || S.wp.x !== wp.x || S.wp.z !== wp.z) { S.wp = { x: wp.x, z: wp.z }; S.bestD = Infinity; S.secs = 0; }
       const d = Math.hypot(wp.x - px, wp.z - pz);
+      if (!Number.isFinite(S.bestD)) S.bestD = d;
       if (d < S.bestD - WALK_STUCK_PROGRESS) { S.bestD = d; S.secs = 0; return; }
-      S.bestD = Math.min(S.bestD, d);
       S.secs += Math.min(0.25, Math.max(0, dt || 0));
       if (S.secs < WALK_STUCK_SECS) return;
       S.fails += 1;
@@ -1873,6 +1873,9 @@ function nextPathDirection(px, pz, target, dt = 0) {
         Object.assign(walkStuck, { key: '', wp: null, fails: 0, secs: 0 });
       }
       while (currentPath.length > 1 && Math.hypot(currentPath[0].x - px, currentPath[0].z - pz) < 0.45) currentPath.shift();
+      // Near a corner of the path and the one after it is in plain view: on to that one (at speed he
+      // swings wide of a corner and would otherwise loop back to touch it)
+      while (currentPath.length > 1 && Math.hypot(currentPath[0].x - px, currentPath[0].z - pz) < 2.2 && segmentClear(px, pz, currentPath[1].x, currentPath[1].z, goal)) currentPath.shift();
       // The way is shut: he got as close as he can
       if (currentPathPartial && currentPath.length <= 1) {
         const end = currentPath[0];

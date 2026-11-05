@@ -134,6 +134,11 @@ Object.assign(WORKSHOP_SUPPLIES, {
 });
 if (typeof ITEM_KINDS !== 'undefined') {
   ITEM_KINDS.unshift(
+    // What he blows is used for what it is: a cup holds drinks, a bowl holds food, a vase holds flowers;
+    // only an ornament is purely decorative. None of it is ever eaten or drunk itself.
+    { kind: 'drinkware', label: 'a cup that holds drinks', re: /hand-blown glass (cup|tumbler|goblet|mug)/i, uses: ['hold drinks', 'display'] },
+    { kind: 'dish', label: 'a bowl that holds food', re: /hand-blown glass (bowl|dish|plate)/i, uses: ['hold food', 'display'] },
+    { kind: 'vase', label: 'a vase that holds flowers', re: /hand-blown glass vase/i, uses: ['hold flowers', 'display'] },
     { kind: 'glasswork', label: 'a piece of hand-blown glass', re: /hand-blown glass/i, uses: ['display'] },
     { kind: 'ws glassBatch', label: 'cullet for the glass furnace', re: /cullet|glass batch/i, uses: ['make glass'], per: 4, unit: 'pieces' },
     { kind: 'ws colourFrit', label: 'colour frit and rod', re: /frit|colou?r rod/i, uses: ['make glass'], per: 6, unit: 'pieces' },

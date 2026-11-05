@@ -483,7 +483,8 @@ function parseWorkshopAsk(message) {
 
 function answerWorkshopAsk(ask, visitor) {
       const def = ask.def;
-      const what = ask.what || (def.products ? def.products[0] : 'something');
+      const raw = ask.what || '';
+      const what = raw ? (/^(an?|the|some|my)\s/i.test(raw) ? raw : `${/^[aeiou]/i.test(raw) ? 'an' : 'a'} ${raw}`) : (def.products ? wsWhat(def.products[0]) : 'something');
       const busy = workshopJobRunning || state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping;
       let reply;
       if (!machineKnown(def.key)) reply = `I'd love to, ${visitor}! I haven't learned the ${def.name} yet, so first I'll read up on it at NetNode, then get what it needs.`;

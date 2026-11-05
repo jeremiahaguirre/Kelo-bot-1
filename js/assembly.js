@@ -949,7 +949,7 @@ async function flyBuiltAirplane(originLabel = 'Flying His Own Airplane') {
         // From the hangar he pushes it out through the big door onto the apron first
         const start = site.inWorkshop ? hangarExitFor(site) : { x: site.x, z: site.z };
         if (site.inWorkshop) await pushPlane(v, start, 'Pushing his airplane out of the hangar');
-        await driveVehicle(v, { x: start.x + 10, z: start.z + 32 }, 'Flying his home-built airplane');
+        await driveVehicle(v, site.inWorkshop ? { x: start.x - 14, z: start.z + 34 } : { x: start.x + 10, z: start.z + 32 }, 'Flying his home-built airplane');
         state.isPracticing = true;
         await driveVehicle(v, { x: start.x, z: start.z }, 'Bringing his airplane home');
         Object.assign(v, { x: start.x, z: start.z, rotY: site.rotY });
@@ -1008,7 +1008,7 @@ async function pushPlane(v, to, label) {
     }
 
 // Fixed-wing flight (called from airAltitude in js/vehicles.js): roll first, then climb, glide in
-const PLANE_CRUISE = 12, PLANE_ROLL = 6;
+const PLANE_CRUISE = 12, PLANE_ROLL = 4;
 function planeAltitude(m, v, t, u) {
       const now = performance.now() / 1000;
       const dt = Math.min(0.5, Math.max(0, now - (u.lastT ?? now)));
@@ -1039,6 +1039,11 @@ function planeAltitude(m, v, t, u) {
 function takeoffRunFor(v) {
       const type = vehicleTypeFor(v.name);
       if (!type || type.kind !== 'plane') return null;
+      // Out of the hangar the run heads south-west, away from the plant's silos, toward the open lake
+      if (typeof WORKSHOP_HANGAR !== 'undefined' && Math.hypot(v.x - WORKSHOP_HANGAR.x, v.z - WORKSHOP_HANGAR.z) < 25) {
+        const dx = 22 - v.x, dz = 12 - v.z, len = Math.hypot(dx, dz) || 1;
+        return { x: v.x + dx / len * 26, z: v.z + dz / len * 26 };
+      }
       const a = v.rotY || 0;
       return { x: v.x + Math.cos(a) * 26, z: v.z - Math.sin(a) * 26 };
     }

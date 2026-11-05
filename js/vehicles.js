@@ -297,7 +297,7 @@ async function driveVehicle(v, target, label) {
       state.ridingSpeed = type.speed;
       state.ridingMode = type.mode;
       state.botPos = { x: v.x, z: v.z };
-      state.moodEmoji = type.kind === 'boat' ? '🛶' : type.kind === 'air' ? (/balloon/i.test(v.name) ? '🎈' : '🚁') : '🚚';
+      state.moodEmoji = type.kind === 'boat' ? '🛶' : type.kind === 'plane' ? '✈️' : type.kind === 'air' ? (/balloon/i.test(v.name) ? '🎈' : '🚁') : '🚚';
       state.moodTitle = label || `Driving the ${v.name.replace(/^(an?|the)\s+/i, '')}`;
       renderAllUI();
       const air = type.mode === 'air', mesh = vehicleMeshes[v.id];

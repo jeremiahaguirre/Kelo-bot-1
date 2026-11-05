@@ -11,6 +11,9 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 ## Done and pushed to main (2026-11-04)
 - Task 1 Paintings, task 2 Accurate welding + work bench, task 3 Humanize/eye cam/fluid motion, task 4 Garden, task 6 Code anything + self-upgrades, task 10 phase 1 audit (plan in .claude/review.md).
 - Task 11 Talk tab (pushed).
+- Task 9 Smarter vehicles (pushed 2026-11-05).
+- Task 7 Workshop (pushed 2026-11-05): floors 1 to 3, hangar, north wing, forklift and three-stop elevator. The bigger garage hall and two full-size build bays move to 7b.
+- Task 8 Concrete and asphalt plant (pushed 2026-11-05): on `KELO_ADDED_LAND` beside the workshop. Smooth paved road (fixed in landscape.js roadMesh), pale cured concrete.
 - Task 8 plant: built on agent/plant; sent back to keep Kelo-1 out of the lake beside it, then merge.
 
 ## In progress (helpers resumed 2026-11-04 14:20 UTC; if one stops, resume it). Still open: 5 build anything, 7 workshop, 8 plant, 9 vehicles, then 10 phase 2.
@@ -51,8 +54,12 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
    - He builds safe declarative world upgrades (JSON, never eval), which the owner can view, toggle and remove.
    - It was writing js/upgrades.js.
 
-## Started (helper running, branch `agent/workshop`)
-7. **Big workshop building**, to the RIGHT of the helipad (AIR_SLOTS around x 38.5, z -2, in js/vehicles.js). Floor 1 is the main fabrication shop, holding all his 3D printers, work benches, welding and CNC machines. Each machine has full functionality and real requirements:
+## In progress (helper running, branch `agent/workshop`)
+7. **Big workshop building** (worktree /home/user/wt/workshop).
+   OWNER'S LATER REQUIREMENTS (2026-11-04/05), status:
+   - DONE: hangar and assembly high bay (`WORKSHOP_HANGAR`, `workshopAssemblyBay()`, painted ultralight footprint, 20 t crane, 18.4 x 8 door); wider car elevator, door 1 and two-post lift; `workshopFits` + `sizes` test; floor 3 with stairs and a three-stop car elevator (landing gates, call buttons, floor selector, `wsVehicleTour`); glass blowing studio (js/glassstudio.js) and woodshop (js/woodshop.js); electric forklift with charger and pallet racking (js/forklift.js); router, Haas, tire changer and pick-and-place accuracy passes; plain job titles; stand spots checked. North wing CNC hall (`WS_WING`: Haas mills, pallet racking, forklift charger, east-west forklift aisle); drive-through hangar door -> wing -> door 4 -> east aisle over the car elevator -> door 1, pickup with a towed trailer (`wsDriveThrough`); hangar laid out from `WORKSHOP_HANGAR_BAYS` (build bays 1 and 2, two parking bays, the lane); multi-item `workshopFits([...])`; woodshop as the main path for wooden project builds; forklift trips via the car elevator and back to its charger; tire changer rebuilt (rim-clamp turntable, tilt-back column, bead breaker); Haas door windows, coolant streams and chips.
+   - LEFT for 7b (needs the map to grow; the north edge z -22.9 is the only free land): a full 4+ bay garage hall with a straight drive-through for the pickup + trailer, the dump truck and the mixer truck (too tall for door 1 and the car elevator today), and a hangar with room for two full-size builds plus 2-3 parked vehicles. Bays are data (`WORKSHOP_HANGAR_BAYS`, `WS_WING`); see the handoff for what moves. `RUNWAY_FIELD` is task 7b.
+   DONE SO FAR: PROGRESS: building + car elevator (js/workshopbuilding.js), models (js/machinemodels.js), machine framework (js/machines.js), printers (js/additive.js), CNC (js/cnc.js), electronics (js/electronics.js), garage + vehicle wear (js/garage.js) are written, wired in and tested job by job; final screenshot and regression passes in progress. `WORKSHOP_SITE = { x: 53.5, z: -7.1, w: 16, d: 15 }` (north of the plant's pad), `WORKSHOP_LAND` for the land it adds. The original brief: to the RIGHT of the helipad (AIR_SLOTS around x 38.5, z -2, in js/vehicles.js). Floor 1 is the main fabrication shop, holding all his 3D printers, work benches, welding and CNC machines. Each machine has full functionality and real requirements:
    - **3D printers**, every type: FDM/FFF, SLA, DLP, MSLA/LCD, SLS, DMLS/SLM, MJF, PolyJet material jetting, binder jetting, DED, EBM and LOM. Each has its real materials (filament, resin, nylon powder, metal powder, binder, wire feedstock, paper or laminate), post-processing (washing and UV curing for resin, depowdering, sintering, heat treating, support removal) and safety needs (gloves, ventilation, inert gas).
    - **CNC machines**:
      - Avid CNC PRO4896 / PRO60120: large-format modular routers for wood and plastics.
@@ -87,6 +94,16 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 
    - **Owner (2026-11-04):** the workshop must be big enough for his projects (the airplane being built) and vehicles (pickup and trailer, dump truck, mixer truck, cars on the lifts) to fit inside, with doors, bays and the car elevator sized to match. Every 3D printer, CNC machine and floor-2 machine must be visually, mechanically and functionally accurate: real layouts, motion that moves the right way during a job, real steps, materials and post-processing. Assembly builds move into the workshop's assembly bay (`workshopAssemblyBay`).
 
+   - **Owner (2026-11-05):**
+     - **Space:** a ton of space. The CNC shop must fit several big jobs at once with forklift aisles. The garage needs 4+ vehicle bays, including a drive-through bay for the pickup and trailer. The hangar needs room for 2+ builds plus vehicle parking.
+     - **New FLOOR 3:**
+       - **Glass blowing studio:** furnace with crucible, glory hole, annealer, marver, bench, blowpipes and punties, jacks, shears, blocks, frit and colour, fume hood, safety gear and gas. The real gather → blow → reheat → shape → punty → anneal process, with supplies used up.
+       - **Woodworking shop:** table saw, jointer, planer, bandsaw, drill press, router table, mitre saw, lathe, sanders, dust collection, benches, clamps, hand tools, finishing booth and a lumber rack. Real milling, joinery, glue-up, sanding and finishing, with supplies used up. It becomes the main path, ahead of the outdoor `WORK_BENCH`.
+     - **Large site:** a big yard and aprons around the building.
+     - **Runway field:** moved to its own task, 7b, after the workshop merge (2,000 m). Exposed as `RUNWAY_FIELD`, `developed: false`. It is reserved: off limits except for future runway jobs. The map size may grow if needed (owner): extend from the WORLD_* constants, keep existing content in place, keep old saves working and check frame time. He develops it later (clear, grade, compact, base, asphalt from his plant, markings, lights).
+     - **Car elevator:** serves every level (1, 2 and 3), with landing doors and call buttons on each floor.
+     - **Electric forklift with charging station:** the battery drains and he recharges it. It has pallets and racking, uses the car elevator between floors, follows the vehicle and one-of-each rules, and needs training know-how first.
+
 8. **Concrete and asphalt plant** (`agent/plant`, started), right beside the workshop. It positions itself from `WORKSHOP_SITE`.
    - **Ready-mix concrete batch plant:**
      - cement silos, aggregate bins, a weigh hopper, conveyor, water and admixture tanks, a twin-shaft mixer and a load-out
@@ -96,17 +113,16 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
    - He researches each plant, requests materials, and uses them up.
    - His own asphalt can be used for paving, and it is wasted if it cools.
    - Concrete is used to pour pads, paths and foundations, and it cures over days.
+   - Status: done and tested on the merged main (with the Workshop): plantflow, reload, chat, haul pass with no page errors. The plant sits west of the Workshop's lane on added land (`KELO_ADDED_LAND`) with a dry walkway; roads are a continuous ribbon; cured concrete is pale with forms off.
 
-9. **Smarter vehicles** (`agent/vehicles`, started):
-   - Fix the snowmobile refuel loop: he kept filling it and it never filled.
-   - Terrain rules for every vehicle:
-     - the snowmobile only on snow
-     - boats only on water
-     - trucks on roads
-     - the excavator hauled for long trips
-   - A trip planner that reasons like a person. Example: no snow between here and the mountain, so he researches, then requests a pickup, a trailer and straps, then loads up, drives to the snow line, unloads and rides.
-   - He still requests every vehicle, trailer and accessory.
-   - **Owner rule:** he may ask for only ONE of each vehicle kind (trailers included) until he has a helper or friend, then up to two (one for the friend). Unrequested gifts are always accepted.
+9. **Smarter vehicles** (`agent/vehicles`, started 2026-11-03):
+   - Fix the refuel loop (he fills the snowmobile again and again and the tank stays empty), for every fuel type.
+   - Terrain rules per vehicle (snowmobile on snow only, boats on water, bikes on roads/gentle ground, trucks off deep snow and steep slopes unless chained, excavator short hops, helicopter anywhere with fuel and a landing spot, balloon by the wind) and fuel range.
+   - A trip planner (`js/trips.js`): picks vehicles per leg, plans truck + trailer transport for ones that can't get there by themselves, checks fuel, know-how and gear (straps, trailer, hitch), explains once and requests exactly what is missing. He researches at NetNode first ("how to transport a snowmobile").
+   - Trailers (snowmobile trailer, boat trailer, lowboy) with models that hitch behind the truck; loading, strapping, hauling and unloading are visible.
+   - Everything is still requested. AI prompt lists his vehicles and a `takeTrip` decision field; the Brain/World tab gets a "His vehicles" list.
+   - One of each vehicle kind (trailers included) until he has a friend or pet (`friend`/`pet` unlocked), then two. Owned + open requests + mailbox count; owner gifts always accepted.
+   - Status: done on `agent/vehicles`, origin/main merged in (js/trips.js plus small hooks in vehicles.js, knowhow.js, itemuse.js, skills.js, agent.js, index.html, and a frame-rate fix in motion.js). Refuel loop root cause: AI-named fuel ("Gasoline for the snowmobile") was classed as a vehicle (0 uses, a phantom vehicle with an empty tank), and every empty can asked for another. Ready to merge into `main`.
 
 10. **Performance, game quality, bug hunt and clean code** (`agent/review`, started):
     - **Phase 1, now:** measure, find and verify bugs, perf hotspots and cleanup items, and write `.claude/review.md` (tiny safe fixes only).
@@ -118,6 +134,21 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
     - Suggested reply chips that fit his context (the helicopter one only if he has one); your name saved on the device and edited in one place; an empty state for a fresh Kelo-1; "Load earlier" within MAX_CHAT_LOG.
     - Accessible (labels, focus, aria-live), re-render only on change, escapeHtml everywhere, no inline handlers (CSP).
     - New code in `js/talk.js` (after portal.js). Status: done on `agent/talk`, ready to merge. Talk tests pass on desktop (1024x720) and phone (390x844): empty state, saved name, Enter/Shift+Enter, thinking indicator, lookup cards, helicopter chip queued → doing → done (and no chip without one), photo and gift from +, load earlier, jump to latest, reload. Regressions reload, chat and skills: page errors none. Harness note: on a loaded machine use DOM clicks (`el.click()`) rather than `page.click`.
+
+## Usage budget (2026-11-05): the owner is at 76% of weekly usage
+- This week: merge the workshop, then finish the concrete and asphalt plant (task 8), then build anything (task 5). Both are nearly done.
+- After the weekly reset: 7b runway field, map growth and the bigger garage, then the full play-through QA, audit phase 2, and the quality upgrade.
+- Keep helper runs lean: one helper at a time, a final test pass only, and few re-shoots.
+
+## Order of work (owner, 2026-11-05): one task at a time, in this order, to keep merge conflicts to a minimum
+1. Task 7 workshop (only helper running). It exposes `WORKSHOP_SITE`, its land constant and `workshopAssemblyBay()`. Merge as soon as it is done.
+1b. **Task 7b: runway field and map growth** (owner, 2026-11-05). This comes after the workshop merge. A 2,000 m undeveloped field (about 3,200 units at 1.6 units per metre, plus a cleared strip) behind the workshop, exposed as `RUNWAY_FIELD` with `developed: false`, off limits except for runway jobs. Grow the map from the WORLD_* constants: keep content in place, use a coarse far-field terrain or LOD, update A* and the minimap and Map tab, keep old saves working, and measure frame time. **Then expand the workshop on the new land:** a full 4+ bay garage hall (drive-through bay for the pickup and trailer, room for the dump and mixer trucks) and room for two full-size builds. The current site (x 24 to 62, z -22.9 to -6.8) is full, so these could not fit before.
+2. Task 8 plant: resume `agent/plant`, rebase onto main after the workshop merge, join its site and land to the workshop's, then finish the road and concrete fixes.
+3. Task 5 build anything: resume `agent/assembly`, rebase, move the build into `workshopAssemblyBay()`, then finish the label, site, grammar and flight-shot fixes.
+4. Task 12 full play-through QA, done directly on main.
+5. Task 13 audit phase 2 (from `.claude/review.md`), directly on main.
+6. Task 14 quality upgrade, no new features.
+Each step merges, passes the regression tests and is pushed before the next starts.
 
 ## Final steps (owner, 2026-11-04), in this order, after tasks 5, 7, 8 and 9 are merged
 12. **Full play-through QA.** Run through the entire game and make sure everything works as intended and smoothly, without bugs:

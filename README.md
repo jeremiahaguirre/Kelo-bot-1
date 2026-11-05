@@ -140,6 +140,7 @@ Kelo-bot-1/
 │   ├── workbench.js     # His wooden work bench with a vise, where woodworking and other non-welded builds are made
 │   ├── plantcare.js     # Soil moisture, nutrients and wilting; plants and garden beds grow with care; watering can, tap and fertilizer
 │   ├── skills.js        # Real skills: practising the vehicles, telescope and hobbies he was given; doing what visitors ask
+│   ├── trips.js         # Vehicle terrain rules, a trip planner, trailers (snowmobile, boat, lowboy) with hitch physics, one of each vehicle
 │   ├── projects.js      # Real builds: finding plans online, asking for materials (or sawing his own logs), building them
 │   ├── bom.js           # Bills of materials for building anything (built-in plans or AI-written, down to the screw)
 │   ├── buildmodels.js   # Part-by-part 3D models of the big builds: airplane, go-kart, canoe, kayak, shed, drone, guitar, tree fort
@@ -154,6 +155,13 @@ Kelo-bot-1/
 │   ├── paintstudio.js   # Real painting: researching a medium, asking for its supplies, painting at an easel, the Museum, visitor requests
 │   ├── shopkeeping.js   # His shop in the game: print files and original paintings for sale, "Sold", earnings, Export shop
 │   ├── printer.js       # His 3D printer: setting it up, learning it, filament spools, prints that fail and succeed
+│   ├── machinemodels.js # The Workshop's machine models (printers, routers, Haas, Taurus, SMT line, garage), shared materials
+│   ├── workshopbuilding.js # His two-storey Workshop east of the helipad: levelled pad, steel shell, car elevator, indoor trips, stations
+│   ├── machines.js      # Using the machines: research at NetNode, supplies and requests, jobs, made parts, AI field, Brain tab
+│   ├── additive.js      # Every kind of 3D printer (FDM, SLA, DLP, MSLA, SLS, DMLS, MJF, PolyJet, binder jet, DED, EBM, LOM) and post-processing
+│   ├── cnc.js           # Avid, AltMill, ShopSaber and Laguna routers, Haas VS-1/VS-3 and the Waldrich Coburg Taurus
+│   ├── electronics.js   # Floor 2 PCB line (mill, paste, place, reflow, AOI, wave, laser, enclosures) and the gadgets he builds
+│   ├── garage.js        # Floor 2 garage: lifts, tire changer, balancer, brake lathe, hoist, press, welder, compressor, plasma; vehicle wear
 │   ├── upgrades.js      # World upgrades he codes himself in a safe, validated JSON language (never JavaScript)
 │   ├── main.js          # UI wiring
 │   ├── portal.js        # Send-him-something panel
@@ -162,6 +170,8 @@ Kelo-bot-1/
 │   ├── eyecam.js        # "Through his eyes": a first-person camera at Kelo-1's eyes with look-around and a small HUD
 │   ├── minimap.js       # The live minimap: terrain, buildings, his vehicles, digs and builds, Kelo-1 and the camera's view, and the Map tab of everything he has changed
 │   ├── tryit.js         # The World tab's Try it panel: preview seasons, night and wind, send sample gifts
+│   ├── plants.js        # His concrete and asphalt plant beside the workshop: research, materials, mix designs, batches, hot mix that cools, concrete pours that cure, wear and service
+│   ├── plantmodels.js   # The plant in 3D: batch plant, asphalt plant, mixer truck, concrete pours, hover labels, built only when the camera is near
 │   ├── shop.js          # The shop website itself (shop.html)
 │   └── vendor/          # The other three.js r128 add-ons (Sky, RGBELoader, bloom post-processing), kept in the repo
 ├── assets/

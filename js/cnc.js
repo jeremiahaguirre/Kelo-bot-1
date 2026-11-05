@@ -234,7 +234,7 @@ routerDef({
   products: ['A Laguna-routed plywood cabinet carcass', 'A Laguna-routed plywood shop sign'], makes: [/cabinet|carcass|shop sign/]
 });
 registerWorkshopMachine({
-  key: 'dust', name: 'Dust collector', short: 'dust collector', kind: 'post', floor: 1, at: { x: 4.7, z: -2.6, ry: 0 }, size: { w: 0.55, h: 1.5, d: 0.8 },
+  key: 'dust', name: 'Dust collector', short: 'dust collector', kind: 'post', floor: 1, at: { x: 0.3, z: -6.85, ry: 0 }, size: { w: 0.55, h: 1.5, d: 0.8 },
   learnAs: 'dust', skill: 'Dust collection', model: dustCollectorModel
 });
 
@@ -314,13 +314,13 @@ function haasDef(spec) {
     }
 
 haasDef({
-  key: 'haasvs1', name: 'Haas VS-1', short: 'Haas VS-1', brand: 'Haas', at: { x: 6.95, z: -3.45, ry: -Math.PI / 2 }, size: { w: 2.5, h: 2.2, d: 1.55 }, color: 0xd2d5d9,
-  stand: { x: 5.45, z: -2.4 }, skill: 'Machining on the Haas VS-1', model: () => haasVmcModel(false), words: [/vs-?1\b|haas(?!.*vs-?3)/i],
+  key: 'haasvs1', name: 'Haas VS-1', short: 'Haas VS-1', brand: 'Haas', at: { x: -0.2, z: -14.45, ry: 0 }, size: { w: 2.5, h: 2.2, d: 1.55 }, color: 0xd2d5d9,
+  stand: { x: 0.35, z: -12.85 }, skill: 'Machining on the Haas VS-1', model: () => haasVmcModel(false), words: [/vs-?1\b|haas(?!.*vs-?3)/i],
   products: ['A Haas-machined aluminium bracket', 'A Haas-machined aluminium go-kart pedal', 'A Haas-machined steel go-kart spindle'], makes: [/bracket|pedal|spindle|hub|kart/]
 });
 haasDef({
-  key: 'haasvs3', name: 'Haas VS-3', short: 'Haas VS-3', brand: 'Haas', at: { x: 6.9, z: -6.0, ry: -Math.PI / 2 }, size: { w: 3.0, h: 2.4, d: 1.75 }, color: 0xd2d5d9,
-  stand: { x: 5.4, z: -5.4 }, skill: 'Machining on the Haas VS-3', model: () => haasVmcModel(true), words: [/vs-?3\b/i],
+  key: 'haasvs3', name: 'Haas VS-3', short: 'Haas VS-3', brand: 'Haas', at: { x: 3.5, z: -14.35, ry: 0 }, size: { w: 3.0, h: 2.4, d: 1.75 }, color: 0xd2d5d9,
+  stand: { x: 4.1, z: -12.7 }, skill: 'Machining on the Haas VS-3', model: () => haasVmcModel(true), words: [/vs-?3\b/i],
   products: ['A Haas-machined aluminium mold plate', 'A Haas-machined aluminium drone frame plate'], makes: [/mold|frame plate|plate/]
 });
 

@@ -1049,11 +1049,11 @@ Return ONLY valid JSON matching this schema:
 
         // If Kelo-1 requested new gear on this tick, add it to his Supply Broker Requisitions inbox!
         if (synth.gearRequested && synth.gearRequested !== 'None') {
-          const alreadyAsked = state.requestsToUser.some(r => r.requestedGear === synth.gearRequested)
+          const alreadyAsked = hasOpenRequest(r => r.requestedGear === synth.gearRequested)
             || (typeof vehicleRequestCheck === 'function' && vehicleRequestCheck(synth.gearRequested).blocked);
           if (!alreadyAsked) {
             state.requestsToUser.unshift({
-              id: 'req-gear-' + Date.now(),
+              id: newRequestId('gear'),
               category: 'Supply Broker Tool Demand',
               icon: '🛠️',
               urgency: 'Gear Requested',
@@ -2038,9 +2038,9 @@ function applyDecision(decision, originLabel) {
       }
 
       const q = decision.askQuestion;
-      if (q && typeof q === 'object' && str(q.question, 300)) {
+      if (q && typeof q === 'object' && str(q.question, 300) && !hasOpenRequest(r => r.question === str(q.question, 300))) {
         state.requestsToUser.unshift({
-          id: 'req-free-' + Date.now(),
+          id: newRequestId('free'),
           category: 'Open Question',
           icon: emoji,
           urgency: 'Wondering',
@@ -2203,13 +2203,24 @@ function runFreeQueue() {
       } catch (e) { console.warn('A job he waited to do failed:', e); }
     }
 
+// A request id that never repeats, even for two requests made in the same millisecond
+let requestIdCount = 0;
+function newRequestId(kind) {
+      return `req-${kind}-${Date.now().toString(36)}-${(++requestIdCount).toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`;
+    }
+
+// Is he already waiting on an answer to this? (Answered or declined ones may be asked again later.)
+function hasOpenRequest(test) {
+      return state.requestsToUser.some(r => !r.fulfilled && test(r));
+    }
+
 // Add something Kelo-1 wants to the requests inbox
 function addItemRequest(item, category, why, context) {
-      if (!item || state.requestsToUser.some(r => !r.fulfilled && r.requestedGear === item)) return;
+      if (!item || hasOpenRequest(r => r.requestedGear === item)) return;
       // One of each kind of vehicle until he has a friend to share with (js/trips.js)
       if (typeof vehicleRequestCheck === 'function') { const cap = vehicleRequestCheck(item, why); if (cap.blocked) return; why = cap.why; }
       state.requestsToUser.unshift({
-        id: 'req-item-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        id: newRequestId('item'),
         category,
         icon: CATEGORY_ICONS[category] || '🎁',
         urgency: `Wants: ${category}`,

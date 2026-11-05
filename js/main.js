@@ -63,7 +63,7 @@ function renderDiaryTab() {
         <article class="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800/90 space-y-1.5 hover:border-slate-700 transition">
           <div class="flex items-center justify-between text-[11px] font-mono">
             <span class="text-amber-300 font-bold">${escapeHtml(d.mood)}</span>
-            <span class="text-slate-400">${escapeHtml(d.vitals)} • ${escapeHtml(d.time)}</span>
+            <span class="text-slate-400">${escapeHtml(String(d.vitals || '').replace(/(\d+\.\d+)%/g, (m, n) => Math.round(parseFloat(n)) + '%'))} • ${escapeHtml(d.time)}</span>
           </div>
           <div class="text-[11px] font-mono text-sky-300 flex items-center gap-1">
             <i class="ph-fill ph-map-pin"></i> <span>${escapeHtml(d.location)}</span>
@@ -803,7 +803,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     const q = fresh[Math.floor(Math.random() * fresh.length)];
     state.requestsToUser.unshift({
-      id: 'req-q-' + Date.now(),
+      id: newRequestId('q'),
       category: 'Open Question',
       icon: q.icon,
       urgency: 'Wondering',

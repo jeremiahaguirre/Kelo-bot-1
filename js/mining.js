@@ -336,9 +336,12 @@ let glintCooldownUntil = 0;
 function discoverDigging(how) {
       if (state.knowsDigging) return;
       state.knowsDigging = true;
-      state.moodEmoji = '✨';
-      state.moodTitle = 'Discovered something under the ground';
-      state.speechBubble = `${how} I think things are buried in this island. I could dig for them!`;
+      // Mid-job (carrying a sculpture, building) he keeps doing it; the discovery goes in his diary
+      if (!(state.isBusy || state.isBuilding || state.isPracticing)) {
+        state.moodEmoji = '✨';
+        state.moodTitle = 'Discovered something under the ground';
+        state.speechBubble = `${how} I think things are buried in this island. I could dig for them!`;
+      }
       state.diaryEntries.unshift({
         time: 'A Discovery', location: currentPlaceLabel(), mood: '✨ Things are buried here',
         vitals: `⚡ ${state.health}% • 🥕 ${state.fullness}% • ✨ ${state.wonderLevel}% • 🌊 ${state.calmLevel}%`,

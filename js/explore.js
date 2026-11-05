@@ -12,7 +12,7 @@
 // This file drives the camera itself; OrbitControls (js/scene.js) stays only to aim it, with its own
 // mouse and touch handling switched off.
 
-const EXPLORE_BOUNDS = { minX: -60, maxX: 60, minZ: -44, maxZ: 20 };
+const EXPLORE_BOUNDS = { minX: WORLD_MIN_X, maxX: WORLD_MAX_X, minZ: WORLD_MIN_Z, maxZ: 20 };
 const EXPLORE_LIMITS = { minDist: 5, maxDist: 140, minPitch: 0.12, maxPitch: 1.45 };
 const EXPLORE_CLEARANCE = 1.4;   // the camera always stays at least this far above the ground
 const EXPLORE_IDLE_MS = 90000;   // "go back to Kelo-1" after this long without touching anything
@@ -58,7 +58,7 @@ function exploreIsTouch() {
 // it, the backdrop lands are measured with a ray now and then
 function exploreGroundAt(x, z) {
       const water = typeof WATER_LEVEL === 'number' ? WATER_LEVEL : -0.18;
-      if (Math.abs(x) <= ISLAND_HALF_X && Math.abs(z) <= ISLAND_HALF_Z) return Math.max(water, getAnalyticalGroundHeight(x, z));
+      if (islandContains(x, z)) return Math.max(water, getAnalyticalGroundHeight(x, z));
       const o = exploreCam.outerGround;
       if (Date.now() - o.at > 150 || Math.hypot(o.x - x, o.z - z) > 4) {
         o.at = Date.now(); o.x = x; o.z = z; o.y = water;

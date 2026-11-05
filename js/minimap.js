@@ -8,7 +8,9 @@
 // (chopped trees, plantings, roads, hills, holes, dirt piles, new land and builds) with a legend and
 // a list; tap a mark or a row to fly there.
 
-const MINIMAP_W = 128, MINIMAP_H = 96;        // world size it covers (the whole island)
+// The world box it covers (the whole island: js/scene.js ISLAND_MIN_X/MAX_X, ISLAND_HALF_Z)
+const MINIMAP_X0 = ISLAND_MIN_X, MINIMAP_Z0 = -ISLAND_HALF_Z;
+const MINIMAP_W = ISLAND_MAX_X - ISLAND_MIN_X, MINIMAP_H = ISLAND_HALF_Z * 2;
 const MINIMAP_RES = 1.5;                      // terrain samples per world unit for the base picture
 const minimap = { canvas: null, ctx: null, base: null, baseSig: '', zoom: 1, lastDraw: 0 };
 
@@ -49,14 +51,14 @@ function minimapBuildBase() {
       const hs = new Float32Array(cw * ch);
       for (let j = 0; j < ch; j++) {
         for (let i = 0; i < cw; i++) {
-          const x = -MINIMAP_W / 2 + (i + 0.5) / MINIMAP_RES, z = -MINIMAP_H / 2 + (j + 0.5) / MINIMAP_RES;
+          const x = MINIMAP_X0 + (i + 0.5) / MINIMAP_RES, z = MINIMAP_Z0 + (j + 0.5) / MINIMAP_RES;
           hs[j * cw + i] = getAnalyticalGroundHeight(x, z);
         }
       }
       const mix = (a, b, t) => a.map((v, k) => v + (b[k] - v) * Math.max(0, Math.min(1, t)));
       for (let j = 0; j < ch; j++) {
         for (let i = 0; i < cw; i++) {
-          const x = -MINIMAP_W / 2 + (i + 0.5) / MINIMAP_RES, z = -MINIMAP_H / 2 + (j + 0.5) / MINIMAP_RES;
+          const x = MINIMAP_X0 + (i + 0.5) / MINIMAP_RES, z = MINIMAP_Z0 + (j + 0.5) / MINIMAP_RES;
           const h = hs[j * cw + i];
           let c;
           if (z > 7.5 && h < water) c = frozen ? mix([228, 238, 247], [176, 200, 222], (water - h) / 6) : mix([120, 190, 222], [24, 70, 120], (water - h) / 5);
@@ -85,8 +87,8 @@ function minimapBuildBase() {
 function minimapView() {
       const w = MINIMAP_W / minimap.zoom, h = MINIMAP_H / minimap.zoom;
       const t = controls ? controls.target : { x: 0, z: 0 };
-      const cx = Math.max(-MINIMAP_W / 2 + w / 2, Math.min(MINIMAP_W / 2 - w / 2, t.x));
-      const cz = Math.max(-MINIMAP_H / 2 + h / 2, Math.min(MINIMAP_H / 2 - h / 2, t.z));
+      const cx = Math.max(MINIMAP_X0 + w / 2, Math.min(MINIMAP_X0 + MINIMAP_W - w / 2, t.x));
+      const cz = Math.max(MINIMAP_Z0 + h / 2, Math.min(MINIMAP_Z0 + MINIMAP_H - h / 2, t.z));
       return { x0: cx - w / 2, z0: cz - h / 2, w, h };
     }
 
@@ -100,7 +102,7 @@ function minimapDraw() {
       ctx.save();
       ctx.clearRect(0, 0, W, H);
       ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(minimap.base, (v.x0 + MINIMAP_W / 2) * MINIMAP_RES, (v.z0 + MINIMAP_H / 2) * MINIMAP_RES, v.w * MINIMAP_RES, v.h * MINIMAP_RES, 0, 0, W, H);
+      ctx.drawImage(minimap.base, (v.x0 - MINIMAP_X0) * MINIMAP_RES, (v.z0 - MINIMAP_Z0) * MINIMAP_RES, v.w * MINIMAP_RES, v.h * MINIMAP_RES, 0, 0, W, H);
 
       // Paved yard, helipad, balloon field, dock and the Disposal Pit
       ctx.lineWidth = 1 * dpr;
@@ -299,7 +301,7 @@ function changesMapDraw() {
       if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
       const ctx = cv.getContext('2d');
       const W = cv.width, H = cv.height, sx = W / MINIMAP_W, sz = H / MINIMAP_H;
-      const px = x => (x + MINIMAP_W / 2) * sx, pz = z => (z + MINIMAP_H / 2) * sz;
+      const px = x => (x - MINIMAP_X0) * sx, pz = z => (z - MINIMAP_Z0) * sz;
       ctx.save();
       ctx.clearRect(0, 0, W, H);
       ctx.drawImage(minimap.base, 0, 0, W, H);
@@ -393,13 +395,14 @@ function initChangesMap() {
       const cv = document.getElementById('changesMap');
       if (!cv) return;
       changesMap.canvas = cv;
+      cv.style.aspectRatio = `${MINIMAP_W} / ${MINIMAP_H}`; // the island's own shape
       cv.addEventListener('click', (e) => {
         const r = cv.getBoundingClientRect(), dpr = cv.width / (r.width || 1);
         const X = (e.clientX - r.left) * dpr, Z = (e.clientY - r.top) * dpr;
         const near = changesMap.hits.map(h => ({ h, d: Math.hypot(h.X - X, h.Z - Z) })).sort((a, b) => a.d - b.d)[0];
         if (near && near.d < 14 * dpr) return changesMapFlyTo(near.h.c);
         // Anywhere else: fly to that spot of the island
-        if (typeof exploreFlyTo === 'function') exploreFlyTo({ x: X / cv.width * MINIMAP_W - MINIMAP_W / 2, z: Z / cv.height * MINIMAP_H - MINIMAP_H / 2, dist: 24 });
+        if (typeof exploreFlyTo === 'function') exploreFlyTo({ x: MINIMAP_X0 + X / cv.width * MINIMAP_W, z: MINIMAP_Z0 + Z / cv.height * MINIMAP_H, dist: 24 });
       });
       document.getElementById('btnOpenChangesMap')?.addEventListener('click', () => { if (typeof window.openKeloMenu === 'function') window.openKeloMenu('map'); });
       document.getElementById('changesMapLegend')?.addEventListener('click', (e) => {

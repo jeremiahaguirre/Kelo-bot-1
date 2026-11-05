@@ -599,8 +599,9 @@ const VALID_PART_SHAPES = [...BASIC_PART_SHAPES, ...FREEFORM_PART_SHAPES];
 const VALID_ARCHETYPES = ['gold_drill_rig', 'mycelium_dome', 'rail_track', 'custom_weld', 'kinetic_spire', 'cairn', 'campfire_lantern', 'botanical_totem'];
 const MAX_SCULPTURE_PARTS = 24;
 
-// Everywhere Kelo-1 can go: the whole valley and the entire mountain range behind it
-const WORLD_MIN_X = -60, WORLD_MAX_X = 60, WORLD_MIN_Z = -44, WORLD_MAX_Z = 10;
+// Everywhere Kelo-1 can go: the whole valley and the entire mountain range behind it. The east
+// edge reaches past the Workshop to the concrete and asphalt plant's land (js/plants.js).
+const WORLD_MIN_X = -60, WORLD_MAX_X = 86, WORLD_MIN_Z = -44, WORLD_MAX_Z = 10;
 // The town: the buildings and the streets between them. Kelo-1 doesn't build, plant or dig here;
 // the beach south of it (z above TOWN.maxZ) is his to use.
 const TOWN = { minX: -16, maxX: 19, minZ: -11.5, maxZ: 7.6 };
@@ -976,7 +977,7 @@ async function synthesizeUnboundedExperience(promptOrImpulse = null, originLabel
         if (hasLLMKey()) {
           {
             const llmPrompt = `You are the backend AI cognitive engine for Kelo-1, an autonomous open-world robot living on an island and alpine mountain range in Kelowna, BC.
-You have FULL freedom to roam the entire island and mountain peaks (x between -44 and 44, z between -40 and 10; note z < -14 is high up on the steep snow-capped mountains).
+You have FULL freedom to roam the entire island and mountain peaks (x between ${WORLD_MIN_X} and ${WORLD_MAX_X}, z between ${WORLD_MIN_Z} and ${WORLD_MAX_Z}; note z < -14 is high up on the steep snow-capped mountains).
 Equipped Tools in Inventory: ${JSON.stringify(state.toolInventory)}.
 What each of his things is for (use each only for that): ${typeof itemUseSummaryForAI === 'function' ? itemUseSummaryForAI() : 'unknown'}.
 User/Catalyst Input: "${promptOrImpulse || 'Invent an unscripted task: e.g., drilling for gold in the mountains, terraforming with your pneumatic auger, or welding a new 3D structure'}".

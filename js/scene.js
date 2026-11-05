@@ -218,8 +218,11 @@ function buildAlpineTerrainAndMountains3D() {
       scene.add(terrainSwapGroup);
 
       // Continuous Vertex-Displaced Valley + Alpine Mountain Mesh so Kelo-1 can walk seamlessly up the peaks!
-      const groundGeo = new THREE.PlaneGeometry(ISLAND_HALF_X * 2, ISLAND_HALF_Z * 2, 214, 160); // fine enough for dig holes to look round
+      // Fine enough for dig holes to look round (about 0.6 units a cell); the island runs further east than west
+      const islandW = ISLAND_MAX_X - ISLAND_MIN_X;
+      const groundGeo = new THREE.PlaneGeometry(islandW, ISLAND_HALF_Z * 2, Math.round(islandW / 0.598), 160);
       groundGeo.rotateX(-Math.PI / 2);
+      groundGeo.translate((ISLAND_MIN_X + ISLAND_MAX_X) / 2, 0, 0);
       const pos = groundGeo.attributes.position;
       const colors = [];
 
@@ -633,12 +636,18 @@ function buildSkyAndClouds3D() {
     }
 
 // --- The lands around the island, so there is never an edge to fall off -------------------
-const ISLAND_HALF_X = 64, ISLAND_HALF_Z = 48;
+// The island's own terrain mesh: 4 units past the world bounds (js/agent.js) on the east and west
+const ISLAND_MIN_X = WORLD_MIN_X - 4, ISLAND_MAX_X = WORLD_MAX_X + 4, ISLAND_HALF_Z = 48;
+
+// Is this point over the island's terrain mesh (pad shrinks the box)?
+function islandContains(x, z, pad = 0) {
+      return x > ISLAND_MIN_X + pad && x < ISLAND_MAX_X - pad && Math.abs(z) < ISLAND_HALF_Z - pad;
+    }
 
 // Height beyond the main terrain: the mountain's back side falls away into further ranges,
 // hills roll off east and west, and south of the shore the land drops into open water
 function outerTerrainHeight(x, z) {
-      const cx = Math.max(-ISLAND_HALF_X, Math.min(ISLAND_HALF_X, x));
+      const cx = Math.max(ISLAND_MIN_X, Math.min(ISLAND_MAX_X, x));
       const cz = Math.max(-ISLAND_HALF_Z, Math.min(ISLAND_HALF_Z, z));
       const edge = getAnalyticalGroundHeight(cx, cz);
       const d = Math.hypot(x - cx, z - cz);
@@ -661,9 +670,9 @@ function buildOuterLands3D() {
       const c = new THREE.Color();
       for (let i = 0; i < pos.count; i++) {
         const x = pos.getX(i), z = pos.getZ(i);
-        const inside = Math.abs(x) < ISLAND_HALF_X && Math.abs(z) < ISLAND_HALF_Z;
+        const inside = islandContains(x, z);
         // Under the island it only matters at the seam; deeper in, it drops well below so holes and the pit stay open
-        const nearSeam = Math.min(ISLAND_HALF_X - Math.abs(x), ISLAND_HALF_Z - Math.abs(z)) < 3;
+        const nearSeam = !islandContains(x, z, 3);
         const y = inside ? getAnalyticalGroundHeight(x, z) - (nearSeam ? 0.4 : 8) : outerTerrainHeight(x, z);
         pos.setY(i, y);
         if (y > 26) c.setHex(0xeef1f5); // snow only on the high peaks
@@ -695,7 +704,7 @@ function buildOuterLands3D() {
         const spots = [];
         for (let k = 0; k < 2600 && spots.length < 900; k++) {
           const x = (Math.random() - 0.5) * size * 0.9, z = (Math.random() - 0.5) * size * 0.9;
-          if (Math.abs(x) < ISLAND_HALF_X + 2 && Math.abs(z) < ISLAND_HALF_Z + 2) continue;
+          if (islandContains(x, z, -2)) continue;
           const y = outerTerrainHeight(x, z);
           if (y < 0.5 || y > 16 || Math.random() < y / 22) continue;
           spots.push([x, y - 0.2, z, 0.9 + Math.random() * 0.8, Math.random() * 6.28, Math.random()]);
@@ -706,7 +715,7 @@ function buildOuterLands3D() {
       const pineMat = new THREE.MeshStandardMaterial({ color: 0x1f9a4b, roughness: 0.75 });
       for (let k = 0; k < 140; k++) {
         const x = (Math.random() - 0.5) * size * 0.9, z = (Math.random() - 0.5) * size * 0.9;
-        if (Math.abs(x) < ISLAND_HALF_X + 2 && Math.abs(z) < ISLAND_HALF_Z + 2) continue;
+        if (islandContains(x, z, -2)) continue;
         const y = outerTerrainHeight(x, z);
         if (y < 0.5 || y > 13) continue;
         const pine = new THREE.Mesh(new THREE.ConeGeometry(1.4, 4, 7), pineMat);
@@ -1388,7 +1397,7 @@ function arrivalRadius(target) {
 
 // --- Pathfinding: A* over a coarse grid, so he routes around buildings instead of getting stuck
 const PATH_CELL = 0.75;
-const PATH_MIN_X = -62, PATH_MAX_X = 62, PATH_MIN_Z = -46, PATH_MAX_Z = 14;
+const PATH_MIN_X = WORLD_MIN_X - 2, PATH_MAX_X = WORLD_MAX_X + 2, PATH_MIN_Z = WORLD_MIN_Z - 2, PATH_MAX_Z = WORLD_MAX_Z + 4;
 const PATH_COLS = Math.ceil((PATH_MAX_X - PATH_MIN_X) / PATH_CELL);
 const PATH_ROWS = Math.ceil((PATH_MAX_Z - PATH_MIN_Z) / PATH_CELL);
 let currentPath = [];

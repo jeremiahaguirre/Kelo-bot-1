@@ -332,6 +332,14 @@ function buildWorkshop3D() {
       floor1.castShadow = false;
       const apron = wsPanel(wsGroup, W + 2.4, 0.06, 1.0, floorMat, 0, -0.04, hz + 0.6, 3.2);
       apron.castShadow = false;
+      // The paved vehicle lane from door 1 down the east side to the beach (WORKSHOP_LAND.lane)
+      const ln = WORKSHOP_LAND.lane, laneZ1 = ln.maxZ - 0.9 - S.z, laneZ0 = hz + 1.1;
+      const asphalt = new THREE.MeshStandardMaterial({ color: 0x55585c, roughness: 0.85, metalness: 0.02, map: conc });
+      // (east of x 58.6: the plant's pad, js/plants.js, ends there)
+      const lx0 = Math.max(ln.minX, 58.6), lx1 = ln.maxX - 0.3;
+      const lanePave = wsPanel(wsGroup, lx1 - lx0, 0.04, laneZ1 - laneZ0, asphalt, (lx0 + lx1) / 2 - S.x, -0.03, (laneZ0 + laneZ1) / 2, 3.2);
+      lanePave.castShadow = false;
+      for (let z = laneZ0 + 1.0; z < laneZ1 - 0.6; z += 2.2) mmBox(wsGroup, 0.12, 0.006, 1.1, 'yellow', (lx0 + lx1) / 2 - S.x, 0.012, z);
 
       // Walls: a concrete plinth course, then steel cladding up to the eaves, with a dark band
       // and the clerestory glazing high up on the long walls
@@ -1604,7 +1612,7 @@ async function wsDriveThrough(site, v, opts = {}) {
         { mood: `Drive-through: the ${nm} through door 4 into the shop`, say: 'Into the shop and over the car elevator.', ms: 6500, name: 'shop',
           pts: [{ x: sd.x - 0.6, z: az + 1.2, ry: -N * 0.5 }, { x: sd.x, z: -S.d / 2 + 1.5, ry: Sth }, { x: sd.x, z: WS_LIFT.z, ry: Sth }] },
         { mood: `Drive-through: the ${nm} out of door 1`, say: 'Out onto the lane. Straight through, no reversing.', ms: 5500, name: 'out',
-          pts: [{ x: WS_DOORS.vehicle.x, z: S.d / 2 + 1.5, ry: Sth }, { x: WS_DOORS.vehicle.x, z: S.d / 2 + 4.2 + (opts.trailer ? 6.5 : 0), ry: Sth }] }
+          pts: [{ x: WS_DOORS.vehicle.x, z: S.d / 2 + 1.5, ry: Sth }, { x: WS_DOORS.vehicle.x, z: S.d / 2 + 4.2, ry: Sth }] }
       ];
       wsUpdateLift(0);
       for (const leg of legs) {

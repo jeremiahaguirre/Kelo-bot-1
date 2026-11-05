@@ -457,7 +457,22 @@ function clampNumber(value, min, max, fallback) {
       return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
     }
 
+// Lookups grow by one entry per new word or thing he meets. Past `max`, the oldest are forgotten
+// (he can look them up again); anything about something he owns is always kept.
+function trimLookupMap(map, max, keep) {
+      if (!map || typeof map !== 'object') return map;
+      const keys = Object.keys(map);
+      if (keys.length <= max) return map;
+      keys.sort((a, b) => ((map[b] && map[b].at) || 0) - ((map[a] && map[a].at) || 0));
+      const out = {};
+      keys.forEach((k, i) => { if (i < max || keep.has(k)) out[k] = map[k]; });
+      return out;
+    }
+
+const LOOKUP_LIMITS = { vocabulary: 800, itemLookups: 600, itemPurposes: 600 };
 function trimBrainState() {
+      const owned = new Set(ownedItemNames().map(n => String(n).toLowerCase()));
+      Object.entries(LOOKUP_LIMITS).forEach(([k, max]) => { state[k] = trimLookupMap(state[k], max, owned); });
       if (state.visitorMemories.length > 50) state.visitorMemories.length = 50;
       if (state.webHistory.length > 12) state.webHistory.length = 12;
       if (state.giftLog.length > 30) state.giftLog.length = 30;

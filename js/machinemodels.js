@@ -723,6 +723,9 @@ function haasVmcModel(big) {
       mmBox(g, 0.4, 0.5, 0.5, 'haas', -w / 2 - 0.22, 0, -0.2);
       mmRod(g, [-w / 2 - 0.22, 0.5, -0.2], [-w / 2 - 0.45, 1.0, -0.2], 0.08, 'dark');
       const tower = mmLightTower(g, w / 2 - 0.1, h, -d / 2 + 0.1);
+      // A work light inside, and a window in the side panel onto the tool changer
+      mmBox(g, w * 0.6, 0.03, 0.04, mmMat('lampGreen'), 0, h - 0.62, -d / 2 + 0.12).material = (() => { const m = mmGlow('window'); m.emissive.setHex(0xf8fafc); m.emissiveIntensity = 1.0; return m; })();
+      mmBox(g, 0.012, 0.45, 0.6, 'glass', -w / 2 - 0.006, h - 1.25, -d / 2 + 0.45);
       // The side-mount tool changer: a carousel of tool holders beside the column, and its arm
       const atc = mmGroup(g, -w / 2 + 0.38, h - 0.95, -d / 2 + 0.45);
       mmCyl(atc, 0.3, 0.08, 'grey', 0, 0, 0);

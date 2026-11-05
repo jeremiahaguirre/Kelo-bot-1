@@ -49,6 +49,17 @@ function wsClearSpray(model) {
       u.spray = [];
     }
 
+// A hold-down clamp: a stepped block outside the sheet, a slotted strap across onto the sheet edge,
+// the stud through the T-track and its flange nut
+function routerClamp(parent, x, y, z, side) {
+      const c = mmGroup(parent, x, y, z);
+      [0, 1, 2].forEach(i => mmBox(c, 0.05 - i * 0.012, 0.016, 0.06, 'dark', side * (0.03 + i * 0.006), i * 0.016, 0));
+      mmBox(c, 0.16, 0.014, 0.035, 'steel', -side * 0.03, 0.048, 0);
+      mmCyl(c, 0.008, 0.09, 'chrome', -side * 0.01, 0.05, 0);
+      mmCyl(c, 0.016, 0.014, 'steel', -side * 0.01, 0.066, 0, { seg8: true });
+      return c;
+    }
+
 // --- The routers ---------------------------------------------------------------------------------------
 // Letters for a sign (strokes in a 0..1 box), so the cutter traces something real
 const SIGN_STROKES = [
@@ -124,7 +135,7 @@ function routerPlan(def, job) {
             if (def.vacuum) {
               await machineStep(ctx, 'Laying the sheet on the vacuum table and switching the pump on', 1600, null, 'The vacuum pump pulls it down flat. No clamps in the way.');
             } else {
-              [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => holds.push(mmBox(m, 0.1, 0.05, 0.06, 'red', sx * (sw / 2 + 0.02), u.bedTop + 0.02, sz * (sd / 2 - 0.1))));
+              [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => holds.push(routerClamp(m, sx * (sw / 2 + 0.1), u.bedTop, sz * (sd / 2 - 0.12), sx)));
               await machineStep(ctx, 'Clamping the sheet to the spoilboard', 1600, null, 'Four hold-down clamps, well clear of the toolpath.');
             }
             useWorkshopSupply(mdf ? 'mdf' : 'plywood', 1, `${def.short} job`);
@@ -272,8 +283,10 @@ function haasDef(spec) {
           const key = this.key;
           const steel = /steel/i.test(job.make || '');
           const name = job.make ? madeName(`${spec.brand}-machined`, steel ? 'steel' : 'aluminium', job.make, this.products[0]) : wsPick(this.products);
+          const what = wsThing(name).replace(/^[A-Za-z]+-machined /, '');
+          const an = /^[aeiou]/i.test(what) ? 'an' : 'a';
           return {
-            title: `Machining ${wsThing(name)} on the ${this.short}`, product: name, speech: 'Safety glasses on. Let\'s make chips.',
+            title: `Machining ${an} ${what} on the ${this.short}`, product: name, speech: 'Safety glasses on. Let\'s make chips.',
             stops: [{
               key, act: async ctx => {
                 const u = ctx.model.userData;
@@ -289,7 +302,7 @@ function haasDef(spec) {
                 useWorkshopSupply('faceMill', 1, 'Facing');
                 useWorkshopSupply('endMills', 1, 'Milling');
                 useWorkshopSupply('coolant', 1, 'Flood coolant');
-                await haasCycle(ctx, u, `Machining ${wsThing(name)} with flood coolant`, 9000, name);
+                await haasCycle(ctx, u, `Machining ${an} ${what} with flood coolant`, 9000, name);
                 await machineStep(ctx, 'Deburring and checking it with calipers', 1500, null, 'Within two hundredths of a millimetre. Nice.');
                 return true;
               }
@@ -303,7 +316,7 @@ function haasDef(spec) {
 
 haasDef({
   key: 'haasvs1', name: 'Haas VS-1', short: 'Haas VS-1', brand: 'Haas', at: { x: 6.95, z: -3.45, ry: -Math.PI / 2 }, size: { w: 2.5, h: 2.2, d: 1.55 }, color: 0xd2d5d9,
-  stand: { x: 5.5, z: -3.45 }, skill: 'Machining on the Haas VS-1', model: () => haasVmcModel(false), words: [/vs-?1\b|haas(?!.*vs-?3)/i],
+  stand: { x: 5.45, z: -2.4 }, skill: 'Machining on the Haas VS-1', model: () => haasVmcModel(false), words: [/vs-?1\b|haas(?!.*vs-?3)/i],
   products: ['A Haas-machined aluminium bracket', 'A Haas-machined aluminium go-kart pedal', 'A Haas-machined steel go-kart spindle'], makes: [/bracket|pedal|spindle|hub|kart/]
 });
 haasDef({

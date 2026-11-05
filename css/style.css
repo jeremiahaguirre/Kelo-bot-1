@@ -305,7 +305,7 @@ body.shopvisit-on #btnShowMinimap, body.shopvisit-on [data-where-kelo], body.sho
   #svHud { left: 8px; right: 8px; width: auto; transform: none; top: max(var(--explore-top), 68px); }
   .sv-area-txt { display: none; }
   .sv-where { flex-basis: 100%; padding: 2px 6px; }
-  #svList { left: 8px; right: 8px; width: auto; top: calc(var(--explore-top) + 136px); max-height: 42%; }
+  #svList { left: 8px; right: 8px; width: auto; top: calc(max(var(--explore-top), 68px) + 136px); max-height: 42%; }
   #svCard { left: 8px; right: 8px; width: auto; bottom: calc(var(--explore-above-panel) + 124px); max-height: 36%; }
   #svCard:not(.sv-card-pinned) .sv-sect, #svCard:not(.sv-card-pinned) .sv-supplies, #svCard:not(.sv-card-pinned) .sv-facts, #svCard:not(.sv-card-pinned) .sv-muted { display: none; }
 }

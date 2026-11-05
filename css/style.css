@@ -233,7 +233,7 @@ body.eyecam-on #explorePad .explore-pad-btn[data-hold="zoomOut"], body.eyecam-on
 /* --- Visiting the Workshop (js/shopvisit.js) --- */
 #svHud.hidden, #svCross.hidden, .sv-panel.hidden, .sv-lift.hidden { display: none !important; }
 body.shopvisit-on #exploreBar, body.shopvisit-on #explorePlaces, body.shopvisit-on #explorePreviewChip, body.shopvisit-on #exploreMinimapWrap,
-body.shopvisit-on #btnShowMinimap, body.shopvisit-on #keloOverheadHUD, body.shopvisit-on #poiLabelsContainer, body.shopvisit-on #eyeCamHud { display: none !important; }
+body.shopvisit-on #btnShowMinimap, body.shopvisit-on [data-where-kelo], body.shopvisit-on #keloOverheadHUD, body.shopvisit-on #poiLabelsContainer, body.shopvisit-on #eyeCamHud { display: none !important; }
 .sv-panel { background: rgba(2, 6, 23, 0.93); backdrop-filter: blur(10px); border: 1px solid rgba(251, 191, 36, 0.35); border-radius: 16px; padding: 10px; color: #e2e8f0; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45); font-size: 12px; }
 .sv-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .sv-title { font-size: 13px; font-weight: 800; color: #fde68a; line-height: 1.25; }

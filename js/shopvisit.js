@@ -60,17 +60,17 @@ function svGeo() {
       const P = (lx, lz, yaw) => ({ x: S.x + lx, z: S.z + lz, yaw });
       // Walking into a flight of stairs takes you up or down it
       const zones = [
-        { floor: 1, to: 2, r: L(-7.75, -6.95, 3.3, 6.3), arrive: P(-5.3, 6.95, Math.PI / 2) },
-        { floor: 2, to: 1, r: L(-6.95, -6.15, 3.3, 6.3), arrive: P(-6.0, 6.9, Math.PI / 2) },
-        { floor: 2, to: 3, r: L(-7.75, -6.95, 3.3, 6.3), arrive: P(-5.5, 6.9, Math.PI / 2) },
-        { floor: 3, to: 2, r: L(-6.95, -6.15, 3.3, 6.3), arrive: P(-5.3, 6.95, Math.PI / 2) }
+        { floor: 1, to: 2, r: L(-7.75, -6.95, 3.3, 6.6), arrive: P(-5.3, 6.95, Math.PI / 2) },
+        { floor: 2, to: 1, r: L(-6.95, -6.15, 3.3, 6.6), arrive: P(-6.0, 6.9, Math.PI / 2) },
+        { floor: 2, to: 3, r: L(-7.75, -6.95, 3.3, 6.6), arrive: P(-5.5, 6.9, Math.PI / 2) },
+        { floor: 3, to: 2, r: L(-6.95, -6.15, 3.3, 6.6), arrive: P(-5.3, 6.95, Math.PI / 2) }
       ];
       // Stepping onto the car elevator (its landing gate) offers a ride
       const lift = { 1: L(3.9, 7.7, 4.4, 7.2), 2: L(2.85, 3.75, 4.9, 7.1), 3: L(2.85, 3.75, 4.9, 7.1) };
-      const liftSpot = f => P(lx0 - 0.65, WS_LIFT_GATE, f === 1 ? Math.PI : Math.PI + 0.75);
+      const liftSpot = f => P(lx0 - 0.65, WS_LIFT_GATE, Math.PI);
       const toW = c => ({ x: S.x + c.x, z: S.z + c.z, r: c.r });
       const circles = {
-        1: (typeof wsObstacles === 'function' ? wsObstacles(1) : []).map(toW),
+        1: (typeof wsObstacles === 'function' ? wsObstacles(1) : []).concat(svStationCircles()).map(toW),
         2: workshopMachinesOn(2).flatMap(d => machineCircles(d)).map(toW),
         3: workshopMachinesOn(3).flatMap(d => machineCircles(d)).map(toW)
       };
@@ -86,6 +86,18 @@ function svGeo() {
       const hangarBox = new THREE.Box3(new THREE.Vector3(H.x - H.w / 2, WORKSHOP_PAD_Y, H.z - H.d / 2), new THREE.Vector3(H.x + H.w / 2, WORKSHOP_PAD_Y + H.h + 1.2, H.z + H.d / 2));
       shopVisit.geo = { areas, rects, zones, lift, liftSpot, circles, starts, shopBox, hangarBox };
       return shopVisit.geo;
+    }
+
+// The weld bay's screens and the work bench on floor 1 (stations are not machines)
+function svStationCircles() {
+      const out = [];
+      ['weld', 'bench'].forEach(k => {
+        const st = WORKSHOP_STATIONS[k];
+        if (!st || st.floor !== 1 || !st.local) return;
+        const r = Math.min(st.size.w, st.size.d) / 2 + 0.1, n = Math.max(1, Math.ceil(st.size.w / (2 * r)));
+        for (let i = 0; i < n; i++) out.push({ x: n === 1 ? st.local.x : st.local.x - st.size.w / 2 + r + i * (st.size.w - 2 * r) / (n - 1), z: st.local.z, r });
+      });
+      return out;
     }
 
 function svIn(r, x, z) { return x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1; }
@@ -442,7 +454,7 @@ function svCardHtml(t, pinned) {
       if (t.type === 'machine') {
         const d = t.def;
         title = d.short ? plainItemSv(d.short) : d.name;
-        model = d.short ? d.name : SV_KIND[d.kind] || '';
+        model = d.short && d.name.toLowerCase() !== title.toLowerCase() ? d.name : SV_KIND[d.kind] || '';
       } else if (t.type === 'elevator') model = 'Platform lift, floors 1-2-3';
       else if (t.type === 'forklift') model = 'Electric workshop forklift';
       else if (t.type === 'vehicle') model = 'Parked in the Workshop';
@@ -533,8 +545,10 @@ function svGoToTarget(t) {
       const c = t.box.getCenter(_svT);
       let spot = null;
       if (t.type === 'machine') {
-        const st = machineStand(t.def);
-        spot = svFindFree(S.x + st.x, S.z + st.z, floor, 2.5);
+        // a step back from where he stands to work it, so you see the whole machine
+        const st = machineStand(t.def), ax = S.x + t.def.at.x, az = S.z + t.def.at.z;
+        const ex = S.x + st.x - ax, ez = S.z + st.z - az, el = Math.hypot(ex, ez) || 1;
+        spot = svFindFree(S.x + st.x + ex / el * 0.9, S.z + st.z + ez / el * 0.9, floor, 0.8) || svFindFree(S.x + st.x, S.z + st.z, floor, 2.5);
       }
       if (!spot) {
         const r = Math.max(t.box.max.x - t.box.min.x, t.box.max.z - t.box.min.z) / 2 + 0.7;

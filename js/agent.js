@@ -2413,6 +2413,8 @@ function runAutonomousLifeTick() {
       if (typeof printOnMyOwn === 'function' && canTryKey('print') && Math.random() < printChance()) { tryKey('print', () => printOnMyOwn()); return; }
       // His Workshop: learn a machine, ask for what it needs, make something, service a vehicle (js/machines.js)
       if (typeof workshopOnMyOwn === 'function' && canTryKey('workshop') && Math.random() < workshopChance()) { tryKey('workshop', () => workshopOnMyOwn()); return; }
+      // Making real things from ideas he reads about, and using what he made (js/shopmaker.js)
+      if (typeof shopMakerOnMyOwn === 'function' && canTryKey('shopmaker') && Math.random() < shopMakerChance()) { tryKey('shopmaker', () => shopMakerOnMyOwn()); return; }
       if (typeof useGadgetOnMyOwn === 'function' && canTryKey('gadget') && Math.random() < gadgetChance()) { tryKey('gadget', () => useGadgetOnMyOwn()); return; }
       // Now and then he sets up his easel and paints (or learns a new medium) (js/paintstudio.js)
       if (typeof paintOnMyOwn === 'function' && canTryKey('paint') && Math.random() < paintChance()) { tryKey('paint', () => paintOnMyOwn()); return; }

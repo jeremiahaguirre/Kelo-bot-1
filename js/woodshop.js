@@ -226,7 +226,7 @@ w3({ key: 'sanders', name: 'Spindle and belt sanders', short: 'sanders', at: { x
 w3({ key: 'woodbench', name: 'Woodworking bench with vises', short: 'woodworking bench', at: { x: 2.6, z: 4.4, ry: Math.PI }, size: { w: 2.0, h: 1.5, d: 0.8 }, skill: 'Joinery and glue-ups', model: woodBenchModel, stand: { x: 2.6, z: 3.55 } });
 w3({ key: 'clamprack', name: 'Clamp rack', short: 'clamp rack', at: { x: -0.1, z: 4.6, ry: Math.PI / 2 }, size: { w: 1.6, h: 1.8, d: 0.2 }, model: clampRackModel });
 w3({ key: 'spraybooth', name: 'Finishing spray booth', short: 'spray booth', at: { x: 1.4, z: 6.6, ry: Math.PI }, size: { w: 2.0, h: 2.6, d: 1.2 }, skill: 'Finishing', model: sprayBoothModel, stand: { x: 1.4, z: 5.6 } });
-w3({ key: 'dryingrack', name: 'Drying rack', short: 'drying rack', at: { x: -0.9, z: 6.7, ry: 0 }, size: { w: 0.8, h: 1.6, d: 0.45 }, model: dryingRackModel });
+w3({ key: 'dryingrack', name: 'Drying rack', short: 'drying rack', at: { x: -0.9, z: 6.7, ry: Math.PI }, size: { w: 0.8, h: 1.6, d: 0.45 }, model: dryingRackModel, stand: { x: -0.9, z: 5.85 } });
 
 const WOOD_PROJECTS = {
   table: { name: 'A handmade maple side table', joinery: 'mortise and tenon', words: /table|furniture|stool|chair/ },

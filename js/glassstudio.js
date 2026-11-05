@@ -152,11 +152,11 @@ g3({ key: 'glassfurnace', name: 'Glass furnace (crucible, 2100 °F)', short: 'gl
 g3({ key: 'gloryhole', name: 'Glory hole', short: 'glory hole', at: { x: -4.6, z: -6.4, ry: 0 }, size: { w: 1.0, h: 1.5, d: 0.9 }, skill: 'Reheating in the glory hole', model: gloryHoleModel, stand: { x: -4.6, z: -5.2 } });
 g3({ key: 'annealer', name: 'Annealer (lehr)', short: 'annealer', at: { x: -2.4, z: -6.4, ry: 0 }, size: { w: 1.6, h: 1.0, d: 0.9 }, skill: 'Annealing glass', model: annealerModel, stand: { x: -2.4, z: -5.3 } });
 g3({ key: 'marver', name: 'Marver table', short: 'marver', at: { x: -6.3, z: -3.2, ry: 0 }, size: { w: 1.2, h: 0.9, d: 0.6 }, skill: 'Marvering', model: marverModel, stand: { x: -6.3, z: -2.4 } });
-g3({ key: 'glassbench', name: "Glassblower's bench", short: "glassblower's bench", at: { x: -4.3, z: -3.2, ry: 0 }, size: { w: 1.9, h: 1.0, d: 0.7 }, skill: 'Shaping at the bench', model: glassBenchModel, stand: { x: -4.6, z: -3.2 } });
+g3({ key: 'glassbench', name: "Glassblower's bench", short: "glassblower's bench", at: { x: -4.3, z: -3.2, ry: 0 }, size: { w: 1.9, h: 1.0, d: 0.7 }, skill: 'Shaping at the bench', model: glassBenchModel, stand: { x: -4.3, z: -2.45 } });
 g3({ key: 'pipewarmer', name: 'Pipe warmer (blowpipes and punties)', short: 'pipe warmer', at: { x: -7.35, z: -1.3, ry: Math.PI / 2 }, size: { w: 0.6, h: 0.9, d: 0.5 }, model: pipeWarmerModel });
 g3({ key: 'glasstools', name: 'Glass tools: jacks, shears, tweezers, paddles, blocks, torch', short: 'glass tools', at: { x: -2.3, z: -3.4, ry: 0 }, size: { w: 1.0, h: 1.5, d: 0.45 }, model: glassToolRackModel });
 g3({ key: 'glassbins', name: 'Cullet, frit and colour rod bins', short: 'glass bins', at: { x: -4.0, z: 1.4, ry: Math.PI }, size: { w: 1.7, h: 0.6, d: 0.5 }, model: glassBinsModel });
-g3({ key: 'glasssafety', name: 'Fire extinguisher, gas meter and safety gear', short: 'glass safety', at: { x: -1.6, z: -7.1, ry: 0 }, size: { w: 1.0, h: 1.2, d: 0.3 }, model: glassSafetyModel });
+g3({ key: 'glasssafety', name: 'Fire extinguisher, gas meter and safety gear', short: 'glass safety', at: { x: -1.6, z: -7.1, ry: 0 }, size: { w: 1.0, h: 1.2, d: 0.3 }, model: glassSafetyModel, stand: { x: -0.85, z: -6.5 } });
 g3({ key: 'fumehood', name: 'Fume extraction hood', short: 'fume hood', at: { x: -5.6, z: -6.5, ry: 0 }, size: { w: 0.2, h: 0.2, d: 0.2 },
   model: () => { const g = new THREE.Group(); mmBox(g, 4.0, 0.5, 1.6, 'alu', 0, 2.6, 0.1); mmBox(g, 0.6, 3.4, 0.6, 'alu', 0, 3.1, -0.3); mmLabel(g, 'FUME EXTRACTION', 1.2, 0.18, 0, 2.75, 0.91, { bg: '#374151', fg: '#fff' }); return mmFinish(g, 'fumehood'); } });
 

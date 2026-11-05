@@ -371,7 +371,7 @@ function droneModel() {
     }
 
 // --- Electric guitar, lying on the bench -----------------------------------------------------------------
-function guitarModel() {
+function buildGuitarModel() {
       const { root, p } = bmBuilder();
       const g = new THREE.Group();
       g.rotation.x = -Math.PI / 2;
@@ -430,7 +430,7 @@ function genericBuildModel(bom) {
       return root;
     }
 
-const BUILD_MODELS = { ultralight: ultralightModel, gokart: goKartModel, canoe: canoeModel, kayak: kayakModel, shed: shedModel, drone: droneModel, guitar: guitarModel, treefort: treeFortModel };
+const BUILD_MODELS = { ultralight: ultralightModel, gokart: goKartModel, canoe: canoeModel, kayak: kayakModel, shed: shedModel, drone: droneModel, guitar: buildGuitarModel, treefort: treeFortModel };
 
 // How far along a sub-assembly is (0..1), counting a step in progress
 function bomSubFraction(bom, key, partial = null) {

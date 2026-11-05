@@ -168,7 +168,7 @@ function stepWorkSpot(p, sub, step) {
         return { pos: b.stand, face: b.top, place: b.name, locKey: b.locKey, bench: true };
       }
       const stand = sub.stand || [0, 1.2];
-      return { pos: siteToWorld(site, stand[0], stand[1]), face: siteToWorld(site, 0, 0), place: site.name, locKey: null };
+      return { pos: buildSiteToWorld(site, stand[0], stand[1]), face: buildSiteToWorld(site, 0, 0), place: site.name, locKey: null };
     }
 
 // The Workshop hangar's build bays (js/workshopbuilding.js): workshopAssemblyBay(1) is the big bay
@@ -226,7 +226,7 @@ function siteFor(p) {
     }
 
 // Model-space metres (x forward, z right) to the world at the site
-function siteToWorld(site, mx, mz) {
+function buildSiteToWorld(site, mx, mz) {
       const k = BUILD_MODEL_SCALE, c = Math.cos(site.rotY || 0), s = Math.sin(site.rotY || 0);
       return { x: site.x + (mx * c + mz * s) * k, z: site.z + (-mx * s + mz * c) * k };
     }
@@ -639,7 +639,7 @@ async function buildNextSubAssembly(id, originLabel = 'Building Something Big') 
         state.speechBubble = `Everything for the ${subProse(sub.name)} is here. Measure twice, cut once.`;
         renderAllUI();
         await waitForArrival(90000);
-        const face = siteToWorld(site, 0, 0);
+        const face = buildSiteToWorld(site, 0, 0);
         state.botRotY = Math.atan2(face.x - state.botPos.x, face.z - state.botPos.z);
         const n = sub.steps.length;
         for (let i = sub.stepsDone; i < n; i++) {
@@ -734,7 +734,7 @@ async function runBuildTests(id, originLabel = 'Inspecting the Build') {
         placeAssemblyMesh(p);
         state.currentLocKey = 'custom';
         state.customPlaceName = site.name;
-        state.targetPos = Number.isFinite(site.standX) && p.bom.site === 'bench' && !site.inWorkshop ? { x: site.standX, z: site.standZ } : siteToWorld(site, 0.8, 1.8);
+        state.targetPos = Number.isFinite(site.standX) && p.bom.site === 'bench' && !site.inWorkshop ? { x: site.standX, z: site.standZ } : buildSiteToWorld(site, 0.8, 1.8);
         state.moodEmoji = '🔍';
         state.moodTitle = `Inspecting the ${p.bom.name.toLowerCase()}`;
         renderAllUI();
@@ -883,7 +883,7 @@ async function learnToFly(originLabel = 'Learning to Fly') {
         const m = assemblyMeshes[p.id] || (p.status === 'complete' ? placeAssemblyMesh(p) : null);
         state.currentLocKey = 'custom';
         state.customPlaceName = site.name;
-        state.targetPos = siteToWorld(site, -0.15, -1.6);
+        state.targetPos = buildSiteToWorld(site, -0.15, -1.6);
         state.moodEmoji = '🛫';
         state.moodTitle = 'Taxi practice on his strip';
         renderAllUI();

@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-05T20:06:08.633Z",
-  "runs": 6,
+  "updatedAt": "2026-11-06T06:59:17.073Z",
+  "runs": 7,
   "curiosities": [
-    "Aikō District, Kanagawa"
+    "Asahi-ku, Yokohama"
   ],
   "entries": [
     {
@@ -210,6 +210,43 @@
       },
       "shapeFrom": "Hadano, Kanagawa",
       "nextCuriosity": "Aikō District, Kanagawa",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1793948357073",
+      "at": 1793948357073,
+      "brain": "procedural",
+      "topic": "Aikō District, Kanagawa",
+      "title": "Dreaming of Amitābha",
+      "text": "Dear Diary, while nobody was around I looked up \"Aikō District, Kanagawa\" and drifted from Aikō District, Kanagawa to Kamakura to Amitābha. Amitābha, also known as Amituofo in Chinese, Amida Butsu in Japanese, Amita-bul in Korean, Avid in Mongolian, A Di Đà Phật in Vietnamese, and Öpakmé in Tibetan, is one of the main Buddhas of Mahayana Buddhism and the most widely venerated Buddhist figure in East Asian Buddhism. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Aikō District, Kanagawa",
+          "url": "https://en.wikipedia.org/wiki/Aik%C5%8D_District%2C_Kanagawa",
+          "extract": "Aikō District  is a district located in central Kanagawa Prefecture, Japan. It currently consists of only one town, Aikawa, and one village, Kiyokawa. The city of Atsugi was formerly part of Aikō District."
+        },
+        {
+          "title": "Kamakura",
+          "url": "https://en.wikipedia.org/wiki/Kamakura",
+          "extract": "Kamakura , officially Kamakura City , is a city of Kanagawa Prefecture in Japan. It is located in the Kantō region on the island of Honshu. The city has an estimated population of 172,929 and a population density of 4,359 people per km2 over the total area of 39.67 km2 (15.32 sq "
+        },
+        {
+          "title": "Amitābha",
+          "url": "https://en.wikipedia.org/wiki/Amit%C4%81bha",
+          "extract": "Amitābha, also known as Amituofo in Chinese, Amida Butsu in Japanese, Amita-bul in Korean, Avid in Mongolian, A Di Đà Phật in Vietnamese, and Öpakmé in Tibetan, is one of the main Buddhas of Mahayana Buddhism and the most widely venerated Buddhist figure in East Asian Buddhism. A"
+        }
+      ],
+      "concept": {
+        "name": "District Amit Principle",
+        "emoji": "💡",
+        "definition": "The idea that aikō district, kanagawa and amitābha share a hidden pattern.",
+        "builtFrom": [
+          "Aikō District, Kanagawa",
+          "Amitābha"
+        ]
+      },
+      "shapeFrom": "Amitābha",
+      "nextCuriosity": "Asahi-ku, Yokohama",
       "coreMemory": null
     }
   ]

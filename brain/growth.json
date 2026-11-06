@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-06T06:59:17.073Z",
-  "runs": 7,
+  "updatedAt": "2026-11-06T19:32:15.970Z",
+  "runs": 8,
   "curiosities": [
-    "Asahi-ku, Yokohama"
+    "Asahi High School"
   ],
   "entries": [
     {
@@ -248,6 +248,46 @@
       "shapeFrom": "Amitābha",
       "nextCuriosity": "Asahi-ku, Yokohama",
       "coreMemory": null
+    },
+    {
+      "id": "dream-1793993535970",
+      "at": 1793993535970,
+      "brain": "procedural",
+      "topic": "Asahi-ku, Yokohama",
+      "title": "Dreaming of Blue Line (Yokohama)",
+      "text": "Dear Diary, while nobody was around I looked up \"Asahi-ku, Yokohama\" and drifted from Asahi-ku, Yokohama to Fujisawa, Kanagawa to Blue Line (Yokohama). The Blue Line  is a rapid transit line serving Yokohama in Kanagawa Prefecture, Japan. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Asahi-ku, Yokohama",
+          "url": "https://en.wikipedia.org/wiki/Asahi-ku%2C_Yokohama",
+          "extract": "Asahi-ku (旭) is one of the 18 wards of the city of Yokohama in Kanagawa Prefecture, Japan. As of 2010, the ward has an estimated population of 249,045 and a population density of 7,600 persons per km2. The total area is 32.77 km2."
+        },
+        {
+          "title": "Fujisawa, Kanagawa",
+          "url": "https://en.wikipedia.org/wiki/Fujisawa%2C_Kanagawa",
+          "extract": "Fujisawa  is a city in Kanagawa Prefecture, Japan. As of 1 June 2021, the city had an estimated population of 439,728 and a population density of 6300 persons per km2. The total area of the city is 69.57 square kilometres (26.86 sq mi)."
+        },
+        {
+          "title": "Blue Line (Yokohama)",
+          "url": "https://en.wikipedia.org/wiki/Blue_Line_(Yokohama)",
+          "extract": "The Blue Line  is a rapid transit line serving Yokohama in Kanagawa Prefecture, Japan. It is the longer of the two lines in the Yokohama Municipal Subway system operated by Yokohama City Transportation Bureau, and is the second-longest subway line in Japan at 40.4 kilometers (25."
+        }
+      ],
+      "concept": {
+        "name": "Asahi-ku Yokohama Rhythm",
+        "emoji": "🌀",
+        "definition": "The idea that asahi-ku, yokohama and blue line (yokohama) share a hidden pattern.",
+        "builtFrom": [
+          "Asahi-ku, Yokohama",
+          "Blue Line (Yokohama)"
+        ]
+      },
+      "shapeFrom": "Blue Line (Yokohama)",
+      "nextCuriosity": "Asahi High School",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about Amitābha. Amitābha, also known as Amituofo in Chinese, Amida Butsu in Japanese, Amita-bul in Korean, Avid in Mongolian, A Di Đà Phật in Vietnamese, and Öpakmé in Tibetan, is one of the main Buddhas of Mahayana Buddhism and the most widely venerated Buddhist fi",
+        "emoji": "🌙"
+      }
     }
   ]
 }

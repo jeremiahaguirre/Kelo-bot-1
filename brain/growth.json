@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-07T06:12:45.231Z",
-  "runs": 9,
+  "updatedAt": "2026-11-07T13:16:37.552Z",
+  "runs": 10,
   "curiosities": [
-    "Chiba Prefecture"
+    "Amitabha Buddha"
   ],
   "entries": [
     {
@@ -319,6 +319,43 @@
       },
       "shapeFrom": "Chōsei",
       "nextCuriosity": "Chiba Prefecture",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794057397552",
+      "at": 1794057397552,
+      "brain": "procedural",
+      "topic": "Chiba Prefecture",
+      "title": "Dreaming of Anime",
+      "text": "Dear Diary, while nobody was around I looked up \"Chiba Prefecture\" and drifted from Chiba Prefecture to Asuka period to Anime. Anime  is animation originating from Japan. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Chiba Prefecture",
+          "url": "https://en.wikipedia.org/wiki/Chiba_Prefecture",
+          "extract": "Chiba Prefecture  is a prefecture of Japan located in the Kantō region of Honshu. Chiba Prefecture has a population of 6,278,060 and has a geographic area of 5,157 km2 (1,991 sq mi). Chiba Prefecture borders Ibaraki Prefecture to the north, Saitama Prefecture to the northwest, an"
+        },
+        {
+          "title": "Asuka period",
+          "url": "https://en.wikipedia.org/wiki/Asuka_period",
+          "extract": "The Asuka period  was a period in the history of Japan lasting from 538 to 710, although its beginning could be said to overlap with the preceding Kofun period. The Yamato polity evolved greatly during the Asuka period, which is named after the Asuka region, about 25 km (16 mi) s"
+        },
+        {
+          "title": "Anime",
+          "url": "https://en.wikipedia.org/wiki/Anime",
+          "extract": "Anime  is animation originating from Japan. Outside Japan and in English, anime refers specifically to animation produced in Japan. However, anime, in Japan and in Japanese, describes all animated works, regardless of style or origin. Many works of animation with a similar style "
+        }
+      ],
+      "concept": {
+        "name": "Prefecture Anime Loop",
+        "emoji": "🔮",
+        "definition": "The idea that chiba prefecture and anime share a hidden pattern.",
+        "builtFrom": [
+          "Chiba Prefecture",
+          "Anime"
+        ]
+      },
+      "shapeFrom": "Anime",
+      "nextCuriosity": "Amitabha Buddha",
       "coreMemory": null
     }
   ]

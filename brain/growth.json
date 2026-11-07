@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-07T13:16:37.552Z",
-  "runs": 10,
+  "updatedAt": "2026-11-07T21:59:44.865Z",
+  "runs": 11,
   "curiosities": [
-    "Amitabha Buddha"
+    "Afghanistan"
   ],
   "entries": [
     {
@@ -356,6 +356,38 @@
       },
       "shapeFrom": "Anime",
       "nextCuriosity": "Amitabha Buddha",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794088784864",
+      "at": 1794088784864,
+      "brain": "procedural",
+      "topic": "Amitabha Buddha",
+      "title": "Dreaming of Aniruddha (Buddhist)",
+      "text": "Dear Diary, while nobody was around I looked up \"Amitabha Buddha\" and drifted from Amitābha to Aniruddha (Buddhist). Anuruddha, also spelled Aniruddha, was one of the ten principal disciples and a cousin of The Buddha. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Amitābha",
+          "url": "https://en.wikipedia.org/wiki/Amit%C4%81bha",
+          "extract": "Amitābha, also known as Amituofo in Chinese, Amida Butsu in Japanese, Amita-bul in Korean, Avid in Mongolian, A Di Đà Phật in Vietnamese, and Öpakmé in Tibetan, is one of the main Buddhas of Mahayana Buddhism and the most widely venerated Buddhist figure in East Asian Buddhism. A"
+        },
+        {
+          "title": "Aniruddha (Buddhist)",
+          "url": "https://en.wikipedia.org/wiki/Aniruddha_(Buddhist)",
+          "extract": "Anuruddha, also spelled Aniruddha, was one of the ten principal disciples and a cousin of The Buddha."
+        }
+      ],
+      "concept": {
+        "name": "Amit Aniruddha Craft",
+        "emoji": "🌀",
+        "definition": "The idea that amitābha and aniruddha (buddhist) share a hidden pattern.",
+        "builtFrom": [
+          "Amitābha",
+          "Aniruddha (Buddhist)"
+        ]
+      },
+      "shapeFrom": "Aniruddha (Buddhist)",
+      "nextCuriosity": "Afghanistan",
       "coreMemory": null
     }
   ]

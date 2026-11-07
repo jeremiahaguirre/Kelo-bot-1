@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-06T19:32:15.970Z",
-  "runs": 8,
+  "updatedAt": "2026-11-07T06:12:45.231Z",
+  "runs": 9,
   "curiosities": [
-    "Asahi High School"
+    "Chiba Prefecture"
   ],
   "entries": [
     {
@@ -288,6 +288,38 @@
         "text": "I remember a quiet night dreaming about Amitābha. Amitābha, also known as Amituofo in Chinese, Amida Butsu in Japanese, Amita-bul in Korean, Avid in Mongolian, A Di Đà Phật in Vietnamese, and Öpakmé in Tibetan, is one of the main Buddhas of Mahayana Buddhism and the most widely venerated Buddhist fi",
         "emoji": "🌙"
       }
+    },
+    {
+      "id": "dream-1794031965231",
+      "at": 1794031965231,
+      "brain": "procedural",
+      "topic": "Asahi High School",
+      "title": "Dreaming of Chōsei",
+      "text": "Dear Diary, while nobody was around I looked up \"Asahi High School\" and drifted from Asahi, Chiba to Chōsei. Chōsei  is a village located in Chiba Prefecture, Japan. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Asahi, Chiba",
+          "url": "https://en.wikipedia.org/wiki/Asahi%2C_Chiba",
+          "extract": "Asahi  is a city located in Chiba Prefecture, Japan. As of 1 December 2020, the city had an estimated population of 64,690 in 26,510 households and a population density of 500 persons per km2. The total area of the city is 129.91 square kilometres (50.16 sq mi)."
+        },
+        {
+          "title": "Chōsei",
+          "url": "https://en.wikipedia.org/wiki/Ch%C5%8Dsei",
+          "extract": "Chōsei  is a village located in Chiba Prefecture, Japan. As of 31 December 2020, the village had an estimated population of 14,028 in 6096 households and a population density of 500 persons per km2. The total area of the village is 28.32 square kilometres (10.93 mi2). It is the o"
+        }
+      ],
+      "concept": {
+        "name": "Asahi Wonder Theory",
+        "emoji": "🌀",
+        "definition": "The idea that asahi, chiba and chōsei share a hidden pattern.",
+        "builtFrom": [
+          "Asahi, Chiba",
+          "Chōsei"
+        ]
+      },
+      "shapeFrom": "Chōsei",
+      "nextCuriosity": "Chiba Prefecture",
+      "coreMemory": null
     }
   ]
 }

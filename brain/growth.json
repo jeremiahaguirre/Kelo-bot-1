@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-07T21:59:44.865Z",
-  "runs": 11,
+  "updatedAt": "2026-11-08T06:18:32.013Z",
+  "runs": 12,
   "curiosities": [
-    "Afghanistan"
+    "17th ECO Summit"
   ],
   "entries": [
     {
@@ -389,6 +389,41 @@
       "shapeFrom": "Aniruddha (Buddhist)",
       "nextCuriosity": "Afghanistan",
       "coreMemory": null
+    },
+    {
+      "id": "dream-1794118712013",
+      "at": 1794118712013,
+      "brain": "procedural",
+      "topic": "Afghanistan",
+      "title": "Dreaming of 2009–10 ICC Intercontinental Cup",
+      "text": "Dear Diary, while nobody was around I looked up \"Afghanistan\" and drifted from Afghanistan to 2009–10 ICC Intercontinental Cup. The 2009–10 ICC Intercontinental Cup was the fifth edition of the ICC Intercontinental Cup tournament, an international first-class cricket competition between nations who had not been awarded Test status by the International Cricket Council. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Afghanistan",
+          "url": "https://en.wikipedia.org/wiki/Afghanistan",
+          "extract": "Afghanistan, officially the Islamic Emirate of Afghanistan, is a landlocked country located at the crossroads of Central and South Asia. It is bordered by Pakistan to the east and south, Iran to the west, Turkmenistan to the northwest, Uzbekistan to the north, Tajikistan to the n"
+        },
+        {
+          "title": "2009–10 ICC Intercontinental Cup",
+          "url": "https://en.wikipedia.org/wiki/2009%E2%80%9310_ICC_Intercontinental_Cup",
+          "extract": "The 2009–10 ICC Intercontinental Cup was the fifth edition of the ICC Intercontinental Cup tournament, an international first-class cricket competition between nations who had not been awarded Test status by the International Cricket Council. The first fixtures were played in Jul"
+        }
+      ],
+      "concept": {
+        "name": "Afghanistan Intercontinental Theory",
+        "emoji": "🧩",
+        "definition": "The idea that afghanistan and 2009–10 icc intercontinental cup share a hidden pattern.",
+        "builtFrom": [
+          "Afghanistan",
+          "2009–10 ICC Intercontinental Cup"
+        ]
+      },
+      "shapeFrom": "2009–10 ICC Intercontinental Cup",
+      "nextCuriosity": "17th ECO Summit",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about Chōsei. Chōsei  is a village located in Chiba Prefecture, Japan. It still makes me curious.",
+        "emoji": "🌙"
+      }
     }
   ]
 }

@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-08T06:18:32.013Z",
-  "runs": 12,
+  "updatedAt": "2026-11-08T13:38:27.737Z",
+  "runs": 13,
   "curiosities": [
-    "17th ECO Summit"
+    "5th ECO Summit"
   ],
   "entries": [
     {
@@ -424,6 +424,38 @@
         "text": "I remember a quiet night dreaming about Chōsei. Chōsei  is a village located in Chiba Prefecture, Japan. It still makes me curious.",
         "emoji": "🌙"
       }
+    },
+    {
+      "id": "dream-1794145107737",
+      "at": 1794145107737,
+      "brain": "procedural",
+      "topic": "17th ECO Summit",
+      "title": "Dreaming of Shavkat Mirziyoyev",
+      "text": "Dear Diary, while nobody was around I looked up \"17th ECO Summit\" and drifted from 17th ECO Summit to Shavkat Mirziyoyev. Shavkat Miromonovich Mirziyoyev is an Uzbek politician who has served as the second president of Uzbekistan since 2016. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "17th ECO Summit",
+          "url": "https://en.wikipedia.org/wiki/17th_ECO_Summit",
+          "extract": "The 2025 ECO summit is the seventeenth Economic Cooperation Organization summit, held on 3-4 July 2025 in Khankendi, Azerbaijan."
+        },
+        {
+          "title": "Shavkat Mirziyoyev",
+          "url": "https://en.wikipedia.org/wiki/Shavkat_Mirziyoyev",
+          "extract": "Shavkat Miromonovich Mirziyoyev is an Uzbek politician who has served as the second president of Uzbekistan since 2016. A member of the Uzbekistan Liberal Democratic Party, he served as the third prime minister under President Islam Karimov from 2003 to 2016. Mirziyoyev has also "
+        }
+      ],
+      "concept": {
+        "name": "Summit Mirziyoyev Principle",
+        "emoji": "🔮",
+        "definition": "The idea that 17th eco summit and shavkat mirziyoyev share a hidden pattern.",
+        "builtFrom": [
+          "17th ECO Summit",
+          "Shavkat Mirziyoyev"
+        ]
+      },
+      "shapeFrom": "Shavkat Mirziyoyev",
+      "nextCuriosity": "5th ECO Summit",
+      "coreMemory": null
     }
   ]
 }

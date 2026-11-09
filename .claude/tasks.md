@@ -26,7 +26,7 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
   - Audit phase 2 (perf: JS 5.83 to 0.94 ms per frame).
   - Movement fixes: box obstacles, robust A*, stuck watch, balloon on open ground, plane circuit over max(ground, water), no digging in buildings, no floating trees.
   - Treehouse rope fix.
-- **Run-through in progress (`agent/runthrough`, 11 commits pushed):** paused by the weekly limit on 2026-11-05 and resumed on 2026-11-09. All 6 owner build rules are added; its final test pass is finishing. Then merge it, then **the quality upgrade (owner: before 7b)**, then 7b runway and map, then the shopview viewer last.
+- **Run-through DONE and pushed (2026-11-09):** js/shopmaker.js adds the 6 owner build and supply rules, fixes the helicopter pad, glass containers, woodshop safety, and the notice back-off. Open: the weld studio and the concrete plant are not routable shops; "make me a sandwich" goes to shops, not food; the stool sits in the meadow, not at the fire ring. Then merge it, then **the quality upgrade (owner: before 7b)**, then 7b runway and map, then the shopview viewer last.
 - **Run-through spec (owner, 2026-11-05)** of Kelo-1, tools, environment, machines and vehicles. Fix what's found. Specific checks:
   - Every shop machine asks for its real supplies, waits, and uses them up.
   - Products land in his inventory as real items he can use for their real purpose.

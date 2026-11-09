@@ -55,6 +55,16 @@ const clamp01 = x => Math.max(0, Math.min(1, x));
 const smoothstep = x => { x = clamp01(x); return x * x * (3 - 2 * x); };
 // Frame-rate independent easing: move a fraction of the way toward the target
 const dampTo = (cur, target, rate, dt) => cur + (target - cur) * (1 - Math.exp(-rate * dt));
+// Frame-rate independent critically damped spring (exact for any dt, so it never blows up on a slow
+// frame): returns the new value and velocity. omega is how stiff it is (about 2x a dampTo rate).
+const _keloSpring = { x: 0, v: 0 };
+function keloSpringTo(x, v, target, omega, dt) {
+      if (!(dt > 0) || !isFinite(x)) { _keloSpring.x = isFinite(x) ? x : target; _keloSpring.v = 0; return _keloSpring; }
+      const off = x - target, e = Math.exp(-omega * dt), tmp = (v + omega * off) * dt;
+      _keloSpring.x = target + (off + tmp) * e;
+      _keloSpring.v = (v - omega * tmp) * e;
+      return _keloSpring;
+    }
 
 // Start of Kelo-1's part of the frame: work out the frame time and put every joint at rest
 function beginKeloPose(t) {
@@ -397,11 +407,16 @@ function finishKeloPose(t) {
       target.lElbowX -= 0.16; target.rElbowX -= 0.16;
       target.lArmZ -= 0.1; target.rArmZ += 0.1;
       target.lKneeX += 0.04; target.rKneeX += 0.04;
-      if (!a.base) a.base = { ...target };
+      if (!a.base) { a.base = { ...target }; a.vel = {}; }
       const out = {};
       for (const ch in target) {
         const rate = (/^(lLeg|rLeg|lKnee|rKnee|lFoot|rFoot)/.test(ch) ? 12 : /^body/.test(ch) ? 8 : 10) * a.rate;
-        a.base[ch] = dampTo(a.base[ch], target[ch], rate, dt);
+        // A critically damped spring rather than a plain ease: a new pose starts moving gently
+        // (no kink at the start of a blend, e.g. walk to sit, idle to dig) and settles without
+        // overshoot. 2x the rate keeps the same overall timing as the old ease.
+        const v = keloSpringTo(a.base[ch], a.vel[ch] || 0, target[ch], 2 * rate, dt);
+        a.base[ch] = v.x;
+        a.vel[ch] = v.v;
         out[ch] = a.base[ch];
       }
       out.lift = 0;

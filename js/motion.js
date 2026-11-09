@@ -223,9 +223,17 @@ function keloSmoothRoot(dt) {
         r.corr.z -= flat > stepOk ? dz : 0;
         r.corr.y -= dy;
       }
-      const k = Math.exp(-7.5 * dt);
-      r.corr.multiplyScalar(k);
-      if (r.corr.lengthSq() < 1e-8) r.corr.set(0, 0, 0);
+      // Ease the leftover offset out on a critically damped spring: it starts gently and lands
+      // softly, instead of leaping off at full speed (exact for any frame time)
+      if (!r.vel) r.vel = new THREE.Vector3();
+      if (all > 4) r.vel.set(0, 0, 0);
+      const w = 15, e = Math.exp(-w * dt);
+      ['x', 'y', 'z'].forEach(ax => {
+        const tmp = (r.vel[ax] + w * r.corr[ax]) * dt;
+        r.corr[ax] = (r.corr[ax] + tmp) * e;
+        r.vel[ax] = (r.vel[ax] - w * tmp) * e;
+      });
+      if (r.corr.lengthSq() < 1e-8 && r.vel.lengthSq() < 1e-6) { r.corr.set(0, 0, 0); r.vel.set(0, 0, 0); }
       P.add(r.corr);
     }
 

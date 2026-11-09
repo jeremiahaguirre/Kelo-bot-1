@@ -38,8 +38,8 @@ function basementSite(key) {
       if (typeof storehouseGroup === 'undefined' || !storehouseGroup) return null;
       const h = STOREHOUSE_HATCH_LOCAL;
       return {
-        key: 'storehouse', name: 'Storehouse', group: storehouseGroup, w: STOREHOUSE.w, d: STOREHOUSE.d, floorY: 0.15, hatch: h, entryAngle: Math.PI,
-        outside: { x: -0.75, z: 3.7 },
+        key: 'storehouse', name: 'Storehouse', group: storehouseGroup, w: STOREHOUSE_MODEL.w, d: STOREHOUSE_MODEL.d, floorY: 0.15, hatch: h, entryAngle: Math.PI,
+        outside: { x: -0.75, z: STOREHOUSE_OUTSIDE_Z },
         walkIn: [{ x: -0.75, z: 2.0, y: 0 }, { x: -0.75, z: 1.7, y: 0.15 }, { x: -0.75, z: 1.25, y: 0.15 }],
         nodes: [[-0.75, 1.25], [1.0, 1.3], [-1.45, -0.72], [1.45, -0.72], [0, -0.78], [-1.5, 0.55], [1.5, 0.55]].map(([x, z]) => ({ x, z })),
         obstacles: () => [{ x: h.x, z: h.z, r: 0.92 }],
@@ -52,10 +52,16 @@ function levelFloorY(site, level) {
       return site.floorY - level * BASEMENT_LEVEL_DEPTH;
     }
 
+// How big one of the building's own units is in the world (the Storehouse is modelled small and
+// scaled up to real size; the site's w, d, nodes, slots and levels are all in its own units)
+function siteScale(site) {
+      return site && site.group ? Math.abs(site.group.scale.x) || 1 : 1;
+    }
+
 // A point in the building's coordinates, as a world position
 function siteToWorld(site, x, z, y) {
-      const o = site.group.position;
-      return { x: o.x + x, y: o.y + y, z: o.z + z };
+      const o = site.group.position, k = siteScale(site);
+      return { x: o.x + x * k, y: o.y + y * k, z: o.z + z * k };
     }
 
 function stairEntry(site, r = 0.98) {
@@ -340,14 +346,14 @@ async function elevatorRide(site, fromLevel, toLevel) {
       tripFace(siteToWorld(site, stairEntry(site).x, stairEntry(site).z, y0));
       await tripPause(350);
       const start = Date.now(), dist = Math.abs(y1 - y0), ms = Math.max(400, dist / ELEVATOR_SPEED * 1000);
-      const base = site.group.position.y;
+      const base = site.group.position.y, k = siteScale(site);
       await new Promise(resolve => {
         const tick = () => {
           // Ease in and out so the ride starts and stops gently
           const t = Math.min(1, (Date.now() - start) / ms), e = t * t * (3 - 2 * t);
           const y = y0 + (y1 - y0) * e;
           if (car) car.position.y = y;
-          if (indoorTrip.pos) indoorTrip.pos.y = base + y;
+          if (indoorTrip.pos) indoorTrip.pos.y = base + y * k;
           if (t < 1 && indoorTrip.active) setTimeout(tick, 16); else resolve();
         };
         tick();
@@ -410,12 +416,12 @@ function setEarthCut(site, level) {
       earthCut.materials.forEach(m => {
         if (m.clippingPlanes !== planes) { m.clippingPlanes = planes; m.clipIntersection = true; m.needsUpdate = true; }
       });
-      const o = site.group.position;
-      const minX = o.x - site.w / 2 - 0.45, maxX = o.x + site.w / 2 + 0.45;
+      const o = site.group.position, k = siteScale(site);
+      const minX = o.x - site.w * k / 2 - 0.45, maxX = o.x + site.w * k / 2 + 0.45;
       // A pit open in front of the building, flat-floored for cutFlat (where the camera goes),
       // then a steep bank back up to the ground
-      const backZ = o.z - site.d / 2 - 0.4, frontZ = o.z + site.d / 2 + site.cutFlat;
-      const bottom = o.y + levelFloorY(site, level) - 0.45;
+      const backZ = o.z - site.d * k / 2 - 0.4, frontZ = o.z + site.d * k / 2 + site.cutFlat;
+      const bottom = o.y + levelFloorY(site, level) * k - 0.45;
       const s = 2.0;
       planes[0].set(new THREE.Vector3(-1, 0, 0), minX);
       planes[1].set(new THREE.Vector3(1, 0, 0), -maxX);
@@ -517,11 +523,11 @@ function basementCameraUpdate() {
         let target, pos;
         if (trip.cutLevel) {
           // Down in the pit in front of the building, looking straight into the cut-open floors
-          const site = trip.site;
+          const site = trip.site, sk = siteScale(site);
           target = new THREE.Vector3(k.x * 0.5 + o.x * 0.5, k.y + 1.3, o.z);
-          pos = new THREE.Vector3(o.x + site.w * 0.08, Math.max(k.y + 2.0, trip.cutBottom + 1.4), o.z + site.d / 2 + site.cutFlat * 0.9);
+          pos = new THREE.Vector3(o.x + site.w * sk * 0.08, Math.max(k.y + 2.0, trip.cutBottom + 1.4), o.z + site.d * sk / 2 + site.cutFlat * 0.9);
         } else {
-          const dist = trip.site.camDist;
+          const dist = trip.site.camDist * (trip.site.key === 'storehouse' ? siteScale(trip.site) * 0.8 : 1);
           target = new THREE.Vector3(k.x * 0.6 + o.x * 0.4, k.y + 1.2, k.z * 0.6 + o.z * 0.4);
           pos = target.clone().add(new THREE.Vector3(dist * 0.16, dist * 0.7, dist));
         }
@@ -580,9 +586,9 @@ async function placeJob(site, job, temps) {
         const hand = site.group.worldToLocal(handsWorldPosition());
         const carriedSize = typeof carriedObject !== 'undefined' && carriedObject ? maxSizeOf(carriedObject) : null;
         parent.add(landed);
-        const finalSize = maxSizeOf(landed);
+        const finalSize = maxSizeOf(landed), own = landed.scale.x;
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
-        await flyObject(landed, hand, to, carriedSize ? carriedSize / finalSize : 1, 1);
+        await flyObject(landed, hand, to, own * (carriedSize ? carriedSize / finalSize : 1), own);
         if (parent === site.group) temps.push(landed);
       } else if (typeof setCarriedObject === 'function') {
         setCarriedObject(null);

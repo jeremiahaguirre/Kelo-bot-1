@@ -4,12 +4,19 @@
 // he carries new things over and puts them away, and before digging or practising a hobby he
 // stops by to grab the tool he needs.
 
-const STOREHOUSE = { x: 5.5, z: -6.5, w: 5.2, d: 3.6, wallH: 2.6 };
+// Modelled in its own units (STOREHOUSE_MODEL) and scaled up to real size: a doorway about 2.1 m high,
+// walls about 2.6 m. x, z, w, d and wallH are in world units. Everything inside (shelf slots, the
+// stairwell, the basements, his walk) is in the model's units, so it all scales with the group;
+// the things on the shelves are shown at their own size (shelfHolderFor).
+const STOREHOUSE_SCALE = 1.6;
+const STOREHOUSE_MODEL = { w: 5.2, d: 3.6, wallH: 2.6 };
+const STOREHOUSE = { x: 7.6, z: -8.4, w: 5.2 * STOREHOUSE_SCALE, d: 3.6 * STOREHOUSE_SCALE, wallH: 2.6 * STOREHOUSE_SCALE };
 const SHELF_SLOT = 0.68;
 const ITEM_FIT = 0.62; // the most an item can measure and still fit on a shelf
 // The stairwell down to the basements, in the middle of the floor (local to the Storehouse).
 // The spiral stairs themselves and the rooms below are built in js/basements.js while he uses them.
 const STOREHOUSE_HATCH_LOCAL = { x: 0, z: 0.55 };
+const STOREHOUSE_OUTSIDE_Z = 2.75; // where he waits at the doorway (model units, in front of the open front)
 const STAIRWELL_R = 0.8;          // the round shaft in each floor the glass elevator rides through
 const BASEMENT_LEVEL_DEPTH = 3.4; // floor to floor, tall enough for him to stand up in
 
@@ -38,10 +45,11 @@ function storedItems() {
     }
 
 function buildStorehouse3D() {
-      const { x: cx, z: cz, w, d, wallH } = STOREHOUSE;
+      const { x: cx, z: cz } = STOREHOUSE, { w, d, wallH } = STOREHOUSE_MODEL, S = STOREHOUSE_SCALE;
       const gy = getAnalyticalGroundHeight(cx, cz);
       storehouseGroup = new THREE.Group();
       storehouseGroup.position.set(cx, gy, cz);
+      storehouseGroup.scale.setScalar(S);
 
       const barnRed = new THREE.MeshStandardMaterial({ color: 0xa63d2a, roughness: 0.85 });
       const trim = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.7 });
@@ -90,7 +98,7 @@ function buildStorehouse3D() {
 
       // Shelving: one long rack on the back wall and one on each side wall, three shelves high
       shelfSlots = [];
-      const levels = [0.35, 1.05, 1.75];
+      const levels = [0.3, 0.85, 1.4]; // (about 0.3, 0.85 and 1.4 m up: the top one at his reach)
       const addRack = (x0, z0, along, length, faceRotY) => {
         const slots = Math.floor(length / SHELF_SLOT);
         levels.forEach(y => {
@@ -104,8 +112,8 @@ function buildStorehouse3D() {
           }
         });
         [-length / 2, length / 2].forEach(end => {
-          const post = new THREE.Mesh(new THREE.BoxGeometry(0.07, 2.0, 0.07), shelfWood);
-          post.position.set(along === 'x' ? x0 + end : x0, 1.0, along === 'x' ? z0 : z0 + end);
+          const post = new THREE.Mesh(new THREE.BoxGeometry(0.07, 1.6, 0.07), shelfWood);
+          post.position.set(along === 'x' ? x0 + end : x0, 0.8, along === 'x' ? z0 : z0 + end);
           storehouseGroup.add(post);
         });
       };
@@ -142,11 +150,11 @@ function buildStorehouse3D() {
       // Static parts joined per material (the shelves' contents, the roof, the hatch and the sign stay apart)
       if (typeof bldFinish === 'function') bldFinish(storehouseGroup, () => [shelfItemsGroup, overflowGroup, roof, hatch, sign]);
       // Its walls (going in and out is the indoor trip's job, js/basements.js); he waits at the doorway
-      addObstacle(obstacleBox(cx, cz, w / 2 + 0.08, d / 2 + 0.08, { placeR: 3.0, building: 'storehouse', door: { x: cx - 0.75, z: cz + 3.7 } }));
+      addObstacle(obstacleBox(cx, cz, (w / 2 + 0.08) * S, (d / 2 + 0.08) * S, { placeR: 3.0 * S, building: 'storehouse', door: { x: cx - 0.75 * S, z: cz + STOREHOUSE_OUTSIDE_Z * S } }));
       renderStorehouseShelves3D();
       if (typeof perfWatchBuilding === 'function') {
         perfWatchBuilding({
-          key: 'storehouse', radius: 4,
+          key: 'storehouse', radius: 4 * S,
           center: () => storehouseGroup.position.clone().setY(storehouseGroup.position.y + 1.2),
           forced: storehouseInUse,
           show: showStorehouseModels, tick: storehouseModelsTick
@@ -247,7 +255,7 @@ function renderStorehouseShelves3D() {
         const held = keep.get(`${i}:${item.name}`);
         if (held) { shelfItemsGroup.add(held); return; }
         const slot = shelfSlots[i];
-        spots.push({ x: slot.x, y: slot.y, z: slot.z, w: 0.34, h: 0.3, d: 0.3, rotY: slot.rotY, color: perfColorFor(item.name), index: i });
+        spots.push({ x: slot.x, y: slot.y, z: slot.z, w: 0.34 / STOREHOUSE_SCALE, h: 0.3 / STOREHOUSE_SCALE, d: 0.3 / STOREHOUSE_SCALE, rotY: slot.rotY, color: perfColorFor(item.name), index: i });
         if (shelfModelsWanted) shelfBuildQueue.push({ name: item.name, index: i, spot: spots.length - 1 });
       });
       if (spots.length) {
@@ -258,7 +266,7 @@ function renderStorehouseShelves3D() {
       const levels = storehouseBasementLevels();
       if (levels > 0) {
         const sign = makeSignMesh(levels === 1 ? 'BASEMENT B1' : `BASEMENTS B1-B${levels}`, { bg: '#1e293b', fg: '#fbbf24', width: 1.3, height: 0.24 });
-        sign.position.set(0, 2.3, -STOREHOUSE.d / 2 + 0.1);
+        sign.position.set(0, 2.3, -STOREHOUSE_MODEL.d / 2 + 0.1);
         overflowGroup.add(sign);
       }
       // While he is in there putting things away, they appear on the shelf straight away
@@ -337,7 +345,7 @@ function storehouseSlotFor(index) {
       const slot = shelfSlots[index % shelfSlots.length];
       return {
         level: Math.floor(index / shelfSlots.length), slot,
-        stand: { x: slot.x + Math.sin(slot.rotY) * 0.72, z: slot.z + Math.cos(slot.rotY) * 0.72 }
+        stand: { x: slot.x + Math.sin(slot.rotY) * 0.6, z: slot.z + Math.cos(slot.rotY) * 0.6 }
       };
     }
 
@@ -346,6 +354,7 @@ function shelfHolderFor(name, slot) {
       const holder = new THREE.Group();
       holder.add(fitOnShelf(buildItemModel3D(name, { label: false })));
       holder.position.set(slot.x, slot.y, slot.z);
+      holder.scale.setScalar(1 / STOREHOUSE_SCALE); // (the building is scaled up; the thing keeps its own size)
       holder.rotation.y = slot.rotY;
       holder.userData.itemName = name;
       return holder;

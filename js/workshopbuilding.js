@@ -298,6 +298,68 @@ function wsWallWithOpenings(parent, axis, fixed, a, b, h, thick, mat, openings, 
       });
     }
 
+// --- Exterior finish shared by the Workshop and the hangar ------------------------------------------
+// The town buildings' level of detail (js/materials.js kit) on a steel shed: cladding panel joints on
+// the column lines, a drip flashing over the plinth, box gutters on both eaves with downspouts that
+// stand on splash blocks, rake trims up the gable ends and wall-pack lamps that light after dusk.
+// All static and opaque, so they are joined per material with the rest of the building.
+// o: { W, D, eave (wall top), rise (roof rise), trim,
+//      walls: [{ side: 'back'|'front'|'west'|'east', a, b (range along the wall), y0, flash, skip: [[a, b]] }],
+//      gutter: [x0, x1], spouts: [[x, z, nx, nz]] (on the wall face, nx/nz pointing out),
+//      rakes: [-1, 1], lamps: [[side, along, y]] }
+let wsOutdoorLamp = null;
+function wsExteriorDetail(g, o) {
+      const hx = o.W / 2, hz = o.D / 2, trim = o.trim, gut = typeof bldKit === 'function' ? bldKit().gutter : mmMat('steel');
+      const face = { back: [0, -1], front: [0, 1], west: [-1, 0], east: [1, 0] };
+      const at = (side, u, off = 0.1) => { const [nx, nz] = face[side]; return nx ? [nx * (hx + off), u] : [u, nz * (hz + off)]; };
+      // Panel joints up the column lines (a cover strip every fifth of the wall), and a drip flashing
+      (o.walls || []).forEach(w => {
+        const len = w.side === 'back' || w.side === 'front' ? o.W : o.D, half = len / 2, along = w.side === 'back' || w.side === 'front';
+        const free = u => u > w.a && u < w.b && !(w.skip || []).some(([p, q]) => u > p - 0.25 && u < q + 0.25);
+        const h = o.eave - w.y0 - 0.1;
+        for (let u = -half + len / 5; u < half - 0.5; u += len / 5) {
+          if (!free(u)) continue;
+          const [x, z] = at(w.side, u);
+          mmBox(g, along ? 0.12 : 0.05, h, along ? 0.05 : 0.12, trim, x, w.y0 + 0.05, z);
+        }
+        if (!w.flash) return;
+        // the flashing runs between the skipped spans (doors)
+        let spans = [[Math.max(-half - 0.12, w.a), Math.min(half + 0.12, w.b)]];
+        (w.skip || []).forEach(([p, q]) => { spans = spans.flatMap(([s0, s1]) => (p >= s1 || q <= s0) ? [[s0, s1]] : [[s0, p - 0.15], [q + 0.15, s1]]); });
+        spans.forEach(([s0, s1]) => {
+          if (s1 - s0 < 0.2) return;
+          const [x, z] = at(w.side, (s0 + s1) / 2);
+          mmBox(g, along ? s1 - s0 : 0.08, 0.06, along ? 0.08 : s1 - s0, trim, x, w.y0, z);
+        });
+      });
+      // Box gutters along both eaves
+      const [g0, g1] = o.gutter || [-hx - 0.4, hx + 0.4], gz = hz + 0.62;
+      [-1, 1].forEach(sz => mmBox(g, g1 - g0, 0.18, 0.2, gut, (g0 + g1) / 2, o.eave - 0.2, sz * gz));
+      // Downspouts: the pipe down the wall, a gooseneck out to the gutter, the shoe and a splash block
+      (o.spouts || []).forEach(([x, z, nx, nz]) => {
+        const px = x + nx * 0.17, pz = z + nz * 0.17, sz = Math.sign(z) || 1;
+        mmBox(g, 0.13, o.eave - 0.75, 0.13, gut, px, 0.2, pz);
+        mmRod(g, [px, o.eave - 0.58, pz], [Math.max(g0 + 0.1, Math.min(g1 - 0.1, px)), o.eave - 0.18, sz * gz], 0.065, gut);
+        mmBox(g, 0.13 + Math.abs(nx) * 0.2, 0.13, 0.13 + Math.abs(nz) * 0.2, gut, px + nx * 0.1, 0.1, pz + nz * 0.1);
+        mmBox(g, nx ? 0.6 : 0.34, 0.06, nz ? 0.6 : 0.34, 'concrete', px + nx * 0.45, -0.02, pz + nz * 0.45);
+        [1.2, o.eave * 0.5, o.eave - 1.0].forEach(y => mmBox(g, 0.16, 0.05, 0.16, gut, px - nx * 0.06, y, pz - nz * 0.06));
+      });
+      // Rake trims up the gable ends
+      const pitch = Math.atan2(o.rise, hz + 0.5), rl = Math.hypot(hz + 0.5, o.rise);
+      (o.rakes || [-1, 1]).forEach(sx => [-1, 1].forEach(sz => mmBox(g, 0.08, 0.24, rl, trim, sx * (hx + 0.42), o.eave + o.rise / 2 - 0.02, sz * (hz + 0.5) / 2, { centre: true, rx: sz * pitch })));
+      // Wall-pack lamps (one shared glowing lens material, lit after dusk by wsUpdateLighting)
+      if (!wsOutdoorLamp) {
+        wsOutdoorLamp = mmGlow('window');
+        wsOutdoorLamp.emissive.setHex(0xfff4d6);
+        wsLights.push({ mesh: { material: wsOutdoorLamp }, outdoor: true });
+      }
+      (o.lamps || []).forEach(([side, u, y]) => {
+        const [nx, nz] = face[side], [x, z] = at(side, u, 0.24);
+        mmBox(g, nx ? 0.25 : 0.4, 0.22, nx ? 0.4 : 0.25, 'dark', x, y, z);
+        mmBox(g, nx ? 0.18 : 0.32, 0.03, nx ? 0.32 : 0.18, wsOutdoorLamp, x + nx * 0.02, y - 0.02, z + nz * 0.02);
+      });
+    }
+
 // --- The building ---------------------------------------------------------------------------------------
 function buildWorkshop3D() {
       if (wsGroup || typeof scene === 'undefined' || !scene) return;
@@ -456,6 +518,13 @@ function buildWorkshop3D() {
       });
       [[-hx, -hz], [hx, -hz], [-hx, hz], [hx, hz]].forEach(([x, z]) => mmBox(wsGroup, 0.14, WS_EAVE, 0.14, trim, x + Math.sign(x) * 0.1, 0, z + Math.sign(z) * 0.1));
 
+      // (the front fades during a trip, the north wing covers the back below 5.8 and the hangar the
+      // west wall north of z -0.9, so those parts stay plain)
+      wsExteriorDetail(wsGroup, { W, D, eave: WS_EAVE, rise: 1.1, trim,
+        walls: [{ side: 'east', a: -hz, b: hz, y0: 0.9, flash: true }, { side: 'west', a: -0.9, b: hz, y0: 0.9, flash: true, skip: [[-1.0, 2.0]] },
+          { side: 'back', a: -hx, b: hx, y0: 5.8 }],
+        spouts: [[hx, hz - 0.45, 1, 0], [-hx, hz - 0.45, -1, 0], [hx, -hz + 0.45, 1, 0]],
+        lamps: [['east', -4.6, 5.4], ['east', 4.5, 5.4], ['west', 0.5, 5.4]] });
       // Roof: a low-pitch gable along x with standing seams and a ridge vent, see-through with
       // the "Roofs: Cutaway" switch (and during a trip)
       const roofMat = new THREE.MeshStandardMaterial({ color: 0x8b98a6, roughness: 0.55, metalness: 0.5, transparent: true, opacity: state.roofCutaway ? 0.18 : 0.95, side: THREE.DoubleSide });
@@ -937,6 +1006,14 @@ function buildWorkshopHangar3D() {
       const sign = makeSignMesh('HANGAR & ASSEMBLY', { bg: '#1e3a5f', fg: '#f8fafc', width: 6.4, height: 0.8 });
       sign.position.set(0, H.h - 0.75, hz + 0.1);
       g.add(sign);
+      // Outside: panel joints, flashing, gutters, downspouts, a rake trim and lamps (the east wall
+      // stands against the Workshop and its north wing, so it stays plain)
+      wsExteriorDetail(g, { W: H.w, D: H.d, eave: H.h, rise: 1.0, trim: navy,
+        walls: [{ side: 'west', a: -hz, b: hz, y0: 0.35, flash: true }, { side: 'back', a: -hx, b: hx, y0: 0.35, flash: true },
+          { side: 'front', a: -hx, b: hx, y0: 0.35, flash: true, skip: [[-H.door.w / 2, H.door.w / 2]] }],
+        gutter: [-hx - 0.4, hx + 0.2], rakes: [-1],
+        spouts: [[-hx, hz - 0.45, -1, 0], [-hx + 0.45, -hz, 0, -1], [hx - 0.45, -hz, 0, -1]],
+        lamps: [['west', -3, 5], ['west', 3, 5], ['back', -5, 5], ['back', 5, 5]] });
       // Roof (see-through with the cutaway switch), trusses, the bridge crane
       const roofMat = new THREE.MeshStandardMaterial({ color: 0x8b98a6, roughness: 0.55, metalness: 0.5, transparent: true, opacity: state.roofCutaway ? 0.18 : 0.95, side: THREE.DoubleSide });
       const pitch = Math.atan2(1.0, hz);
@@ -1004,6 +1081,9 @@ function buildWorkshopHangar3D() {
       const b2 = WORKSHOP_HANGAR_BAYS.find(b => b.key === 'build2');
       [-1.6, 1.6].forEach(x => { mmBox(g, 0.12, 0.06, 1.0, 'wood', b2.x + x, 0.8, b2.z - 0.2); [-0.4, 0.4].forEach(dz => mmBox(g, 0.3, 0.75, 0.05, 'wood', b2.x + x, 0.1, b2.z - 0.2 + dz)); });
       if (typeof dressBuilding === 'function') dressBuilding(g, [[roofMat, 'metalroof', 1.2], [plinth, 'stone', 2]]);
+      // Its many small fixed parts (trusses, markings, trims, carts) join per material now, the way the
+      // Workshop's do (mergeStaticMeshes below leaves the shared-geometry parts alone)
+      wsMergeStatic(g, new Set(typeof cutawayRoofMeshes !== 'undefined' ? cutawayRoofMeshes : []), [crane]);
       scene.add(g);
       // Its static walls, trusses, markings and carts draw as one mesh per material (js/perf.js); the
       // crane and hook (userData), the see-through roof and the light fixtures stay separate

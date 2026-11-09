@@ -420,12 +420,12 @@ function applySkyForHour(hour, dayOfYear) {
       } else {
         s.lightDir.copy(MOON_DIR);
         sunLight.color.setRGB(0.55, 0.65, 0.95);
-        sunLight.intensity = 0.28 * s.night;
+        sunLight.intensity = 0.36 * s.night; // moonlight: enough to read the shapes of the valley
       }
       // Sky light from above and bounce from the grass below (the HDR environment does most of this)
       hemiLight.color.setRGB(0.55, 0.68, 0.9);
       hemiLight.groundColor.setRGB(0.22, 0.2, 0.14);
-      hemiLight.intensity = 0.02 + 0.12 * s.day + 0.02 * s.night;
+      hemiLight.intensity = 0.02 + 0.12 * s.day + 0.035 * s.night;
       // Exposure: the eye adapts a little to the dark
       renderer.toneMappingExposure = 0.6 + 0.5 * s.night + 0.1 * s.dusk;
 

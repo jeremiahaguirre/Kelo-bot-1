@@ -1968,6 +1968,18 @@ function camEase(perFrame, dt) {
       return 1 - Math.pow(1 - perFrame, Math.max(0, Math.min(0.25, dt || 1 / 60)) * 60);
     }
 
+const keloToolWordsCache = { a: null, b: null, c: null, mining: false, welding: false };
+function keloToolWords() {
+      const w = keloToolWordsCache, a = state.moodTitle, b = state.speechBubble, c = state.customPlaceName || '';
+      if (a !== w.a || b !== w.b || c !== w.c) {
+        w.a = a; w.b = b; w.c = c;
+        const text = `${a} ${b} ${c}`.toLowerCase();
+        w.mining = /drill|gold|\bmine\b|\bmining|\bdig|auger|\bores?\b|quarry|excavat|mycelium/i.test(text);
+        w.welding = /weld|forge|titanium|track|rail|sculpt|arch|spire/i.test(text);
+      }
+      return w;
+    }
+
 function animateDiorama() {
       requestAnimationFrame(animateDiorama);
       const t = clock.getElapsedTime();
@@ -2020,9 +2032,10 @@ function animateDiorama() {
       const dt = beginKeloPose(t);
 
       // Determine which 3D hand tool Kelo-1 is actively holding
-      const textContext = `${state.moodTitle} ${state.speechBubble} ${state.customPlaceName || ''}`.toLowerCase();
-      const isMiningOrDrilling = state.microPose === 'digging' || state.currentLocKey === 'mountain_peak' || /drill|gold|\bmine\b|\bmining|\bdig|auger|\bores?\b|quarry|excavat|mycelium/i.test(textContext);
-      const isWeldingOrBuilding = state.currentLocKey === 'weld' || Boolean(state.proceduralMotion?.sparkBurst) || /weld|forge|titanium|track|rail|sculpt|arch|spire/i.test(textContext);
+      // (the text tests run only when the words change, not every frame)
+      const toolWords = keloToolWords();
+      const isMiningOrDrilling = state.microPose === 'digging' || state.currentLocKey === 'mountain_peak' || toolWords.mining;
+      const isWeldingOrBuilding = state.currentLocKey === 'weld' || Boolean(state.proceduralMotion?.sparkBurst) || toolWords.welding;
 
       if (keloDrillToolGroup && keloWeldTorchGroup) {
         // A carried tool (shovel, jackhammer...) replaces the built-in drill arm

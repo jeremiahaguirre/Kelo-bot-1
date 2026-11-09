@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-08T22:15:40.170Z",
-  "runs": 13,
+  "updatedAt": "2026-11-09T06:51:48.716Z",
+  "runs": 14,
   "curiosities": [
-    "Bioluminescence"
+    "Abundance (ecology)"
   ],
   "entries": [
     {
@@ -455,6 +455,43 @@
       },
       "shapeFrom": "Shavkat Mirziyoyev",
       "nextCuriosity": "5th ECO Summit",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794207108716",
+      "at": 1794207108716,
+      "brain": "procedural",
+      "topic": "Bioluminescence",
+      "title": "Dreaming of Bioindicator",
+      "text": "Dear Diary, while nobody was around I looked up \"Bioluminescence\" and drifted from Bioluminescence to Antibiosis to Bioindicator. A bioindicator is any species or group of species whose function, population, or status can reveal the qualitative status of the environment. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Bioluminescence",
+          "url": "https://en.wikipedia.org/wiki/Bioluminescence",
+          "extract": "Bioluminescence is the production of light by an organism as the result of a chemiluminescence reaction. It occurs in a wide variety of organisms, including marine vertebrates and invertebrates, terrestrial arthropods such as fireflies, some fungi, and microorganisms such as some"
+        },
+        {
+          "title": "Antibiosis",
+          "url": "https://en.wikipedia.org/wiki/Antibiosis",
+          "extract": "Antibiosis, also referred to as antagonism, a process of biological interaction between two or more organisms that is detrimental to at least one of them; it can also be an antagonistic association between an organism and the metabolic substances produced by another. Antibiosis c"
+        },
+        {
+          "title": "Bioindicator",
+          "url": "https://en.wikipedia.org/wiki/Bioindicator",
+          "extract": "A bioindicator is any species or group of species whose function, population, or status can reveal the qualitative status of the environment. The most common indicator species are animals. For example, copepods and other small water crustaceans that are present in many water bodi"
+        }
+      ],
+      "concept": {
+        "name": "Bioluminescence Bioindicator Principle",
+        "emoji": "🧩",
+        "definition": "The idea that bioluminescence and bioindicator share a hidden pattern.",
+        "builtFrom": [
+          "Bioluminescence",
+          "Bioindicator"
+        ]
+      },
+      "shapeFrom": "Bioindicator",
+      "nextCuriosity": "Abundance (ecology)",
       "coreMemory": null
     }
   ]

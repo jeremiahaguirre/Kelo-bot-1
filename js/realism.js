@@ -1187,8 +1187,27 @@ function grassGroundColour(x, z, out) {
       return out.setRGB(col.getX(i), col.getY(i), col.getZ(i));
     }
 
+// Floors and paving the grass must stay under: the buildings' footprints (the same list the map
+// draws, so a building added there is covered), the Workshop's pad, lane and hangar with its apron,
+// the plant's yard. Obstacles, the vehicle yard, the pads and his roads are checked as well.
+function grassFloorRects() {
+      const out = [];
+      if (typeof minimapBuildings === 'function') minimapBuildings().forEach(b => out.push({ minX: b.x - b.w / 2, maxX: b.x + b.w / 2, minZ: b.z - b.d / 2, maxZ: b.z + b.d / 2 }));
+      if (typeof WORKSHOP_LAND !== 'undefined') [WORKSHOP_LAND.pad, WORKSHOP_LAND.lane, WORKSHOP_LAND.hangar].forEach(r => r && out.push(r));
+      if (typeof aggregatePlantSite === 'function') {
+        const S = aggregatePlantSite();
+        out.push({ minX: S.x - S.w / 2, maxX: S.x + S.w / 2, minZ: S.z - S.d / 2, maxZ: S.z + S.d / 2 });
+      }
+      return out;
+    }
+
 function grassBlockedAt(x, z) {
       if (typeof inParkingArea === 'function' && inParkingArea(x, z, 0.3)) return true;
+      const floors = grassState.floors || [];
+      for (let i = 0; i < floors.length; i++) {
+        const r = floors[i];
+        if (x > r.minX - 0.3 && x < r.maxX + 0.3 && z > r.minZ - 0.3 && z < r.maxZ + 0.3) return true;
+      }
       const near = grassState.near;
       for (let i = 0; i < near.length; i++) {
         const o = near[i];
@@ -1198,7 +1217,7 @@ function grassBlockedAt(x, z) {
         } else if (o.road) {
           const ax = o.x, az = o.z, bx = o.toX - ax, bz = o.toZ - az, L = bx * bx + bz * bz || 1;
           const u = Math.max(0, Math.min(1, ((x - ax) * bx + (z - az) * bz) / L));
-          if (Math.hypot(x - ax - bx * u, z - az - bz * u) < 1.3) return true;
+          if (Math.hypot(x - ax - bx * u, z - az - bz * u) < (o.hw || 1.3)) return true;
         } else if ((x - o.x) * (x - o.x) + (z - o.z) * (z - o.z) < o.r * o.r * 0.5) return true;
       }
       return false;
@@ -1231,7 +1250,7 @@ function updateGrassTufts() {
       const far = cam.y - getAnalyticalGroundHeight(cam.x, cam.z) > 45;
       grassTufts.visible = !far;
       const col = terrainGroundMesh.geometry.attributes.color;
-      const key = `${R}|${col.version}|${typeof seasonApplied !== 'undefined' ? seasonApplied : ''}|${typeof obstacleVersion !== 'undefined' ? obstacleVersion : 0}|${(state.worldEdits || []).length}`;
+      const key = `${R}|${col.version}|${typeof seasonApplied !== 'undefined' ? seasonApplied : ''}|${typeof obstacleVersion !== 'undefined' ? obstacleVersion : 0}|${(state.worldEdits || []).length}|${(state.concretePours || []).length}`;
       const moved = Math.hypot(tg.x - grassState.x, tg.z - grassState.z) >= R * 0.14;
       // Ground that keeps changing (a fill or a dig being animated) re-lays the grass at most every 1.5 s
       const now = performance.now();
@@ -1239,8 +1258,11 @@ function updateGrassTufts() {
       grassState.x = tg.x; grassState.z = tg.z; grassState.key = key; grassState.at = now;
       const cx = Math.round(tg.x / cell), cz = Math.round(tg.z / cell);
       grassState.near = [];
+      grassState.floors = grassFloorRects().filter(r => r.maxX > tg.x - R - 1 && r.minX < tg.x + R + 1 && r.maxZ > tg.z - R - 1 && r.minZ < tg.z + R + 1);
       (typeof worldObstacles !== 'undefined' ? worldObstacles : []).forEach(o => { if (Math.hypot(o.x - tg.x, o.z - tg.z) < R + (o.r || 1) + 1) grassState.near.push(o); });
       (state.worldEdits || []).forEach(e => { if (e.type === 'road' && Number.isFinite(e.toX)) grassState.near.push({ road: true, x: e.x, z: e.z, toX: e.toX, toZ: e.toZ }); });
+      // His concrete paths and pads (js/plants.js)
+      (state.concretePours || []).forEach(p => { if (Number.isFinite(p.toX)) grassState.near.push({ road: true, x: p.x, z: p.z, toX: p.toX, toZ: p.toZ, hw: (p.w || 1.2) / 2 + 0.3 }); });
       const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), c = new THREE.Color();
       let k = 0;
       for (let j = -n; j <= n; j++) {

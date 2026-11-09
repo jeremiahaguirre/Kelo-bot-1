@@ -1070,6 +1070,22 @@ function buildCafe3D() {
       const umbrellaPole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.1, 6), tableLeg.material);
       umbrellaPole.position.set(-1.3, 1.3, 2.5);
       cafe.add(walls, roof, awning, door, shopWindow, sign, cup, coffee, handle, table, tableLeg, umbrella, umbrellaPole);
+      // Details at the house's level (js/materials.js kit): base, corner boards, framed shop window and
+      // side windows, a door casing with a handle and step, eaves with gutters, lamps and a planter
+      if (typeof bldKit === 'function') {
+        const K = bldKit();
+        bldBase(cafe, 3.8, 2.8, 2.4);
+        const front = bldFace(cafe, 'front', 3.8, 2.8);
+        bldWindow(front, -0.7, 1.05, 1.6, 0.9, { noGlass: true, frame: K.darkTrim });
+        bldDoor(front, 0.9, 0.8, 1.4, { frame: K.darkTrim });
+        bldLamp(front, 1.55, 1.75);
+        bldPlanter(front, -0.7, 1.5);
+        ['left', 'right'].forEach(side => { const f = bldFace(cafe, side, 3.8, 2.8); bldWindow(f, 0, 1.3, 0.9, 0.75); bldLamp(f, 0.95, 1.9); });
+        const back = bldFace(cafe, 'back', 3.8, 2.8);
+        bldWindow(back, 0.8, 1.35, 0.7, 0.6);
+        bldEaves(cafe, 3.8, 2.8, 2.52, { overhang: 0.15, fascia: K.darkTrim, fasciaH: 0.28 });
+        bldFinish(cafe, [sign]);
+      }
       // Stucco walls, a steel roof and a wooden door (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(cafe, [[walls.material, 'plaster', 2], [roof.material, 'metalroof', 2], [door.material, 'paintedwood']]);
       scene.add(cafe);
@@ -1106,6 +1122,26 @@ function buildNetNode3D() {
       const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), new THREE.MeshBasicMaterial({ color: 0xf43f5e }));
       beacon.position.set(-1.4, 3.92, -0.6);
       net.add(body, glass, sign, dish, antenna, beacon);
+      if (typeof bldKit === 'function') {
+        const K = bldKit();
+        bldBase(net, 4.2, 3.0, 2.5, { corners: false, footMat: K.concrete });
+        // A dark aluminium storefront: frame, mullions and a door with pull handles in the glass
+        const front = bldFace(net, 'front', 4.2, 3.0);
+        bldWindow(front, 0, 1.25, 3.4, 1.3, { noGlass: true, frame: K.darkMetal, mullions: false, sill: false });
+        [-0.85, 0.85].forEach(x => bldBox(front, 0.05, 1.3, 0.06, K.darkMetal, x, 1.25, 0.05));
+        [1.32, 1.48].forEach(x => bldBox(front, 0.03, 0.42, 0.05, K.gutter, x, 1.0, 0.1));
+        bldBox(front, 4.0, 0.12, 0.3, K.concrete, 0, 0.06, 0.15);
+        [-1.9, 1.9].forEach(x => bldLamp(front, x, 1.95));
+        ['left', 'right', 'back'].forEach(side => { const f = bldFace(net, side, 4.2, 3.0); bldWindow(f, 0, 1.45, side === 'back' ? 1.4 : 1.0, 0.5, { frame: K.darkMetal, sill: false }); });
+        // Parapet coping round the flat roof and a rooftop air unit
+        bldEaves(net, 4.2, 3.0, 2.54, { overhang: 0.04, fascia: K.darkMetal, fasciaH: 0.1, gutters: false });
+        bldBox(net, 0.9, 0.5, 0.7, K.gutter, -0.2, 2.75, -0.7);
+        bldBox(net, 0.6, 0.04, 0.6, K.darkMetal, -0.2, 3.01, -0.7);
+        const downspout = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.4, 8), K.darkMetal);
+        downspout.position.set(-2.12, 1.2, -1.4);
+        net.add(downspout);
+        bldFinish(net, [sign]);
+      }
       // Modern metal wall panels (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(net, [[body.material, 'cladding', 2.5]]);
       scene.add(net);
@@ -1166,6 +1202,20 @@ function buildPostOffice3D() {
       mailbox.position.set(-1.9, 0, 2.1);
 
       po.add(body, roof, cornice, door, step, sign, pole, flag, mailbox);
+      if (typeof bldKit === 'function') {
+        const K = bldKit();
+        bldBase(po, 4.2, 3.2, 2.6, { footMat: K.stone, footH: 0.3, cornerMat: trim });
+        const front = bldFace(po, 'front', 4.2, 3.2);
+        [-1.35, 1.35].forEach(x => bldWindow(front, x, 1.5, 0.8, 0.7, { noGlass: true, frame: trim, sillMat: K.stone }));
+        bldDoor(front, 0, 0.9, 1.5, { frame: trim, step: false, doorDepth: 0.08 });
+        bldWindow(front, 0, 1.78, 0.8, 0.22, { frame: trim, sill: false, mullions: false }); // transom
+        [-0.75, 0.75].forEach(x => bldLamp(front, x, 1.95));
+        ['left', 'right'].forEach(side => { const f = bldFace(po, side, 4.2, 3.2); [-0.7, 0.7].forEach(x => bldWindow(f, x, 1.45, 0.7, 0.8, { frame: trim, sillMat: K.stone })); });
+        const back = bldFace(po, 'back', 4.2, 3.2);
+        bldWindow(back, 0, 1.45, 0.8, 0.8, { frame: trim, sillMat: K.stone });
+        bldEaves(po, 4.2, 3.2, 2.5, { overhang: 0.1, fascia: trim, fasciaH: 0.1, downspouts: true });
+        bldFinish(po, [sign, flag, mailbox]);
+      }
       // Real brick, slate shingles and painted trim (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(po, [[brick, 'brick', 1.2], [slate, 'shingles', 1.4], [trim, 'paintedwood']]);
       scene.add(po);

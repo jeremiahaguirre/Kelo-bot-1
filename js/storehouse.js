@@ -113,13 +113,34 @@ function buildStorehouse3D() {
       addRack(-w / 2 + 0.35, -0.15, 'z', d - 1.3, Math.PI / 2);
       addRack(w / 2 - 0.35, -0.15, 'z', d - 1.3, -Math.PI / 2);
 
-      storehouseGroup.add(buildBasementHatch(STOREHOUSE_HATCH_LOCAL, 0.15, Math.PI));
+      // Details at the house's level (js/materials.js kit): a stone base, corner boards, a barn-door
+      // track with its hangers, a lamp over the doorway, fascia and gutters, side windows
+      if (typeof bldKit === 'function') {
+        const K = bldKit();
+        bldBase(storehouseGroup, w, d, wallH, { footMat: K.stone, cornerMat: trim });
+        const front = bldFace(storehouseGroup, 'front', w, d);
+        bldBox(front, w - 0.2, 0.08, 0.06, K.darkMetal, 0, wallH - 0.55, 0.14);
+        [-1, 1].forEach(sx => {
+          const x = sx * (1.3 + frontPieceW / 2 - 0.05);
+          bldBox(front, frontPieceW - 0.1, 0.1, 0.06, trim, x, wallH - 0.72, 0.1);
+          bldBox(front, frontPieceW - 0.1, 0.1, 0.06, trim, x, 0.12, 0.1);
+          bldBox(front, 0.06, 0.06, 0.12, K.darkMetal, x - sx * (frontPieceW / 2 - 0.25), wallH - 0.5, 0.17);
+        });
+        bldLamp(front, 0, wallH - 0.85);
+        bldBox(front, 2.6, 0.06, 0.08, trim, 0, 0.04, 0.02); // threshold
+        ['left', 'right'].forEach(side => { const f = bldFace(storehouseGroup, side, w, d); bldWindow(f, 0, 2.05, 0.7, 0.45, { frame: trim }); });
+        bldEaves(storehouseGroup, w, d, wallH - 0.05, { overhang: 0.22, fascia: trim, fasciaH: 0.12, gutterSides: [1, -1] });
+      }
+      const hatch = buildBasementHatch(STOREHOUSE_HATCH_LOCAL, 0.15, Math.PI);
+      storehouseGroup.add(hatch);
       shelfItemsGroup = new THREE.Group();
       overflowGroup = new THREE.Group();
       storehouseGroup.add(shelfItemsGroup, overflowGroup);
       // Real board siding, painted trim and a steel roof (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(storehouseGroup, [[barnRed, 'siding', 2], [trim, 'paintedwood'], [roofMat, 'metalroof', 2], [woodFloor, 'wood']]);
       scene.add(storehouseGroup);
+      // Static parts joined per material (the shelves' contents, the roof, the hatch and the sign stay apart)
+      if (typeof bldFinish === 'function') bldFinish(storehouseGroup, () => [shelfItemsGroup, overflowGroup, roof, hatch, sign]);
       // Its walls (going in and out is the indoor trip's job, js/basements.js); he waits at the doorway
       addObstacle(obstacleBox(cx, cz, w / 2 + 0.08, d / 2 + 0.08, { placeR: 3.0, building: 'storehouse', door: { x: cx - 0.75, z: cz + 3.7 } }));
       renderStorehouseShelves3D();

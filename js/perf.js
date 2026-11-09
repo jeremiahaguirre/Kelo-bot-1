@@ -229,7 +229,7 @@ function perfListLimit(id, step) {
 // The "Show more" button under a long list: data-perf-more="<list id>" adds another step
 function perfMoreButton(id, shown, total, step) {
       if (total <= shown) return '';
-      return `<button type="button" data-perf-more="${id}" data-perf-step="${step}" class="w-full mt-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-semibold">Show more (${total - shown} more)</button>`;
+      return `<button type="button" data-perf-more="${id}" data-perf-step="${step}" class="menu-btn w-full justify-center mt-1">Show more <span class="text-slate-500">(${total - shown} more)</span></button>`;
     }
 
 document.addEventListener('click', e => {

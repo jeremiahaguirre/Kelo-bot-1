@@ -497,19 +497,16 @@ function renderWebTastesTab() {
       if (invBadge) invBadge.textContent = `${state.inventedCreations.length} built`;
       const invEl = document.getElementById('inventedActionsContainer');
       if (invEl) {
-        perfSetHtml(invEl, state.inventedCreations.slice(0, perfListLimit('inventedActionsContainer', 24)).map((c, idx) => `
-          <div data-cx="${escapeHtml(c.x)}" data-cz="${escapeHtml(c.z)}" data-ctitle="${escapeHtml(c.title)}" class="invented-creation-card cursor-pointer p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-emerald-500/25 transition space-y-1">
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
-                <i class="ph-fill ph-cube text-emerald-400"></i>
-                <span>${escapeHtml(c.title)}</span>
-              </span>
-              <span class="text-[10px] font-mono text-slate-400">${escapeHtml(c.createdTime)}</span>
-            </div>
-            <div class="text-[11px] text-amber-200 font-mono">${escapeHtml(c.actionVerb)}</div>
-            <p class="text-[11px] text-slate-300 font-serif italic">"${escapeHtml(c.philosophy)}"</p>
-          </div>
-        `).join('') + perfMoreButton('inventedActionsContainer', perfListLimit('inventedActionsContainer', 24), state.inventedCreations.length, 24));
+        perfSetHtml(invEl, state.inventedCreations.slice(0, perfListLimit('inventedActionsContainer', 8)).map((c, idx) => `
+          <button type="button" data-cx="${escapeHtml(c.x)}" data-cz="${escapeHtml(c.z)}" data-ctitle="${escapeHtml(c.title)}" class="invented-creation-card brain-card w-full text-left hover:border-emerald-500/50 transition space-y-1" aria-label="Go back to ${escapeHtml(c.title)}">
+            <span class="flex items-center justify-between gap-2">
+              <span class="brain-card-title text-emerald-300 truncate">${escapeHtml(c.title)}</span>
+              <span class="brain-card-meta shrink-0">${escapeHtml(c.createdTime)}</span>
+            </span>
+            ${c.actionVerb ? `<span class="block text-[11px] text-amber-200">${escapeHtml(c.actionVerb)}</span>` : ''}
+            ${c.philosophy ? `<span class="block text-[12px] text-slate-300 font-serif italic">"${escapeHtml(c.philosophy)}"</span>` : ''}
+          </button>
+        `).join('') + perfMoreButton('inventedActionsContainer', perfListLimit('inventedActionsContainer', 8), state.inventedCreations.length, 8));
 
         invEl.querySelectorAll('.invented-creation-card').forEach(card => {
           card.onclick = () => {

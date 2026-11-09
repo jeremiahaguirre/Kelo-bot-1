@@ -246,7 +246,7 @@ function renderSkillsList() {
           <div class="brain-skill-lv" aria-hidden="true"><small>Lv</small>${s.level}</div>
           <div class="min-w-0 flex-1 space-y-1">
             <div class="flex items-baseline justify-between gap-2">
-              <span class="brain-card-title truncate">${escapeHtml(s.label)}</span>
+              <span class="brain-card-title truncate">${escapeHtml(String(s.label || '').replace(/^./, ch => ch.toUpperCase()))}</span>
               <span class="brain-card-meta shrink-0">${s.level >= 10 ? 'Mastered' : `${pct}% to Lv ${s.level + 1}`}</span>
             </div>
             <div class="brain-bar" role="progressbar" aria-label="${escapeHtml(s.label)}: level ${s.level}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>

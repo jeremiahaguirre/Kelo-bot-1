@@ -57,6 +57,7 @@ function wheel(radius, width, rimColor = 0x94a3b8) {
       const hub = mesh(new THREE.CylinderGeometry(radius * 0.2, radius * 0.25, width + 0.08, 10), 0x334155, { metalness: 0.8 });
       hub.rotation.x = Math.PI / 2;
       const g = group(tyre, rim, hub);
+      g.userData.wheelRadius = radius; // js/vehicles.js spins it to match the ground speed
       for (let i = 0; i < 6; i++) {
         const a = (i / 6) * Math.PI * 2;
         const nut = mesh(new THREE.CylinderGeometry(0.03, 0.03, width + 0.06, 6), 0x1f2937);
@@ -90,7 +91,7 @@ function dumpTruckModel() {
       [2.5, -1.6, -2.8].forEach(x => [-1.05, 1.05].forEach(z => b.add(at(wheel(0.62, 0.45), x, 0.62, z))));
       [-1.12, 1.12].forEach(z => {
         b.add(at(mesh(new THREE.BoxGeometry(2.7, 0.1, 0.55), dark), -2.2, 1.34, z));
-        const arch = mesh(new THREE.CylinderGeometry(0.78, 0.78, 0.5, 16, 1, true, -Math.PI / 2, Math.PI), red, { side: THREE.DoubleSide });
+        const arch = mesh(new THREE.CylinderGeometry(0.78, 0.78, 0.5, 16, 1, true, Math.PI / 2, Math.PI), red, { side: THREE.DoubleSide });
         arch.rotation.x = Math.PI / 2;
         b.add(at(arch, 2.5, 0.66, z));
       });
@@ -116,6 +117,7 @@ function dumpTruckModel() {
       steer.rotation.y = Math.PI / 2;
       steer.rotation.x = 0.5;
       b.add(at(steer, 3.05, 2.15, -0.45));
+      steer.userData.steeringWheel = true; // turns with the front wheels (js/vehicles.js)
       // Mirrors, steps, fuel tank and exhaust stack
       [-1, 1].forEach(s => {
         b.add(rod([3.3, 2.7, s * 1.25], [3.3, 2.7, s * 1.6], 0.03, dark));

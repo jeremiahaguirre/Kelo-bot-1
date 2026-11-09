@@ -813,7 +813,7 @@ function mixerTruckModel() {
       [3.0, -1.75, -2.95].forEach(x => [-1.05, 1.05].forEach(z => b.add(at(wheel(0.58, 0.44), x, 0.58, z))));
       [-1.12, 1.12].forEach(z => {
         b.add(at(mesh(new THREE.BoxGeometry(2.8, 0.1, 0.55), dark), -2.35, 1.28, z));
-        const arch = mesh(new THREE.CylinderGeometry(0.74, 0.74, 0.5, 16, 1, true, -Math.PI / 2, Math.PI), white, { side: THREE.DoubleSide });
+        const arch = mesh(new THREE.CylinderGeometry(0.74, 0.74, 0.5, 16, 1, true, Math.PI / 2, Math.PI), white, { side: THREE.DoubleSide });
         arch.rotation.x = Math.PI / 2;
         b.add(at(arch, 3.0, 0.62, z));
       });
@@ -837,6 +837,7 @@ function mixerTruckModel() {
       steer.rotation.y = Math.PI / 2;
       steer.rotation.x = 0.5;
       b.add(at(steer, 3.6, 2.1, -0.45));
+      steer.userData.steeringWheel = true; // turns with the front wheels (js/vehicles.js)
       [-1, 1].forEach(s => {
         b.add(rod([3.9, 2.6, s * 1.25], [3.9, 2.6, s * 1.6], 0.03, dark));
         b.add(at(mesh(new THREE.BoxGeometry(0.08, 0.48, 0.24), dark), 3.9, 2.5, s * 1.62));

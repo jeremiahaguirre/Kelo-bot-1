@@ -1342,7 +1342,8 @@ function takeoffRunFor(v) {
 function assemblyFrame() {
       if (!state.riding || typeof vehicleMeshes === 'undefined') return;
       const m = vehicleMeshes[state.riding];
-      if (m && m.userData.prop) m.userData.prop.rotation.x += 0.9;
+      // (js/vehicles.js spools it up and down by real time; this is the fallback)
+      if (m && m.userData.prop && typeof vehicleRideFrame !== 'function') m.userData.prop.rotation.x += 0.9;
     }
 
 // --- 6. Brain tab, AI and talking ---------------------------------------------------------------------

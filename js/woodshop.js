@@ -13,82 +13,135 @@
 // --- Models ----------------------------------------------------------------------------------------
 function tableSawModel() {
       const g = new THREE.Group();
-      mmBox(g, 0.55, 0.8, 0.55, 'yellow', 0, 0, 0);                           // cabinet
-      mmBox(g, 1.0, 0.06, 0.75, 'steel', 0, 0.8, 0);                         // cast-iron top
-      mmBox(g, 1.0, 0.04, 0.9, 'alu', 0, 0.82, -0.75);                        // outfeed table
+      mmRBox(g, 0.55, 0.76, 0.55, 'yellow', 0, 0.04, 0, { r: 0.02 });
+      mmBox(g, 0.6, 0.04, 0.6, 'dark', 0, 0, 0);
+      mmRBox(g, 0.2, 0.3, 0.06, 'yellow', 0.3, 0.2, 0.0, { r: 0.02 });
+      mmCyl(g, 0.06, 0.08, 'plasticDark', 0, 0.12, -0.3, { axis: 'z' });
+      mmRBox(g, 1.0, 0.06, 0.75, 'castIron', 0, 0.8, 0, { r: 0.008 });
+      [-0.25, 0.25].forEach(x => mmBox(g, 0.02, 0.003, 0.75, 'black', x, 0.86, 0));
+      mmBox(g, 0.06, 0.003, 0.25, 'plasticDark', 0, 0.86, 0.02);
+      mmRBox(g, 1.0, 0.04, 0.9, 'alu', 0, 0.82, -0.75, { r: 0.01 });
       [-0.45, 0.45].forEach(x => mmBox(g, 0.04, 0.8, 0.04, 'dark', x, 0, -0.75));
-      mmBox(g, 0.06, 0.08, 0.75, 'dark', 0.32, 0.86, 0);                      // rip fence
-      mmBox(g, 1.2, 0.05, 0.05, 'chrome', 0, 0.78, 0.4);                      // fence rail
+      mmBox(g, 0.06, 0.08, 0.75, 'dark', 0.32, 0.86, 0);
+      mmBox(g, 0.12, 0.1, 0.08, 'dark', 0.32, 0.84, 0.4);
+      mmBox(g, 1.2, 0.05, 0.05, 'chrome', 0, 0.78, 0.4);
+      mmBox(g, 1.2, 0.03, 0.03, 'chrome', 0, 0.8, -0.38);
+      [[0, 0.5, 0.28], [0.28, 0.5, 0]].forEach(([x, y, z], i) => {
+        const hw = mmGroup(g, x, y, z);
+        hw.rotation.y = i ? Math.PI / 2 : 0;
+        mmCyl(hw, 0.08, 0.02, 'castIron', 0, 0, 0.04, { axis: 'z' });
+        mmCyl(hw, 0.012, 0.06, 'plasticDark', 0.05, 0, 0.07, { axis: 'z' });
+      });
       const blade = mmCyl(g, 0.13, 0.008, 'chrome', 0, 0.82, 0, { axis: 'x' });
       for (let i = 0; i < 8; i++) mmBox(blade, 0.01, 0.2, 0.12, 'steel', 0, 0, 0, { rx: i * Math.PI / 8 });
-      mmBox(g, 0.006, 0.14, 0.08, 'red', 0, 0.86, -0.13);                     // riving knife
-      const guard = mmBox(g, 0.08, 0.1, 0.3, 'glass', 0, 0.9, -0.05);         // blade guard
-      mmCyl(g, 0.06, 0.06, 'red', 0.3, 0.55, 0.3, { axis: 'z' });             // switch
-      mmLabel(g, 'TABLE SAW', 0.3, 0.06, 0, 0.5, 0.28, { bg: '#ca8a04', fg: '#111827' });
+      mmBox(g, 0.006, 0.14, 0.08, 'red', 0, 0.86, -0.13);
+      const guard = mmBox(g, 0.08, 0.1, 0.3, 'glass', 0, 0.9, -0.05);
+      mmBox(g, 0.09, 0.012, 0.31, 'plasticDark', 0, 1.0, -0.05);
+      mmRBox(g, 0.12, 0.08, 0.04, 'red', 0.3, 0.72, 0.34, { r: 0.012 });
+      mmBox(g, 0.1, 0.04, 0.02, 'lampGreen', 0.3, 0.68, 0.36);
+      mmCable(g, [[0.3, 0.2, -0.28], [0.25, 0.08, -0.35], [0.1, 0.01, -0.5]], 0.008);
       return mmFinish(g, 'tablesaw', { blade, guard, plate: { y: 0.84 }, w: 1.0, d: 1.6 });
     }
 
 function jointerModel() {
       const g = new THREE.Group();
-      mmBox(g, 0.5, 0.7, 0.35, 'grey', 0, 0, 0);
-      mmBox(g, 1.4, 0.05, 0.3, 'steel', 0, 0.72, 0);
-      mmBox(g, 1.0, 0.18, 0.03, 'steel', 0.1, 0.77, -0.14);
+      mmRBox(g, 0.5, 0.66, 0.35, 'grey', 0, 0.04, 0, { r: 0.02 });
+      mmBox(g, 0.55, 0.04, 0.4, 'dark', 0, 0, 0);
+      mmRBox(g, 0.62, 0.05, 0.3, 'castIron', -0.36, 0.72, 0, { r: 0.008 });
+      mmRBox(g, 0.62, 0.05, 0.3, 'castIron', 0.36, 0.72, 0, { r: 0.008 });
+      mmRBox(g, 1.0, 0.18, 0.03, 'castIron', 0.1, 0.77, -0.14, { r: 0.008 });
       const head = mmCyl(g, 0.05, 0.28, 'chrome', 0, 0.74, 0, { axis: 'z' });
-      mmLabel(g, 'JOINTER', 0.25, 0.06, 0, 0.45, 0.176, { bg: '#374151', fg: '#fff' });
+      mmRBox(g, 0.12, 0.03, 0.2, 'red', 0.0, 0.78, 0.05, { r: 0.012 });
+      [-0.3, 0.3].forEach(x => { mmCyl(g, 0.05, 0.02, 'castIron', x, 0.55, 0.18, { axis: 'z' }); mmCyl(g, 0.01, 0.05, 'plasticDark', x + 0.03, 0.55, 0.2, { axis: 'z' }); });
+      mmRBox(g, 0.1, 0.06, 0.03, 'plasticDark', 0.18, 0.5, 0.18, { r: 0.008 });
+      mmCyl(g, 0.05, 0.08, 'plasticDark', 0, 0.3, -0.2, { axis: 'z' });
       return mmFinish(g, 'jointer', { head, plate: { y: 0.77 }, w: 1.4, d: 0.4 });
     }
 
 function planerModel() {
       const g = new THREE.Group();
-      mmBox(g, 0.6, 0.6, 0.5, 'dark', 0, 0, 0);
-      mmBox(g, 0.55, 0.35, 0.5, 'grey', 0, 0.75, 0);
-      mmBox(g, 0.5, 0.03, 1.0, 'steel', 0, 0.68, 0);
+      mmRBox(g, 0.6, 0.6, 0.5, 'dark', 0, 0, 0, { r: 0.02 });
+      mmFeet(g, 0.6, 0.5, { casters: true, inset: 0.06 });
+      mmRBox(g, 0.55, 0.35, 0.5, 'grey', 0, 0.75, 0, { r: 0.03 });
+      [-1, 1].forEach(s => mmCyl(g, 0.03, 0.4, 'chrome', s * 0.25, 0.85, 0.2));
+      mmRBox(g, 0.5, 0.03, 1.0, 'castIron', 0, 0.68, 0, { r: 0.008 });
       mmCyl(g, 0.08, 0.03, 'red', 0.32, 0.95, 0, { axis: 'x' });
+      mmCyl(g, 0.012, 0.06, 'plasticDark', 0.34, 1.0, 0.05, { axis: 'x' });
+      mmCyl(g, 0.06, 0.1, 'plasticDark', 0, 1.13, -0.15);
+      mmRBox(g, 0.1, 0.06, 0.03, 'plasticDark', -0.2, 1.0, 0.255, { r: 0.008 });
       const roller = mmCyl(g, 0.04, 0.48, 'chrome', 0, 0.72, 0, { axis: 'x' });
-      mmLabel(g, 'PLANER', 0.25, 0.06, 0, 0.8, 0.252, { bg: '#374151', fg: '#fff' });
       return mmFinish(g, 'planer', { roller, plate: { y: 0.72 }, w: 0.6, d: 1.0 });
     }
 
 function woodBandsawModel() {
       const g = new THREE.Group();
-      mmBox(g, 0.4, 0.5, 0.4, 'dark', 0, 0, 0);
-      mmBox(g, 0.12, 1.4, 0.12, 'blue', -0.15, 0.5, 0);
-      mmBox(g, 0.4, 0.12, 0.12, 'blue', 0, 1.8, 0);
-      mmCyl(g, 0.18, 0.05, 'dark', 0.02, 1.7, 0, { axis: 'z' });
-      mmCyl(g, 0.18, 0.05, 'dark', 0.02, 0.6, 0, { axis: 'z' });
-      mmBox(g, 0.45, 0.03, 0.45, 'steel', 0.05, 1.0, 0);
+      mmRBox(g, 0.4, 0.5, 0.4, 'dark', 0, 0, 0, { r: 0.02 });
+      mmRBox(g, 0.12, 1.4, 0.12, 'blue', -0.15, 0.5, 0, { r: 0.02 });
+      mmRBox(g, 0.4, 0.12, 0.12, 'blue', 0, 1.8, 0, { r: 0.02 });
+      [1.7, 0.6].forEach(y => {
+        mmCyl(g, 0.2, 0.06, 'blue', 0.02, y, 0.0, { axis: 'z' });
+        mmCyl(g, 0.18, 0.05, 'dark', 0.02, y, -0.02, { axis: 'z' });
+        mmCyl(g, 0.03, 0.02, 'plasticDark', 0.08, y + 0.1, 0.04, { axis: 'z' });
+      });
+      mmRBox(g, 0.45, 0.03, 0.45, 'castIron', 0.05, 1.0, 0, { r: 0.006 });
+      mmBox(g, 0.12, 0.08, 0.1, 'castIron', 0.05, 0.92, 0);
+      mmBox(g, 0.02, 0.4, 0.02, 'chrome', 0.12, 1.2, 0.03);
+      mmBox(g, 0.05, 0.04, 0.05, 'dark', 0.12, 1.18, 0.03);
+      mmBox(g, 0.4, 0.02, 0.02, 'chrome', 0.05, 1.0, 0.24);
+      mmCyl(g, 0.05, 0.08, 'plasticDark', -0.15, 0.4, -0.2, { axis: 'z' });
+      mmRBox(g, 0.08, 0.06, 0.03, 'plasticDark', -0.15, 1.05, 0.08, { r: 0.008 });
       const blade = mmBox(g, 0.004, 1.1, 0.01, 'chrome', 0.12, 0.6, 0.02);
       return mmFinish(g, 'woodbandsaw', { blade, w: 0.5, d: 0.5 });
     }
 
 function drillPressModel() {
       const g = new THREE.Group();
-      mmBox(g, 0.35, 0.05, 0.45, 'dark', 0, 0, 0);
+      mmRBox(g, 0.35, 0.05, 0.45, 'castIron', 0, 0, 0, { r: 0.012 });
       mmCyl(g, 0.04, 1.6, 'steel', 0, 0.8, -0.12);
-      mmBox(g, 0.3, 0.03, 0.3, 'steel', 0, 0.85, 0.05);
+      mmCyl(g, 0.06, 0.06, 'castIron', 0, 0.06, -0.12);
+      mmRBox(g, 0.3, 0.03, 0.3, 'castIron', 0, 0.85, 0.05, { r: 0.008 });
+      mmBox(g, 0.1, 0.1, 0.18, 'castIron', 0, 0.76, -0.06);
+      mmCyl(g, 0.01, 0.12, 'chrome', 0.1, 0.78, -0.08, { axis: 'x' });
       const head = mmGroup(g, 0, 1.45, 0);
-      mmBox(head, 0.22, 0.25, 0.4, 'green', 0, 0, 0);
+      mmRBox(head, 0.22, 0.25, 0.4, 'green', 0, 0, 0, { r: 0.04 });
+      mmRBox(head, 0.24, 0.1, 0.44, 'green', 0, 0.25, -0.02, { r: 0.04 });
+      mmCyl(head, 0.08, 0.2, 'green', 0, 0.12, -0.3);
+      mmCyl(head, 0.04, 0.06, 'steel', 0, -0.06, 0.08);
+      [0, 2.09, 4.19].forEach(a => mmRod(head, [0.12, 0.1, 0.05], [0.12 + Math.cos(a) * 0.01, 0.1 + Math.sin(a) * 0.14, 0.05 + Math.cos(a) * 0.12], 0.008, 'chrome'));
+      mmBox(head, 0.06, 0.04, 0.02, 'red', -0.06, 0.15, 0.2);
       const chuck = mmCyl(head, 0.03, 0.12, 'chrome', 0, -0.18, 0.08);
       return mmFinish(g, 'drillpress', { head, chuck, plate: { y: 0.88 }, w: 0.4, d: 0.5 });
     }
 
 function routerTableModel() {
       const g = new THREE.Group();
-      [-0.4, 0.4].forEach(x => [-0.22, 0.22].forEach(z => mmBox(g, 0.05, 0.85, 0.05, 'dark', x, 0, z)));
-      mmBox(g, 1.0, 0.05, 0.6, 'mdf', 0, 0.85, 0);
+      [-0.4, 0.4].forEach(x => [-0.22, 0.22].forEach(z => mmBox(g, 0.05, 0.85, 0.05, 'anthracite', x, 0, z)));
+      [-1, 1].forEach(s => mmBox(g, 0.8, 0.05, 0.03, 'anthracite', 0, 0.2, s * 0.22));
+      mmBox(g, 0.75, 0.02, 0.45, 'mdf', 0, 0.2, 0);
+      mmRBox(g, 1.0, 0.05, 0.6, 'mdf', 0, 0.85, 0, { r: 0.008 });
+      mmRBox(g, 0.3, 0.008, 0.24, 'alu', 0, 0.9, 0.02, { r: 0.006 });
       mmBox(g, 0.9, 0.12, 0.06, 'alu', 0, 0.9, -0.15);
+      mmBox(g, 0.12, 0.08, 0.08, 'plasticDark', 0, 0.94, -0.2);
+      mmBox(g, 0.9, 0.004, 0.02, 'castIron', 0, 0.9, 0.18);
+      mmCyl(g, 0.07, 0.2, 'plasticDark', 0, 0.7, 0.02);
+      mmRBox(g, 0.12, 0.08, 0.04, 'red', 0.4, 0.75, 0.25, { r: 0.012 });
       const bit = mmCyl(g, 0.02, 0.04, 'chrome', 0, 0.9, 0.0);
-      mmLabel(g, 'ROUTER TABLE', 0.35, 0.06, 0, 0.7, 0.31, { bg: '#374151', fg: '#fff' });
       return mmFinish(g, 'routertable', { bit, plate: { y: 0.9 }, w: 1.0, d: 0.6 });
     }
 
 function mitreSawModel() {
       const g = new THREE.Group();
-      mmBox(g, 1.8, 0.05, 0.35, 'dark', 0, 0.75, 0);
-      [-0.8, 0.8].forEach(x => mmBox(g, 0.06, 0.75, 0.3, 'dark', x, 0, 0));
-      mmBox(g, 0.4, 0.06, 0.35, 'steel', 0, 0.8, 0);
+      mmRBox(g, 1.8, 0.05, 0.35, 'anthracite', 0, 0.75, 0, { r: 0.01 });
+      [-0.8, 0.8].forEach(x => { mmBox(g, 0.06, 0.75, 0.3, 'anthracite', x, 0, 0); mmCyl(g, 0.03, 0.3, 'chrome', x, 0.86, 0, { axis: 'z' }); mmBox(g, 0.04, 0.08, 0.04, 'dark', x, 0.8, 0); });
+      mmRBox(g, 0.5, 0.06, 0.35, 'castIron', 0, 0.8, 0, { r: 0.01 });
+      mmCyl(g, 0.16, 0.03, 'castIron', 0, 0.84, 0.05);
+      mmBox(g, 0.5, 0.08, 0.02, 'alu', 0, 0.86, -0.08);
+      [-1, 1].forEach(s => mmCyl(g, 0.012, 0.35, 'chrome', s * 0.06, 0.95, -0.2, { axis: 'z' }));
       const arm = mmGroup(g, 0, 0.9, -0.15);
-      mmBox(arm, 0.08, 0.08, 0.35, 'red', 0, 0.2, 0.15);
+      mmRBox(arm, 0.09, 0.09, 0.35, 'teal', 0, 0.2, 0.15, { r: 0.02 });
+      mmRBox(arm, 0.1, 0.12, 0.12, 'dark', -0.06, 0.24, 0.12, { r: 0.02 });
+      mmBox(arm, 0.04, 0.14, 0.04, 'plasticDark', 0, 0.3, 0.32);
+      mmCyl(arm, 0.15, 0.02, 'teal', 0.05, 0.12, 0.25, { axis: 'x' });
       const blade = mmCyl(arm, 0.14, 0.01, 'chrome', 0.05, 0.12, 0.25, { axis: 'x' });
       arm.rotation.x = -0.4;
       return mmFinish(g, 'mitresaw', { arm, blade, plate: { y: 0.82 }, w: 1.8, d: 0.4 });
@@ -96,81 +149,115 @@ function mitreSawModel() {
 
 function woodLatheModel() {
       const g = new THREE.Group();
-      [-0.6, 0.6].forEach(x => mmBox(g, 0.12, 0.75, 0.3, 'dark', x, 0, 0));
-      mmBox(g, 1.5, 0.1, 0.2, 'grey', 0, 0.75, 0);                            // bed
-      mmBox(g, 0.3, 0.3, 0.25, 'grey', -0.6, 0.85, 0);                        // headstock
-      mmBox(g, 0.18, 0.22, 0.2, 'grey', 0.55, 0.85, 0);                       // tailstock
-      mmBox(g, 0.05, 0.05, 0.4, 'steel', 0.1, 1.0, 0.18);                     // tool rest
+      [-0.6, 0.6].forEach(x => { mmRBox(g, 0.12, 0.75, 0.3, 'castIron', x, 0, 0, { r: 0.015 }); mmBox(g, 0.16, 0.02, 0.34, 'dark', x, 0, 0); });
+      mmBox(g, 1.1, 0.04, 0.2, 'castIron', 0, 0.25, 0);
+      mmRBox(g, 1.5, 0.1, 0.2, 'castIron', 0, 0.75, 0, { r: 0.012 });
+      mmBox(g, 1.4, 0.004, 0.03, 'black', 0, 0.85, 0);
       const work = mmGroup(g, -0.1, 1.05, 0);
       mmCyl(work, 0.15, 0.22, 'wood', 0, 0, 0, { axis: 'x' });
+      mmRBox(g, 0.3, 0.3, 0.25, 'grey', -0.6, 0.85, 0, { r: 0.03 });
+      mmCyl(g, 0.1, 0.25, 'dark', -0.6, 1.1, -0.15, { axis: 'x' });
+      mmCyl(g, 0.04, 0.02, 'plasticDark', -0.55, 1.0, 0.13, { axis: 'z' });
+      mmCyl(g, 0.05, 0.1, 'castIron', -0.4, 1.05, 0, { axis: 'x' });
+      mmCyl(g, 0.08, 0.04, 'steel', -0.33, 1.05, 0, { axis: 'x' });
+      mmRBox(g, 0.18, 0.22, 0.2, 'grey', 0.55, 0.85, 0, { r: 0.02 });
+      mmCyl(g, 0.025, 0.12, 'chrome', 0.42, 1.05, 0, { axis: 'x' });
+      mmCyl(g, 0.07, 0.02, 'castIron', 0.66, 1.0, 0, { axis: 'x' });
+      mmBox(g, 0.1, 0.06, 0.25, 'castIron', 0.1, 0.85, 0.05);
+      mmBox(g, 0.03, 0.12, 0.03, 'steel', 0.1, 0.9, 0.18);
+      mmBox(g, 0.05, 0.05, 0.4, 'steel', 0.1, 1.0, 0.18);
       const gouge = mmBox(g, 0.4, 0.03, 0.03, 'steel', 0.05, 1.05, 0.33, { ry: 0.6 });
-      mmLabel(g, 'LATHE', 0.2, 0.06, 0, 0.5, 0.156, { bg: '#374151', fg: '#fff' });
       return mmFinish(g, 'woodlathe', { work, gouge, plate: { y: 1.05 }, w: 1.5, d: 0.4 });
     }
 
 function sandersModel() {
       const g = new THREE.Group();
-      mmBox(g, 0.5, 0.85, 0.45, 'grey', -0.35, 0, 0);
+      // Oscillating spindle sander (left) and the belt/disc sander (right) on their stands
+      mmRBox(g, 0.5, 0.85, 0.45, 'grey', -0.35, 0, 0, { r: 0.02 });
+      mmRBox(g, 0.5, 0.03, 0.45, 'castIron', -0.35, 0.85, 0, { r: 0.006 });
       const spindle = mmCyl(g, 0.04, 0.2, 'paper', -0.35, 0.95, 0);
-      mmBox(g, 0.55, 0.85, 0.45, 'grey', 0.35, 0, 0);
+      mmCyl(g, 0.06, 0.01, 'steel', -0.35, 0.88, 0);
+      mmRBox(g, 0.55, 0.85, 0.45, 'grey', 0.35, 0, 0, { r: 0.02 });
+      mmRBox(g, 0.5, 0.1, 0.22, 'dark', 0.35, 0.83, -0.05, { r: 0.02 });
       const belt = mmBox(g, 0.5, 0.06, 0.18, 'paper', 0.35, 0.88, 0);
-      mmLabel(g, 'SPINDLE  •  BELT SANDERS', 0.6, 0.06, 0, 0.5, 0.226, { bg: '#374151', fg: '#fff' });
+      [0.12, 0.58].forEach(x => mmCyl(g, 0.035, 0.2, 'dark', x, 0.91, 0, { axis: 'z' }));
+      mmCyl(g, 0.18, 0.03, 'paper', 0.62, 0.9, 0.0, { axis: 'x' });
+      mmBox(g, 0.12, 0.02, 0.25, 'castIron', 0.68, 0.8, 0);
+      [-0.35, 0.35].forEach(x => { mmCyl(g, 0.05, 0.08, 'plasticDark', x, 0.5, -0.24, { axis: 'z' }); mmRBox(g, 0.1, 0.06, 0.03, 'red', x + 0.15, 0.7, 0.23, { r: 0.008 }); });
       return mmFinish(g, 'sanders', { spindle, belt, w: 1.2, d: 0.45 });
     }
 
 function woodBenchModel() {
       const g = workBenchModel(2.0, 0.8, 'wood');
-      [-0.85, 0.85].forEach(x => { mmBox(g, 0.2, 0.12, 0.12, 'dark', x, 0.86, 0.4); mmCyl(g, 0.01, 0.3, 'chrome', x, 0.92, 0.5, { axis: 'x' }); });
-      // hand tools: chisels, planes, a saw and a mallet
-      [0, 1, 2, 3].forEach(i => mmBox(g, 0.02, 0.18, 0.02, 'wood', -0.6 + i * 0.08, 1.2, -0.37));
-      mmBox(g, 0.22, 0.06, 0.06, 'blue', 0.1, 1.2, -0.37);
+      // Leg vise and end vise with their screws, bench dogs, and the hand tools on the wall
+      [-0.85, 0.85].forEach(x => { mmRBox(g, 0.2, 0.12, 0.12, 'wood', x, 0.86, 0.4, { r: 0.015 }); mmCyl(g, 0.012, 0.3, 'chrome', x, 0.92, 0.5, { axis: 'x' }); mmCyl(g, 0.03, 0.03, 'wood', x + 0.15, 0.92, 0.5, { axis: 'x' }); });
+      for (let i = 0; i < 6; i++) mmBox(g, 0.02, 0.02, 0.02, 'steel', -0.6 + i * 0.24, 0.985, 0.25);
+      [0, 1, 2, 3].forEach(i => { mmBox(g, 0.02, 0.12, 0.02, 'wood', -0.6 + i * 0.08, 1.26, -0.37); mmBox(g, 0.012, 0.08, 0.004, 'steel', -0.6 + i * 0.08, 1.18, -0.37); });
+      mmRBox(g, 0.22, 0.06, 0.06, 'blue', 0.1, 1.2, -0.37, { r: 0.012 });
       mmBox(g, 0.4, 0.15, 0.01, 'chrome', 0.55, 1.3, -0.37);
-      mmBox(g, 0.12, 0.08, 0.08, 'wood', 0.3, 0.99, 0.1);
+      mmBox(g, 0.12, 0.04, 0.02, 'wood', 0.32, 1.33, -0.37);
+      mmRBox(g, 0.12, 0.08, 0.08, 'wood', 0.3, 0.99, 0.1, { r: 0.012 });
+      mmBox(g, 0.02, 0.2, 0.02, 'wood', 0.3, 0.99, 0.18, { rx: 1.4 });
       return mmFinish(g, 'woodbench', { top: 0.98, plate: { y: 0.98 }, w: 2.0, d: 0.8 });
     }
 
 function clampRackModel() {
       const g = new THREE.Group();
-      mmBox(g, 1.6, 0.06, 0.15, 'wood', 0, 1.6, 0);
+      mmRBox(g, 1.6, 0.06, 0.15, 'wood', 0, 1.6, 0, { r: 0.01 });
+      mmBox(g, 1.6, 0.4, 0.02, 'wood', 0, 1.3, -0.07);
       for (let i = 0; i < 9; i++) {
-        mmBox(g, 0.03, 1.1, 0.03, 'steel', -0.7 + i * 0.175, 0.5, 0.06);
-        mmBox(g, 0.06, 0.12, 0.08, i % 2 ? 'yellow' : 'red', -0.7 + i * 0.175, 0.5, 0.08);
+        const x = -0.7 + i * 0.175;
+        mmBox(g, 0.03, 1.1, 0.012, 'steel', x, 0.5, 0.06);
+        mmRBox(g, 0.06, 0.12, 0.1, i % 2 ? 'yellow' : 'red', x, 1.45, 0.08, { r: 0.01 });
+        mmRBox(g, 0.06, 0.12, 0.1, i % 2 ? 'yellow' : 'red', x, 0.5 + (i % 3) * 0.2, 0.08, { r: 0.01 });
+        mmBox(g, 0.08, 0.04, 0.02, 'plasticDark', x, 0.48 + (i % 3) * 0.2, 0.14);
       }
-      mmLabel(g, 'CLAMPS', 0.3, 0.07, 0, 1.75, 0.08, { bg: '#111827', fg: '#fff' });
       return mmFinish(g, 'clamprack', { w: 1.6, d: 0.2 });
     }
 
 function lumberRackModel() {
       const g = new THREE.Group();
       [-1.0, 0, 1.0].forEach(x => {
-        mmBox(g, 0.1, 2.2, 0.1, 'navy', x, 0, -0.25);
+        mmRBox(g, 0.1, 2.2, 0.1, 'navy', x, 0, -0.25, { r: 0.012 });
+        mmBox(g, 0.2, 0.01, 0.2, 'dark', x, 0, -0.25);
         [0.4, 0.95, 1.5, 2.05].forEach(y => mmBox(g, 0.06, 0.06, 0.55, 'navy', x, y, 0.0));
       });
-      // rough lumber, plywood sheets, hardwoods (maple, walnut, cherry)
-      [['wood', 0.45], ['ply', 1.0], ['bench', 1.55], ['mdf', 2.1]].forEach(([m, y]) => mmBox(g, 2.3, 0.12, 0.45, m, 0, y, 0.0));
-      const meter = mmBox(g, 0.08, 0.14, 0.04, 'yellow', 1.15, 1.2, 0.2);
-      mmLabel(g, 'LUMBER  •  MC 7%', 0.6, 0.1, 0, 2.3, 0.26, { bg: '#111827', fg: '#86efac' });
+      // rough lumber, plywood sheets, hardwoods (maple, walnut, cherry), each as a few boards
+      [['wood', 0.45], ['ply', 1.0], ['bench', 1.55], ['mdf', 2.1]].forEach(([m, y], r) => {
+        for (let b = 0; b < 3; b++) mmBox(g, 2.3 - b * 0.1 - r * 0.05, 0.04, 0.14, m, (b - 1) * 0.04, y + (b % 2) * 0.04, -0.15 + b * 0.15);
+      });
+      const meter = mmRBox(g, 0.08, 0.14, 0.04, 'yellow', 1.15, 1.2, 0.2, { r: 0.012 });
+      mmBox(g, 0.05, 0.03, 0.004, mmMat('screen'), 1.15, 1.29, 0.222);
       return mmFinish(g, 'lumberrack', { meter, w: 2.4, d: 0.6 });
     }
 
 function sprayBoothModel() {
       const g = new THREE.Group();
-      mmBox(g, 2.0, 2.0, 0.05, 'white', 0, 0, -0.55);
-      [-1, 1].forEach(x => mmBox(g, 0.05, 2.0, 1.1, 'white', x, 0, 0));
-      mmBox(g, 2.0, 0.05, 1.1, 'white', 0, 2.0, 0);
-      mmBox(g, 1.6, 1.4, 0.03, 'powder', 0, 0.3, -0.52);                      // filter wall
+      mmBox(g, 2.0, 2.0, 0.05, 'offWhite', 0, 0, -0.55);
+      [-1, 1].forEach(x => mmRBox(g, 0.05, 2.0, 1.1, 'offWhite', x, 0, 0, { r: 0.01 }));
+      mmRBox(g, 2.0, 0.05, 1.1, 'offWhite', 0, 2.0, 0, { r: 0.01 });
+      mmBox(g, 1.6, 1.4, 0.03, 'powder', 0, 0.3, -0.52);
+      for (let i = 0; i < 4; i++) mmBox(g, 0.01, 1.4, 0.035, 'lightGrey', -0.6 + i * 0.4, 0.3, -0.52);
+      [-0.5, 0.5].forEach(x => mmBox(g, 0.6, 0.02, 0.15, mmMat('lampAmber'), x, 1.97, 0.0));
       mmCyl(g, 0.2, 0.8, 'alu', 0, 2.4, -0.4);
+      mmCyl(g, 0.24, 0.1, 'anthracite', 0, 2.1, -0.4);
       const stand = mmGroup(g, 0, 0, 0.0);
       mmCyl(stand, 0.18, 0.05, 'dark', 0, 0.7, 0);
       mmCyl(stand, 0.03, 0.7, 'dark', 0, 0.35, 0);
-      mmLabel(g, 'SPRAY BOOTH', 0.5, 0.1, 0, 1.85, 0.56, { bg: '#111827', fg: '#fff' });
+      mmCyl(g, 0.15, 0.02, 'dark', 0, 0.01, 0);
+      mmBox(g, 0.12, 0.2, 0.06, 'plasticDark', 0.9, 1.3, 0.5);
+      mmCable(g, [[0.9, 1.2, 0.5], [0.7, 0.8, 0.4], [0.5, 0.75, 0.35]], 0.008, 'rubber');
       return mmFinish(g, 'spraybooth', { stand, plate: { y: 0.75 }, w: 2.0, d: 1.2 });
     }
 
 function dryingRackModel() {
       const g = new THREE.Group();
-      [-0.35, 0.35].forEach(x => mmBox(g, 0.04, 1.6, 0.04, 'dark', x, 0, 0));
-      [0.3, 0.7, 1.1, 1.5].forEach(y => mmBox(g, 0.7, 0.02, 0.4, 'steel', 0, y, 0));
+      [-0.35, 0.35].forEach(x => { mmBox(g, 0.04, 1.6, 0.04, 'dark', x, 0, 0); mmBox(g, 0.08, 0.02, 0.4, 'dark', x, 0, 0); });
+      [0.3, 0.7, 1.1, 1.5].forEach(y => {
+        mmBox(g, 0.7, 0.02, 0.4, 'steel', 0, y, 0);
+        for (let i = 0; i < 3; i++) mmBox(g, 0.004, 0.04, 0.4, 'chrome', -0.2 + i * 0.2, y + 0.02, 0);
+      });
+      mmBox(g, 0.25, 0.02, 0.18, 'wood', -0.1, 0.74, 0);
       return mmFinish(g, 'dryingrack', { w: 0.8, d: 0.45 });
     }
 

@@ -12,105 +12,172 @@
 // --- Models ---------------------------------------------------------------------------------------
 function glassFurnaceModel() {
       const g = new THREE.Group();
+      // A firebrick box in a welded angle-iron frame, the steel top with its flue hood
       mmBox(g, 1.4, 1.25, 1.2, 'firebrick', 0, 0, 0);
-      mmBox(g, 1.5, 0.12, 1.3, 'steel', 0, 1.25, 0);
-      // The crucible's mouth: the glow of the glass inside, and the swinging door
+      [-1, 1].forEach(sx => [-1, 1].forEach(sz => mmBox(g, 0.06, 1.3, 0.06, 'castIron', sx * 0.7, 0, sz * 0.6)));
+      [0.05, 0.62, 1.2].forEach(y => [-1, 1].forEach(sz => mmBox(g, 1.46, 0.05, 0.03, 'castIron', 0, y, sz * 0.615)));
+      mmRBox(g, 1.5, 0.12, 1.3, 'steel', 0, 1.25, 0, { r: 0.02 });
+      mmRBox(g, 0.7, 0.25, 0.5, 'steel', 0, 1.37, 0.0, { r: 0.04 });
+      mmCyl(g, 0.12, 0.8, 'steel', 0, 1.95, -0.05);
+      // The crucible's mouth: the glow of the glass inside, its frame, and the counterweighted door
+      mmFrame(g, 0.56, 0.5, 0.07, 0, 0.55, 0.61, 'castIron', 0.03);
       const inside = mmBox(g, 0.42, 0.36, 0.02, mmGlow('hot'), 0, 0.62, 0.61);
       inside.material.emissiveIntensity = 1.6;
       const door = mmGroup(g, 0.22, 0.6, 0.63);
       mmBox(door, 0.5, 0.45, 0.06, 'steel', -0.25, 0, 0);
+      mmBox(door, 0.42, 0.37, 0.03, 'firebrick', -0.25, 0.04, -0.04);
+      mmCyl(door, 0.012, 0.25, 'chrome', -0.42, 0.22, 0.06, { axis: 'x' });
       door.rotation.y = 1.1;
-      mmCyl(g, 0.05, 0.6, 'steel', 0.85, 0.7, 0, { axis: 'x' });   // burner
-      mmLabel(g, '2100 F', 0.3, 0.1, -0.45, 1.05, 0.61, { bg: '#020617', fg: '#f97316' });
+      // Burner with its gas train (valve, regulator, pipe down to the floor), thermocouple controller
+      mmCyl(g, 0.05, 0.6, 'steel', 0.85, 0.7, 0, { axis: 'x' });
+      mmCyl(g, 0.09, 0.15, 'blue', 1.1, 0.7, 0, { axis: 'x' });
+      mmRod(g, [0.95, 0.7, 0.0], [0.95, 0.05, 0.2], 0.02, 'yellow');
+      mmBox(g, 0.06, 0.06, 0.06, 'red', 0.95, 0.35, 0.12);
+      mmRBox(g, 0.3, 0.22, 0.1, 'plasticDark', -0.45, 0.95, 0.65, { r: 0.012 });
+      mmLabel(g, '2100 F', 0.2, 0.07, -0.45, 1.07, 0.703, { bg: '#020617', fg: '#f97316' });
+      mmButtons(g, 3, -0.45, 1.0, 0.7, { gap: 0.05 });
       return mmFinish(g, 'glassfurnace', { inside, door, plate: { y: 0.62, z: 0.6 }, w: 1.4, d: 1.2 });
     }
 
 function gloryHoleModel() {
       const g = new THREE.Group();
-      [-0.3, 0.3].forEach(x => mmBox(g, 0.08, 0.7, 0.6, 'dark', x, 0, 0));
-      mmCyl(g, 0.42, 0.9, 'firebrick', 0, 1.05, 0, { axis: 'z' });
+      // A steel-shelled drum on a stand, its bore lined with refractory, the burner at the back
+      [-0.3, 0.3].forEach(x => { mmBox(g, 0.08, 0.7, 0.6, 'castIron', x, 0, 0); mmBox(g, 0.12, 0.02, 0.66, 'dark', x, 0, 0); });
+      mmBox(g, 0.68, 0.06, 0.08, 'castIron', 0, 0.35, 0);
+      mmCyl(g, 0.42, 0.9, 'steel', 0, 1.05, 0, { axis: 'z' });
+      [-0.3, 0, 0.3].forEach(z => mmCyl(g, 0.43, 0.03, 'castIron', 0, 1.05, z, { axis: 'z' }));
+      mmCyl(g, 0.3, 0.02, 'firebrick', 0, 1.05, 0.455, { axis: 'z' });
       const mouth = mmCyl(g, 0.22, 0.02, mmGlow('hot'), 0, 1.05, 0.46, { axis: 'z' });
       mouth.material.emissiveIntensity = 1.8;
       mmCyl(g, 0.44, 0.06, 'steel', 0, 1.05, 0.44, { axis: 'z' });
+      mmCyl(g, 0.06, 0.3, 'steel', 0, 1.05, -0.6, { axis: 'z' });
+      mmCyl(g, 0.1, 0.12, 'blue', 0, 1.05, -0.78, { axis: 'z' });
+      mmRod(g, [0, 1.05, -0.78], [0.25, 0.05, -0.6], 0.02, 'yellow');
+      mmBox(g, 0.12, 0.3, 0.02, 'alu', -0.42, 0.9, 0.45);
       return mmFinish(g, 'gloryhole', { mouth, plate: { y: 1.05, z: 0.5 }, w: 1.0, d: 0.9 });
     }
 
 function annealerModel() {
       const g = new THREE.Group();
-      mmBox(g, 1.6, 0.85, 0.9, 'grey', 0, 0, 0);
+      mmRBox(g, 1.6, 0.75, 0.9, 'lightGrey', 0, 0.1, 0, { r: 0.025 });
+      [-1, 1].forEach(sx => [-1, 1].forEach(sz => mmBox(g, 0.06, 0.1, 0.06, 'dark', sx * 0.72, 0, sz * 0.38)));
       const inside = mmBox(g, 1.3, 0.02, 0.7, mmGlow('hot'), 0, 0.86, 0);
+      [-1, 1].forEach(s => { mmBox(g, 1.46, 0.02, 0.08, 'firebrick', 0, 0.85, s * 0.39); mmBox(g, 0.08, 0.02, 0.7, 'firebrick', s * 0.69, 0.85, 0); });
       const lid = mmGroup(g, 0, 0.88, -0.45);
-      mmBox(lid, 1.6, 0.12, 0.9, 'white', 0, 0, 0.45);
-      mmBox(g, 0.3, 0.2, 0.05, 'dark', 0.55, 0.5, 0.46);
+      mmRBox(lid, 1.6, 0.12, 0.9, 'offWhite', 0, 0, 0.45, { r: 0.02 });
+      mmHandle(lid, 0.5, 0, 0.06, 0.9, { axis: 'x' });
+      [-0.5, 0.5].forEach(x => mmCyl(g, 0.025, 0.1, 'steel', x, 0.9, -0.45, { axis: 'x' }));
+      mmRBox(g, 0.3, 0.2, 0.05, 'plasticDark', 0.55, 0.5, 0.46, { r: 0.012 });
       const temp = mmLabel(g, 'ANNEAL 900 F', 0.26, 0.08, 0.55, 0.62, 0.49, { bg: '#020617', fg: '#f87171' });
-      mmLabel(g, 'ANNEALER', 0.5, 0.1, -0.4, 0.55, 0.455, { bg: '#e5e7eb', fg: '#111827' });
+      mmButtons(g, 3, 0.55, 0.55, 0.485, { gap: 0.05 });
+      mmVents(g, 0.5, 0.15, -0.4, 0.45, 0.451, { n: 4 });
       return mmFinish(g, 'annealer', { inside, lid, temp, plate: { y: 0.9 }, w: 1.6, d: 0.9 });
     }
 
 function marverModel() {
       const g = new THREE.Group();
-      [-0.5, 0.5].forEach(x => [-0.22, 0.22].forEach(z => mmBox(g, 0.06, 0.8, 0.06, 'dark', x, 0, z)));
-      mmBox(g, 1.2, 0.08, 0.6, 'chrome', 0, 0.8, 0);
+      [-0.5, 0.5].forEach(x => [-0.22, 0.22].forEach(z => { mmBox(g, 0.06, 0.8, 0.06, 'castIron', x, 0, z); mmBox(g, 0.1, 0.01, 0.1, 'dark', x, 0, z); }));
+      [-1, 1].forEach(s => mmBox(g, 1.0, 0.05, 0.04, 'castIron', 0, 0.2, s * 0.22));
+      mmRBox(g, 1.2, 0.08, 0.6, 'steel', 0, 0.8, 0, { r: 0.012 });
+      mmBox(g, 1.1, 0.002, 0.5, 'chrome', 0, 0.88, 0);
       return mmFinish(g, 'marver', { plate: { y: 0.88 }, w: 1.2, d: 0.6 });
     }
 
 function glassBenchModel() {
       const g = new THREE.Group();
-      mmBox(g, 0.5, 0.55, 0.45, 'wood', 0, 0, 0);                 // the seat
+      // The seat on its frame, the long arms the pipe rolls on, a tool tray and the heat shield
+      mmRBox(g, 0.5, 0.08, 0.45, 'wood', 0, 0.47, 0, { r: 0.015 });
+      [-0.2, 0.2].forEach(x => [-0.18, 0.18].forEach(z => mmBox(g, 0.05, 0.47, 0.05, 'castIron', x, 0, z)));
       [-0.3, 0.3].forEach(z => {
-        mmBox(g, 1.6, 0.07, 0.07, 'steel', 0.2, 0.7, z);            // the rails the pipe rolls on
-        mmBox(g, 0.07, 0.7, 0.07, 'dark', 0.95, 0, z);
+        mmRBox(g, 1.6, 0.07, 0.07, 'steel', 0.2, 0.7, z, { r: 0.012 });
+        mmBox(g, 0.07, 0.7, 0.07, 'castIron', 0.95, 0, z);
+        mmBox(g, 0.07, 0.7, 0.07, 'castIron', -0.45, 0, z);
       });
-      mmBox(g, 0.5, 0.04, 0.3, 'dark', -0.5, 0.55, 0);               // tool tray
-      // jacks, shears, tweezers and a paddle laid out on the tray
+      mmBox(g, 0.06, 0.06, 0.66, 'castIron', 0.95, 0.3, 0);
+      mmBox(g, 0.5, 0.04, 0.3, 'dark', -0.5, 0.55, 0);
       mmBox(g, 0.36, 0.015, 0.03, 'steel', -0.5, 0.6, -0.08);
       mmBox(g, 0.36, 0.015, 0.03, 'steel', -0.5, 0.6, 0.0);
       mmBox(g, 0.28, 0.015, 0.06, 'wood', -0.5, 0.6, 0.09);
-      // the heat shield beside the bench
-      mmBox(g, 0.05, 0.9, 0.6, 'alu', 1.15, 0.3, 0);
+      mmCyl(g, 0.05, 0.07, 'wood', -0.65, 0.63, -0.05);
+      mmRBox(g, 0.05, 0.9, 0.6, 'alu', 1.15, 0.3, 0, { r: 0.012 });
+      mmBox(g, 0.04, 0.3, 0.04, 'castIron', 1.15, 0, 0);
       return mmFinish(g, 'glassbench', { plate: { y: 0.75, x: 0.6 }, w: 1.6, d: 0.7 });
     }
 
 function pipeWarmerModel() {
       const g = new THREE.Group();
-      mmBox(g, 0.5, 0.75, 0.6, 'dark', 0, 0, 0);
+      mmRBox(g, 0.5, 0.75, 0.6, 'anthracite', 0, 0, 0, { r: 0.02 });
+      mmBox(g, 0.44, 0.04, 0.54, 'firebrick', 0, 0.73, 0);
       const glow = mmBox(g, 0.4, 0.02, 0.5, mmGlow('hot'), 0, 0.76, 0);
       glow.material.emissiveIntensity = 0.6;
-      for (let i = 0; i < 4; i++) mmCyl(g, 0.018, 1.5, 'steel', -0.15 + i * 0.1, 0.8, 0.2, { axis: 'z' });
-      mmLabel(g, 'PIPE WARMER', 0.4, 0.07, 0, 0.5, 0.31, { bg: '#111827', fg: '#fbbf24' });
+      for (let i = 0; i < 4; i++) {
+        mmCyl(g, 0.018, 1.5, 'steel', -0.15 + i * 0.1, 0.8, 0.2, { axis: 'z' });
+        mmCyl(g, 0.026, 0.12, 'wood', -0.15 + i * 0.1, 0.8, 0.9, { axis: 'z' });
+      }
+      mmBox(g, 0.5, 0.06, 0.04, 'castIron', 0, 0.76, 0.6);
+      mmVents(g, 0.3, 0.12, 0, 0.4, 0.301, { n: 4 });
+      mmCyl(g, 0.03, 0.02, 'blue', 0.18, 0.55, 0.305, { axis: 'z' });
       return mmFinish(g, 'pipewarmer', { w: 0.5, d: 0.6 });
     }
 
 function glassToolRackModel() {
       const g = new THREE.Group();
       mmBox(g, 1.0, 1.4, 0.06, 'mdf', 0, 0.4, -0.15);
-      ['jacks', 'shears', 'tweezers', 'paddle', 'diamond shears', 'torch'].forEach((t, i) => mmBox(g, 0.05, 0.4, 0.03, i === 3 ? 'wood' : 'steel', -0.4 + i * 0.16, 1.0, -0.1));
-      // the bucket of wooden blocks in water, and a stack of wet newspaper
+      [-0.48, 0.48].forEach(x => mmBox(g, 0.04, 1.8, 0.04, 'castIron', x, 0, -0.18));
+      // jacks, shears, tweezers, paddle, diamond shears and the torch, each on its hook
+      [0, 1, 2, 3, 4, 5].forEach(i => {
+        const x = -0.4 + i * 0.16;
+        mmBox(g, 0.008, 0.008, 0.06, 'steel', x, 1.42, -0.1);
+        if (i === 3) { mmBox(g, 0.1, 0.25, 0.015, 'wood', x, 1.05, -0.1); mmBox(g, 0.025, 0.15, 0.015, 'wood', x, 1.28, -0.1); }
+        else if (i === 5) { mmCyl(g, 0.025, 0.3, 'blue', x, 1.2, -0.1); mmCyl(g, 0.012, 0.1, 'brass', x, 1.0, -0.1); }
+        else { [-1, 1].forEach(s => mmBox(g, 0.012, 0.36, 0.01, 'steel', x + s * 0.015, 1.04, -0.1, { rz: s * 0.08 })); mmCyl(g, 0.015, 0.02, 'steel', x, 1.38, -0.1, { axis: 'z' }); }
+      });
       mmCyl(g, 0.18, 0.35, 'blue', -0.25, 0.175, 0.1);
-      mmCyl(g, 0.1, 0.2, 'wood', -0.25, 0.4, 0.1);
+      mmCyl(g, 0.17, 0.01, 'resin', -0.25, 0.33, 0.1);
+      mmCyl(g, 0.06, 0.2, 'wood', -0.3, 0.4, 0.08);
+      mmCyl(g, 0.05, 0.18, 'wood', -0.2, 0.39, 0.13);
       mmBox(g, 0.3, 0.12, 0.22, 'paper', 0.25, 0, 0.1);
+      mmBox(g, 0.28, 0.01, 0.2, 'greyResin', 0.25, 0.12, 0.1);
       return mmFinish(g, 'glasstools', { w: 1.0, d: 0.45 });
     }
 
 function glassBinsModel() {
       const g = new THREE.Group();
       [['cullet', 'glass'], ['frit', 'red'], ['colour rod', 'blue']].forEach(([n, c], i) => {
-        mmBox(g, 0.5, 0.5, 0.45, 'grey', -0.55 + i * 0.55, 0, 0);
-        mmBox(g, 0.44, 0.05, 0.4, c, -0.55 + i * 0.55, 0.47, 0);
-        mmLabel(g, n.toUpperCase(), 0.4, 0.07, -0.55 + i * 0.55, 0.3, 0.226, { bg: '#e5e7eb', fg: '#111827' });
+        const x = -0.55 + i * 0.55;
+        mmRBox(g, 0.5, 0.5, 0.45, 'lightGrey', x, 0, 0, { r: 0.02 });
+        mmBox(g, 0.44, 0.05, 0.4, c, x, 0.47, 0);
+        mmBox(g, 0.5, 0.03, 0.05, 'anthracite', x, 0.48, -0.2);
+        mmLabel(g, n.toUpperCase(), 0.3, 0.06, x, 0.3, 0.226, { bg: '#e5e7eb', fg: '#111827' });
+        mmBox(g, 0.2, 0.03, 0.02, 'plasticDark', x, 0.2, 0.23);
       });
+      for (let i = 0; i < 8; i++) mmCyl(g, 0.008, 0.4, i % 2 ? 'red' : 'blue', 0.45 + (i % 4) * 0.02, 0.62, -0.08 + Math.floor(i / 4) * 0.03, { rz: 1.3 });
+      mmCyl(g, 0.05, 0.06, 'glass', -0.35, 0.53, 0.1);
       return mmFinish(g, 'glassbins', { w: 1.7, d: 0.5 });
     }
 
 function glassSafetyModel() {
       const g = new THREE.Group();
-      // the fire extinguisher, the gas meter with its regulator, and the eyewear and gloves on a hook
-      mmCyl(g, 0.09, 0.5, 'red', -0.4, 0.25, 0);
-      mmCyl(g, 0.05, 0.06, 'dark', -0.4, 0.53, 0);
-      mmBox(g, 0.35, 0.45, 0.12, 'yellow', 0.1, 1.0, -0.05);
-      mmCyl(g, 0.08, 0.02, 'white', 0.1, 1.15, 0.02, { axis: 'z' });
+      // fire extinguisher on its wall bracket, the gas meter with its regulator and shut-off, a hook
+      // with the didymium glasses and Kevlar gloves, a first-aid box
+      mmCyl(g, 0.09, 0.5, 'red', -0.4, 0.3, 0);
+      mmSphere(g, 0.09, 'red', -0.4, 0.55, 0).scale.set(0.09, 0.05, 0.09);
+      mmCyl(g, 0.02, 0.08, 'dark', -0.4, 0.63, 0);
+      mmBox(g, 0.06, 0.02, 0.05, 'dark', -0.37, 0.68, 0);
+      mmCable(g, [[-0.37, 0.66, 0.02], [-0.3, 0.6, 0.08], [-0.32, 0.35, 0.1]], 0.008, 'rubber');
+      mmBox(g, 0.1, 0.06, 0.04, 'dark', -0.4, 0.45, -0.08);
+      mmRBox(g, 0.35, 0.45, 0.12, 'lightGrey', 0.1, 1.0, -0.05, { r: 0.03 });
+      mmBox(g, 0.12, 0.05, 0.005, mmMat('screen'), 0.1, 1.25, 0.012);
+      mmCyl(g, 0.08, 0.02, 'white', 0.1, 1.12, 0.02, { axis: 'z' });
       mmRod(g, [0.1, 1.0, -0.05], [0.1, 0.0, -0.05], 0.02, 'yellow');
-      mmLabel(g, 'GAS', 0.2, 0.08, 0.1, 0.85, 0.02, { bg: '#facc15', fg: '#111827' });
+      mmBox(g, 0.12, 0.03, 0.03, 'red', 0.16, 0.7, -0.03);
+      mmCyl(g, 0.05, 0.06, 'brass', 0.1, 0.85, -0.05);
+      mmBox(g, 0.3, 0.012, 0.012, 'steel', 0.4, 1.3, 0.0);
+      mmBox(g, 0.12, 0.04, 0.02, 'brass', 0.35, 1.25, 0.02);
+      mmRBox(g, 0.1, 0.16, 0.04, 'yellow', 0.46, 1.1, 0.02, { r: 0.012 });
+      mmRBox(g, 0.22, 0.18, 0.08, 'green', 0.4, 0.6, -0.05, { r: 0.015 });
+      mmBox(g, 0.06, 0.02, 0.004, 'white', 0.4, 0.68, -0.008);
+      mmBox(g, 0.02, 0.06, 0.004, 'white', 0.4, 0.66, -0.008);
       return mmFinish(g, 'glasssafety', { w: 1.0, d: 0.3 });
     }
 
@@ -122,6 +189,18 @@ function glassGatherModel() {
       gob.scale.setScalar(0.06);
       gob.material.color.setHex(0xffa040);
       return { group: g, pipe, gob };
+    }
+
+// The fume extraction hood over the hot shop: a canopy with its filters and lights, the duct up
+function glassFumeHoodModel() {
+      const g = new THREE.Group();
+      mmRBox(g, 4.0, 0.5, 1.6, 'alu', 0, 2.6, 0.1, { r: 0.03 });
+      mmBox(g, 3.8, 0.02, 1.4, 'castIron', 0, 2.59, 0.1);
+      for (let i = 0; i < 6; i++) mmBox(g, 0.55, 0.012, 0.5, 'steel', -1.6 + i * 0.64, 2.585, 0.1);
+      [-1.2, 1.2].forEach(x => mmBox(g, 0.5, 0.012, 0.12, mmMat('lampAmber'), x, 2.584, 0.7));
+      mmRBox(g, 0.6, 3.4, 0.6, 'alu', 0, 3.1, -0.3, { r: 0.04 });
+      [3.6, 4.6, 5.6].forEach(y => mmBox(g, 0.62, 0.03, 0.62, 'steel', 0, y, -0.3));
+      return mmFinish(g, 'fumehood');
     }
 
 // --- Supplies -----------------------------------------------------------------------------------
@@ -163,7 +242,7 @@ g3({ key: 'glasstools', name: 'Glass tools: jacks, shears, tweezers, paddles, bl
 g3({ key: 'glassbins', name: 'Cullet, frit and colour rod bins', short: 'glass bins', at: { x: -4.0, z: 1.4, ry: Math.PI }, size: { w: 1.7, h: 0.6, d: 0.5 }, model: glassBinsModel });
 g3({ key: 'glasssafety', name: 'Fire extinguisher, gas meter and safety gear', short: 'glass safety', at: { x: -1.6, z: -7.1, ry: 0 }, size: { w: 1.0, h: 1.2, d: 0.3 }, model: glassSafetyModel, stand: { x: -1.2, z: -5.6 } });
 g3({ key: 'fumehood', name: 'Fume extraction hood', short: 'fume hood', at: { x: -5.6, z: -6.5, ry: 0 }, size: { w: 0.2, h: 0.2, d: 0.2 },
-  model: () => { const g = new THREE.Group(); mmBox(g, 4.0, 0.5, 1.6, 'alu', 0, 2.6, 0.1); mmBox(g, 0.6, 3.4, 0.6, 'alu', 0, 3.1, -0.3); mmLabel(g, 'FUME EXTRACTION', 1.2, 0.18, 0, 2.75, 0.91, { bg: '#374151', fg: '#fff' }); return mmFinish(g, 'fumehood'); } });
+  model: glassFumeHoodModel });
 
 const GLASS_PIECES = {
   vase: { name: 'A hand-blown glass vase', size: 1.25 },

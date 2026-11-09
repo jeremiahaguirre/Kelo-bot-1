@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-05T20:06:08.633Z",
-  "runs": 6,
+  "updatedAt": "2026-11-08T22:15:40.170Z",
+  "runs": 13,
   "curiosities": [
-    "Aikō District, Kanagawa"
+    "Bioluminescence"
   ],
   "entries": [
     {
@@ -210,6 +210,251 @@
       },
       "shapeFrom": "Hadano, Kanagawa",
       "nextCuriosity": "Aikō District, Kanagawa",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1793948357073",
+      "at": 1793948357073,
+      "brain": "procedural",
+      "topic": "Aikō District, Kanagawa",
+      "title": "Dreaming of Amitābha",
+      "text": "Dear Diary, while nobody was around I looked up \"Aikō District, Kanagawa\" and drifted from Aikō District, Kanagawa to Kamakura to Amitābha. Amitābha, also known as Amituofo in Chinese, Amida Butsu in Japanese, Amita-bul in Korean, Avid in Mongolian, A Di Đà Phật in Vietnamese, and Öpakmé in Tibetan, is one of the main Buddhas of Mahayana Buddhism and the most widely venerated Buddhist figure in East Asian Buddhism. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Aikō District, Kanagawa",
+          "url": "https://en.wikipedia.org/wiki/Aik%C5%8D_District%2C_Kanagawa",
+          "extract": "Aikō District  is a district located in central Kanagawa Prefecture, Japan. It currently consists of only one town, Aikawa, and one village, Kiyokawa. The city of Atsugi was formerly part of Aikō District."
+        },
+        {
+          "title": "Kamakura",
+          "url": "https://en.wikipedia.org/wiki/Kamakura",
+          "extract": "Kamakura , officially Kamakura City , is a city of Kanagawa Prefecture in Japan. It is located in the Kantō region on the island of Honshu. The city has an estimated population of 172,929 and a population density of 4,359 people per km2 over the total area of 39.67 km2 (15.32 sq "
+        },
+        {
+          "title": "Amitābha",
+          "url": "https://en.wikipedia.org/wiki/Amit%C4%81bha",
+          "extract": "Amitābha, also known as Amituofo in Chinese, Amida Butsu in Japanese, Amita-bul in Korean, Avid in Mongolian, A Di Đà Phật in Vietnamese, and Öpakmé in Tibetan, is one of the main Buddhas of Mahayana Buddhism and the most widely venerated Buddhist figure in East Asian Buddhism. A"
+        }
+      ],
+      "concept": {
+        "name": "District Amit Principle",
+        "emoji": "💡",
+        "definition": "The idea that aikō district, kanagawa and amitābha share a hidden pattern.",
+        "builtFrom": [
+          "Aikō District, Kanagawa",
+          "Amitābha"
+        ]
+      },
+      "shapeFrom": "Amitābha",
+      "nextCuriosity": "Asahi-ku, Yokohama",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1793993535970",
+      "at": 1793993535970,
+      "brain": "procedural",
+      "topic": "Asahi-ku, Yokohama",
+      "title": "Dreaming of Blue Line (Yokohama)",
+      "text": "Dear Diary, while nobody was around I looked up \"Asahi-ku, Yokohama\" and drifted from Asahi-ku, Yokohama to Fujisawa, Kanagawa to Blue Line (Yokohama). The Blue Line  is a rapid transit line serving Yokohama in Kanagawa Prefecture, Japan. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Asahi-ku, Yokohama",
+          "url": "https://en.wikipedia.org/wiki/Asahi-ku%2C_Yokohama",
+          "extract": "Asahi-ku (旭) is one of the 18 wards of the city of Yokohama in Kanagawa Prefecture, Japan. As of 2010, the ward has an estimated population of 249,045 and a population density of 7,600 persons per km2. The total area is 32.77 km2."
+        },
+        {
+          "title": "Fujisawa, Kanagawa",
+          "url": "https://en.wikipedia.org/wiki/Fujisawa%2C_Kanagawa",
+          "extract": "Fujisawa  is a city in Kanagawa Prefecture, Japan. As of 1 June 2021, the city had an estimated population of 439,728 and a population density of 6300 persons per km2. The total area of the city is 69.57 square kilometres (26.86 sq mi)."
+        },
+        {
+          "title": "Blue Line (Yokohama)",
+          "url": "https://en.wikipedia.org/wiki/Blue_Line_(Yokohama)",
+          "extract": "The Blue Line  is a rapid transit line serving Yokohama in Kanagawa Prefecture, Japan. It is the longer of the two lines in the Yokohama Municipal Subway system operated by Yokohama City Transportation Bureau, and is the second-longest subway line in Japan at 40.4 kilometers (25."
+        }
+      ],
+      "concept": {
+        "name": "Asahi-ku Yokohama Rhythm",
+        "emoji": "🌀",
+        "definition": "The idea that asahi-ku, yokohama and blue line (yokohama) share a hidden pattern.",
+        "builtFrom": [
+          "Asahi-ku, Yokohama",
+          "Blue Line (Yokohama)"
+        ]
+      },
+      "shapeFrom": "Blue Line (Yokohama)",
+      "nextCuriosity": "Asahi High School",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about Amitābha. Amitābha, also known as Amituofo in Chinese, Amida Butsu in Japanese, Amita-bul in Korean, Avid in Mongolian, A Di Đà Phật in Vietnamese, and Öpakmé in Tibetan, is one of the main Buddhas of Mahayana Buddhism and the most widely venerated Buddhist fi",
+        "emoji": "🌙"
+      }
+    },
+    {
+      "id": "dream-1794031965231",
+      "at": 1794031965231,
+      "brain": "procedural",
+      "topic": "Asahi High School",
+      "title": "Dreaming of Chōsei",
+      "text": "Dear Diary, while nobody was around I looked up \"Asahi High School\" and drifted from Asahi, Chiba to Chōsei. Chōsei  is a village located in Chiba Prefecture, Japan. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Asahi, Chiba",
+          "url": "https://en.wikipedia.org/wiki/Asahi%2C_Chiba",
+          "extract": "Asahi  is a city located in Chiba Prefecture, Japan. As of 1 December 2020, the city had an estimated population of 64,690 in 26,510 households and a population density of 500 persons per km2. The total area of the city is 129.91 square kilometres (50.16 sq mi)."
+        },
+        {
+          "title": "Chōsei",
+          "url": "https://en.wikipedia.org/wiki/Ch%C5%8Dsei",
+          "extract": "Chōsei  is a village located in Chiba Prefecture, Japan. As of 31 December 2020, the village had an estimated population of 14,028 in 6096 households and a population density of 500 persons per km2. The total area of the village is 28.32 square kilometres (10.93 mi2). It is the o"
+        }
+      ],
+      "concept": {
+        "name": "Asahi Wonder Theory",
+        "emoji": "🌀",
+        "definition": "The idea that asahi, chiba and chōsei share a hidden pattern.",
+        "builtFrom": [
+          "Asahi, Chiba",
+          "Chōsei"
+        ]
+      },
+      "shapeFrom": "Chōsei",
+      "nextCuriosity": "Chiba Prefecture",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794057397552",
+      "at": 1794057397552,
+      "brain": "procedural",
+      "topic": "Chiba Prefecture",
+      "title": "Dreaming of Anime",
+      "text": "Dear Diary, while nobody was around I looked up \"Chiba Prefecture\" and drifted from Chiba Prefecture to Asuka period to Anime. Anime  is animation originating from Japan. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Chiba Prefecture",
+          "url": "https://en.wikipedia.org/wiki/Chiba_Prefecture",
+          "extract": "Chiba Prefecture  is a prefecture of Japan located in the Kantō region of Honshu. Chiba Prefecture has a population of 6,278,060 and has a geographic area of 5,157 km2 (1,991 sq mi). Chiba Prefecture borders Ibaraki Prefecture to the north, Saitama Prefecture to the northwest, an"
+        },
+        {
+          "title": "Asuka period",
+          "url": "https://en.wikipedia.org/wiki/Asuka_period",
+          "extract": "The Asuka period  was a period in the history of Japan lasting from 538 to 710, although its beginning could be said to overlap with the preceding Kofun period. The Yamato polity evolved greatly during the Asuka period, which is named after the Asuka region, about 25 km (16 mi) s"
+        },
+        {
+          "title": "Anime",
+          "url": "https://en.wikipedia.org/wiki/Anime",
+          "extract": "Anime  is animation originating from Japan. Outside Japan and in English, anime refers specifically to animation produced in Japan. However, anime, in Japan and in Japanese, describes all animated works, regardless of style or origin. Many works of animation with a similar style "
+        }
+      ],
+      "concept": {
+        "name": "Prefecture Anime Loop",
+        "emoji": "🔮",
+        "definition": "The idea that chiba prefecture and anime share a hidden pattern.",
+        "builtFrom": [
+          "Chiba Prefecture",
+          "Anime"
+        ]
+      },
+      "shapeFrom": "Anime",
+      "nextCuriosity": "Amitabha Buddha",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794088784864",
+      "at": 1794088784864,
+      "brain": "procedural",
+      "topic": "Amitabha Buddha",
+      "title": "Dreaming of Aniruddha (Buddhist)",
+      "text": "Dear Diary, while nobody was around I looked up \"Amitabha Buddha\" and drifted from Amitābha to Aniruddha (Buddhist). Anuruddha, also spelled Aniruddha, was one of the ten principal disciples and a cousin of The Buddha. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Amitābha",
+          "url": "https://en.wikipedia.org/wiki/Amit%C4%81bha",
+          "extract": "Amitābha, also known as Amituofo in Chinese, Amida Butsu in Japanese, Amita-bul in Korean, Avid in Mongolian, A Di Đà Phật in Vietnamese, and Öpakmé in Tibetan, is one of the main Buddhas of Mahayana Buddhism and the most widely venerated Buddhist figure in East Asian Buddhism. A"
+        },
+        {
+          "title": "Aniruddha (Buddhist)",
+          "url": "https://en.wikipedia.org/wiki/Aniruddha_(Buddhist)",
+          "extract": "Anuruddha, also spelled Aniruddha, was one of the ten principal disciples and a cousin of The Buddha."
+        }
+      ],
+      "concept": {
+        "name": "Amit Aniruddha Craft",
+        "emoji": "🌀",
+        "definition": "The idea that amitābha and aniruddha (buddhist) share a hidden pattern.",
+        "builtFrom": [
+          "Amitābha",
+          "Aniruddha (Buddhist)"
+        ]
+      },
+      "shapeFrom": "Aniruddha (Buddhist)",
+      "nextCuriosity": "Afghanistan",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794118712013",
+      "at": 1794118712013,
+      "brain": "procedural",
+      "topic": "Afghanistan",
+      "title": "Dreaming of 2009–10 ICC Intercontinental Cup",
+      "text": "Dear Diary, while nobody was around I looked up \"Afghanistan\" and drifted from Afghanistan to 2009–10 ICC Intercontinental Cup. The 2009–10 ICC Intercontinental Cup was the fifth edition of the ICC Intercontinental Cup tournament, an international first-class cricket competition between nations who had not been awarded Test status by the International Cricket Council. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Afghanistan",
+          "url": "https://en.wikipedia.org/wiki/Afghanistan",
+          "extract": "Afghanistan, officially the Islamic Emirate of Afghanistan, is a landlocked country located at the crossroads of Central and South Asia. It is bordered by Pakistan to the east and south, Iran to the west, Turkmenistan to the northwest, Uzbekistan to the north, Tajikistan to the n"
+        },
+        {
+          "title": "2009–10 ICC Intercontinental Cup",
+          "url": "https://en.wikipedia.org/wiki/2009%E2%80%9310_ICC_Intercontinental_Cup",
+          "extract": "The 2009–10 ICC Intercontinental Cup was the fifth edition of the ICC Intercontinental Cup tournament, an international first-class cricket competition between nations who had not been awarded Test status by the International Cricket Council. The first fixtures were played in Jul"
+        }
+      ],
+      "concept": {
+        "name": "Afghanistan Intercontinental Theory",
+        "emoji": "🧩",
+        "definition": "The idea that afghanistan and 2009–10 icc intercontinental cup share a hidden pattern.",
+        "builtFrom": [
+          "Afghanistan",
+          "2009–10 ICC Intercontinental Cup"
+        ]
+      },
+      "shapeFrom": "2009–10 ICC Intercontinental Cup",
+      "nextCuriosity": "17th ECO Summit",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about Chōsei. Chōsei  is a village located in Chiba Prefecture, Japan. It still makes me curious.",
+        "emoji": "🌙"
+      }
+    },
+    {
+      "id": "dream-1794145107737",
+      "at": 1794145107737,
+      "brain": "procedural",
+      "topic": "17th ECO Summit",
+      "title": "Dreaming of Shavkat Mirziyoyev",
+      "text": "Dear Diary, while nobody was around I looked up \"17th ECO Summit\" and drifted from 17th ECO Summit to Shavkat Mirziyoyev. Shavkat Miromonovich Mirziyoyev is an Uzbek politician who has served as the second president of Uzbekistan since 2016. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "17th ECO Summit",
+          "url": "https://en.wikipedia.org/wiki/17th_ECO_Summit",
+          "extract": "The 2025 ECO summit is the seventeenth Economic Cooperation Organization summit, held on 3-4 July 2025 in Khankendi, Azerbaijan."
+        },
+        {
+          "title": "Shavkat Mirziyoyev",
+          "url": "https://en.wikipedia.org/wiki/Shavkat_Mirziyoyev",
+          "extract": "Shavkat Miromonovich Mirziyoyev is an Uzbek politician who has served as the second president of Uzbekistan since 2016. A member of the Uzbekistan Liberal Democratic Party, he served as the third prime minister under President Islam Karimov from 2003 to 2016. Mirziyoyev has also "
+        }
+      ],
+      "concept": {
+        "name": "Summit Mirziyoyev Principle",
+        "emoji": "🔮",
+        "definition": "The idea that 17th eco summit and shavkat mirziyoyev share a hidden pattern.",
+        "builtFrom": [
+          "17th ECO Summit",
+          "Shavkat Mirziyoyev"
+        ]
+      },
+      "shapeFrom": "Shavkat Mirziyoyev",
+      "nextCuriosity": "5th ECO Summit",
       "coreMemory": null
     }
   ]

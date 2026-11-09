@@ -1027,10 +1027,12 @@ function buildBlueberryBushes3D() {
 
 // --- Buildings ------------------------------------------------------------------
 function buildCafe3D() {
-      const cx = -1.5, cz = 3.5;
+      // Modelled in its own small units and scaled to real size (TOWN_BUILDINGS, js/agent.js)
+      const B = TOWN_BUILDINGS.cafe, cx = B.x, cz = B.z, S = B.scale;
       const gy = getAnalyticalGroundHeight(cx, cz);
       const cafe = new THREE.Group();
       cafe.position.set(cx, gy, cz);
+      cafe.scale.setScalar(S);
       const walls = new THREE.Mesh(new THREE.BoxGeometry(3.8, 2.4, 2.8), new THREE.MeshStandardMaterial({ color: 0xeadcc2, roughness: 0.8 }));
       walls.position.y = 1.2;
       walls.castShadow = true;
@@ -1060,16 +1062,20 @@ function buildCafe3D() {
       coffee.position.set(-1.1, 3.24, 0);
       const handle = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.05, 8, 16), cup.material);
       handle.position.set(-0.6, 2.95, 0);
-      // Patio table with an umbrella
+      // Patio table with an umbrella: furniture size (TOWN_FURNITURE_SCALE), not the building's
+      const patio = new THREE.Group();
+      patio.position.set(-1.3, 0, 2.1);
+      patio.scale.setScalar(TOWN_FURNITURE_SCALE / S);
       const table = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.06, 16), new THREE.MeshStandardMaterial({ color: 0xf8fafc }));
-      table.position.set(-1.3, 0.75, 2.5);
+      table.position.set(0, 0.75, 0);
       const tableLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.75, 6), new THREE.MeshStandardMaterial({ color: 0x334155 }));
-      tableLeg.position.set(-1.3, 0.37, 2.5);
+      tableLeg.position.set(0, 0.37, 0);
       const umbrella = new THREE.Mesh(new THREE.ConeGeometry(0.85, 0.35, 8), new THREE.MeshStandardMaterial({ color: 0xea580c }));
-      umbrella.position.set(-1.3, 1.85, 2.5);
+      umbrella.position.set(0, 1.85, 0);
       const umbrellaPole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.1, 6), tableLeg.material);
-      umbrellaPole.position.set(-1.3, 1.3, 2.5);
-      cafe.add(walls, roof, awning, door, shopWindow, sign, cup, coffee, handle, table, tableLeg, umbrella, umbrellaPole);
+      umbrellaPole.position.set(0, 1.3, 0);
+      patio.add(table, tableLeg, umbrella, umbrellaPole);
+      cafe.add(walls, roof, awning, door, shopWindow, sign, cup, coffee, handle, patio);
       // Details at the house's level (js/materials.js kit): base, corner boards, framed shop window and
       // side windows, a door casing with a handle and step, eaves with gutters, lamps and a planter
       if (typeof bldKit === 'function') {
@@ -1092,22 +1098,24 @@ function buildCafe3D() {
       // Stucco walls, a steel roof and a wooden door (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(cafe, [[walls.material, 'plaster', 2], [roof.material, 'metalroof', 2], [door.material, 'paintedwood']]);
       scene.add(cafe);
-      // Solid walls (3.8 x 2.8); he stands at the counter door out front. The patio table is a circle.
-      addObstacle(obstacleBox(cx, cz, 1.95, 1.45, { placeR: 2.3, building: 'cafe', door: { x: TOWN_LOCATIONS.cafe.x, z: TOWN_LOCATIONS.cafe.z } }), { x: cx - 1.3, z: cz + 2.5, r: 0.6 });
+      // Solid walls (3.8 x 2.8 model units); he stands at the counter door out front. The patio table is a circle.
+      addObstacle(obstacleBox(cx, cz, 1.95 * S, 1.45 * S, { placeR: 2.3 * S, building: 'cafe', door: { x: TOWN_LOCATIONS.cafe.x, z: TOWN_LOCATIONS.cafe.z } }), { x: cx - 1.3 * S, z: cz + 2.1 * S, r: 0.6 * TOWN_FURNITURE_SCALE });
     }
 
 function buildNetNode3D() {
-      const cx = 6.8, cz = 2.2;
+      const B = TOWN_BUILDINGS.cyber, cx = B.x, cz = B.z, S = B.scale;
       const gy = getAnalyticalGroundHeight(cx, cz);
       const net = new THREE.Group();
       net.position.set(cx, gy, cz);
+      net.scale.setScalar(S);
       const body = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.5, 3.0), new THREE.MeshStandardMaterial({ color: 0x6b717c, metalness: 0.4, roughness: 0.4 }));
       body.position.y = 1.25;
       body.castShadow = true;
       body.receiveShadow = true;
       // Glowing glass front with screens behind it
-      const glass = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.3, 0.05), new THREE.MeshStandardMaterial({ color: 0x8fb8c2, roughness: 0.05, metalness: 0.2, emissive: 0x0891b2, emissiveIntensity: 0.18, transparent: true, opacity: 0.85 }));
-      glass.position.set(0, 1.25, 1.52);
+      // (the storefront runs from the step up, so its glass door is a full-height door)
+      const glass = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.5, 0.05), new THREE.MeshStandardMaterial({ color: 0x8fb8c2, roughness: 0.05, metalness: 0.2, emissive: 0x0891b2, emissiveIntensity: 0.18, transparent: true, opacity: 0.85 }));
+      glass.position.set(0, 0.87, 1.52);
       const screenMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee });
       const frontScreens = [-1.1, 0, 1.1].map(x => {
         const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.4), screenMat);
@@ -1135,9 +1143,9 @@ function buildNetNode3D() {
         // A dark aluminium storefront: frame, mullions and a door with pull handles in the glass
         const front = bldFace(net, 'front', 4.2, 3.0);
         front.userData.interiorPart = 'front';
-        bldWindow(front, 0, 1.25, 3.4, 1.3, { noGlass: true, frame: K.darkMetal, mullions: false, sill: false });
-        [-0.85, 0.85].forEach(x => bldBox(front, 0.05, 1.3, 0.06, K.darkMetal, x, 1.25, 0.05));
-        [1.32, 1.48].forEach(x => bldBox(front, 0.03, 0.42, 0.05, K.gutter, x, 1.0, 0.1));
+        bldWindow(front, 0, 0.87, 3.4, 1.5, { noGlass: true, frame: K.darkMetal, mullions: false, sill: false });
+        [-0.85, 0.85].forEach(x => bldBox(front, 0.05, 1.5, 0.06, K.darkMetal, x, 0.87, 0.05));
+        [1.32, 1.48].forEach(x => bldBox(front, 0.03, 0.42, 0.05, K.gutter, x, 0.85, 0.1));
         bldBox(front, 4.0, 0.12, 0.3, K.concrete, 0, 0.06, 0.15);
         [-1.9, 1.9].forEach(x => bldLamp(front, x, 1.95));
         ['left', 'right', 'back'].forEach(side => { const f = bldFace(net, side, 4.2, 3.0); bldWindow(f, 0, 1.45, side === 'back' ? 1.4 : 1.0, 0.5, { frame: K.darkMetal, sill: false }); });
@@ -1154,16 +1162,17 @@ function buildNetNode3D() {
       // Modern metal wall panels (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(net, [[body.material, 'cladding', 2.5]]);
       scene.add(net);
-      // Its walls (4.2 x 3.0): he walks up to the glass front, never through a corner
-      addObstacle(obstacleBox(cx, cz, 2.12, 1.52, { placeR: 2.5, building: 'cyber', door: { x: TOWN_LOCATIONS.cyber.x, z: TOWN_LOCATIONS.cyber.z } }));
+      // Its walls (4.2 x 3.0 model units): he walks up to the glass front, never through a corner
+      addObstacle(obstacleBox(cx, cz, 2.12 * S, 1.52 * S, { placeR: 2.5 * S, building: 'cyber', door: { x: TOWN_LOCATIONS.cyber.x, z: TOWN_LOCATIONS.cyber.z } }));
     }
 
 // The Okanagan Post Office, where mail for Kelo-1 waits and his letters go out
 function buildPostOffice3D() {
-      const cx = 12.5, cz = -3.0;
+      const B = TOWN_BUILDINGS.post_office, cx = B.x, cz = B.z, S = B.scale;
       const gy = getAnalyticalGroundHeight(cx, cz);
       const po = new THREE.Group();
       po.position.set(cx, gy, cz);
+      po.scale.setScalar(S);
 
       const brick = new THREE.MeshStandardMaterial({ color: 0x9a4a38, roughness: 0.85 });
       const trim = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.6 });
@@ -1210,6 +1219,7 @@ function buildPostOffice3D() {
       boxLeg.position.y = 0.2;
       mailbox.add(boxBody, boxTop, boxLeg);
       mailbox.position.set(-1.9, 0, 2.1);
+      mailbox.scale.setScalar(TOWN_FURNITURE_SCALE / S); // a real street mailbox, not one blown up with the walls
 
       po.add(body, roof, cornice, door, step, sign, pole, flag, mailbox);
       if (typeof bldKit === 'function') {
@@ -1231,8 +1241,8 @@ function buildPostOffice3D() {
       // Real brick, slate shingles and painted trim (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(po, [[brick, 'brick', 1.2], [slate, 'shingles', 1.4], [trim, 'paintedwood']]);
       scene.add(po);
-      // Brick walls (4.2 x 3.2); the red street mailbox out front is a circle
-      addObstacle(obstacleBox(cx, cz, 2.12, 1.62, { placeR: 2.5, building: 'post_office', door: { x: TOWN_LOCATIONS.post_office.x, z: TOWN_LOCATIONS.post_office.z } }), { x: cx - 1.9, z: cz + 2.1, r: 0.4 });
+      // Brick walls (4.2 x 3.2 model units); the red street mailbox out front is a circle
+      addObstacle(obstacleBox(cx, cz, 2.12 * S, 1.62 * S, { placeR: 2.5 * S, building: 'post_office', door: { x: TOWN_LOCATIONS.post_office.x, z: TOWN_LOCATIONS.post_office.z } }), { x: cx - 1.9 * S, z: cz + 2.1 * S, r: 0.4 * TOWN_FURNITURE_SCALE });
     }
 
 // Kelo-1's body and rig are built by buildKelo1Character3D() in js/kelo-body.js
@@ -2020,8 +2030,8 @@ function runKeloFrameHooks(now) {
 const CAMERA_PRESET_VIEWS = {
   overview: [0, 0.5, -1, 0, 22, 27],
   house: [-9.2, 1.4, -8.0, -9.2, 9.5, 0.5],
-  storehouse: [5.5, 1.2, -6.8, 5.5, 4.2, 0.8],
-  cafes: [0, 1.5, 3.2, 0, 11.5, 15.5]
+  storehouse: [7.6, 2.0, -7.6, 7.6, 7.5, 3.5],
+  cafes: [-4, 2.5, 2.5, -4, 22, 30]
 };
 const camScratch = new THREE.Vector3();
 const panScratch = { forward: new THREE.Vector3(), right: new THREE.Vector3(), move: new THREE.Vector3(), up: new THREE.Vector3(0, 1, 0) };

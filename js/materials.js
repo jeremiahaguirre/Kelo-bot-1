@@ -1059,10 +1059,12 @@ function dressBuilding(root, pairs) {
         m.opacity = keepOpacity;
         m.transparent = keepTransparent;
       });
+      // (a building scaled up to real size keeps its textures at real size too)
+      const grow = Math.abs(root.scale.x) || 1;
       root.traverse(o => {
         if (!o.isMesh) return;
         const look = looks.get(o.material);
-        if (look && look.key !== 'windowglass') worldScaleUVs(o.geometry, look.tile);
+        if (look && look.key !== 'windowglass') worldScaleUVs(o.geometry, look.tile / grow);
       });
       return root;
     }

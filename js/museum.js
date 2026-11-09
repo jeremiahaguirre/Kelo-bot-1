@@ -83,7 +83,7 @@ function buildMuseum3D() {
       const hatch = typeof buildBasementHatch === 'function' ? buildBasementHatch(MUSEUM_HATCH_LOCAL, 0.56, Math.PI / 2) : null;
       if (hatch) museumGroup.add(hatch);
       // Details (js/materials.js kit): column bases, a dentil course under the cornice, bronze lamps
-      // on the front walls, stone urns either side of the steps, and a moulded base course
+      // on the side walls, stone urns either side of the steps, and a moulded base course
       if (typeof bldKit === 'function') {
         const K = bldKit();
         for (let i = 0; i < 6; i++) {
@@ -106,7 +106,6 @@ function buildMuseum3D() {
           museumGroup.add(shrub);
         });
         ['left', 'right'].forEach(side => { const f = bldFace(museumGroup, side, w, d); bldLamp(f, d / 2 - 0.6, 0.5 + 2.6); });
-        [-1, 1].forEach(sx => { const f = bldFace(museumGroup, 'front', w, d); f.position.z = d / 2; bldLamp(f, sx * (w / 2 - 0.3), 0.5 + 2.8); });
       }
       museumArtGroup = new THREE.Group();
       museumGroup.add(museumArtGroup);

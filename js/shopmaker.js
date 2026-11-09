@@ -548,6 +548,7 @@ let makerSeat = null; // { y, mesh }
 function stoolModel(lower = 'stool') {
       const g = new THREE.Group();
       const wood = 0xb7814f, dark = 0x8a5a33;
+      const chairLike = /chair/.test(lower);
       const chair = /chair/.test(lower);
       const h = 0.46, top = new THREE.Mesh(new THREE.CylinderGeometry(chair ? 0.2 : 0.17, chair ? 0.2 : 0.17, 0.035, chair ? 4 : 20), new THREE.MeshStandardMaterial({ color: wood, roughness: 0.6 }));
       if (chair) top.rotation.y = Math.PI / 4;
@@ -565,10 +566,134 @@ function stoolModel(lower = 'stool') {
         back.position.set(0, h + 0.2, -0.14);
         g.add(back);
       }
+      // Joinery: a rounded edge on the seat and a ring of stretchers between the legs
+      const rungMat = new THREE.MeshStandardMaterial({ color: dark, roughness: 0.65 });
+      if (!chairLike) {
+        const edge = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.018, 6, 28), top.material);
+        edge.rotation.x = Math.PI / 2;
+        edge.position.y = h;
+        g.add(edge);
+      }
+      const n = chairLike ? 4 : 3;
+      for (let i = 0; i < n; i++) {
+        const a0 = i / n * Math.PI * 2 + (chairLike ? Math.PI / 4 : 0), a1 = (i + 1) / n * Math.PI * 2 + (chairLike ? Math.PI / 4 : 0);
+        const r = 0.125, y = 0.16;
+        const ax = Math.cos(a0) * r, az = Math.sin(a0) * r, bx = Math.cos(a1) * r, bz = Math.sin(a1) * r;
+        const len = Math.hypot(bx - ax, bz - az);
+        const rung = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, len, 6), rungMat);
+        rung.position.set((ax + bx) / 2, y, (az + bz) / 2);
+        rung.rotation.set(0, -Math.atan2(bz - az, bx - ax), Math.PI / 2);
+        g.add(rung);
+      }
+      // Oiled wood with its grain (js/materials.js)
+      if (typeof applyFinish === 'function') applyFinish(g, 'wood');
       g.traverse(o => { if (o.isMesh) o.castShadow = true; });
       return typeof realSize === 'function' ? realSize(g) : g;
     }
 if (typeof ITEM_MODEL_RULES !== 'undefined') ITEM_MODEL_RULES.unshift([/\b(stool|chair)\b(?!.*(seat back|lift))/, lower => stoolModel(lower)]);
+
+// --- The things he makes, modelled like the real thing (sizes in metres, like stoolModel) -----------
+// Blown glass: a thin lathed wall (outside and inside surfaces), clear and glossy, with a thicker base
+function madeGlassMaterial(tint = 0xd9eef0) {
+      return new THREE.MeshStandardMaterial({ color: tint, roughness: 0.04, metalness: 0.1, transparent: true, opacity: 0.38, depthWrite: false, side: THREE.DoubleSide, envMapIntensity: 1.6 });
+    }
+
+function madeLathe(profile, mat, segs = 28) {
+      const m = new THREE.Mesh(new THREE.LatheGeometry(profile.map(([r, y]) => new THREE.Vector2(r, y)), segs), mat);
+      m.castShadow = true;
+      return m;
+    }
+
+function madeGlassModel(kind) {
+      const g = new THREE.Group();
+      const tint = kind === 'vase' ? 0xbfe3dc : kind === 'ornament' ? 0x9cc7e8 : 0xdcecef;
+      const mat = madeGlassMaterial(tint);
+      const P = {
+        cup: [[0, 0], [0.034, 0], [0.037, 0.006], [0.036, 0.05], [0.041, 0.1], [0.038, 0.1], [0.033, 0.05], [0.031, 0.012], [0, 0.012]],
+        bowl: [[0, 0], [0.045, 0], [0.085, 0.03], [0.11, 0.07], [0.105, 0.07], [0.08, 0.032], [0.04, 0.008], [0, 0.008]],
+        vase: [[0, 0], [0.055, 0], [0.07, 0.05], [0.072, 0.12], [0.05, 0.2], [0.032, 0.25], [0.04, 0.28], [0.036, 0.28], [0.028, 0.25], [0.045, 0.2], [0.066, 0.12], [0.064, 0.05], [0.05, 0.01], [0, 0.01]]
+      };
+      if (kind === 'ornament') {
+        const ball = new THREE.Mesh(new THREE.SphereGeometry(0.05, 24, 16), mat);
+        ball.position.y = 0.05;
+        const swirl = new THREE.Mesh(new THREE.TorusKnotGeometry(0.028, 0.004, 48, 6, 2, 3), new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.2, metalness: 0.1 }));
+        swirl.position.y = 0.05;
+        const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.012, 0.016, 10), new THREE.MeshStandardMaterial({ color: 0xc9a64a, roughness: 0.3, metalness: 0.9 }));
+        cap.position.y = 0.106;
+        g.add(ball, swirl, cap);
+      } else {
+        g.add(madeLathe(P[kind] || P.cup, mat));
+        // The punty mark and a little colour trail where the glass was worked
+        const trail = new THREE.Mesh(new THREE.TorusGeometry(kind === 'bowl' ? 0.108 : kind === 'vase' ? 0.038 : 0.04, 0.0025, 4, 32), madeGlassMaterial(0x2f8f83));
+        trail.rotation.x = Math.PI / 2;
+        trail.position.y = kind === 'bowl' ? 0.068 : kind === 'vase' ? 0.278 : 0.098;
+        g.add(trail);
+      }
+      return realSize(g);
+    }
+
+// A turned wooden bowl: lathe profile with a foot and a rolled rim, oiled grain
+function madeWoodBowlModel() {
+      const mat = new THREE.MeshStandardMaterial({ color: 0x9a6a3c, roughness: 0.5 });
+      const g = new THREE.Group();
+      g.add(madeLathe([[0, 0.006], [0.04, 0.006], [0.042, 0], [0.05, 0], [0.09, 0.025], [0.118, 0.062], [0.12, 0.07], [0.112, 0.07], [0.105, 0.06], [0.08, 0.03], [0.04, 0.016], [0, 0.016]], mat, 32));
+      if (typeof finishMaterial === 'function') finishMaterial(mat, 'wood', { texture: 'rings' });
+      return realSize(g);
+    }
+
+// A wall shelf: a board with a routed front edge on two steel brackets
+function madeShelfModel() {
+      const g = new THREE.Group();
+      const wood = new THREE.MeshStandardMaterial({ color: 0xb98a58, roughness: 0.6 });
+      const steel = new THREE.MeshStandardMaterial({ color: 0x2b2f36, roughness: 0.4, metalness: 0.7 });
+      const board = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.025, 0.18), wood);
+      board.position.y = 0.16;
+      const lip = new THREE.Mesh(new THREE.CylinderGeometry(0.0125, 0.0125, 0.6, 8), wood);
+      lip.rotation.z = Math.PI / 2;
+      lip.position.set(0, 0.16, 0.09);
+      g.add(board, lip);
+      [-0.21, 0.21].forEach(x => {
+        const up = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.15, 0.012), steel);
+        up.position.set(x, 0.075, -0.084);
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.012, 0.16), steel);
+        arm.position.set(x, 0.142, -0.01);
+        const brace = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.012, 0.17), steel);
+        brace.position.set(x, 0.085, -0.02);
+        brace.rotation.x = -0.72;
+        g.add(up, arm, brace);
+      });
+      if (typeof applyFinish === 'function') { applyFinish(board, 'wood'); applyFinish(lip, 'wood'); }
+      if (typeof finishMaterial === 'function') finishMaterial(steel, 'painted');
+      g.traverse(o => { if (o.isMesh) o.castShadow = true; });
+      return realSize(g);
+    }
+
+// A table lamp: a turned base, a brass stem, a linen drum shade and a warm bulb inside
+function madeTableLampModel() {
+      const g = new THREE.Group();
+      const base = madeLathe([[0, 0], [0.075, 0], [0.078, 0.012], [0.06, 0.03], [0.03, 0.05], [0.02, 0.07], [0, 0.07]], new THREE.MeshStandardMaterial({ color: 0x8a5a33, roughness: 0.5 }), 24);
+      if (typeof finishMaterial === 'function') finishMaterial(base.material, 'wood');
+      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.26, 10), new THREE.MeshStandardMaterial({ color: 0xc9a64a, roughness: 0.3, metalness: 0.9 }));
+      stem.position.y = 0.2;
+      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.025, 12, 8), new THREE.MeshStandardMaterial({ color: 0xfff4dc, emissive: 0xffd28c, emissiveIntensity: 0.8 }));
+      bulb.position.y = 0.33;
+      const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.1, 0.13, 28, 1, true), new THREE.MeshStandardMaterial({ color: 0xf1e7d0, roughness: 0.9, side: THREE.DoubleSide, emissive: 0xffd9a0, emissiveIntensity: 0.15 }));
+      shade.position.y = 0.35;
+      if (typeof finishMaterial === 'function') finishMaterial(shade.material, 'nylon');
+      g.add(base, stem, bulb, shade);
+      g.traverse(o => { if (o.isMesh) o.castShadow = o !== bulb; });
+      return realSize(g);
+    }
+
+if (typeof ITEM_MODEL_RULES !== 'undefined') ITEM_MODEL_RULES.unshift(
+  [/\bglass (cup|tumbler|mug)\b|hand-?blown (glass )?(cup|tumbler)/, () => madeGlassModel('cup')],
+  [/\bglass bowl\b|hand-?blown (glass )?bowl/, () => madeGlassModel('bowl')],
+  [/\bglass vase\b|hand-?blown (glass )?vase/, () => madeGlassModel('vase')],
+  [/\bglass ornament\b|hand-?blown (glass )?ornament/, () => madeGlassModel('ornament')],
+  [/(hand-?turned|turned|wooden|handmade) (wooden )?bowl\b/, () => madeWoodBowlModel()],
+  [/\b(handmade|wooden|floating|wall) (wooden |wall )?shelf\b/, () => madeShelfModel()],
+  [/\b(table|desk|bedside|handmade) (wooden )?lamp\b/, () => madeTableLampModel()]
+);
 
 async function sitOnMadeSeat(name, originLabel = 'Sitting Down') {
       if (!name || state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;

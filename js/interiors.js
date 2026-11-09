@@ -810,7 +810,8 @@ async function interiorAtCafe(v, S, room) {
 // The Post Office: open his own box and take out what is in it
 async function interiorAtMailbox(v, S, room) {
       const B = S.box, door = room.parts.door, at = room.parts.boxAt;
-      await interiorWalk('post_office', [...B.via, B]);
+      const stand = { x: B.x, z: B.z }; // (on the floor: B.y is the box's height, not his)
+      await interiorWalk('post_office', [...B.via, stand]);
       tripFace(interiorPoint('post_office', B.face));
       const swing = async (to, ms) => {
         const from = door.rotation.y, start = Date.now();
@@ -857,7 +858,7 @@ async function interiorAtMailbox(v, S, room) {
         indoorTrip.pose = null;
       };
       v.cleanup = () => { door.rotation.y = 0; };
-      return [B, ...B.via.slice().reverse()];
+      return [stand, ...B.via.slice().reverse()];
     }
 
 // --- Hooks into the existing trips ---------------------------------------------------------------

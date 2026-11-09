@@ -26,7 +26,7 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
   - Audit phase 2 (perf: JS 5.83 to 0.94 ms per frame).
   - Movement fixes: box obstacles, robust A*, stuck watch, balloon on open ground, plane circuit over max(ground, water), no digging in buildings, no floating trees.
   - Treehouse rope fix.
-- **Run-through in progress (`agent/runthrough`, 11 commits pushed):** paused by the weekly limit on 2026-11-05 and resumed on 2026-11-09. All 6 owner build rules are added; its final test pass is finishing. Then merge it, then 7b runway, then the quality upgrade, then the shopview viewer last.
+- **Run-through in progress (`agent/runthrough`, 11 commits pushed):** paused by the weekly limit on 2026-11-05 and resumed on 2026-11-09. All 6 owner build rules are added; its final test pass is finishing. Then merge it, then **the quality upgrade (owner: before 7b)**, then 7b runway and map, then the shopview viewer last.
 - **Run-through spec (owner, 2026-11-05)** of Kelo-1, tools, environment, machines and vehicles. Fix what's found. Specific checks:
   - Every shop machine asks for its real supplies, waits, and uses them up.
   - Products land in his inventory as real items he can use for their real purpose.

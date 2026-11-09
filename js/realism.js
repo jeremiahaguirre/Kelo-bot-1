@@ -1090,7 +1090,7 @@ function buildDistantForest(spots) {
 // makes them swim, and rebuilt only after the view has moved a little. They sway with the firs.
 const GRASS_CELL = 0.5;
 let grassTufts = null;
-const grassState = { x: 1e9, z: 1e9, key: '', near: [] };
+const grassState = { x: 1e9, z: 1e9, key: '', near: [], at: 0 };
 
 function grassTuftGeometry() {
       const pos = [], col = [], sway = [], nor = [];
@@ -1174,8 +1174,11 @@ function updateGrassTufts() {
       grassTufts.visible = !far;
       const col = terrainGroundMesh.geometry.attributes.color;
       const key = `${R}|${col.version}|${typeof seasonApplied !== 'undefined' ? seasonApplied : ''}|${typeof obstacleVersion !== 'undefined' ? obstacleVersion : 0}|${(state.worldEdits || []).length}`;
-      if (far || (Math.hypot(tg.x - grassState.x, tg.z - grassState.z) < R * 0.14 && key === grassState.key)) return;
-      grassState.x = tg.x; grassState.z = tg.z; grassState.key = key;
+      const moved = Math.hypot(tg.x - grassState.x, tg.z - grassState.z) >= R * 0.14;
+      // Ground that keeps changing (a fill or a dig being animated) re-lays the grass at most every 1.5 s
+      const now = performance.now();
+      if (far || (!moved && (key === grassState.key || now - grassState.at < 1500))) return;
+      grassState.x = tg.x; grassState.z = tg.z; grassState.key = key; grassState.at = now;
       const cx = Math.round(tg.x / cell), cz = Math.round(tg.z / cell);
       grassState.near = [];
       (typeof worldObstacles !== 'undefined' ? worldObstacles : []).forEach(o => { if (Math.hypot(o.x - tg.x, o.z - tg.z) < R + (o.r || 1) + 1) grassState.near.push(o); });

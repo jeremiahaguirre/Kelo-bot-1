@@ -83,6 +83,7 @@ function buildVehicleMesh(v) {
       if (model.userData.fullSize) {
         // Built at real size: just undo the miniature, and keep the moving parts handy
         model.userData.mini.scale.setScalar(1);
+        vehicleFinish(model);
         g.add(model);
         Object.assign(g.userData, model.userData);
         return g;
@@ -99,6 +100,23 @@ function buildVehicleMesh(v) {
       }
       if (v.kind === 'excavator') g.userData.boom = model.children.find(c => c.geometry && c.geometry.type === 'BoxGeometry' && c.rotation.z < -0.3) || null;
       return g;
+    }
+
+// Proper surfaces for the full-size vehicles: parts left on the plain default finish become glossy
+// painted metal (it picks up the sky and the sun), and the near-black parts matte rubber and plastic.
+// Parts with their own finish (chrome, glass, tyres, lamps, loads) keep it.
+function vehicleFinish(root) {
+      const done = new Set();
+      root.traverse(o => {
+        const m = o.isMesh && o.material;
+        if (!m || Array.isArray(m) || done.has(m) || !m.isMeshStandardMaterial || m.map || m.transparent) return;
+        done.add(m);
+        if (m.roughness !== 0.55 || m.metalness !== 0 || (m.emissive && m.emissive.getHex() !== 0)) return;
+        const c = m.color, lum = 0.3 * c.r + 0.59 * c.g + 0.11 * c.b;
+        if (lum < 0.03) { m.roughness = 0.78; return; }
+        m.roughness = 0.36;
+        m.metalness = 0.12;
+      });
     }
 
 function renderVehicles3D() {
@@ -240,14 +258,133 @@ function updateVehicles(t) {
         keloGroup.position.z += Math.cos(a) * lean;
       }
       keloGroup.rotation.set(0, state.botRotY, bank);
-      if (m.userData.rotor) m.userData.rotor.rotation.y = t * 14;
-      if (m.userData.tailRotor) m.userData.tailRotor.rotation.z = t * 20;
+      // (rotors and propellers spool up and down in vehicleRideFrame)
+      if (typeof vehicleRideFrame !== 'function') {
+        if (m.userData.rotor) m.userData.rotor.rotation.y = t * 14;
+        if (m.userData.tailRotor) m.userData.tailRotor.rotation.z = t * 20;
+      }
       // Hands forward on the wheel or the handlebars
       keloLeftArm.rotation.set(-0.6, 0, 0.05);
       keloRightArm.rotation.set(-0.6, 0, -0.05);
       keloLeftElbow.rotation.x = keloRightElbow.rotation.x = -0.7;
       keloLeftHand.userData.grip = keloRightHand.userData.grip = 0.85;
     }
+
+// --- Ride feel: wheels, steering, suspension, pitch, hydraulics and rotors ---------------------------
+// Runs every frame after the vehicles are placed (keloEveryFrame). It only adds to how they look:
+// positions, headings and parking stay exactly what the driving code set.
+//  - wheels (userData.wheelRadius, set in the models) roll with the distance really travelled,
+//    front ones steer into turns and the cab's steering wheel turns with them;
+//  - land vehicles pitch with the ground under their axles, squat a little when they speed up and
+//    nose down when they brake, and the riding one rides on its springs over rough ground;
+//  - boats rock gently;
+//  - the dump bed, excavator boom and house and the forklift mast and carriage move at a hydraulic
+//    pace toward wherever the code puts them, instead of jumping;
+//  - rotors and propellers spool up when he flies and wind down after he lands.
+const vehicleRideStates = new WeakMap();
+const HYDRAULIC_PARTS = [['bed', 'rotation', 'z', 0.9], ['boom', 'rotation', 'z', 0.8], ['house', 'rotation', 'y', 1.2], ['mast', 'rotation', 'z', 0.5], ['carriage', 'position', 'y', 0.9]];
+let vehicleRideLastNow = 0;
+
+function vehicleRideStateFor(m) {
+      let rs = vehicleRideStates.get(m);
+      if (rs) return rs;
+      rs = { x: m.position.x, z: m.position.z, yaw: m.rotation.y, speed: 0, acc: 0, steer: 0, pitch: 0, pitchSet: false, rotor: 0, wheels: [], front: [], steering: [], hyd: [] };
+      let maxX = -Infinity;
+      m.traverse(o => {
+        if (o.userData && o.userData.wheelRadius) { rs.wheels.push(o); maxX = Math.max(maxX, o.position.x); }
+        if (o.userData && o.userData.steeringWheel) rs.steering.push({ o, base: o.rotation.z });
+      });
+      // The front axle steers (wheels whose own axle is along z, from wheel() in gearmodels.js)
+      if (rs.wheels.length >= 3) rs.front = rs.wheels.filter(w => w.position.x > maxX - 0.3 && w.userData.wheelAxis !== 'y');
+      const xs = rs.wheels.map(w => w.position.x);
+      rs.halfBase = xs.length ? Math.max(0.6, (Math.max(...xs) - Math.min(...xs)) / 2) : 1.2;
+      HYDRAULIC_PARTS.forEach(([key, prop, axis, rate]) => {
+        const part = m.userData[key];
+        if (part && part.isObject3D) rs.hyd.push({ part, prop, axis, rate, shown: part[prop][axis] });
+      });
+      vehicleRideStates.set(m, rs);
+      return rs;
+    }
+
+function vehicleRideFrame(now) {
+      const dt = vehicleRideLastNow ? Math.min(0.1, Math.max(0, (now - vehicleRideLastNow) / 1000)) : 1 / 60;
+      vehicleRideLastNow = now;
+      if (!dt || !state.vehicles || !state.vehicles.length) return;
+      const t = now / 1000;
+      for (const v of state.vehicles) {
+        const m = vehicleMeshes[v.id];
+        if (!m || !m.parent) continue;
+        const rs = vehicleRideStateFor(m);
+        const type = vehicleTypeFor(v.name);
+        const mode = type ? type.mode : 'land';
+        const riding = state.riding === v.id;
+        // How far it went along its own nose (+x of the model) since last frame
+        const a = m.rotation.y, fx = Math.cos(a), fz = -Math.sin(a);
+        const dx = m.position.x - rs.x, dz = m.position.z - rs.z;
+        rs.x = m.position.x; rs.z = m.position.z;
+        const jump = Math.hypot(dx, dz) > 6; // parked somewhere else: not driven there
+        const along = jump ? 0 : dx * fx + dz * fz;
+        const speed = along / dt;
+        rs.acc = dampTo(rs.acc, (speed - rs.speed) / dt, 3, dt);
+        rs.speed = dampTo(rs.speed, speed, 10, dt);
+        const moving = Math.abs(rs.speed) > 0.05;
+        // Wheels roll; the front ones steer by the turn the path makes
+        if (rs.wheels.length && along) rs.wheels.forEach(w => { if (w.userData.wheelAxis === 'y') w.rotation.y -= along / w.userData.wheelRadius; else w.rotation.z -= along / w.userData.wheelRadius; });
+        const yawRate = riding && typeof keloMotion !== 'undefined' && moving ? keloMotion.yawRate : 0;
+        const steerWant = moving ? Math.max(-0.5, Math.min(0.5, Math.atan(yawRate / Math.max(0.4, Math.abs(rs.speed)) * rs.halfBase * 2) * Math.sign(rs.speed || 1))) : rs.steer;
+        rs.steer = dampTo(rs.steer, steerWant, 5, dt);
+        rs.front.forEach(w => { w.rotation.y = rs.steer; });
+        rs.steering.forEach(s => { s.o.rotation.z = s.base - rs.steer * 5; });
+        if (mode === 'land' || mode === 'snow') {
+          // Pitch with the ground under the axles, plus a little squat and dive
+          const turned = rs.yaw !== a || jump;
+          rs.yaw = a;
+          if (moving || turned || !rs.pitchSet || Math.abs(rs.pitchGoal - rs.pitch) > 1e-3) {
+            if (moving || turned || !rs.pitchSet) {
+              const L = rs.halfBase, x = m.position.x, z = m.position.z;
+              const slope = Math.atan2(getIslandGroundHeight(x + fx * L, z + fz * L) - getIslandGroundHeight(x - fx * L, z - fz * L), 2 * L);
+              rs.pitchGoal = Math.max(-0.35, Math.min(0.35, slope - Math.max(-0.05, Math.min(0.05, rs.acc * 0.012))));
+            }
+            rs.pitch = rs.pitchSet ? dampTo(rs.pitch, rs.pitchGoal, 6, dt) : rs.pitchGoal;
+            rs.pitchSet = true;
+            m.rotation.order = 'YXZ';
+            m.rotation.z = rs.pitch;
+          }
+          // On its springs: a light, uneven bob while it rolls
+          if (riding && moving) {
+            const k = Math.min(1, Math.abs(rs.speed) / 1.6);
+            m.position.y += (Math.sin(t * 11.3) * 0.6 + Math.sin(t * 6.7 + 1.3) * 0.4) * 0.014 * k;
+          }
+        } else if (mode === 'water') {
+          // Boats rock on the swell, a little more when under way
+          m.rotation.order = 'YXZ';
+          m.rotation.z = Math.sin(t * 1.3 + (v.x || 0)) * 0.025 + (riding ? Math.max(-0.05, Math.min(0.06, rs.speed * 0.02)) : 0);
+          if (!riding) m.rotation.x = Math.sin(t * 1.05 + (v.z || 0)) * 0.02;
+        }
+        // Hydraulics: follow wherever the code last put each part, at the cylinder's pace
+        rs.hyd.forEach(h => {
+          const now = h.part[h.prop][h.axis];
+          if (now !== h.shown) h.goal = now;
+          if (h.goal === undefined) return;
+          const diff = h.goal - h.shown;
+          const step = Math.sign(diff) * Math.min(Math.abs(diff), h.rate * dt * Math.min(1, 0.25 + Math.abs(diff) * 4));
+          h.shown += step;
+          if (Math.abs(h.goal - h.shown) < 1e-4) { h.shown = h.goal; h.goal = undefined; }
+          h.part[h.prop][h.axis] = h.shown;
+        });
+        // Rotors and propellers: spool up in the air, wind down on the ground
+        const u = m.userData;
+        if (u.rotor || u.tailRotor || u.prop) {
+          const want = riding && (mode === 'air' || u.prop) ? 1 : 0;
+          rs.rotor = dampTo(rs.rotor, want, want > rs.rotor ? 0.9 : 0.35, dt);
+          if (rs.rotor < 0.002) rs.rotor = 0;
+          if (u.rotor) u.rotor.rotation.y += rs.rotor * 14 * dt;
+          if (u.tailRotor) u.tailRotor.rotation.z += rs.rotor * 20 * dt;
+          if (u.prop) u.prop.rotation.x += rs.rotor * 54 * dt;
+        }
+      }
+    }
+if (typeof keloEveryFrame === 'function') keloEveryFrame(vehicleRideFrame);
 
 // Aircraft climb smoothly to cruising height, hold there, and come gently down when `landing` is set.
 // A balloon rises well above the trees with its burner roaring; a helicopter climbs faster and lower.

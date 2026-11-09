@@ -1066,3 +1066,178 @@ function dressBuilding(root, pairs) {
       });
       return root;
     }
+
+// --- Town building details ---------------------------------------------------------------------------
+// The kit the town buildings share to reach the house's level of detail (js/house.js is the bar):
+// foundations, corner boards, framed windows with glass and sills, door casings with handles and a
+// step, fascia and gutters with downspouts, wall lamps that light up at dusk. Everything is added to
+// the building's own group around its existing walls, so footprints, doors and obstacles stay as they
+// are, and the static parts are joined per material afterwards (mergeStaticMeshes, js/perf.js). The
+// kit's materials are shared by every building, so the joined meshes stay few.
+let bldKitMats = null;
+function bldKit() {
+      if (bldKitMats) return bldKitMats;
+      const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.6, ...o });
+      const K = {
+        trim: std(0xf3f1ea), darkTrim: std(0x2b2f36, { roughness: 0.5 }), concrete: std(0xa7a39b, { roughness: 0.95 }),
+        stone: std(0x8f877c, { roughness: 0.9 }), gutter: std(0xdfe3e6, { roughness: 0.38, metalness: 0.55 }),
+        darkMetal: std(0x30353b, { roughness: 0.42, metalness: 0.7 }), brass: std(0xc9a64a, { roughness: 0.3, metalness: 0.9 }),
+        glass: std(0x6f8796, { roughness: 0.06, metalness: 0.35 }),
+        // Windows and lamps glow warm after dark (bldKitLights below sets how much)
+        litGlass: std(0x8fa3ad, { roughness: 0.08, metalness: 0.25, emissive: 0xffc27a, emissiveIntensity: 0 }),
+        bulb: std(0xfff4dc, { roughness: 0.3, emissive: 0xffd28c, emissiveIntensity: 0.1 }),
+        soil: std(0x3f2a1a, { roughness: 1 }), leaf: std(0x3f7d37, { roughness: 0.8 }), wood: std(0x7a5232, { roughness: 0.75 })
+      };
+      if (typeof finishMaterial === 'function') {
+        finishMaterial(K.trim, 'paintedwood'); finishMaterial(K.wood, 'wood'); finishMaterial(K.concrete, 'stone', { repeat: 2 });
+        finishMaterial(K.stone, 'stone', { repeat: 2 }); finishMaterial(K.darkMetal, 'painted'); finishMaterial(K.gutter, 'painted');
+        finishMaterial(K.brass, 'brass'); finishMaterial(K.soil, 'soil');
+      }
+      bldKitMats = K;
+      return K;
+    }
+
+// Lamps and window glow follow the dusk (one shared material each, so this is two writes)
+let bldKitLightAt = 0;
+function bldKitLights(now) {
+      if (!bldKitMats || now - bldKitLightAt < 500) return;
+      bldKitLightAt = now;
+      const dark = typeof skyDarkness === 'function' ? skyDarkness() : 0;
+      bldKitMats.bulb.emissiveIntensity = 0.1 + 2.2 * dark;
+      bldKitMats.litGlass.emissiveIntensity = 0.55 * dark;
+    }
+if (typeof keloEveryFrame === 'function') keloEveryFrame(bldKitLights);
+
+function bldBox(parent, w, h, d, mat, x, y, z) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      parent.add(m);
+      return m;
+    }
+
+// A frame on one wall of a w x d building: local +z points out of that wall, x runs along it
+function bldFace(root, side, w, d) {
+      const f = new THREE.Group();
+      const s = { front: [0, d / 2, 0], back: [0, -d / 2, Math.PI], right: [w / 2, 0, Math.PI / 2], left: [-w / 2, 0, -Math.PI / 2] }[side];
+      f.position.set(s[0], 0, s[1]);
+      f.rotation.y = s[2];
+      root.add(f);
+      return f;
+    }
+
+// A window on a face: casing, glass, a cross bar and a sill (its centre at x, y on the wall)
+function bldWindow(face, x, y, w, h, opts = {}) {
+      const K = bldKit(), frame = opts.frame || K.trim, b = 0.08, out = 0.05;
+      if (!opts.noGlass) bldBox(face, w, h, 0.03, opts.glass || K.litGlass, x, y, 0.02);
+      [[0, h / 2 + b / 2, w + 2 * b, b], [0, -h / 2 - b / 2, w + 2 * b, b], [-w / 2 - b / 2, 0, b, h], [w / 2 + b / 2, 0, b, h]]
+        .forEach(([dx, dy, bw, bh]) => bldBox(face, bw, bh, 0.07, frame, x + dx, y + dy, out));
+      if (opts.mullions !== false) {
+        bldBox(face, 0.04, h, 0.05, frame, x, y, 0.045);
+        if (h > 0.5) bldBox(face, w, 0.04, 0.05, frame, x, y, 0.045);
+      }
+      if (opts.sill !== false) bldBox(face, w + 0.26, 0.06, 0.16, opts.sillMat || frame, x, y - h / 2 - b - 0.03, 0.08);
+    }
+
+// A door casing with a head trim, a handle and a low step in front (door already on the wall)
+function bldDoor(face, x, w, h, opts = {}) {
+      const K = bldKit(), frame = opts.frame || K.trim;
+      bldBox(face, 0.1, h + 0.1, 0.08, frame, x - w / 2 - 0.05, (h + 0.1) / 2, 0.06);
+      bldBox(face, 0.1, h + 0.1, 0.08, frame, x + w / 2 + 0.05, (h + 0.1) / 2, 0.06);
+      bldBox(face, w + 0.36, 0.12, 0.12, frame, x, h + 0.1, 0.07);
+      const hx = x + (opts.handleLeft ? -1 : 1) * (w / 2 - 0.12);
+      bldBox(face, 0.05, 0.05, 0.08, K.brass, hx, h * 0.47, (opts.doorDepth || 0.06) + 0.04);
+      bldBox(face, 0.16, 0.035, 0.035, K.brass, hx - (opts.handleLeft ? -0.06 : 0.06), h * 0.47, (opts.doorDepth || 0.06) + 0.09);
+      if (opts.step !== false) bldBox(face, w + 0.5, 0.12, 0.34, opts.stepMat || K.concrete, x, 0.06, 0.17);
+    }
+
+// A wall lamp: a bracket, a shade and a bulb that lights at dusk
+function bldLamp(face, x, y) {
+      const K = bldKit();
+      bldBox(face, 0.08, 0.16, 0.06, K.darkMetal, x, y, 0.03);
+      bldBox(face, 0.04, 0.04, 0.2, K.darkMetal, x, y + 0.04, 0.12);
+      const shade = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.12, 10, 1, true), K.darkMetal);
+      shade.position.set(x, y + 0.02, 0.24);
+      face.add(shade);
+      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), K.bulb);
+      bulb.position.set(x, y - 0.04, 0.24);
+      face.add(bulb);
+    }
+
+// Foundation plinth and corner boards for a w x d box building whose walls are h high
+function bldBase(root, w, d, h, opts = {}) {
+      const K = bldKit();
+      if (opts.foundation !== false) bldBox(root, w + 0.1, opts.footH || 0.2, d + 0.1, opts.footMat || K.concrete, 0, (opts.footH || 0.2) / 2 - 0.06, 0);
+      if (opts.corners !== false) {
+        const c = opts.cornerMat || K.trim, t = 0.12;
+        [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([sx, sz]) => bldBox(root, t, h, t, c, sx * (w / 2 + 0.01 - t / 2 + 0.03), h / 2, sz * (d / 2 + 0.01 - t / 2 + 0.03)));
+      }
+    }
+
+// Fascia boards round the eaves at height y (an overhang `o` past the walls), gutters on the front
+// and back, and downspouts at the front corners
+function bldEaves(root, w, d, y, opts = {}) {
+      const K = bldKit(), o = opts.overhang || 0.15, f = opts.fascia || K.trim, fh = opts.fasciaH || 0.16;
+      bldBox(root, w + 2 * o, fh, 0.05, f, 0, y, d / 2 + o);
+      bldBox(root, w + 2 * o, fh, 0.05, f, 0, y, -d / 2 - o);
+      bldBox(root, 0.05, fh, d + 2 * o, f, w / 2 + o, y, 0);
+      bldBox(root, 0.05, fh, d + 2 * o, f, -w / 2 - o, y, 0);
+      if (opts.gutters === false) return;
+      const sides = opts.gutterSides || [1, -1];
+      sides.forEach(sz => {
+        const g = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, w + 2 * o, 10, 1, true, Math.PI / 2, Math.PI), K.gutter);
+        g.material.side = THREE.DoubleSide;
+        g.rotation.z = Math.PI / 2;
+        g.position.set(0, y - 0.02, sz * (d / 2 + o + 0.07));
+        g.castShadow = true;
+        root.add(g);
+        [-1, 1].forEach(sx => {
+          if (opts.downspouts === false) return;
+          const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, y - 0.05, 8), K.gutter);
+          pipe.position.set(sx * (w / 2 + o - 0.12), (y - 0.05) / 2, sz * (d / 2 + 0.07));
+          pipe.castShadow = true;
+          root.add(pipe);
+          bldBox(root, 0.08, 0.04, 0.2, K.gutter, sx * (w / 2 + o - 0.12), 0.04, sz * (d / 2 + 0.12));
+        });
+      });
+    }
+
+// A planter box with a little shrub, standing against a wall (x along the face)
+function bldPlanter(face, x, w) {
+      const K = bldKit();
+      bldBox(face, w, 0.32, 0.34, K.wood, x, 0.16, 0.2);
+      bldBox(face, w - 0.08, 0.04, 0.26, K.soil, x, 0.31, 0.2);
+      const n = Math.max(1, Math.round(w / 0.35));
+      for (let i = 0; i < n; i++) {
+        const s = new THREE.Mesh(new THREE.IcosahedronGeometry(0.16 + (i % 2) * 0.03, 0), K.leaf);
+        s.position.set(x - w / 2 + (i + 0.5) * (w / n), 0.42, 0.2);
+        s.castShadow = true;
+        face.add(s);
+      }
+    }
+
+// Join what the kit added (and the building's other static parts) once the world has settled
+function bldFinish(root, skip) {
+      if (typeof mergeStaticMeshesSoon === 'function') mergeStaticMeshesSoon(root, skip || []);
+    }
+
+// Items: parts that kept the plain default finish (no material guessed for them) get a real one by
+// what they look like: saturated colours read as moulded plastic or enamel paint (glossy), pale greys
+// as satin plastic, near-black as rubber. Food, glass, textured and named-material parts keep theirs.
+function polishItemSurfaces(model, itemName) {
+      if (!model || (typeof inferMaterials === 'function' && inferMaterials(itemName).includes('food'))) return model;
+      const done = new Set(), hsl = {};
+      model.traverse(o => {
+        const m = o.isMesh && o.material;
+        if (!m || Array.isArray(m) || done.has(m) || !m.isMeshStandardMaterial || m.map || m.transparent || (o.userData && (o.userData.isLabel || o.userData.realModel))) return;
+        done.add(m);
+        if (m.userData.material || m.userData.finish || m.metalness !== 0 || Math.abs(m.roughness - 0.55) > 1e-6 || (m.emissive && m.emissive.getHex())) return;
+        m.color.getHSL(hsl);
+        if (hsl.l < 0.12) m.roughness = 0.82;
+        else if (hsl.s > 0.35) m.roughness = 0.34;
+        else m.roughness = 0.5;
+        m.envMapIntensity = 1;
+      });
+      return model;
+    }

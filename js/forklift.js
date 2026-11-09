@@ -49,6 +49,8 @@ function forkliftModel() {
       [[0.55, 0.32], [-0.75, 0.26]].forEach(([x, r]) => [-0.6, 0.6].forEach(z => {
         const w = mesh(new THREE.CylinderGeometry(r, r, 0.22, 16), 0x111111);
         w.rotation.x = Math.PI / 2;
+        w.userData.wheelRadius = r;
+        w.userData.wheelAxis = 'y'; // its own axle is the cylinder's y (js/vehicles.js spins it)
         b.add(at(w, x, r, z));
       }));
       // The mast (tilts at its foot) with the carriage and forks that ride up it

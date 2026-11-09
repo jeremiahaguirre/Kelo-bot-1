@@ -1141,6 +1141,7 @@ function wsBuildModel(def) {
       if (!def || !def.model || wsModels[def.key]) return wsModels[def.key] || null;
       let m;
       try { m = def.model(); } catch (e) { console.warn('workshop model', def.key, e); return null; }
+      if (typeof machineMergeStatic === 'function') { try { machineMergeStatic(m); } catch (e) { console.warn('machine merge', def.key, e); } }
       m.position.set(def.at.x, 0, def.at.z);
       m.rotation.y = def.at.ry || 0;
       m.userData.machineKey = def.key;
@@ -1414,6 +1415,7 @@ async function runWorkshopVisit(plan) {
           try { results.push(await stop.act(ctx)); } catch (e) { console.warn('workshop stop', e); results.push(false); }
           indoorTrip.pose = null;
           indoorTrip.crouchTarget = 0;
+          if (results[results.length - 1] === false) break; // a failed step ends the job (no washing a print that never came off)
         }
         if (veh && (plan.vehicleTour || plan.driveThrough)) {
           // (the tour drove back out already)

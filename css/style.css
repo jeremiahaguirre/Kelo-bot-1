@@ -51,6 +51,12 @@ body {
   body.menu-open #keloOverheadHUD { left: calc((100% - 460px) / 2); width: min(560px, calc(100% - 460px - 1.5rem)); }
 }
 
+/* Toasts never cover the open menu: on a wide screen they sit over the world still visible, on a phone
+   (where the menu fills the screen) they rise from the bottom, above the message box */
+#toastContainer > * { max-width: min(92vw, 440px); text-align: center; }
+@media (min-width: 640px) { body.menu-open #toastContainer { left: calc((100% - 460px) / 2); } }
+@media (max-width: 639px) { body.menu-open #toastContainer { top: auto; bottom: calc(132px + env(safe-area-inset-bottom, 0px)); } }
+
 /* Brain tab sections fold open and closed */
 .brain-section > summary::-webkit-details-marker { display: none; }
 .brain-section[open] .brain-caret { transform: rotate(90deg); }

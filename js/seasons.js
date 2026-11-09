@@ -140,7 +140,7 @@ async function researchSnowTravel(originLabel = 'Reading About Snow') {
 // --- How the valley looks in each season ---------------------------------------------------------
 function applySeasonLook(season = currentSeason()) {
       if (!scene || !terrainGroundMesh) return;
-      const geo = terrainGroundMesh.geometry, pos = geo.attributes.position, col = geo.attributes.color;
+      const geo = terrainGroundMesh.geometry, pos = geo.attributes.position, col = geo.attributes.color, nrm = geo.attributes.normal;
       if (!terrainBaseColors) terrainBaseColors = Float32Array.from(col.array);
       const line = SNOW_LINE[season];
       const c = new THREE.Color();
@@ -151,8 +151,9 @@ function applySeasonLook(season = currentSeason()) {
         if ((typeof groundDugAt === 'function' && groundDugAt(x, z) > 0.05) || (typeof dirtPileRaiseAt === 'function' && dirtPileRaiseAt(x, z) > 0.03) || paved) continue;
         c.setRGB(terrainBaseColors[i * 3], terrainBaseColors[i * 3 + 1], terrainBaseColors[i * 3 + 2]);
         if (z < 7.8 && y > line) {
-          // A soft edge where the snow thins out
-          c.lerp(SNOW_COLOR, Math.min(1, (y - line) / 0.6 + 0.35));
+          // A soft edge where the snow thins out; cliff faces keep only a dusting and read as rock
+          const holds = nrm && typeof snowHoldsOn === 'function' ? 0.18 + 0.82 * snowHoldsOn(nrm.getY(i)) : 1;
+          c.lerp(SNOW_COLOR, Math.min(1, (y - line) / 0.6 + 0.35) * holds);
         } else if (season === 'Spring') c.lerp(new THREE.Color(0x5f8a2e), 0.25);
         else if (season === 'Autumn' && c.g > c.r) c.lerp(new THREE.Color(0x8e8442), 0.35);
         col.setXYZ(i, c.r, c.g, c.b);

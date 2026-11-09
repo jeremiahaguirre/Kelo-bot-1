@@ -277,6 +277,10 @@ function exploreCameraUpdate() {
         c.pitch = Math.min(1.5, Math.asin(exploreClamp(need / c.dist, -1, 0.997)));
       }
 
+      // Never inside a building: the camera comes in front of a wall between it and what it follows
+      const wallDist = exploreBuildingClearance(c.target, exploreOffset(c));
+      if (wallDist < c.dist) c.dist = Math.max(1.2, wallDist);
+
       controls.target.copy(c.target);
       camera.position.copy(c.target).add(exploreOffset(c));
       exploreCam.driving = true;
@@ -288,6 +292,72 @@ function exploreCameraUpdate() {
         exploreFlyToKelo();
       }
       return true;
+    }
+
+// Camera against buildings. Each building footprint (a box in worldObstacles) gets its roof height
+// measured once, with one ray straight down (one new box per frame at most). The line from the
+// target to the camera is tested against those boxes in 2D, then against the height where it
+// enters. Returns how far out the camera may be (Infinity when nothing is in the way).
+const exploreRoofs = new WeakMap();
+const exploreRoofRay = new THREE.Raycaster();
+let exploreRoofBudget = 0;
+function exploreRoofOf(b) {
+      let h = exploreRoofs.get(b);
+      if (h !== undefined) return h;
+      if (exploreRoofBudget <= 0) return null;
+      exploreRoofBudget--;
+      const ground = getAnalyticalGroundHeight(b.x, b.z);
+      h = ground + 3; // walls at least this high
+      exploreRoofRay.set(exploreRoofRay.ray.origin.set(b.x, ground + 40, b.z), exploreRoofRay.ray.direction.set(0, -1, 0));
+      exploreRoofRay.camera = camera;
+      exploreRoofRay.far = 41;
+      try {
+        const hits = exploreRoofRay.intersectObjects(scene.children, true);
+        for (const hit of hits) {
+          const m = hit.object.material;
+          if (!hit.object.isMesh || hit.object === terrainGroundMesh || (m && m.transparent && m.opacity < 0.5)) continue;
+          if (hit.point.y > ground + 0.5) { h = Math.max(h, Math.min(ground + 16, hit.point.y)); break; }
+        }
+      } catch (e) {}
+      exploreRoofs.set(b, h);
+      return h;
+    }
+
+function exploreBuildingClearance(target, off) {
+      if (typeof worldObstacles === 'undefined') return Infinity;
+      exploreRoofBudget = 1;
+      const len = off.length();
+      if (len < 0.01) return Infinity;
+      let best = Infinity;
+      for (let i = 0; i < worldObstacles.length; i++) {
+        const b = worldObstacles[i];
+        // Building footprints only (not thin fence and wall pieces, posts or trees)
+        if (b.hw === undefined || Math.min(b.hw, b.hd) < 0.9) continue;
+        if (Math.hypot(b.x - target.x, b.z - target.z) > len + b.r + 1) continue;
+        // Into the box's own frame (turned by rot about y)
+        const cs = Math.cos(b.rot || 0), sn = Math.sin(b.rot || 0);
+        const lx = target.x - b.x, lz = target.z - b.z;
+        const ax = lx * cs - lz * sn, az = lx * sn + lz * cs;
+        const dx = off.x * cs - off.z * sn, dz = off.x * sn + off.z * cs;
+        const hw = b.hw + 0.35, hd = b.hd + 0.35;
+        // Following something inside this building (an indoor trip): leave the camera alone
+        if (Math.abs(ax) < hw && Math.abs(az) < hd) continue;
+        let t0 = 0, t1 = 1;
+        const slab = (p, d, h) => {
+          if (Math.abs(d) < 1e-9) return Math.abs(p) < h;
+          let a = (-h - p) / d, c = (h - p) / d;
+          if (a > c) { const x = a; a = c; c = x; }
+          t0 = Math.max(t0, a); t1 = Math.min(t1, c);
+          return t0 <= t1;
+        };
+        if (!slab(ax, dx, hw) || !slab(az, dz, hd)) continue;
+        const roof = exploreRoofOf(b);
+        if (roof === null) continue;
+        // Where the line enters the box, is it below the roof?
+        if (target.y + off.y * t0 > roof + 0.3) continue;
+        best = Math.min(best, t0 * len - 0.4);
+      }
+      return best;
     }
 
 // Keys, the joystick and held buttons

@@ -120,6 +120,7 @@ function initDiorama3D() {
       // Real colours, filmic tone mapping, physical light and the Graphics level (js/realism.js)
       if (typeof setupRealisticRenderer === 'function') setupRealisticRenderer();
       container.appendChild(renderer.domElement);
+      fadeInWorldWhenReady(renderer.domElement);
 
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
@@ -246,6 +247,21 @@ function initDiorama3D() {
       animateDiorama();
     }
 
+// The 3D view fades in once its first frames are drawn and the ground textures are in (at most a
+// few seconds), instead of popping in half-built over the dark page
+function fadeInWorldWhenReady(canvas) {
+      canvas.style.opacity = '0';
+      canvas.style.transition = 'opacity 0.9s ease-out';
+      const start = performance.now();
+      const check = () => {
+        const frames = renderer && renderer.info ? renderer.info.render.frame : 0;
+        const tex = typeof TERRAIN_TEXTURES === 'undefined' || Object.values(TERRAIN_TEXTURES).every(x => !x || x.image);
+        if ((frames >= 3 && tex) || performance.now() - start > 6000) canvas.style.opacity = '1';
+        else requestAnimationFrame(check);
+      };
+      requestAnimationFrame(check);
+    }
+
 function buildAlpineTerrainAndMountains3D() {
       terrainSwapGroup = new THREE.Group();
       scene.add(terrainSwapGroup);
@@ -259,19 +275,28 @@ function buildAlpineTerrainAndMountains3D() {
       const pos = groundGeo.attributes.position;
       const colors = [];
 
+      for (let i = 0; i < pos.count; i++) pos.setY(i, getAnalyticalGroundHeight(pos.getX(i), pos.getZ(i)));
+      groundGeo.computeVertexNormals();
+      const nrm = groundGeo.attributes.normal;
+      const rockA = new THREE.Color(), rockB = new THREE.Color(0x5e5b55), snowC = new THREE.Color(0xeef1f5);
       for (let i = 0; i < pos.count; i++) {
         const vx = pos.getX(i);
         const vz = pos.getZ(i);
-        const vy = getAnalyticalGroundHeight(vx, vz);
-        pos.setY(i, vy);
+        const vy = pos.getY(i);
 
         // Natural colours by altitude, with gentle variation so the ground doesn't look flat
         // (js/realism.js reads these colours to pick the grass, rock, sand, dirt or snow texture)
         const c = new THREE.Color();
         const wobble = Math.sin(vx * 0.9) * Math.cos(vz * 0.7) * 0.5 + Math.sin(vx * 0.23 + vz * 0.31) * 0.5;
         const dry = Math.max(0, Math.sin(vx * 0.13 - vz * 0.21) * Math.cos(vz * 0.09 + vx * 0.05));
-        if (vy > 8.5) c.setHex(0xeef1f5); // Snow cap
-        else if (vy > 2.6) c.setHex(0x7a766d).lerp(new THREE.Color(0x5e5b55), Math.max(0, wobble)); // Rocky ridge
+        if (vy > 2.6) {
+          // Rocky ridge; snow only settles on the gentler high ground, never on the cliff faces
+          rockA.setHex(0x7a766d).lerp(rockB, Math.max(0, wobble));
+          c.copy(rockA);
+          // Sheer faces a shade darker than the ledges, so the cliffs have some depth
+          c.lerp(rockB, (1 - snowHoldsOn(nrm.getY(i) + 0.12)) * 0.45);
+          if (vy > 8.5) c.lerp(snowC, snowHoldsOn(nrm.getY(i)) * Math.min(1, (vy - 8.5) / 0.6 + 0.4));
+        }
         else if (vz > 8.2) c.setHex(0xc8b48c); // Sandy beach
         else if (Math.abs(vx + 2) < 2.0 && vz > -10 && vz < 9) c.setHex(0x8f7656); // Dirt trail
         else c.setHex(0x5d7d33).lerp(new THREE.Color(0x46662a), Math.max(0, wobble)).lerp(new THREE.Color(0x87884a), dry * 0.55); // Meadow grass, drier in patches
@@ -280,7 +305,6 @@ function buildAlpineTerrainAndMountains3D() {
         colors.push(c.r, c.g, c.b);
       }
       groundGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-      groundGeo.computeVertexNormals();
 
       const groundMesh = terrainGroundMesh = new THREE.Mesh(
         groundGeo,
@@ -806,6 +830,13 @@ function roundCartoonTree(trunkMat, leafColor) {
     }
 
 // Is the ground here steeper than `limit` (rise over run)? Trees and rocks never stand on a cliff face.
+// How much snow stays on ground with this normal (its up component): all of it on gentle ground,
+// none on cliff faces steeper than about 47 degrees, which show bare rock even in winter
+function snowHoldsOn(ny) {
+      const t = Math.max(0, Math.min(1, (ny - 0.68) / 0.14));
+      return t * t * (3 - 2 * t);
+    }
+
 function groundTooSteep(x, z, limit = 0.85, e = 0.8) {
       const h = getAnalyticalGroundHeight;
       return Math.max(Math.abs(h(x + e, z) - h(x - e, z)), Math.abs(h(x, z + e) - h(x, z - e))) / (2 * e) > limit;
@@ -1039,6 +1070,22 @@ function buildCafe3D() {
       const umbrellaPole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.1, 6), tableLeg.material);
       umbrellaPole.position.set(-1.3, 1.3, 2.5);
       cafe.add(walls, roof, awning, door, shopWindow, sign, cup, coffee, handle, table, tableLeg, umbrella, umbrellaPole);
+      // Details at the house's level (js/materials.js kit): base, corner boards, framed shop window and
+      // side windows, a door casing with a handle and step, eaves with gutters, lamps and a planter
+      if (typeof bldKit === 'function') {
+        const K = bldKit();
+        bldBase(cafe, 3.8, 2.8, 2.4);
+        const front = bldFace(cafe, 'front', 3.8, 2.8);
+        bldWindow(front, -0.7, 1.05, 1.6, 0.9, { noGlass: true, frame: K.darkTrim });
+        bldDoor(front, 0.9, 0.8, 1.4, { frame: K.darkTrim });
+        bldLamp(front, 1.55, 1.75);
+        bldPlanter(front, -0.7, 1.5);
+        ['left', 'right'].forEach(side => { const f = bldFace(cafe, side, 3.8, 2.8); bldWindow(f, 0, 1.3, 0.9, 0.75); bldLamp(f, 0.95, 1.9); });
+        const back = bldFace(cafe, 'back', 3.8, 2.8);
+        bldWindow(back, 0.8, 1.35, 0.7, 0.6);
+        bldEaves(cafe, 3.8, 2.8, 2.52, { overhang: 0.15, fascia: K.darkTrim, fasciaH: 0.28 });
+        bldFinish(cafe, [sign]);
+      }
       // Stucco walls, a steel roof and a wooden door (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(cafe, [[walls.material, 'plaster', 2], [roof.material, 'metalroof', 2], [door.material, 'paintedwood']]);
       scene.add(cafe);
@@ -1075,6 +1122,26 @@ function buildNetNode3D() {
       const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), new THREE.MeshBasicMaterial({ color: 0xf43f5e }));
       beacon.position.set(-1.4, 3.92, -0.6);
       net.add(body, glass, sign, dish, antenna, beacon);
+      if (typeof bldKit === 'function') {
+        const K = bldKit();
+        bldBase(net, 4.2, 3.0, 2.5, { corners: false, footMat: K.concrete });
+        // A dark aluminium storefront: frame, mullions and a door with pull handles in the glass
+        const front = bldFace(net, 'front', 4.2, 3.0);
+        bldWindow(front, 0, 1.25, 3.4, 1.3, { noGlass: true, frame: K.darkMetal, mullions: false, sill: false });
+        [-0.85, 0.85].forEach(x => bldBox(front, 0.05, 1.3, 0.06, K.darkMetal, x, 1.25, 0.05));
+        [1.32, 1.48].forEach(x => bldBox(front, 0.03, 0.42, 0.05, K.gutter, x, 1.0, 0.1));
+        bldBox(front, 4.0, 0.12, 0.3, K.concrete, 0, 0.06, 0.15);
+        [-1.9, 1.9].forEach(x => bldLamp(front, x, 1.95));
+        ['left', 'right', 'back'].forEach(side => { const f = bldFace(net, side, 4.2, 3.0); bldWindow(f, 0, 1.45, side === 'back' ? 1.4 : 1.0, 0.5, { frame: K.darkMetal, sill: false }); });
+        // Parapet coping round the flat roof and a rooftop air unit
+        bldEaves(net, 4.2, 3.0, 2.54, { overhang: 0.04, fascia: K.darkMetal, fasciaH: 0.1, gutters: false });
+        bldBox(net, 0.9, 0.5, 0.7, K.gutter, -0.2, 2.75, -0.7);
+        bldBox(net, 0.6, 0.04, 0.6, K.darkMetal, -0.2, 3.01, -0.7);
+        const downspout = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.4, 8), K.darkMetal);
+        downspout.position.set(-2.12, 1.2, -1.4);
+        net.add(downspout);
+        bldFinish(net, [sign]);
+      }
       // Modern metal wall panels (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(net, [[body.material, 'cladding', 2.5]]);
       scene.add(net);
@@ -1135,6 +1202,20 @@ function buildPostOffice3D() {
       mailbox.position.set(-1.9, 0, 2.1);
 
       po.add(body, roof, cornice, door, step, sign, pole, flag, mailbox);
+      if (typeof bldKit === 'function') {
+        const K = bldKit();
+        bldBase(po, 4.2, 3.2, 2.6, { footMat: K.stone, footH: 0.3, cornerMat: trim });
+        const front = bldFace(po, 'front', 4.2, 3.2);
+        [-1.35, 1.35].forEach(x => bldWindow(front, x, 1.5, 0.8, 0.7, { noGlass: true, frame: trim, sillMat: K.stone }));
+        bldDoor(front, 0, 0.9, 1.5, { frame: trim, step: false, doorDepth: 0.08 });
+        bldWindow(front, 0, 1.78, 0.8, 0.22, { frame: trim, sill: false, mullions: false }); // transom
+        [-0.75, 0.75].forEach(x => bldLamp(front, x, 1.95));
+        ['left', 'right'].forEach(side => { const f = bldFace(po, side, 4.2, 3.2); [-0.7, 0.7].forEach(x => bldWindow(f, x, 1.45, 0.7, 0.8, { frame: trim, sillMat: K.stone })); });
+        const back = bldFace(po, 'back', 4.2, 3.2);
+        bldWindow(back, 0, 1.45, 0.8, 0.8, { frame: trim, sillMat: K.stone });
+        bldEaves(po, 4.2, 3.2, 2.5, { overhang: 0.1, fascia: trim, fasciaH: 0.1, downspouts: true });
+        bldFinish(po, [sign, flag, mailbox]);
+      }
       // Real brick, slate shingles and painted trim (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(po, [[brick, 'brick', 1.2], [slate, 'shingles', 1.4], [trim, 'paintedwood']]);
       scene.add(po);
@@ -1923,6 +2004,32 @@ function runKeloFrameHooks(now) {
       }
     }
 
+// Fixed camera views: target x, y, z then camera x, y, z
+const CAMERA_PRESET_VIEWS = {
+  overview: [0, 0.5, -1, 0, 22, 27],
+  house: [-9.2, 1.4, -8.0, -9.2, 9.5, 0.5],
+  storehouse: [5.5, 1.2, -6.8, 5.5, 4.2, 0.8],
+  cafes: [0, 1.5, 3.2, 0, 11.5, 15.5]
+};
+const camScratch = new THREE.Vector3();
+const panScratch = { forward: new THREE.Vector3(), right: new THREE.Vector3(), move: new THREE.Vector3(), up: new THREE.Vector3(0, 1, 0) };
+// A per-frame easing amount tuned at 60 fps, turned into the same easing over `dt` seconds
+function camEase(perFrame, dt) {
+      return 1 - Math.pow(1 - perFrame, Math.max(0, Math.min(0.25, dt || 1 / 60)) * 60);
+    }
+
+const keloToolWordsCache = { a: null, b: null, c: null, mining: false, welding: false };
+function keloToolWords() {
+      const w = keloToolWordsCache, a = state.moodTitle, b = state.speechBubble, c = state.customPlaceName || '';
+      if (a !== w.a || b !== w.b || c !== w.c) {
+        w.a = a; w.b = b; w.c = c;
+        const text = `${a} ${b} ${c}`.toLowerCase();
+        w.mining = /drill|gold|\bmine\b|\bmining|\bdig|auger|\bores?\b|quarry|excavat|mycelium/i.test(text);
+        w.welding = /weld|forge|titanium|track|rail|sculpt|arch|spire/i.test(text);
+      }
+      return w;
+    }
+
 function animateDiorama() {
       requestAnimationFrame(animateDiorama);
       const t = clock.getElapsedTime();
@@ -1944,14 +2051,14 @@ function animateDiorama() {
         }
         const panSpeed = 0.52;
         // Pan relative to camera horizontal heading so arrow keys always feel natural
-        const forward = new THREE.Vector3();
+        const forward = panScratch.forward;
         camera.getWorldDirection(forward);
         forward.y = 0;
         if (forward.lengthSq() < 0.001) forward.set(0, 0, -1);
         forward.normalize();
-        const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+        const right = panScratch.right.crossVectors(forward, panScratch.up).normalize();
 
-        const moveDelta = new THREE.Vector3();
+        const moveDelta = panScratch.move.set(0, 0, 0);
         if (panUp) moveDelta.addScaledVector(forward, panSpeed);
         if (panDown) moveDelta.addScaledVector(forward, -panSpeed);
         if (panRight) moveDelta.addScaledVector(right, panSpeed);
@@ -1975,9 +2082,10 @@ function animateDiorama() {
       const dt = beginKeloPose(t);
 
       // Determine which 3D hand tool Kelo-1 is actively holding
-      const textContext = `${state.moodTitle} ${state.speechBubble} ${state.customPlaceName || ''}`.toLowerCase();
-      const isMiningOrDrilling = state.microPose === 'digging' || state.currentLocKey === 'mountain_peak' || /drill|gold|\bmine\b|\bmining|\bdig|auger|\bores?\b|quarry|excavat|mycelium/i.test(textContext);
-      const isWeldingOrBuilding = state.currentLocKey === 'weld' || Boolean(state.proceduralMotion?.sparkBurst) || /weld|forge|titanium|track|rail|sculpt|arch|spire/i.test(textContext);
+      // (the text tests run only when the words change, not every frame)
+      const toolWords = keloToolWords();
+      const isMiningOrDrilling = state.microPose === 'digging' || state.currentLocKey === 'mountain_peak' || toolWords.mining;
+      const isWeldingOrBuilding = state.currentLocKey === 'weld' || Boolean(state.proceduralMotion?.sparkBurst) || toolWords.welding;
 
       if (keloDrillToolGroup && keloWeldTorchGroup) {
         // A carried tool (shovel, jackhammer...) replaces the built-in drill arm
@@ -2212,7 +2320,7 @@ function animateDiorama() {
       // Animals, his friend and pet, the campfire, swimming: things his human switched on (js/wishfeatures.js)
       if (typeof updateWishFeatures === 'function') updateWishFeatures(t);
       if (typeof checkForGlints === 'function') checkForGlints();
-      updateClouds(1 / 60);
+      updateClouds(dt); // real seconds, so they drift at the same speed at any frame rate
       if (skyDome) skyDome.position.copy(camera.position);
 
       // 2. Scale Garden Crops smoothly based on ripeness
@@ -2262,23 +2370,16 @@ function animateDiorama() {
       } else if (typeof basementCameraUpdate === 'function' && basementCameraUpdate()) {
         // moved there
       } else if (state.cameraMode === 'follow') {
-        controls.target.lerp(new THREE.Vector3(keloGroup.position.x, keloGroup.position.y + 1.6, keloGroup.position.z), 0.08);
+        controls.target.lerp(camScratch.set(keloGroup.position.x, keloGroup.position.y + 1.6, keloGroup.position.z), camEase(0.08, dt));
       } else if (state.cameraMode === 'bird') {
         // Keep target clamped to terrain elevation while allowing free Arrow-Key / WASD exploration
         const targetGroundY = getIslandGroundHeight(controls.target.x, controls.target.z);
-        controls.target.y = THREE.MathUtils.lerp(controls.target.y, targetGroundY + 1.0, 0.1);
-      } else if (state.cameraMode === 'overview') {
-        controls.target.lerp(new THREE.Vector3(0, 0.5, -1), 0.08);
-        camera.position.lerp(new THREE.Vector3(0, 22, 27), 0.05);
-      } else if (state.cameraMode === 'house') {
-        controls.target.lerp(new THREE.Vector3(-9.2, 1.4, -8.0), 0.08);
-        camera.position.lerp(new THREE.Vector3(-9.2, 9.5, 0.5), 0.05);
-      } else if (state.cameraMode === 'storehouse') {
-        controls.target.lerp(new THREE.Vector3(5.5, 1.2, -6.8), 0.08);
-        camera.position.lerp(new THREE.Vector3(5.5, 4.2, 0.8), 0.05);
-      } else if (state.cameraMode === 'cafes') {
-        controls.target.lerp(new THREE.Vector3(0, 1.5, 3.2), 0.08);
-        camera.position.lerp(new THREE.Vector3(0, 11.5, 15.5), 0.05);
+        controls.target.y = THREE.MathUtils.lerp(controls.target.y, targetGroundY + 1.0, camEase(0.1, dt));
+      } else if (CAMERA_PRESET_VIEWS[state.cameraMode]) {
+        // The fixed views ease in at the same pace at any frame rate
+        const [tx, ty, tz, px, py, pz] = CAMERA_PRESET_VIEWS[state.cameraMode];
+        controls.target.lerp(camScratch.set(tx, ty, tz), camEase(0.08, dt));
+        camera.position.lerp(camScratch.set(px, py, pz), camEase(0.05, dt));
       }
 
       controls.update();
@@ -2292,36 +2393,51 @@ function animateDiorama() {
       projectLabelsToScreen();
     }
 
+// Pins are projected every frame: scratch vectors, the viewport size read once per resize, and
+// style properties written only when they change
+const labelScratch = new THREE.Vector3(), labelGroundScratch = new THREE.Vector3();
+const labelView = { el: null, w: 0, h: 0, at: -1 };
 function projectLabelsToScreen() {
-      const viewport = document.getElementById('dioramaViewport');
+      if (!labelView.el) {
+        labelView.el = document.getElementById('dioramaViewport');
+        window.addEventListener('resize', () => { labelView.at = -1; });
+      }
+      const viewport = labelView.el;
       if (!viewport || !keloGroup) return;
-      const w = viewport.clientWidth;
-      const h = viewport.clientHeight;
-
-      // Project Kelo-1 Overhead Bubble
-      // (What he's doing is shown in the docked panel at the bottom; nothing to project here)
+      if (labelView.at < 0 || ++labelView.at > 120) { labelView.w = viewport.clientWidth; labelView.h = viewport.clientHeight; labelView.at = 1; }
+      const w = labelView.w;
+      const h = labelView.h;
 
       // Project Building & Mountain Pins (anchored above exact terrain elevation!)
       // Names only appear when the cursor is near the place (or it was just tapped)
       const pointerLive = hoverPointer.active && (hoverPointer.touchUntil === 0 || Date.now() < hoverPointer.touchUntil);
-      Object.values(TOWN_LOCATIONS).forEach(loc => {
+      for (const id in TOWN_LOCATIONS) {
+        const loc = TOWN_LOCATIONS[id];
         const el = poiDomElements[loc.id];
-        if (!el) return;
+        if (!el) continue;
         const pinBaseY = (typeof loc.groundY === 'number') ? loc.groundY : getIslandGroundHeight(loc.x, loc.z);
-        const v = new THREE.Vector3(loc.x, pinBaseY + 3.6, loc.z);
-        v.project(camera);
-        const ground = new THREE.Vector3(loc.x, pinBaseY + 1.0, loc.z).project(camera);
+        const v = labelScratch.set(loc.x, pinBaseY + 3.6, loc.z).project(camera);
+        const ground = labelGroundScratch.set(loc.x, pinBaseY + 1.0, loc.z).project(camera);
         const lx = (v.x * 0.5 + 0.5) * w, ly = (-(v.y * 0.5) + 0.5) * h;
         const gx = (ground.x * 0.5 + 0.5) * w, gy = (-(ground.y * 0.5) + 0.5) * h;
         const near = pointerLive && v.z <= 1 && (
           Math.hypot(hoverPointer.x - gx, hoverPointer.y - gy) < 70 ||
           Math.hypot(hoverPointer.x - lx, hoverPointer.y - ly) < 45 ||
           (Math.abs(hoverPointer.x - gx) < 40 && hoverPointer.y > ly && hoverPointer.y < gy));
-        el.style.opacity = near ? '1' : '0';
-        el.style.pointerEvents = near ? 'auto' : 'none';
-        if (v.z <= 1) {
-          el.style.left = `${lx}px`;
-          el.style.top = `${ly}px`;
+        const was = el._keloPin || (el._keloPin = { near: null, x: NaN, y: NaN });
+        if (was.near !== near) {
+          was.near = near;
+          el.style.opacity = near ? '1' : '0';
+          el.style.pointerEvents = near ? 'auto' : 'none';
         }
-      });
+        // Hidden pins don't need to follow the camera until they show again
+        if (v.z <= 1 && (near || el.style.opacity !== '0')) {
+          const rx = Math.round(lx), ry = Math.round(ly);
+          if (rx !== was.x || ry !== was.y) {
+            was.x = rx; was.y = ry;
+            el.style.left = `${rx}px`;
+            el.style.top = `${ry}px`;
+          }
+        }
+      }
     }

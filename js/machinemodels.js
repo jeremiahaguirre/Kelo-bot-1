@@ -78,11 +78,46 @@ const MM_GLOW_DEFS = {
   window: { color: 0x0b0f14, emissive: 0xfff1d6, emissiveIntensity: 0, roughness: 0.2 }
 };
 const MM_MATS = {};
+// Which real finish each shared material gets: [finish, options, overrides]
+const MM_FINISH = {
+  white: ['painted', {}, { metalness: 0.12 }], grey: ['painted'], haas: ['painted', {}, { metalness: 0.2 }], haasRed: ['painted', {}, { metalness: 0.15 }],
+  dark: ['painted', {}, { roughness: 0.5 }], yellow: ['painted', {}, { metalness: 0.15 }], orange: ['painted', {}, { metalness: 0.12 }],
+  red: ['painted', {}, { metalness: 0.15 }], blue: ['painted'], navy: ['painted'], green: ['painted'], sienci: ['painted'], teal: ['painted'], wcGrey: ['painted'],
+  steel: ['steel'], alu: ['steel', { texture: 'brushed' }, { roughness: 0.28, metalness: 0.8 }], copper: ['copper'], brass: ['brass'],
+  wood: ['wood'], ply: ['wood'], mdf: ['wood', {}, { roughness: 0.9 }], bench: ['wood'],
+  concrete: ['stone', { repeat: 2 }, { roughness: 0.95 }], firebrick: ['brick', {}, { roughness: 0.95 }],
+  argon: ['painted'], oxygen: ['painted'], rubber: [null], tire: [null]
+};
+Object.keys(MM_FINISH).forEach(k => { if (!MM_FINISH[k][0]) delete MM_FINISH[k]; });
+
+// After a machine is built: join its static parts per material (its moving parts, which it keeps in
+// userData, stay separate), so a detailed machine still costs a handful of draw calls
+function machineMergeStatic(root) {
+      if (!root || typeof mergeStaticMeshes !== 'function') return 0;
+      const flagged = [];
+      root.traverse(o => {
+        if (o.isMesh && o.userData.sharedGeometry && Object.keys(o.userData).length === 1) { delete o.userData.sharedGeometry; flagged.push(o); }
+      });
+      let n = 0;
+      try { n = mergeStaticMeshes(root); } finally {
+        // Parts left whole keep their shared-geometry mark (so disposeTree leaves the shared geometry alone)
+        flagged.forEach(o => { if (o.parent) o.userData.sharedGeometry = true; });
+      }
+      return n;
+    }
 
 function mmMat(key) {
       if (MM_MATS[key]) return MM_MATS[key];
       const def = MM_MAT_DEFS[key] || MM_MAT_DEFS.grey;
       const m = new THREE.MeshStandardMaterial({ roughness: 0.5, metalness: 0.2, ...def });
+      // Real surfaces (js/materials.js): powder-coated paint, brushed steel, wood grain, cast concrete...
+      const finish = MM_FINISH[key];
+      if (finish && typeof finishMaterial === 'function' && !m.transparent) {
+        const keep = m.color.getHex();
+        finishMaterial(m, finish[0], finish[1] || {});
+        m.color.setHex(keep);
+        if (finish[2]) Object.assign(m, finish[2]);
+      }
       m.userData.keepMap = true;
       m.userData.shared = true;
       MM_MATS[key] = m;

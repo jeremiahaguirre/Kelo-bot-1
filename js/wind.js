@@ -156,6 +156,14 @@ function updateWindLook(t, dt) {
       da = Math.atan2(Math.sin(da), Math.cos(da));
       windShown.angle += da * Math.min(1, dt * 0.4);
       const s = windShown.s, dx = Math.cos(windShown.angle), dz = Math.sin(windShown.angle);
+      // The firs sway on the GPU (js/realism.js foliageSwayShader)
+      if (typeof FOLIAGE_WIND !== 'undefined') {
+        FOLIAGE_WIND.keloWindTime.value = t;
+        FOLIAGE_WIND.keloWindDir.value.set(dx, dz);
+        FOLIAGE_WIND.keloWindLean.value = s * s * 0.22;
+        FOLIAGE_WIND.keloWindRock.value = 0.025 + s * 0.09;
+        FOLIAGE_WIND.keloWindSpeed.value = 1.1 + s * 2.6;
+      }
       // Trees: the leafy tops lean downwind and rock, more as the wind picks up
       if (typeof valleyTrees !== 'undefined') {
         const lean = s * s * 0.32, rock = 0.02 + s * 0.12, speed = 1.2 + s * 3.5;

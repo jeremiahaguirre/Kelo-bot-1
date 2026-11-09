@@ -80,10 +80,37 @@ function buildMuseum3D() {
       MUSEUM_FRAMES.length = 0;
       for (let i = 0; i < 4; i++) MUSEUM_FRAMES.push({ x: -w / 2 + 1.6 + i * ((w - 3.2) / 3), y: 2.6, z: -d / 2 + 0.12, rotY: 0 });
       [-1, 1].forEach(s => [-1.6, 1.4].forEach(fz => MUSEUM_FRAMES.push({ x: s * (w / 2 - 0.12), y: 2.6, z: fz, rotY: -s * Math.PI / 2 })));
-      if (typeof buildBasementHatch === 'function') museumGroup.add(buildBasementHatch(MUSEUM_HATCH_LOCAL, 0.56, Math.PI / 2));
+      const hatch = typeof buildBasementHatch === 'function' ? buildBasementHatch(MUSEUM_HATCH_LOCAL, 0.56, Math.PI / 2) : null;
+      if (hatch) museumGroup.add(hatch);
+      // Details (js/materials.js kit): column bases, a dentil course under the cornice, bronze lamps
+      // on the side walls, stone urns either side of the steps, and a moulded base course
+      if (typeof bldKit === 'function') {
+        const K = bldKit();
+        for (let i = 0; i < 6; i++) {
+          const x = -w / 2 + 0.6 + i * ((w - 1.2) / 5);
+          bldBox(museumGroup, 0.62, 0.14, 0.62, stone, x, 0.57, d / 2 + 0.4);
+          bldBox(museumGroup, 0.52, 0.08, 0.52, marble, x, 0.68, d / 2 + 0.4);
+        }
+        for (let x = -w / 2 - 0.2; x <= w / 2 + 0.2; x += 0.32) bldBox(museumGroup, 0.14, 0.12, 0.1, marble, x, 0.5 + wallH + 0.12, d / 2 + 0.88);
+        bldBox(museumGroup, w + 1.1, 0.12, d + 1.1, stone, 0, 0.44, 0);
+        [-1, 1].forEach(sx => {
+          const urnX = sx * 2.1, urnZ = d / 2 + 0.75;
+          bldBox(museumGroup, 0.5, 0.3, 0.5, stone, urnX, 0.65, urnZ);
+          const urn = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.16, 0.4, 14), stone);
+          urn.position.set(urnX, 1.0, urnZ);
+          urn.castShadow = true;
+          museumGroup.add(urn);
+          const shrub = new THREE.Mesh(new THREE.IcosahedronGeometry(0.26, 1), K.leaf);
+          shrub.position.set(urnX, 1.32, urnZ);
+          shrub.castShadow = true;
+          museumGroup.add(shrub);
+        });
+        ['left', 'right'].forEach(side => { const f = bldFace(museumGroup, side, w, d); bldLamp(f, d / 2 - 0.6, 0.5 + 2.6); });
+      }
       museumArtGroup = new THREE.Group();
       museumGroup.add(museumArtGroup);
       scene.add(museumGroup);
+      if (typeof bldFinish === 'function') bldFinish(museumGroup, () => [museumArtGroup, roof, hatch, sign].filter(Boolean));
       // The stone base and walls, and the front steps (he climbs them only on a trip inside, js/basements.js)
       addObstacle(obstacleBox(cx, cz, (w + 1) / 2, (d + 1) / 2, { placeR: Math.max(w, d) / 2 + 0.6, building: 'museum', door: { x: cx, z: cz + 7.3 } }),
         obstacleBox(cx, cz + d / 2 + 1.0, 2.55, 0.55, { placeR: -Infinity, building: 'museum', door: { x: cx, z: cz + 7.3 } }));

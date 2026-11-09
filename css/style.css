@@ -249,7 +249,7 @@ body.eyecam-on #explorePad .explore-pad-btn[data-hold="zoomOut"], body.eyecam-on
 #sideMenu :is(button, a, input, select, textarea, summary, label[role="button"], [tabindex]):focus-visible { outline: 2px solid var(--m-amber); outline-offset: 2px; border-radius: 10px; }
 #sideMenu .brain-section > summary:focus-visible { outline-offset: -2px; border-radius: 14px; }
 @media (pointer: coarse) {
-  #sideMenu :is(button, select, summary, label[role="button"]):not(.talk-chip):not(.inspector-tab-btn) { min-height: 44px; }
+  #sideMenu :is(button, select, summary, label[role="button"]):not(.talk-chip):not(.inspector-tab-btn):not(p *):not(span *) { min-height: 44px; }
   #sideMenu input:is([type="text"], [type="search"], [type="date"], [type="number"]) { min-height: 44px; font-size: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {

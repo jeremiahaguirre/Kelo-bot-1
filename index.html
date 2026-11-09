@@ -192,28 +192,28 @@
   <aside id="sideMenu" class="fixed top-0 right-0 z-40 h-full w-full sm:w-[460px] bg-slate-900/95 backdrop-blur-xl border-l border-slate-800 shadow-2xl flex flex-col translate-x-full transition-transform duration-300" aria-hidden="true" aria-label="Kelo-1 menu">
     <div class="flex items-center justify-between px-4 pt-3 pb-2">
       <span class="text-sm font-extrabold text-white">Interact with Kelo-1</span>
-      <button id="btnCloseMenu" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center" aria-label="Close menu"><i class="ph-bold ph-x"></i></button>
+      <button id="btnCloseMenu" type="button" class="w-11 h-11 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center" aria-label="Close menu"><i class="ph-bold ph-x"></i></button>
     </div>
-    <nav class="grid grid-cols-7 gap-1 px-2 pb-2 border-b border-slate-800">
-      <button data-tab="talk" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Talk">
+    <nav class="menu-tabs grid grid-cols-7 gap-1 px-2 pb-2 border-b border-slate-800" role="tablist" aria-label="Menu sections">
+      <button type="button" role="tab" aria-controls="tab-talk" data-tab="talk" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Talk">
             <i class="ph-fill ph-chat-circle-dots text-base" data-tab-emoji="💬"></i><span>Talk</span>
-          </button><button data-tab="requests" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Post">
+          </button><button type="button" role="tab" aria-controls="tab-requests" data-tab="requests" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Post">
             <i class="ph-fill ph-envelope-simple text-base" data-tab-emoji="✉️"></i><span>Post</span><span id="requestsCountBadge" class="absolute -mt-1 ml-8 px-1 rounded-full bg-amber-500 text-slate-950 font-mono text-[9px]">0</span>
-          </button><button data-tab="diary" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Diary">
+          </button><button type="button" role="tab" aria-controls="tab-diary" data-tab="diary" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Diary">
             <i class="ph-fill ph-notebook text-base" data-tab-emoji="📓"></i><span>Diary</span>
-          </button><button data-tab="brain" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Brain">
+          </button><button type="button" role="tab" aria-controls="tab-brain" data-tab="brain" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Brain">
             <i class="ph-fill ph-brain text-base" data-tab-emoji="🧠"></i><span>Brain</span>
-          </button><button data-tab="github" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="GitHub">
+          </button><button type="button" role="tab" aria-controls="tab-github" data-tab="github" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="GitHub">
             <i class="ph-fill ph-github-logo text-base" data-tab-emoji="🐙"></i><span>GitHub</span>
-          </button><button data-tab="world" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="World">
+          </button><button type="button" role="tab" aria-controls="tab-world" data-tab="world" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="World">
             <i class="ph-fill ph-sliders-horizontal text-base" data-tab-emoji="🎛️"></i><span>World</span>
-          </button><button data-tab="map" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Map of his changes">
+          </button><button type="button" role="tab" aria-controls="tab-map" data-tab="map" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Map of his changes">
             <i class="ph-fill ph-map-trifold text-base" data-tab-emoji="🗺️"></i><span>Map</span>
           </button>
     </nav>
-    <div class="flex-1 overflow-y-auto">
+    <div id="menuScroll" class="flex-1 overflow-y-auto">
       <!-- TAB: TALK (js/talk.js): a live chat with Kelo-1. Letters and his requests live in the Post tab -->
-      <section id="tab-talk" class="tab-pane hidden" aria-labelledby="talkTitle">
+      <section id="tab-talk" class="tab-pane hidden" role="tabpanel" aria-labelledby="talkTitle">
         <header class="talk-head">
           <span class="talk-avatar talk-avatar-kelo" aria-hidden="true"><span class="talk-face"><i></i><i></i></span></span>
           <div class="min-w-0 flex-1">
@@ -309,38 +309,60 @@
           </div>
         </div>
       </section>
-      <!-- TAB 1: HIS DIARY -->
-      <div id="tab-diary" class="tab-pane hidden p-4 space-y-3">
-        <div class="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/15 to-orange-500/5 border border-amber-500/30 space-y-1.5">
-          <div class="flex items-center justify-between text-[11px] font-mono text-amber-300">
-            <span>📖 LATEST STREAM OF CONSCIOUSNESS</span>
-            <button id="btnExportDiary" class="hover:underline flex items-center gap-1"><i class="ph-bold ph-copy"></i> Copy Diary</button>
+      <!-- TAB 1: HIS DIARY (a journal: js/main.js renderDiaryTab) -->
+      <section id="tab-diary" class="tab-pane hidden" role="tabpanel" aria-label="His diary">
+        <div class="menu-toolbar" role="search">
+          <div class="flex items-center gap-2">
+            <label for="diaryArchiveSearch" class="sr-only">Search his diary</label>
+            <div class="menu-search flex-1">
+              <svg aria-hidden="true" viewBox="0 0 20 20" width="15" height="15"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <input id="diaryArchiveSearch" type="search" placeholder="Search his diary" autocomplete="off" enterkeyhint="search">
+            </div>
+            <label for="diaryDateFilter" class="sr-only">Show entries from</label>
+            <select id="diaryDateFilter" class="menu-select">
+              <option value="all">Any time</option>
+              <option value="today">Today</option>
+              <option value="week">Past 7 days</option>
+              <option value="month">Past 30 days</option>
+              <option value="day">On a day…</option>
+            </select>
+            <button id="btnExportDiary" type="button" class="menu-icon-btn" aria-label="Copy the diary" title="Copy the diary"><i class="ph-bold ph-copy" aria-hidden="true"></i></button>
           </div>
-          <p id="diarySpotlightText" class="font-serif italic text-sm text-slate-100 leading-relaxed">"Dear Diary, I just woke up. I want to find out everything."</p>
+          <div id="diaryDayPickWrap" class="hidden pt-2">
+            <label for="diaryDayPick" class="sr-only">Pick a day</label>
+            <input id="diaryDayPick" type="date" class="menu-select w-full">
+          </div>
+          <p id="diaryArchiveCount" class="menu-toolbar-note" aria-live="polite">0 entries</p>
         </div>
-        <div id="diaryEntriesList" class="space-y-2.5"></div>
+        <div class="px-4 pb-4 pt-3 space-y-4">
+          <article id="diaryFeatured" class="journal-featured" aria-labelledby="diaryFeaturedLabel">
+            <div class="flex items-center justify-between gap-2">
+              <span id="diaryFeaturedLabel" class="journal-kicker">Latest entry</span>
+              <span id="diaryFeaturedWhen" class="journal-when"></span>
+            </div>
+            <div id="diaryFeaturedTags" class="journal-tags"></div>
+            <p id="diarySpotlightText" class="journal-body journal-body-lg">"Dear Diary, I just woke up. I want to find out everything."</p>
+          </article>
+          <div id="diaryEntriesList" class="journal-feed" role="feed" aria-label="Diary entries" aria-busy="false"></div>
+          <div id="diaryArchiveResults" class="journal-more"></div>
 
-        <!-- Long-term diary archive & brain backup -->
-        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-          <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
-            <span class="font-bold text-amber-300 flex items-center gap-1.5"><i class="ph-fill ph-archive"></i> Diary Archive</span>
-            <span id="diaryArchiveCount" class="font-mono text-[10px] text-slate-400">0 older entries archived</span>
+          <!-- His memory: backup & restore -->
+          <div class="menu-card space-y-2">
+            <div class="menu-card-title"><i class="ph-fill ph-archive" aria-hidden="true"></i> His memory</div>
+            <p id="memoryUsageText" class="text-[11px] text-emerald-300/80"></p>
+            <div class="flex flex-wrap gap-2">
+              <button id="btnExportBrain" type="button" class="menu-btn menu-btn-teal"><i class="ph-bold ph-download-simple" aria-hidden="true"></i> Back up his brain</button>
+              <label class="menu-btn cursor-pointer" tabindex="0" role="button"><i class="ph-bold ph-upload-simple" aria-hidden="true"></i> Restore from backup
+                <input id="importBrainInput" type="file" accept="application/json,.json" class="hidden">
+              </label>
+            </div>
+            <p class="text-[11px] text-slate-500 leading-snug">His memories are saved automatically. A backup file keeps them safe or moves him to another browser or the desktop app. API keys are never included.</p>
           </div>
-          <input id="diaryArchiveSearch" type="search" placeholder="Search everything he has ever written..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400">
-          <div id="diaryArchiveResults" class="space-y-1.5 max-h-64 overflow-y-auto"></div>
-          <div class="flex flex-wrap gap-1.5 pt-1">
-            <button id="btnExportBrain" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 text-[11px] font-semibold transition"><i class="ph-bold ph-download-simple"></i> Back Up His Brain</button>
-            <label class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-semibold transition cursor-pointer"><i class="ph-bold ph-upload-simple"></i> Restore From Backup
-              <input id="importBrainInput" type="file" accept="application/json,.json" class="hidden">
-            </label>
-          </div>
-          <p id="memoryUsageText" class="text-[10px] font-mono text-emerald-300/80"></p>
-          <p class="text-[10px] text-slate-500">His memories are saved automatically. A backup file lets you keep them safe or move him to another browser or the desktop app. API keys are never included.</p>
         </div>
-      </div>
+      </section>
 
       <!-- TAB 2: SUPPLY BROKER TOOL REQUESTS & OPEN QUESTIONS -->
-      <div id="tab-requests" class="tab-pane hidden p-4 space-y-3">
+      <div id="tab-requests" class="tab-pane hidden p-4 space-y-3" role="tabpanel">
         <!-- POST OFFICE: mail waiting for Kelo-1 to pick up -->
         <div class="p-3 rounded-2xl bg-gradient-to-br from-red-500/15 to-rose-500/5 border border-red-500/35 space-y-2">
           <div class="flex items-center justify-between gap-2">
@@ -445,7 +467,7 @@
       </div>
 
       <!-- TAB 3: AUTONOMOUS GITHUB (@kelo1-okanagan-bot) -->
-      <div id="tab-github" class="tab-pane hidden p-4 space-y-3">
+      <div id="tab-github" class="tab-pane hidden p-4 space-y-3" role="tabpanel">
         <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
           <div class="flex items-center justify-between">
             <div>
@@ -469,169 +491,186 @@
       </div>
 
       <!-- TAB 4: HIS BRAIN (WORLDVIEW, OPINIONS, 3D CREATIONS & MEMORIES) -->
-      <div id="tab-brain" class="tab-pane hidden p-4 space-y-3">
-        <div class="p-3.5 rounded-2xl bg-purple-950/30 border border-purple-500/30 space-y-1.5">
-          <div id="worldviewStageBadge" class="text-[10px] font-mono uppercase text-purple-300">His outlook</div>
-          <p id="worldviewManifestoText" class="font-serif italic text-xs text-slate-100 leading-relaxed">"I don't know anything yet. I want to find out what everything is."</p>
+      <section id="tab-brain" class="tab-pane hidden" role="tabpanel" aria-label="His brain">
+        <div class="menu-toolbar" role="search">
+          <div class="flex items-center gap-2">
+            <label for="brainSearch" class="sr-only">Search his brain</label>
+            <div class="menu-search flex-1">
+              <svg aria-hidden="true" viewBox="0 0 20 20" width="15" height="15"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <input id="brainSearch" type="search" placeholder="Search his brain" autocomplete="off" enterkeyhint="search">
+            </div>
+            <button id="brainExpandAll" type="button" class="menu-icon-btn" aria-label="Open every section" title="Open every section"><svg aria-hidden="true" viewBox="0 0 20 20" width="16" height="16"><path d="M10 2v6M7 5l3-3 3 3M10 18v-6M7 15l3 3 3-3M3 10h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button id="brainCollapseAll" type="button" class="menu-icon-btn" aria-label="Close every section" title="Close every section"><svg aria-hidden="true" viewBox="0 0 20 20" width="16" height="16"><path d="M10 2v6M7 5l3 3 3-3M10 18v-6M7 15l3-3 3 3M3 10h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+          <p id="brainSearchNote" class="menu-toolbar-note hidden" aria-live="polite"></p>
         </div>
-
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="built" open>
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-emerald-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🏗️ Things He Has Built</span></span>
-            <span id="inventedCountBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20">0 built</span>
+        <div class="px-4 pb-4 pt-3 space-y-3">
+        <div id="brainSummary" class="brain-summary" aria-label="At a glance"></div>
+        <div class="brain-outlook">
+          <div id="worldviewStageBadge" class="journal-kicker text-purple-300">His outlook</div>
+          <p id="worldviewManifestoText" class="journal-body">"I don't know anything yet. I want to find out what everything is."</p>
+        </div>
+        <div id="brainSections" class="space-y-2">
+        <details class="brain-section" data-section="built" open>
+          <summary class="brain-head text-emerald-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🏗️ Things He Has Built</span></span>
+            <span id="inventedCountBadge" class="brain-count">0 built</span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <div id="inventedActionsContainer" class="space-y-2"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="upgrades" open>
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-violet-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>⌨️ Upgrades He Coded</span></span>
-            <span id="worldUpgradesCount" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-violet-500/20">0</span>
+        <details class="brain-section" data-section="upgrades" open>
+          <summary class="brain-head text-violet-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>⌨️ Upgrades He Coded</span></span>
+            <span id="worldUpgradesCount" class="brain-count">0</span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <p class="text-[10.5px] text-slate-500">He writes these at NetNode in a small, safe JSON language (never JavaScript). View the code, switch one off, or remove it.</p>
             <div id="worldUpgradesList" class="space-y-2"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="projects" open>
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-orange-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🔨 Real Things He's Building</span></span>
+        <details class="brain-section" data-section="projects" open>
+          <summary class="brain-head text-orange-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🔨 Real Things He's Building</span></span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <div id="projectsListContainer" class="space-y-1.5"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="buildprojects" open>
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-sky-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>✈️ Build projects</span></span>
-            <span id="buildProjectsBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-sky-500/20">none</span>
+        <details class="brain-section" data-section="buildprojects" open>
+          <summary class="brain-head text-sky-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>✈️ Build projects</span></span>
+            <span id="buildProjectsBadge" class="brain-count">none</span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <div id="buildProjectsContainer" class="space-y-1.5"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="skills" open>
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-amber-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🎓 Skills He Is Learning</span></span>
+        <details class="brain-section" data-section="skills" open>
+          <summary class="brain-head text-amber-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🎓 Skills He Is Learning</span></span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <div id="skillsListContainer" class="space-y-1.5"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="workshop" open>
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-amber-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🏭 His Workshop</span></span>
+        <details class="brain-section" data-section="workshop" open>
+          <summary class="brain-head text-amber-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🏭 His Workshop</span></span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <div id="workshopListContainer" class="space-y-1.5"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="vehicles" open>
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-sky-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🚚 His Vehicles</span></span>
+        <details class="brain-section" data-section="vehicles" open>
+          <summary class="brain-head text-sky-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🚚 His Vehicles</span></span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <div id="vehiclesListContainer" class="space-y-1.5"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="landscape" open>
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-lime-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🌲 How He Has Shaped the Valley</span></span>
+        <details class="brain-section" data-section="landscape" open>
+          <summary class="brain-head text-lime-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🌲 How He Has Shaped the Valley</span></span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <div id="landscapeListContainer" class="space-y-1.5"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="digging" open>
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-amber-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>⛏️ Digging, Equipment &amp; Finds</span></span>
+        <details class="brain-section" data-section="digging" open>
+          <summary class="brain-head text-amber-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>⛏️ Digging, Equipment &amp; Finds</span></span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <div id="digSitesContainer" class="space-y-1.5"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="hobbies" open>
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-orange-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🎨 Hobbies</span></span>
+        <details class="brain-section" data-section="hobbies" open>
+          <summary class="brain-head text-orange-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🎨 Hobbies</span></span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <div id="hobbiesContainer" class="space-y-1.5"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="memories" open>
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-pink-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🧠 Core Memories</span></span>
+        <details class="brain-section" data-section="memories" open>
+          <summary class="brain-head text-pink-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🧠 Core Memories</span></span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <p id="lifeStatsText" class="text-[10px] font-mono text-slate-400"></p>
             <div id="coreMemoriesContainer" class="space-y-1.5"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="concepts">
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-yellow-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>💡 Concepts He Invented</span></span>
-            <span id="conceptsCountBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-yellow-500/20">0 Concepts</span>
+        <details class="brain-section" data-section="concepts">
+          <summary class="brain-head text-yellow-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>💡 Concepts He Invented</span></span>
+            <span id="conceptsCountBadge" class="brain-count">0 Concepts</span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <div id="conceptsListContainer" class="space-y-2"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="shapes">
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-cyan-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>📐 Shapes He Designed or Discovered</span></span>
-            <span id="shapesCountBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20">0 Shapes</span>
+        <details class="brain-section" data-section="shapes">
+          <summary class="brain-head text-cyan-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>📐 Shapes He Designed or Discovered</span></span>
+            <span id="shapesCountBadge" class="brain-count">0 Shapes</span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <div id="shapeLibraryContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="opinions">
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-purple-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🧠 Opinions</span></span>
+        <details class="brain-section" data-section="opinions">
+          <summary class="brain-head text-purple-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🧠 Opinions</span></span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <div id="opinionsListContainer" class="space-y-2"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="visitors">
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-amber-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>👥 Visitors He Remembers</span></span>
+        <details class="brain-section" data-section="visitors">
+          <summary class="brain-head text-amber-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>👥 Visitors He Remembers</span></span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <div id="visitorMemoriesContainer" class="space-y-1.5"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="likes">
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-indigo-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>✨ Things That Fascinate Him</span></span>
+        <details class="brain-section" data-section="likes">
+          <summary class="brain-head text-indigo-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>✨ Things That Fascinate Him</span></span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <div id="likesListContainer" class="space-y-1.5"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="dislikes">
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-amber-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>⚖️ Things That Puzzle Him</span></span>
+        <details class="brain-section" data-section="dislikes">
+          <summary class="brain-head text-amber-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>⚖️ Things That Puzzle Him</span></span>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <div id="dislikesListContainer" class="space-y-1.5"></div>
           </div>
         </details>
-        <details class="brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2" data-section="web">
-          <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-sky-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🌐 What He Read at NetNode</span></span>
-            <button id="btnBrowseWebNow" class="text-[10px] font-mono text-sky-400 hover:underline">Browse now</button>
+        <details class="brain-section" data-section="web">
+          <summary class="brain-head text-sky-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🌐 What He Read at NetNode</span></span>
+            <button id="btnBrowseWebNow" type="button" class="brain-head-btn">Browse now</button>
           </summary>
-          <div class="pt-2 space-y-2">
+          <div class="brain-body">
             <p id="curiosityQueueText" class="text-[10px] font-mono text-slate-400"></p>
             <div id="webHistoryList" class="space-y-1.5"></div>
           </div>
         </details>
       </div>
+        <div id="brainNoMatch" class="menu-empty hidden"><div class="menu-empty-icon" aria-hidden="true">🔍</div><p class="menu-empty-title">Nothing in his brain matches</p><p>Try another word.</p></div>
+        </div>
+      </section>
 
       <!-- TAB: WORLD CONTROLS -->
-      <div id="tab-world" class="tab-pane hidden p-4 space-y-3">
+      <div id="tab-world" class="tab-pane hidden p-4 space-y-3" role="tabpanel">
         <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
           <div class="text-xs font-bold text-slate-200">World</div>
           <div class="flex flex-wrap gap-2">
@@ -674,7 +713,7 @@
       </div>
 
       <!-- TAB: MAP OF EVERYTHING HE HAS CHANGED (js/minimap.js) -->
-      <div id="tab-map" class="tab-pane hidden p-4 space-y-3">
+      <div id="tab-map" class="tab-pane hidden p-4 space-y-3" role="tabpanel">
         <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
           <div class="flex items-center justify-between gap-2">
             <div class="text-xs font-bold text-slate-200">🗺️ What Kelo-1 has changed</div>
@@ -896,5 +935,6 @@
   <script src="./js/tryit.js"></script>
   <script src="./js/plants.js"></script>
   <script src="./js/plantmodels.js"></script>
+  <script src="./js/menuui.js"></script>
 </body>
 </html>

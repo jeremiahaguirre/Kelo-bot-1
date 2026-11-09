@@ -172,6 +172,7 @@ Kelo-bot-1/
 │   ├── tryit.js         # The World tab's Try it panel: preview seasons, night and wind, send sample gifts
 │   ├── plants.js        # His concrete and asphalt plant beside the workshop: research, materials, mix designs, batches, hot mix that cools, concrete pours that cure, wear and service
 │   ├── plantmodels.js   # The plant in 3D: batch plant, asphalt plant, mixer truck, concrete pours, hover labels, built only when the camera is near
+│   ├── menuui.js        # The menu's Diary and Brain tabs: diary filters and paging, the Brain dashboard, search and section counts (loaded last)
 │   ├── shop.js          # The shop website itself (shop.html)
 │   └── vendor/          # The other three.js r128 add-ons (Sky, RGBELoader, bloom post-processing), kept in the repo
 ├── assets/

@@ -361,20 +361,28 @@ function projectsSummaryForAI() {
       return parts.join('; ');
     }
 
+// His real builds: the one he is gathering for first, with a bar and what he is still waiting for
 function renderProjectsList() {
       const el = document.getElementById('projectsListContainer');
       if (!el) return;
       const owned = ownedItemNames();
-      el.innerHTML = state.projects.slice(0, 8).map(p => {
+      const list = state.projects.slice(0, 8).sort((a, b) => (a.status === 'built') - (b.status === 'built'));
+      perfSetHtml(el, list.map(p => {
         const plan = planFor(p.key);
         if (!plan) return '';
-        const checks = p.status === 'built' ? '' : [...allocateMaterials(plan).map(a => [a.fromLogs ? `${a.m.ask} (from his logs)` : a.m.ask, Boolean(a.item)]), ...plan.tools.map(t => [BUILD_TOOLS[t].ask, owned.some(n => BUILD_TOOLS[t].re.test(n))])]
-          .map(([label, have]) => `<span class="px-1.5 py-0.5 rounded-md ${have ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-800 text-slate-400'}">${have ? '✓' : '○'} ${escapeHtml(label)}</span>`).join(' ');
-        return `<div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200 space-y-1">
-          <div class="font-semibold">${escapeHtml(plan.emoji)} ${escapeHtml(plan.name)} <span class="text-slate-500 font-normal">${p.status === 'built' ? `· built${p.fromLogs ? ' from his own logs' : ''}` : '· gathering materials'}</span></div>
-          ${checks ? `<div class="flex flex-wrap gap-1">${checks}</div>` : ''}
+        if (p.status === 'built') {
+          return `<div class="brain-card brain-row"><span class="brain-card-icon" aria-hidden="true">${escapeHtml(plan.emoji)}</span><span class="brain-card-title flex-1 truncate">${escapeHtml(plan.name)}</span><span class="brain-pill brain-pill-done">Built${p.fromLogs ? ' from his logs' : ''}</span></div>`;
+        }
+        const needs = [...allocateMaterials(plan).map(a => [a.fromLogs ? `${a.m.ask} (from his logs)` : a.m.ask, Boolean(a.item)]), ...plan.tools.map(t => [BUILD_TOOLS[t].ask, owned.some(n => BUILD_TOOLS[t].re.test(n))])];
+        const have = needs.filter(n => n[1]).length, pct = needs.length ? Math.round(have / needs.length * 100) : 100;
+        const waiting = needs.filter(n => !n[1]).map(n => n[0]);
+        return `<div class="brain-card space-y-1.5">
+          <div class="flex items-center gap-2"><span class="brain-card-icon" aria-hidden="true">${escapeHtml(plan.emoji)}</span><span class="brain-card-title flex-1 truncate">${escapeHtml(plan.name)}</span><span class="brain-pill">${have} of ${needs.length} ready</span></div>
+          <div class="brain-bar brain-bar-orange" role="progressbar" aria-label="${escapeHtml(plan.name)}: ${have} of ${needs.length} things ready" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>
+          <div class="brain-card-meta">${waiting.length ? `Waiting for ${waiting.length} ${waiting.length === 1 ? 'thing' : 'things'} (○ below)` : 'Has everything; building as soon as he is free'}</div>
+          <div class="flex flex-wrap gap-1">${needs.map(([label, ok]) => `<span class="brain-chip ${ok ? 'brain-chip-ok' : ''}">${ok ? '✓' : '○'} ${escapeHtml(label)}</span>`).join('')}</div>
         </div>`;
-      }).join('');
+      }).join(''));
     }
 
 // Real materials for a finished build: the parts tagged with a finish get it, the rest are worked out

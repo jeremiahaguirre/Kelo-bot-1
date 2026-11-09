@@ -1169,12 +1169,12 @@ function injectPlantsPanel() {
       const after = document.querySelector('#tab-brain details[data-section="projects"]') || document.querySelector('#tab-brain details');
       if (!after) return;
       const d = document.createElement('details');
-      d.className = 'brain-section rounded-2xl bg-slate-950/60 border border-slate-800/80 px-3 py-2';
+      d.className = 'brain-section';
       d.dataset.section = 'plants';
       d.open = true;
-      d.innerHTML = `<summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-sky-300">
-            <span class="flex items-center gap-1.5"><i class="ph-bold ph-caret-right brain-caret text-slate-500 transition-transform"></i><span>🏗️ Concrete &amp; Asphalt Plant</span></span>
-          </summary><div class="pt-2 space-y-2"><div id="plantsPanelContainer" class="space-y-1.5"></div></div>`;
+      d.innerHTML = `<summary class="brain-head text-sky-300">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🏗️ Concrete &amp; Asphalt Plant</span></span>
+          </summary><div class="brain-body"><div id="plantsPanelContainer" class="space-y-1.5"></div></div>`;
       after.insertAdjacentElement('afterend', d);
     }
 

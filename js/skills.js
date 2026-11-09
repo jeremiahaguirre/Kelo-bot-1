@@ -221,14 +221,37 @@ function skillsSummaryForAI() {
       return `${list.length ? list.join(', ') : 'no practised skills yet'}${untried.length ? `; given to you but never really practised: ${untried.join(', ')}` : ''}`;
     }
 
+// How far he is from his current level to the next one (0..1); level 10 is the top
+function skillProgress(s) {
+      if (s.level >= 10) return 1;
+      return Math.max(0, Math.min(1, (s.xp - 6 * s.level * s.level) / Math.max(1, 6 * ((s.level + 1) ** 2 - s.level ** 2))));
+    }
+
+function skillAgo(at) {
+      if (!at) return '';
+      const m = Math.round((Date.now() - at) / 60000);
+      return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} d ago`;
+    }
+
+// Each skill: its level, a bar to the next level and when he last practised it
 function renderSkillsList() {
       const el = document.getElementById('skillsListContainer');
       if (!el) return;
       const list = Object.values(state.skills || {}).sort((a, b) => b.level - a.level || b.xp - a.xp);
-      el.innerHTML = list.length ? list.map(s => `
-        <div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200 flex items-center gap-2">
-          <span class="flex-1">🎓 ${escapeHtml(s.label)}</span>
-          <span class="text-amber-300 font-bold">Lv ${s.level}</span>
-          <span class="w-16 h-1.5 rounded bg-slate-700 overflow-hidden"><span class="block h-full bg-amber-400" style="width:${Math.round(Math.min(1, (s.xp - 6 * s.level * s.level) / Math.max(1, 6 * ((s.level + 1) ** 2 - s.level ** 2))) * 100)}%"></span></span>
-        </div>`).join('') : '<div class="text-[11px] text-slate-500 italic">No skills practised yet. Give him something to learn!</div>';
+      perfSetHtml(el, list.length ? list.map(s => {
+        const pct = Math.round(skillProgress(s) * 100);
+        const ago = skillAgo(s.lastAt);
+        return `
+        <div class="brain-card brain-skill">
+          <div class="brain-skill-lv" aria-hidden="true"><small>Lv</small>${s.level}</div>
+          <div class="min-w-0 flex-1 space-y-1">
+            <div class="flex items-baseline justify-between gap-2">
+              <span class="brain-card-title truncate">${escapeHtml(s.label)}</span>
+              <span class="brain-card-meta shrink-0">${s.level >= 10 ? 'Mastered' : `${pct}% to Lv ${s.level + 1}`}</span>
+            </div>
+            <div class="brain-bar" role="progressbar" aria-label="${escapeHtml(s.label)}: level ${s.level}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>
+            <div class="brain-card-meta">${s.sessions || 0} ${s.sessions === 1 ? 'session' : 'sessions'}${ago ? ` · last ${ago}` : ''}</div>
+          </div>
+        </div>`;
+      }).join('') : '<p class="brain-empty">No skills practised yet. Give him something to learn!</p>');
     }

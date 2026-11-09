@@ -53,26 +53,155 @@ function renderAllUI() {
       if (typeof renderMiningUI === 'function') renderMiningUI();
     }
 
-function renderDiaryTab() {
-      const list = document.getElementById('diaryEntriesList');
-      if (!Array.isArray(state.diaryEntries)) state.diaryEntries = [];
-      if (state.diaryEntries.length > 0) {
-        document.getElementById('diarySpotlightText').textContent = `"${state.diaryEntries[0].text}"`;
+// --- The Diary tab: a journal grouped by day, newest first, loaded a page at a time ---------------
+const journalView = { query: '', range: 'all', day: '', shown: 30, key: '', dirty: true };
+const JOURNAL_PAGE = 30;
+
+// Is this tab of the menu on screen right now? (closed menu or another tab: nothing to draw)
+function menuTabVisible(tabId) {
+      const menu = document.getElementById('sideMenu');
+      const pane = document.getElementById('tab-' + tabId);
+      return Boolean(menu && pane && !menu.classList.contains('translate-x-full') && !pane.classList.contains('hidden'));
+    }
+
+// "🎓 Kayaking: level 3" -> ['🎓', 'Kayaking: level 3']
+function journalSplitEmoji(text) {
+      const m = String(text || '').match(/^\s*((?:\p{Extended_Pictographic}|\p{Regional_Indicator})(?:️|‍|\p{Extended_Pictographic}|\p{Emoji_Modifier})*)\s*(.*)$/su);
+      return m ? [m[1], m[2]] : ['📓', String(text || '')];
+    }
+
+// Escaped text with the search words marked
+function journalMark(text, words) {
+      const raw = String(text || '');
+      if (!words.length) return escapeHtml(raw);
+      const re = new RegExp(`(${words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+      return raw.split(re).map((part, i) => (i % 2 ? `<mark class="journal-hit">${escapeHtml(part)}</mark>` : escapeHtml(part))).join('');
+    }
+
+function journalDayLabel(at) {
+      const d = new Date(at), today = new Date();
+      const startOf = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+      const diff = Math.round((startOf(today) - startOf(d)) / 86400e3);
+      if (diff === 0) return 'Today';
+      if (diff === 1) return 'Yesterday';
+      return d.toLocaleDateString([], diff < 7 ? { weekday: 'long', month: 'long', day: 'numeric' } : { weekday: 'short', month: 'long', day: 'numeric', year: d.getFullYear() === today.getFullYear() ? undefined : 'numeric' });
+    }
+
+function journalTime(at) {
+      return new Date(at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    }
+
+// The text he wrote, and anything the agent tagged on the end ("[GEAR_REQUESTED]: a kite")
+function journalParts(d) {
+      const lines = String(d.text || '').split('\n');
+      const wish = (lines.find(l => /^\[GEAR_REQUESTED\]:/.test(l)) || '').replace(/^\[GEAR_REQUESTED\]:\s*/, '').trim();
+      return { body: lines.filter(l => !/^\[[A-Z_]+\]:/.test(l)).join(' ').trim(), wish: /^(none|n\/a|nothing)?$/i.test(wish) ? '' : wish };
+    }
+
+function journalTagsHtml(d, words, emoji, moodText) {
+      const { wish } = journalParts(d);
+      return [
+        moodText ? `<span class="journal-tag journal-tag-mood">${journalMark(moodText, words)}</span>` : '',
+        d.time && !/^(Autonomous Agent Tick|Just now)$/i.test(d.time) ? `<span class="journal-tag">${journalMark(d.time, words)}</span>` : '',
+        d.location ? `<span class="journal-tag journal-tag-place"><i class="ph-fill ph-map-pin" aria-hidden="true"></i>${journalMark(stripCoords(d.location), words)}</span>` : '',
+        wish ? `<span class="journal-tag journal-tag-wish">Wished for ${escapeHtml(wish)}</span>` : ''
+      ].join('');
+    }
+
+function journalEntryHtml(d, words) {
+      const [emoji, moodText] = journalSplitEmoji(d.mood);
+      const vitals = String(d.vitals || '').replace(/(\d+\.\d+)%/g, (m, n) => Math.round(parseFloat(n)) + '%');
+      return `<article class="journal-entry" aria-label="${escapeHtml(moodText || 'Diary entry')}, ${escapeHtml(journalTime(d.at))}">
+          <div class="journal-dot" aria-hidden="true">${escapeHtml(emoji)}</div>
+          <div class="min-w-0 flex-1 space-y-1.5">
+            <div class="flex items-baseline justify-between gap-2"><time class="journal-when" datetime="${new Date(d.at).toISOString()}">${escapeHtml(journalTime(d.at))}</time>${vitals ? `<span class="journal-vitals">${escapeHtml(vitals)}</span>` : ''}</div>
+            <div class="journal-tags">${journalTagsHtml(d, words, emoji, moodText)}</div>
+            <p class="journal-body">${journalMark(journalParts(d).body, words)}</p>
+          </div>
+        </article>`;
+    }
+
+// Every entry he has written, newest first (recent ones, then the long-term archive)
+function journalEntries() {
+      if (typeof stampDiaryEntries === 'function') stampDiaryEntries();
+      const archive = typeof memoryArchive !== 'undefined' ? memoryArchive.diary : [];
+      return state.diaryEntries.concat(archive).filter(d => d && d.text);
+    }
+
+function journalFilter(all) {
+      const words = journalView.query.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+      const now = new Date(), dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      let from = 0, to = Infinity;
+      if (journalView.range === 'today') from = dayStart;
+      if (journalView.range === 'week') from = dayStart - 6 * 86400e3;
+      if (journalView.range === 'month') from = dayStart - 29 * 86400e3;
+      if (journalView.range === 'day' && journalView.day) {
+        const [y, m, dd] = journalView.day.split('-').map(Number);
+        from = new Date(y, m - 1, dd).getTime(); to = from + 86400e3;
       }
-      perfSetHtml(list, state.diaryEntries.map(d => `
-        <article class="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800/90 space-y-1.5 hover:border-slate-700 transition">
-          <div class="flex items-center justify-between text-[11px] font-mono">
-            <span class="text-amber-300 font-bold">${escapeHtml(d.mood)}</span>
-            <span class="text-slate-400">${escapeHtml(String(d.vitals || '').replace(/(\d+\.\d+)%/g, (m, n) => Math.round(parseFloat(n)) + '%'))} • ${escapeHtml(d.time)}</span>
-          </div>
-          <div class="text-[11px] font-mono text-sky-300 flex items-center gap-1">
-            <i class="ph-fill ph-map-pin"></i> <span>${escapeHtml(d.location)}</span>
-          </div>
-          <p class="font-serif italic text-slate-200 text-sm leading-relaxed pl-2.5 border-l-2 border-amber-400/50">
-            "${escapeHtml(d.text)}"
-          </p>
-        </article>
-      `).join(''));
+      const list = all.filter(d => {
+        const at = d.at || 0;
+        if (at < from || at >= to) return false;
+        if (!words.length) return true;
+        const hay = `${d.text} ${d.mood} ${d.location} ${d.time}`.toLowerCase();
+        return words.every(w => hay.includes(w));
+      });
+      return { list, words };
+    }
+
+function renderDiaryTab() {
+      if (!Array.isArray(state.diaryEntries)) state.diaryEntries = [];
+      const latest = state.diaryEntries[0];
+      // The featured entry is written even with the tab closed (it is one line); the rest waits until it is seen
+      if (!menuTabVisible('diary')) { journalView.dirty = true; return; }
+      const archiveLen = typeof memoryArchive !== 'undefined' ? memoryArchive.diary.length : 0;
+      const today = new Date().toDateString();
+      const key = [state.diaryEntries.length, latest && latest.at, latest && latest.text.length, latest && latest.mood, archiveLen, journalView.query, journalView.range, journalView.day, journalView.shown, today].join('|');
+      if (key === journalView.key && !journalView.dirty) return;
+      journalView.key = key; journalView.dirty = false;
+
+      const all = journalEntries();
+      const filtering = Boolean(journalView.query.trim()) || journalView.range !== 'all';
+      const { list, words } = journalFilter(all);
+      const featured = document.getElementById('diaryFeatured');
+      const listEl = document.getElementById('diaryEntriesList');
+      const more = document.getElementById('diaryArchiveResults');
+      const countEl = document.getElementById('diaryArchiveCount');
+
+      // Latest entry, set apart at the top (not while searching)
+      featured.classList.toggle('hidden', filtering || !latest);
+      if (latest && !filtering) {
+        const [emoji, moodText] = journalSplitEmoji(latest.mood);
+        document.getElementById('diarySpotlightText').innerHTML = journalMark(journalParts(latest).body, []);
+        document.getElementById('diaryFeaturedWhen').textContent = `${journalDayLabel(latest.at)} · ${journalTime(latest.at)}`;
+        perfSetHtml(document.getElementById('diaryFeaturedTags'), `<span class="journal-tag journal-tag-emoji" aria-hidden="true">${escapeHtml(emoji)}</span>` + journalTagsHtml(latest, [], emoji, moodText));
+      }
+
+      const rest = filtering ? list : list.slice(1);
+      const shown = rest.slice(0, journalView.shown);
+      countEl.textContent = filtering
+        ? (list.length ? `${list.length.toLocaleString()} ${list.length === 1 ? 'entry matches' : 'entries match'}` : 'No entries match')
+        : `${all.length.toLocaleString()} ${all.length === 1 ? 'entry' : 'entries'} in his diary`;
+
+      let html = '', lastDay = '';
+      shown.forEach(d => {
+        const day = journalDayLabel(d.at);
+        if (day !== lastDay) {
+          if (lastDay) html += '</div></section>';
+          html += `<section class="journal-day" aria-label="${escapeHtml(day)}"><h3 class="journal-day-head"><span>${escapeHtml(day)}</span></h3><div class="journal-day-list">`;
+          lastDay = day;
+        }
+        html += journalEntryHtml(d, words);
+      });
+      if (lastDay) html += '</div></section>';
+      if (!all.length) {
+        html = `<div class="menu-empty"><div class="menu-empty-icon" aria-hidden="true">📓</div><p class="menu-empty-title">His diary is still blank</p><p>He writes in it after things happen. Come back once he has been out and about.</p></div>`;
+      } else if (!shown.length && filtering) {
+        html = `<div class="menu-empty"><div class="menu-empty-icon" aria-hidden="true">🔍</div><p class="menu-empty-title">Nothing matches</p><p>Try fewer words or a wider time range.</p><button type="button" class="menu-btn mt-2" data-journal-clear>Clear search</button></div>`;
+      }
+      perfSetHtml(listEl, html);
+      const left = rest.length - shown.length;
+      perfSetHtml(more, left > 0 ? `<button type="button" class="menu-btn w-full justify-center" data-journal-more>Load older entries <span class="text-slate-500">(${left.toLocaleString()} more)</span></button>` : (shown.length > 6 && !filtering ? '<p class="journal-end">The first page of his diary</p>' : ''));
     }
 
 function renderRequestsTab() {
@@ -559,35 +688,48 @@ window.addEventListener('DOMContentLoaded', () => {
     e.currentTarget.querySelector('span').textContent = state.roofCutaway ? 'Roofs: Cutaway' : 'Roofs: Solid';
   });
 
-  // Brain tab sections remember whether you left them open or closed
-  document.querySelectorAll('.brain-section').forEach(sec => {
-    const key = 'kelo1_brain_section_' + sec.dataset.section;
-    try {
-      const saved = localStorage.getItem(key);
-      if (saved !== null) sec.open = saved === '1';
-    } catch (e) {}
-    sec.addEventListener('toggle', () => { try { localStorage.setItem(key, sec.open ? '1' : '0'); } catch (e) {} });
-  });
+  // Brain tab sections remember whether you left them open or closed (js/menuui.js)
   // The Browse button sits in a section heading: don't fold the section when it's pressed
   document.getElementById('btnBrowseWebNow')?.addEventListener('click', e => e.preventDefault(), true);
 
   // Right-hand menu: tabs (remembered between visits), open/close, Esc to close
-  const TAB_ACTIVE = 'inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold bg-amber-500/20 text-amber-200 transition';
-  const TAB_IDLE = 'inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition';
+  const TAB_ACTIVE = 'inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[11px] font-semibold bg-amber-500/20 text-amber-200 transition';
+  const TAB_IDLE = 'inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[11px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition';
+  // Each tab keeps its own scroll position, so switching back lands where you were
+  const menuScroll = document.getElementById('menuScroll');
+  const tabScroll = {};
+  let currentTab = null;
   const showTab = (tabId) => {
+    if (menuScroll && currentTab) tabScroll[currentTab] = menuScroll.scrollTop;
+    const changed = currentTab !== tabId;
+    currentTab = tabId;
     document.querySelectorAll('.inspector-tab-btn').forEach(b => {
       const active = b.getAttribute('data-tab') === tabId;
       b.className = active ? TAB_ACTIVE : TAB_IDLE;
       b.setAttribute('aria-selected', String(active));
+      b.tabIndex = active ? 0 : -1;
       // The open tab's icon is filled, the others are outlined
       const icon = b.querySelector('i[class*="ph-"]');
       if (icon) { icon.classList.toggle('ph-fill', active); icon.classList.toggle('ph', !active); }
     });
     document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.toggle('hidden', pane.id !== 'tab-' + tabId));
+    if (menuScroll && changed) menuScroll.scrollTop = tabScroll[tabId] || 0;
     try { localStorage.setItem('kelo1_menu_tab', tabId); } catch (e) {}
+    document.dispatchEvent(new CustomEvent('kelo-menu-shown', { detail: { tab: tabId } }));
   };
   document.querySelectorAll('.inspector-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => showTab(btn.getAttribute('data-tab')));
+    // Arrow keys move between tabs, Home/End jump to the first and last
+    btn.addEventListener('keydown', (e) => {
+      const tabs = [...document.querySelectorAll('.inspector-tab-btn')];
+      const i = tabs.indexOf(btn);
+      const to = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+      if (to === undefined) return;
+      e.preventDefault();
+      const next = tabs[(to + tabs.length) % tabs.length];
+      showTab(next.getAttribute('data-tab'));
+      next.focus();
+    });
   });
   // If the icon font can't load (offline, blocked CDN) each tab shows an emoji instead of a blank square
   setTimeout(() => {
@@ -629,6 +771,7 @@ window.addEventListener('DOMContentLoaded', () => {
     sideMenu.setAttribute('aria-hidden', String(!open));
     menuButton.setAttribute('aria-expanded', String(open));
     scrim.classList.toggle('hidden', !open);
+    if (open && currentTab) document.dispatchEvent(new CustomEvent('kelo-menu-shown', { detail: { tab: currentTab } }));
   };
   menuButton?.addEventListener('click', () => setMenuOpen(sideMenu.classList.contains('translate-x-full')));
   document.getElementById('btnCloseMenu')?.addEventListener('click', () => setMenuOpen(false));

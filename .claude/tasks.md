@@ -191,6 +191,9 @@ Each step merges, passes the regression tests and is pushed before the next star
     - Camera feel, audio polish, UI/HUD clarity and consistency, transitions, loading.
     - Steady frame rate on desktop and phone, with quality presets.
     - Polish and fix only what already exists. Add nothing new.
+    - Owner, 2026-11-09:
+      - Include the items he owns (Storehouse, in hand, at the Post Office), with real-looking models and materials.
+      - Bring every other town building up to the detail level of his house: cafe, NetNode, post office, storehouse, museum, and the rest. Keep the footprints, doors and basements unchanged.
 
 ## Owner notes to keep in mind
 - Owner (2026-11-04): helpers may add as much land as needed for machines, workshops and plants (natural shoreline, walkable, clear of town, one shared land constant/helper). Kelo-1 must never end up standing in water.

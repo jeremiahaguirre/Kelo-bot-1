@@ -10,6 +10,11 @@ const MM_GEO = {
   box: new THREE.BoxGeometry(1, 1, 1),
   cyl: new THREE.CylinderGeometry(1, 1, 1, 18),
   cyl8: new THREE.CylinderGeometry(1, 1, 1, 8),
+  // (thinner cylinders need fewer sides to look round: see mmCylGeo)
+  cyl6: new THREE.CylinderGeometry(1, 1, 1, 6),
+  cyl12: new THREE.CylinderGeometry(1, 1, 1, 12),
+  cyl16: new THREE.CylinderGeometry(1, 1, 1, 16),
+  sphereLo: new THREE.SphereGeometry(1, 8, 6),
   sphere: new THREE.SphereGeometry(1, 14, 10),
   torus: new THREE.TorusGeometry(1, 0.22, 8, 22),
   cone: new THREE.ConeGeometry(1, 1, 14)
@@ -131,8 +136,27 @@ function mmIsAncestor(a, o) {
       return false;
     }
 
+// Small static parts (bolts, buttons, feet, slats...) are joined into their own mesh per material and
+// size class, so the Workshop can leave them out when the camera is too far away to see them (and
+// they never cast shadows). mmFineTier: mesh -> 1 (under MM_FINE_R[0] across its bounding sphere
+// radius) or 2 (under MM_FINE_R[1]).
+const MM_FINE_R = [0.04, 0.075], MM_FINE_THIN = [0.022, 0.045];
+const mmFineTier = new WeakMap();
+const _mmFineSize = new THREE.Vector3(), _mmFineScale = new THREE.Vector3();
+// Small (its bounding sphere) or thin (its middle dimension: a long 1 cm strip is a hairline too)
+function mmFineTierOf(g, mat) {
+      if (!g.boundingSphere) g.computeBoundingSphere();
+      if (!g.boundingBox) g.computeBoundingBox();
+      const e = mat.elements;
+      _mmFineScale.set(Math.hypot(e[0], e[1], e[2]), Math.hypot(e[4], e[5], e[6]), Math.hypot(e[8], e[9], e[10]));
+      const rad = g.boundingSphere.radius * Math.max(_mmFineScale.x, _mmFineScale.y, _mmFineScale.z);
+      const sz = g.boundingBox.getSize(_mmFineSize).multiply(_mmFineScale);
+      const mid = sz.x + sz.y + sz.z - Math.max(sz.x, sz.y, sz.z) - Math.min(sz.x, sz.y, sz.z);
+      return rad < MM_FINE_R[0] || mid < MM_FINE_THIN[0] ? 1 : rad < MM_FINE_R[1] || mid < MM_FINE_THIN[1] ? 2 : 0;
+    }
+
 // Join root's static meshes per material (subtrees in `keep` stay whole); returns parts joined away
-function mmJoin(root, keep) {
+function mmJoin(root, keep, dropBase = false) {
       const kept = new Set();
       keep.forEach(k => k.traverse(c => kept.add(c)));
       root.updateMatrixWorld(true);
@@ -144,13 +168,14 @@ function mmJoin(root, keep) {
         const g = o.geometry;
         if (!g || !g.attributes.position || o.matrixWorld.determinant() < 0 || o.morphTargetInfluences) return;
         const names = Object.keys(g.attributes).sort();
-        const key = `${o.material.uuid}|${o.castShadow}|${o.renderOrder}|${names.map(n => n + g.attributes[n].itemSize).join(',')}`;
-        if (!sets.has(key)) sets.set(key, []);
+        const tier = mmFineTierOf(g, m.multiplyMatrices(inv, o.matrixWorld));
+        const key = `${o.material.uuid}|${o.castShadow}|${o.renderOrder}|${tier}|${names.map(n => n + g.attributes[n].itemSize).join(',')}`;
+        if (!sets.has(key)) sets.set(key, Object.assign([], { tier }));
         sets.get(key).push(o);
       });
       let joined = 0;
       sets.forEach(list => {
-        if (list.length < 2) return;
+        if (list.length < 2) { if (list.tier && list[0]) mmFineTier.set(list[0], list.tier); return; }
         const parts = list.map(o => (o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone()).applyMatrix4(m.multiplyMatrices(inv, o.matrixWorld)));
         const out = new THREE.BufferGeometry();
         Object.keys(parts[0].attributes).forEach(n => {
@@ -161,13 +186,15 @@ function mmJoin(root, keep) {
           out.setAttribute(n, new THREE.BufferAttribute(arr, size, a0.normalized));
         });
         parts.forEach(p => p.dispose());
+        if (dropBase && !list[0].material.transparent) mmDropBaseFaces(out);
         const mesh = new THREE.Mesh(out, list[0].material);
         mesh.castShadow = list[0].castShadow;
         mesh.receiveShadow = list[0].receiveShadow;
         mesh.renderOrder = list[0].renderOrder;
         mesh.matrixAutoUpdate = false;
-        mesh.userData.noShadow = !mesh.castShadow;
+        mesh.userData.noShadow = !mesh.castShadow || list.tier > 0;
         mesh.userData.joinedParts = list.length;
+        if (list.tier) mmFineTier.set(mesh, list.tier);
         root.add(mesh);
         mesh.updateMatrix();
         list.forEach(o => {
@@ -177,6 +204,28 @@ function mmJoin(root, keep) {
         joined += list.length - 1;
       });
       return joined;
+    }
+
+// The undersides of parts standing on the floor (feet, bases, plinths) face straight down at the
+// model's own y = 0: nobody ever sees them, so they are left out of the joined mesh
+function mmDropBaseFaces(geo) {
+      const pos = geo.attributes.position, n = pos.count / 3, keep = [];
+      for (let t = 0; t < n; t++) {
+        const a = t * 3, y0 = pos.getY(a), y1 = pos.getY(a + 1), y2 = pos.getY(a + 2);
+        if (Math.max(y0, y1, y2) < 0.004) {
+          // its face normal from the winding: pointing down means it lies against the floor
+          const ux = pos.getX(a + 1) - pos.getX(a), uz = pos.getZ(a + 1) - pos.getZ(a);
+          const vx = pos.getX(a + 2) - pos.getX(a), vz = pos.getZ(a + 2) - pos.getZ(a);
+          if (uz * vx - ux * vz < 0) continue;
+        }
+        keep.push(t);
+      }
+      if (keep.length === n || !keep.length) return;
+      Object.keys(geo.attributes).forEach(name => {
+        const att = geo.attributes[name], size = att.itemSize, src = att.array, arr = new Float32Array(keep.length * 3 * size);
+        keep.forEach((t, i) => arr.set(src.subarray(t * 3 * size, (t + 1) * 3 * size), i * 3 * size));
+        geo.setAttribute(name, new THREE.BufferAttribute(arr, size, att.normalized));
+      });
     }
 
 function machineMergeStatic(root, depth = 0) {
@@ -189,7 +238,7 @@ function machineMergeStatic(root, depth = 0) {
         if (o.userData && o.userData.machineModel) { n += machineMergeStatic(o, depth + 1); return; }
         n += mmJoin(o, objs.filter(x => x !== o && !mmIsAncestor(x, o)).concat(mmRefsOf(o).map(r => r[1])));
       });
-      return n + mmJoin(root, objs);
+      return n + mmJoin(root, objs, true);
     }
 
 // Near-identical small-part finishes share one material, so they join into the same mesh
@@ -237,8 +286,15 @@ function mmBox(parent, w, h, d, mat, x = 0, y = 0, z = 0, opts = {}) {
     }
 
 // A cylinder of radius r and length h along y (or x/z with axis), centred at (x, y, z)
+// As many sides as a cylinder that thick needs (a 2 cm pin is a few pixels across from the floor views)
+function mmCylGeo(r, seg8) {
+      if (r < 0.022) return MM_GEO.cyl6;
+      if (seg8 || r < 0.05) return MM_GEO.cyl8;
+      return r < 0.13 ? MM_GEO.cyl12 : r < 0.3 ? MM_GEO.cyl16 : MM_GEO.cyl;
+    }
+
 function mmCyl(parent, r, h, mat, x = 0, y = 0, z = 0, opts = {}) {
-      const m = new THREE.Mesh(opts.seg8 ? MM_GEO.cyl8 : MM_GEO.cyl, mmMatOf(mat));
+      const m = new THREE.Mesh(mmCylGeo(Math.max(r, opts.r2 || 0), opts.seg8), mmMatOf(mat));
       m.scale.set(r, h, opts.r2 || r);
       m.position.set(x, y, z);
       if (opts.axis === 'x') m.rotation.z = Math.PI / 2;
@@ -251,7 +307,7 @@ function mmCyl(parent, r, h, mat, x = 0, y = 0, z = 0, opts = {}) {
     }
 
 function mmSphere(parent, r, mat, x = 0, y = 0, z = 0) {
-      const m = new THREE.Mesh(MM_GEO.sphere, mmMatOf(mat));
+      const m = new THREE.Mesh(r < 0.05 ? MM_GEO.sphereLo : MM_GEO.sphere, mmMatOf(mat));
       m.scale.setScalar(r);
       m.position.set(x, y, z);
       m.userData.sharedGeometry = true;
@@ -270,7 +326,7 @@ function mmGroup(parent, x = 0, y = 0, z = 0) {
 function mmRod(parent, a, b, r, mat) {
       const va = new THREE.Vector3(...a), vb = new THREE.Vector3(...b);
       const len = va.distanceTo(vb);
-      const m = new THREE.Mesh(MM_GEO.cyl8, mmMatOf(mat));
+      const m = new THREE.Mesh(mmCylGeo(r, true), mmMatOf(mat));
       m.scale.set(r, len, r);
       m.position.copy(va).add(vb).multiplyScalar(0.5);
       m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), vb.clone().sub(va).normalize());
@@ -400,9 +456,10 @@ function mmBevelGeo(w, h, d, r) {
 
 // mmBox with rounded edges (r defaults to a few mm, scaled to the part)
 function mmRBox(parent, w, h, d, mat, x = 0, y = 0, z = 0, opts = {}) {
-      // (small parts stay plain boxes: a rounded edge there is too small to see but costs 9x the triangles)
-      if (Math.max(w, h, d) < 0.09) return mmBox(parent, w, h, d, mat, x, y, z, opts);
+      // (small parts stay plain boxes: a rounded edge there is too small to see but costs 4x the triangles)
+      if (Math.max(w, h, d) < 0.15) return mmBox(parent, w, h, d, mat, x, y, z, opts);
       const r = opts.r != null ? opts.r : Math.min(0.03, Math.min(w, h, d) * 0.12);
+      if (r < 0.006) return mmBox(parent, w, h, d, mat, x, y, z, opts);
       const m = new THREE.Mesh(mmBevelGeo(w, h, d, r), mmMatOf(mat));
       m.position.set(x, opts.centre ? y : y + h / 2, z);
       if (opts.rx) m.rotation.x = opts.rx;
@@ -451,7 +508,7 @@ function mmFeet(parent, w, d, opts = {}) {
 // A flexible cable or hose through points (a smooth tube; joined with the rest at merge time)
 function mmCable(parent, points, r, mat = 'cable', seg) {
       const curve = new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(...p)));
-      const m = new THREE.Mesh(new THREE.TubeGeometry(curve, seg || Math.max(6, points.length * 4), r, 6, false), mmMatOf(mat));
+      const m = new THREE.Mesh(new THREE.TubeGeometry(curve, seg || Math.max(6, points.length * 3), r, 5, false), mmMatOf(mat));
       if (parent) parent.add(m);
       return m;
     }

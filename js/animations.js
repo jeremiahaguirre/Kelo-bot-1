@@ -374,6 +374,32 @@ function keloCarrySize(obj) {
       return size;
     }
 
+// One leg at a time steps from the pose he stopped in to standing under him, the other planted
+function keloSettleStep(a, out, dt) {
+      const S = a.settle;
+      const away = P => Math.abs(P.hip) > 0.012 || Math.abs(P.knee) > 0.03 || Math.abs(P.foot) > 0.03;
+      if (!S.step) {
+        let side = S.first && away(S[S.first]) ? S.first : null;
+        if (!side) side = away(S.L) || away(S.R) ? (Math.abs(S.L.hip) + S.L.knee * 0.3 >= Math.abs(S.R.hip) + S.R.knee * 0.3 ? 'L' : 'R') : null;
+        if (side && !away(S[side])) side = side === 'L' ? 'R' : 'L';
+        S.first = null;
+        if (!side) { a.settle = null; return; }
+        const from = { ...S[side] }, reach = clamp01(Math.abs(from.hip) / 0.3);
+        S.step = { side, from, t: 0, dur: 0.22 + 0.16 * reach, lift: 0.42 + 0.3 * reach };
+      }
+      const st = S.step;
+      st.t += dt;
+      // The foot lifts clear (knee folds, the thigh comes forward half as much so the foot stays under
+      // him: about 3-5 cm up) while it travels home
+      const w = smoothstep(st.t / st.dur), P = S[st.side], up = st.lift * Math.sin(Math.PI * clamp01(st.t / st.dur));
+      P.hip = st.from.hip * (1 - w) - up * 0.5;
+      P.knee = st.from.knee * (1 - w) + up;
+      P.foot = st.from.foot * (1 - w);
+      if (st.t >= st.dur) { S[st.side] = { hip: 0, knee: 0, foot: 0 }; S.step = null; }
+      out.lLegX += S.L.hip; out.lKneeX += S.L.knee; out.lFootX += S.L.foot;
+      out.rLegX += S.R.hip; out.rKneeX += S.R.knee; out.rFootX += S.R.foot;
+    }
+
 function finishKeloPose(t) {
       if (!keloBody) return;
       const a = keloAnim, dt = a.dt;
@@ -447,7 +473,7 @@ function finishKeloPose(t) {
       if (a.lastX !== null && dt > 0) raw = Math.hypot(p.x - a.lastX, p.z - a.lastZ) / dt;
       if (raw > 30) raw = 0;  // a jump to a new place, not a step
       a.lastX = p.x; a.lastZ = p.z;
-      a.speed = locoOn ? dampTo(a.speed, keloMotion.speed, 30, dt) : dampTo(a.speed, walking ? raw : 0, 8, dt);
+      a.speed = locoOn ? dampTo(a.speed, keloMotion.speed, 30, dt) : dampTo(a.speed, walking ? raw : 0, walking ? 16 : 30, dt);
       a.walkW = dampTo(a.walkW, walking ? 1 : 0, 8, dt);
 
       // --- Walk cycle. Each leg spends ~60% of a stride planted, sweeping back at exactly his speed
@@ -459,6 +485,17 @@ function finishKeloPose(t) {
         : clamp01((Math.abs(a.yawVel || 0) - 0.5) / 1.5)) * (a.mode === 'idle' || a.mode === 'walk' ? 1 : 0);
       const act = Math.max(a.walkW * clamp01(v / 0.2), shuffle);
       a.stepAct = act;
+      // Stopping: once his body stops over the ground (or he stops walking), the legs don't fade back
+      // to standing while the root is still (that drags the planted foot along the ground). The leg
+      // pose he stopped in is held, and each leg that isn't under him steps home in turn: the one in
+      // the air first, then the other, lifting its foot (keloSettleStep). Moving again blends it out.
+      const rootStill = !walking || v < 0.08, onFeet = !riding && !resting && (a.mode === 'idle' || a.mode === 'walk');
+      if (a.settle && (shuffle > 0.05 || (walking && v > 0.15) || !onFeet)) { a.settleFade = { ...a.settle, k: 1 }; a.settle = null; }
+      if (!a.settle && rootStill && onFeet && shuffle < 0.01 && a.legHold && a.legHold.act > 0.02) {
+        a.settle = { L: { ...a.legHold.L }, R: { ...a.legHold.R }, first: a.legHold.swing, step: null };
+        a.settleFade = null;
+      }
+      if (act <= 0.001 || a.settle) a.legHold = null;
       if (act > 0.001) {
         const run = smoothstep((v - 5.5) / 3);
         const f = Math.max(Math.min(3.3, 1.5 + 0.28 * v), 2.2 * shuffle);   // strides per second
@@ -479,9 +516,13 @@ function finishKeloPose(t) {
             foot: 0.32 * (1 - smoothstep(w / 0.35)) - 0.12 * smoothstep((w - 0.6) / 0.4) };
         };
         const L = leg(uL), R = leg(uR);
-        out.lLegX += act * L.hip; out.rLegX += act * R.hip;
-        out.lKneeX += act * L.knee; out.rKneeX += act * R.knee;
-        out.lFootX += act * L.foot; out.rFootX += act * R.foot;
+        if (!a.settle) {
+          out.lLegX += act * L.hip; out.rLegX += act * R.hip;
+          out.lKneeX += act * L.knee; out.rKneeX += act * R.knee;
+          out.lFootX += act * L.foot; out.rFootX += act * R.foot;
+          a.legHold = { act, swing: uL >= sf ? 'L' : uR >= sf ? 'R' : null,
+            L: { hip: act * L.hip, knee: act * L.knee, foot: act * L.foot }, R: { hip: act * R.hip, knee: act * R.knee, foot: act * R.foot } };
+        }
         // Arms swing opposite the legs, wider the faster he goes (a gentle pendulum, trailing a little)
         const holdingTool = (keloDrillToolGroup && keloDrillToolGroup.visible) || (keloWeldTorchGroup && keloWeldTorchGroup.visible);
         const armL = holding ? 0.1 : 1, armR = holding ? 0.1 : holdingTool ? 0.3 : 1;
@@ -495,7 +536,7 @@ function finishKeloPose(t) {
         out.rArmZ += act * 0.05 * armR;
         // Low as each heel lands, up over the planted foot; lean into the walk, into speeding up, and into turns
         const ph2 = (uL * 2) % 1;
-        out.lift += act * ((0.018 + 0.006 * Math.min(v, 6) + 0.03 * run) * (0.5 - 0.5 * Math.cos(Math.PI * 2 * ph2)) - 0.012);
+        if (!a.settle) out.lift += act * ((0.018 + 0.006 * Math.min(v, 6) + 0.03 * run) * (0.5 - 0.5 * Math.cos(Math.PI * 2 * ph2)) - 0.012);
         const accLean = locoOn ? Math.max(-0.05, Math.min(0.06, keloMotion.acc * 0.012)) : 0;
         const lean = act * (0.03 + 0.01 * Math.min(v, 6) + 0.1 * run) + accLean;
         out.bodyX += lean;
@@ -510,6 +551,15 @@ function finishKeloPose(t) {
         out.headX -= lean * 0.75;
         out.headY -= twist * 0.85;
         out.headZ -= (act * 0.035 * roll - turnLean) * 0.8;
+      }
+
+      if (a.settle) keloSettleStep(a, out, dt);
+      if (a.settleFade) {
+        const F = a.settleFade;
+        F.k *= Math.exp(-12 * dt);
+        out.lLegX += F.L.hip * F.k; out.lKneeX += F.L.knee * F.k; out.lFootX += F.L.foot * F.k;
+        out.rLegX += F.R.hip * F.k; out.rKneeX += F.R.knee * F.k; out.rFootX += F.R.foot * F.k;
+        if (F.k < 0.01) a.settleFade = null;
       }
 
       // --- Breathing, always (slower when he sleeps)
@@ -544,9 +594,14 @@ function finishKeloPose(t) {
       const sh = a.shift * a.idleW;
       out.bodyShift += sh * 0.04;
       out.bodyZ += sh * 0.03;
-      out.lLegX -= Math.max(0, sh) * 0.08;    // the leg without his weight on it relaxes
+      // The leg without his weight on it relaxes: the hip comes forward and the knee bends twice as
+      // much (0.12 of it in js/humanize.js), which leaves that foot where it stands (thigh and shin
+      // are about the same length)
+      out.lLegX -= Math.max(0, sh) * 0.08;
       out.rLegX -= Math.max(0, -sh) * 0.08;
-      out.lift -= Math.abs(sh) * 0.015;
+      out.lKneeX += Math.max(0, sh) * 0.04;
+      out.rKneeX += Math.max(0, -sh) * 0.04;
+      out.bodyLift -= Math.abs(sh) * 0.015;   // (his hips settle; his feet stay on the ground)
       // A long time standing still: sometimes he stretches or stops to think
       if (idle && !keloEmote) {
         if (!a.idleSince) a.idleSince = t;

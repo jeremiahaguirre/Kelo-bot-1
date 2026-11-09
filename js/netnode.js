@@ -303,6 +303,8 @@ async function browseInternet(topic = null, originLabel = 'Own Curiosity') {
       state.isBusy = true;
       let searches = 0;
       try {
+        // He walks in and sits at a computer first (js/interiors.js), then searches
+        if (typeof waitForArrival === 'function') await waitForArrival(90000);
         let keepGoing = true;
         while (keepGoing) {
           const readSomething = await searchOnce(query, searches === 0 ? originLabel : 'Kept Browsing');

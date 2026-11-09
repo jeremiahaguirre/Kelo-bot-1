@@ -659,7 +659,12 @@ async function interiorAtComputer(v, S, room) {
       const screen = room.parts.screens[1];
       screen.material = scr.mat;
       room.parts.glow.material.opacity = 0.22;
-      const queryNow = () => String(state.moodTitle || 'NetNode').replace(/^(Looking up|Reading about|Researching|Reading how to)[:\s]*/i, '').slice(0, 60);
+      const queryNow = () => {
+        const quoted = String(state.speechBubble || '').match(/"([^"]{2,60})"/);
+        const title = String(state.moodTitle || '');
+        if (/^(Looking up|Reading about|Researching|Reading how to)/i.test(title) || !quoted) return title.replace(/^(Looking up|Reading about|Researching|Reading how to)[:\s]*/i, '').slice(0, 60);
+        return quoted[1];
+      };
       scr.query = queryNow(); scr.typed = 0;
       let lastType = 0;
       v.tick = t => {

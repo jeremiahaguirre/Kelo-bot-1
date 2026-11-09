@@ -52,8 +52,8 @@ const TOWN_LOCATIONS = {
     "name": "Storehouse",
     "building": "Kelo-1 Storehouse",
     "icon": "📦",
-    "x": 5.5,
-    "z": -3.9,
+    "x": 6.4,
+    "z": -4.0,
     "showPin": true,
     "pinColor": "from-orange-500/90 to-red-700/90"
   },
@@ -62,8 +62,8 @@ const TOWN_LOCATIONS = {
     "name": "Post Office",
     "building": "Okanagan Post Office",
     "icon": "📮",
-    "x": 12.5,
-    "z": 0.2,
+    "x": 9.8,
+    "z": 7.1,
     "showPin": true,
     "pinColor": "from-red-500/90 to-rose-600/90"
   },
@@ -115,8 +115,8 @@ const TOWN_LOCATIONS = {
     "name": "Bean & Byte Cafe",
     "building": "Bean & Byte Espresso Bar",
     "icon": "☕",
-    "x": 0.0,
-    "z": 5.6,
+    "x": -16.84,
+    "z": 5.5,
     "showPin": true,
     "pinColor": "from-orange-500/90 to-rose-600/90",
     "groundY": -0.04820776730775833
@@ -126,8 +126,8 @@ const TOWN_LOCATIONS = {
     "name": "NetNode Cyber Cafe",
     "building": "NetNode Internet & GitHub Hub",
     "icon": "💻",
-    "x": 6.8,
-    "z": 4.4,
+    "x": 1.32,
+    "z": 6.4,
     "showPin": true,
     "pinColor": "from-purple-500/90 to-indigo-600/90",
     "groundY": 0.21131333621589513
@@ -148,8 +148,8 @@ const TOWN_LOCATIONS = {
     "name": "West Wildflower Meadow",
     "building": "West Island Meadow",
     "icon": "🌼",
-    "x": -16,
-    "z": -1.5,
+    "x": -28.5,
+    "z": -5.0,
     "showPin": true,
     "pinColor": "from-yellow-500/90 to-amber-600/90",
     "groundY": -0.25
@@ -620,7 +620,18 @@ const MAX_SCULPTURE_PARTS = 24;
 const WORLD_MIN_X = -60, WORLD_MAX_X = 86, WORLD_MIN_Z = -44, WORLD_MAX_Z = 10;
 // The town: the buildings and the streets between them. Kelo-1 doesn't build, plant or dig here;
 // the beach south of it (z above TOWN.maxZ) is his to use.
-const TOWN = { minX: -16, maxX: 19, minZ: -11.5, maxZ: 7.6 };
+const TOWN = { minX: -24.5, maxX: 19, minZ: -11.5, maxZ: 7.8 };
+// The town buildings at real size (1.6 units a metre: doors about 2.1 m, storeys about 3 m). Each one is
+// modelled in its own small units and its group is scaled up by `scale`; x, z is its centre and w, d its
+// footprint in world units. Furniture inside is drawn at `furniture` (js/interiors.js), so chairs, desks and
+// counters are sized for Kelo-1 rather than blown up with the walls.
+const TOWN_BLDG_SCALE = 2.4;
+const TOWN_FURNITURE_SCALE = 1.5;
+const TOWN_BUILDINGS = {
+  cafe: { x: -19.0, z: 0.5, w: 3.8 * TOWN_BLDG_SCALE, d: 2.8 * TOWN_BLDG_SCALE, scale: TOWN_BLDG_SCALE },
+  cyber: { x: -1.8, z: 1.6, w: 4.2 * TOWN_BLDG_SCALE, d: 3.0 * TOWN_BLDG_SCALE, scale: TOWN_BLDG_SCALE },
+  post_office: { x: 9.8, z: 1.2, w: 4.2 * TOWN_BLDG_SCALE, d: 3.2 * TOWN_BLDG_SCALE, scale: TOWN_BLDG_SCALE }
+};
 // Did he weld something in the last 15 minutes?
 function recentlyWelded() {
       return Boolean(state.lastWeldAt) && Date.now() - state.lastWeldAt < 15 * 60 * 1000;

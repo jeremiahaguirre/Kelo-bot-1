@@ -23,27 +23,47 @@ const INTERIOR_SPECS = {
     name: 'Bean & Byte Cafe', w: 3.8, d: 2.8, H: 2.4, floor: 0.15, door: { x: 0.9, w: 0.8, h: 1.4 }, camDist: 6.5,
     walkIn: [{ x: 0.9, z: 2.0, ground: true }, { x: 0.9, z: 1.35 }, { x: 0.9, z: 0.75 }],
     // Furniture footprints (building-local x, z, half width, half depth)
-    blocks: [['counter', 0.8, -1.01, 1.0, 0.29], ['table', -1.05, 0.55, 0.36, 0.36], ['chair', -1.05, -0.22, 0.22, 0.22],
-      ['chair2', -0.3, 0.6, 0.22, 0.22], ['plant', -1.55, 1.05, 0.2, 0.2]],
-    order: { x: 0.75, z: -0.3, face: { x: 0.75, z: -1.2 } },
-    seat: { via: [{ x: -0.35, z: -0.24 }], x: -1.05, z: -0.24, rotY: 0, h: 0.46 },
-    table: { x: -1.05, z: 0.55, h: 0.82 }
+    blocks: [['counter', 0.8, -1.01, 1.0, 0.29], ['table', -1.05, 0.55, 0.23, 0.23], ['chair', -1.05, 0.1, 0.14, 0.14],
+      ['chair2', -0.6, 0.55, 0.14, 0.14], ['plant', -1.55, 1.05, 0.2, 0.2]],
+    order: { x: 0.75, z: -0.5, face: { x: 0.75, z: -1.2 } },
+    seat: { via: [{ x: -0.35, z: 0.1 }], x: -1.05, z: 0.1, rotY: 0, h: 0.46 },
+    table: { x: -1.05, z: 0.55, h: 0.72 }
   },
   cyber: {
-    name: 'NetNode Cyber Cafe', w: 4.2, d: 3.0, H: 2.5, floor: 0.15, door: { x: 1.3, w: 0.8, h: 1.3 }, noGap: true, roofSlab: true, camDist: 6.5,
+    name: 'NetNode Cyber Cafe', w: 4.2, d: 3.0, H: 2.5, floor: 0.15, door: { x: 1.3, w: 0.8, h: 1.5 }, noGap: true, roofSlab: true, camDist: 6.5,
     walkIn: [{ x: 1.3, z: 1.95, ground: true }, { x: 1.3, z: 1.35 }, { x: 1.2, z: 0.8 }],
-    blocks: [['desk', -1.7, -0.75, 0.3, 0.5], ['desk2', -1.7, 0.55, 0.3, 0.5], ['chair', -1.0, -0.75, 0.24, 0.24], ['chair2', -1.0, 0.55, 0.24, 0.24],
+    blocks: [['desk', -1.7, -0.75, 0.3, 0.5], ['desk2', -1.7, 0.55, 0.3, 0.5], ['chair', -1.18, -0.75, 0.15, 0.15], ['chair2', -1.18, 0.55, 0.15, 0.15],
       ['printer', 0.1, -1.19, 0.45, 0.21], ['rack', 1.05, -1.15, 0.3, 0.25], ['vending', 1.75, -0.3, 0.25, 0.35]],
-    seat: { via: [{ x: -0.4, z: 0.55 }], x: -1.0, z: 0.55, rotY: -Math.PI / 2, h: 0.48 },
-    screen: { x: -1.84, z: 0.55, y: 1.22 }
+    seat: { via: [{ x: -0.4, z: 0.55 }], x: -1.18, z: 0.55, rotY: -Math.PI / 2, h: 0.48 },
+    screen: { x: -1.74, z: 0.55, y: 1.22 }
   },
   post_office: {
     name: 'Post Office', w: 4.2, d: 3.2, H: 2.6, floor: 0.25, door: { x: 0, w: 0.9, h: 1.5 }, camDist: 6.5,
     walkIn: [{ x: 0, z: 2.4, ground: true }, { x: 0, z: 1.95, y: 0.14 }, { x: 0, z: 1.45 }, { x: 0, z: 0.85 }],
     blocks: [['poboxes', -1.86, -0.3, 0.14, 1.1], ['counter', 0.775, -1.225, 1.175, 0.275], ['shelf', 1.85, 0.15, 0.15, 0.75]],
-    box: { via: [{ x: -0.9, z: 0.3 }], x: -1.3, z: -0.12, y: 1.17, face: { x: -2.0, z: -0.12 } }
+    box: { via: [{ x: -0.9, z: 0.3 }], x: -1.58, z: -0.12, y: 1.17, face: { x: -2.0, z: -0.12 } }
   }
 };
+// Sizes: the specs are in the building's own model units (its group is scaled up to real size,
+// TOWN_BUILDINGS in js/agent.js), so walls, doors, the floor plan and every spot scale with it. The
+// furniture is drawn in an inner group that is only squashed in height (and chairs, the table, the
+// computers and what he eats off are kept in proportion), so chairs, desks and counters come out at
+// TOWN_FURNITURE_SCALE: a seat and a desk at the height he sits and reaches at.
+function interiorScale(key) {
+      const room = interiorRooms[key];
+      return room ? Math.abs(room.root.scale.x) || 1 : 1;
+    }
+function interiorFurnScale() {
+      return typeof TOWN_FURNITURE_SCALE === 'number' ? TOWN_FURNITURE_SCALE : 1;
+    }
+// A furniture group in the squashed inner group, scaled back to the furniture's true proportions
+function intUpright(parent, q, x, y, z) {
+      const g = new THREE.Group();
+      g.position.set(x, y, z);
+      g.scale.set(q, 1, q);
+      parent.add(g);
+      return g;
+    }
 const INTERIOR_BUSY_FLAGS = ['isBusy', 'isBrowsing', 'isPracticing', 'isCollectingMail', 'isBuilding'];
 const interiorRooms = {};        // key -> { root, front, roof, inside, parts }
 let interiorVisitNow = null;     // the visit in progress
@@ -88,8 +108,8 @@ function interiorSetup(key, root, parts) {
       interiorRooms[key] = { key, root, front, roof, inside: null, parts: {} };
       // The furniture is solid (box obstacles, in world coordinates; the walls are the building's own box)
       if (typeof addObstacle === 'function' && typeof obstacleBox === 'function') {
-        const o = root.position;
-        addObstacle(S.blocks.map(([name, x, z, hw, hd]) => obstacleBox(o.x + x, o.z + z, hw, hd, { interior: key, part: name })));
+        const o = root.position, k = Math.abs(root.scale.x) || 1;
+        addObstacle(S.blocks.map(([name, x, z, hw, hd]) => obstacleBox(o.x + x * k, o.z + z * k, hw * k, hd * k, { interior: key, part: name })));
       }
     }
 
@@ -161,10 +181,11 @@ function intBoard(parent, w, h, lines, opts = {}) {
     }
 
 // Plain chair facing +z at (x, z) (rotY turns it), seat h above the floor
-function intChair(parent, M, x, z, rotY, h, office) {
+function intChair(parent, M, x, z, rotY, h, office, y = 0, q = 1) {
       const c = new THREE.Group();
-      c.position.set(x, 0, z);
+      c.position.set(x, y, z);
       c.rotation.y = rotY;
+      c.scale.set(q, 1, q);
       if (office) {
         intBox(c, 0.44, 0.07, 0.44, M.fabric, 0, h - 0.035, 0);
         intBox(c, 0.42, 0.5, 0.06, M.fabric, 0, h + 0.3, -0.22);
@@ -217,17 +238,19 @@ function intWindow(g, M, side, S, along, y, w, h) {
       }
     }
 
-function buildCafeInside(room, S) {
+// sh: the room's lining (floor, walls, windows) at the building's scale; g: the furniture, squashed
+// in height by q (see interiorScale)
+function buildCafeInside(room, S, sh, q) {
       const M = interiorMaterials(), F = S.floor, g = new THREE.Group();
-      intRoomShell(g, S, F, M.oak, M.cream, M.walnut);
+      intRoomShell(sh, S, F, M.oak, M.cream, M.walnut);
       // wainscot round the room
       const iw = S.w - 0.24, id = S.d - 0.24;
-      intBox(g, iw, 0.85, 0.015, M.latte, 0, F + 0.43, -id / 2 + 0.01);
-      intBox(g, 0.015, 0.85, id, M.latte, -iw / 2 + 0.01, F + 0.43, 0);
-      intBox(g, 0.015, 0.85, id, M.latte, iw / 2 - 0.01, F + 0.43, 0);
-      intWindow(g, M, 'left', S, 0, 1.3, 0.75, 0.75);
-      intWindow(g, M, 'right', S, 0, 1.3, 0.75, 0.75);
-      intWindow(g, M, 'back', S, -0.8, 1.35, 0.7, 0.6);
+      intBox(sh, iw, 0.85, 0.015, M.latte, 0, F + 0.43, -id / 2 + 0.01);
+      intBox(sh, 0.015, 0.85, id, M.latte, -iw / 2 + 0.01, F + 0.43, 0);
+      intBox(sh, 0.015, 0.85, id, M.latte, iw / 2 - 0.01, F + 0.43, 0);
+      intWindow(sh, M, 'left', S, 0, 1.3, 0.75, 0.75);
+      intWindow(sh, M, 'right', S, 0, 1.3, 0.75, 0.75);
+      intWindow(sh, M, 'back', S, -0.8, 1.35, 0.7, 0.6);
       // The counter along the back wall: panelled walnut, a stone top, the espresso machine, a pastry case
       intBox(g, 2.0, 0.9, 0.52, M.walnut, 0.8, F + 0.45, -1.02);
       intBox(g, 2.06, 0.05, 0.6, M.tile, 0.8, F + 0.93, -1.01);
@@ -258,58 +281,66 @@ function buildCafeInside(room, S) {
       // A shelf of mugs on the right wall
       intBox(g, 0.18, 0.03, 0.8, M.oak, S.w / 2 - 0.22, F + 1.45, -0.1);
       for (let i = 0; i < 4; i++) intCyl(g, 0.045, 0.045, 0.09, i % 2 ? M.red : M.white, S.w / 2 - 0.22, F + 1.51, -0.4 + i * 0.2, 10);
-      // The table, his chair and a second chair
-      const T = S.table;
-      intCyl(g, 0.36, 0.36, 0.04, M.oak, T.x, F + T.h - 0.02, T.z, 24);
-      intCyl(g, 0.035, 0.035, T.h - 0.04, M.black, T.x, F + (T.h - 0.04) / 2, T.z, 8);
-      intCyl(g, 0.2, 0.22, 0.03, M.black, T.x, F + 0.015, T.z, 16);
-      intChair(g, M, S.seat.x, S.seat.z, 0, S.seat.h);
-      intChair(g, M, -0.3, 0.6, -Math.PI / 2, S.seat.h);
-      // A pendant lamp over the table and two wall lamps
+      // The table (a round cafe table, kept round), his chair and a second chair
+      const T = S.table, tg = intUpright(g, q, T.x, F, T.z);
+      intCyl(tg, 0.36, 0.36, 0.04, M.oak, 0, T.h - 0.02, 0, 24);
+      intCyl(tg, 0.035, 0.035, T.h - 0.04, M.black, 0, (T.h - 0.04) / 2, 0, 8);
+      intCyl(tg, 0.2, 0.22, 0.03, M.black, 0, 0.015, 0, 16);
+      room.parts.table = tg;
+      intChair(g, M, S.seat.x, S.seat.z, 0, S.seat.h, false, F, q);
+      intChair(g, M, -0.6, 0.55, -Math.PI / 2, S.seat.h, false, F, q);
+      // A pendant lamp over the table (hung from the ceiling, its shade at the table's scale)
       const K = typeof bldKit === 'function' ? bldKit() : null;
-      intCyl(g, 0.006, 0.006, S.H - F - 2.12, M.black, T.x, F + 2.12 + (S.H - F - 2.12) / 2, T.z, 4);
+      const lampY = F + 1.25 * q;
+      intCyl(sh, 0.006, 0.006, S.H - lampY, M.black, T.x, lampY + (S.H - lampY) / 2, T.z, 4);
+      const lamp = new THREE.Group();
+      lamp.position.set(T.x, lampY, T.z);
+      lamp.scale.setScalar(q);
+      sh.add(lamp);
       const shade = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.16, 14, 1, true), M.walnut);
       shade.material.side = THREE.DoubleSide;
-      shade.position.set(T.x, F + 2.12, T.z);
-      g.add(shade);
+      lamp.add(shade);
       if (K) {
         const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), K.bulb);
-        bulb.position.set(T.x, F + 2.05, T.z);
-        g.add(bulb);
+        bulb.position.y = -0.07;
+        lamp.add(bulb);
       }
       intPlant(g, M, -1.55, 1.05, F);
       return g;
     }
 
-function buildNetNodeInside(room, S) {
+function buildNetNodeInside(room, S, sh, q) {
       const M = interiorMaterials(), F = S.floor, g = new THREE.Group();
-      intRoomShell(g, S, F, M.vinyl, M.slate, M.black);
-      intWindow(g, M, 'left', S, 0, 1.45, 0.9, 0.45);
-      intWindow(g, M, 'right', S, 0.5, 1.45, 0.9, 0.45);
-      intWindow(g, M, 'back', S, -0.5, 1.45, 1.2, 0.45);
+      intRoomShell(sh, S, F, M.vinyl, M.slate, M.black);
+      intWindow(sh, M, 'left', S, 0, 1.45, 0.9, 0.45);
+      intWindow(sh, M, 'right', S, 0.5, 1.45, 0.9, 0.45);
+      intWindow(sh, M, 'back', S, -0.5, 1.45, 1.2, 0.45);
       // a cyan LED strip along the top of the walls
-      intBox(g, S.w - 0.3, 0.03, 0.03, M.ledBlue, 0, S.H - 0.25, -S.d / 2 + 0.15);
-      intBox(g, 0.03, 0.03, S.d - 0.3, M.ledBlue, -S.w / 2 + 0.15, S.H - 0.25, 0);
+      intBox(sh, S.w - 0.3, 0.03, 0.03, M.ledBlue, 0, S.H - 0.25, -S.d / 2 + 0.15);
+      intBox(sh, 0.03, 0.03, S.d - 0.3, M.ledBlue, -S.w / 2 + 0.15, S.H - 0.25, 0);
       room.parts.screens = [];
       // Two computer desks along the left wall, each with a monitor, keyboard, mouse and tower
+      // (the computer itself is kept in proportion, set from x0 on the desk)
+      const x0 = -1.55;
       [-0.75, 0.55].forEach((dz, i) => {
         intBox(g, 0.6, 0.04, 1.0, M.white, -1.7, F + 0.8, dz);
         [-0.48, 0.48].forEach(s => intBox(g, 0.56, 0.78, 0.03, M.black, -1.7, F + 0.39, dz + s));
         intBox(g, 0.03, 0.5, 0.94, M.black, -1.97, F + 0.53, dz);
-        intBox(g, 0.12, 0.02, 0.22, M.black, -1.86, F + 0.83, dz);
-        intBox(g, 0.04, 0.3, 0.05, M.black, -1.88, F + 0.97, dz);
-        intBox(g, 0.04, 0.42, 0.68, M.black, -1.86, F + 1.2, dz);
+        const pc = intUpright(g, q, x0, F, dz);
+        intBox(pc, 0.12, 0.02, 0.22, M.black, -0.31, 0.83, 0);
+        intBox(pc, 0.04, 0.3, 0.05, M.black, -0.33, 0.97, 0);
+        intBox(pc, 0.04, 0.42, 0.68, M.black, -0.31, 1.2, 0);
         const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.37), M.screenOff);
         screen.rotation.y = Math.PI / 2;
-        screen.position.set(-1.835, F + 1.21, dz);
+        screen.position.set(-0.285, 1.21, 0);
         screen.userData.screen = i;
-        g.add(screen);
+        pc.add(screen);
         room.parts.screens.push(screen);
-        intBox(g, 0.17, 0.02, 0.44, M.slate, -1.52, F + 0.83, dz);
-        intBox(g, 0.08, 0.02, 0.05, M.slate, -1.52, F + 0.83, dz + 0.32);
+        intBox(pc, 0.17, 0.02, 0.44, M.slate, 0.12, 0.83, 0);
+        intBox(pc, 0.08, 0.02, 0.05, M.slate, 0.12, 0.83, 0.32);
         intBox(g, 0.42, 0.42, 0.2, M.slate, -1.75, F + 0.21, dz - 0.25);
         intBox(g, 0.01, 0.02, 0.02, M.led, -1.535, F + 0.36, dz - 0.25);
-        intChair(g, M, -1.0, dz, Math.PI / 2, S.seat.h, true);
+        intChair(g, M, S.seat.x, dz, Math.PI / 2, S.seat.h, true, F, q);
       });
       // A soft glow on the wall behind his screen (shown while it is on)
       const glow = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.8), M.glow.clone());
@@ -339,7 +370,7 @@ function buildNetNodeInside(room, S) {
       return g;
     }
 
-function buildPostOfficeInside(room, S) {
+function buildPostOfficeInside(room, S, sh, q) {
       const M = interiorMaterials(), F = S.floor, g = new THREE.Group();
       // A checkerboard tile floor (one small canvas, repeated)
       const c = document.createElement('canvas');
@@ -351,13 +382,13 @@ function buildPostOfficeInside(room, S) {
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
       tex.repeat.set(5, 4);
       const floorMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.45 });
-      intRoomShell(g, S, F, floorMat, M.sage, M.walnut);
+      intRoomShell(sh, S, F, floorMat, M.sage, M.walnut);
       const iw = S.w - 0.24, id = S.d - 0.24;
-      intBox(g, iw, 0.8, 0.015, M.walnut, 0, F + 0.4, -id / 2 + 0.01);
-      intBox(g, 0.015, 0.8, id, M.walnut, iw / 2 - 0.01, F + 0.4, 0);
-      intWindow(g, M, 'right', S, -0.7, 1.45, 0.7, 0.8);
-      intWindow(g, M, 'right', S, 0.7, 1.45, 0.7, 0.8);
-      intWindow(g, M, 'back', S, 0, 1.6, 0.8, 0.6);
+      intBox(sh, iw, 0.8, 0.015, M.walnut, 0, F + 0.4, -id / 2 + 0.01);
+      intBox(sh, 0.015, 0.8, id, M.walnut, iw / 2 - 0.01, F + 0.4, 0);
+      intWindow(sh, M, 'right', S, -0.7, 1.45, 0.7, 0.8);
+      intWindow(sh, M, 'right', S, 0.7, 1.45, 0.7, 0.8);
+      intWindow(sh, M, 'back', S, 0, 1.6, 0.8, 0.6);
       // The wall of PO boxes (left wall): 6 across, 5 high, brass doors with little windows
       const B = S.box, cabX = -S.w / 2 + 0.12 + 0.14, z0 = -1.38, pitch = 0.36;
       intBox(g, 0.28, 2.02, 2.24, M.walnut, cabX, F + 1.01, -0.3);
@@ -406,7 +437,16 @@ function interiorBuildInside(key) {
       const room = interiorRooms[key], S = INTERIOR_SPECS[key];
       if (!room) return null;
       if (room.inside) return room.inside;
-      const g = key === 'cafe' ? buildCafeInside(room, S) : key === 'cyber' ? buildNetNodeInside(room, S) : buildPostOfficeInside(room, S);
+      const q = interiorFurnScale() / interiorScale(key);
+      const sh = new THREE.Group();
+      const f = key === 'cafe' ? buildCafeInside(room, S, sh, q) : key === 'cyber' ? buildNetNodeInside(room, S, sh, q) : buildPostOfficeInside(room, S, sh, q);
+      // The furniture: squashed in height so it comes out at furniture size (the floor stays put)
+      f.scale.set(1, q, 1);
+      f.position.y = S.floor * (1 - q);
+      f.children.forEach(o => { if (o.userData && o.userData.board) o.scale.y /= q; }); // signs keep their shape
+      room.furniture = f;
+      const g = new THREE.Group();
+      g.add(sh, f);
       g.userData.interiorPart = 'inside';
       g.visible = false;
       room.root.add(g);
@@ -521,15 +561,21 @@ function interiorKeyForTarget(p) {
 
 function interiorSite(key) {
       const room = interiorRooms[key], S = INTERIOR_SPECS[key];
-      return { key: 'interior-' + key, name: S.name, group: room.root, w: S.w, d: S.d, camDist: S.camDist, cutFlat: 4, floorY: S.floor };
+      return { key: 'interior-' + key, name: S.name, group: room.root, w: S.w, d: S.d, camDist: S.camDist * Math.max(1, interiorScale(key) * 0.75), cutFlat: 4, floorY: S.floor };
     }
 
 // A building-local point as a world point (on the floor unless y is given)
 function interiorPoint(key, p) {
-      const room = interiorRooms[key], S = INTERIOR_SPECS[key], o = room.root.position;
-      const x = o.x + p.x, z = o.z + p.z;
-      const y = p.ground ? getIslandGroundHeight(x, z) : o.y + (p.y !== undefined ? p.y : S.floor);
+      const room = interiorRooms[key], S = INTERIOR_SPECS[key], o = room.root.position, k = interiorScale(key);
+      const x = o.x + p.x * k, z = o.z + p.z * k;
+      const y = p.ground ? getIslandGroundHeight(x, z) : o.y + (p.y !== undefined ? p.y : S.floor) * k;
       return { x, y, z };
+    }
+
+// A height in the furniture's coordinates (floor plus y) as a world height
+function interiorFurnY(key, y) {
+      const room = interiorRooms[key], S = INTERIOR_SPECS[key];
+      return room.root.position.y + S.floor * interiorScale(key) + (y - S.floor) * interiorFurnScale();
     }
 
 function interiorAnyBusy(flags) {
@@ -586,7 +632,7 @@ function interiorSit(key, seat, pose) {
       const p = interiorPoint(key, seat);
       indoorTrip.pos.x = p.x;
       indoorTrip.pos.z = p.z;
-      indoorTrip.pos.y = p.y + seat.h - (KELO_LEG_Y - KELO_THIGH_R);
+      indoorTrip.pos.y = p.y + seat.h * interiorFurnScale() - (KELO_LEG_Y - KELO_THIGH_R);
       indoorTrip.rotY = seat.rotY;
       indoorTrip.crouchTarget = 0;
       indoorTrip.pose = pose;
@@ -710,7 +756,7 @@ async function interiorAtCafe(v, S, room) {
       interiorSit('cafe', seat, t => (v.food ? interiorEatPose(t) : interiorRestSitPose(t)));
       if (eating) {
         // A plate and a cup of coffee on the table in front of him
-        const M = interiorMaterials(), T = S.table, F = S.floor, top = F + T.h;
+        const M = interiorMaterials(), T = S.table, top = T.h;
         const set = new THREE.Group();
         set.userData.tableSet = true;
         intCyl(set, 0.15, 0.12, 0.02, M.white, 0, top + 0.01, -0.12, 20);
@@ -720,10 +766,12 @@ async function interiorAtCafe(v, S, room) {
         const handle = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.008, 6, 12), M.white);
         handle.position.set(0.26, top + 0.06, 0.05);
         set.add(handle);
-        set.position.set(T.x, 0, T.z);
-        room.root.add(set);
+        // (set on the table's own group, which is at furniture size)
+        const table = room.parts.table || room.root;
+        table.add(set);
         v.temps.push(set);
-        v.plateTop = { x: T.x, y: top + 0.03, z: T.z - 0.12 };
+        table.updateMatrixWorld(true);
+        v.plateTop = table.localToWorld(new THREE.Vector3(0, top + 0.03, -0.12));
       }
       // What he ordered arrives in his hands (js/needs.js eatSomething): it goes on the plate and he eats it
       // (setCarriedObject is wrapped below to hand it here)
@@ -732,10 +780,10 @@ async function interiorAtCafe(v, S, room) {
           if (f.scale.x === 1 && typeof lifeSize === 'function') lifeSize(f, 1.4);
           f.traverse(o => { if (o.userData && o.userData.isLabel) o.visible = false; });
           const size = typeof maxSizeOf === 'function' ? maxSizeOf(f) : 0.3;
-          f.scale.multiplyScalar(Math.min(1, 0.22 / size));
+          f.scale.multiplyScalar(Math.min(1, 0.3 / size));
           f.position.set(v.plateTop.x, v.plateTop.y, v.plateTop.z);
           f.rotation.set(0, 0, 0);
-          room.root.add(f);
+          scene.add(f); // (in the world, at its own size)
           v.temps.push(f);
           v.food = f;
           v.foodScale = f.scale.x;
@@ -762,7 +810,8 @@ async function interiorAtCafe(v, S, room) {
 // The Post Office: open his own box and take out what is in it
 async function interiorAtMailbox(v, S, room) {
       const B = S.box, door = room.parts.door, at = room.parts.boxAt;
-      await interiorWalk('post_office', [...B.via, B]);
+      const stand = { x: B.x, z: B.z }; // (on the floor: B.y is the box's height, not his)
+      await interiorWalk('post_office', [...B.via, stand]);
       tripFace(interiorPoint('post_office', B.face));
       const swing = async (to, ms) => {
         const from = door.rotation.y, start = Date.now();
@@ -773,7 +822,7 @@ async function interiorAtMailbox(v, S, room) {
           await tripPause(30);
         }
       };
-      const boxY = room.root.position.y + B.y;
+      const boxY = interiorFurnY('post_office', at.y);
       indoorTrip.pose = () => reachPose(boxY - indoorTrip.pos.y);
       await tripPause(500);
       await swing(-1.75, 650);
@@ -781,11 +830,12 @@ async function interiorAtMailbox(v, S, room) {
       if (mail) {
         // A letter or a little parcel waiting in the box (the real thing is on the pick-up table outside)
         const M = interiorMaterials();
-        const item = mail.kind === 'message' ? intBox(room.root, 0.02, 0.14, 0.2, M.white, at.x, at.y, at.z) : intBox(room.root, 0.16, 0.13, 0.18, M.kraft, at.x, at.y - 0.06, at.z);
+        const fg = room.furniture || room.root;
+        const item = mail.kind === 'message' ? intBox(fg, 0.02, 0.14, 0.2, M.white, at.x, at.y, at.z) : intBox(fg, 0.16, 0.13, 0.18, M.kraft, at.x, at.y - 0.06, at.z);
         v.temps.push(item);
         await tripPause(500);
         if (typeof handsWorldPosition === 'function') {
-          const from = item.position.clone(), to = room.root.worldToLocal(handsWorldPosition());
+          const from = item.position.clone(), to = (room.furniture || room.root).worldToLocal(handsWorldPosition());
           const start = Date.now();
           for (;;) {
             const k = smoothstep(Math.min(1, (Date.now() - start) / 600));
@@ -808,7 +858,7 @@ async function interiorAtMailbox(v, S, room) {
         indoorTrip.pose = null;
       };
       v.cleanup = () => { door.rotation.y = 0; };
-      return [B, ...B.via.slice().reverse()];
+      return [stand, ...B.via.slice().reverse()];
     }
 
 // --- Hooks into the existing trips ---------------------------------------------------------------
@@ -873,8 +923,8 @@ function interiorAfterLoad() {
       Object.keys(INTERIOR_SPECS).forEach(key => {
         const room = interiorRooms[key], S = INTERIOR_SPECS[key], pin = TOWN_LOCATIONS[key];
         if (!room || !pin || !state.botPos) return;
-        const o = room.root.position;
-        if (Math.abs(state.botPos.x - o.x) < S.w / 2 + 0.1 && Math.abs(state.botPos.z - o.z) < S.d / 2 + 0.1) {
+        const o = room.root.position, k = interiorScale(key);
+        if (Math.abs(state.botPos.x - o.x) < S.w * k / 2 + 0.1 && Math.abs(state.botPos.z - o.z) < S.d * k / 2 + 0.1) {
           state.botPos = { x: pin.x, z: pin.z };
           state.targetPos = { x: pin.x, z: pin.z };
         }

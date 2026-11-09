@@ -20,6 +20,11 @@ const PALLET_RACK = (() => {
   const S = WORKSHOP_SITE, r = WS_WING.spots.rack;
   return { x: S.x + r.x, z: S.z + r.z, w: r.w };
 })();
+// The model is drawn in metres; at 1.6 units a metre (lifeSize) a real counterbalance truck is this
+// much bigger than its model: the overhead guard about 2.15 m high, so Kelo-1 sits under it.
+const FORKLIFT_SCALE = 1.5;
+const FORKLIFT_RACK_Y = 2.4;      // the racking's upper beam (world units, about 1.5 m)
+const FORKLIFT_PICK_H = 1.35;     // carriage height (model units) that puts the forks into that level's pallets
 const PALLET_GOODS = ['glass batch', 'maple lumber', 'aluminium sheet stock', 'a truck engine', 'machine parts'];
 
 // --- The model -------------------------------------------------------------------------------------
@@ -105,7 +110,9 @@ function forkliftModel() {
       mast.add(carriage);
       b.add(mast);
       b.traverse(o => { if (o.isMesh) o.castShadow = true; });
-      const fl = miniature(b, { seat: { x: -0.3, y: 1.31 - (typeof KELO_SIT_OFFSET === 'number' ? KELO_SIT_OFFSET : 0.3), z: 0 }, mast, carriage, load, beacon });
+      b.scale.setScalar(FORKLIFT_SCALE);
+      const F = FORKLIFT_SCALE;
+      const fl = miniature(b, { seat: { x: -0.3 * F, y: 1.31 * F - (typeof KELO_SIT_OFFSET === 'number' ? KELO_SIT_OFFSET : 0.3), z: 0 }, mast, carriage, load, beacon });
       if (typeof machineMergeStatic === 'function') machineMergeStatic(fl);
       return fl;
     }
@@ -126,7 +133,7 @@ function palletModel(what) {
 
 // --- It's a vehicle ------------------------------------------------------------------------------------
 if (typeof VEHICLE_TYPES !== 'undefined' && !VEHICLE_TYPES.some(t => t.kind === 'forklift')) {
-  VEHICLE_TYPES.unshift({ kind: 'forklift', re: FORKLIFT_RE, mode: 'land', speed: 0.9, scale: 2.6, seatY: 0.9 });
+  VEHICLE_TYPES.unshift({ kind: 'forklift', re: FORKLIFT_RE, mode: 'land', speed: 0.9, scale: FORKLIFT_SCALE, seatY: 1.67 });
 }
 if (typeof VEHICLE_KIND_WORDS !== 'undefined') VEHICLE_KIND_WORDS.forklift = 'forklift';
 if (typeof VEHICLE_TERRAIN !== 'undefined') VEHICLE_TERRAIN.forklift = { max: 0.12, text: 'indoor floors and paved yards only: the Workshop, the hangar and their aprons' };
@@ -187,18 +194,18 @@ function buildForkliftCharger3D() {
       const plug = mmRBox(g, 0.12, 0.1, 0.16, 'red', -0.42, 0.25, -0.1, { r: 0.02 });
       // Parking box on the floor
       const P = { x: sgn * (C.park.x - C.x), z: sgn * (C.park.z - C.z) };
-      [[0, -1.0, 2.6, 0.08], [0, 1.0, 2.6, 0.08], [-1.3, 0, 0.08, 2.0], [1.3, 0, 0.08, 2.0]].forEach(([dx, dz, w, d]) => mmBox(g, w, 0.01, d, 'stripe', P.x + dx, 0.006, P.z + dz));
+      [[0, -1.25, 4.0, 0.08], [0, 1.25, 4.0, 0.08], [-2.0, 0, 0.08, 2.5], [2.0, 0, 0.08, 2.5]].forEach(([dx, dz, w, d]) => mmBox(g, w, 0.01, d, 'stripe', P.x + dx, 0.006, P.z + dz));
       mmLabel(g, 'FORKLIFT CHARGING', 1.6, 0.3, P.x, 0.02, P.z + 0.6, { bg: '#b9bab5', fg: '#1d4ed8' }).rotation.x = -Math.PI / 2;
       g.userData = { bar, cable, plug };
       // Pallet racking along the hangar's back wall, two levels of pallets
       const r = PALLET_RACK;
       const rack = mmGroup(g, sgn * (r.x - C.x), 0, sgn * (r.z - C.z));
       rack.rotation.y = C.flip ? Math.PI : 0;
-      [0.15, 1.6].forEach(yy => mmBox(rack, r.w, 0.12, 1.1, 'orange', 0, yy, 0));
+      [0.15, FORKLIFT_RACK_Y].forEach(yy => mmBox(rack, r.w, 0.12, 1.1, 'orange', 0, yy, 0));
       const bays = Math.max(1, Math.floor(r.w / 2.0));
-      for (let i = 0; i <= bays; i++) mmBox(rack, 0.1, 3.4, 1.1, 'blue', -r.w / 2 + i * r.w / bays, 0, 0);
-      PALLET_GOODS.forEach((what, i) => { if (i < bays) { const p = palletModel(what); p.scale.setScalar(1.3); p.position.set(-r.w / 2 + r.w / bays * (i + 0.5), 1.72, 0); rack.add(p); } });
-      mmLabel(rack, 'PALLET RACKING', 1.4, 0.25, 0, 3.0, 0.56, { bg: '#ea580c', fg: '#fff' });
+      for (let i = 0; i <= bays; i++) mmBox(rack, 0.1, 3.9, 1.1, 'blue', -r.w / 2 + i * r.w / bays, 0, 0);
+      PALLET_GOODS.forEach((what, i) => { if (i < bays) { const p = palletModel(what); p.scale.setScalar(FORKLIFT_SCALE); p.position.set(-r.w / 2 + r.w / bays * (i + 0.5), FORKLIFT_RACK_Y + 0.06, 0); rack.add(p); } });
+      mmLabel(rack, 'PALLET RACKING', 1.4, 0.25, 0, 3.6, 0.56, { bg: '#ea580c', fg: '#fff' });
       g.userData.rack = rack;
       if (typeof machineMergeStatic === 'function') machineMergeStatic(g);
       scene.add(g);
@@ -283,11 +290,12 @@ async function forkliftMovePallet(what = null, to = null, originLabel = 'Moving 
         if (m) { m.rotation.y = Math.PI / 2; } // forks toward the rack
         state.moodTitle = `Lifting the pallet of ${what} off the racking`.slice(0, 80);
         renderAllUI();
-        await forkliftAnim(2500, k => forkliftMast(v, k * 1.65, 0));
+        const H = FORKLIFT_PICK_H;
+        await forkliftAnim(2500, k => forkliftMast(v, k * H, 0));
         const pallet = palletModel(what);
         if (m && m.userData.load) { m.userData.load.add(pallet); }
-        await forkliftAnim(1200, k => forkliftMast(v, 1.65 + k * 0.05, k * 0.08));
-        await forkliftAnim(2200, k => forkliftMast(v, 1.7 - k * 1.55, 0.08));
+        await forkliftAnim(1200, k => forkliftMast(v, H + k * 0.05, k * 0.08));
+        await forkliftAnim(2200, k => forkliftMast(v, H + 0.05 - k * (H - 0.1), 0.08));
         state.moodTitle = `Carrying the pallet of ${what} on the forklift`.slice(0, 80);
         renderAllUI();
         await driveVehicle(v, to, `Carrying a pallet of ${what}`);
@@ -299,7 +307,7 @@ async function forkliftMovePallet(what = null, to = null, originLabel = 'Moving 
           const wp = pallet.getWorldPosition(new THREE.Vector3());
           pallet.parent.remove(pallet);
           pallet.position.copy(wp);
-          pallet.scale.setScalar(1.3);
+          pallet.scale.setScalar(FORKLIFT_SCALE);
           scene.add(pallet);
           (state.workshop.pallets = state.workshop.pallets || []).unshift({ what, x: wp.x, z: wp.z, at: Date.now() });
           if (state.workshop.pallets.length > 6) state.workshop.pallets.length = 6;

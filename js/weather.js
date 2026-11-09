@@ -118,7 +118,8 @@ function buildPuddles() {
         if (Object.values(TOWN_LOCATIONS).some(l => Math.hypot(l.x - x, l.z - z) < 3)) continue;
         if (worldObstacles.some(o => Math.hypot(o.x - x, o.z - z) < o.r + 1)) continue;
         if (typeof HOUSE !== 'undefined' && Math.abs(x - HOUSE.x) < HOUSE.w / 2 + 1 && Math.abs(z - HOUSE.z) < HOUSE.d / 2 + 2.5) continue;
-        if (typeof STOREHOUSE !== 'undefined' && Math.hypot(x - STOREHOUSE.x, z - STOREHOUSE.z) < 4) continue;
+        if (typeof STOREHOUSE !== 'undefined' && Math.abs(x - STOREHOUSE.x) < STOREHOUSE.w / 2 + 1 && Math.abs(z - STOREHOUSE.z) < STOREHOUSE.d / 2 + 1) continue;
+        if (typeof townBuildingAt === 'function' && townBuildingAt(x, z, 1)) continue;
         const r = 0.45 + rng() * 0.7;
         const puddle = new THREE.Mesh(new THREE.CircleGeometry(r, 20), mat);
         puddle.rotation.x = -Math.PI / 2;

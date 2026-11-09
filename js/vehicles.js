@@ -20,7 +20,8 @@ const VEHICLE_YARD = { minX: 17.4, maxX: 32.2, minZ: -6.2, maxZ: 3.8 };
 const YARD_SLOTS = [[21.4, -4.6], [21.4, -1.2], [21.4, 2.2], [28.4, -4.6], [28.4, -1.2], [28.4, 2.2]];
 // Helicopters need room for their rotors: a helipad past the yard. Balloons launch from the meadow.
 const AIR_SLOTS = [[38.5, -2.0]];
-const BALLOON_SLOTS = [[-24.0, -2.5]];
+const BALLOON_SLOTS = [[-28.8, 1.6]]; // (moved west of the Bean & Byte when the town grew to real size)
+const BALLOON_OLD_SLOTS = [[-24.0, -2.5]];
 const PAD_RADIUS = 4.8;
 // Boats tie up off the end of the dock, bow out toward the lake
 const DOCK_SLOTS = [[2.2, 11.6], [5.4, 11.6], [-1.0, 11.6]];
@@ -201,7 +202,10 @@ function reparkOldVehicles() {
         const type = vehicleTypeFor(v.name);
         if (!type) return;
         const water = type.mode === 'water';
-        const stale = water ? v.z < 10.5 && v.z > 8.5 : Math.hypot(v.x - STOREHOUSE.x, v.z - STOREHOUSE.z) < 7;
+        // (also anything left where a town building now stands, or on the balloon field's old spot)
+        const stale = water ? v.z < 10.5 && v.z > 8.5 : Math.hypot(v.x - STOREHOUSE.x, v.z - STOREHOUSE.z) < 7
+          || (typeof townBuildingAt === 'function' && Boolean(townBuildingAt(v.x, v.z, 1.5)))
+          || (type.mode === 'air' && BALLOON_OLD_SLOTS.some(([bx, bz]) => Math.hypot(v.x - bx, v.z - bz) < 0.5));
         if (!stale) return;
         const slots = parkingSlotsFor(type, v.name);
         const used = new Set(state.vehicles.filter(o => o !== v).map(o => `${o.x},${o.z}`));

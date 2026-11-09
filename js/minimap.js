@@ -20,9 +20,11 @@ function minimapBuildings() {
       if (typeof HOUSE !== 'undefined') b.push({ x: HOUSE.x, z: HOUSE.z, w: HOUSE.w, d: HOUSE.d, color: '#c08457', icon: '🏠' });
       if (typeof STOREHOUSE !== 'undefined') b.push({ x: STOREHOUSE.x, z: STOREHOUSE.z, w: STOREHOUSE.w, d: STOREHOUSE.d, color: '#b91c1c', icon: '📦' });
       if (typeof MUSEUM !== 'undefined') b.push({ x: MUSEUM.x, z: MUSEUM.z, w: MUSEUM.w, d: MUSEUM.d, color: '#e2e8f0', icon: '🏛️' });
-      b.push({ x: 12.5, z: -3.0, w: 4.2, d: 3.2, color: '#dc2626', icon: '📮' });   // Post Office (js/scene.js)
-      b.push({ x: 6.8, z: 2.2, w: 4.2, d: 3.0, color: '#312e81', icon: '💻' });     // NetNode
-      b.push({ x: -1.5, z: 3.5, w: 3.6, d: 3.0, color: '#ea580c', icon: '☕' });    // Bean & Byte
+      // The town buildings (js/scene.js builds them from TOWN_BUILDINGS)
+      [['post_office', '#dc2626', '📮'], ['cyber', '#312e81', '💻'], ['cafe', '#ea580c', '☕']].forEach(([k, color, icon]) => {
+        const t = TOWN_BUILDINGS[k];
+        b.push({ x: t.x, z: t.z, w: t.w, d: t.d, color, icon });
+      });
       b.push({ x: -1.2, z: -8.2, w: 2.4, d: 1.6, color: '#334155', icon: '🔥' });   // welding studio
       return b;
     }

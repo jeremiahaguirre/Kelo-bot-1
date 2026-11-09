@@ -149,6 +149,12 @@ function buildKeloHouse3D() {
         const win = houseWindow(wWin, hWin, trimMat, glassMat);
         win.position.set(x, floorY + y, z);
         win.rotation.y = rotY;
+        // A head casing with a little drip cap over each window (outside face)
+        const crown = new THREE.Mesh(new THREE.BoxGeometry(wWin + 0.44, 0.14, 0.3), trimMat);
+        crown.position.set(0, hWin / 2 + 0.16, 0.04);
+        const cap = new THREE.Mesh(new THREE.BoxGeometry(wWin + 0.52, 0.04, 0.38), trimMat);
+        cap.position.set(0, hWin / 2 + 0.25, 0.06);
+        [crown, cap].forEach(m => { m.castShadow = true; m.receiveShadow = true; win.add(m); });
         house.add(win);
         return win;
       };
@@ -299,6 +305,63 @@ function buildKeloHouse3D() {
       box(0.22, 0.3, 0.22, lanternGlow, doorW / 2 + 0.45, floorY + 2.2, d / 2 + 0.2).castShadow = false;
       box(0.28, 0.06, 0.28, darkWood, doorW / 2 + 0.45, floorY + 2.38, d / 2 + 0.2);
 
+      // --- Exterior finish (the town buildings' level of detail, js/materials.js kit): a painted
+      // water-table board round the foot of the walls, shutters on the front windows, rafter tails
+      // under the eaves, gutters and downspouts, a deck fascia and chimney flue pots.
+      // All static: they join the house's merged meshes below.
+      const K = typeof bldKit === 'function' ? bldKit() : null;
+      const skirt = (len, x, z, rotY) => { const b = box(len, 0.24, 0.06, trimMat, x, floorY + 0.12, z); b.rotation.y = rotY; return b; };
+      skirt(w + 0.12, 0, -d / 2 - 0.04, 0);
+      skirt(d + 0.12, -w / 2 - 0.04, 0, Math.PI / 2);
+      skirt(d + 0.12, w / 2 + 0.04, 0, Math.PI / 2);
+      [-1, 1].forEach(sx => skirt(w / 2 - doorW / 2 - 0.2, sx * (w / 4 + doorW / 4 + 0.1), d / 2 + 0.04, 0));
+      // Louvred shutters either side of the two front windows, in the door's teal
+      const shutterMat = new THREE.MeshStandardMaterial({ color: 0x2f6f73, roughness: 0.55 });
+      const slatMat = new THREE.MeshStandardMaterial({ color: 0x245a5d, roughness: 0.6 });
+      const shH = head - sill + 0.1;
+      [-2.85, 2.85].forEach(cx => [-1, 1].forEach(sx => {
+        const x = cx + sx * 1.05;
+        box(0.36, shH, 0.05, shutterMat, x, floorY + (sill + head) / 2, d / 2 + 0.03);
+        for (let k = 0; k < 9; k++) box(0.28, 0.035, 0.03, slatMat, x, floorY + sill + 0.16 + k * (shH - 0.32) / 8, d / 2 + 0.065).castShadow = false;
+      }));
+      // Open eaves: rafter tails every 0.7 under the overhang
+      const eaveY = ridgeY - run * Math.tan(pitch);
+      [1, -1].forEach(side => {
+        for (let x = -w / 2 - sideHang + 0.2; x <= w / 2 + sideHang - 0.15; x += 0.7) {
+          const tail = box(0.08, 0.13, overhang + 0.05, darkWood, x, eaveY + overhang * Math.tan(pitch) / 2 - 0.075, side * (d / 2 + overhang / 2));
+          tail.rotation.x = side * pitch;
+          tail.castShadow = false;
+        }
+      });
+      // Half-round gutters along both eaves, with a downspout at each corner that steps in to the wall
+      const gutMat = K ? K.gutter : trimMat;
+      const gutterLen = w + 2 * sideHang;
+      const gutterGeo = new THREE.CylinderGeometry(0.09, 0.09, gutterLen, 10, 1, true, Math.PI / 2, Math.PI);
+      [1, -1].forEach(side => {
+        const g = mesh(gutterGeo, gutMat, 0, eaveY - 0.06, side * (run + 0.12));
+        g.rotation.z = Math.PI / 2;
+        [-1, 1].forEach(sx => box(0.03, 0.18, 0.2, gutMat, sx * gutterLen / 2, eaveY - 0.06, side * (run + 0.12)));
+        [-1, 1].forEach(sx => {
+          const px = sx * (w / 2 + 0.22);
+          const pipe = mesh(new THREE.CylinderGeometry(0.045, 0.045, eaveY - 0.5, 8), gutMat, px, (eaveY - 0.5) / 2 + 0.12, side * (d / 2 + 0.12));
+          pipe.castShadow = false;
+          const gz = run - d / 2, gy = 0.28;
+          const goose = mesh(new THREE.CylinderGeometry(0.045, 0.045, Math.hypot(gz, gy), 8), gutMat, px, eaveY - 0.38 + gy / 2, side * (d / 2 + 0.12 + gz / 2));
+          goose.rotation.x = side * Math.atan2(gz, gy);
+          // the shoe at the foot turns out onto a splash block
+          box(0.1, 0.06, 0.3, gutMat, px, 0.12, side * (d / 2 + 0.3));
+          box(0.26, 0.05, 0.5, stoneMat, px, 0.03, side * (d / 2 + 0.55)).castShadow = false;
+          [0.2, eaveY * 0.45, eaveY - 0.75].forEach(y => box(0.12, 0.04, 0.06, gutMat, px, y, side * (d / 2 + 0.06)));
+        });
+      });
+      // A fascia round the porch deck, and caps on the porch posts
+      box(porchW + 0.06, 0.2, 0.05, darkWood, 0, floorY - 0.12, d / 2 + porchD + 0.02);
+      [-1, 1].forEach(sx => box(0.05, 0.2, porchD, darkWood, sx * (porchW / 2 + 0.02), floorY - 0.12, d / 2 + porchD / 2));
+      [[-half, pz0 + 0.07], [-half, pz1], [-gap, pz1], [gap, pz1], [half, pz1], [half, pz0 + 0.07]].forEach(([x, z]) => box(0.2, 0.06, 0.2, trimMat, x, floorY + railH + 0.13, z));
+      // Two terracotta flue pots on the chimney
+      const potMat = new THREE.MeshStandardMaterial({ color: 0xa4553a, roughness: 0.8 });
+      [-0.2, 0.2].forEach(dz => mesh(new THREE.CylinderGeometry(0.11, 0.14, 0.42, 10), potMat, chimX, ridgeY + 1.27, chimZ + dz));
+
       // --- Inside ---------------------------------------------------------------------------
       // Bed: Kelo-1 lies at (-11.6, 0.95, -8.8) with his head toward the back wall
       const bedX = -11.6 - HOUSE.x, bedFoot = -8.4 - HOUSE.z, bedHead = -d / 2 + t + 0.06;
@@ -446,7 +509,7 @@ function buildKeloHouse3D() {
       mesh(new THREE.SphereGeometry(0.11, 12, 10), bulbMat, 0, floorY + wallH - 0.22, 0).castShadow = false;
 
       // Painted lap siding, shingles, stone and wood trim at real size (js/materials.js)
-      if (typeof dressBuilding === 'function') dressBuilding(house, [[wallMat, 'siding', 1.6], [frontWallMat, 'siding', 1.6], [roofMat, 'shingles', 1.6], [stoneMat, 'stone', 1.2], [trimMat, 'paintedwood'], [darkWood, 'wood'], [lightWood, 'wood']]);
+      if (typeof dressBuilding === 'function') dressBuilding(house, [[wallMat, 'siding', 1.6], [frontWallMat, 'siding', 1.6], [shutterMat, 'paintedwood'], [slatMat, 'paintedwood'], [potMat, 'stone', 0.6], [roofMat, 'shingles', 1.6], [stoneMat, 'stone', 1.2], [trimMat, 'paintedwood'], [darkWood, 'wood'], [lightWood, 'wood']]);
       scene.add(house);
       terrainSwapGroup.add(ground);
       // Its few hundred static boards, bricks and trims draw as one mesh per material (js/perf.js); the

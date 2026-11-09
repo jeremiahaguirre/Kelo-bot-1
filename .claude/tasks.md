@@ -27,7 +27,7 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
   - Movement fixes: box obstacles, robust A*, stuck watch, balloon on open ground, plane circuit over max(ground, water), no digging in buildings, no floating trees.
   - Treehouse rope fix.
 - **Run-through DONE and pushed (2026-11-09):** js/shopmaker.js adds the 6 owner build and supply rules, fixes the helicopter pad, glass containers, woodshop safety, and the notice back-off. Open: the weld studio and the concrete plant are not routable shops; "make me a sandwich" goes to shops, not food; the stool sits in the meadow, not at the fire ring. Then merge it, then **the quality upgrade (owner: before 7b)**, then 7b runway and map, then the shopview viewer last.
-- **Next after the quality merge (owner, 2026-11-09): town building interiors he really uses.**
+- **Part of the quality upgrade (owner, 2026-11-09, second pass): town building interiors he really uses.**
   - **NetNode Cyber Cafe:** he walks in through the door and sits at a computer while he searches or researches (all NetNode trips).
   - **Bean & Byte Cafe:** he goes in, sits down, orders, and eats or drinks there.
   - **Post Office:** he goes in and opens his own mailbox. Parcels and items still also show for the owner on the table outside, as now.

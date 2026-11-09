@@ -244,10 +244,12 @@ function buildRealisticSky() {
       const u = skyMesh.material.uniforms;
       u.skyGain = { value: 1 };
       u.skyTint = { value: new THREE.Color(0, 0, 0) };
+      u.skyGrey = { value: 0 };
       // A gain to balance the sky against the lit ground, and a faint blue for starlit nights
       skyMesh.material.fragmentShader = skyMesh.material.fragmentShader
-        .replace('uniform vec3 up;', 'uniform vec3 up;\n\t\tuniform float skyGain;\n\t\tuniform vec3 skyTint;')
-        .replace('gl_FragColor = vec4( retColor, 1.0 );', 'gl_FragColor = vec4( retColor * skyGain + skyTint * ( 1.0 - 0.7 * max( direction.y, 0.0 ) ), 1.0 );');
+        .replace('uniform vec3 up;', 'uniform vec3 up;\n\t\tuniform float skyGain;\n\t\tuniform vec3 skyTint;\n\t\tuniform float skyGrey;')
+        // Overcast (rain, falling snow): the blue drains to a soft grey of about the same brightness
+        .replace('gl_FragColor = vec4( retColor, 1.0 );', 'vec3 keloSky = retColor * skyGain;\n\t\tkeloSky = mix( keloSky, vec3( dot( keloSky, vec3( 0.3, 0.59, 0.11 ) ) * 0.92 ), skyGrey );\n\t\tgl_FragColor = vec4( keloSky + skyTint * ( 1.0 - 0.7 * max( direction.y, 0.0 ) ), 1.0 );');
       skyMesh.material.fog = false;
       skyMesh.renderOrder = -10;
       skyMesh.frustumCulled = false;
@@ -277,21 +279,44 @@ function buildRealisticSky() {
       starField.renderOrder = -9;
       scene.add(starField);
 
-      // The moon: a small grey disc with darker seas
+      // The moon: a soft halo, a disc darkening toward its rim, grey seas and a few small craters
       const c = document.createElement('canvas');
-      c.width = c.height = 128;
+      c.width = c.height = 256;
       const ctx = c.getContext('2d');
-      const glow = ctx.createRadialGradient(64, 64, 20, 64, 64, 64);
-      glow.addColorStop(0, 'rgba(220,228,255,0.35)');
-      glow.addColorStop(1, 'rgba(220,228,255,0)');
+      const glow = ctx.createRadialGradient(128, 128, 40, 128, 128, 128);
+      glow.addColorStop(0, 'rgba(210,222,255,0.32)');
+      glow.addColorStop(0.45, 'rgba(210,222,255,0.08)');
+      glow.addColorStop(1, 'rgba(210,222,255,0)');
       ctx.fillStyle = glow;
-      ctx.fillRect(0, 0, 128, 128);
-      ctx.fillStyle = '#e9ecef';
+      ctx.fillRect(0, 0, 256, 256);
+      const disc = ctx.createRadialGradient(120, 120, 6, 128, 128, 48);
+      disc.addColorStop(0, '#f4f5f2');
+      disc.addColorStop(0.75, '#e2e4e2');
+      disc.addColorStop(1, '#b9bcc0');
+      ctx.fillStyle = disc;
       ctx.beginPath();
-      ctx.arc(64, 64, 24, 0, Math.PI * 2);
+      ctx.arc(128, 128, 48, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = 'rgba(150,156,168,0.55)';
-      [[56, 56, 7], [70, 60, 5], [62, 72, 6], [74, 72, 3]].forEach(([x, y, r]) => { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); });
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(128, 128, 47, 0, Math.PI * 2);
+      ctx.clip();
+      const mrng = makeRng('kelo1-moon');
+      [[112, 110, 15], [140, 118, 11], [124, 146, 13], [150, 146, 7], [104, 134, 8], [134, 98, 6]].forEach(([x, y, r]) => {
+        const g2 = ctx.createRadialGradient(x, y, 0, x, y, r);
+        g2.addColorStop(0, 'rgba(128,134,148,0.6)');
+        g2.addColorStop(1, 'rgba(128,134,148,0)');
+        ctx.fillStyle = g2;
+        ctx.fillRect(x - r, y - r, r * 2, r * 2);
+      });
+      for (let i = 0; i < 14; i++) {
+        const x = 90 + mrng() * 76, y = 90 + mrng() * 76, r = 1 + mrng() * 2.6;
+        ctx.fillStyle = 'rgba(120,124,134,0.5)';
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.beginPath(); ctx.arc(x - r * 0.35, y - r * 0.35, r * 0.5, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
       const moonTex = new THREE.CanvasTexture(c);
       moonSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: moonTex, transparent: true, opacity: 0, depthWrite: false, fog: false, toneMapped: false }));
       moonSprite.scale.setScalar(60);
@@ -351,7 +376,7 @@ function buildEnvScene() {
 function updateEnvironment() {
       if (!pmremGenerator || !skyEnvScene) return;
       const s = SKY_STATE;
-      const key = [s.day, s.dusk, s.night, s.sinElev].map(v => Math.round(v * 30)).join(',') + '|' + Object.values(envPhotoTextures).every(Boolean);
+      const key = [s.day, s.dusk, s.night, s.sinElev].map(v => Math.round(v * 30)).join(',') + ',' + Math.round((s.overcast || 0) * 4) + '|' + Object.values(envPhotoTextures).every(Boolean);
       if (key === s.envKey) return;
       s.envKey = key;
       // The sky alone, for the lake's reflections (only when the light itself has changed)
@@ -384,6 +409,14 @@ function updateEnvironment() {
       }
     }
 
+// How overcast it looks, 0..1: rain clouds over (js/weather.js), or the soft grey of falling snow in
+// winter (js/seasons.js). The sky, haze, clouds, stars and the lake all follow it.
+function skyOvercast() {
+      const rain = typeof rainShown !== 'undefined' ? rainShown : 0;
+      const snow = typeof snowfall !== 'undefined' && snowfall && snowfall.visible ? 0.4 : 0;
+      return Math.max(rain, snow);
+    }
+
 // Light and sky for an hour of the day (used by the world clock, and by the fixed lighting presets)
 function applySkyForHour(hour, dayOfYear) {
       if (!scene || !sunLight) return;
@@ -406,6 +439,8 @@ function applySkyForHour(hour, dayOfYear) {
       u.mieDirectionalG.value = 0.82;
       u.skyGain.value = 0.75; // keeps the sky blue overhead instead of washing out to white
       u.skyTint.value.setRGB(0.004, 0.007, 0.018).multiplyScalar(s.night);
+      s.overcast = skyOvercast();
+      u.skyGrey.value = 0.85 * s.overcast;
 
       // The sun by day; the moon (cool and dim) at night. One light does both, so shadows always work.
       const sunUp = sm(-0.03, 0.05, s.sinElev);
@@ -430,10 +465,11 @@ function applySkyForHour(hour, dayOfYear) {
       renderer.toneMappingExposure = 0.6 + 0.5 * s.night + 0.1 * s.dusk;
 
       // Haze: denser in the evening and at night
-      scene.fog.density = 0.0042 + 0.0022 * s.dusk + 0.002 * s.night;
+      scene.fog.density = 0.0042 + 0.0022 * s.dusk + 0.002 * s.night + 0.0045 * s.overcast;
 
-      if (starField) starField.material.opacity = s.night;
-      if (moonSprite) moonSprite.material.opacity = 0.15 + 0.85 * s.night;
+      // Stars and the moon hide behind rain clouds and snow
+      if (starField) starField.material.opacity = s.night * (1 - s.overcast);
+      if (moonSprite) moonSprite.material.opacity = (0.15 + 0.85 * s.night) * (1 - 0.85 * s.overcast);
       updateCloudLight();
       updateEnvironment();
     }
@@ -470,8 +506,11 @@ function skyColourToward(dx, dy, dz, out) {
         let lin = Math.pow(sunE * ratio * (1 - fex), 1.5);
         lin *= 1 + (Math.pow(sunE * ratio * fex, 0.5) - 1) * low;
         const tex = (lin + 0.1 * fex) * 0.04 + add[i];
-        res[i] = Math.pow(tex, 1 / 2.4) * u.skyGain.value + tints[i] * (1 - 0.7 * Math.max(dy, 0));
+        res[i] = Math.pow(tex, 1 / 2.4) * u.skyGain.value;
       }
+      // the same overcast grey as the sky shader
+      const grey = u.skyGrey ? u.skyGrey.value : 0, lum = (res[0] * 0.3 + res[1] * 0.59 + res[2] * 0.11) * 0.92;
+      for (let i = 0; i < 3; i++) res[i] = res[i] + (lum - res[i]) * grey + tints[i] * (1 - 0.7 * Math.max(dy, 0));
       // ACES filmic, as three.js r128 does it, then sRGB
       const e = renderer.toneMappingExposure / 0.6;
       const r = res[0] * e, gg = res[1] * e, b = res[2] * e;
@@ -538,19 +577,25 @@ function buildRealisticClouds() {
       scene.add(cloudGroup);
     }
 
-// Clouds take the colour of the light: white at noon, peach at sunset, dark grey-blue at night
+// Clouds take the colour of the light: white at noon, peach at sunset, dark grey-blue at night (eased
+// through dusk, never switched), and heavier and greyer when it is overcast
+const CLOUD_NIGHT_TOP = new THREE.Color(0.16, 0.18, 0.24), CLOUD_NIGHT_BASE = new THREE.Color(0.1, 0.11, 0.15);
+const CLOUD_RAIN = new THREE.Color(0.52, 0.56, 0.62);
 function updateCloudLight() {
       if (!cloudTopMat || !sunLight) return;
-      const s = SKY_STATE;
+      const s = SKY_STATE, oc = s.overcast || 0;
       const sun = sunLight.color;
       const lit = 0.35 + 0.75 * s.day;
       cloudTopMat.color.setRGB(Math.min(1, sun.r * lit + 0.08), Math.min(1, sun.g * lit + 0.1), Math.min(1, sun.b * lit + 0.14));
       cloudTopMat.color.lerp(CLOUD_WHITE, 0.35 * s.day * (1 - s.dusk));
+      cloudTopMat.color.lerp(CLOUD_RAIN, 0.7 * oc * s.day);
       // Undersides take the blue-grey of the sky around them
-      cloudBaseMat.color.copy(cloudTopMat.color).multiplyScalar(0.78).lerp(CLOUD_SHADE, 0.45 * s.day);
-      if (s.night > 0.5) { cloudTopMat.color.setRGB(0.16, 0.18, 0.24); cloudBaseMat.color.setRGB(0.1, 0.11, 0.15); }
-      cloudTopMat.opacity = 0.95 - 0.35 * s.night;
-      cloudBaseMat.opacity = 0.9 - 0.35 * s.night;
+      cloudBaseMat.color.copy(cloudTopMat.color).multiplyScalar(0.78 - 0.12 * oc).lerp(CLOUD_SHADE, 0.45 * s.day * (1 - oc));
+      const n = Math.max(0, Math.min(1, (s.night - 0.3) / 0.5));
+      cloudTopMat.color.lerp(CLOUD_NIGHT_TOP, n);
+      cloudBaseMat.color.lerp(CLOUD_NIGHT_BASE, n);
+      cloudTopMat.opacity = Math.min(1, 0.95 - 0.35 * s.night + 0.05 * oc);
+      cloudBaseMat.opacity = Math.min(1, 0.9 - 0.35 * s.night + 0.1 * oc);
     }
 
 // --- 7. Every frame ---------------------------------------------------------------------------------
@@ -673,7 +718,9 @@ function makeRealisticWaterMaterial() {
         depthMap: { value: seaDepthTexture },
         depthBox: { value: new THREE.Vector4(SEA_DEPTH_BOX.x, SEA_DEPTH_BOX.z, SEA_DEPTH_BOX.w, SEA_DEPTH_BOX.d) },
         shallowColor: { value: new THREE.Color(0x5f9c94) },
-        waterTime: { value: 0 }
+        deepColor: { value: new THREE.Color(0x06222c) },
+        waterTime: { value: 0 },
+        waterRain: { value: 0 }
       };
       mat.userData.uniforms = uniforms;
       mat.onBeforeCompile = (shader) => {
@@ -682,7 +729,7 @@ function makeRealisticWaterMaterial() {
           '#include <project_vertex>\n\tvKeloW = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
         shader.fragmentShader = `varying vec3 vKeloW;
 uniform sampler2D waterNormals; uniform sampler2D depthMap; uniform vec4 depthBox;
-uniform vec3 shallowColor; uniform float waterTime;
+uniform vec3 shallowColor; uniform vec3 deepColor; uniform float waterTime; uniform float waterRain;
 ` + shader.fragmentShader
           .replace('#include <color_fragment>', `#include <color_fragment>
 	vec2 keloDuv = ( vKeloW.xz - depthBox.xy ) / depthBox.zw;
@@ -690,17 +737,24 @@ uniform vec3 shallowColor; uniform float waterTime;
 	float keloDepth = mix( 8.0, texture2D( depthMap, clamp( keloDuv, 0.0, 1.0 ) ).r * 8.0, keloInside );
 	float keloShallow = 1.0 - smoothstep( 0.0, 1.6, keloDepth );
 	diffuseColor.rgb = mix( diffuseColor.rgb, keloToLinear( shallowColor ), keloShallow );
+	// darker with depth, out past the shelf
+	diffuseColor.rgb = mix( diffuseColor.rgb, keloToLinear( deepColor ), 0.7 * smoothstep( 2.0, 7.5, keloDepth ) );
 	float keloRipple = texture2D( waterNormals, vKeloW.xz * 0.21 + vec2( waterTime * 0.021, - waterTime * 0.017 ) ).g;
 	float keloFoam = ( 1.0 - smoothstep( 0.0, 0.08 + 0.06 * keloRipple, keloDepth ) ) * smoothstep( 0.5, 0.7, keloRipple + 0.2 * sin( waterTime * 0.9 + vKeloW.x * 0.35 ) );
+	// a second, fainter line of foam that laps in and out a little way off the beach
+	float keloLap = ( 1.0 - smoothstep( 0.06, 0.4, keloDepth ) ) * smoothstep( 0.82, 1.0, sin( keloDepth * 16.0 - waterTime * 1.4 + keloRipple * 2.0 ) ) * smoothstep( 0.35, 0.6, keloRipple );
+	keloFoam = max( keloFoam, keloLap * 0.55 );
 	diffuseColor.rgb = mix( diffuseColor.rgb, vec3( 0.8, 0.84, 0.84 ), keloFoam * 0.6 );
-	diffuseColor.a = clamp( mix( 0.93, 0.32, keloShallow ) + keloFoam * 0.6, 0.0, 1.0 );`)
-          .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n\troughnessFactor = mix( roughnessFactor, 0.8, keloFoam );')
+	// Fresnel: clear looking down into the shallows, a solid mirror toward the horizon
+	float keloGraze = pow( 1.0 - clamp( normalize( cameraPosition - vKeloW ).y, 0.0, 1.0 ), 4.0 );
+	diffuseColor.a = clamp( mix( mix( 0.93, 0.32, keloShallow ), 1.0, keloGraze * 0.75 ) + keloFoam * 0.6, 0.0, 1.0 );`)
+          .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n\troughnessFactor = mix( roughnessFactor + 0.16 * waterRain, 0.8, keloFoam );')
           .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
 	vec2 keloW2 = vKeloW.xz;
 	vec3 keloN1 = texture2D( waterNormals, keloW2 * 0.035 + vec2( waterTime * 0.010, waterTime * 0.006 ) ).xyz * 2.0 - 1.0;
 	vec3 keloN2 = texture2D( waterNormals, keloW2 * 0.09 - vec2( waterTime * 0.014, - waterTime * 0.009 ) ).xyz * 2.0 - 1.0;
 	vec3 keloN3 = texture2D( waterNormals, keloW2 * 0.27 + vec2( - waterTime * 0.026, waterTime * 0.022 ) ).xyz * 2.0 - 1.0;
-	vec2 keloWave = keloN1.xy + keloN2.xy * 0.6 + keloN3.xy * 0.3;
+	vec2 keloWave = keloN1.xy + keloN2.xy * 0.6 + keloN3.xy * ( 0.3 + 0.9 * waterRain );
 	float keloFar = smoothstep( 30.0, 170.0, length( vKeloW - cameraPosition ) );
 	vec3 keloWorldN = normalize( vec3( keloWave.x * 0.16, 1.0, keloWave.y * 0.16 ) );
 	keloWorldN = normalize( mix( keloWorldN, vec3( 0.0, 1.0, 0.0 ), keloFar * 0.6 + keloShallow * 0.3 ) );
@@ -733,7 +787,11 @@ function bakeSeaDepth() {
     }
 
 function updateRealisticWater(t) {
-      if (seaMaterial) seaMaterial.userData.uniforms.waterTime.value = t;
+      if (!seaMaterial) return;
+      const u = seaMaterial.userData.uniforms;
+      u.waterTime.value = t;
+      // Rain roughens the surface: choppier small ripples and a duller reflection
+      u.waterRain.value = typeof rainShown !== 'undefined' ? rainShown : 0;
     }
 
 // --- 11. The ground ----------------------------------------------------------------------------------

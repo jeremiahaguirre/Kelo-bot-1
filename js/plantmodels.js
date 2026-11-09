@@ -414,6 +414,47 @@ function buildAggregatePlantGround() {
       return g;
     }
 
+// A site cabin's finish, the town buildings' level of detail: corner trims, a drip edge under the
+// roof, framed window and door with a sill and a handle, a wall louvre and a lamp over the door.
+// Faces are '+x', '-x', '+z' or '-z' of a w x d cabin (walls h tall from y0) centred at cx, cz.
+function plantCabinDetail(k, cx, cz, w, d, y0, h, label, { win, door, louvre }) {
+      const M = plantMats(), t = 0.06;
+      const on = (face, c, out = 0.035) => {
+        const sgn = face[0] === '+' ? 1 : -1;
+        return face[1] === 'z' ? { x: cx + c, z: cz + sgn * (d / 2 + out), along: 'x' } : { x: cx + sgn * (w / 2 + out), z: cz + c, along: 'z' };
+      };
+      const bar = (face, c, y, lw, lh, mat, lab, out) => {
+        const p = on(face, c, out);
+        if (p.along === 'x') k.box(mat, lw, lh, 0.07, p.x, y, p.z, lab); else k.box(mat, 0.07, lh, lw, p.x, y, p.z, lab);
+      };
+      const frame = (f, lab) => {
+        const yb = f.y - f.h / 2, yt = f.y + f.h / 2;
+        bar(f.face, f.c, yt + t / 2, f.w + 2 * t, t, M.dark, lab);
+        if (!f.door) bar(f.face, f.c, yb - t / 2, f.w + 2 * t, t, M.dark, lab);
+        [-1, 1].forEach(s => bar(f.face, f.c + s * (f.w / 2 + t / 2), f.y, t, f.h, M.dark, lab));
+      };
+      [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([sx, sz]) => k.box(M.grey, 0.07, h, 0.07, cx + sx * (w / 2 + 0.01), y0 + h / 2, cz + sz * (d / 2 + 0.01), label + ': corner trim'));
+      // a drip edge round the roof slab
+      k.box(M.grey, w + 0.24, 0.05, 0.05, cx, y0 + h + 0.02, cz + d / 2 + 0.1, label + ': roof drip edge');
+      k.box(M.grey, w + 0.24, 0.05, 0.05, cx, y0 + h + 0.02, cz - d / 2 - 0.1, label + ': roof drip edge');
+      k.box(M.grey, 0.05, 0.05, d + 0.24, cx + w / 2 + 0.1, y0 + h + 0.02, cz, label + ': roof drip edge');
+      k.box(M.grey, 0.05, 0.05, d + 0.24, cx - w / 2 - 0.1, y0 + h + 0.02, cz, label + ': roof drip edge');
+      if (win) {
+        frame(win, label + ': window frame');
+        bar(win.face, win.c, win.y - win.h / 2 - 0.09, win.w + 0.2, 0.05, M.grey, label + ': window sill', 0.07);
+      }
+      if (door) {
+        frame({ ...door, door: true }, label + ': door frame');
+        bar(door.face, door.c + door.w * 0.32, door.y - 0.05, 0.05, 0.05, M.galv, label + ': door handle', 0.08);
+        bar(door.face, door.c, door.y + door.h / 2 + 0.28, 0.24, 0.14, M.dark, label + ': door lamp', 0.07);
+        bar(door.face, door.c, door.y + door.h / 2 + 0.2, 0.18, 0.03, M.cabin, label + ': door lamp', 0.1);
+      }
+      if (louvre) {
+        bar(louvre.face, louvre.c, louvre.y, 0.5, 0.42, M.grey, label + ': wall louvre');
+        for (let i = 0; i < 4; i++) bar(louvre.face, louvre.c, louvre.y - 0.15 + i * 0.1, 0.44, 0.025, M.dark, label + ': wall louvre', 0.06);
+      }
+    }
+
 // --- Ready-mix concrete batch plant (local to its origin; z is north-, the truck lane is at +z) -----
 function buildBatchPlantModel() {
       const M = plantMats();
@@ -467,6 +508,9 @@ function buildBatchPlantModel() {
         k.cyl(M.white, 0.88, 0.95, x, 2.95, z, lab, { geo: 'cone' });
         k.cyl(M.white, 0.88, 5.6, x, 6.2, z, lab);
         k.cyl(M.white, 0.9, 0.25, x, 9.12, z, lab, { geo: 'cone', rx: Math.PI });
+        // stiffener rings where the shell courses are welded, and a curb round the roof edge
+        [3.95, 5.25, 6.55, 7.85].forEach(y => k.cyl(M.galv, 0.905, 0.07, x, y, z, `Silo ${n} stiffener ring`));
+        k.cyl(M.galv, 0.91, 0.1, x, 9.0, z, `Silo ${n} roof curb`);
         k.box(M.grey, 0.62, 0.48, 0.5, x, 9.45, z, `Silo ${n} dust collector (filter cartridges)`);
         k.cyl(M.galv, 0.08, 0.32, x + 0.22, 9.8, z, `Silo ${n} dust collector vent`);
         k.box(M.dark, 0.18, 0.22, 0.18, x - 0.4, 9.32, z + 0.4, `Silo ${n} pressure relief valve`);
@@ -562,6 +606,8 @@ function buildBatchPlantModel() {
       k.box(M.dark, 1.4, 0.75, 0.35, cx, 0.95, cz + 0.35, 'Batching console');
       k.box(M.screen, 0.6, 0.38, 0.04, cx + 0.3, 1.55, cz + 0.5, 'Batching computer (mix designs and tickets)');
       k.box(M.grey, 0.5, 0.06, 0.5, cx - 0.6, 0.36, cz - 0.9, 'Control room step');
+      plantCabinDetail(k, cx, cz, 2.4, 1.2, 0.2, 2.3, 'Batch control room', {
+        win: { face: '+z', c: 0, w: 1.6, h: 0.8, y: 1.75 }, door: { face: '-z', c: -0.6, w: 0.8, h: 1.8, y: 1.1 }, louvre: { face: '-x', c: 0, y: 1.6 } });
       const beacon = (mat, x, y, z, lab) => { const b = plantPart(new THREE.SphereGeometry(0.11, 12, 8), mat, lab, x, y, z); root.add(b); return b; };
       parts.beaconGreen = beacon(M.beaconGreen, cx - 0.7, 2.72, cz + 0.3, 'Running light');
       parts.beaconAmber = beacon(M.beaconAmber, cx + 0.7, 2.72, cz + 0.3, 'Service light (filters or mixer wear)');
@@ -735,6 +781,8 @@ function buildAsphaltPlantModel() {
       k.cyl(M.cladding, 0.92, 0.75, silX, 3.85, L, 'Hot storage silo (insulated)', { geo: 'cone' });
       k.cyl(M.cladding, 0.92, 2.5, silX, 5.45, L, 'Hot storage silo (insulated)');
       k.cyl(M.cladding, 0.95, 0.3, silX, 6.85, L, 'Hot storage silo roof', { geo: 'cone', rx: Math.PI });
+      [4.6, 5.6].forEach(y => k.cyl(M.galv, 0.935, 0.07, silX, y, L, 'Silo cladding band'));
+      k.cyl(M.galv, 0.94, 0.1, silX, 6.68, L, 'Silo roof curb');
       k.cyl(M.orange, 0.38, 0.5, silX + 0.15, 7.1, L - 0.1, 'Batcher (gob hopper, stops segregation)', { geo: 'cone' });
       k.box(M.dark, 0.5, 0.3, 0.5, silX, 3.3, L, 'Silo clam gate');
       k.box(M.dark, 0.12, 0.45, 0.12, silX + 0.35, 3.25, L, 'Clam gate air cylinder');
@@ -747,6 +795,7 @@ function buildAsphaltPlantModel() {
       const tx = 5.35, tz = L - 0.1;
       k.cyl(M.cladding, 0.8, 3.3, tx, 1.95, tz, 'Bitumen tank (heated, insulated, 30 t)');
       k.cyl(M.cladding, 0.82, 0.28, tx, 3.72, tz, 'Bitumen tank roof', { geo: 'cone', rx: Math.PI });
+      [1.0, 2.0, 3.0].forEach(y => k.cyl(M.galv, 0.815, 0.06, tx, y, tz, 'Bitumen tank cladding band'));
       k.box(M.concrete, 2.0, 0.3, 2.0, tx, 0.15, tz, 'Bitumen tank base');
       k.cyl(M.dark, 0.06, 0.4, tx + 0.3, 4.0, tz, 'Bitumen tank vent');
       k.ladder(tx - 0.95, tz, 0.3, 4.2, Math.PI / 2, 'Bitumen tank ladder');
@@ -766,6 +815,8 @@ function buildAsphaltPlantModel() {
       k.box(M.dark, 0.4, 0.75, 1.4, cx + 0.5, 0.95, cz, 'Plant control desk');
       k.box(M.screen, 0.04, 0.38, 0.6, cx + 0.68, 1.55, cz + 0.3, 'Plant computer (feed rates, temperatures, binder %)');
       k.box(M.grey, 0.5, 0.4, 0.3, cx - 0.4, 2.0, cz + 1.3, 'Air conditioner');
+      plantCabinDetail(k, cx, cz, 1.7, 2.4, 0.2, 2.3, 'Asphalt plant control house', {
+        win: { face: '+x', c: 0, w: 1.8, h: 0.9, y: 1.75 }, door: { face: '-z', c: 0, w: 0.8, h: 1.8, y: 1.1 }, louvre: { face: '-x', c: 0.5, y: 1.6 } });
       const beacon = (mat, x, y, z, lab) => { const b = plantPart(new THREE.SphereGeometry(0.11, 12, 8), mat, lab, x, y, z); root.add(b); return b; };
       parts.beaconGreen = beacon(M.beaconGreen, cx + 0.45, 2.72, cz - 0.6, 'Running light');
       parts.beaconAmber = beacon(M.beaconAmber, cx + 0.45, 2.72, cz + 0.6, 'Service light (baghouse bags or burner)');

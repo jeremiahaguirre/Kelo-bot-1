@@ -1415,6 +1415,7 @@ async function runWorkshopVisit(plan) {
           try { results.push(await stop.act(ctx)); } catch (e) { console.warn('workshop stop', e); results.push(false); }
           indoorTrip.pose = null;
           indoorTrip.crouchTarget = 0;
+          if (results[results.length - 1] === false) break; // a failed step ends the job (no washing a print that never came off)
         }
         if (veh && (plan.vehicleTour || plan.driveThrough)) {
           // (the tour drove back out already)

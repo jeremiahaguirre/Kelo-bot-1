@@ -48,9 +48,9 @@ vec3 keloToLinear( vec3 c ) {
 
 // --- 2. Graphics quality ------------------------------------------------------------------------
 const GRAPHICS_LEVELS = {
-  high:     { label: 'High',     pixelRatio: 2,   shadowSize: 4096, shadowRange: 46, softShadows: true,  bloom: true,  terrainDetail: 2, castMin: 0.08, anisotropy: 8, clouds: 22 },
-  balanced: { label: 'Balanced', pixelRatio: 1.5, shadowSize: 2048, shadowRange: 40, softShadows: true,  bloom: false, terrainDetail: 1, castMin: 0.15, anisotropy: 4, clouds: 16 },
-  fast:     { label: 'Fast',     pixelRatio: 1,   shadowSize: 1024, shadowRange: 32, softShadows: false, bloom: false, terrainDetail: 0, castMin: 0.4,  anisotropy: 1, clouds: 9 }
+  high:     { label: 'High',     pixelRatio: 2,   shadowSize: 4096, shadowRange: 46, softShadows: true,  bloom: true,  terrainDetail: 2, castMin: 0.08, anisotropy: 8, clouds: 22, grassRadius: 17 },
+  balanced: { label: 'Balanced', pixelRatio: 1.5, shadowSize: 2048, shadowRange: 40, softShadows: true,  bloom: false, terrainDetail: 1, castMin: 0.15, anisotropy: 4, clouds: 16, grassRadius: 11 },
+  fast:     { label: 'Fast',     pixelRatio: 1,   shadowSize: 1024, shadowRange: 32, softShadows: false, bloom: false, terrainDetail: 0, castMin: 0.4,  anisotropy: 1, clouds: 9, grassRadius: 0 }
 };
 const GRAPHICS_KEY = 'kelo-graphics';
 let graphicsLevel = 'balanced';
@@ -580,15 +580,36 @@ function updateRealism(t, dt) {
         if (postComposer) fogScratch.convertSRGBToLinear();
         scene.fog.color.copy(fogScratch);
       }
-      // Shadows follow what the camera looks at, snapped to whole shadow-map texels so they don't crawl
+      // Shadows follow what the camera looks at, snapped to whole shadow-map texels so they don't crawl.
+      // The shadow box fits the view: close up it shrinks (crisp shadows), zoomed out it covers the
+      // level's full range. It changes in steps, so the texels don't swim while the camera eases.
       const q = graphics();
-      const snap = (q.shadowRange * 2) / q.shadowSize;
-      const tx = Math.round(controls.target.x / snap) * snap, tz = Math.round(controls.target.z / snap) * snap;
+      const range = shadowRangeFor(q, camera.position.distanceTo(controls.target));
+      const scam = sunLight.shadow.camera;
+      if (scam.right !== range) {
+        scam.left = scam.bottom = -range;
+        scam.right = scam.top = range;
+        scam.updateProjectionMatrix();
+        // Bias in texels: the same acne protection at every size
+        sunLight.shadow.normalBias = 0.035 * range / 40;
+      }
+      const snap = (range * 2) / q.shadowSize;
+      // Centred a little beyond the target, where more of the visible ground is (camForward is the
+      // flat view direction worked out above every few frames)
+      const ahead = range < q.shadowRange ? range * 0.3 : 0;
+      const tx = Math.round((controls.target.x + camForward.x * ahead) / snap) * snap, tz = Math.round((controls.target.z + camForward.z * ahead) / snap) * snap;
       sunLight.target.position.set(tx, 0, tz);
       sunLight.position.set(tx, 0, tz).addScaledVector(SKY_STATE.lightDir, 150);
+      updateGrassTufts();
       if (typeof updateRealisticWater === 'function') updateRealisticWater(t);
       if (typeof updateWeldingStudio === 'function') updateWeldingStudio(t);
       trackFrameRate(dt);
+    }
+
+// Half-width of the sun's shadow box for a camera this far from what it looks at (steps of 6 units)
+function shadowRangeFor(q, dist) {
+      const want = Math.max(24, Math.min(q.shadowRange, dist * 0.95 + 10));
+      return want >= q.shadowRange ? q.shadowRange : Math.ceil(want / 6) * 6;
     }
 
 // --- 8. Watching the frame rate: step down on slow computers -------------------------------------
@@ -789,6 +810,9 @@ vec3 keloBump( vec3 surfPos, vec3 surfNorm, vec2 dHdxy ) {
 	// Steep grassy ground shows bare rock
 	float kCliff = smoothstep( 0.42, 0.7, kSlope ) * wGrass;
 	wGrass -= kCliff; wRock += kCliff;
+	// Snow doesn't stay on cliff faces: they show bare rock
+	float kBare = smoothstep( 0.34, 0.52, kSlope ) * wSnow;
+	wSnow -= kBare; wRock += kBare;
 	float kSum = wSnow + wGrass + wSand + wDirt + wRock;
 	vec2 kUv = vKeloW.xz;
 	vec3 kDetail = vec3( 0.0 );
@@ -805,7 +829,7 @@ vec3 keloBump( vec3 surfPos, vec3 surfNorm, vec2 dHdxy ) {
 	kDetail += t * wRock;
 	kDetail = clamp( kDetail / max( kSum, 0.001 ), 0.25, 2.2 );
 	// Cliffs take on the colour of rock
-	diffuseColor.rgb = mix( diffuseColor.rgb, vec3( 0.16, 0.15, 0.135 ), kCliff * 0.85 );
+	diffuseColor.rgb = mix( diffuseColor.rgb, vec3( 0.16, 0.15, 0.135 ), min( 1.0, kCliff * 0.85 + kBare * 0.9 ) );
 	diffuseColor.rgb *= kDetail;
 	kHeight = dot( kDetail, vec3( 0.3, 0.59, 0.11 ) );
 	// Wide patches of lighter and darker ground, as real meadows have
@@ -906,10 +930,44 @@ function naturalTreeMaterials() {
         const m = new THREE.MeshStandardMaterial({ color: c, roughness: 0.88 });
         if (leafTex) { m.map = leafTex; m.bumpMap = leafTex; m.bumpScale = 0.05; }
         m.userData.seasonal = 'needle'; // frosted in winter
+        m.onBeforeCompile = foliageSwayShader; // the boughs sway in the wind, on the GPU
         return m;
       });
       treeMats = { bark, firBark, leaves, needles };
       return treeMats;
+    }
+
+// Wind in the firs, done in the vertex shader so it costs no JavaScript per tree. Each fir's needle
+// geometry carries `keloSway` (0 at the foot, 1 at the tip, squared); js/wind.js sets the uniforms
+// from the wind it shows. Geometry without the attribute reads 0 and stays still.
+const FOLIAGE_WIND = { keloWindTime: { value: 0 }, keloWindDir: { value: new THREE.Vector2(1, 0) }, keloWindLean: { value: 0 }, keloWindRock: { value: 0.03 }, keloWindSpeed: { value: 1.2 } };
+function foliageSwayShader(shader) {
+      Object.assign(shader.uniforms, FOLIAGE_WIND);
+      shader.vertexShader = `attribute float keloSway;
+uniform float keloWindTime; uniform vec2 keloWindDir; uniform float keloWindLean; uniform float keloWindRock; uniform float keloWindSpeed;
+` + shader.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+	{
+		mat4 kM = modelMatrix;
+		#ifdef USE_INSTANCING
+		kM = modelMatrix * instanceMatrix;
+		#endif
+		vec3 kRoot = kM[3].xyz;
+		float kPh = keloWindTime * keloWindSpeed + kRoot.x * 0.37 + kRoot.z * 0.29;
+		float kAmt = ( keloWindLean + sin( kPh ) * keloWindRock + sin( kPh * 2.3 + 1.7 ) * keloWindRock * 0.35 ) * keloSway;
+		vec3 kW = vec3( keloWindDir.x, 0.0, keloWindDir.y ) * kAmt;
+		// world push into the mesh's own frame (rotation and uniform scale only)
+		vec3 kL = vec3( dot( kM[0].xyz, kW ), dot( kM[1].xyz, kW ), dot( kM[2].xyz, kW ) ) / max( dot( kM[0].xyz, kM[0].xyz ), 1e-4 );
+		transformed += kL;
+	}`);
+    }
+
+// Mark how far up a tree each vertex is (for foliageSwayShader): `base` is the geometry's own height
+// above the tree's foot, `height` the whole tree's
+function markSway(geo, base, height, scale = 1) {
+      const p = geo.attributes.position, a = new Float32Array(p.count);
+      for (let i = 0; i < p.count; i++) { const u = Math.max(0, Math.min(1, (base + p.getY(i)) / height)); a[i] = u * u * scale; }
+      geo.setAttribute('keloSway', new THREE.BufferAttribute(a, 1));
+      return geo;
     }
 
 function roughen(geo, amount, seed) {
@@ -931,8 +989,9 @@ function buildNaturalFir(rng, height = 4) {
         const t = i / (tiers - 1);
         const r = height * (0.3 - 0.22 * t) * (0.9 + rng() * 0.2);
         const h = height * (0.3 - 0.1 * t);
-        const cone = new THREE.Mesh(roughen(new THREE.ConeGeometry(r, h, 9, 2), 0.16, rng() * 100), mat);
-        cone.position.y = trunkH + t * (height - trunkH - h * 0.5) + h * 0.2;
+        const coneY = trunkH + t * (height - trunkH - h * 0.5) + h * 0.2;
+        const cone = new THREE.Mesh(markSway(roughen(new THREE.ConeGeometry(r, h, 9, 2), 0.16, rng() * 100), coneY, height), mat);
+        cone.position.y = coneY;
         cone.rotation.y = rng() * Math.PI;
         cone.rotation.z = (rng() - 0.5) * 0.08;
         cone.castShadow = true;
@@ -1005,7 +1064,7 @@ function buildDistantForest(spots) {
       }
       const trunk = new THREE.CylinderGeometry(0.1, 0.18, 1.4, 5);
       trunk.translate(0, 0.7, 0);
-      const crown = joinGeometries(tiers);
+      const crown = markSway(joinGeometries(tiers), 0, 4.6, 0.7);
       const foliage = new THREE.InstancedMesh(crown, M.needles[0], spots.length);
       const trunks = new THREE.InstancedMesh(trunk, M.firBark, spots.length);
       const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
@@ -1022,4 +1081,134 @@ function buildDistantForest(spots) {
       foliage.receiveShadow = true;
       scene.add(foliage, trunks);
       return foliage;
+    }
+
+// --- 14. Grass near the camera ------------------------------------------------------------------------
+// Short tufts of blades on the meadow around where the camera looks (High and Balanced), one instanced
+// mesh, coloured from the ground under each tuft so they match it in every season (snow and dug or
+// paved ground get none). They are laid out on a fixed jittered grid, so moving the camera never
+// makes them swim, and rebuilt only after the view has moved a little. They sway with the firs.
+const GRASS_CELL = 0.5;
+let grassTufts = null;
+const grassState = { x: 1e9, z: 1e9, key: '', near: [] };
+
+function grassTuftGeometry() {
+      const pos = [], col = [], sway = [], nor = [];
+      const blades = 6;
+      for (let b = 0; b < blades; b++) {
+        const a = (b / blades) * Math.PI * 2 + b * 0.7, lean = 0.12 + (b % 3) * 0.06;
+        const ox = Math.cos(a) * 0.05, oz = Math.sin(a) * 0.05, w = 0.028;
+        const px = -Math.sin(a) * w, pz = Math.cos(a) * w, h = 0.75 + (b % 2) * 0.25;
+        pos.push(ox - px, 0, oz - pz, ox + px, 0, oz + pz, ox + Math.cos(a) * lean, h, oz + Math.sin(a) * lean);
+        col.push(0.62, 0.62, 0.62, 0.62, 0.62, 0.62, 1.08, 1.08, 1.0);
+        sway.push(0, 0, 0.9);
+        nor.push(0, 1, 0, 0, 1, 0, 0, 1, 0);
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+      g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+      g.setAttribute('keloSway', new THREE.Float32BufferAttribute(sway, 1));
+      return g;
+    }
+
+function grassHash(i, j, k) {
+      const s = Math.sin(i * 127.1 + j * 311.7 + k * 74.7) * 43758.5453;
+      return s - Math.floor(s);
+    }
+
+// The terrain's own colour at a spot (nearest grid vertex), or null off the island
+function grassGroundColour(x, z, out) {
+      const mesh = terrainGroundMesh;
+      if (!mesh || typeof terrainGrid === 'undefined' || !terrainGrid || terrainGrid.geo !== mesh.geometry) return null;
+      const g = terrainGrid, col = mesh.geometry.attributes.color, nrm = mesh.geometry.attributes.normal;
+      const ix = Math.round((x - mesh.position.x - g.x0) / g.dx), iz = Math.round((z - mesh.position.z - g.z0) / g.dz);
+      if (ix < 0 || iz < 0 || ix >= g.cols || iz >= g.rows) return null;
+      const i = ix + g.cols * iz;
+      if (nrm && nrm.getY(i) < 0.88) return null;
+      return out.setRGB(col.getX(i), col.getY(i), col.getZ(i));
+    }
+
+function grassBlockedAt(x, z) {
+      if (typeof inParkingArea === 'function' && inParkingArea(x, z, 0.3)) return true;
+      const near = grassState.near;
+      for (let i = 0; i < near.length; i++) {
+        const o = near[i];
+        if (o.hw !== undefined) {
+          const cs = Math.cos(o.rot || 0), sn = Math.sin(o.rot || 0), lx = x - o.x, lz = z - o.z;
+          if (Math.abs(lx * cs - lz * sn) < o.hw + 0.3 && Math.abs(lx * sn + lz * cs) < o.hd + 0.3) return true;
+        } else if (o.road) {
+          const ax = o.x, az = o.z, bx = o.toX - ax, bz = o.toZ - az, L = bx * bx + bz * bz || 1;
+          const u = Math.max(0, Math.min(1, ((x - ax) * bx + (z - az) * bz) / L));
+          if (Math.hypot(x - ax - bx * u, z - az - bz * u) < 1.3) return true;
+        } else if ((x - o.x) * (x - o.x) + (z - o.z) * (z - o.z) < o.r * o.r * 0.5) return true;
+      }
+      return false;
+    }
+
+function updateGrassTufts() {
+      const R = graphics().grassRadius || 0;
+      if (!R || !terrainGroundMesh || typeof controls === 'undefined' || !controls) { if (grassTufts) grassTufts.visible = false; return; }
+      const cell = GRASS_CELL, n = Math.ceil(R / cell);
+      if (!grassTufts || grassTufts.userData.cap < (2 * n + 1) * (2 * n + 1)) {
+        if (grassTufts) { scene.remove(grassTufts); grassTufts.dispose && grassTufts.dispose(); }
+        const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.9, side: THREE.DoubleSide });
+        mat.onBeforeCompile = foliageSwayShader;
+        const cap = (2 * n + 1) * (2 * n + 1);
+        grassTufts = new THREE.InstancedMesh(grassTuftGeometry(), mat, cap);
+        grassTufts.userData = { cap, noShadow: true };
+        grassTufts.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        // Colours from the start, so the shader is built with them even if the first pass finds no grass
+        grassTufts.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(cap * 3), 3);
+        grassTufts.frustumCulled = false;
+        grassTufts.castShadow = false;
+        grassTufts.receiveShadow = true;
+        grassTufts.count = 0;
+        scene.add(grassTufts);
+        grassState.x = 1e9;
+      }
+      grassTufts.visible = true;
+      // Below the camera's own height the view hardly changes; well above the meadow tufts are too small to see
+      const tg = controls.target, cam = camera.position;
+      const far = cam.y - getAnalyticalGroundHeight(cam.x, cam.z) > 45;
+      grassTufts.visible = !far;
+      const col = terrainGroundMesh.geometry.attributes.color;
+      const key = `${R}|${col.version}|${typeof seasonApplied !== 'undefined' ? seasonApplied : ''}|${typeof obstacleVersion !== 'undefined' ? obstacleVersion : 0}|${(state.worldEdits || []).length}`;
+      if (far || (Math.hypot(tg.x - grassState.x, tg.z - grassState.z) < R * 0.14 && key === grassState.key)) return;
+      grassState.x = tg.x; grassState.z = tg.z; grassState.key = key;
+      const cx = Math.round(tg.x / cell), cz = Math.round(tg.z / cell);
+      grassState.near = [];
+      (typeof worldObstacles !== 'undefined' ? worldObstacles : []).forEach(o => { if (Math.hypot(o.x - tg.x, o.z - tg.z) < R + (o.r || 1) + 1) grassState.near.push(o); });
+      (state.worldEdits || []).forEach(e => { if (e.type === 'road' && Number.isFinite(e.toX)) grassState.near.push({ road: true, x: e.x, z: e.z, toX: e.toX, toZ: e.toZ }); });
+      const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), c = new THREE.Color();
+      let k = 0;
+      for (let j = -n; j <= n; j++) {
+        for (let i = -n; i <= n; i++) {
+          const gi = cx + i, gj = cz + j;
+          const h0 = grassHash(gi, gj, 1);
+          if (h0 > 0.82) continue;
+          const x = gi * cell + (grassHash(gi, gj, 2) - 0.5) * cell * 0.9, z = gj * cell + (grassHash(gi, gj, 3) - 0.5) * cell * 0.9;
+          const d = Math.hypot(x - tg.x, z - tg.z);
+          if (d > R) continue;
+          if (!grassGroundColour(x, z, c)) continue;
+          // Only on meadow green (not dirt, sand, rock, gravel, snow or dug ground)
+          if (!(c.g > c.r * 1.04 && c.g > c.b * 1.25)) continue;
+          const ym = typeof terrainMeshHeightAt === 'function' ? terrainMeshHeightAt(x, z) : null;
+          const y = ym === null ? getAnalyticalGroundHeight(x, z) : ym;
+          if (y < 0.02 || y > 3.2) continue;
+          if (grassBlockedAt(x, z)) continue;
+          // Smaller toward the edge, so there is no ring where the grass ends
+          const fade = Math.min(1, (R - d) / (R * 0.3));
+          const s = (0.18 + grassHash(gi, gj, 4) * 0.2) * (0.35 + 0.65 * fade);
+          q.setFromAxisAngle(up, grassHash(gi, gj, 5) * Math.PI * 2);
+          m.compose(p.set(x, y - 0.01, z), q, sc.set(s * 1.4, s, s * 1.4));
+          grassTufts.setMatrixAt(k, m);
+          c.multiplyScalar(0.85 + grassHash(gi, gj, 6) * 0.35);
+          grassTufts.setColorAt(k, c);
+          k++;
+        }
+      }
+      grassTufts.count = k;
+      grassTufts.instanceMatrix.needsUpdate = true;
+      if (grassTufts.instanceColor) grassTufts.instanceColor.needsUpdate = true;
     }

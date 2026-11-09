@@ -61,10 +61,14 @@ function minimapBuildBase() {
           const x = MINIMAP_X0 + (i + 0.5) / MINIMAP_RES, z = MINIMAP_Z0 + (j + 0.5) / MINIMAP_RES;
           const h = hs[j * cw + i];
           let c;
+          // Snow lies on gentle ground only; cliff faces show as rock, as they do in 3D (snowHoldsOn, scene.js)
+          const gx = (hs[j * cw + Math.min(cw - 1, i + 1)] - hs[j * cw + Math.max(0, i - 1)]) * MINIMAP_RES / 2;
+          const gz = (hs[Math.min(ch - 1, j + 1) * cw + i] - hs[Math.max(0, j - 1) * cw + i]) * MINIMAP_RES / 2;
+          const snowy = typeof snowHoldsOn === 'function' ? snowHoldsOn(1 / Math.sqrt(1 + gx * gx + gz * gz)) > 0.5 : true;
           if (z > 7.5 && h < water) c = frozen ? mix([228, 238, 247], [176, 200, 222], (water - h) / 6) : mix([120, 190, 222], [24, 70, 120], (water - h) / 5);
-          else if (z < 7.8 && h > snowLine) c = [238, 243, 250];
+          else if (z < 7.8 && h > snowLine && snowy) c = [238, 243, 250];
           else if (typeof groundDugAt === 'function' && groundDugAt(x, z) > 0.05) c = [122, 75, 42];
-          else if (h > 8.5) c = [236, 241, 250];
+          else if (h > 8.5 && snowy) c = [236, 241, 250];
           else if (h > 2.6) c = mix([128, 136, 152], [92, 99, 118], (h - 2.6) / 6);
           else if (z > 8.2) c = [236, 217, 160];
           else c = mix([96, 196, 70], [60, 150, 50], (h + 0.3) / 2.6);
@@ -90,6 +94,25 @@ function minimapView() {
       const cx = Math.max(MINIMAP_X0 + w / 2, Math.min(MINIMAP_X0 + MINIMAP_W - w / 2, t.x));
       const cz = Math.max(MINIMAP_Z0 + h / 2, Math.min(MINIMAP_Z0 + MINIMAP_H - h / 2, t.z));
       return { x0: cx - w / 2, z0: cz - h / 2, w, h };
+    }
+
+const minimapRay = new THREE.Raycaster(), minimapNdc = new THREE.Vector2();
+// Redraw only when something on it moved by half a map pixel or more (or once a second)
+let minimapDrawKey = '', minimapDrawnAt = 0;
+function minimapNeedsDraw() {
+      const cv = minimap.canvas;
+      if (!cv) return false;
+      const q = Math.max(0.05, (MINIMAP_W / minimap.zoom) / Math.max(1, cv.width) * 0.5);
+      const r = v => Math.round(v / q);
+      const t = controls ? controls.target : { x: 0, z: 0 }, cp = camera ? camera.position : t;
+      const k = keloGroup ? keloGroup.position : state.botPos;
+      let key = `${minimap.zoom}|${cv.width}|${r(t.x)},${r(t.z)}|${r(cp.x)},${r(cp.y)},${r(cp.z)}|${r(k.x)},${r(k.z)},${Math.round((state.botRotY || 0) * 20)}`;
+      (state.vehicles || []).forEach(v => { key += `|${r(v.x)},${r(v.z)}`; });
+      const now = performance.now();
+      if (key === minimapDrawKey && now - minimapDrawnAt < 1000) return false;
+      minimapDrawKey = key;
+      minimapDrawnAt = now;
+      return true;
     }
 
 function minimapDraw() {
@@ -159,9 +182,9 @@ function minimapDraw() {
       // What the camera sees: where the corners of the view meet the ground
       if (camera) {
         const y = controls ? controls.target.y : 0;
+        const ray = minimapRay, ndc = minimapNdc;
         const corners = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([nx, ny]) => {
-          const ray = new THREE.Raycaster();
-          ray.setFromCamera(new THREE.Vector2(nx, ny), camera);
+          ray.setFromCamera(ndc.set(nx, ny), camera);
           const d = ray.ray.direction, o = ray.ray.origin;
           let t = d.y < -0.01 ? (y - o.y) / d.y : 160;
           t = Math.min(Math.max(t, 0), 160);
@@ -243,9 +266,9 @@ function initExploreMinimap() {
       document.getElementById('btnShowMinimap')?.addEventListener('click', () => minimapSetOpen(true));
       window.addEventListener('resize', minimapResize);
 
-      // Redraw about eight times a second, and the terrain picture when the land changes
+      // Check eight times a second (redrawing only when something moved), and the terrain picture when the land changes
       setInterval(() => {
-        if (!cv.offsetParent) return;
+        if (!cv.offsetParent || !minimapNeedsDraw()) return;
         minimapDraw();
       }, 125);
       setInterval(() => {

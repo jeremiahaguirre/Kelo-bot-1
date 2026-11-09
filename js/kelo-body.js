@@ -254,7 +254,7 @@ function buildKelo1Character3D() {
       // Torso: one round, egg-shaped teal shell with a cream belly panel and his K-1 badge
       const TSX = 1.0, TSZ = 0.82;
       const torsoProfile = [[0, 0.0], [0.17, 0.02], [0.215, 0.08], [0.24, 0.18], [0.245, 0.3], [0.237, 0.42], [0.21, 0.52], [0.16, 0.6], [0.09, 0.645], [0, 0.66]];
-      keloBody.add(keloLathe(torsoProfile, M.shell, { sx: TSX, sz: TSZ, seg: 36 }));
+      keloBody.add(keloLathe(torsoProfile, M.shell, { sx: TSX, sz: TSZ, seg: 32 }));
       // Panel seams: where the chest shell meets the shoulder cap, and a waist line above the belt
       keloBody.add(keloSeamRing(torsoProfile, 0.535, TSX, TSZ, M), keloSeamRing(torsoProfile, 0.075, TSX, TSZ, M));
       keloBody.add(keloMesh(keloPatchGeometry(torsoProfile, TSX, TSZ, { yc: 0.26, hy: 0.19, phi: 0.78 }, 0.004, 0.1), M.cream, { shadow: false }));
@@ -289,7 +289,7 @@ function buildKelo1Character3D() {
       keloBody.add(keloHead);
       const HSX = 1.1, HSZ = 0.98;
       const headProfile = [[0, 0.0], [0.12, 0.01], [0.215, 0.05], [0.278, 0.12], [0.303, 0.21], [0.31, 0.3], [0.302, 0.39], [0.272, 0.47], [0.215, 0.545], [0.125, 0.598], [0, 0.615]];
-      keloHead.add(keloLathe(headProfile, M.shell, { sx: HSX, sz: HSZ, seg: 40 }));
+      keloHead.add(keloLathe(headProfile, M.shell, { sx: HSX, sz: HSZ, seg: 34 }));
       keloHead.add(keloSeamRing(headProfile, 0.53, HSX, HSZ, M), keloSeamRing(headProfile, 0.04, HSX, HSZ, M));
       // a cream frame around the screen, then the dark glass screen itself
       keloHead.add(keloMesh(keloPatchGeometry(headProfile, HSX, HSZ, { yc: 0.275, hy: 0.215, phi: 1.12 }, 0.004, 0.25), M.cream, { shadow: false }));
@@ -360,9 +360,9 @@ function buildKelo1Character3D() {
 
       // --- Arms: soft rounded capsules with ball joints and small hands
       const shoulderBall = new THREE.SphereGeometry(0.088, 24, 16);
-      const upperArm = new THREE.LatheGeometry(keloCapsuleProfile(0.07, 0.058, KELO_UPPER_ARM - 0.03, 0.006).map(([r, y]) => new THREE.Vector2(r, y)), 22);
+      const upperArm = new THREE.LatheGeometry(keloCapsuleProfile(0.07, 0.058, KELO_UPPER_ARM - 0.03, 0.006).map(([r, y]) => new THREE.Vector2(r, y)), 20);
       const elbowBall = new THREE.SphereGeometry(0.056, 14, 10);
-      const forearm = new THREE.LatheGeometry(keloCapsuleProfile(0.064, 0.05, KELO_FOREARM - 0.05, 0.008).map(([r, y]) => new THREE.Vector2(r, y)), 22);
+      const forearm = new THREE.LatheGeometry(keloCapsuleProfile(0.064, 0.05, KELO_FOREARM - 0.05, 0.008).map(([r, y]) => new THREE.Vector2(r, y)), 20);
       const cuff = new THREE.TorusGeometry(0.05, 0.011, 6, 18).rotateX(Math.PI / 2);
       const wristBall = new THREE.SphereGeometry(0.034, 10, 8);
 
@@ -394,14 +394,14 @@ function buildKelo1Character3D() {
 
       // --- Legs: short and sturdy, with round knees and chunky rounded boots
       const hipBall = new THREE.SphereGeometry(0.095, 16, 12);
-      const thigh = new THREE.LatheGeometry(keloCapsuleProfile(0.1, 0.082, KELO_THIGH - 0.04, 0.01).map(([r, y]) => new THREE.Vector2(r, y)), 24);
+      const thigh = new THREE.LatheGeometry(keloCapsuleProfile(0.1, 0.082, KELO_THIGH - 0.04, 0.01).map(([r, y]) => new THREE.Vector2(r, y)), 20);
       const kneeBall = new THREE.SphereGeometry(0.075, 14, 10);
-      const shin = new THREE.LatheGeometry(keloCapsuleProfile(0.085, 0.07, KELO_SHIN - 0.08, 0.012).map(([r, y]) => new THREE.Vector2(r, y)), 24);
+      const shin = new THREE.LatheGeometry(keloCapsuleProfile(0.085, 0.07, KELO_SHIN - 0.08, 0.012).map(([r, y]) => new THREE.Vector2(r, y)), 20);
       const ankleBall = new THREE.SphereGeometry(0.05, 12, 8);
       const ankleY = KELO_LEG_Y - KELO_THIGH - KELO_SHIN;   // how high his ankles are above the ground
       // the boot: the top half of a squashed ball, long toward the toe, on a flat rubber sole
-      const boot = new THREE.SphereGeometry(1, 28, 12, 0, Math.PI * 2, 0, Math.PI / 2);
-      const sole = new THREE.CylinderGeometry(1, 1, 1, 28);
+      const boot = new THREE.SphereGeometry(1, 24, 10, 0, Math.PI * 2, 0, Math.PI / 2);
+      const sole = new THREE.CylinderGeometry(1, 1, 1, 24);
 
       const buildLeg = s => {
         const hip = new THREE.Group();

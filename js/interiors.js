@@ -267,14 +267,14 @@ function buildCafeInside(room, S) {
       intChair(g, M, -0.3, 0.6, -Math.PI / 2, S.seat.h);
       // A pendant lamp over the table and two wall lamps
       const K = typeof bldKit === 'function' ? bldKit() : null;
-      intCyl(g, 0.006, 0.006, S.H - F - 1.85, M.black, T.x, F + 1.85 + (S.H - F - 1.85) / 2, T.z, 4);
+      intCyl(g, 0.006, 0.006, S.H - F - 2.12, M.black, T.x, F + 2.12 + (S.H - F - 2.12) / 2, T.z, 4);
       const shade = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.16, 14, 1, true), M.walnut);
       shade.material.side = THREE.DoubleSide;
-      shade.position.set(T.x, F + 1.85, T.z);
+      shade.position.set(T.x, F + 2.12, T.z);
       g.add(shade);
       if (K) {
         const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), K.bulb);
-        bulb.position.set(T.x, F + 1.78, T.z);
+        bulb.position.set(T.x, F + 2.05, T.z);
         g.add(bulb);
       }
       intPlant(g, M, -1.55, 1.05, F);
@@ -541,7 +541,7 @@ function interiorCanStart(key) {
       const pin = TOWN_LOCATIONS[key];
       if (!interiorRooms[key] || !pin || !keloGroup || typeof indoorTrip === 'undefined') return false;
       if (indoorTrip.active || state.riding || state.isSleeping || state.basementDepth) return false;
-      return Math.hypot(state.botPos.x - pin.x, state.botPos.z - pin.z) < 1.2;
+      return Math.hypot(state.botPos.x - pin.x, state.botPos.z - pin.z) < 1.6;
     }
 
 // The visit at this building (started now if he is at its door), or null
@@ -562,7 +562,7 @@ function interiorStartVisit(key) {
       return v;
     }
 
-function interiorAwaitReady(v, ms = 30000) {
+function interiorAwaitReady(v, ms = 120000) {
       return Promise.race([v.ready, new Promise(r => setTimeout(() => r(false), ms))]);
     }
 
@@ -633,7 +633,7 @@ async function interiorRunVisit(v) {
         v.leaving = true;
         v.setReady(false);
         try { if (v.cleanup) v.cleanup(); } catch (e) { console.warn('interior cleanup', e); }
-        v.temps.forEach(o => { if (o.parent) o.parent.remove(o); });
+        v.temps.forEach(o => { if (o.parent) o.parent.remove(o); if (typeof disposeTree === "function") disposeTree(o); });
         indoorTrip.path = null;
         const hold = indoorTrip.resolve;
         indoorTrip.resolve = null;
@@ -725,13 +725,11 @@ async function interiorAtCafe(v, S, room) {
         v.temps.push(set);
         v.plateTop = { x: T.x, y: top + 0.03, z: T.z - 0.12 };
       }
-      v.tick = () => {
-        // What he ordered arrives in his hands (js/needs.js eatSomething): it goes on the plate and he eats it
-        if (typeof carriedObject !== 'undefined' && carriedObject && v.plateTop && carriedObject !== v.food) {
-          const f = carriedObject;
-          carriedObject = null;
-          if (typeof carriedUntil !== 'undefined') carriedUntil = 0;
+      // What he ordered arrives in his hands (js/needs.js eatSomething): it goes on the plate and he eats it
+      // (setCarriedObject is wrapped below to hand it here)
+      v.serve = f => {
           if (f.parent) f.parent.remove(f);
+          if (f.scale.x === 1 && typeof lifeSize === 'function') lifeSize(f, 1.4);
           f.traverse(o => { if (o.userData && o.userData.isLabel) o.visible = false; });
           const size = typeof maxSizeOf === 'function' ? maxSizeOf(f) : 0.3;
           f.scale.multiplyScalar(Math.min(1, 0.22 / size));
@@ -743,7 +741,8 @@ async function interiorAtCafe(v, S, room) {
           v.foodScale = f.scale.x;
           v.bites = 0;
           v.lastBite = performance.now();
-        }
+      };
+      v.tick = () => {
         if (v.food && performance.now() - v.lastBite > 1300 && v.bites < 5) {
           v.bites++;
           v.lastBite = performance.now();
@@ -752,7 +751,7 @@ async function interiorAtCafe(v, S, room) {
       };
       await tripPause(500);
       v.finish = async () => {
-        if (v.food) { v.food.visible = false; tripMood('All done', state.speechBubble); }
+        if (v.food) v.food.visible = false;
         indoorTrip.pose = t => interiorRestSitPose(t);
         await tripPause(500);
         interiorStand('cafe', seat.via[seat.via.length - 1]);
@@ -826,12 +825,26 @@ if (interiorBaseWait) {
       if (v && v.key === key && !v.leaving) { await interiorAwaitReady(v); return; }
       if (v && v.leaving) await Promise.race([v.done, tripPause(20000)]);
       // (his mail run used to give up after 15 s on the way; he finishes the walk and goes in)
-      await interiorBaseWait(key === 'post_office' ? Math.max(timeoutMs, 45000) : timeoutMs);
-      v = interiorEnsureVisit(key);
+      const ms = key === 'post_office' ? Math.max(timeoutMs, 45000) : timeoutMs, until = Date.now() + ms;
+      await interiorBaseWait(ms);
+      // (arriving counts at the edge of the pin; he goes in once he is at the door)
+      while (!(v = interiorEnsureVisit(key)) && Date.now() < until && interiorKeyForTarget(state.targetPos) === key) await tripPause(250);
       if (v) await interiorAwaitReady(v);
     } catch (e) {
       console.warn('interior wait', e);
     }
+  };
+}
+
+// While he sits at the cafe table, food handed to him goes onto his plate instead of into his hands
+const interiorBaseCarry = typeof setCarriedObject === 'function' ? setCarriedObject : null;
+if (interiorBaseCarry) {
+  setCarriedObject = function (object3d, holdMs) {
+    const v = interiorVisitNow;
+    if (object3d && v && v.serve && v.plateTop && !v.food && !v.leaving && v.readyAt) {
+      try { v.serve(object3d); return; } catch (e) { console.warn('interior serve', e); }
+    }
+    return interiorBaseCarry(object3d, holdMs);
   };
 }
 

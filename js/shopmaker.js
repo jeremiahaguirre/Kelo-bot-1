@@ -582,7 +582,7 @@ async function sitOnMadeSeat(name, originLabel = 'Sitting Down') {
         const ring = [0.75, 0.5, 1, 0.25, 1.25, 0, 1.5, 1.75].map(f => f * Math.PI * 2).map(a => ({ x: fire.x + Math.cos(a) * 1.9, z: fire.z + Math.sin(a) * 1.9 }));
         const spot = ring.find(p => obstacleClearAt(p.x, p.z, 0.45) && getAnalyticalGroundHeight(p.x, p.z) > WATER_LEVEL + 0.1) || openGroundNear({ x: fire.x - 1.8, z: fire.z + 1.6 }, 0.7) || { x: fire.x - 1.8, z: fire.z + 1.6 };
         state.currentLocKey = 'custom';
-        state.customPlaceName = 'the fire ring by his house';
+        state.customPlaceName = Math.hypot(spot.x - fire.x, spot.z - fire.z) < 3 ? 'the fire ring by his house' : 'the meadow by his house';
         state.targetPos = { x: spot.x, z: spot.z + 0.6 };
         state.moodEmoji = '🪑';
         state.moodTitle = `Carrying the ${plain} out to sit on`.slice(0, 80);

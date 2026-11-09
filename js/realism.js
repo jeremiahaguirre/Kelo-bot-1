@@ -1125,7 +1125,7 @@ function grassGroundColour(x, z, out) {
       const ix = Math.round((x - mesh.position.x - g.x0) / g.dx), iz = Math.round((z - mesh.position.z - g.z0) / g.dz);
       if (ix < 0 || iz < 0 || ix >= g.cols || iz >= g.rows) return null;
       const i = ix + g.cols * iz;
-      if (nrm && nrm.getY(i) < 0.88) return null;
+      if (nrm && nrm.getY(i) < 0.8) return null;
       return out.setRGB(col.getX(i), col.getY(i), col.getZ(i));
     }
 
@@ -1186,20 +1186,20 @@ function updateGrassTufts() {
         for (let i = -n; i <= n; i++) {
           const gi = cx + i, gj = cz + j;
           const h0 = grassHash(gi, gj, 1);
-          if (h0 > 0.82) continue;
+          if (h0 > 0.9) continue;
           const x = gi * cell + (grassHash(gi, gj, 2) - 0.5) * cell * 0.9, z = gj * cell + (grassHash(gi, gj, 3) - 0.5) * cell * 0.9;
           const d = Math.hypot(x - tg.x, z - tg.z);
           if (d > R) continue;
           if (!grassGroundColour(x, z, c)) continue;
           // Only on meadow green (not dirt, sand, rock, gravel, snow or dug ground)
-          if (!(c.g > c.r * 1.04 && c.g > c.b * 1.25)) continue;
+          if (!(c.g > c.r * 0.97 && c.g > c.b * 1.25)) continue;
           const ym = typeof terrainMeshHeightAt === 'function' ? terrainMeshHeightAt(x, z) : null;
           const y = ym === null ? getAnalyticalGroundHeight(x, z) : ym;
           if (y < 0.02 || y > 3.2) continue;
           if (grassBlockedAt(x, z)) continue;
           // Smaller toward the edge, so there is no ring where the grass ends
           const fade = Math.min(1, (R - d) / (R * 0.3));
-          const s = (0.18 + grassHash(gi, gj, 4) * 0.2) * (0.35 + 0.65 * fade);
+          const s = (0.24 + grassHash(gi, gj, 4) * 0.24) * (0.35 + 0.65 * fade);
           q.setFromAxisAngle(up, grassHash(gi, gj, 5) * Math.PI * 2);
           m.compose(p.set(x, y - 0.01, z), q, sc.set(s * 1.4, s, s * 1.4));
           grassTufts.setMatrixAt(k, m);

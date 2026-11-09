@@ -391,13 +391,13 @@ function openListRequests(p) {
     }
 
 function listFullySent(p, subKey) {
-      return bomListLines(p.bom, subKey).every(l => (l.sent || 0) >= l.qty || l.got >= l.qty);
+      return bomListLines(p.bom, subKey).every(l => l.make || (l.sent || 0) >= l.qty || l.got >= l.qty);
     }
 
 function addListRequest(p, subKey) {
       const tools = subKey === '__tools';
       const sub = p.bom.subs.find(s => s.key === subKey);
-      const lines = bomListLines(p.bom, subKey).filter(l => l.got < l.qty);
+      const lines = bomListLines(p.bom, subKey).filter(l => l.got < l.qty && !l.make);
       if (!lines.length) return null;
       const req = {
         id: 'req-bom-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 1000),
@@ -437,17 +437,23 @@ function bomListCardHtml(req) {
       const kindTag = { f: 'fastener', c: 'consumable', tool: 'tool' };
       const rows = lines.map(l => {
         const sent = (l.sent || 0) >= l.qty, got = l.got >= l.qty;
+        // A part he makes in one of his own shops: not something to send
+        if (l.make) return `<div class="flex items-start gap-2 px-2 py-1 rounded-lg ${got ? 'bg-emerald-500/10' : 'bg-violet-500/10'}">
+          <span class="mt-0.5 text-[11px]">🛠️</span>
+          <span class="flex-1 text-[11px] text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="font-mono font-bold text-amber-300">× ${escapeHtml(bomFmtQty(l.qty))}</span> <span class="block text-[10px] text-violet-300 italic">I'll make this on the ${escapeHtml(l.makeOn || l.make)}</span></span>
+          <span class="text-[10px] font-mono shrink-0 ${got ? 'text-emerald-300' : 'text-violet-300'}">${got ? '✓ made' : l.making ? 'making' : 'my shop'}</span>
+        </div>`;
         return `<label class="flex items-start gap-2 px-2 py-1 rounded-lg ${got ? 'bg-emerald-500/10' : sent ? 'bg-sky-500/10' : 'hover:bg-slate-800/60'} cursor-pointer">
           <input type="checkbox" class="bom-line-cb mt-0.5 accent-amber-400" data-req-id="${id}" data-line-id="${escapeHtml(l.id)}" ${sent || got ? 'disabled' : 'checked'} />
-          <span class="flex-1 text-[11px] text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="font-mono font-bold text-amber-300">× ${escapeHtml(bomFmtQty(l.qty))}${l.unit ? ' ' + escapeHtml(l.unit) : ''}</span>${kindTag[l.kind] ? ` <span class="text-[9px] uppercase text-slate-500">${kindTag[l.kind]}</span>` : ''}</span>
+          <span class="flex-1 text-[11px] text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="font-mono font-bold text-amber-300">× ${escapeHtml(bomFmtQty(l.qty))}${l.unit ? ' ' + escapeHtml(l.unit) : ''}</span>${kindTag[l.kind] ? ` <span class="text-[9px] uppercase text-slate-500">${kindTag[l.kind]}</span>` : ''}${l.forShop ? ` <span class="text-[9px] text-violet-300">for my ${escapeHtml(typeof makerShopName === 'function' ? makerShopName(l.forShop) : l.forShop)}</span>` : ''}</span>
           <span class="text-[10px] font-mono shrink-0 ${got ? 'text-emerald-300' : sent ? 'text-sky-300' : 'text-slate-500'}">${got ? '✓ here' : sent ? '📮 sent' : `${bomFmtQty(Math.min(l.got, l.qty))}/${bomFmtQty(l.qty)}`}</span>
         </label>`;
       }).join('');
-      const left = lines.filter(l => (l.sent || 0) < l.qty && l.got < l.qty).length;
+      const left = lines.filter(l => !l.make && (l.sent || 0) < l.qty && l.got < l.qty).length;
       return `<div class="p-4 rounded-2xl border ${req.fulfilled ? 'bg-slate-950/60 border-emerald-500/30' : 'bg-slate-950 border-amber-500/50 shadow-lg'} space-y-2.5" data-bom-card="${id}">
         <div class="flex items-center justify-between gap-2">
           <span class="text-xs font-bold text-white flex items-center gap-1.5"><span class="text-lg">${escapeHtml(req.icon)}</span><span>${escapeHtml(req.title)}</span></span>
-          <span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${req.fulfilled ? 'bg-emerald-500/20 text-emerald-300' : req.declined ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/25 text-amber-300 border border-amber-400/40'}">${req.declined ? '✗ Not now' : req.fulfilled ? '📮 All sent' : `${lines.length - left}/${lines.length} sent`}</span>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${req.fulfilled ? 'bg-emerald-500/20 text-emerald-300' : req.declined ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/25 text-amber-300 border border-amber-400/40'}">${req.declined ? '✗ Not now' : req.fulfilled ? '📮 All sent' : `${lines.filter(l => !l.make).length - left}/${lines.filter(l => !l.make).length} sent`}</span>
         </div>
         <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
         ${sub ? `<div class="text-[10px] font-mono text-slate-400">${lines.length} lines · ${escapeHtml(bomFmtQty(bomFastenerCount(sub)))} fasteners · ${bomSubReceived(sub)}/${lines.length} received</div>` : ''}
@@ -509,7 +515,7 @@ function sendBomList(reqId, lineIds = null, visitor = 'curiousWanderer') {
       const p = req && buildProjectById(req.listProject);
       if (!req || !p || req.fulfilled) return null;
       const tools = req.listSub === '__tools';
-      const lines = bomListLines(p.bom, req.listSub).filter(l => (l.sent || 0) < l.qty && l.got < l.qty && (!lineIds || lineIds.includes(l.id)));
+      const lines = bomListLines(p.bom, req.listSub).filter(l => !l.make && (l.sent || 0) < l.qty && l.got < l.qty && (!lineIds || lineIds.includes(l.id)));
       if (!lines.length) return null;
       const sub = p.bom.subs.find(s => s.key === req.listSub);
       const name = tools ? `Tools for the ${p.bom.name.toLowerCase()} (${lines.length})` : `Parts kit: ${sub.name} (${lines.length} line${lines.length === 1 ? '' : 's'})`;
@@ -826,6 +832,11 @@ function finishBuild(id) {
       } else if (bom.itemKind === 'tool') {
         state.toolInventory.unshift(bom.item);
         state.unstoredItems.push(bom.item);
+      } else if (bom.itemKind === 'thing') {
+        // A practical thing he built (its kind and uses were registered when he planned it, js/shopmaker.js)
+        state.belongings.unshift({ name: bom.item, category: 'made', emoji: bom.emoji, from: 'his own build' });
+        state.unstoredItems.push(bom.item);
+        if (typeof putAwayItems === 'function') doWhenFree(putAwayItems, { key: 'putaway-made' });
       } else {
         const s = siteFor(p);
         if (!p.obstacle && bom.site !== 'tree') { worldObstacles.push({ x: s.x, z: s.z, r: bom.r || 2 }); p.obstacle = true; }

@@ -134,7 +134,12 @@ Object.assign(WORKSHOP_SUPPLIES, {
 });
 if (typeof ITEM_KINDS !== 'undefined') {
   ITEM_KINDS.unshift(
-    { kind: 'glasswork', label: 'a piece of hand-blown glass', re: /hand-blown glass/i, uses: ['display', 'drink'] },
+    // What he blows is used for what it is: a cup holds drinks, a bowl holds food, a vase holds flowers;
+    // only an ornament is purely decorative. None of it is ever eaten or drunk itself.
+    { kind: 'drinkware', label: 'a cup that holds drinks', re: /hand-blown glass (cup|tumbler|goblet|mug)/i, uses: ['hold drinks', 'display'] },
+    { kind: 'dish', label: 'a bowl that holds food', re: /hand-blown glass (bowl|dish|plate)/i, uses: ['hold food', 'display'] },
+    { kind: 'vase', label: 'a vase that holds flowers', re: /hand-blown glass vase/i, uses: ['hold flowers', 'display'] },
+    { kind: 'glasswork', label: 'a piece of hand-blown glass', re: /hand-blown glass/i, uses: ['display'] },
     { kind: 'ws glassBatch', label: 'cullet for the glass furnace', re: /cullet|glass batch/i, uses: ['make glass'], per: 4, unit: 'pieces' },
     { kind: 'ws colourFrit', label: 'colour frit and rod', re: /frit|colou?r rod/i, uses: ['make glass'], per: 6, unit: 'pieces' },
     { kind: 'ws furnaceGas', label: 'gas for the glass furnace', re: /furnace gas|gas meter/i, uses: ['make glass'], per: 4, unit: 'firings' },
@@ -192,7 +197,8 @@ registerWorkshopMachine({
   plan(job) {
     const key = this.key;
     const kind = Object.keys(GLASS_PIECES).find(k => new RegExp(k, 'i').test(job.make || '')) || wsPick(Object.keys(GLASS_PIECES));
-    const piece = GLASS_PIECES[kind];
+    // A named order keeps its name and goes where its kind says (js/shopmaker.js), never the coin-flip museum
+    const piece = job.product ? { ...GLASS_PIECES[kind], name: job.product, museum: false } : GLASS_PIECES[kind];
     const rush = Boolean(job.rush);
     let gather = null, heat = 1, size = 0.06;
     const follow = ctx => glassPipeFollow(gather, ctx, heat, size);
@@ -205,7 +211,7 @@ registerWorkshopMachine({
       }
     });
     return {
-      title: `Blowing a glass ${kind} in the glass studio`, product: piece.name,
+      title: `Blowing ${job.product ? wsWhat(job.product).replace(/hand-blown /i, "") : `a glass ${kind}`} in the glass studio`, product: piece.name,
       speech: 'Didymium glasses and Kevlar gloves on. The furnace is at 2100 degrees.',
       stops: [
         step('glassfurnace', 'Gathering molten glass from the crucible', 3500, 'Dip the blowpipe, turn, turn, lift: a honey-bright gather.', (k, t, ctx) => {

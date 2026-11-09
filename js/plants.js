@@ -1261,8 +1261,12 @@ function placesToNotice() {
       return NEW_PLACES_TO_NOTICE.filter(p => !state.placesNoticed[p.key]);
     }
 
+// A walk that keeps failing (blocked from where he stands) backs off instead of retrying every 20 s,
+// which held isBusy most of the time and starved everything else; after three tries he takes it in from afar
+let noticeTries = 0, noticeNextAt = 0;
 async function noticeNewPlaces() {
       const todo = placesToNotice();
+      if (Date.now() < noticeNextAt) return false;
       if (!todo.length || state.isBusy || state.isBuilding || state.isCollectingMail || state.isPracticing || state.isSleeping) return false;
       state.isBusy = true;
       try {
@@ -1284,7 +1288,11 @@ async function noticeNewPlaces() {
             else if (Date.now() - lastGain > 30000) break;
             if (state.targetPos !== spot) state.targetPos = spot;
           }
-          if (Math.hypot(spot.x - state.botPos.x, spot.z - state.botPos.z) > 3) break;
+          if (Math.hypot(spot.x - state.botPos.x, spot.z - state.botPos.z) > 3) {
+            noticeTries += 1;
+            noticeNextAt = Date.now() + Math.min(30, 5 * noticeTries) * 60000;
+            if (noticeTries < 3) break;
+          }
           state.speechBubble = p.say;
           state.wonderLevel = Math.min(100, (state.wonderLevel || 0) + 8);
           state.placesNoticed[p.key] = Date.now();

@@ -297,6 +297,10 @@ function boardingSpot(v) {
 function vehicleDestination(v, type, target) {
       const dest = { x: target.x, z: target.z };
       if (type.mode === 'air' && type.kind !== 'plane' && typeof openGroundNear === 'function') {
+        // Its own helipad or balloon field is made for landing on (the hangar wall beside the pad
+        // would otherwise send it 10 units off the pad, and it would never come home)
+        const pad = [...AIR_SLOTS, ...BALLOON_SLOTS].find(([x, z]) => Math.hypot(dest.x - x, dest.z - z) < 1.5);
+        if (pad) return { x: pad[0], z: pad[1] };
         return openGroundNear(dest, /balloon/i.test(v.name) ? 2.2 : 3.0) || dest;
       }
       if (type.mode === 'water') {

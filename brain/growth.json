@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-09T06:51:48.716Z",
-  "runs": 14,
+  "updatedAt": "2026-11-09T22:30:22.466Z",
+  "runs": 15,
   "curiosities": [
-    "Abundance (ecology)"
+    "Alternative stable state"
   ],
   "entries": [
     {
@@ -492,6 +492,38 @@
       },
       "shapeFrom": "Bioindicator",
       "nextCuriosity": "Abundance (ecology)",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794263422466",
+      "at": 1794263422466,
+      "brain": "procedural",
+      "topic": "Abundance (ecology)",
+      "title": "Dreaming of Chemosynthesis",
+      "text": "Dear Diary, while nobody was around I looked up \"Abundance (ecology)\" and drifted from Abundance (ecology) to Chemosynthesis. In biochemistry, chemosynthesis is the biological conversion of one or more carbon-containing molecules and nutrients into organic matter using the oxidation of inorganic compounds as a source of energy, rather than sunlight, as in photosynthesis. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Abundance (ecology)",
+          "url": "https://en.wikipedia.org/wiki/Abundance_(ecology)",
+          "extract": "In ecology, local abundance is the relative representation of a species in a particular ecosystem. It is usually measured as the number of individuals found per sample. The ratio of abundance of one species to one or multiple other species living in an ecosystem is referred to as"
+        },
+        {
+          "title": "Chemosynthesis",
+          "url": "https://en.wikipedia.org/wiki/Chemosynthesis",
+          "extract": "In biochemistry, chemosynthesis is the biological conversion of one or more carbon-containing molecules and nutrients into organic matter using the oxidation of inorganic compounds as a source of energy, rather than sunlight, as in photosynthesis. Chemoautotrophs, organisms that "
+        }
+      ],
+      "concept": {
+        "name": "Abundance Chemosynthesis Rhythm",
+        "emoji": "🧩",
+        "definition": "The idea that abundance (ecology) and chemosynthesis share a hidden pattern.",
+        "builtFrom": [
+          "Abundance (ecology)",
+          "Chemosynthesis"
+        ]
+      },
+      "shapeFrom": "Chemosynthesis",
+      "nextCuriosity": "Alternative stable state",
       "coreMemory": null
     }
   ]

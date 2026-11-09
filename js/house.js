@@ -306,9 +306,9 @@ function buildKeloHouse3D() {
       box(0.28, 0.06, 0.28, darkWood, doorW / 2 + 0.45, floorY + 2.38, d / 2 + 0.2);
 
       // --- Exterior finish (the town buildings' level of detail, js/materials.js kit): a painted
-      // water-table board round the foot of the walls, shutters on the front windows, rafter tails
-      // under the eaves, gutters and downspouts, a deck fascia and chimney flue pots.
-      // All static: they join the house's merged meshes below.
+      // water-table board round the foot of the walls, shutters on the front windows, gutters and
+      // downspouts, a deck fascia and chimney flue pots. Static: they join the house's merged meshes
+      // below (the gutters fade with the roof in cutaway mode).
       const K = typeof bldKit === 'function' ? bldKit() : null;
       const skirt = (len, x, z, rotY) => { const b = box(len, 0.24, 0.06, trimMat, x, floorY + 0.12, z); b.rotation.y = rotY; return b; };
       skirt(w + 0.12, 0, -d / 2 - 0.04, 0);
@@ -324,30 +324,28 @@ function buildKeloHouse3D() {
         box(0.36, shH, 0.05, shutterMat, x, floorY + (sill + head) / 2, d / 2 + 0.03);
         for (let k = 0; k < 9; k++) box(0.28, 0.035, 0.03, slatMat, x, floorY + sill + 0.16 + k * (shH - 0.32) / 8, d / 2 + 0.065).castShadow = false;
       }));
-      // Open eaves: rafter tails every 0.7 under the overhang
       const eaveY = ridgeY - run * Math.tan(pitch);
-      [1, -1].forEach(side => {
-        for (let x = -w / 2 - sideHang + 0.2; x <= w / 2 + sideHang - 0.15; x += 0.7) {
-          const tail = box(0.08, 0.13, overhang + 0.05, darkWood, x, eaveY + overhang * Math.tan(pitch) / 2 - 0.075, side * (d / 2 + overhang / 2));
-          tail.rotation.x = side * pitch;
-          tail.castShadow = false;
-        }
-      });
       // Half-round gutters along both eaves, with a downspout at each corner that steps in to the wall
       const gutMat = K ? K.gutter : trimMat;
+      // the gutters hang off the roof, so they fade with it in cutaway mode
+      const roofGut = gutMat.clone();
+      Object.assign(roofGut, { transparent: true, opacity: state.roofCutaway ? 0.18 : 0.95, side: THREE.DoubleSide });
       const gutterLen = w + 2 * sideHang;
       const gutterGeo = new THREE.CylinderGeometry(0.09, 0.09, gutterLen, 10, 1, true, Math.PI / 2, Math.PI);
       [1, -1].forEach(side => {
-        const g = mesh(gutterGeo, gutMat, 0, eaveY - 0.06, side * (run + 0.12));
+        const g = mesh(gutterGeo, roofGut, 0, eaveY - 0.06, side * (run + 0.12));
         g.rotation.z = Math.PI / 2;
-        [-1, 1].forEach(sx => box(0.03, 0.18, 0.2, gutMat, sx * gutterLen / 2, eaveY - 0.06, side * (run + 0.12)));
+        g.castShadow = false;
+        cutawayRoofMeshes.push(g);
         [-1, 1].forEach(sx => {
           const px = sx * (w / 2 + 0.22);
           const pipe = mesh(new THREE.CylinderGeometry(0.045, 0.045, eaveY - 0.5, 8), gutMat, px, (eaveY - 0.5) / 2 + 0.12, side * (d / 2 + 0.12));
           pipe.castShadow = false;
           const gz = run - d / 2, gy = 0.28;
-          const goose = mesh(new THREE.CylinderGeometry(0.045, 0.045, Math.hypot(gz, gy), 8), gutMat, px, eaveY - 0.38 + gy / 2, side * (d / 2 + 0.12 + gz / 2));
+          const goose = mesh(new THREE.CylinderGeometry(0.045, 0.045, Math.hypot(gz, gy), 8), roofGut, px, eaveY - 0.38 + gy / 2, side * (d / 2 + 0.12 + gz / 2));
           goose.rotation.x = side * Math.atan2(gz, gy);
+          goose.castShadow = false;
+          cutawayRoofMeshes.push(goose);
           // the shoe at the foot turns out onto a splash block
           box(0.1, 0.06, 0.3, gutMat, px, 0.12, side * (d / 2 + 0.3));
           box(0.26, 0.05, 0.5, stoneMat, px, 0.03, side * (d / 2 + 0.55)).castShadow = false;

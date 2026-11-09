@@ -473,6 +473,10 @@ function buildWorkshop3D() {
           leaf.rotation.y = -1.3;
           doors[k] = leaf;
           mmLabel(g, 'STAFF ENTRANCE', 1.2, 0.18, 0, d.h + 0.25, 0.12, { bg: '#1e3a5f', fg: '#fff' });
+          // A steel canopy over it on two tie rods
+          mmBox(g, d.w + 0.7, 0.1, 1.1, trim, 0, d.h + 0.55, 0.6);
+          mmBox(g, d.w + 0.7, 0.14, 0.05, trim, 0, d.h + 0.5, 1.15);
+          [-1, 1].forEach(sx => mmRod(g, [sx * (d.w / 2 + 0.2), d.h + 1.45, 0.05], [sx * (d.w / 2 + 0.2), d.h + 0.65, 1.1], 0.02, 'steel'));
           return;
         }
         const curtain = mmGroup(g, 0, d.h, 0.05);

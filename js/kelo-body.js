@@ -55,7 +55,7 @@ function keloMaterials() {
         // Soft slate-blue covers at the hands and ears
         cover: new THREE.MeshStandardMaterial({ color: 0x3a4a60, metalness: 0.15, roughness: 0.5 }),
         // Matte silicone rubber at his joints (shoulders, elbows, hips, knees, ankles)
-        joint: new THREE.MeshStandardMaterial({ color: 0x334052, metalness: 0, roughness: 0.72 }),
+        joint: new THREE.MeshStandardMaterial({ color: 0x45556b, metalness: 0, roughness: 0.68 }),
         rubber: new THREE.MeshStandardMaterial({ color: 0x232b38, metalness: 0, roughness: 0.85 }),
         // Hairline panel seams between the painted parts
         seam: new THREE.MeshStandardMaterial({ color: 0x0f1a20, metalness: 0.2, roughness: 0.6 }),

@@ -48,9 +48,9 @@ vec3 keloToLinear( vec3 c ) {
 
 // --- 2. Graphics quality ------------------------------------------------------------------------
 const GRAPHICS_LEVELS = {
-  high:     { label: 'High',     pixelRatio: 2,   shadowSize: 4096, shadowRange: 46, softShadows: true,  bloom: true,  terrainDetail: 2, castMin: 0.08, anisotropy: 8, clouds: 22, grassRadius: 17 },
-  balanced: { label: 'Balanced', pixelRatio: 1.5, shadowSize: 2048, shadowRange: 40, softShadows: true,  bloom: false, terrainDetail: 1, castMin: 0.15, anisotropy: 4, clouds: 16, grassRadius: 11 },
-  fast:     { label: 'Fast',     pixelRatio: 1,   shadowSize: 1024, shadowRange: 32, softShadows: false, bloom: false, terrainDetail: 0, castMin: 0.4,  anisotropy: 1, clouds: 9, grassRadius: 0 }
+  high:     { label: 'High',     pixelRatio: 2,   shadowSize: 4096, shadowRange: 46, softShadows: true,  bloom: true,  terrainDetail: 2, castMin: 0.08, anisotropy: 8, clouds: 22, grassRadius: 17, rainRipples: 1 },
+  balanced: { label: 'Balanced', pixelRatio: 1.5, shadowSize: 2048, shadowRange: 40, softShadows: true,  bloom: false, terrainDetail: 1, castMin: 0.15, anisotropy: 4, clouds: 16, grassRadius: 11, rainRipples: 1 },
+  fast:     { label: 'Fast',     pixelRatio: 1,   shadowSize: 1024, shadowRange: 32, softShadows: false, bloom: false, terrainDetail: 0, castMin: 0.4,  anisotropy: 1, clouds: 9, grassRadius: 0, rainRipples: 0 }
 };
 const GRAPHICS_KEY = 'kelo-graphics';
 let graphicsLevel = 'balanced';
@@ -720,7 +720,8 @@ function makeRealisticWaterMaterial() {
         shallowColor: { value: new THREE.Color(0x5f9c94) },
         deepColor: { value: new THREE.Color(0x06222c) },
         waterTime: { value: 0 },
-        waterRain: { value: 0 }
+        waterRain: { value: 0 },
+        waterRipples: { value: 0 }
       };
       mat.userData.uniforms = uniforms;
       mat.onBeforeCompile = (shader) => {
@@ -729,7 +730,20 @@ function makeRealisticWaterMaterial() {
           '#include <project_vertex>\n\tvKeloW = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
         shader.fragmentShader = `varying vec3 vKeloW;
 uniform sampler2D waterNormals; uniform sampler2D depthMap; uniform vec4 depthBox;
-uniform vec3 shallowColor; uniform vec3 deepColor; uniform float waterTime; uniform float waterRain;
+uniform vec3 shallowColor; uniform vec3 deepColor; uniform float waterTime; uniform float waterRain; uniform float waterRipples;
+// Raindrop rings: one drop per cell at a time, somewhere new each time, a ring that spreads and fades.
+// Returns the slope of the water there (added to the ripple normals).
+vec2 keloRainRings( vec2 p, float t, float seed ) {
+	vec2 cell = floor( p ), f = fract( p ) - 0.5;
+	float h = fract( sin( dot( cell, vec2( 127.1, 311.7 ) ) + seed ) * 43758.5453 );
+	float cyc = t * 0.75 + h, life = fract( cyc );
+	float hh = fract( sin( floor( cyc ) * 12.9898 + h * 78.233 ) * 43758.5453 );
+	if ( fract( hh * 7.31 ) > 0.25 + 0.75 * waterRipples ) return vec2( 0.0 );
+	vec2 d = f - ( vec2( hh, fract( hh * 37.1 ) ) - 0.5 ) * 0.3;
+	float r = max( length( d ), 1e-3 ), x = ( r - life * 0.25 ) * 36.0;
+	float fade = ( 1.0 - life ) * ( 1.0 - life ) * smoothstep( 0.0, 0.08, life );
+	return d / r * ( -2.0 * x * exp( - x * x ) ) * fade;
+}
 ` + shader.fragmentShader
           .replace('#include <color_fragment>', `#include <color_fragment>
 	vec2 keloDuv = ( vKeloW.xz - depthBox.xy ) / depthBox.zw;
@@ -755,6 +769,11 @@ uniform vec3 shallowColor; uniform vec3 deepColor; uniform float waterTime; unif
 	vec3 keloN2 = texture2D( waterNormals, keloW2 * 0.09 - vec2( waterTime * 0.014, - waterTime * 0.009 ) ).xyz * 2.0 - 1.0;
 	vec3 keloN3 = texture2D( waterNormals, keloW2 * 0.27 + vec2( - waterTime * 0.026, waterTime * 0.022 ) ).xyz * 2.0 - 1.0;
 	vec2 keloWave = keloN1.xy + keloN2.xy * 0.6 + keloN3.xy * ( 0.3 + 0.9 * waterRain );
+	// rain: small rings spreading where the drops land (near the camera only; off with no rain)
+	if ( waterRipples > 0.001 ) {
+		float keloRk = waterRipples * ( 1.0 - smoothstep( 16.0, 40.0, length( vKeloW - cameraPosition ) ) );
+		if ( keloRk > 0.001 ) keloWave += ( keloRainRings( keloW2 * 1.7, waterTime, 0.0 ) + keloRainRings( keloW2 * 2.3 + vec2( 0.37, 0.71 ), waterTime * 1.13, 19.0 ) ) * keloRk * 3.0;
+	}
 	float keloFar = smoothstep( 30.0, 170.0, length( vKeloW - cameraPosition ) );
 	vec3 keloWorldN = normalize( vec3( keloWave.x * 0.16, 1.0, keloWave.y * 0.16 ) );
 	keloWorldN = normalize( mix( keloWorldN, vec3( 0.0, 1.0, 0.0 ), keloFar * 0.6 + keloShallow * 0.3 ) );
@@ -792,6 +811,9 @@ function updateRealisticWater(t) {
       u.waterTime.value = t;
       // Rain roughens the surface: choppier small ripples and a duller reflection
       u.waterRain.value = typeof rainShown !== 'undefined' ? rainShown : 0;
+      // Rings where the drops land: with the rain, never on ice, off on the Fast preset
+      const iced = typeof iceSheet !== 'undefined' && iceSheet && iceSheet.visible;
+      u.waterRipples.value = iced ? 0 : u.waterRain.value * (graphics().rainRipples || 0);
     }
 
 // --- 11. The ground ----------------------------------------------------------------------------------

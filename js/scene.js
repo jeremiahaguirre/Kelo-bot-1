@@ -1076,6 +1076,7 @@ function buildCafe3D() {
         const K = bldKit();
         bldBase(cafe, 3.8, 2.8, 2.4);
         const front = bldFace(cafe, 'front', 3.8, 2.8);
+        front.userData.interiorPart = 'front'; // hidden while he is inside (js/interiors.js)
         bldWindow(front, -0.7, 1.05, 1.6, 0.9, { noGlass: true, frame: K.darkTrim });
         bldDoor(front, 0.9, 0.8, 1.4, { frame: K.darkTrim });
         bldLamp(front, 1.55, 1.75);
@@ -1086,6 +1087,8 @@ function buildCafe3D() {
         bldEaves(cafe, 3.8, 2.8, 2.52, { overhang: 0.15, fascia: K.darkTrim, fasciaH: 0.28 });
         bldFinish(cafe, [sign]);
       }
+      // Hollow walls with a room inside, the front and the roof come off while he is in there (js/interiors.js)
+      if (typeof interiorSetup === 'function') interiorSetup('cafe', cafe, { body: walls, front: [awning, door, shopWindow, sign], roof: [roof, cup, coffee, handle] });
       // Stucco walls, a steel roof and a wooden door (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(cafe, [[walls.material, 'plaster', 2], [roof.material, 'metalroof', 2], [door.material, 'paintedwood']]);
       scene.add(cafe);
@@ -1106,11 +1109,15 @@ function buildNetNode3D() {
       const glass = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.3, 0.05), new THREE.MeshStandardMaterial({ color: 0x8fb8c2, roughness: 0.05, metalness: 0.2, emissive: 0x0891b2, emissiveIntensity: 0.18, transparent: true, opacity: 0.85 }));
       glass.position.set(0, 1.25, 1.52);
       const screenMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee });
-      [-1.1, 0, 1.1].forEach(x => {
+      const frontScreens = [-1.1, 0, 1.1].map(x => {
         const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.4), screenMat);
         screen.position.set(x, 1.15, 1.56);
         net.add(screen);
+        return screen;
       });
+      const netRoof = new THREE.Group(); // rooftop kit: hidden with the roof while he is inside
+      netRoof.userData.interiorPart = 'roof';
+      net.add(netRoof);
       const sign = makeSignMesh('NETNODE CYBER CAFE', { bg: '#0f172a', fg: '#22d3ee', width: 3.2, height: 0.42 });
       sign.position.set(0, 2.25, 1.53);
       // Satellite dish and antenna on the roof
@@ -1127,6 +1134,7 @@ function buildNetNode3D() {
         bldBase(net, 4.2, 3.0, 2.5, { corners: false, footMat: K.concrete });
         // A dark aluminium storefront: frame, mullions and a door with pull handles in the glass
         const front = bldFace(net, 'front', 4.2, 3.0);
+        front.userData.interiorPart = 'front';
         bldWindow(front, 0, 1.25, 3.4, 1.3, { noGlass: true, frame: K.darkMetal, mullions: false, sill: false });
         [-0.85, 0.85].forEach(x => bldBox(front, 0.05, 1.3, 0.06, K.darkMetal, x, 1.25, 0.05));
         [1.32, 1.48].forEach(x => bldBox(front, 0.03, 0.42, 0.05, K.gutter, x, 1.0, 0.1));
@@ -1135,13 +1143,14 @@ function buildNetNode3D() {
         ['left', 'right', 'back'].forEach(side => { const f = bldFace(net, side, 4.2, 3.0); bldWindow(f, 0, 1.45, side === 'back' ? 1.4 : 1.0, 0.5, { frame: K.darkMetal, sill: false }); });
         // Parapet coping round the flat roof and a rooftop air unit
         bldEaves(net, 4.2, 3.0, 2.54, { overhang: 0.04, fascia: K.darkMetal, fasciaH: 0.1, gutters: false });
-        bldBox(net, 0.9, 0.5, 0.7, K.gutter, -0.2, 2.75, -0.7);
-        bldBox(net, 0.6, 0.04, 0.6, K.darkMetal, -0.2, 3.01, -0.7);
+        bldBox(netRoof, 0.9, 0.5, 0.7, K.gutter, -0.2, 2.75, -0.7);
+        bldBox(netRoof, 0.6, 0.04, 0.6, K.darkMetal, -0.2, 3.01, -0.7);
         const downspout = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.4, 8), K.darkMetal);
         downspout.position.set(-2.12, 1.2, -1.4);
         net.add(downspout);
         bldFinish(net, [sign]);
       }
+      if (typeof interiorSetup === 'function') interiorSetup('cyber', net, { body, front: [glass, sign, ...frontScreens], roof: [dish, antenna, beacon] });
       // Modern metal wall panels (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(net, [[body.material, 'cladding', 2.5]]);
       scene.add(net);
@@ -1175,10 +1184,11 @@ function buildPostOffice3D() {
       door.position.set(0, 0.75, 1.62);
       const step = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.14, 0.6), trim);
       step.position.set(0, 0.07, 1.85);
-      [-1.35, 1.35].forEach(wx => {
+      const frontWins = [-1.35, 1.35].map(wx => {
         const win = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.7, 0.06), new THREE.MeshStandardMaterial({ color: 0xbfdbfe, emissive: 0x1e3a8a, emissiveIntensity: 0.2 }));
         win.position.set(wx, 1.5, 1.62);
         po.add(win);
+        return win;
       });
       const sign = makeSignMesh('POST OFFICE', { bg: '#f8fafc', fg: '#b91c1c', width: 2.6, height: 0.45 });
       sign.position.set(0, 2.25, 1.63);
@@ -1206,6 +1216,7 @@ function buildPostOffice3D() {
         const K = bldKit();
         bldBase(po, 4.2, 3.2, 2.6, { footMat: K.stone, footH: 0.3, cornerMat: trim });
         const front = bldFace(po, 'front', 4.2, 3.2);
+        front.userData.interiorPart = 'front';
         [-1.35, 1.35].forEach(x => bldWindow(front, x, 1.5, 0.8, 0.7, { noGlass: true, frame: trim, sillMat: K.stone }));
         bldDoor(front, 0, 0.9, 1.5, { frame: trim, step: false, doorDepth: 0.08 });
         bldWindow(front, 0, 1.78, 0.8, 0.22, { frame: trim, sill: false, mullions: false }); // transom
@@ -1216,6 +1227,7 @@ function buildPostOffice3D() {
         bldEaves(po, 4.2, 3.2, 2.5, { overhang: 0.1, fascia: trim, fasciaH: 0.1, downspouts: true });
         bldFinish(po, [sign, flag, mailbox]);
       }
+      if (typeof interiorSetup === 'function') interiorSetup('post_office', po, { body, front: [door, sign, ...frontWins], roof: [roof, cornice] });
       // Real brick, slate shingles and painted trim (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(po, [[brick, 'brick', 1.2], [slate, 'shingles', 1.4], [trim, 'paintedwood']]);
       scene.add(po);

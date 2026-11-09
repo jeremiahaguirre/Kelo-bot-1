@@ -193,7 +193,7 @@ function machineMergeStatic(root, depth = 0) {
     }
 
 // Near-identical small-part finishes share one material, so they join into the same mesh
-const MM_MAT_ALIAS = { cable: 'rubber', plasticDark: 'black', plasticGrey: 'grey' };
+const MM_MAT_ALIAS = { cable: 'rubber', plasticDark: 'black', plasticGrey: 'grey', anthracite: 'dark', lightGrey: 'grey', offWhite: 'white' };
 function mmMat(key) {
       if (MM_MATS[key]) return MM_MATS[key];
       if (MM_MAT_ALIAS[key]) return (MM_MATS[key] = mmMat(MM_MAT_ALIAS[key]));
@@ -359,17 +359,40 @@ function mmBevelGeo(w, h, d, r) {
       r = Math.max(0.002, Math.min(r, w * 0.45, h * 0.45, d * 0.45));
       const key = [w, h, d, r].map(v => Math.round(v * 1000)).join('|');
       if (MM_BEVELS[key]) return MM_BEVELS[key];
-      const g = new THREE.BoxGeometry(1, 1, 1, 3, 3, 3);
-      const p = g.attributes.position, n = g.attributes.normal, half = [w / 2, h / 2, d / 2];
-      const v = new THREE.Vector3(), c = new THREE.Vector3(), dl = new THREE.Vector3();
-      for (let i = 0; i < p.count; i++) {
-        const a = [p.getX(i), p.getY(i), p.getZ(i)].map((u, k) => Math.sign(u) * (Math.abs(u) < 0.3 ? half[k] - r : half[k]));
-        v.set(a[0], a[1], a[2]);
-        c.set(Math.max(-half[0] + r, Math.min(half[0] - r, a[0])), Math.max(-half[1] + r, Math.min(half[1] - r, a[1])), Math.max(-half[2] + r, Math.min(half[2] - r, a[2])));
-        dl.subVectors(v, c);
-        if (dl.lengthSq() > 1e-12) { dl.normalize(); v.copy(c).addScaledVector(dl, r); n.setXYZ(i, dl.x, dl.y, dl.z); }
-        p.setXYZ(i, v.x, v.y, v.z);
+      // A chamfered box: 6 inset faces, 12 edge strips, 8 corner triangles (44 triangles). Every
+      // vertex's normal points out from the rounded core, so the strips shade like rounded edges.
+      const half = [w / 2 - r, h / 2 - r, d / 2 - r], size = [w, h, d];
+      const pos = [], nor = [], uv = [];
+      const pt = (sg, a) => { const p = sg.map((s, i) => s * half[i]); p[a] += sg[a] * r; const n = [0, 0, 0]; n[a] = sg[a]; return { p, n }; };
+      const tri = (A, B, C) => {
+        const ab = A.p.map((v, i) => B.p[i] - v), ac = A.p.map((v, i) => C.p[i] - v);
+        const cr = [ab[1] * ac[2] - ab[2] * ac[1], ab[2] * ac[0] - ab[0] * ac[2], ab[0] * ac[1] - ab[1] * ac[0]];
+        const avg = [0, 1, 2].map(i => A.n[i] + B.n[i] + C.n[i]);
+        const list = cr[0] * avg[0] + cr[1] * avg[1] + cr[2] * avg[2] < 0 ? [A, C, B] : [A, B, C];
+        list.forEach(V => {
+          pos.push(...V.p); nor.push(...V.n);
+          const ax = Math.abs(V.n[0]) > 0.5 ? 0 : Math.abs(V.n[1]) > 0.5 ? 1 : 2, u = (ax + 1) % 3, v = (ax + 2) % 3;
+          uv.push(V.p[u] / size[u] + 0.5, V.p[v] / size[v] + 0.5);
+        });
+      };
+      const quad = (A, B, C, D) => { tri(A, B, C); tri(A, C, D); };
+      const S = [-1, 1];
+      for (let a = 0; a < 3; a++) S.forEach(s => {
+        const u = (a + 1) % 3, v = (a + 2) % 3, c = (x, y) => { const g = [0, 0, 0]; g[a] = s; g[u] = x; g[v] = y; return pt(g, a); };
+        quad(c(-1, -1), c(1, -1), c(1, 1), c(-1, 1));
+      });
+      for (let a = 0; a < 3; a++) {
+        const b = (a + 1) % 3, c = (a + 2) % 3;
+        S.forEach(sa => S.forEach(sb => {
+          const g = sc => { const x = [0, 0, 0]; x[a] = sa; x[b] = sb; x[c] = sc; return x; };
+          quad(pt(g(-1), a), pt(g(-1), b), pt(g(1), b), pt(g(1), a));
+        }));
       }
+      S.forEach(x => S.forEach(y => S.forEach(z => tri(pt([x, y, z], 0), pt([x, y, z], 1), pt([x, y, z], 2)))));
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+      g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
       g.userData.sharedGeometry = true;
       MM_BEVELS[key] = g;
       return g;

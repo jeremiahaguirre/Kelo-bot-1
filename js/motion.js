@@ -205,6 +205,12 @@ function keloMotionSpeed(t) {
 // body (more than a step's worth in one frame, less than 4 units) is absorbed into a correction
 // that fades over about a third of a second, so sitting, standing, climbing in and out of seats and
 // collapsing all slide smoothly. Steady motion (walking, terrain, an aircraft climbing) is untouched.
+// Riding an elevator car (js/basements.js tripRide) his height follows the car exactly: that is
+// steady motion, however fast it looks in one slow frame, never a pop to smooth over
+function keloOnMovingPlatform() {
+      return typeof indoorTrip !== 'undefined' && Boolean(indoorTrip.ride || indoorTrip.rideTail > 0);
+    }
+
 function keloSmoothRoot(dt) {
       // The end of a frame: keloLocomote compares with this to know whether he was moving just now
       keloMotion.frameT = typeof keloAnim !== 'undefined' ? keloAnim.lastT : null;
@@ -212,13 +218,15 @@ function keloSmoothRoot(dt) {
       const r = keloMotion.root, P = keloGroup.position;
       if (!r.prev) { r.prev = P.clone(); r.corr = new THREE.Vector3(); return; }
       const dx = P.x - r.prev.x, dy = P.y - r.prev.y, dz = P.z - r.prev.z;
+      const riding = keloOnMovingPlatform();
+      if (riding && !indoorTrip.ride) indoorTrip.rideTail--;
       const flat = Math.hypot(dx, dz), all = Math.hypot(flat, dy);
       const speed = Math.max(keloMotion.speed, state.riding ? 30 : 9);
       const stepOk = speed * dt * 1.6 + 0.03;
       r.prev.copy(P);
       if (all > 4) {
         r.corr.set(0, 0, 0);             // a real teleport: snap
-      } else if (flat > stepOk || Math.abs(dy) > 0.06 + flat * 1.5) {
+      } else if (flat > stepOk || (Math.abs(dy) > 0.06 + flat * 1.5 && !riding)) {
         r.corr.x -= flat > stepOk ? dx : 0;
         r.corr.z -= flat > stepOk ? dz : 0;
         r.corr.y -= dy;

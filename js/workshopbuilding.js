@@ -1454,33 +1454,32 @@ function wsOnLift(p) {
       return Math.abs(p.x - WS_LIFT.x) < WS_LIFT.w / 2 && Math.abs(p.z - WS_LIFT.z) < WS_LIFT.d / 2;
     }
 
-// Ride the car elevator between floors. Whatever stands on the platform (him, a vehicle) rides with it.
+// Ride the car elevator between floors. Whatever stands on the platform (him, a vehicle) rides with
+// it: riders(y) puts them on the platform top y in the same frame the platform moves (tripRide, js/basements.js),
+// eased in and out. The decks change as he passes them (the one above stays see-through until his
+// feet are past it, so he never vanishes under a deck that turned solid before he got there).
 async function wsRideLift(toFloor, riders = []) {
       const from = workshopTrip.liftY, to = wsFloorY(toFloor) - WS_F1;
-      const ms = Math.max(800, Math.abs(to - from) / 0.9 * 1000);
-      let start = Date.now(), pausedAt = 0, held = false;
+      const ms = Math.max(1000, Math.abs(to - from) / 0.9 * 1000 * 1.25);
       const base = wsGroup.position.y;
-      await new Promise(resolve => {
-        const tick = () => {
-          // (window.__wsHold = 'elevator' stops the ride half way, for a screenshot; see js/machines.js)
-          if (pausedAt) {
-            if (window.__wsHold && /elevator/i.test(window.__wsHold) && workshopTrip.active) { setTimeout(tick, 50); return; }
-            start += Date.now() - pausedAt; pausedAt = 0; window.__wsHeld = null;
-          } else if (!held && window.__wsHold && /elevator/i.test(window.__wsHold) && Date.now() - start > ms / 2) {
-            held = true; pausedAt = Date.now(); window.__wsHeld = 'car elevator';
-            setTimeout(tick, 50);
-            return;
-          }
-          const t = Math.min(1, (Date.now() - start) / ms), e = t * t * (3 - 2 * t);
-          const y = from + (to - from) * e;
-          workshopTrip.liftY = y;
-          wsUpdateLift(y);
-          riders.forEach(r => r(base + WS_F1 + y));
-          if (t < 1 && workshopTrip.active) setTimeout(tick, 16); else resolve();
-        };
-        tick();
-      });
+      let held = false;
+      // (window.__wsHold = 'elevator' stops the ride half way, for a screenshot; see js/machines.js)
+      const holdIf = t => {
+        const want = Boolean(window.__wsHold && /elevator/i.test(window.__wsHold) && workshopTrip.active);
+        if (!held && want && t > 0.5) { held = true; window.__wsHeld = 'car elevator'; }
+        if (held && !want && window.__wsHeld === 'car elevator') window.__wsHeld = null;
+        return held && want;
+      };
+      await tripRide(ms, e => {
+        const y = from + (to - from) * e;
+        workshopTrip.liftY = y;
+        wsUpdateLift(y);
+        riders.forEach(r => r(base + WS_F1 + y));
+        const top = WS_F1 + y + 0.05, f = top >= WS_F3 ? 3 : top >= WS_F2 ? 2 : 1;
+        if (f !== wsViewFloor) wsSetDecksFor(f);
+      }, holdIf);
       workshopTrip.liftY = to;
+      wsUpdateLift(to);
     }
 
 // Animate something over ms: fn(k 0..1, seconds since start). Keeps going when the tab is hidden.
@@ -1644,7 +1643,6 @@ async function wsChangeFloor(site, cur, floor) {
       await tripWalk([siteToWorld(site, onLift.x, onLift.z, wsFloorY(from))]);
       tripFace(siteToWorld(site, onLift.x, onLift.z + 2, 0));
       if (floor > 1) workshopShowFloor(floor, true);
-      wsSetDecksFor(floor);
       tripMood(`Taking the car elevator to floor ${floor}`, floor > from ? `Up to floor ${floor}!` : null);
       await tripPause(400);
       // (the engine hoist parks over the shaft on floor 2: it's only there while the platform is up there)
@@ -1837,7 +1835,6 @@ async function wsDriveIn(site, v) {
       await wsDriveAlong(site, v, [{ x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 1.5, ry }, { x: WS_LIFT.x, z: WS_LIFT.z, ry }], 4200);
       workshopShowUpstairs(true);
       if (wsModels.hoist) wsModels.hoist.visible = false;
-      wsSetDecksFor(2);
       tripMood('Taking the car elevator up', `Going up with the ${nm}. This is the best part.`);
       await wsRideLift(2, [y => { mesh.position.y = y; wsHoldVehicle(mesh); wsSeatKelo(mesh); }]);
       workshopTrip.floor = 2;
@@ -1892,7 +1889,6 @@ async function wsVehicleTour(site, v, floors) {
       await wsDriveAlong(site, v, [{ x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 1.5, ry }, { x: WS_LIFT.x, z: WS_LIFT.z, ry }], 3800);
       for (const f of floors) {
         if (f > 1) workshopShowFloor(f, true);
-        wsSetDecksFor(f);
         tripMood(`Car elevator: riding to floor ${f} with the ${nm}`);
         await wsRideLift(f, [y => { mesh.position.y = y; wsHoldVehicle(mesh); wsSeatKelo(mesh); }]);
         workshopTrip.floor = f;

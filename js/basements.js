@@ -113,6 +113,8 @@ function updateIndoorTrip(t) {
       if (!trip.active || !trip.pos) return false;
       const dt = trip.lastT === null ? 0 : Math.max(0, Math.min(0.5, t - trip.lastT));
       trip.lastT = t;
+      // An elevator ride moves the car and whatever rides it here, in the frame that draws them
+      if (trip.ride) tripRideStep(trip.ride, performance.now(), true);
       const pos = trip.pos;
       if (trip.path) {
         let move = trip.speed * dt;
@@ -172,25 +174,78 @@ function tripWalk(points, speed = INDOOR_WALK_SPEED) {
 
 const tripPause = ms => new Promise(r => setTimeout(r, ms));
 
+// --- Elevator rides ------------------------------------------------------------------------------
+// A ride is worked out from the clock in the frame that draws it (updateIndoorTrip, before he is
+// placed): apply(e, t) moves the car and puts him (and a vehicle) on it, so they move together
+// exactly, every frame, at any frame rate. e eases in and out with no jolt at either end. When the
+// frames stop (a hidden tab) a timer keeps it going. holdIf(t) true freezes it there (pictures).
+function tripRideEase(t) {
+      return t * t * t * (t * (t * 6 - 15) + 10);
+    }
+
+function tripRide(ms, apply, holdIf = null) {
+      return new Promise(resolve => {
+        const ride = { start: performance.now(), ms: Math.max(1, ms), apply, holdIf, resolve, lastFrame: 0, done: false };
+        if (indoorTrip.ride) tripRideStep(indoorTrip.ride, Infinity);
+        indoorTrip.ride = ride;
+        tripRideStep(ride, ride.start);
+        const timer = () => {
+          if (ride.done) return;
+          if (performance.now() - ride.lastFrame > 150) tripRideStep(ride, performance.now());
+          if (!ride.done) setTimeout(timer, 50);
+        };
+        setTimeout(timer, 50);
+      });
+    }
+
+function tripRideStep(ride, now, fromFrame) {
+      if (ride.done) return;
+      if (fromFrame) ride.lastFrame = now;
+      let t = Math.min(1, Math.max(0, (now - ride.start) / ride.ms));
+      if (!indoorTrip.active) t = 1;
+      if (t < 1 && ride.holdIf && ride.holdIf(t)) {
+        // frozen: the clock starts again from here
+        t = ride.heldT === undefined ? (ride.heldT = t) : ride.heldT;
+        ride.start = now - t * ride.ms;
+      } else ride.heldT = undefined;
+      try { ride.apply(tripRideEase(t), t); } catch (e) { console.warn('elevator ride', e); }
+      if (t >= 1) {
+        ride.done = true;
+        // (the last stretch may have been moved by the timer between frames: the next frame still
+        // counts as riding, so it isn't smoothed over as a jump)
+        if (indoorTrip.ride === ride) { indoorTrip.ride = null; indoorTrip.rideTail = 2; }
+        ride.resolve();
+      }
+    }
+
 // Turn to face a world point
 function tripFace(p) {
       indoorTrip.rotY = Math.atan2(p.x - indoorTrip.pos.x, p.z - indoorTrip.pos.z);
     }
 
-// Reaching for something h above his feet: arms up for a high shelf, a squat for a low one
-function reachPose(h) {
+// Reaching for something h above his feet: arms up for a high shelf, a squat for a low one. With
+// `out` (how far in front of him it is, from his middle) he leans in from the hips when it is past
+// what his arms reach upright, and aims his arms at it.
+function reachPose(h, out) {
       // (a low shelf: squat down, at most about half his leg length)
       const low = KELO_SHOULDER.y * 0.5;
       const crouch = h < low ? Math.min(0.45 * (KELO_THIGH + KELO_SHIN), low - h) : 0;
       indoorTrip.crouchTarget = crouch;
       const reach = KELO_UPPER_ARM + KELO_FOREARM + KELO_PALM;
-      const rel = (KELO_SHOULDER.y - crouch - (h + 0.12)) / reach;
-      const arm = -Math.acos(Math.max(-1, Math.min(1, rel)));
+      const down = KELO_SHOULDER.y - crouch - (h + 0.12);
+      let arm = -Math.acos(Math.max(-1, Math.min(1, down / reach))), lean = null;
+      if (out > 0) {
+        const torso = KELO_SHOULDER.y - KELO_HIP_Y, ok = reach * 0.95;
+        const flat = Math.sqrt(Math.max(0, ok * ok - down * down));
+        lean = Math.asin(Math.max(0, Math.min(0.45, (out - flat) / torso)));
+        const fwd = out - torso * Math.sin(lean), dn = down - torso * (1 - Math.cos(lean));
+        arm = -(Math.atan2(fwd, dn) + lean);
+      }
       keloLeftArm.rotation.set(arm, 0, 0.12);
       keloRightArm.rotation.set(arm, 0, -0.12);
       keloLeftElbow.rotation.x = keloRightElbow.rotation.x = 0.1;
       keloLeftHand.userData.grip = keloRightHand.userData.grip = 0.15;
-      keloBody.rotation.x = crouch ? 0.35 : h > 1.6 ? -0.08 : 0.06;
+      keloBody.rotation.x = lean !== null ? Math.max(lean, crouch ? 0.35 : 0) : crouch ? 0.35 : h > 1.6 ? -0.08 : 0.06;
       if (crouch) keloSquat(crouch);
       keloHead.rotation.x = Math.max(-0.5, Math.min(0.5, -(h - KELO_SHOULDER.y - 0.45) * 0.35));
     }
@@ -345,18 +400,13 @@ async function elevatorRide(site, fromLevel, toLevel) {
       await tripWalk([siteToWorld(site, h.x, h.z, y0)]);
       tripFace(siteToWorld(site, stairEntry(site).x, stairEntry(site).z, y0));
       await tripPause(350);
-      const start = Date.now(), dist = Math.abs(y1 - y0), ms = Math.max(400, dist / ELEVATOR_SPEED * 1000);
+      const dist = Math.abs(y1 - y0), ms = Math.max(400, dist / ELEVATOR_SPEED * 1000);
       const base = site.group.position.y, k = siteScale(site);
-      await new Promise(resolve => {
-        const tick = () => {
-          // Ease in and out so the ride starts and stops gently
-          const t = Math.min(1, (Date.now() - start) / ms), e = t * t * (3 - 2 * t);
-          const y = y0 + (y1 - y0) * e;
-          if (car) car.position.y = y;
-          if (indoorTrip.pos) indoorTrip.pos.y = base + y * k;
-          if (t < 1 && indoorTrip.active) setTimeout(tick, 16); else resolve();
-        };
-        tick();
+      // (the car's floor top is at its group's y, so he stands exactly on it)
+      await tripRide(ms * 1.25, e => {
+        const y = y0 + (y1 - y0) * e;
+        if (car) car.position.y = y;
+        if (indoorTrip.pos) indoorTrip.pos.y = base + y * k;
       });
       await tripPause(300);
     }
@@ -507,7 +557,7 @@ function buildTrench(cut) {
 
 // --- The camera: while he is inside and the camera is following him, it moves round to look in
 // (and down into the cutaway), then goes back to where it was
-const tripCam = { on: false, offset: null, releaseUntil: 0, lastMs: 0 };
+const tripCam = { on: false, offset: null, releaseUntil: 0, lastMs: 0, lastY: null };
 
 function basementCameraUpdate() {
       if (state.cameraMode !== 'follow' || !keloGroup) { tripCam.on = false; return false; }
@@ -531,10 +581,19 @@ function basementCameraUpdate() {
           target = new THREE.Vector3(k.x * 0.6 + o.x * 0.4, k.y + 1.2, k.z * 0.6 + o.z * 0.4);
           pos = target.clone().add(new THREE.Vector3(dist * 0.16, dist * 0.7, dist));
         }
+        // Riding an elevator: the camera rides up and down with him, in the same frame (no lag
+        // that swings the view and catches up after); only the rest is eased
+        if ((trip.ride || trip.rideTail > 0) && tripCam.lastY !== null) {
+          const dy = k.y - tripCam.lastY;
+          camera.position.y += dy;
+          controls.target.y += dy;
+        }
+        tripCam.lastY = k.y;
         controls.target.lerp(target, ease(4));
         camera.position.lerp(pos, ease(2.2));
         return true;
       }
+      tripCam.lastY = null;
       if (tripCam.on) { tripCam.on = false; tripCam.releaseUntil = Date.now() + 2500; }
       if (Date.now() < tripCam.releaseUntil && tripCam.offset) {
         const target = new THREE.Vector3(keloGroup.position.x, keloGroup.position.y + 1.6, keloGroup.position.z);

@@ -385,16 +385,16 @@ function keloSettleStep(a, out, dt) {
         S.first = null;
         if (!side) { a.settle = null; return; }
         const from = { ...S[side] }, reach = clamp01(Math.abs(from.hip) / 0.3);
-        S.step = { side, from, t: 0, dur: 0.22 + 0.16 * reach, lift: 0.42 + 0.3 * reach };
+        S.step = { side, from, t: 0, dur: keloMcStopStep(0).dur * (0.7 + 0.4 * reach), lift: 0.75 + 0.45 * reach };
       }
       const st = S.step;
       st.t += dt;
-      // The foot lifts clear (knee folds, the thigh comes forward half as much so the foot stays under
-      // him: about 3-5 cm up) while it travels home
-      const w = smoothstep(st.t / st.dur), P = S[st.side], up = st.lift * Math.sin(Math.PI * clamp01(st.t / st.dur));
-      P.hip = st.from.hip * (1 - w) - up * 0.5;
-      P.knee = st.from.knee * (1 - w) + up;
-      P.foot = st.from.foot * (1 - w);
+      // The foot lifts clear and travels home along the path the last step of a real stop takes
+      // (motion capture, js/kelo-mocap.js): the knee folds, the thigh comes forward a little
+      const M = keloMcStopStep(st.t / st.dur), P = S[st.side];
+      P.hip = st.from.hip * (1 - M.w) + M.hip * st.lift;
+      P.knee = st.from.knee * (1 - M.w) + Math.max(M.knee * st.lift, 0.3 * st.lift * Math.sin(Math.PI * clamp01(st.t / st.dur)));
+      P.foot = st.from.foot * (1 - M.w);
       if (st.t >= st.dur) { S[st.side] = { hip: 0, knee: 0, foot: 0 }; S.step = null; }
       out.lLegX += S.L.hip; out.lKneeX += S.L.knee; out.lFootX += S.L.foot;
       out.rLegX += S.R.hip; out.rKneeX += S.R.knee; out.rFootX += S.R.foot;
@@ -457,7 +457,8 @@ function finishKeloPose(t) {
       const locoOn = walking && typeof keloMotion !== 'undefined' && t - keloMotion.lastCall < 0.2;
       if (a.yaw === null || riding) { a.yaw = g.y; a.yawVel = 0; }
       else if (locoOn) { a.yaw = g.y; a.yawVel = keloMotion.yawRate; }
-      else {
+      else if (!keloMcTurnYaw(a, g.y, dt, !riding && !resting && (a.mode === 'idle' || a.mode === 'walk') && (!walking || a.speed < 0.3))) {
+        // (a big new way to face is stepped round to with the turn clip, js/kelo-mocap.js)
         const err = Math.atan2(Math.sin(g.y - a.yaw), Math.cos(g.y - a.yaw));
         const wantVel = Math.max(-4.5, Math.min(4.5, err * 7));
         a.yawVel = (a.yawVel || 0) + Math.max(-28 * dt, Math.min(28 * dt, wantVel - (a.yawVel || 0)));
@@ -476,83 +477,64 @@ function finishKeloPose(t) {
       a.speed = locoOn ? dampTo(a.speed, keloMotion.speed, 30, dt) : dampTo(a.speed, walking ? raw : 0, walking ? 16 : 30, dt);
       a.walkW = dampTo(a.walkW, walking ? 1 : 0, 8, dt);
 
-      // --- Walk cycle. Each leg spends ~60% of a stride planted, sweeping back at exactly his speed
-      // over the ground (so his feet don't skate), then swings forward with the knee folding to clear
-      // the ground. Cadence, stride and arm swing all follow his real speed. Turning on the spot, he
-      // shuffles round in small steps instead.
+      // --- Walking and running, from motion capture (js/kelo-mocap.js): the stroll, walk and run
+      // cycles blended by his real speed, with the cadence and stride matched to it so his feet
+      // don't skate; the start clip as he sets off; and turning on the spot, he steps round.
       const v = a.speed;
-      const shuffle = riding || resting ? 0 : (locoOn ? (keloMotion.pivot ? clamp01(Math.abs(keloMotion.yawRate) / 2) : 0)
-        : clamp01((Math.abs(a.yawVel || 0) - 0.5) / 1.5)) * (a.mode === 'idle' || a.mode === 'walk' ? 1 : 0);
-      const act = Math.max(a.walkW * clamp01(v / 0.2), shuffle);
+      const onFeet = !riding && !resting && (a.mode === 'idle' || a.mode === 'walk');
+      const shuffle = keloMcTurnStep(a, dt, locoOn, onFeet, walking, v);
+      const cycW = a.walkW * clamp01(v / 0.2);
+      const act = Math.max(cycW, shuffle);
+      const wasAct = a.stepAct || 0;
       a.stepAct = act;
       // Stopping: once his body stops over the ground (or he stops walking), the legs don't fade back
       // to standing while the root is still (that drags the planted foot along the ground). The leg
       // pose he stopped in is held, and each leg that isn't under him steps home in turn: the one in
       // the air first, then the other, lifting its foot (keloSettleStep). Moving again blends it out.
-      const rootStill = !walking || v < 0.08, onFeet = !riding && !resting && (a.mode === 'idle' || a.mode === 'walk');
+      const rootStill = !walking || v < 0.08;
       if (a.settle && (shuffle > 0.05 || (walking && v > 0.15) || !onFeet)) { a.settleFade = { ...a.settle, k: 1 }; a.settle = null; }
       if (!a.settle && rootStill && onFeet && shuffle < 0.01 && a.legHold && a.legHold.act > 0.02) {
-        a.settle = { L: { ...a.legHold.L }, R: { ...a.legHold.R }, first: a.legHold.swing, step: null };
+        a.settle = { L: { ...a.legHold.L }, R: { ...a.legHold.R }, first: a.legHold.swing, step: null, t: 0 };
         a.settleFade = null;
       }
-      if (act <= 0.001 || a.settle) a.legHold = null;
-      if (act <= 0.001) a.ikPhase = null;
+      if (act <= 0.001 || a.settle || shuffle > 0.3) a.legHold = null;
+      a.stepLift = 0;
+      if (act <= 0.001) { a.ikPhase = null; a.mcStart = null; }
+      // setting off from standing still
+      if (walking && onFeet && wasAct < 0.02 && v > 0.01 && shuffle < 0.05 && !a.settle) keloMcStartOff(a);
       if (act > 0.001) {
-        const run = smoothstep((v - 5.5) / 3);
-        const f = Math.max(Math.min(3.3, 1.5 + 0.28 * v), 2.2 * shuffle);   // strides per second
-        const sf = 0.6 - 0.18 * run;                                         // share of a stride a foot is planted
-        const A = Math.max(Math.asin(Math.min(0.75, v * sf / f / (2 * 0.98))), 0.09 * shuffle);  // hip sweep
-        a.phase += Math.PI * 2 * f * dt;
-        const uL = ((a.phase / (Math.PI * 2)) % 1 + 1) % 1, uR = (uL + 0.5) % 1;
-        a.ikPhase = { uL, uR, sf, f, A };   // read by js/kelo-ik.js: which foot is planted
-        const kneeSwing = (0.3 + 0.95 * clamp01(A / 0.5) + 0.45 * run) * Math.max(clamp01(v / 1.2), shuffle * 0.6);
-        const leg = u => {
-          if (u < sf) {   // planted: forward (negative) to back, at a steady rate
-            const w = u / sf;
-            return { hip: -A + 2 * A * w, knee: 0.1 + 0.12 * Math.sin(Math.PI * w),
-              foot: -0.2 * Math.pow(1 - smoothstep(w / 0.3), 2) + 0.32 * smoothstep((w - 0.7) / 0.3) };
-          }
-          const w = (u - sf) / (1 - sf);   // swinging through, knee folded
-          // the leg reaches forward a little early and the foot comes straight down, so it lands softly
-          return { hip: A - 2 * A * smoothstep(w / 0.82), knee: 0.1 + kneeSwing * Math.sin(Math.PI * Math.min(1, w / 0.9)),
-            foot: 0.32 * (1 - smoothstep(w / 0.35)) - 0.12 * smoothstep((w - 0.6) / 0.4) };
-        };
-        const L = leg(uL), R = leg(uR);
+        const yawRate = locoOn ? keloMotion.yawRate : (a.yawVel || 0) * (shuffle > 0.05 ? 0 : 1);
+        const P = keloMcPose(a, dt, v, cycW, shuffle, walking, yawRate), I = keloMcI;
         if (!a.settle) {
-          out.lLegX += act * L.hip; out.rLegX += act * R.hip;
-          out.lKneeX += act * L.knee; out.rKneeX += act * R.knee;
-          out.lFootX += act * L.foot; out.rFootX += act * R.foot;
-          a.legHold = { act, swing: uL >= sf ? 'L' : uR >= sf ? 'R' : null,
-            L: { hip: act * L.hip, knee: act * L.knee, foot: act * L.foot }, R: { hip: act * R.hip, knee: act * R.knee, foot: act * R.foot } };
+          out.lLegX += P[I.lLegX]; out.rLegX += P[I.rLegX];
+          out.lLegZ += P[I.lLegZ]; out.rLegZ += P[I.rLegZ];
+          out.lKneeX += P[I.lKneeX]; out.rKneeX += P[I.rKneeX];
+          out.lFootX += P[I.lFootX]; out.rFootX += P[I.rFootX];
+          out.lift += P[I.lift];
+          a.stepLift = P[I.lift];   // (js/eyecam.js takes it back out)
+          const ph = a.ikPhase;
+          if (shuffle <= 0.3) a.legHold = { act, swing: ph.uL >= ph.sf ? 'L' : ph.uR >= ph.sf ? 'R' : null,
+            L: { hip: P[I.lLegX], knee: P[I.lKneeX], foot: P[I.lFootX] }, R: { hip: P[I.rLegX], knee: P[I.rKneeX], foot: P[I.rFootX] } };
         }
-        // Arms swing opposite the legs, wider the faster he goes (a gentle pendulum, trailing a little)
+        // Arms swing as captured, but yield to carrying (forearms out holding it) and to a tool
         const holdingTool = (keloDrillToolGroup && keloDrillToolGroup.visible) || (keloWeldTorchGroup && keloWeldTorchGroup.visible);
         const armL = holding ? 0.1 : 1, armR = holding ? 0.1 : holdingTool ? 0.3 : 1;
-        const armA = Math.min(0.75, 0.06 + 0.085 * v + 0.15 * run) * a.walkW;
-        const swingL = -Math.cos(Math.PI * 2 * (uR - 0.05)), swingR = -Math.cos(Math.PI * 2 * (uL - 0.05));
-        out.lArmX += armA * swingL * armL;
-        out.rArmX += armA * swingR * armR;
-        out.lElbowX -= a.walkW * (0.06 + 0.04 * v + 0.25 * run + armA * 0.5 * Math.max(0, -swingL)) * armL;
-        out.rElbowX -= a.walkW * (0.06 + 0.04 * v + 0.25 * run + armA * 0.5 * Math.max(0, -swingR)) * armR;
-        out.lArmZ -= act * 0.05 * armL;
-        out.rArmZ += act * 0.05 * armR;
-        // Low as each heel lands, up over the planted foot; lean into the walk, into speeding up, and into turns
-        const ph2 = (uL * 2) % 1;
-        if (!a.settle) out.lift += act * ((0.018 + 0.006 * Math.min(v, 6) + 0.03 * run) * (0.5 - 0.5 * Math.cos(Math.PI * 2 * ph2)) - 0.012);
+        out.lArmX += P[I.lArmX] * armL; out.rArmX += P[I.rArmX] * armR;
+        out.lArmZ += P[I.lArmZ] * armL; out.rArmZ += P[I.rArmZ] * armR;
+        out.lElbowX += P[I.lElbowX] * armL; out.rElbowX += P[I.rElbowX] * armR;
+        // His body as captured (lean, the shoulders turning against the hips, weight over the planted
+        // foot), plus leaning into speeding up and into turns
         const accLean = locoOn ? Math.max(-0.05, Math.min(0.06, keloMotion.acc * 0.012)) : 0;
-        const lean = act * (0.03 + 0.01 * Math.min(v, 6) + 0.1 * run) + accLean;
-        out.bodyX += lean;
-        const twist = act * -Math.cos(Math.PI * 2 * uL) * Math.min(0.1, 0.02 + 0.015 * v);
-        out.bodyY += twist;                         // shoulders turn with the arms
-        const roll = Math.cos(Math.PI * 2 * (uL - sf / 2));
-        out.bodyZ += act * 0.035 * roll;             // weight over the planted foot
-        out.bodyShift -= act * 0.03 * roll;
         const turnLean = locoOn ? Math.max(-0.08, Math.min(0.08, keloMotion.yawRate * v * 0.008)) : 0;
-        out.bodyZ -= turnLean;
+        const lean = P[I.bodyX] + accLean;
+        out.bodyX += lean;
+        out.bodyY += P[I.bodyY];
+        out.bodyZ += P[I.bodyZ] - turnLean;
+        out.bodyShift += P[I.shift];
         // Head stays level while the body moves under it
         out.headX -= lean * 0.75;
-        out.headY -= twist * 0.85;
-        out.headZ -= (act * 0.035 * roll - turnLean) * 0.8;
+        out.headY -= P[I.bodyY] * 0.85;
+        out.headZ -= (P[I.bodyZ] - turnLean) * 0.8;
       }
 
       if (a.settle) keloSettleStep(a, out, dt);

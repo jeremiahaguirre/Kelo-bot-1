@@ -90,6 +90,29 @@ function eyeCamHandsBusy() {
       return Boolean(holding || tool || keloAnim.mode === 'dig' || keloAnim.mode === 'weld' || state.currentLocKey === 'cyber');
     }
 
+// Outdoor work with no named spot (digging, welding at his table, painting, building, planting,
+// chopping, fixing things): look at his hands' work, or at the ground in front of him when he digs or
+// crouches to look. Smoothed, so the swing of a shovel or a brush doesn't shake the view.
+const eyeWork = { p: null, on: false };
+function eyeCamWorkFocus(dt) {
+      const pose = state.microPose;
+      const working = !state.isWalking && !state.riding && !state.isSleeping && (
+        eyeCamHandsBusy() || state.currentLocKey === 'weld' || pose === 'digging' || pose === 'crouch_inspect' || pose === 'procedural_custom'
+        || keloAnim.mode === 'other' || state.isBuilding);
+      if (!working || typeof handsWorldPosition !== 'function') { eyeWork.p = null; return null; }
+      let want;
+      const fwd = new THREE.Vector3(Math.sin(keloGroup.rotation.y), 0, Math.cos(keloGroup.rotation.y));
+      if (pose === 'digging' || keloAnim.mode === 'dig' || pose === 'crouch_inspect') {
+        const x = keloGroup.position.x + fwd.x * 1.6, z = keloGroup.position.z + fwd.z * 1.6;
+        want = new THREE.Vector3(x, getIslandGroundHeight(x, z) + 0.05, z);
+      } else {
+        want = handsWorldPosition().addScaledVector(fwd, 0.7);
+      }
+      if (!eyeWork.p) eyeWork.p = want.clone();
+      else eyeWork.p.lerp(want, 1 - Math.exp(-3 * dt));
+      return eyeWork.p;
+    }
+
 // Where his eyes are and which way his head faces, in the world
 function eyeCamRead() {
       keloGroup.updateMatrixWorld(true);
@@ -181,7 +204,8 @@ function eyeCamFrame(dt) {
       const bob = 0.01 * (keloAnim.stepAct || 0) * Math.sin(keloAnim.phase * 2);
       // Working on something: look at it (the part moving in a machine, the screen, the plate),
       // not just the way his head points. Kept within what he could see by turning his head.
-      const focus = keloFocusPoint();
+      const named = keloFocusPoint();
+      const focus = named || eyeCamWorkFocus(dt);
       let wantYaw = r.yaw, wantPitch = Math.max(-0.7, Math.min(0.95, r.pitch)) + (busy ? 0.42 : 0.1);
       if (focus) {
         const dx = focus.x - eyeCam.pos.x, dy = focus.y - eyeCam.pos.y, dz = focus.z - eyeCam.pos.z;
@@ -190,7 +214,7 @@ function eyeCamFrame(dt) {
           const fy = Math.atan2(dx, dz), body = keloGroup.rotation.y;
           wantYaw = body + Math.max(-1.6, Math.min(1.6, wrap(fy - body)));
         }
-        wantPitch = Math.max(-0.7, Math.min(1.25, Math.atan2(-dy, Math.max(0.05, flat))));
+        wantPitch = Math.max(-0.7, Math.min(named ? 1.25 : 0.95, Math.atan2(-dy, Math.max(0.05, flat))));
       }
       eyeCam.yaw += wrap(wantYaw - eyeCam.yaw) * (1 - Math.exp(-(focus ? 4 : 6) * dt));
       eyeCam.pitch = dampTo(eyeCam.pitch, wantPitch, focus ? 4 : 5, dt);

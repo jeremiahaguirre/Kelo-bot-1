@@ -25,7 +25,7 @@ const INTERIOR_SPECS = {
     // Furniture footprints (building-local x, z, half width, half depth)
     blocks: [['counter', 0.8, -1.01, 1.0, 0.29], ['table', -1.05, 0.55, 0.23, 0.23], ['chair', -1.05, 0.1, 0.14, 0.14],
       ['chair2', -0.6, 0.55, 0.14, 0.14], ['plant', -1.55, 1.05, 0.2, 0.2]],
-    order: { x: 0.75, z: -0.5, face: { x: 0.75, z: -1.2 } },
+    order: { x: 0.75, z: -0.42, face: { x: 0.75, z: -1.2 } }, // (a step back from the counter, about 0.45 m)
     seat: { via: [{ x: -0.35, z: 0.1 }], x: -1.05, z: 0.1, rotY: 0, h: 0.46 },
     table: { x: -1.05, z: 0.55, h: 0.72 }
   },
@@ -41,7 +41,9 @@ const INTERIOR_SPECS = {
     name: 'Post Office', w: 4.2, d: 3.2, H: 2.6, floor: 0.25, door: { x: 0, w: 0.9, h: 1.5 }, camDist: 6.5,
     walkIn: [{ x: 0, z: 2.4, ground: true }, { x: 0, z: 1.95, y: 0.14 }, { x: 0, z: 1.45 }, { x: 0, z: 0.85 }],
     blocks: [['poboxes', -1.86, -0.3, 0.14, 1.1], ['counter', 0.775, -1.225, 1.175, 0.275], ['shelf', 1.85, 0.15, 0.15, 0.75]],
-    box: { via: [{ x: -0.9, z: 0.3 }], x: -1.58, z: -0.12, y: 1.17, face: { x: -2.0, z: -0.12 } }
+    // (he stands an arm's length back from the box door, about 0.53 m, a little to the latch side so
+    // the door swings open beside him, not into him)
+    box: { via: [{ x: -0.9, z: 0.3 }], x: -1.325, z: -0.18, y: 1.17, face: { x: -2.0, z: -0.18 } }
   }
 };
 // Sizes: the specs are in the building's own model units (its group is scaled up to real size,
@@ -833,7 +835,10 @@ async function interiorAtMailbox(v, S, room) {
         }
       };
       const boxY = interiorFurnY('post_office', at.y);
-      indoorTrip.pose = () => reachPose(boxY - indoorTrip.pos.y);
+      // how far in front of him the box door is (he leans in to it from where he stands)
+      const doorAt = door.getWorldPosition(new THREE.Vector3()), f = indoorTrip.rotY;
+      const boxOut = (doorAt.x - indoorTrip.pos.x) * Math.sin(f) + (doorAt.z - indoorTrip.pos.z) * Math.cos(f);
+      indoorTrip.pose = () => reachPose(boxY - indoorTrip.pos.y, boxOut);
       await tripPause(500);
       await swing(-1.75, 650);
       const mail = (state.mailbox || [])[0];
@@ -862,7 +867,7 @@ async function interiorAtMailbox(v, S, room) {
       indoorTrip.pose = null;
       v.finish = async () => {
         tripFace(interiorPoint('post_office', B.face));
-        indoorTrip.pose = () => reachPose(boxY - indoorTrip.pos.y);
+        indoorTrip.pose = () => reachPose(boxY - indoorTrip.pos.y, boxOut);
         await tripPause(300);
         await swing(0, 450);
         indoorTrip.pose = null;

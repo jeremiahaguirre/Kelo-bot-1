@@ -192,7 +192,10 @@ function keloApplyIK(t, dt, ctx) {
       const dx = P.x - root.x, dy = P.y - root.y, dz = P.z - root.z;
       const platform = typeof keloOnMovingPlatform === 'function' && keloOnMovingPlatform();
       if (Math.hypot(dx, dz) > 0.8 || Math.abs(dy) > 1.2) { K.L.planted = K.R.planted = false; }
-      else if (platform) ['L', 'R'].forEach(s => { const F = K[s]; F.lx += dx; F.ly += dy; F.lz += dz; F.liftX += dx; F.liftY += dy; F.liftZ += dz; F.landY += dy; });
+      else if (platform) {
+        // (the car's floor is flat and moves with him: feet stay on it, never probed mid-ride)
+        ['L', 'R'].forEach(s => { const F = K[s]; F.lx += dx; F.lz += dz; F.liftX += dx; F.liftZ += dz; F.ly = F.liftY = F.landY = floorY; F.pitch = F.roll = 0; });
+      }
       root.copy(P);
       if (K.legW < 0.001) {
         K.L.planted = K.R.planted = false;
@@ -212,7 +215,7 @@ function keloApplyIK(t, dt, ctx) {
         }
         return { planted: true };
       };
-      const rootFloorLocal = floorY - P.y;   // where his floor is in keloGroup's space
+      const probe = (x, z) => platform ? Object.assign(_ikProbe, { y: floorY, pitch: 0, roll: 0 }) : keloIkProbeFoot(x, z, yaw, floorY + sink, sink);
 
       let dropNeed = 0;
       for (const side of ['L', 'R']) {
@@ -225,7 +228,7 @@ function keloApplyIK(t, dt, ctx) {
           if (!F.planted || (!lockXZ && (F.probeX === null || Math.hypot(A.x - F.probeX, A.z - F.probeZ) > 0.04)) || stray > (ph ? 0.45 : 0.25)) {
             // touching down (or the pose moved this foot): lock it where it is, on the real ground
             if (F.planted && lockXZ) K.stats.relocks++;
-            const g = keloIkProbeFoot(A.x, A.z, yaw, floorY + sink, sink);
+            const g = probe(A.x, A.z);
             F.lx = A.x; F.lz = A.z; F.ly = g.y; F.pitch = g.pitch; F.roll = g.roll;
             F.probeX = A.x; F.probeZ = A.z;
             F.planted = true;
@@ -257,7 +260,7 @@ function keloApplyIK(t, dt, ctx) {
               const hp = legs[side][0].position;
               lx = P.x + hp.x * cy + sy * ahead; lz = P.z - hp.x * sy + cy * ahead;
             }
-            F.landY = keloIkProbeFoot(lx, lz, yaw, floorY + sink, sink).y;
+            F.landY = probe(lx, lz).y;
             F.landPitch = _ikProbe.pitch;
             F.landProbed++;
           }

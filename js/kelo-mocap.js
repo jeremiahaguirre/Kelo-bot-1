@@ -87,7 +87,7 @@ function keloMcLoad() {
         // (a jogger's foot is down a little longer than the clip's strict contact test says)
         if (k === 'run') { c.sfL = Math.max(c.sfL, 0.36); c.sfR = Math.max(c.sfR, 0.36); }
         // Where the foot is in front of the hip (units), from the hip and knee angles
-        const I = keloMcI, foot = (h, kn) => KELO_THIGH * Math.sin(-h) + KELO_SHIN * Math.sin(kn - h);
+        const I = keloMcI, foot = (h, kn) => KELO_THIGH * Math.sin(-h) + KELO_SHIN * Math.sin(-h - kn);
         const lx = c.rows[I.lLegX], rx = c.rows[I.rLegX], lk = c.rows[I.lKneeX], rk = c.rows[I.rKneeX];
         const nL = Math.round(c.sfL * n), oR = Math.round(c.offR * n) % n, nR = Math.round(c.sfR * n);
         const eL = nL - 1, eR = (oR + nR - 1) % n;
@@ -257,7 +257,7 @@ function keloMcPose(a, dt, v, cycW, turnW, walking, yawRate) {
       for (const [c, w] of G) {
         if (w <= 0) continue;
         const k = Math.max(0.35, Math.min(1.7, stride / c.S));
-        A += w * Math.asin(Math.min(0.9, Math.max(0, KELO_THIGH * Math.sin(-c.rows[I.lLegX][0] * k) + KELO_SHIN * Math.sin(c.rows[I.lKneeX][0] - c.rows[I.lLegX][0] * k)) / 0.98));
+        A += w * Math.asin(Math.min(0.9, Math.max(0, KELO_THIGH * Math.sin(-c.rows[I.lLegX][0] * k) + KELO_SHIN * Math.sin(-c.rows[I.lLegX][0] * k - c.rows[I.lKneeX][0])) / 0.98));
         if (cw <= 0.001) continue;
         for (let i = 0; i < nch; i++) T[i] = 1;
         T[I.lLegX] = T[I.rLegX] = k;

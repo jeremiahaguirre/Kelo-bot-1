@@ -1496,7 +1496,10 @@ async function runWorkshopVisit(plan) {
           const model = def ? workshopModel(def.key) : null;
           if (model) tripFace(siteToWorld(site, def.at.x, def.at.z, 0));
           const ctx = wsContext(site, def, model, stop);
+          const focusFn = typeof machineFocusFn === 'function' ? machineFocusFn(model) : null;
+          if (focusFn) setKeloFocus(focusFn);
           try { results.push(await stop.act(ctx)); } catch (e) { console.warn('workshop stop', e); results.push(false); }
+          finally { if (focusFn) clearKeloFocus(focusFn); }
           indoorTrip.pose = null;
           indoorTrip.crouchTarget = 0;
           if (results[results.length - 1] === false) break; // a failed step ends the job (no washing a print that never came off)

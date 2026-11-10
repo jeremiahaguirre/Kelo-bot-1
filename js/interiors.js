@@ -672,6 +672,7 @@ async function interiorRunVisit(v) {
           if (v.tick) v.tick(performance.now() / 1000);
         }
         v.leaving = true;
+        if (v.focus && typeof clearKeloFocus === 'function') clearKeloFocus(v.focus);
         if (v.finish) await v.finish();
         await interiorWalk(key, [...back, hub, ...S.walkIn.slice(0, -1).reverse()]);
         await tripWalk([outside]);
@@ -679,6 +680,7 @@ async function interiorRunVisit(v) {
         v.leaving = true;
         v.setReady(false);
         try { if (v.cleanup) v.cleanup(); } catch (e) { console.warn('interior cleanup', e); }
+        if (v.focus && typeof clearKeloFocus === 'function') clearKeloFocus(v.focus);
         v.temps.forEach(o => { if (o.parent) o.parent.remove(o); if (typeof disposeTree === "function") disposeTree(o); });
         indoorTrip.path = null;
         const hold = indoorTrip.resolve;
@@ -704,6 +706,9 @@ async function interiorAtComputer(v, S, room) {
       const scr = interiorScreen(room);
       const screen = room.parts.screens[1];
       screen.material = scr.mat;
+      const scrV = new THREE.Vector3();
+      v.focus = () => screen.getWorldPosition(scrV);
+      if (typeof setKeloFocus === 'function') setKeloFocus(v.focus);
       room.parts.glow.material.opacity = 0.22;
       const queryNow = () => {
         const quoted = String(state.speechBubble || '').match(/"([^"]{2,60})"/);
@@ -772,6 +777,8 @@ async function interiorAtCafe(v, S, room) {
         v.temps.push(set);
         table.updateMatrixWorld(true);
         v.plateTop = table.localToWorld(new THREE.Vector3(0, top + 0.03, -0.12));
+        v.focus = () => v.plateTop;
+        if (typeof setKeloFocus === 'function') setKeloFocus(v.focus);
       }
       // What he ordered arrives in his hands (js/needs.js eatSomething): it goes on the plate and he eats it
       // (setCarriedObject is wrapped below to hand it here)
@@ -813,6 +820,9 @@ async function interiorAtMailbox(v, S, room) {
       const stand = { x: B.x, z: B.z }; // (on the floor: B.y is the box's height, not his)
       await interiorWalk('post_office', [...B.via, stand]);
       tripFace(interiorPoint('post_office', B.face));
+      const boxV = new THREE.Vector3();
+      v.focus = () => door.getWorldPosition(boxV);
+      if (typeof setKeloFocus === 'function') setKeloFocus(v.focus);
       const swing = async (to, ms) => {
         const from = door.rotation.y, start = Date.now();
         for (;;) {

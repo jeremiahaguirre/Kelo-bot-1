@@ -27,6 +27,43 @@ const eyeCam = {
 };
 const _eyeV = new THREE.Vector3(), _eyeDir = new THREE.Vector3(), _eyeQ = new THREE.Quaternion();
 
+// What he is working on, for "through his eyes" to look at (a machine's moving part, the screen he
+// types on, his plate, his PO box...). Activities call setKeloFocus(fn) with a function that returns
+// a world point (it is read every frame, so it follows moving parts) and clearKeloFocus(fn) after.
+const keloFocus = { fn: null, until: 0 };
+function setKeloFocus(fn, ms = 10 * 60000) {
+      keloFocus.fn = fn;
+      keloFocus.until = Date.now() + ms;
+    }
+function clearKeloFocus(fn) {
+      if (!fn || keloFocus.fn === fn) keloFocus.fn = null;
+    }
+function keloFocusPoint() {
+      if (!keloFocus.fn) return null;
+      if (Date.now() > keloFocus.until) { keloFocus.fn = null; return null; }
+      try {
+        const p = keloFocus.fn();
+        return p && Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z) ? p : null;
+      } catch (e) { return null; }
+    }
+// A machine model's working spot: its moving part if it has one, else the middle of its top half
+const KELO_FOCUS_PARTS = ['part', 'platform', 'basket', 'table', 'bed', 'head', 'spindle', 'nozzle', 'blade', 'arm', 'brush', 'inside', 'glow', 'uv', 'window', 'screen'];
+function machineFocusFn(model) {
+      if (!model) return null;
+      const u = model.userData || {}, inner = (u.inner && u.inner.userData) || {};
+      let part = null;
+      for (const k of KELO_FOCUS_PARTS) {
+        const o = u[k] || inner[k];
+        if (o && o.isObject3D) { part = o; break; }
+      }
+      model.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(model);
+      const mid = box.getCenter(new THREE.Vector3());
+      mid.y = box.min.y + (box.max.y - box.min.y) * 0.65;
+      const v = new THREE.Vector3();
+      return () => (part && part.parent ? part.getWorldPosition(v) : mid);
+    }
+
 function eyeCamLoadPrefs() {
       try { Object.assign(eyeCam.prefs, JSON.parse(localStorage.getItem(EYECAM_PREFS_KEY) || '{}')); } catch (e) {}
     }
@@ -142,9 +179,21 @@ function eyeCamFrame(dt) {
       eyeCam.pos.z = dampTo(eyeCam.pos.z, r.eye.z, 16, dt);
       eyeCam.pos.y = dampTo(eyeCam.pos.y, r.eye.y, 4.5, dt);
       const bob = 0.01 * (keloAnim.stepAct || 0) * Math.sin(keloAnim.phase * 2);
-      eyeCam.yaw += wrap(r.yaw - eyeCam.yaw) * (1 - Math.exp(-6 * dt));
-      const wantPitch = Math.max(-0.7, Math.min(0.95, r.pitch)) + (busy ? 0.42 : 0.1);
-      eyeCam.pitch = dampTo(eyeCam.pitch, wantPitch, 5, dt);
+      // Working on something: look at it (the part moving in a machine, the screen, the plate),
+      // not just the way his head points. Kept within what he could see by turning his head.
+      const focus = keloFocusPoint();
+      let wantYaw = r.yaw, wantPitch = Math.max(-0.7, Math.min(0.95, r.pitch)) + (busy ? 0.42 : 0.1);
+      if (focus) {
+        const dx = focus.x - eyeCam.pos.x, dy = focus.y - eyeCam.pos.y, dz = focus.z - eyeCam.pos.z;
+        const flat = Math.hypot(dx, dz);
+        if (flat > 0.05) {
+          const fy = Math.atan2(dx, dz), body = keloGroup.rotation.y;
+          wantYaw = body + Math.max(-1.6, Math.min(1.6, wrap(fy - body)));
+        }
+        wantPitch = Math.max(-0.7, Math.min(1.25, Math.atan2(-dy, Math.max(0.05, flat))));
+      }
+      eyeCam.yaw += wrap(wantYaw - eyeCam.yaw) * (1 - Math.exp(-(focus ? 4 : 6) * dt));
+      eyeCam.pitch = dampTo(eyeCam.pitch, wantPitch, focus ? 4 : 5, dt);
 
       const yaw = eyeCam.yaw + eyeCam.lookYaw;
       const pitch = Math.max(-1.3, Math.min(1.35, eyeCam.pitch + eyeCam.lookPitch));

@@ -92,8 +92,12 @@ function routeInside(site, a, b) {
     }
 
 function routeInsideWith(site, a, b, room) {
-      const circles = site.obstacles().map(c => ({ x: c.x, z: c.z, r: c.r + room }))
-        .filter(c => Math.hypot(a.x - c.x, a.z - c.z) > c.r && Math.hypot(b.x - c.x, b.z - c.z) > c.r);
+      // (a spot he starts from or walks to inside the extra room only trims that circle back to it,
+      // so the walk up to a machine still goes round the machine, not through it)
+      const circles = site.obstacles().map(c => {
+        const near = Math.min(Math.hypot(a.x - c.x, a.z - c.z), Math.hypot(b.x - c.x, b.z - c.z));
+        return { x: c.x, z: c.z, r: near > c.r ? Math.min(c.r + room, near - 0.02) : 0 };
+      }).filter(c => c.r > 0);
       if (indoorSegmentClear(a, b, circles)) return [b];
       const pts = [a, b, ...site.nodes.filter(n => circles.every(c => Math.hypot(n.x - c.x, n.z - c.z) > c.r))];
       const dist = pts.map(() => Infinity), prev = pts.map(() => -1), done = pts.map(() => false);

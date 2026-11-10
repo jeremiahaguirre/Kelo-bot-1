@@ -174,7 +174,8 @@ function machineCircles(def) {
       const sz = def.size || { w: 1, d: 1 };
       const a = def.at.ry || 0;
       const long = Math.max(sz.w, sz.d), short = Math.min(sz.w, sz.d);
-      const n = Math.max(1, Math.round(long / Math.max(0.8, short)));
+      // (close enough together that a long thin thing, a clamp rack or a bench, has no gaps to walk through)
+      const n = long - short < 1e-6 ? 1 : Math.max(2, Math.ceil((long - short) / Math.max(0.3, short / 2 + 0.25)) + 1);
       const alongX = sz.w >= sz.d;
       const out = [];
       for (let i = 0; i < n; i++) {
@@ -1439,8 +1440,8 @@ function wsObstacles(floor) {
         const sd = WS_WING.doors.shop;
         for (let x = -WS_IN.x; x <= WS_IN.x; x += 0.5) if (Math.abs(x - sd.x) > sd.w / 2 - 0.2) out.push({ x, z: -WORKSHOP_SITE.d / 2, r: 0.32 });
       } else {
-        // The open edge over the high bay
-        for (let z = -WS_IN.z; z <= WS_IN.z; z += 0.8) out.push({ x: -4.4, z, r: 0.5 });
+        // The open edge over the high bay (floor 2; the floor-3 deck covers it)
+        if (floor === 2) for (let z = -WS_IN.z; z <= WS_IN.z; z += 0.8) out.push({ x: -4.4, z, r: 0.5 });
         if (workshopTrip.vehicle) {
           const v = workshopTrip.vehicleAt;
           if (v) for (let k = -3; k <= 3; k++) out.push({ x: v.x, z: v.z + k * 1.2, r: 1.5 });

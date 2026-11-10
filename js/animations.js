@@ -485,8 +485,9 @@ function finishKeloPose(t) {
       const shuffle = keloMcTurnStep(a, dt, locoOn, onFeet, walking, v);
       const cycW = a.walkW * clamp01(v / 0.2);
       const act = Math.max(cycW, shuffle);
-      const wasAct = a.stepAct || 0;
+      const wasCyc = a.cycW || 0;
       a.stepAct = act;
+      a.cycW = cycW;
       // Stopping: once his body stops over the ground (or he stops walking), the legs don't fade back
       // to standing while the root is still (that drags the planted foot along the ground). The leg
       // pose he stopped in is held, and each leg that isn't under him steps home in turn: the one in
@@ -501,7 +502,7 @@ function finishKeloPose(t) {
       a.stepLift = 0;
       if (act <= 0.001) { a.ikPhase = null; a.mcStart = null; }
       // setting off from standing still
-      if (walking && onFeet && wasAct < 0.02 && v > 0.01 && shuffle < 0.05 && !a.settle) keloMcStartOff(a);
+      if (walking && onFeet && wasCyc < 0.05 && cycW > 0 && !a.mcStart && shuffle < 0.05) keloMcStartOff(a);
       if (act > 0.001) {
         const yawRate = locoOn ? keloMotion.yawRate : (a.yawVel || 0) * (shuffle > 0.05 ? 0 : 1);
         const P = keloMcPose(a, dt, v, cycW, shuffle, walking, yawRate), I = keloMcI;

@@ -48,9 +48,9 @@ vec3 keloToLinear( vec3 c ) {
 
 // --- 2. Graphics quality ------------------------------------------------------------------------
 const GRAPHICS_LEVELS = {
-  high:     { label: 'High',     pixelRatio: 2,   shadowSize: 4096, shadowRange: 46, softShadows: true,  bloom: true,  terrainDetail: 2, castMin: 0.08, anisotropy: 8, clouds: 22, grassRadius: 17 },
-  balanced: { label: 'Balanced', pixelRatio: 1.5, shadowSize: 2048, shadowRange: 40, softShadows: true,  bloom: false, terrainDetail: 1, castMin: 0.15, anisotropy: 4, clouds: 16, grassRadius: 11 },
-  fast:     { label: 'Fast',     pixelRatio: 1,   shadowSize: 1024, shadowRange: 32, softShadows: false, bloom: false, terrainDetail: 0, castMin: 0.4,  anisotropy: 1, clouds: 9, grassRadius: 0 }
+  high:     { label: 'High',     pixelRatio: 2,   shadowSize: 4096, shadowRange: 46, softShadows: true,  bloom: true,  terrainDetail: 2, castMin: 0.08, anisotropy: 8, clouds: 22, grassRadius: 17, rainRipples: 1 },
+  balanced: { label: 'Balanced', pixelRatio: 1.5, shadowSize: 2048, shadowRange: 40, softShadows: true,  bloom: false, terrainDetail: 1, castMin: 0.15, anisotropy: 4, clouds: 16, grassRadius: 11, rainRipples: 1 },
+  fast:     { label: 'Fast',     pixelRatio: 1,   shadowSize: 1024, shadowRange: 32, softShadows: false, bloom: false, terrainDetail: 0, castMin: 0.4,  anisotropy: 1, clouds: 9, grassRadius: 0, rainRipples: 0 }
 };
 const GRAPHICS_KEY = 'kelo-graphics';
 let graphicsLevel = 'balanced';
@@ -720,7 +720,8 @@ function makeRealisticWaterMaterial() {
         shallowColor: { value: new THREE.Color(0x5f9c94) },
         deepColor: { value: new THREE.Color(0x06222c) },
         waterTime: { value: 0 },
-        waterRain: { value: 0 }
+        waterRain: { value: 0 },
+        waterRipples: { value: 0 }
       };
       mat.userData.uniforms = uniforms;
       mat.onBeforeCompile = (shader) => {
@@ -729,7 +730,20 @@ function makeRealisticWaterMaterial() {
           '#include <project_vertex>\n\tvKeloW = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
         shader.fragmentShader = `varying vec3 vKeloW;
 uniform sampler2D waterNormals; uniform sampler2D depthMap; uniform vec4 depthBox;
-uniform vec3 shallowColor; uniform vec3 deepColor; uniform float waterTime; uniform float waterRain;
+uniform vec3 shallowColor; uniform vec3 deepColor; uniform float waterTime; uniform float waterRain; uniform float waterRipples;
+// Raindrop rings: one drop per cell at a time, somewhere new each time, a ring that spreads and fades.
+// Returns the slope of the water there (added to the ripple normals).
+vec2 keloRainRings( vec2 p, float t, float seed ) {
+	vec2 cell = floor( p ), f = fract( p ) - 0.5;
+	float h = fract( sin( dot( cell, vec2( 127.1, 311.7 ) ) + seed ) * 43758.5453 );
+	float cyc = t * 0.75 + h, life = fract( cyc );
+	float hh = fract( sin( floor( cyc ) * 12.9898 + h * 78.233 ) * 43758.5453 );
+	if ( fract( hh * 7.31 ) > 0.25 + 0.75 * waterRipples ) return vec2( 0.0 );
+	vec2 d = f - ( vec2( hh, fract( hh * 37.1 ) ) - 0.5 ) * 0.3;
+	float r = max( length( d ), 1e-3 ), x = ( r - life * 0.25 ) * 36.0;
+	float fade = ( 1.0 - life ) * ( 1.0 - life ) * smoothstep( 0.0, 0.08, life );
+	return d / r * ( -2.0 * x * exp( - x * x ) ) * fade;
+}
 ` + shader.fragmentShader
           .replace('#include <color_fragment>', `#include <color_fragment>
 	vec2 keloDuv = ( vKeloW.xz - depthBox.xy ) / depthBox.zw;
@@ -755,6 +769,11 @@ uniform vec3 shallowColor; uniform vec3 deepColor; uniform float waterTime; unif
 	vec3 keloN2 = texture2D( waterNormals, keloW2 * 0.09 - vec2( waterTime * 0.014, - waterTime * 0.009 ) ).xyz * 2.0 - 1.0;
 	vec3 keloN3 = texture2D( waterNormals, keloW2 * 0.27 + vec2( - waterTime * 0.026, waterTime * 0.022 ) ).xyz * 2.0 - 1.0;
 	vec2 keloWave = keloN1.xy + keloN2.xy * 0.6 + keloN3.xy * ( 0.3 + 0.9 * waterRain );
+	// rain: small rings spreading where the drops land (near the camera only; off with no rain)
+	if ( waterRipples > 0.001 ) {
+		float keloRk = waterRipples * ( 1.0 - smoothstep( 16.0, 40.0, length( vKeloW - cameraPosition ) ) );
+		if ( keloRk > 0.001 ) keloWave += ( keloRainRings( keloW2 * 1.7, waterTime, 0.0 ) + keloRainRings( keloW2 * 2.3 + vec2( 0.37, 0.71 ), waterTime * 1.13, 19.0 ) ) * keloRk * 3.0;
+	}
 	float keloFar = smoothstep( 30.0, 170.0, length( vKeloW - cameraPosition ) );
 	vec3 keloWorldN = normalize( vec3( keloWave.x * 0.16, 1.0, keloWave.y * 0.16 ) );
 	keloWorldN = normalize( mix( keloWorldN, vec3( 0.0, 1.0, 0.0 ), keloFar * 0.6 + keloShallow * 0.3 ) );
@@ -792,6 +811,9 @@ function updateRealisticWater(t) {
       u.waterTime.value = t;
       // Rain roughens the surface: choppier small ripples and a duller reflection
       u.waterRain.value = typeof rainShown !== 'undefined' ? rainShown : 0;
+      // Rings where the drops land: with the rain, never on ice, off on the Fast preset
+      const iced = typeof iceSheet !== 'undefined' && iceSheet && iceSheet.visible;
+      u.waterRipples.value = iced ? 0 : u.waterRain.value * (graphics().rainRipples || 0);
     }
 
 // --- 11. The ground ----------------------------------------------------------------------------------
@@ -1187,8 +1209,27 @@ function grassGroundColour(x, z, out) {
       return out.setRGB(col.getX(i), col.getY(i), col.getZ(i));
     }
 
+// Floors and paving the grass must stay under: the buildings' footprints (the same list the map
+// draws, so a building added there is covered), the Workshop's pad, lane and hangar with its apron,
+// the plant's yard. Obstacles, the vehicle yard, the pads and his roads are checked as well.
+function grassFloorRects() {
+      const out = [];
+      if (typeof minimapBuildings === 'function') minimapBuildings().forEach(b => out.push({ minX: b.x - b.w / 2, maxX: b.x + b.w / 2, minZ: b.z - b.d / 2, maxZ: b.z + b.d / 2 }));
+      if (typeof WORKSHOP_LAND !== 'undefined') [WORKSHOP_LAND.pad, WORKSHOP_LAND.lane, WORKSHOP_LAND.hangar].forEach(r => r && out.push(r));
+      if (typeof aggregatePlantSite === 'function') {
+        const S = aggregatePlantSite();
+        out.push({ minX: S.x - S.w / 2, maxX: S.x + S.w / 2, minZ: S.z - S.d / 2, maxZ: S.z + S.d / 2 });
+      }
+      return out;
+    }
+
 function grassBlockedAt(x, z) {
       if (typeof inParkingArea === 'function' && inParkingArea(x, z, 0.3)) return true;
+      const floors = grassState.floors || [];
+      for (let i = 0; i < floors.length; i++) {
+        const r = floors[i];
+        if (x > r.minX - 0.3 && x < r.maxX + 0.3 && z > r.minZ - 0.3 && z < r.maxZ + 0.3) return true;
+      }
       const near = grassState.near;
       for (let i = 0; i < near.length; i++) {
         const o = near[i];
@@ -1198,7 +1239,7 @@ function grassBlockedAt(x, z) {
         } else if (o.road) {
           const ax = o.x, az = o.z, bx = o.toX - ax, bz = o.toZ - az, L = bx * bx + bz * bz || 1;
           const u = Math.max(0, Math.min(1, ((x - ax) * bx + (z - az) * bz) / L));
-          if (Math.hypot(x - ax - bx * u, z - az - bz * u) < 1.3) return true;
+          if (Math.hypot(x - ax - bx * u, z - az - bz * u) < (o.hw || 1.3)) return true;
         } else if ((x - o.x) * (x - o.x) + (z - o.z) * (z - o.z) < o.r * o.r * 0.5) return true;
       }
       return false;
@@ -1231,7 +1272,7 @@ function updateGrassTufts() {
       const far = cam.y - getAnalyticalGroundHeight(cam.x, cam.z) > 45;
       grassTufts.visible = !far;
       const col = terrainGroundMesh.geometry.attributes.color;
-      const key = `${R}|${col.version}|${typeof seasonApplied !== 'undefined' ? seasonApplied : ''}|${typeof obstacleVersion !== 'undefined' ? obstacleVersion : 0}|${(state.worldEdits || []).length}`;
+      const key = `${R}|${col.version}|${typeof seasonApplied !== 'undefined' ? seasonApplied : ''}|${typeof obstacleVersion !== 'undefined' ? obstacleVersion : 0}|${(state.worldEdits || []).length}|${(state.concretePours || []).length}`;
       const moved = Math.hypot(tg.x - grassState.x, tg.z - grassState.z) >= R * 0.14;
       // Ground that keeps changing (a fill or a dig being animated) re-lays the grass at most every 1.5 s
       const now = performance.now();
@@ -1239,8 +1280,11 @@ function updateGrassTufts() {
       grassState.x = tg.x; grassState.z = tg.z; grassState.key = key; grassState.at = now;
       const cx = Math.round(tg.x / cell), cz = Math.round(tg.z / cell);
       grassState.near = [];
+      grassState.floors = grassFloorRects().filter(r => r.maxX > tg.x - R - 1 && r.minX < tg.x + R + 1 && r.maxZ > tg.z - R - 1 && r.minZ < tg.z + R + 1);
       (typeof worldObstacles !== 'undefined' ? worldObstacles : []).forEach(o => { if (Math.hypot(o.x - tg.x, o.z - tg.z) < R + (o.r || 1) + 1) grassState.near.push(o); });
       (state.worldEdits || []).forEach(e => { if (e.type === 'road' && Number.isFinite(e.toX)) grassState.near.push({ road: true, x: e.x, z: e.z, toX: e.toX, toZ: e.toZ }); });
+      // His concrete paths and pads (js/plants.js)
+      (state.concretePours || []).forEach(p => { if (Number.isFinite(p.toX)) grassState.near.push({ road: true, x: p.x, z: p.z, toX: p.toX, toZ: p.toZ, hw: (p.w || 1.2) / 2 + 0.3 }); });
       const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), c = new THREE.Color();
       let k = 0;
       for (let j = -n; j <= n; j++) {

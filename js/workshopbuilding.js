@@ -747,7 +747,7 @@ function buildWorkshop3D() {
           center: () => wsGroup.position.clone().setY(WORKSHOP_PAD_Y + 3),
           forced: () => Boolean(workshopTrip.active),
           show: near => wsShowFloor1(near),
-          tick: near => { if (near) wsBuildQueued(2); }
+          tick: near => { if (near) { wsBuildQueued(2); wsViewCull(); } }
         });
       } else wsShowFloor1(true);
       wsInitHover();
@@ -1231,6 +1231,7 @@ function wsBuildModel(def) {
       m.userData.machineKey = def.key;
       (def.floor === 3 ? wsFloor3 : def.floor === 2 ? wsFloor2 : wsFloor1).add(m);
       wsModels[def.key] = m;
+      wsNoteModelView(m, def.floor);
       if (typeof def.onBuilt === 'function') def.onBuilt(m);
       return m;
     }
@@ -1241,6 +1242,76 @@ function wsDropModel(key) {
       if (m.parent) m.parent.remove(m);
       if (typeof disposeTree === 'function') disposeTree(m);
       delete wsModels[key];
+      wsModelView.delete(m);
+    }
+
+// --- Drawing only what can be seen -----------------------------------------------------------------
+// Each machine's small parts (js/machinemodels.js mmFineTier) are left out once the camera is too
+// far away to see them, and a machine under an opaque deck the camera looks down on is not drawn at
+// all (it goes on layer 1, which the camera doesn't render). Floors above the one being viewed are
+// hidden in wsSetDecksFor. Nothing here moves a part or changes what a job can reach.
+const wsModelView = new Map();   // model -> { box (world), floor, fine: [[mesh, tier]], near: [bool, bool], hidden }
+const WS_FINE_DIST = [8, 12.5];  // how far away each size class of small part still shows (Balanced)
+let wsViewFloor = null, wsViewCullAt = 0, wsDeckRects = null;
+function wsNoteModelView(m, floor) {
+      m.updateWorldMatrix(true, true);
+      const fine = [];
+      if (typeof mmFineTier !== 'undefined') m.traverse(o => { const t = mmFineTier.get(o); if (t) fine.push([o, t]); });
+      wsModelView.set(m, { box: new THREE.Box3().setFromObject(m), floor, fine, near: [true, true], hidden: false });
+      wsViewCullAt = 0;
+    }
+
+function wsSetModelLayer(m, hide) {
+      m.traverse(o => { if (hide) o.layers.set(1); else o.layers.set(0); });
+    }
+
+// The decks as world rectangles at their top surface (the building is never turned)
+function wsDeckRectList() {
+      if (wsDeckRects) return wsDeckRects;
+      wsDeckRects = [...wsDeckMeshes.map(d => [d, 2]), ...wsDeck3Meshes.map(d => [d, 3])].map(([d, floor]) => {
+        d.updateWorldMatrix(true, false);
+        const b = new THREE.Box3().setFromObject(d);
+        return { mesh: d, floor, x0: b.min.x + 0.02, x1: b.max.x - 0.02, z0: b.min.z + 0.02, z1: b.max.z - 0.02, y: b.max.y };
+      });
+      return wsDeckRects;
+    }
+
+// Hidden behind a deck: every corner of the machine's box, seen from the camera, is behind the same
+// solid deck rectangle (the camera above it, the machine below it)
+function wsBehindDeck(box, cam, rects) {
+      for (const r of rects) {
+        if (cam.y <= r.y + 0.05 || box.max.y >= r.y - 0.3) continue;
+        let all = true;
+        for (let i = 0; i < 8 && all; i++) {
+          const x = i & 1 ? box.max.x : box.min.x, y = i & 2 ? box.max.y : box.min.y, z = i & 4 ? box.max.z : box.min.z;
+          const t = (cam.y - r.y) / (cam.y - y), px = cam.x + (x - cam.x) * t, pz = cam.z + (z - cam.z) * t;
+          all = px > r.x0 && px < r.x1 && pz > r.z0 && pz < r.z1;
+        }
+        if (all) return true;
+      }
+      return false;
+    }
+
+function wsViewCull() {
+      const now = performance.now();
+      if (!wsGroup || !camera || !wsModelView.size || now - wsViewCullAt < 150) return;
+      wsViewCullAt = now;
+      const q = typeof graphics === 'function' ? graphics() : null;
+      const k = q && q.label === 'High' ? 1.4 : q && q.label === 'Fast' ? 0.6 : 1;
+      const cam = camera.position;
+      const rects = wsViewFloor >= 2 ? wsDeckRectList().filter(r => r.mesh.visible && r.mesh.material.opacity >= 0.97 && r.floor <= wsViewFloor) : [];
+      wsModelView.forEach((v, m) => {
+        const d = Math.max(0, v.box.distanceToPoint(cam));
+        const n0 = d < WS_FINE_DIST[0] * k, n1 = d < WS_FINE_DIST[1] * k;
+        if (n0 !== v.near[0] || n1 !== v.near[1]) {
+          v.near = [n0, n1];
+          v.fine.forEach(([o, t]) => { o.visible = t === 1 ? n0 : n1; });
+        }
+        const hide = v.floor < (wsViewFloor || 0) && rects.length > 0 && wsBehindDeck(v.box, cam, rects);
+        // (re-applied while hidden: a job may have added a part to it since)
+        if (hide || v.hidden) wsSetModelLayer(m, hide);
+        v.hidden = hide;
+      });
     }
 
 // The model of a machine, built now if it isn't (during a trip, or a visitor's request)
@@ -1556,7 +1627,13 @@ function wsSetDeck(opacity) {
         m.material.opacity = opacity === null ? (state.roofCutaway ? 0.18 : 0.95) : opacity;
         m.visible = opacity === null || opacity > 0.12; // (hidden outright while he works downstairs)
       });
-      if (opacity === null) wsDeck3Meshes.forEach(m => { m.material.opacity = state.roofCutaway ? 0.18 : 0.95; m.visible = true; });
+      if (opacity === null) {
+        wsDeck3Meshes.forEach(m => { m.material.opacity = state.roofCutaway ? 0.18 : 0.95; m.visible = true; });
+        wsViewFloor = null;
+        if (wsFloor2) wsFloor2.visible = true;
+        if (wsFloor3) wsFloor3.visible = true;
+        wsViewCullAt = 0;
+      }
     }
 
 // Walk onto the platform, ride it, walk off onto the other floor
@@ -1586,6 +1663,11 @@ async function wsChangeFloor(site, cur, floor) {
 function wsSetDecksFor(floor) {
       wsSetDeck(floor >= 2 ? 0.98 : 0.1);
       wsDeck3Meshes.forEach(m => { m.material.opacity = 0.98; m.visible = floor >= 3; });
+      // The machines on the floors above have no deck under them now: they aren't shown either
+      wsViewFloor = floor;
+      if (wsFloor2) wsFloor2.visible = floor >= 2;
+      if (wsFloor3) wsFloor3.visible = floor >= 3;
+      wsViewCullAt = 0;
     }
 
 // Him in the driver's seat of a vehicle he is moving inside (not the outdoor riding code)

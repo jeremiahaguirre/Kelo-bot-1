@@ -12,6 +12,11 @@ Everything he gets (tools, vehicles, seeds, materials) arrives **only** through 
 He may change the world freely. He can never move or change the buildings, and he can't build new ones.
 
 ## Recently shipped (on `main`, pushed)
+- **Leftovers from the quality passes** (branch `agent/leftovers`).
+  - Grass: `grassFloorRects()` (realism.js) keeps tufts off `minimapBuildings()` footprints (add new buildings there), `WORKSHOP_LAND` pad/lane/hangar, the plant yard and `state.concretePours`.
+  - Feet: `keloSettleStep` (animations.js) holds the leg pose he stopped in and steps each leg home in turn (`keloAnim.settle`, `legHold`); weight shifts bend the relaxed knee 2x its hip so the foot stays put.
+  - Lake rain rings: `keloRainRings` in the water shader, uniform `waterRipples` = rain x `graphics().rainRipples` (0 on Fast), 0 under the ice.
+  - Workshop draw cost: `mmCylGeo` (sides by thickness), plain boxes under 15 cm, `mmFineTierOf`/`mmFineTier` (small or thin static parts joined separately, hidden past `WS_FINE_DIST` by `wsViewCull`), `mmDropBaseFaces`; `wsSetDecksFor` hides floors above the viewed one and `wsViewCull` puts machines under an opaque deck the camera looks down on onto layer 1. Floor views: ~730/561/391 calls, 188k/180k/172k tris (was ~1070/1050/960, 267k/266k/254k).
 - **Quality pass 3, no new features** (branch `agent/quality3`).
   - Kelo-1 (kelo-body.js): lacquered shell, `joint` rubber material with `keloBellows` ribs at elbows/knees/neck, a clear `visor` patch over the face screen, additive eye halos (`eye.userData.sparkle` is the sparkle now), `keloSeamRing` panel seams. `keloJoinRigid(group, keep)` joins plain meshes hung directly on each joint per material (child groups, userData parts, the mouth and cheeks stay separate). Rig names and hooks unchanged.
   - Motion: `keloSpringTo(x, v, target, omega, dt)` (animations.js) is a critically damped spring; `finishKeloPose` blends every channel with it (omega = 2 x the old rate, `keloAnim.vel`), and `keloSmoothRoot` (motion.js) eases its offset the same way (`root.vel`).

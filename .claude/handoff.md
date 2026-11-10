@@ -12,6 +12,12 @@ Everything he gets (tools, vehicles, seeds, materials) arrives **only** through 
 He may change the world freely. He can never move or change the buildings, and he can't build new ones.
 
 ## Recently shipped (on `main`, pushed)
+- **Play-feel fixes** (branch `agent/feelfix`).
+  - Elevator rides: `tripRide(ms, apply, holdIf)` (basements.js) works a ride out from the clock inside `updateIndoorTrip`, so the car, him and a vehicle move in the frame that draws them (a timer fills in when frames stop). `keloSmoothRoot` skips height while `keloOnMovingPlatform()` (ride, plus `indoorTrip.rideTail` frames after); the trip camera rides with him (`tripCam.lastY`); `wsRideLift` switches the decks as his feet pass them. `reachPose(h, out)` leans in to something `out` units in front.
+  - Indoor routes: `routeInside` keeps his body clear (`INDOOR_BODY_ROOM` 0.55/0.42/0.25/0 extra radius, first that routes wins; a circle holding an endpoint is trimmed back to it, not dropped). `wsObstacles` has the car elevator's west side/north end (open only at the gate); `machineCircles` packs long thin things without gaps. Floor-1 additive rows, the floor-3 bench/spray booth and the fume hood/DED stands were moved for 1.45-unit aisles. Outdoor `PATH_MARGIN` 0.18 (no gaps under 1.46 units).
+  - Shadows: the sun's shadow box centre snaps along the shadow camera's own right/up axes (realism.js), which stopped shadow edges shimmering at building corners. Camera near 0.25.
+  - Eyes: `eyeCamHideBody` hides his torso/neck/backpack/shoulder shells while in Eyes (forearms, hands, legs stay); `EYECAM_MAX_LAG` 0.05 caps the eye's lag; near 0.08.
+  - Post Office: he stands 0.85 units (0.53 m) from his box door, latch side; the cafe order spot is a step back.
 - **Leftovers from the quality passes** (branch `agent/leftovers`).
   - Grass: `grassFloorRects()` (realism.js) keeps tufts off `minimapBuildings()` footprints (add new buildings there), `WORKSHOP_LAND` pad/lane/hangar, the plant yard and `state.concretePours`.
   - Feet: `keloSettleStep` (animations.js) holds the leg pose he stopped in and steps each leg home in turn (`keloAnim.settle`, `legHold`); weight shifts bend the relaxed knee 2x its hip so the foot stays put.

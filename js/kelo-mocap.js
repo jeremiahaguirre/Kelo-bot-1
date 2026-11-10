@@ -217,10 +217,16 @@ function keloMcPose(a, dt, v, cycW, turnW, walking, yawRate) {
         sf += w * (c.sfL + c.sfR) / 2;
         offR += w * c.offR;
       }
-      f = Math.max(1.25, Math.min(3.4, f));   // (slow, he takes small quick steps: a long stance outlasts a speed-up)
+      f = Math.max(1.25, Math.min(3.4, f));
+      // The stride eases toward the one that speed wants, and the phase moves with the ground he
+      // covers (not the clock): speeding up or slowing down mid-step, the planted foot still keeps
+      // pace with his hips
+      const want = Math.max(v, 0.05) / f;
+      a.mcStride = a.mcStride ? dampTo(a.mcStride, want, 4, dt) : want;
+      const stride = a.mcStride;
+      f = Math.max(0.15, Math.min(3.8, v / stride));
       a.phase += Math.PI * 2 * f * dt;
       const u = ((a.phase / (Math.PI * 2)) % 1 + 1) % 1;
-      const stride = Math.max(v, 0.05) / f;
 
       // Setting off: the start clip, by the distance covered (before his first foot lifts it may run
       // ahead on the clock: that is only his weight shifting)

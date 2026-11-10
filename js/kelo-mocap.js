@@ -226,7 +226,7 @@ function keloMcPose(a, dt, v, cycW, turnW, walking, yawRate) {
       // ahead on the clock: that is only his weight shifting)
       const S = C.start;
       let M = a.mcStart;
-      if (M && (!walking || turnW > 0.3)) M = a.mcStart = null;
+      if (M && (!walking || (turnW > 0.3 && a.turn && !a.turn.end))) M = a.mcStart = null;
       let startW = 0;
       if (M) {
         M.d += v * dt / L;
@@ -292,7 +292,7 @@ function keloMcPose(a, dt, v, cycW, turnW, walking, yawRate) {
       }
 
       // Which foot is planted, for js/kelo-ik.js
-      if (R && turnW > 0.05 && turnW >= cw) {
+      if (R && turnW > 0.05 && turnW >= cw && !(clipS && startW > 0.5 && R.end)) {
         const c = R.dir > 0 ? C.turn : C.turnR, s = Math.max(0, Math.min(c.n - 1, Math.round((R.s - Math.min(R.n - 1, Math.floor(R.s))) * (c.n - 1))));
         a.ikPhase = { uL: c.uL[s], uR: c.uR[s], sf: 0.5, f: 1.2, A: 0 };
       } else if (clipS && startW > 0.5) {

@@ -502,7 +502,7 @@ function finishKeloPose(t) {
       a.stepLift = 0;
       if (act <= 0.001) { a.ikPhase = null; a.mcStart = null; }
       // setting off from standing still
-      if (walking && onFeet && wasCyc < 0.05 && cycW > 0 && !a.mcStart && shuffle < 0.05) keloMcStartOff(a);
+      if (walking && onFeet && wasCyc < 0.05 && cycW > 0 && !a.mcStart && (shuffle < 0.05 || (a.turn && a.turn.end))) keloMcStartOff(a);
       if (act > 0.001) {
         const yawRate = locoOn ? keloMotion.yawRate : (a.yawVel || 0) * (shuffle > 0.05 ? 0 : 1);
         const P = keloMcPose(a, dt, v, cycW, shuffle, walking, yawRate), I = keloMcI;

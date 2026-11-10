@@ -262,7 +262,7 @@ function keloMcPose(a, dt, v, cycW, turnW, walking, yawRate) {
         for (let i = 0; i < nch; i++) T[i] = 1;
         T[I.lLegX] = T[I.rLegX] = k;
         T[I.lKneeX] = T[I.rKneeX] = Math.min(1.25, 0.55 + 0.45 * k);
-        T[I.lFootX] = T[I.rFootX] = Math.min(1, k);
+        T[I.lFootX] = T[I.rFootX] = 0.5 * Math.min(1, k);   // (his soles are stiffer than a person's: half the heel-and-toe roll)
         T[I.lift] = Math.sqrt(k) * KELO_MC.bounce * L;
         T[I.shift] = L;
         T[I.lArmX] = T[I.rArmX] = T[I.lElbowX] = T[I.rElbowX] = Math.sqrt(k) * KELO_MC.arms;

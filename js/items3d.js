@@ -710,6 +710,7 @@ function buildItemModel3D(name, { kind = 'gift', thumb = null, label = true } = 
         if (typeof applyMaterialLook === 'function') applyMaterialLook(model, name);
         if (typeof polishItemSurfaces === 'function') polishItemSurfaces(model, name);
       }
+      if (name) model.userData.itemName = String(name); // (js/kelo-clips.js picks how he swings a tool by it)
       if (label && name) {
         const text = String(name).replace(/^(an?|the|some)\s+/i, '').slice(0, 22).toUpperCase();
         const tag = makeSignMesh(text, { bg: '#fff7ed', fg: '#7c2d12', width: 0.75, height: 0.16 });

@@ -519,7 +519,7 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
           : ['Big shapes first, details last.', 'Look more than you paint, they say.', 'The light is changing. I have to be quick.']);
         if (typeof setCarriedObject === 'function') setCarriedObject(paintBrushModel(medium === 'ink' || medium === 'charcoal' ? 0x1a1a1a : 0xc2410c));
         state.microPose = 'procedural_custom';
-        state.proceduralMotion = { headPitch: 0.05, headYawSpeed: 0.8, headTiltAmp: 0.15, armWaveAmp: 0.45, armRaiseOffset: -0.9, bodyBounceAmp: 0.02, spinSpeed: 0, crouchOffset: 0, sparkBurst: false };
+        state.proceduralMotion = { headPitch: 0.05, headYawSpeed: 0.8, headTiltAmp: 0.15, armWaveAmp: 0.45, armRaiseOffset: -0.9, bodyBounceAmp: 0.02, spinSpeed: 0, crouchOffset: 0, sparkBurst: false, clip: 'paint' };
         renderAllUI();
         const t0 = Date.now();
         const canvas = await renderPaintingInMedium(spec, {

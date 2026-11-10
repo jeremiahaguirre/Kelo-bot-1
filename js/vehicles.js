@@ -267,11 +267,9 @@ function updateVehicles(t) {
         if (m.userData.rotor) m.userData.rotor.rotation.y = t * 14;
         if (m.userData.tailRotor) m.userData.tailRotor.rotation.z = t * 20;
       }
-      // Hands forward on the wheel or the handlebars
-      keloLeftArm.rotation.set(-0.6, 0, 0.05);
-      keloRightArm.rotation.set(-0.6, 0, -0.05);
-      keloLeftElbow.rotation.x = keloRightElbow.rotation.x = -0.7;
-      keloLeftHand.userData.grip = keloRightHand.userData.grip = 0.85;
+      // Climbing in, hands on the wheel or the handlebars (on a steering wheel's rim, so they turn it),
+      // glancing about, and climbing out again when he stops riding (js/kelo-clips.js)
+      keloAction('drive', { wheel: keloSteeringWheelOf(m) });
     }
 
 // --- Ride feel: wheels, steering, suspension, pitch, hydraulics and rotors ---------------------------

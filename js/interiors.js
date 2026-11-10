@@ -508,48 +508,12 @@ function interiorDrawScreen(scr, t) {
     }
 
 // --- Poses (run every frame by updateIndoorTrip while he isn't walking) -------------------------
-function interiorSitLegs() {
-      keloSitPose(0, 1.35);
-      keloBody.rotation.x = 0.06;
-    }
-
-function interiorTypingPose(t) {
-      interiorSitLegs();
-      const burst = Math.sin(t * 1.3) > -0.3;
-      keloLeftArm.rotation.set(-0.75 + (burst ? Math.sin(t * 15) * 0.05 : 0), 0, 0.1);
-      keloRightArm.rotation.set(burst ? -0.75 + Math.cos(t * 15) * 0.05 : -0.6, 0, -0.1);
-      keloLeftElbow.rotation.x = burst ? -0.85 : -0.7;
-      keloRightElbow.rotation.x = burst ? -0.85 : -1.9;
-      keloLeftHand.userData.grip = burst ? 0.2 + 0.25 * Math.max(0, Math.sin(t * 22)) : 0.4;
-      keloRightHand.userData.grip = burst ? 0.2 + 0.25 * Math.max(0, Math.cos(t * 22)) : 0.6;
-      keloHead.rotation.x = 0.05;
-      keloHead.rotation.y = Math.sin(t * 0.7) * 0.12;
-    }
-
-function interiorEatPose(t) {
-      interiorSitLegs();
-      const k = 0.5 - 0.5 * Math.cos(t * 2.6); // hand up to his mouth and back down to the plate
-      keloRightArm.rotation.set(-0.55 - 0.55 * k, 0, -0.15 - 0.25 * k);
-      keloRightElbow.rotation.x = -0.6 - 1.4 * k;
-      keloRightHand.userData.grip = 0.7;
-      keloLeftArm.rotation.set(-0.5, 0, 0.12);
-      keloLeftElbow.rotation.x = -0.9;
-      keloHead.rotation.x = 0.18 - 0.2 * k;
-    }
-
-function interiorRestSitPose(t) {
-      interiorSitLegs();
-      keloLeftArm.rotation.set(-0.5, 0, 0.12);
-      keloRightArm.rotation.set(-0.5, 0, -0.12);
-      keloLeftElbow.rotation.x = keloRightElbow.rotation.x = -0.9;
-      keloHead.rotation.y = Math.sin(t * 0.4) * 0.35;
-    }
-
-function interiorWavePose(t) {
-      keloRightArm.rotation.set(-2.5, 0, -0.2);
-      keloRightElbow.rotation.x = -0.3 + Math.sin(t * 9) * 0.25;
-      keloHead.rotation.x = -0.15;
-    }
+// Sitting down, typing, eating and sipping, waving and standing up are hand-keyed clips (js/kelo-clips.js);
+// the seat's own height comes from interiorSit, the clip glides him down onto it and back up
+function interiorTypingPose(t) { keloAction('type'); }
+function interiorEatPose(t) { keloAction('eat'); }
+function interiorRestSitPose(t) { keloAction('sit'); }
+function interiorWavePose(t) { keloAction('greet'); }
 
 // --- Where things are -------------------------------------------------------------------------
 function interiorKeyForTarget(p) {

@@ -383,7 +383,8 @@ function windKiteProps(kite, line) {
       const spot = { ...state.botPos };
       kiteSession = { key: w.key, snapped: false, snapAt: w.key === 'gale' && Math.random() < 0.6 ? Date.now() + 5000 + Math.random() * 3000 : 0, flyAway: null };
       const session = kiteSession;
-      const hand = () => new THREE.Vector3(state.botPos.x, state.botAltitudeY + 1.4, state.botPos.z);
+      // (the line runs from his right hand, which the kite clip holds up: js/kelo-clips.js)
+      const hand = () => keloRightHand ? keloRightHand.getWorldPosition(new THREE.Vector3()) : new THREE.Vector3(state.botPos.x, state.botAltitudeY + 1.4, state.botPos.z);
       if (w.key === 'calm') {
         // He runs back and forth trying to get it up; it bounces along behind him and drops
         state.speechBubble = 'Come on, up you go! ...Why won\'t it fly?';

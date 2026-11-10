@@ -9,7 +9,7 @@
 //   - standing around he fidgets now and then: taps a foot, looks at his hand, rocks on his heels,
 //     straightens his antenna, hums a little tune (♪) or lets out a sigh (~) when he is low;
 //   - his weight shifts onto one leg with the other knee relaxed;
-//   - picking something up or putting it down, he dips at the knees instead of the thing popping.
+//   - (picking something up or putting it down: hand-keyed clips in js/kelo-clips.js)
 // Hums and sighs are heard only when sound is already on (js/pastimes.js), and very quietly.
 
 const keloHuman = {
@@ -336,22 +336,6 @@ function keloHumanize(out, t, dt, ctx) {
         h.idleSince = 0;
       }
 
-      // --- Picking something up or putting it down: dip at the knees, lean in, look at it
-      const carried = typeof carriedObject !== 'undefined' ? carriedObject : null;
-      if (h.lastCarried !== undefined && carried !== h.lastCarried && !ctx.riding && !ctx.resting) h.dipT = t;
-      h.lastCarried = carried;
-      const de = t - h.dipT;
-      if (de >= 0 && de < 0.8) {
-        const w = Math.sin(Math.PI * smoothstep(de / 0.8));
-        out.bodyX += 0.32 * w;
-        out.headX += 0.25 * w;
-        if (!ctx.walking) {
-          const drop = 0.15 * w, ang = squatAngle(drop);
-          out.lLegX -= ang; out.rLegX -= ang;
-          out.lKneeX += 2 * ang; out.rKneeX += 2 * ang;
-          out.lift -= drop;
-        }
-      }
-
+      // (picking something up or putting it down is a clip now: js/kelo-clips.js keloClipOneShots)
       keloUpdatePuffs(t);
     }

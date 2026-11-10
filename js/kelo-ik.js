@@ -93,7 +93,10 @@ function keloIkProbeFoot(x, z, yaw, refY, sink) {
       const yh = keloIkGroundAt(x + fx * KELO_IK.heel, z + fz * KELO_IK.heel, refY);
       const yt = keloIkGroundAt(x + fx * KELO_IK.toe, z + fz * KELO_IK.toe, refY);
       const diff = yt - yh, P = _ikProbe;
-      if (Math.abs(diff) > KELO_IK.edge) {
+      // (a step edge only inside a building: outdoors the ground is smooth, so a big heel-to-toe
+      // difference is a steep slope, and standing level on its high end left the sole in the air)
+      const indoors = typeof indoorTrip !== 'undefined' && indoorTrip.active;
+      if (indoors && Math.abs(diff) > KELO_IK.edge) {
         // half on a step: stand level on the higher one
         P.y = Math.max(yh, yt); P.pitch = 0;
       } else {
@@ -191,7 +194,12 @@ function keloApplyIK(t, dt, ctx) {
       const root = K.lastRoot || (K.lastRoot = new THREE.Vector3().copy(P));
       const dx = P.x - root.x, dy = P.y - root.y, dz = P.z - root.z;
       const platform = typeof keloOnMovingPlatform === 'function' && keloOnMovingPlatform();
-      if (Math.hypot(dx, dz) > 0.8 || Math.abs(dy) > 1.2) { K.L.planted = K.R.planted = false; }
+      // (a jump bigger than he can move in a frame is a new place: let go and plant again where he is)
+      const jumpXZ = Math.max(0.2, (a.speed || 0) * Math.max(dt, 1 / 60) * 3 + 0.08);
+      // (and while js/motion.js is still easing out such a jump, his feet come along with him)
+      const corr = typeof keloMotion !== 'undefined' && keloMotion.root && keloMotion.root.corr;
+      const gliding = !platform && corr && Math.hypot(corr.x, corr.z) > 0.12;
+      if (Math.hypot(dx, dz) > (platform ? 0.8 : jumpXZ) || Math.abs(dy) > 1.2 || gliding) { K.L.planted = K.R.planted = false; K.stats.jumps = (K.stats.jumps || 0) + 1; }
       else if (platform) {
         // (the car's floor is flat and moves with him: feet stay on it, never probed mid-ride)
         ['L', 'R'].forEach(s => { const F = K[s]; F.lx += dx; F.lz += dz; F.liftX += dx; F.liftZ += dz; F.ly = F.liftY = F.landY = floorY; F.pitch = F.roll = 0; });
@@ -312,8 +320,12 @@ function keloApplyIK(t, dt, ctx) {
 const _ikArmT = new THREE.Vector3(), _ikArmQ = new THREE.Quaternion();
 function keloApplyReach(t, dt, ctx) {
       const K = keloIK;
-      const targets = !ctx.riding && !ctx.resting && !state.isWalking ? keloReachTargets() : null;
-      K.reachW = dampTo(K.reachW, targets ? 1 : 0, targets ? 4.5 : 6, dt);
+      // (riding: hands on the steering wheel while the drive clip plays, js/kelo-clips.js)
+      const targets = ctx.riding ? (typeof keloClipRideReach === 'function' ? keloClipRideReach() : null)
+        : !ctx.resting && !state.isWalking ? keloReachTargets() : null;
+      // An action clip can lift his hands off the target for a while (checking a machine, waiting)
+      const share = typeof keloClipValue === 'function' ? Math.max(0, Math.min(1, keloClipValue('reach', 1))) : 1;
+      K.reachW = dampTo(K.reachW, targets ? share : 0, targets ? 4.5 : 6, dt);
       if (targets) K.lastReach = targets;
       const tg = targets || K.lastReach;
       if (K.reachW < 0.002 || !tg) { if (!targets) K.lastReach = null; return; }

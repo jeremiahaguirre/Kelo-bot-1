@@ -2116,12 +2116,14 @@ function animateDiorama() {
         keloWeldTorchGroup.visible = !isMiningOrDrilling && isWeldingOrBuilding;
       }
 
+      // Getting up off a seat, the bed or the ground finishes before he walks off (js/kelo-clips.js)
+      const clipHold = typeof keloClipHolds === 'function' && keloClipHolds();
       if (typeof updateIndoorTrip === 'function' && updateIndoorTrip(t)) {
         // Inside the Storehouse or the Museum (js/basements.js): his walk in, the stairs and the shelves are scripted there
         weldingSparks.visible = false;
         if (miningDebrisParticles) miningDebrisParticles.visible = false;
         forgeArcLight.intensity = 0;
-      } else if (dist > arrivalRadius(state.targetPos)) {
+      } else if (dist > arrivalRadius(state.targetPos) && !clipHold) {
         state.isWalking = true;
         // Speeding up and braking, eased turns (on the spot for big ones) and a smooth line around
         // obstacles (js/motion.js); he moves the way he faces
@@ -2163,23 +2165,34 @@ function animateDiorama() {
         const groundY = Math.max(getIslandGroundHeight(state.botPos.x, state.botPos.z), typeof iceFloorAt === 'function' ? iceFloorAt(state.botPos) : -Infinity);
         state.botAltitudeY = groundY;
 
-        if (state.microPose === 'collapsed') {
-          // Fell asleep where he stood
+        if (clipHold) {
+          // Still getting up (the clip moves him); standing here until he is up
+          keloGroup.position.set(state.botPos.x, groundY, state.botPos.z);
+          keloGroup.rotation.set(0, state.botRotY, 0);
+          keloAnim.mode = 'idle';
+          weldingSparks.visible = false;
+          if (miningDebrisParticles) miningDebrisParticles.visible = false;
+          forgeArcLight.intensity = 0;
+        } else if (state.microPose === 'collapsed') {
+          // Fell asleep where he stood: his knees go and he folds over (js/kelo-clips.js)
           keloGroup.position.set(state.botPos.x, groundY + 0.35, state.botPos.z);
           keloGroup.rotation.set(-Math.PI / 2, state.botRotY, 0);
+          keloAction('doze');
           weldingSparks.visible = false;
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
           forgeArcLight.intensity = 0;
         } else if (state.currentLocKey === 'bed') {
           keloGroup.position.set(-11.6, Math.max(groundY, 0.95), -8.8);
           keloGroup.rotation.set(-Math.PI / 2, 0, 0);
-          keloHead.rotation.set(0, 0, 0);
+          // sits on the edge, swings round and lies back; breathes; stretches and gets up (js/kelo-clips.js)
+          keloAction('sleep');
           weldingSparks.visible = false;
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
           forgeArcLight.intensity = 0;
         } else if (isMiningOrDrilling) {
           // ACTIVE 3D MOUNTAIN GOLD DRILLING / AUGERING POSE WITH SPINNING BIT & FLYING ROCK/GOLD DEBRIS!
-          const drillVibration = Math.abs(Math.sin(t * 28)) * 0.05;
+          // (the built-in drill shakes him; a hand tool's own clip carries its jolts)
+          const drillVibration = typeof carriedObject !== 'undefined' && carriedObject ? 0 : Math.abs(Math.sin(t * 28)) * 0.05;
           keloGroup.position.set(state.botPos.x, groundY + drillVibration, state.botPos.z);
           keloGroup.rotation.set(0, state.botRotY, 0);
           keloDigPose(t);
@@ -2257,52 +2270,25 @@ function animateDiorama() {
         } else if (state.currentLocKey === 'cyber') {
           keloGroup.position.set(state.botPos.x, Math.max(groundY, 0.2), state.botPos.z);
           keloGroup.rotation.set(0, Math.PI, 0);
-          const typingBurst = Math.sin(t * 1.5) > -0.2;
-          // forearms out over the keyboard, fingers tapping; between bursts a hand goes up to his chin
-          keloLeftArm.rotation.x = typingBurst ? -0.4 + Math.sin(t * 16) * 0.06 : -0.25;
-          keloRightArm.rotation.x = typingBurst ? -0.4 + Math.cos(t * 16) * 0.06 : -0.5;
-          keloLeftElbow.rotation.x = typingBurst ? -1.1 : -0.9;
-          keloRightElbow.rotation.x = typingBurst ? -1.1 : -2.1;
-          keloLeftHand.rotation.x = keloRightHand.rotation.x = typingBurst ? -0.4 : 0;
-          keloLeftHand.userData.grip = typingBurst ? 0.2 + 0.25 * Math.max(0, Math.sin(t * 22)) : 0.4;
-          keloRightHand.userData.grip = typingBurst ? 0.2 + 0.25 * Math.max(0, Math.cos(t * 22)) : 0.6;
-          keloHead.rotation.z = typingBurst ? 0.05 : 0.24;
-          keloHead.rotation.y = Math.sin(t * 0.9) * 0.2;
+          // bursts of typing, a pause with his chin on his hand (js/kelo-clips.js)
+          keloAction('typeStand');
           weldingSparks.visible = false;
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
           forgeArcLight.intensity = 0;
         } else if (state.currentLocKey === 'shoreline' && Math.hypot(state.botPos.x - 4.2, state.botPos.z - 10.2) < 2.2) {
-          // Sitting on the flat shoreline stones, knees up, leaning back on his hands, feet tapping
-          keloGroup.position.set(state.botPos.x, Math.max(groundY, 0.05) - (KELO_LEG_Y - 0.2), state.botPos.z);
+          // Sitting on the flat shoreline stones, knees up, leaning back on his hands: he lowers himself
+          // down and gets back up with the clip (js/kelo-clips.js), so his root stays on the ground
+          keloGroup.position.set(state.botPos.x, groundY, state.botPos.z);
           keloGroup.rotation.set(0, 0, 0);
-          keloLeftLeg.rotation.set(-2.0, 0, -0.1);
-          keloRightLeg.rotation.set(-2.0, 0, 0.1);
-          keloLeftKnee.rotation.x = keloSitKnee(-2.0, 0.2) + Math.max(0, Math.sin(t * 2.4)) * 0.25;
-          keloRightKnee.rotation.x = keloSitKnee(-2.0, 0.2) + Math.max(0, -Math.sin(t * 2.4)) * 0.25;
-          keloBody.rotation.x = -0.2;
-          keloLeftArm.rotation.set(0.55, 0, -0.25);
-          keloRightArm.rotation.set(0.55, 0, 0.25);
-          keloLeftElbow.rotation.x = keloRightElbow.rotation.x = 0.1;
-          keloLeftHand.userData.grip = keloRightHand.userData.grip = 0.1;
-          keloHead.rotation.z = Math.sin(t * 1.1) * 0.22;
-          keloHead.rotation.x = -0.1 + Math.sin(t * 0.8) * 0.1;
+          keloAction('sitGround');
           weldingSparks.visible = false;
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
           forgeArcLight.intensity = 0;
         } else if (state.currentLocKey === 'meadow' || state.microPose === 'crouch_inspect') {
-          // Crouching on top of the terrain without sinking below groundY!
-          // a deep squat, leaning in, one hand reaching down to look closely at something
-          const squat = 0.42 * (KELO_THIGH + KELO_SHIN);
-          keloSquat(squat);
-          keloGroup.position.set(state.botPos.x, groundY - squat + Math.abs(Math.sin(t * 2)) * 0.03, state.botPos.z);
-          keloBody.rotation.x = 0.4;
-          keloRightArm.rotation.x = -0.75 + Math.sin(t * 3) * 0.1;
-          keloRightElbow.rotation.x = -0.3;
-          keloRightHand.userData.grip = 0.1;
-          keloLeftArm.rotation.set(-0.5, 0, 0.1);
-          keloLeftElbow.rotation.x = -0.9;
-          keloHead.rotation.x = 0.35;
-          keloHead.rotation.z = 0.28 * Math.sin(t * 1.3);
+          // Crouched down looking closely at something, head tilting, a hand reaching to touch it (js/kelo-clips.js)
+          keloGroup.position.set(state.botPos.x, groundY, state.botPos.z);
+          keloGroup.rotation.set(0, state.botRotY, 0);
+          keloAction('inspect');
           weldingSparks.visible = false;
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
           forgeArcLight.intensity = 0;
@@ -2317,11 +2303,16 @@ function animateDiorama() {
           } else {
             keloGroup.rotation.set(0, state.botRotY, 0);
           }
-          keloLeftArm.rotation.x = (pm.armRaiseOffset ?? -0.5) + Math.sin(t * 4.5) * (pm.armWaveAmp ?? 0.35);
-          keloRightArm.rotation.x = (pm.armRaiseOffset ?? -0.5) + Math.cos(t * 4.5) * (pm.armWaveAmp ?? 0.35);
-          keloHead.rotation.x = (pm.headPitch ?? -0.15) + Math.sin(t * 1.6) * 0.12;
-          keloHead.rotation.y = Math.sin(t * (pm.headYawSpeed ?? 1.4)) * 0.38;
-          keloHead.rotation.z = Math.sin(t * 1.9) * (pm.headTiltAmp ?? 0.24);
+          // A known activity has a hand-keyed clip (pm.clip: painting, the kite, bench work; js/kelo-clips.js)
+          if (pm.clip && typeof keloAction === 'function' && keloAction(pm.clip)) {
+            keloGroup.position.y = groundY;
+          } else {
+            keloLeftArm.rotation.x = (pm.armRaiseOffset ?? -0.5) + Math.sin(t * 4.5) * (pm.armWaveAmp ?? 0.35);
+            keloRightArm.rotation.x = (pm.armRaiseOffset ?? -0.5) + Math.cos(t * 4.5) * (pm.armWaveAmp ?? 0.35);
+            keloHead.rotation.x = (pm.headPitch ?? -0.15) + Math.sin(t * 1.6) * 0.12;
+            keloHead.rotation.y = Math.sin(t * (pm.headYawSpeed ?? 1.4)) * 0.38;
+            keloHead.rotation.z = Math.sin(t * 1.9) * (pm.headTiltAmp ?? 0.24);
+          }
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
         } else {
           // Standing idle: breathing, glancing around and shifting his weight come from animations.js

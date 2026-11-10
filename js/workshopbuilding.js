@@ -1691,9 +1691,8 @@ function wsSeatKelo(mesh) {
 
 function wsDrivePose() {
       keloSitPose(typeof KELO_SIT_OFFSET === 'number' ? KELO_SIT_OFFSET : 0.3, 1.3);
-      keloLeftArm.rotation.set(-0.6, 0, 0.05);
-      keloRightArm.rotation.set(-0.6, 0, -0.05);
-      keloLeftElbow.rotation.x = keloRightElbow.rotation.x = -0.7;
+      // climbing in, hands on the wheel, glancing about, climbing out (js/kelo-clips.js)
+      keloAction('drive');
     }
 
 // Move the vehicle along local points [{x, z, ry}] (on the floor he's on), with him driving
@@ -1972,13 +1971,9 @@ function wsControlReach(model) {
 
 // Busy hands at a control panel or bench
 function wsWorkPose(t) {
-      const s = Math.sin(t * 6) * 0.12;
-      keloLeftArm.rotation.set(-1.05 + s, 0, 0.12);
-      keloRightArm.rotation.set(-1.0 - s, 0, -0.12);
-      keloLeftElbow.rotation.x = keloRightElbow.rotation.x = -0.5;
-      keloLeftHand.userData.grip = keloRightHand.userData.grip = 0.4;
-      keloBody.rotation.x = 0.12;
-      keloHead.rotation.x = 0.25;
+      // press the controls, step back and check, wait with arms folded (js/kelo-clips.js); his hands
+      // go to the controls by wsControlReach while the clip has them there
+      keloAction('machine');
     }
 
 function workshopSummaryForAI() {

@@ -345,7 +345,9 @@ async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
         state.proceduralMotion = {
           headPitch: hobby.style === 'kite' ? -0.35 : 0.1, headYawSpeed: 1.2, headTiltAmp: 0.2,
           armWaveAmp: hobby.style === 'mural' ? 0.6 : 0.35, armRaiseOffset: hobby.style === 'kite' ? -1.3 : -0.8,
-          bodyBounceAmp: hobby.style === 'music' || hobby.style === 'tricks' ? 0.1 : 0.03, spinSpeed: 0, crouchOffset: 0, sparkBurst: false
+          bodyBounceAmp: hobby.style === 'music' || hobby.style === 'tricks' ? 0.1 : 0.03, spinSpeed: 0, crouchOffset: 0, sparkBurst: false,
+          // (hand-keyed clips, js/kelo-clips.js)
+          clip: hobby.style === 'kite' ? 'kite' : hobby.style === 'easel' || hobby.style === 'mural' ? 'paint' : null
         };
         state.moodTitle = `${hobby.name}${hobby.practiced ? '' : ' (first try!)'}`.slice(0, 80);
         renderAllUI();

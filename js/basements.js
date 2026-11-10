@@ -656,6 +656,9 @@ async function placeJob(site, job, temps) {
       const slotW = siteToWorld(site, job.slot.x, job.slot.z, job.slot.y + shift);
       tripFace(slotW);
       indoorTrip.pose = () => reachPose(slotW.y - indoorTrip.pos.y);
+      // both hands to the slot itself (js/kelo-ik.js)
+      const reachFn = () => slotW;
+      if (typeof setKeloReach === 'function') setKeloReach(reachFn);
       await tripPause(750);
       const landed = job.landing ? job.landing() : null;
       if (landed) {
@@ -672,6 +675,7 @@ async function placeJob(site, job, temps) {
         setCarriedObject(null);
       }
       job.done = true;
+      if (typeof clearKeloReach === 'function') clearKeloReach(reachFn);
       // The real thing takes over from the stand-in once it is on the books
       if (job.onPlaced && job.onPlaced() && landed && landed.parent === site.group) {
         site.group.remove(landed);
@@ -688,6 +692,9 @@ async function takeJob(site, job) {
       const slotW = siteToWorld(site, job.slot.x, job.slot.z, job.slot.y + shift);
       tripFace(slotW);
       indoorTrip.pose = () => reachPose(slotW.y - indoorTrip.pos.y);
+      // both hands to the slot itself (js/kelo-ik.js)
+      const reachFn = () => slotW;
+      if (typeof setKeloReach === 'function') setKeloReach(reachFn);
       await tripPause(750);
       let real = null;
       site.group.traverse(o => { if (!real && o.visible && job.match && job.match(o)) real = o; });
@@ -706,6 +713,7 @@ async function takeJob(site, job) {
       if (job.carried && typeof setCarriedObject === 'function') setCarriedObject(job.carried());
       job.done = true;
       indoorTrip.pose = null;
+      if (typeof clearKeloReach === 'function') clearKeloReach(reachFn);
       await tripPause(300);
     }
 
@@ -808,6 +816,7 @@ async function runIndoorTrip(siteKey, jobs) {
       } finally {
         // However the trip ended, he is back up at the door and nothing underground is left showing
         finishSkippedJobs(jobs);
+        if (typeof clearKeloReach === 'function') clearKeloReach();
         indoorTrip.path = null;
         const hold = indoorTrip.resolve;
         indoorTrip.resolve = null;

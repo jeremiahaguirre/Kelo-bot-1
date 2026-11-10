@@ -683,6 +683,7 @@ async function interiorRunVisit(v) {
         v.setReady(false);
         try { if (v.cleanup) v.cleanup(); } catch (e) { console.warn('interior cleanup', e); }
         if (v.focus && typeof clearKeloFocus === 'function') clearKeloFocus(v.focus);
+        if (v.reach && typeof clearKeloReach === 'function') clearKeloReach(v.reach);
         v.temps.forEach(o => { if (o.parent) o.parent.remove(o); if (typeof disposeTree === "function") disposeTree(o); });
         indoorTrip.path = null;
         const hold = indoorTrip.resolve;
@@ -711,6 +712,16 @@ async function interiorAtComputer(v, S, room) {
       const scrV = new THREE.Vector3();
       v.focus = () => screen.getWorldPosition(scrV);
       if (typeof setKeloFocus === 'function') setKeloFocus(v.focus);
+      // Fingers on the keyboard in front of the screen (the right hand leaves it between bursts)
+      const pc = screen.parent, kbL = new THREE.Vector3(), kbR = new THREE.Vector3();
+      v.reach = () => {
+        const t = keloAnim.lastT || 0, burst = Math.sin(t * 1.3) > -0.3;
+        return {
+          l: pc.localToWorld(kbL.set(0.14, 0.86 + 0.012 * Math.max(0, Math.sin(t * 15)), -0.1)),
+          r: burst ? pc.localToWorld(kbR.set(0.14, 0.86 + 0.012 * Math.max(0, Math.cos(t * 15)), 0.1)) : null
+        };
+      };
+      if (typeof setKeloReach === 'function') setKeloReach(v.reach);
       room.parts.glow.material.opacity = 0.22;
       const queryNow = () => {
         const quoted = String(state.speechBubble || '').match(/"([^"]{2,60})"/);
@@ -730,6 +741,7 @@ async function interiorAtComputer(v, S, room) {
       v.tick(performance.now() / 1000);
       await tripPause(700);
       v.finish = async () => {
+        if (v.reach && typeof clearKeloReach === 'function') clearKeloReach(v.reach);
         indoorTrip.pose = t => interiorRestSitPose(t);
         await tripPause(400);
         screen.material = interiorMaterials().screenOff;
@@ -781,6 +793,10 @@ async function interiorAtCafe(v, S, room) {
         v.plateTop = table.localToWorld(new THREE.Vector3(0, top + 0.03, -0.12));
         v.focus = () => v.plateTop;
         if (typeof setKeloFocus === 'function') setKeloFocus(v.focus);
+        // His left hand on the cup's handle while he eats
+        const cupV = table.localToWorld(new THREE.Vector3(0.27, top + 0.06, 0.05));
+        v.reach = () => ({ l: cupV });
+        if (typeof setKeloReach === 'function') setKeloReach(v.reach);
       }
       // What he ordered arrives in his hands (js/needs.js eatSomething): it goes on the plate and he eats it
       // (setCarriedObject is wrapped below to hand it here)
@@ -808,6 +824,7 @@ async function interiorAtCafe(v, S, room) {
       };
       await tripPause(500);
       v.finish = async () => {
+        if (v.reach && typeof clearKeloReach === 'function') clearKeloReach(v.reach);
         if (v.food) v.food.visible = false;
         indoorTrip.pose = t => interiorRestSitPose(t);
         await tripPause(500);
@@ -825,6 +842,13 @@ async function interiorAtMailbox(v, S, room) {
       const boxV = new THREE.Vector3();
       v.focus = () => door.getWorldPosition(boxV);
       if (typeof setKeloFocus === 'function') setKeloFocus(v.focus);
+      // His right hand goes to the knob (and swings with the door), his left into the box once it is open
+      const knobV = new THREE.Vector3(), slotV = new THREE.Vector3(), fg0 = room.furniture || room.root;
+      v.reach = () => ({
+        r: door.localToWorld(knobV.set(0.03, -0.06, -0.24)),
+        l: door.rotation.y < -1.2 ? fg0.localToWorld(slotV.set(at.x + 0.1, at.y - 0.03, at.z)) : null
+      });
+      if (typeof setKeloReach === 'function') setKeloReach(v.reach);
       const swing = async (to, ms) => {
         const from = door.rotation.y, start = Date.now();
         for (;;) {
@@ -865,12 +889,15 @@ async function interiorAtMailbox(v, S, room) {
         await tripPause(900);
       }
       indoorTrip.pose = null;
+      if (typeof clearKeloReach === 'function') clearKeloReach(v.reach);
       v.finish = async () => {
         tripFace(interiorPoint('post_office', B.face));
         indoorTrip.pose = () => reachPose(boxY - indoorTrip.pos.y, boxOut);
+        if (typeof setKeloReach === 'function') setKeloReach(v.reach);
         await tripPause(300);
         await swing(0, 450);
         indoorTrip.pose = null;
+        if (typeof clearKeloReach === 'function') clearKeloReach(v.reach);
       };
       v.cleanup = () => { door.rotation.y = 0; };
       return [stand, ...B.via.slice().reverse()];

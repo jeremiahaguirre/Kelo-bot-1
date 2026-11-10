@@ -67,6 +67,14 @@ function exploreGroundAt(x, z) {
       return o.y;
     }
 
+const EXPLORE_GROUND_SAMPLES = [0.2, 0.4, 0.6, 0.8, 1];
+// The ground as drawn: the terrain mesh (holes, piles, fills) where it exists, never below the water
+function exploreSolidGroundAt(x, z) {
+      const g = exploreGroundAt(x, z);
+      const m = typeof terrainMeshHeightAt === 'function' && islandContains(x, z) ? terrainMeshHeightAt(x, z) : null;
+      return m === null ? g : Math.max(g, m);
+    }
+
 function exploreCopy(s) {
       return { target: s.target.clone(), yaw: s.yaw, pitch: s.pitch, dist: s.dist };
     }
@@ -85,6 +93,8 @@ function exploreSyncFromCamera() {
       exploreClampState(s);
       exploreCam.cur = exploreCopy(s);
       exploreCam.goal = exploreCopy(s);
+      exploreCam.adj = { lift: 0, bld: 0 };
+      exploreCam.fv = null;
     }
 
 function exploreClampState(s) {
@@ -138,8 +148,10 @@ function exploreTerrainPoint(clientX, clientY) {
 
 function exploreKeloSpot() {
       const p = keloGroup ? keloGroup.position : new THREE.Vector3(state.botPos.x, 0, state.botPos.z);
-      // On foot, follow the ground under him rather than the bob of each step
-      const y = keloGroup && state.isWalking && !state.riding && Number.isFinite(state.botAltitudeY) ? state.botAltitudeY : p.y;
+      // Follow the ground under him (not the bob of each step, or the drop when he sits or lies down),
+      // unless he is clearly somewhere else: up on a bed, a ladder, a vehicle or down a basement
+      const ground = Number.isFinite(state.botAltitudeY) ? state.botAltitudeY : p.y;
+      const y = !state.riding && Math.abs(p.y - ground) < 1.2 ? ground : p.y;
       return new THREE.Vector3(p.x, y + 1.6, p.z);
     }
 
@@ -260,29 +272,71 @@ function exploreCameraUpdate() {
         const dragging = Boolean(exploreCam.drag && exploreCam.drag.moved);
         const k = 1 - Math.exp(-(dragging ? 20 : 9) * dt);
         const kt = state.cameraMode === 'follow' ? 1 - Math.exp(-5 * dt) : k;
-        cur.target.lerp(goal.target, kt);
+        if (state.cameraMode === 'follow') {
+          // Following him: a spring with no overshoot, so starts, stops and turns ease in and out
+          // instead of lurching. A big jump (he was moved, or a trip ended far away) is a short flight.
+          if (cur.target.distanceTo(goal.target) > 30 && !exploreCam.drag) { exploreFlyToKelo(); exploreCam.fv = null; }
+          else {
+            const fv = exploreCam.fv || (exploreCam.fv = new THREE.Vector3());
+            const w = 5.5;
+            for (let left = dt; left > 1e-4;) {
+              const h = Math.min(left, 1 / 120);
+              left -= h;
+              fv.addScaledVector(goal.target.clone().sub(cur.target).multiplyScalar(w * w).addScaledVector(fv, -2 * w), h);
+              cur.target.addScaledVector(fv, h);
+            }
+          }
+        } else {
+          exploreCam.fv = null;
+          cur.target.lerp(goal.target, kt);
+        }
         cur.yaw += (goal.yaw - cur.yaw) * k;
         cur.pitch += (goal.pitch - cur.pitch) * k;
         cur.dist += (goal.dist - cur.dist) * k;
       }
 
-      // Never under the ground: tilt up over hills, mountains and the lake shore
+      // What is shown = what was asked for (cur), lifted so the camera and its whole line of sight stay
+      // above the ground (holes, piles, hills) and above buildings. Buildings are treated like raised
+      // ground with soft edges, so the camera rises over a roof smoothly instead of jumping in front of
+      // a wall or ending up inside one. The lift is kept apart from cur, so it never fights the easing.
       const c = exploreCam.cur;
-      for (let i = 0; i < 3; i++) {
-        const off = exploreOffset(c);
-        const camY = exploreGroundAt(c.target.x + off.x, c.target.z + off.z);
-        const midY = exploreGroundAt(c.target.x + off.x * 0.5, c.target.z + off.z * 0.5);
-        const need = Math.max(camY + EXPLORE_CLEARANCE - c.target.y, (midY + 0.8 - c.target.y) * 2);
-        if (c.dist * Math.sin(c.pitch) >= need) break;
-        c.pitch = Math.min(1.5, Math.asin(exploreClamp(need / c.dist, -1, 0.997)));
-      }
+      const v = exploreCopy(c);
+      const blds = exploreNearBuildings(v.target, v.dist);
+      const needFor = (withBuildings) => {
+        const off = exploreOffset(v);
+        let need = -1;
+        // The lens itself must clear the ground at once; the rest of the line (and roofs) eases in
+        for (const t of (withBuildings ? EXPLORE_GROUND_SAMPLES : [1])) {
+          const x = v.target.x + off.x * t, z = v.target.z + off.z * t;
+          let g = exploreSolidGroundAt(x, z) + (t >= 1 ? EXPLORE_CLEARANCE : 0.8);
+          if (withBuildings) g = Math.max(g, exploreBuildingHeightAt(blds, x, z) + (t >= 1 ? 1.2 : 0.3));
+          need = Math.max(need, (g - v.target.y) / (v.dist * t));
+        }
+        return need;
+      };
+      const liftFor = (withBuildings) => {
+        const p0 = v.pitch;
+        for (let i = 0; i < 3; i++) {
+          const need = needFor(withBuildings);
+          if (Math.sin(v.pitch) >= need) break;
+          v.pitch = Math.min(1.5, Math.asin(exploreClamp(need, -1, 0.997)));
+        }
+        const l = v.pitch - p0;
+        v.pitch = p0;
+        return Math.max(0, l);
+      };
+      const liftGround = liftFor(false);
+      v.pitch = c.pitch + liftGround;
+      const liftBld = liftFor(true);
+      const adj = exploreCam.adj || (exploreCam.adj = { lift: 0, bld: 0 });
+      // Up over the ground at once (never under it), back down gently
+      adj.lift = liftGround >= adj.lift ? liftGround : adj.lift + (liftGround - adj.lift) * (1 - Math.exp(-4 * dt));
+      // Over a roof quickly but smoothly, back down gently
+      adj.bld += (liftBld - adj.bld) * (1 - Math.exp(-(liftBld > adj.bld ? 10 : 3) * dt));
+      const shown = { target: c.target, yaw: c.yaw, pitch: Math.min(1.5, c.pitch + adj.lift + adj.bld), dist: c.dist };
 
-      // Never inside a building: the camera comes in front of a wall between it and what it follows
-      const wallDist = exploreBuildingClearance(c.target, exploreOffset(c));
-      if (wallDist < c.dist) c.dist = Math.max(1.2, wallDist);
-
-      controls.target.copy(c.target);
-      camera.position.copy(c.target).add(exploreOffset(c));
+      controls.target.copy(shown.target);
+      camera.position.copy(shown.target).add(exploreOffset(shown));
       exploreCam.driving = true;
 
       // Optional: drift back to Kelo-1 after a while with nobody touching anything
@@ -295,9 +349,7 @@ function exploreCameraUpdate() {
     }
 
 // Camera against buildings. Each building footprint (a box in worldObstacles) gets its roof height
-// measured once, with one ray straight down (one new box per frame at most). The line from the
-// target to the camera is tested against those boxes in 2D, then against the height where it
-// enters. Returns how far out the camera may be (Infinity when nothing is in the way).
+// measured once, with one ray straight down (a few boxes per frame at most).
 const exploreRoofs = new WeakMap();
 const exploreRoofRay = new THREE.Raycaster();
 let exploreRoofBudget = 0;
@@ -323,41 +375,44 @@ function exploreRoofOf(b) {
       return h;
     }
 
-function exploreBuildingClearance(target, off) {
-      if (typeof worldObstacles === 'undefined') return Infinity;
-      exploreRoofBudget = 1;
-      const len = off.length();
-      if (len < 0.01) return Infinity;
-      let best = Infinity;
+// Building boxes near the camera, with their roof heights (measured a few per frame ahead of time,
+// so a roof is known before the camera gets there). A box that holds what the camera looks at (an
+// indoor trip) is left out.
+const EXPLORE_BLD_SOFT = 5;      // the lift ramps up over this many units outside a wall
+function exploreNearBuildings(target, dist) {
+      exploreRoofBudget = 4;
+      const out = [];
+      if (typeof worldObstacles === 'undefined') return out;
       for (let i = 0; i < worldObstacles.length; i++) {
         const b = worldObstacles[i];
-        // Building footprints only (not thin fence and wall pieces, posts or trees)
         if (b.hw === undefined || Math.min(b.hw, b.hd) < 0.9) continue;
-        if (Math.hypot(b.x - target.x, b.z - target.z) > len + b.r + 1) continue;
-        // Into the box's own frame (turned by rot about y)
+        const d = Math.hypot(b.x - target.x, b.z - target.z);
+        if (d > 140) continue;
+        const roof = exploreRoofOf(b);
+        if (d > dist + b.r + EXPLORE_BLD_SOFT + 1 || roof === null) continue;
         const cs = Math.cos(b.rot || 0), sn = Math.sin(b.rot || 0);
         const lx = target.x - b.x, lz = target.z - b.z;
-        const ax = lx * cs - lz * sn, az = lx * sn + lz * cs;
-        const dx = off.x * cs - off.z * sn, dz = off.x * sn + off.z * cs;
-        const hw = b.hw + 0.35, hd = b.hd + 0.35;
-        // Following something inside this building (an indoor trip): leave the camera alone
-        if (Math.abs(ax) < hw && Math.abs(az) < hd) continue;
-        let t0 = 0, t1 = 1;
-        const slab = (p, d, h) => {
-          if (Math.abs(d) < 1e-9) return Math.abs(p) < h;
-          let a = (-h - p) / d, c = (h - p) / d;
-          if (a > c) { const x = a; a = c; c = x; }
-          t0 = Math.max(t0, a); t1 = Math.min(t1, c);
-          return t0 <= t1;
-        };
-        if (!slab(ax, dx, hw) || !slab(az, dz, hd)) continue;
-        const roof = exploreRoofOf(b);
-        if (roof === null) continue;
-        // Where the line enters the box, is it below the roof?
-        if (target.y + off.y * t0 > roof + 0.3) continue;
-        best = Math.min(best, t0 * len - 0.4);
+        if (Math.abs(lx * cs - lz * sn) < b.hw + 0.35 && Math.abs(lx * sn + lz * cs) < b.hd + 0.35) continue;
+        out.push({ b, cs, sn, roof });
       }
-      return best;
+      return out;
+    }
+
+// How high the buildings stand at a point: the roof inside a footprint, easing to nothing a few
+// units outside it (so the camera's lift has no sudden steps)
+function exploreBuildingHeightAt(blds, x, z) {
+      let h = -99;
+      for (let i = 0; i < blds.length; i++) {
+        const { b, cs, sn, roof } = blds[i];
+        const lx = x - b.x, lz = z - b.z;
+        const ox = Math.abs(lx * cs - lz * sn) - b.hw, oz = Math.abs(lx * sn + lz * cs) - b.hd;
+        const out = Math.hypot(Math.max(0, ox), Math.max(0, oz));
+        if (out >= EXPLORE_BLD_SOFT) continue;
+        const u = out / EXPLORE_BLD_SOFT, f = 1 - u * u * (3 - 2 * u);
+        const ground = getAnalyticalGroundHeight(b.x, b.z);
+        h = Math.max(h, ground + (roof - ground) * f);
+      }
+      return h;
     }
 
 // Keys, the joystick and held buttons

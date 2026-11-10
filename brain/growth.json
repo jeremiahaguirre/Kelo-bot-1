@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-10T07:29:42.102Z",
-  "runs": 16,
+  "updatedAt": "2026-11-10T19:52:00.931Z",
+  "runs": 17,
   "curiosities": [
-    "Allee effect"
+    "Anti-predator adaptation"
   ],
   "entries": [
     {
@@ -560,6 +560,38 @@
         "text": "I remember a quiet night dreaming about Shavkat Mirziyoyev. Shavkat Miromonovich Mirziyoyev is an Uzbek politician who has served as the second president of Uzbekistan since 2016. It still makes me curious.",
         "emoji": "🌙"
       }
+    },
+    {
+      "id": "dream-1794340320931",
+      "at": 1794340320931,
+      "brain": "procedural",
+      "topic": "Allee effect",
+      "title": "Dreaming of Animal navigation",
+      "text": "Dear Diary, while nobody was around I looked up \"Allee effect\" and drifted from Allee effect to Animal navigation. Animal navigation is the ability of many animals to find their way accurately without maps or instruments. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Allee effect",
+          "url": "https://en.wikipedia.org/wiki/Allee_effect",
+          "extract": "The Allee effect is a phenomenon in biology characterized by a correlation between population size or density and the mean individual fitness of a population or species."
+        },
+        {
+          "title": "Animal navigation",
+          "url": "https://en.wikipedia.org/wiki/Animal_navigation",
+          "extract": "Animal navigation is the ability of many animals to find their way accurately without maps or instruments. Birds such as the Arctic tern, insects such as the monarch butterfly and fish such as the salmon regularly migrate thousands of miles to and from their breeding grounds, and"
+        }
+      ],
+      "concept": {
+        "name": "Effect Navigation Theory",
+        "emoji": "🌀",
+        "definition": "The idea that allee effect and animal navigation share a hidden pattern.",
+        "builtFrom": [
+          "Allee effect",
+          "Animal navigation"
+        ]
+      },
+      "shapeFrom": "Animal navigation",
+      "nextCuriosity": "Anti-predator adaptation",
+      "coreMemory": null
     }
   ]
 }

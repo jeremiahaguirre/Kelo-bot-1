@@ -26,6 +26,24 @@ const eyeCam = {
   lastHeadYaw: null
 };
 const _eyeV = new THREE.Vector3(), _eyeDir = new THREE.Vector3(), _eyeQ = new THREE.Quaternion();
+// How far the stabilised eye may trail his real eyes (units): a few cm, so it never sinks into
+// his head or chest when he crouches, sits, rides a lift or leans in
+const EYECAM_MAX_LAG = 0.05;
+
+// Like a first-person game, his own torso, neck, backpack and shoulder shells are hidden while you
+// look through his eyes (the camera sits right above them, and a lean or a squat would put them in
+// the view); his forearms, hands, legs and whatever he holds stay. Put back on leaving.
+const eyeCamHidden = new Set();
+function eyeCamHideBody(hide) {
+      if (!hide) { eyeCamHidden.forEach(o => { o.visible = true; }); eyeCamHidden.clear(); return; }
+      if (!keloBody) return;
+      const off = o => { if (o.visible) { o.visible = false; eyeCamHidden.add(o); } };
+      keloBody.children.forEach(c => {
+        if (c === keloHead) return;
+        if (c === keloLeftArm || c === keloRightArm) { c.children.forEach(m => { if (m !== keloLeftElbow && m !== keloRightElbow) off(m); }); return; }
+        off(c);
+      });
+    }
 
 // What he is working on, for "through his eyes" to look at (a machine's moving part, the screen he
 // types on, his plate, his PO box...). Activities call setKeloFocus(fn) with a function that returns
@@ -127,7 +145,7 @@ function eyeCamEnter() {
       eyeCam.saved = { fov: camera.fov, near: camera.near, maxPolar: controls.maxPolarAngle, minDist: controls.minDistance };
       controls.maxPolarAngle = Math.PI;   // he can look up at the sky
       controls.minDistance = 0.5;
-      camera.near = 0.05;
+      camera.near = 0.08;   // (his hands come no closer than this; the body that could is hidden)
       const r = eyeCamRead();
       eyeCam.pos = r.eye.clone();
       eyeCam.yaw = r.yaw; eyeCam.pitch = r.pitch;
@@ -135,6 +153,7 @@ function eyeCamEnter() {
       eyeCam.from = { pos: camera.position.clone(), target: controls.target.clone(), fov: camera.fov };
       eyeCam.enterT = performance.now();
       keloHead.visible = false;
+      eyeCamHideBody(true);
       document.body.classList.add('eyecam-on');
       eyeCamRenderHud(true);
     }
@@ -142,6 +161,7 @@ function eyeCamEnter() {
 function eyeCamLeave() {
       eyeCam.on = false;
       if (keloHead) keloHead.visible = true;
+      eyeCamHideBody(false);
       const s = eyeCam.saved;
       if (s) {
         camera.fov = s.fov; camera.near = s.near; camera.updateProjectionMatrix();
@@ -175,6 +195,7 @@ function eyeCamFrame(dt) {
       if (!keloGroup || !keloHead || !camera || !controls) return false;
       if (!eyeCam.on) eyeCamEnter();
       keloHead.visible = false;   // in case something else showed it
+      eyeCamHideBody(true);
       const r = eyeCamRead();
       const wrap = x => Math.atan2(Math.sin(x), Math.cos(x));
       const teleported = r.eye.distanceTo(eyeCam.pos) > 4;
@@ -201,6 +222,10 @@ function eyeCamFrame(dt) {
       eyeCam.pos.x = dampTo(eyeCam.pos.x, r.eye.x, 16, dt);
       eyeCam.pos.z = dampTo(eyeCam.pos.z, r.eye.z, 16, dt);
       eyeCam.pos.y = dampTo(eyeCam.pos.y, r.eye.y, 4.5, dt);
+      // ...but never more than a few cm off his real eyes (a lift, a squat or sitting down moves
+      // them far faster than the filter follows)
+      const lag = _eyeDir.subVectors(eyeCam.pos, r.eye), lagLen = lag.length();
+      if (lagLen > EYECAM_MAX_LAG) eyeCam.pos.copy(r.eye).addScaledVector(lag, EYECAM_MAX_LAG / lagLen);
       const bob = 0.01 * (keloAnim.stepAct || 0) * Math.sin(keloAnim.phase * 2);
       // Working on something: look at it (the part moving in a machine, the screen, the plate),
       // not just the way his head points. Kept within what he could see by turning his head.

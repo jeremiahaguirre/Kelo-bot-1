@@ -240,7 +240,8 @@ function keloApplyIK(t, dt, ctx) {
             : KELO_IK.ankle * (Math.cos(rel) - 1) + KELO_IK.heel * 1.2 * Math.sin(rel);
           T.set(F.lx, F.ly + KELO_IK.ankle + Math.max(0, raise), F.lz);
           const n = toLocal(T, _ikV), hip = legs[side][0].position;
-          const horiz = Math.hypot(n.x - hip.x, n.z - hip.z);
+          // (a frame ahead: his hips move on over a planted foot, so they start down in time)
+          const horiz = Math.max(Math.hypot(n.x - hip.x, n.z - hip.z), Math.hypot(n.x - hip.x, n.z - hip.z - (a.speed || 0) * Math.max(dt, 1 / 60)));
           const maxV = Math.sqrt(Math.max(0, KELO_IK.reach * KELO_IK.reach - horiz * horiz));
           dropNeed = Math.max(dropNeed, hip.y - n.y - maxV);
           F.w = 1;

@@ -221,11 +221,15 @@ function eyeCamFrame(dt) {
       const busy = eyeCamHandsBusy();
       eyeCam.pos.x = dampTo(eyeCam.pos.x, r.eye.x, 16, dt);
       eyeCam.pos.z = dampTo(eyeCam.pos.z, r.eye.z, 16, dt);
+      // (the walk's own up-and-down, js/kelo-mocap.js, is taken out first: a run bounces more)
+      const stepLift = state.isWalking && !state.riding ? (keloAnim.stepLift || 0) : 0;
+      r.eye.y -= stepLift * 0.85;
       eyeCam.pos.y = dampTo(eyeCam.pos.y, r.eye.y, 4.5, dt);
       // ...but never more than a few cm off his real eyes (a lift, a squat or sitting down moves
       // them far faster than the filter follows)
       const lag = _eyeDir.subVectors(eyeCam.pos, r.eye), lagLen = lag.length();
       if (lagLen > EYECAM_MAX_LAG) eyeCam.pos.copy(r.eye).addScaledVector(lag, EYECAM_MAX_LAG / lagLen);
+      r.eye.y += stepLift * 0.85;
       const bob = 0.01 * (keloAnim.stepAct || 0) * Math.sin(keloAnim.phase * 2);
       // Working on something: look at it (the part moving in a machine, the screen, the plate),
       // not just the way his head points. Kept within what he could see by turning his head.

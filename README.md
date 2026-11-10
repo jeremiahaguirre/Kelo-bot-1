@@ -199,3 +199,7 @@ Kelo-bot-1/
 2. In your GitHub repo, go to **Settings → Pages**.
 3. Under **Build and deployment**, set **Source** to **Deploy from a branch**, select `main` and `/ (root)`, and click **Save**.
 4. Within a minute or two, Kelo-1 will be live at `https://jeremiahaguirre.github.io/Kelo-bot-1/`.
+
+## Credits
+
+Kelo-1's walk, run and turns are based on motion capture from the CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu; created with funding from NSF EIA-0196217). See [CREDITS.md](CREDITS.md).

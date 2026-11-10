@@ -77,8 +77,23 @@ function indoorSegmentClear(a, b, circles) {
       });
     }
 
+// The circles are the things themselves; his route keeps his body clear of them too (he is about
+// 0.8 wide), with a little room to spare where the aisles allow it. Tried with the most room first;
+// an aisle narrower than that still gets him through with less, never straight through a machine.
+// (site.bodyRoom: extra room in the site's own units, for a building modelled small)
+const INDOOR_BODY_ROOM = [0.55, 0.42, 0.25, 0];
 function routeInside(site, a, b) {
-      const circles = site.obstacles().filter(c => Math.hypot(a.x - c.x, a.z - c.z) > c.r && Math.hypot(b.x - c.x, b.z - c.z) > c.r);
+      const k = siteScale(site) || 1;
+      for (const room of site.bodyRoom || INDOOR_BODY_ROOM.map(r => r / k)) {
+        const route = routeInsideWith(site, a, b, room);
+        if (route) return route;
+      }
+      return [b];
+    }
+
+function routeInsideWith(site, a, b, room) {
+      const circles = site.obstacles().map(c => ({ x: c.x, z: c.z, r: c.r + room }))
+        .filter(c => Math.hypot(a.x - c.x, a.z - c.z) > c.r && Math.hypot(b.x - c.x, b.z - c.z) > c.r);
       if (indoorSegmentClear(a, b, circles)) return [b];
       const pts = [a, b, ...site.nodes.filter(n => circles.every(c => Math.hypot(n.x - c.x, n.z - c.z) > c.r))];
       const dist = pts.map(() => Infinity), prev = pts.map(() => -1), done = pts.map(() => false);
@@ -94,7 +109,7 @@ function routeInside(site, a, b) {
           if (nd < dist[v]) { dist[v] = nd; prev[v] = u; }
         });
       }
-      if (prev[1] < 0) return [b];
+      if (prev[1] < 0) return null;
       const out = [];
       for (let i = 1; i > 0; i = prev[i]) out.unshift(pts[i]);
       return out;
@@ -103,7 +118,7 @@ function routeInside(site, a, b) {
 // --- The scripted walk, driven by the animation loop -----------------------------------------
 const indoorTrip = {
   active: false, site: null, pos: null, rotY: 0, path: null, speed: INDOOR_WALK_SPEED, resolve: null,
-  pose: null, crouch: 0, crouchTarget: 0, lastT: null, walkStarted: 0, cutLevel: 0
+  pose: null, crouch: 0, crouchTarget: 0, lastT: null, walkStarted: 0, cutLevel: 0, ride: null, rideTail: 0
 };
 
 // Called by scene.js every frame. Returns true while he is inside on a trip (scene.js then leaves

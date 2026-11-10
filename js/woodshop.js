@@ -310,9 +310,9 @@ w3({ key: 'tablesaw', name: 'Table saw (riving knife, blade guard)', short: 'tab
 w3({ key: 'wooddust', name: 'Dust collection (ducts and blast gates)', short: 'dust collection', at: { x: 7.3, z: -2.6, ry: 0 }, size: { w: 0.6, h: 1.5, d: 0.6 }, model: woodDustModel });
 w3({ key: 'woodlathe', name: 'Wood lathe', short: 'lathe', at: { x: 1.6, z: 0.6, ry: 0 }, size: { w: 1.5, h: 1.2, d: 0.4 }, skill: 'Wood turning', model: woodLatheModel, stand: { x: 1.6, z: 1.3 } });
 w3({ key: 'sanders', name: 'Spindle and belt sanders', short: 'sanders', at: { x: 0.6, z: 2.6, ry: 0 }, size: { w: 1.2, h: 1.0, d: 0.45 }, skill: 'Sanding', model: sandersModel, stand: { x: 0.6, z: 3.3 } });
-w3({ key: 'woodbench', name: 'Woodworking bench with vises', short: 'woodworking bench', at: { x: 2.6, z: 4.4, ry: Math.PI }, size: { w: 2.0, h: 1.5, d: 0.8 }, skill: 'Joinery and glue-ups', model: woodBenchModel, stand: { x: 2.6, z: 3.55 } });
+w3({ key: 'woodbench', name: 'Woodworking bench with vises', short: 'woodworking bench', at: { x: 2.6, z: 4.2, ry: Math.PI }, size: { w: 2.0, h: 1.5, d: 0.8 }, skill: 'Joinery and glue-ups', model: woodBenchModel, stand: { x: 2.6, z: 3.35 } });
 w3({ key: 'clamprack', name: 'Clamp rack', short: 'clamp rack', at: { x: -0.1, z: 4.6, ry: Math.PI / 2 }, size: { w: 1.6, h: 1.8, d: 0.2 }, model: clampRackModel });
-w3({ key: 'spraybooth', name: 'Finishing spray booth', short: 'spray booth', at: { x: 1.4, z: 6.6, ry: Math.PI }, size: { w: 2.0, h: 2.6, d: 1.2 }, skill: 'Finishing', model: sprayBoothModel, stand: { x: 1.4, z: 5.6 } });
+w3({ key: 'spraybooth', name: 'Finishing spray booth', short: 'spray booth', at: { x: 1.15, z: 6.7, ry: Math.PI }, size: { w: 2.0, h: 2.6, d: 1.2 }, skill: 'Finishing', model: sprayBoothModel, stand: { x: 1.15, z: 5.6 } });
 w3({ key: 'dryingrack', name: 'Drying rack', short: 'drying rack', at: { x: -0.9, z: 6.7, ry: Math.PI }, size: { w: 0.8, h: 1.6, d: 0.45 }, model: dryingRackModel, stand: { x: -0.9, z: 5.85 } });
 
 const WOOD_PROJECTS = {

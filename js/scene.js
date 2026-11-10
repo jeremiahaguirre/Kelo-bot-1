@@ -1776,8 +1776,9 @@ function segmentClear(ax, az, bx, bz, target) {
 // Which grid cells he can't stand in (each obstacle marks only the cells under it). Cells keep a
 // little extra room (PATH_MARGIN), so a path never squeezes through a gap he only just fits.
 // Near the start, something he is already brushing against only blocks cells deeper into it,
-// so he can always step away from it.
-const PATH_MARGIN = 0.12;
+// so he can always step away from it. 0.18: the narrowest gap a path takes is 2 x (0.55 + 0.18) =
+// 1.46 units (0.9 m), so he never threads the 0.89 m alley between the NetNode and the Post Office.
+const PATH_MARGIN = 0.18;
 function pathBlockedGrid(to, from = null) {
       const blocked = new Uint8Array(PATH_COLS * PATH_ROWS);
       const R = KELO_RADIUS + PATH_MARGIN;

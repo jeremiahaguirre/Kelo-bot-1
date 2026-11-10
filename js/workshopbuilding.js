@@ -1426,6 +1426,11 @@ function workshopSite() {
 function wsObstacles(floor) {
       const out = [];
       workshopMachinesOn(floor).forEach(def => out.push(...machineCircles(def)));
+      // The car elevator's open west side and north end (masts, rails, the shaft when the platform
+      // is on another floor): he steps on and off only through the landing gate, never along its edge
+      const lx0 = WS_LIFT.x - WS_LIFT.w / 2, lz0 = WS_LIFT.z - WS_LIFT.d / 2, lz1 = WS_LIFT.z + WS_LIFT.d / 2;
+      for (let z = lz0; z <= lz1 + 1e-6; z += 0.4) if (Math.abs(z - WS_LIFT_GATE) > 0.8) out.push({ x: lx0, z, r: 0.12 });
+      for (let x = lx0 + 0.4; x <= WS_LIFT.x + WS_LIFT.w / 2 + 1e-6; x += 0.4) out.push({ x, z: lz0, r: 0.12 });
       if (floor === 1) {
         // The deck columns, the Taurus bay edge, the stations
         for (let z = -WS_IN.z + 1.45; z < WS_IN.z - 0.4; z += 3.5) out.push({ x: -3.8, z, r: 0.35 });

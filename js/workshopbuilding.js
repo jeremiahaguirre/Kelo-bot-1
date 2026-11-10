@@ -1574,8 +1574,11 @@ async function runWorkshopVisit(plan) {
           const ctx = wsContext(site, def, model, stop);
           const focusFn = typeof machineFocusFn === 'function' ? machineFocusFn(model) : null;
           if (focusFn) setKeloFocus(focusFn);
+          // his hands on the machine's controls while he works it (js/kelo-ik.js)
+          const reachFn = typeof setKeloReach === 'function' ? wsControlReach(model) : null;
+          if (reachFn) setKeloReach(reachFn);
           try { results.push(await stop.act(ctx)); } catch (e) { console.warn('workshop stop', e); results.push(false); }
-          finally { if (focusFn) clearKeloFocus(focusFn); }
+          finally { if (focusFn) clearKeloFocus(focusFn); if (reachFn) clearKeloReach(reachFn); }
           indoorTrip.pose = null;
           indoorTrip.crouchTarget = 0;
           if (results[results.length - 1] === false) break; // a failed step ends the job (no washing a print that never came off)
@@ -1598,6 +1601,7 @@ async function runWorkshopVisit(plan) {
         if (hold) hold();
         indoorTrip.active = false;
         indoorTrip.site = null;
+        if (typeof clearKeloReach === 'function') clearKeloReach();
         indoorTrip.pose = null;
         indoorTrip.crouch = 0;
         state.basementDepth = 0;
@@ -1932,13 +1936,37 @@ function wsContext(site, def, model, stop) {
         face: (lx, lz) => tripFace(siteToWorld(site, lx, lz, 0)),
         // Hands on the controls (or reaching to a height above the floor)
         reach: h => { indoorTrip.pose = () => reachPose(h); },
-        work: () => { indoorTrip.pose = t => wsWorkPose(t); },
+        work: () => { indoorTrip.pose = wsWorkPose; },
         idle: () => { indoorTrip.pose = null; indoorTrip.crouchTarget = 0; },
         walk: async (lx, lz) => {
           const cur = { x: indoorTrip.pos.x - wsGroup.position.x, z: indoorTrip.pos.z - wsGroup.position.z };
           await wsWalkTo(site, cur, { x: lx, z: lz });
         },
         floor: workshopTrip.floor
+      };
+    }
+
+// Where his hands go on a machine while he works it (wsWorkPose): the face of its box nearest his
+// chest, at working height, the two hands side by side and pressing in turn. Only while the work pose
+// is on (not while he reaches up, walks round it or waits).
+function wsControlReach(model) {
+      if (!model) return null;
+      model.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(model);
+      if (box.isEmpty()) return null;
+      const l = new THREE.Vector3(), r = new THREE.Vector3();
+      return () => {
+        if (!indoorTrip.active || !indoorTrip.pos || indoorTrip.pose !== wsWorkPose) return null;
+        const p = indoorTrip.pos, f = indoorTrip.rotY, fx = Math.sin(f), fz = Math.cos(f);
+        const y = Math.max(box.min.y + 0.15, Math.min(box.max.y - 0.05, p.y + 1.15));
+        if (y < p.y + 0.6 || y > p.y + 1.75) return null;
+        const cx = Math.max(box.min.x, Math.min(box.max.x, p.x + fx * 0.3)), cz = Math.max(box.min.z, Math.min(box.max.z, p.z + fz * 0.3));
+        if (Math.hypot(cx - p.x, cz - p.z) > 1.1) return null;   // out of reach from where he stands
+        const t = keloAnim.lastT || 0, side = 0.13;
+        const tapL = 0.03 * Math.max(0, Math.sin(t * 6)), tapR = 0.03 * Math.max(0, -Math.sin(t * 6));
+        l.set(cx - fz * side + fx * tapL, y, cz + fx * side + fz * tapL);
+        r.set(cx + fz * side + fx * tapR, y, cz - fx * side + fz * tapR);
+        return { l, r };
       };
     }
 

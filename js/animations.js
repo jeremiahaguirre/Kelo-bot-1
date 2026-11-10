@@ -496,6 +496,7 @@ function finishKeloPose(t) {
         a.settleFade = null;
       }
       if (act <= 0.001 || a.settle) a.legHold = null;
+      if (act <= 0.001) a.ikPhase = null;
       if (act > 0.001) {
         const run = smoothstep((v - 5.5) / 3);
         const f = Math.max(Math.min(3.3, 1.5 + 0.28 * v), 2.2 * shuffle);   // strides per second
@@ -503,6 +504,7 @@ function finishKeloPose(t) {
         const A = Math.max(Math.asin(Math.min(0.75, v * sf / f / (2 * 0.98))), 0.09 * shuffle);  // hip sweep
         a.phase += Math.PI * 2 * f * dt;
         const uL = ((a.phase / (Math.PI * 2)) % 1 + 1) % 1, uR = (uL + 0.5) % 1;
+        a.ikPhase = { uL, uR, sf, f, A };   // read by js/kelo-ik.js: which foot is planted
         const kneeSwing = (0.3 + 0.95 * clamp01(A / 0.5) + 0.45 * run) * Math.max(clamp01(v / 1.2), shuffle * 0.6);
         const leg = u => {
           if (u < sf) {   // planted: forward (negative) to back, at a steady rate
@@ -659,6 +661,8 @@ function finishKeloPose(t) {
       keloGroup.rotation.set(a.groupX, a.yaw + out.yaw, a.groupZ);
       // Sitting, standing and climbing in or out slide instead of popping (js/motion.js)
       if (typeof keloSmoothRoot === 'function') keloSmoothRoot(dt);
+      // Feet on the real ground, hands on what he reaches for (js/kelo-ik.js)
+      if (typeof keloApplyIK === 'function') keloApplyIK(t, dt, { walking, riding, resting });
 
       if (holding) keloHoldInHands(riding || resting ? null : a.mode);
     }

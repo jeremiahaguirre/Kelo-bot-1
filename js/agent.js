@@ -616,8 +616,37 @@ const VALID_ARCHETYPES = ['gold_drill_rig', 'mycelium_dome', 'rail_track', 'cust
 const MAX_SCULPTURE_PARTS = 24;
 
 // Everywhere Kelo-1 can go: the whole valley and the entire mountain range behind it. The east
-// edge reaches past the Workshop to the concrete and asphalt plant's land (js/plants.js).
-const WORLD_MIN_X = -60, WORLD_MAX_X = 86, WORLD_MIN_Z = -44, WORLD_MAX_Z = 10;
+// edge reaches past the Workshop to the concrete and asphalt plant's land (js/plants.js). The north
+// edge reaches through the cut behind the Workshop to its north yard (the garage hall and the big
+// hangar, js/workshopbuilding.js) and the apron at the south end of the runway field.
+const WORLD_MIN_X = -60, WORLD_MAX_X = 86, WORLD_MIN_Z = -90, WORLD_MAX_Z = 10;
+// The old north edge (the crest of the mountain range): random wandering and "somewhere open" picks
+// stay south of it, so he doesn't keep heading over the back of the mountains
+const WORLD_VALLEY_MIN_Z = -44;
+// The runway field (task 7b): a 2,000 m undeveloped field north of the Workshop, past its north yard,
+// running north along the valley like Kelowna's real runway (16/34). 1.6 world units a metre: 3,200
+// units long and 240 wide (150 m: a 45 m strip, shoulders and the graded safety area). Plain grass
+// for now, reserved for his future runway jobs (clear, grade, compact, base, asphalt from his plant,
+// markings, lights): nothing else is built, planted, dug or parked on it (offLimits, js/landscape.js).
+// Its south edge meets the big hangar's apron (`taxiway`, reserved ground, not paved).
+const RUNWAY_FIELD = {
+  minX: -110, maxX: 130, minZ: -3290, maxZ: -90,
+  centerX: 10, unitsPerMetre: 1.6, metres: { length: 2000, width: 150 },
+  y: 0.05,                       // its ground level (the Workshop's pad level)
+  blend: 34,                     // the ground blends back to the hills this far round it
+  heading: 'north-south',
+  developed: false,              // true once he has built the runway on it (future jobs)
+  stage: 'field',                // future: 'cleared', 'graded', 'compacted', 'base', 'paved', 'marked', 'lit'
+  // The short taxiway corridor from the Workshop's big hangar apron onto the field
+  taxiway: { minX: 15, maxX: 70.5, minZ: -90, maxZ: -82 }
+};
+// Is (x, z) on the runway field (pad grows it)?
+function onRunwayField(x, z, pad = 0) {
+  const f = RUNWAY_FIELD;
+  return x > f.minX - pad && x < f.maxX + pad && z > f.minZ - pad && z < f.maxZ + pad;
+}
+// The whole world with the field: what the explore camera, the Map tab and flying cover
+const WORLD_EXTENT = { minX: Math.min(WORLD_MIN_X, RUNWAY_FIELD.minX), maxX: Math.max(WORLD_MAX_X, RUNWAY_FIELD.maxX), minZ: RUNWAY_FIELD.minZ, maxZ: WORLD_MAX_Z };
 // The town: the buildings and the streets between them. Kelo-1 doesn't build, plant or dig here;
 // the beach south of it (z above TOWN.maxZ) is his to use.
 const TOWN = { minX: -24.5, maxX: 19, minZ: -11.5, maxZ: 7.8 };
@@ -1004,7 +1033,7 @@ async function synthesizeUnboundedExperience(promptOrImpulse = null, originLabel
         if (hasLLMKey()) {
           {
             const llmPrompt = `You are the backend AI cognitive engine for Kelo-1, an autonomous open-world robot living on an island and alpine mountain range in Kelowna, BC.
-You have FULL freedom to roam the entire island and mountain peaks (x between ${WORLD_MIN_X} and ${WORLD_MAX_X}, z between ${WORLD_MIN_Z} and ${WORLD_MAX_Z}; note z < -14 is high up on the steep snow-capped mountains).
+You have FULL freedom to roam the entire island and mountain peaks (x between ${WORLD_MIN_X} and ${WORLD_MAX_X}, z between ${WORLD_MIN_Z} and ${WORLD_MAX_Z}; note z < -14 is high up on the steep snow-capped mountains; the cut behind your Workshop, x 14 to 70 and z -23 to ${RUNWAY_FIELD.maxZ}, is your Workshop's north yard with the garage hall and the big hangar; north of z ${RUNWAY_FIELD.maxZ} lies the runway field, kept clear for a runway).
 Equipped Tools in Inventory: ${JSON.stringify(state.toolInventory)}.
 What each of his things is for (use each only for that): ${typeof itemUseSummaryForAI === 'function' ? itemUseSummaryForAI() : 'unknown'}.
 User/Catalyst Input: "${promptOrImpulse || 'Invent an unscripted task: e.g., drilling for gold in the mountains, terraforming with your pneumatic auger, or welding a new 3D structure'}".
@@ -1789,7 +1818,7 @@ function generateProceduralDecision(context = {}) {
         destination = { x: loc.x, z: loc.z, placeName: loc.building };
       } else {
         const x = Math.round(randRange(WORLD_MIN_X + 2, WORLD_MAX_X - 2) * 10) / 10;
-        const z = Math.round(randRange(WORLD_MIN_Z + 2, WORLD_MAX_Z) * 10) / 10;
+        const z = Math.round(randRange(WORLD_VALLEY_MIN_Z + 2, WORLD_MAX_Z) * 10) / 10;
         destination = { x, z, placeName: z < -14 ? 'Somewhere on the Mountain' : 'Somewhere on the Island' };
       }
 
@@ -1908,7 +1937,7 @@ Current state:
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
 - The town (x ${TOWN.minX} to ${TOWN.maxX}, z ${TOWN.minZ} to ${TOWN.maxZ}) is not yours to build in: put creations, plantings, roads and digs out of town or on the beach. Art you make for a spot in town goes to your Museum of Art & Ideas (${typeof museumSummaryForAI === 'function' ? museumSummaryForAI() : 'empty'}).
-- World bounds: x from ${WORLD_MIN_X} to ${WORLD_MAX_X}, z from ${WORLD_MIN_Z} to ${WORLD_MAX_Z} (z below -14 is the mountain range, which you can roam freely; z above 8 is the lake shore)
+- World bounds: x from ${WORLD_MIN_X} to ${WORLD_MAX_X}, z from ${WORLD_MIN_Z} to ${WORLD_MAX_Z} (z below -14 is the mountain range, which you can roam freely, except the cut behind the Workshop, x 14 to 70 and z -23 to ${RUNWAY_FIELD.maxZ}: the Workshop's north yard with its garage hall and big hangar; z above 8 is the lake shore; north of z ${RUNWAY_FIELD.maxZ} is the runway field, x ${RUNWAY_FIELD.minX} to ${RUNWAY_FIELD.maxX}: nothing is built, planted, dug or parked there)
 ${trigger ? `- Something just prompted you (you may follow it, reinterpret it, or decline): "${trigger}"` : '- Nothing prompted you. This is purely your own impulse.'}
 
 Return ONLY JSON:

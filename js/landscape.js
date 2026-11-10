@@ -45,8 +45,12 @@ function offLimits(x, z, pad = 0) {
       if (typeof inParkingArea === 'function' && inParkingArea(x, z, pad)) return 'the vehicle yard';
       if (Math.hypot(x - DISPOSAL_PIT.x, z - DISPOSAL_PIT.z) < DISPOSAL_PIT.r + 1 + pad) return 'the Disposal Pit';
       if (z > 9.2) return 'the lake';
+      // The runway field is kept for the runway (only a runway job may work on it)
+      if (typeof onRunwayField === 'function' && onRunwayField(x, z, pad) && !runwayJobActive) return 'the runway field';
       return null;
     }
+// Set by a runway job (future) while it works the field, so offLimits lets it clear, grade and pave
+let runwayJobActive = false;
 
 function newEditId(type) {
       return `${type}-${Date.now().toString(36)}-${Math.floor(Math.random() * 1000)}`;
@@ -591,8 +595,8 @@ async function undoEdit(id, why = '', originLabel = 'Changing His Mind') {
 function openGroundSpot(pad = 1.5, near = null) {
       for (let i = 0; i < 60; i++) {
         const x = near && i < 30 ? near.x + randRange(-18, 18) : randRange(WORLD_MIN_X + 4, WORLD_MAX_X - 4);
-        const z = near && i < 30 ? near.z + randRange(-18, 18) : randRange(WORLD_MIN_Z + 4, 8.8);
-        if (x < WORLD_MIN_X + 3 || x > WORLD_MAX_X - 3 || z < WORLD_MIN_Z + 3 || z > 8.8) continue;
+        const z = near && i < 30 ? near.z + randRange(-18, 18) : randRange(WORLD_VALLEY_MIN_Z + 4, 8.8);
+        if (x < WORLD_MIN_X + 3 || x > WORLD_MAX_X - 3 || z < WORLD_VALLEY_MIN_Z + 3 || z > 8.8) continue;
         if (offLimits(x, z, pad) || pointBlocked(x, z, { x: 999, z: 999 })) continue;
         if (typeof getAnalyticalGroundHeight === 'function') {
           const slope = Math.abs(getAnalyticalGroundHeight(x + 1, z) - getAnalyticalGroundHeight(x - 1, z)) + Math.abs(getAnalyticalGroundHeight(x, z + 1) - getAnalyticalGroundHeight(x, z - 1));

@@ -602,6 +602,7 @@ function updateCloudLight() {
 const fogScratch = new THREE.Color();
 const NIGHT_FOG = new THREE.Color(0x0d1422);
 const camForward = new THREE.Vector3();
+const shadowSnapL = new THREE.Vector3(), shadowSnapX = new THREE.Vector3(), shadowSnapY = new THREE.Vector3(), shadowSnapC = new THREE.Vector3();
 let frameCounter = 0;
 
 function updateRealism(t, dt) {
@@ -642,9 +643,18 @@ function updateRealism(t, dt) {
       // Centred a little beyond the target, where more of the visible ground is (camForward is the
       // flat view direction worked out above every few frames)
       const ahead = range < q.shadowRange ? range * 0.3 : 0;
-      const tx = Math.round((controls.target.x + camForward.x * ahead) / snap) * snap, tz = Math.round((controls.target.z + camForward.z * ahead) / snap) * snap;
-      sunLight.target.position.set(tx, 0, tz);
-      sunLight.position.set(tx, 0, tz).addScaledVector(SKY_STATE.lightDir, 150);
+      // The texels are square in the light's own view, not on the ground, so the centre is snapped
+      // along the shadow camera's right and up axes (snapping world x/z leaves the shadow edges, the
+      // building corners' among them, shimmering by part of a texel as the camera moves)
+      const L = shadowSnapL.copy(SKY_STATE.lightDir).normalize();
+      shadowSnapX.set(0, 1, 0).cross(L);
+      if (shadowSnapX.lengthSq() < 1e-6) shadowSnapX.set(1, 0, 0); else shadowSnapX.normalize();
+      shadowSnapY.crossVectors(L, shadowSnapX);
+      shadowSnapC.set(controls.target.x + camForward.x * ahead, 0, controls.target.z + camForward.z * ahead);
+      const su = Math.round(shadowSnapC.dot(shadowSnapX) / snap) * snap, sv = Math.round(shadowSnapC.dot(shadowSnapY) / snap) * snap, sw = shadowSnapC.dot(L);
+      shadowSnapC.copy(shadowSnapX).multiplyScalar(su).addScaledVector(shadowSnapY, sv).addScaledVector(L, sw);
+      sunLight.target.position.copy(shadowSnapC);
+      sunLight.position.copy(shadowSnapC).addScaledVector(L, 150);
       updateGrassTufts();
       if (typeof updateRealisticWater === 'function') updateRealisticWater(t);
       if (typeof updateWeldingStudio === 'function') updateWeldingStudio(t);

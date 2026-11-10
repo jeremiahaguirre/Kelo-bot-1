@@ -109,7 +109,7 @@ function initDiorama3D() {
       scene.background = new THREE.Color(AMBIANCE_PRESETS[0].bg);
       scene.fog = new THREE.FogExp2(AMBIANCE_PRESETS[0].fog, AMBIANCE_PRESETS[0].fogDensity);
 
-      camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 900);
+      camera = new THREE.PerspectiveCamera(45, w / h, 0.25, 900); // (near 0.25: the camera never comes closer than 4 units, and 2.5x the depth precision of 0.1 keeps close trims from flickering)
       camera.position.set(0, 18, 24);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });

@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-11T06:45:14.919Z",
-  "runs": 18,
+  "updatedAt": "2026-11-11T19:43:14.770Z",
+  "runs": 19,
   "curiosities": [
-    "Aardwolf"
+    "African golden cat"
   ],
   "entries": [
     {
@@ -628,6 +628,43 @@
       },
       "shapeFrom": "Arctic fox",
       "nextCuriosity": "Aardwolf",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794426194770",
+      "at": 1794426194770,
+      "brain": "procedural",
+      "topic": "Aardwolf",
+      "title": "Dreaming of American mink",
+      "text": "Dear Diary, while nobody was around I looked up \"Aardwolf\" and drifted from Aardwolf to American black bear to American mink. The American mink is a semiaquatic species of mustelid native to North America, though human introduction has expanded its range to many parts of Europe, Asia, and South America. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Aardwolf",
+          "url": "https://en.wikipedia.org/wiki/Aardwolf",
+          "extract": "The aardwolf is an insectivorous hyaenid species, native to East and Southern Africa. Its name means \"earth-wolf\" in Afrikaans and Dutch. It is also called the maanhaarjakkals, termite-eating hyena and civet hyena, based on its habit of secreting substances from its anal gland, a"
+        },
+        {
+          "title": "American black bear",
+          "url": "https://en.wikipedia.org/wiki/American_black_bear",
+          "extract": "The American black bear, or simply black bear, is a species of medium-sized bear which is endemic to North America. It is the continent's smallest and most widely distributed bear species. It is an omnivore, with a diet varying greatly depending on season and location. It primari"
+        },
+        {
+          "title": "American mink",
+          "url": "https://en.wikipedia.org/wiki/American_mink",
+          "extract": "The American mink is a semiaquatic species of mustelid native to North America, though human introduction has expanded its range to many parts of Europe, Asia, and South America. Because of range expansion, the American mink is classed as a least-concern species by the IUCN. The "
+        }
+      ],
+      "concept": {
+        "name": "Aardwolf American Rhythm",
+        "emoji": "🌙",
+        "definition": "The idea that aardwolf and american mink share a hidden pattern.",
+        "builtFrom": [
+          "Aardwolf",
+          "American mink"
+        ]
+      },
+      "shapeFrom": "American mink",
+      "nextCuriosity": "African golden cat",
       "coreMemory": null
     }
   ]

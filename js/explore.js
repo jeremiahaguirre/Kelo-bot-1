@@ -597,7 +597,10 @@ function exploreBindKeys() {
         if (e.code === 'Escape' && exploreTyping(e) && e.target.closest && e.target.closest('#exploreHelp, #explorePlaces')) { exploreTogglePlaces(false); exploreShowHelp(false); return; }
         if (exploreTyping(e) || e.ctrlKey || e.metaKey || e.altKey) return;
         if (document.getElementById('keloViewer')) return; // the arrows page through the viewer
-        if (state.cameraMode === 'visit' && typeof shopVisitKey === 'function' && shopVisitKey(e)) { e.stopPropagation(); return; }
+        // A dialog open over the Workshop visit gets the keys first (Escape closes it, not the visit)
+        const dialogOpen = document.querySelector('#aiConfigModal:not(.hidden), #codeViewerModal:not(.hidden), #exploreHelp:not(.hidden)');
+        if (dialogOpen && e.code === 'Escape') { exploreShowHelp(false); return; }
+        if (state.cameraMode === 'visit' && !dialogOpen && typeof shopVisitKey === 'function' && shopVisitKey(e)) { e.stopPropagation(); return; }
         if (e.key === '?') { exploreShowHelp(true); return; }
         if (e.code === 'Escape') { exploreHideSpotMenu(); exploreTogglePlaces(false); exploreShowHelp(false); return; }
         if (e.code === 'KeyK' || e.code === 'Home') { exploreFlyToKelo(); e.stopPropagation(); return; }

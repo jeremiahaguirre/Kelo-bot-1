@@ -1132,6 +1132,8 @@ function svBuildDom() {
       // Esc closes the chooser (and the list, when typing in its filter)
       document.addEventListener('keydown', ev => {
         if (ev.code !== 'Escape') return;
+        // A dialog over the chooser (settings, code) closes first
+        if (document.querySelector('#aiConfigModal:not(.hidden), #codeViewerModal:not(.hidden), #exploreHelp:not(.hidden)')) return;
         const ch = document.getElementById('svChooser');
         if (ch && !ch.classList.contains('hidden')) { svCloseChooser(); ev.stopPropagation(); return; }
         if (ev.target && ev.target.id === 'svFilter') { svToggleList(false); document.querySelector('#svHud [data-sv="list"]')?.focus(); }

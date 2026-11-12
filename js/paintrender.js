@@ -20,7 +20,7 @@ function artCanvas(w = ART_W, h = ART_H) {
       return c;
     }
 
-function artClamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+const artClamp01 = clamp01;
 function artSmooth(a, b, v) { const t = artClamp01((v - a) / (b - a)); return t * t * (3 - 2 * t); }
 function artMix(a, b, t) { return a + (b - a) * t; }
 

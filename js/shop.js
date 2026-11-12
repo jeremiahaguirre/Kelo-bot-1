@@ -148,6 +148,8 @@ async function loadShop() {
       const local = readLocalShop();
       const published = await readPublishedShop();
       const soldHere = new Set(((local && Array.isArray(local.sold)) ? local.sold : []).map(s => s && s.id).filter(Boolean));
+      // ...and anything he took down since (shopkeeping.js takeDownListing)
+      ((local && Array.isArray(local.removed)) ? local.removed : []).forEach(id => { if (typeof id === 'string') soldHere.add(id); });
       const byId = new Map();
       // Published listings first, then this browser's newer save on top (minus anything sold since)
       ((published && Array.isArray(published.listings)) ? published.listings : []).map(cleanListing).filter(Boolean)

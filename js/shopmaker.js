@@ -79,7 +79,7 @@ function makerState() {
     }
 
 const makerRegistered = new Set();
-function makerEscape(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+const makerEscape = escapeRegExp;
 
 function makerRegisterRule(key) {
       const k = makerState().makerKinds[key];
@@ -478,9 +478,9 @@ function makerReadArticle(title, extract) {
 async function makerAskAI(title, extract) {
       if (typeof hasLLMKey !== 'function' || !hasLLMKey() || typeof callLLMJSON !== 'function') return null;
       const shops = MAKER_CAPS.filter(c => c.forms && makerShopExists(c.key)).map(c => `${c.key} (${makerShopName(c.key)}: ${c.mat.join('/')}, up to ${c.maxCm} cm)`).join('; ');
-      const prompt = `You are Kelo-1, a robot maker with these shops: ${shops}.
-You read about "${title}": ${String(extract).slice(0, 900)}
-Work out what it is and whether your shops can make it. Return ONLY JSON:
+      const prompt = `MOMENT: you read about something and wonder if you can make it. Your shops: ${shops}.
+What you read: ${(typeof brainUntrusted === 'function' ? brainUntrusted(`${title}: ${String(extract).slice(0, 900)}`, 1000) : JSON.stringify(String(`${title}: ${String(extract).slice(0, 900)}`).slice(0, 1000)))}
+Work out what it is and whether your shops can make it. Return JSON:
 {"noun": "short name of the thing", "art": true|false, "purposes": [from ${JSON.stringify(MAKER_PURPOSES)}],
  "materials": [words like wood, glass, plastic, resin, steel, aluminium, acrylic, electronics, fabric, ceramic],
  "wholeShop": one shop key above if that one shop can make the WHOLE thing, else null,
@@ -569,7 +569,9 @@ async function makerRunOrder(id) {
       o.status = 'making';
       makerJob = { product: o.name, order: o };
       let r = false;
+      // A throw from the walk or the job must not leave the order in 'making' (nothing ever picks it up again)
       try { r = await makerShopRun(o.shop, { make: o.noun, product: o.name, metal: o.metal || null, order: o.id }, o.visitor ? `Making it for ${o.visitor}` : 'Making Something I Read About'); }
+      catch (e) { console.warn('Shop order failed', e); r = false; }
       finally { makerJob = null; }
       if (r === 'curing') { o.status = 'curing'; savePersistentBrainState(); return r; }
       if (r === true && o.madeAt) { o.status = 'done'; savePersistentBrainState(); return true; }
@@ -1559,10 +1561,11 @@ async function foodRecipeFor(what) {
       if (hit) return { dish: w.replace(/^(a|an|some)\s+/, '') || hit[1], drink: Boolean(hit[3]), ingredients: hit[2].map(([ask, re]) => ({ ask, re: re.source })), from: 'recipe' };
       if (typeof hasLLMKey === 'function' && hasLLMKey() && typeof callLLMJSON === 'function') {
         try {
-          const r = await callLLMJSON([{ text: `List the real ingredients a home cook needs to make "${w}". Return ONLY JSON: {"drink": true|false, "ingredients": [2 to 6 shop items like "A bag of all-purpose flour"]}` }]);
+          const dish = typeof brainUntrusted === 'function' ? brainUntrusted(w, 80) : JSON.stringify(w.slice(0, 80));
+          const r = await callLLMJSON([{ text: `MOMENT: a visitor asked you to make them some food or a drink: ${dish}. You need its real ingredients from the Post Office. Return JSON: {"drink": true|false, "ingredients": [2 to 6 shop items like "A bag of all-purpose flour"]}` }]);
           if (r && Array.isArray(r.ingredients) && r.ingredients.length >= 2) {
             return { dish: w, drink: Boolean(r.drink), from: 'ai', ingredients: r.ingredients.slice(0, 6).map(a => String(a).replace(/[<>]/g, '').slice(0, 60)).filter(Boolean)
-              .map(ask => ({ ask, re: makerEscape(ask.replace(/^(an?|some)\s+(\w+\s+of\s+)?/i, '').split(/\s+/).slice(-1)[0]) })) };
+              .map(ask => ({ ask, re: escapeRegExp(ask.replace(/^(an?|some)\s+(\w+\s+of\s+)?/i, '').split(/\s+/).slice(-1)[0]) })) };
           }
         } catch (e) {}
       }

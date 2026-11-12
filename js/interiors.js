@@ -837,17 +837,13 @@ async function interiorAtMailbox(v, S, room) {
         const item = mail.kind === 'message' ? intBox(fg, 0.02, 0.14, 0.2, M.white, at.x, at.y, at.z) : intBox(fg, 0.16, 0.13, 0.18, M.kraft, at.x, at.y - 0.06, at.z);
         v.temps.push(item);
         await tripPause(500);
-        if (typeof handsWorldPosition === 'function') {
-          const from = item.position.clone(), to = (room.furniture || room.root).worldToLocal(handsWorldPosition());
-          const start = Date.now();
-          for (;;) {
-            const k = smoothstep(Math.min(1, (Date.now() - start) / 600));
-            item.position.lerpVectors(from, to, k);
-            if (k >= 1) break;
-            await tripPause(30);
-          }
-        }
-        item.visible = false;
+        // His left hand is in the box: it closes on the parcel and takes it out with him; it stays in his
+        // hand until the post office hands him the real thing (js/kelo-handoff.js)
+        if (typeof keloHandoffHoldInHand === 'function') {
+          v.temps.splice(v.temps.indexOf(item), 1);
+          keloHandoffHoldInHand(item, keloLeftHand);
+          await tripPause(400);
+        } else item.visible = false;
       } else {
         tripMood('Checking my PO box', 'Nothing in my box right now.');
         await tripPause(900);
@@ -895,12 +891,12 @@ if (interiorBaseWait) {
 // While he sits at the cafe table, food handed to him goes onto his plate instead of into his hands
 const interiorBaseCarry = typeof setCarriedObject === 'function' ? setCarriedObject : null;
 if (interiorBaseCarry) {
-  setCarriedObject = function (object3d, holdMs) {
+  setCarriedObject = function (object3d, holdMs, opts) {
     const v = interiorVisitNow;
     if (object3d && v && v.serve && v.plateTop && !v.food && !v.leaving && v.readyAt) {
       try { v.serve(object3d); return; } catch (e) { console.warn('interior serve', e); }
     }
-    return interiorBaseCarry(object3d, holdMs);
+    return interiorBaseCarry(object3d, holdMs, opts);
   };
 }
 

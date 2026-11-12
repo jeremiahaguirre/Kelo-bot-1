@@ -795,7 +795,7 @@ function bomKey(text, used) {
 // A tool's name turned into a loose pattern for "does he own one?" (the first two real words)
 function bomToolPattern(name) {
       const words = String(name || '').toLowerCase().replace(/\(.*?\)/g, ' ').replace(/^(an?|the)\s+/, '').match(/[a-z][a-z0-9-]+/g) || ['tool'];
-      return words.slice(0, 2).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join(' ');
+      return words.slice(0, 2).map(escapeRegExp).join(' ');
     }
 
 // Checks and caps any BOM (built-in or written by the AI) and gives every line its tracking fields
@@ -859,9 +859,9 @@ function normalizeBom(b) {
 // With an AI key: the AI writes the bill of materials as strict JSON, which is checked and capped
 async function bomFromAI(target, why = '', readings = []) {
       if (typeof hasLLMKey !== 'function' || !hasLLMKey() || typeof callLLMJSON !== 'function') return null;
-      const prompt = `You are Kelo-1, a careful robot builder. You are going to build a real ${target} from scratch${why ? ` (${why})` : ''}.
-${readings.length ? `What you read at NetNode: ${readings.map(r => `${r.title}: ${r.extract.slice(0, 300)}`).join(' | ')}\n` : ''}Write a realistic, detailed bill of materials, accurate down to the screw: real materials and grades, sizes and specs (e.g. "4130 chromoly tube 3/4 in. × 0.035 in.", "AN3-5A bolts", "1/8 in. aluminium pop rivets"), exact quantities, every fastener, and the consumables that get used up.
-Return ONLY JSON:
+      const prompt = `MOMENT: you are planning a real build, carefully: a ${target} from scratch${why ? ` (${why})` : ''}.
+${readings.length ? `What you read at NetNode: ${(typeof brainUntrusted === 'function' ? brainUntrusted(readings.map(r => `${r.title}: ${r.extract.slice(0, 300)}`).join(' | '), 1200) : JSON.stringify(String(readings.map(r => `${r.title}: ${r.extract.slice(0, 300)}`).join(' | ')).slice(0, 1200)))}\n` : ''}Write a realistic, detailed bill of materials, accurate down to the screw: real materials and grades, sizes and specs (e.g. "4130 chromoly tube 3/4 in. × 0.035 in.", "AN3-5A bolts", "1/8 in. aluminium pop rivets"), exact quantities, every fastener, and the consumables that get used up.
+Return JSON:
 {"name": "short name", "summary": "1 sentence: the design you chose and its key dimensions",
  "vehicle": "plane" | "kart" | "boat" | null (only if you can ride, drive, paddle or fly it),
  "subAssemblies": [4 to 10 of {"name": "...", "weightLb": number, "parts": [4 to 25 of {"name": "...", "qty": number, "unit": "" or "ft" or "yd" or "gal" or "lb" or "sheets"..., "kind": "part" | "fastener" | "consumable"}],

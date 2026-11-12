@@ -354,6 +354,18 @@ function setLineEnds(line, a, b) {
 // Parts that never move are joined into one mesh per material, so a building costs about one draw
 // per material. Left alone: anything with userData, anything the root's userData points at (doors,
 // cranes...), anything in `skip` (and what is inside them), mirrored parts, and arrays of materials.
+// A material made inline for one part (opaque, no textures, no glow, no userData, used by no other mesh)
+// can stand in for any other like it, so parts that each got their own `new MeshStandardMaterial({ color })`
+// still join. Anything that might be changed later (lamps glow, glass fades, seasonal leaves) keeps its own.
+const MERGE_MAP_SLOTS = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap', 'bumpMap', 'displacementMap', 'lightMap', 'envMap'];
+function mergeMaterialKey(mat, users) {
+      if (!mat.isMeshStandardMaterial || mat.isMeshPhysicalMaterial || users.get(mat) !== 1 || mat.transparent || mat.opacity !== 1 || mat.alphaTest ||
+        Object.keys(mat.userData).length || mat.onBeforeCompile !== THREE.Material.prototype.onBeforeCompile || mat.clippingPlanes ||
+        (mat.emissive && mat.emissive.getHex() !== 0) || MERGE_MAP_SLOTS.some(k => mat[k]) || (mat.defines && Object.keys(mat.defines).some(k => k !== 'STANDARD'))) return mat.uuid;
+      return ['plain', mat.color.getHexString(), mat.roughness, mat.metalness, mat.side, mat.flatShading, mat.vertexColors, mat.wireframe,
+        mat.depthWrite, mat.depthTest, mat.colorWrite, mat.polygonOffset, mat.polygonOffsetFactor, mat.polygonOffsetUnits, mat.visible, mat.envMapIntensity, mat.fog, mat.toneMapped].join(':');
+    }
+
 function mergeStaticMeshes(root, skip = []) {
       if (!root) return 0;
       // First let the Graphics level decide who casts shadows, so the joined meshes keep that choice
@@ -366,6 +378,11 @@ function mergeStaticMeshes(root, skip = []) {
       const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
       const m = new THREE.Matrix4();
       const sets = new Map(), casts = new Map();
+      // How many meshes in the world use each material (only a material used once may be shared)
+      const users = new Map();
+      (typeof scene !== 'undefined' && scene && root.parent ? scene : root).traverse(o => {
+        if (o.isMesh && o.material && !Array.isArray(o.material)) users.set(o.material, (users.get(o.material) || 0) + 1);
+      });
       root.traverse(o => {
         if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || keep.has(o) || Array.isArray(o.material) || !o.visible) return;
         if (Object.keys(o.userData).length || o.morphTargetInfluences || o.onBeforeRender !== THREE.Object3D.prototype.onBeforeRender) return;
@@ -376,7 +393,7 @@ function mergeStaticMeshes(root, skip = []) {
         const names = Object.keys(g.attributes).sort();
         // A small part that is out of shadow range right now still means to cast (js/realism.js)
         const cast = o.castShadow || (typeof smallCasters !== 'undefined' && smallCasters.has(o));
-        const key = `${o.material.uuid}|${cast}|${o.receiveShadow}|${o.renderOrder}|${names.map(n => n + g.attributes[n].itemSize).join(',')}`;
+        const key = `${mergeMaterialKey(o.material, users)}|${cast}|${o.receiveShadow}|${o.renderOrder}|${names.map(n => n + g.attributes[n].itemSize).join(',')}`;
         if (!sets.has(key)) sets.set(key, []);
         sets.get(key).push(o);
         casts.set(o, cast);
@@ -414,6 +431,8 @@ function mergeStaticMeshes(root, skip = []) {
         // Free the old parts' buffers unless something still draws them
         if (typeof scene !== 'undefined' && scene) scene.traverse(o => { if (o.geometry) gone.delete(o.geometry); });
         gone.forEach(g => g.dispose());
+        // Stand-in materials that only that part used are done with too
+        list.forEach(o => { if (o.material !== first.material && users.get(o.material) === 1) o.material.dispose(); });
         joined += list.length - 1;
       });
       return joined;

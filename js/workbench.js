@@ -124,10 +124,10 @@ function poseKeloAtWorkBench(t) {
       state.botRotY = WORK_BENCH.face;
       keloGroup.rotation.set(0, WORK_BENCH.face, 0);
       const step = String(state.moodTitle || '');
-      const kind = /saw/i.test(step) ? 'saw' : /drill/i.test(step) ? 'drill' : /together|assembl|fix/i.test(step) ? 'hammer' : 'sand';
+      const kind = /saw/i.test(step) ? 'saw' : /drill/i.test(step) ? 'drill' : /bolt|screw|wrench|tighten/i.test(step) ? 'twist' : /together|assembl|fix/i.test(step) ? 'hammer' : 'sand';
       ensureWorkBenchTool(kind);
       // Hand-keyed strokes with a wind-up, the hit and the follow-through (js/kelo-clips.js)
-      keloAction({ saw: 'saw', drill: 'drillBench', hammer: 'hammer', sand: 'sand' }[kind]);
+      keloAction({ saw: 'saw', drill: 'drillBench', twist: 'twist', hammer: 'hammer', sand: 'sand' }[kind]);
     }
 
 // A saw, hammer or sanding block in his right hand
@@ -138,6 +138,7 @@ function ensureWorkBenchTool(kind) {
         const g = new THREE.Group();
         const m = (geo, color, x, y, z, metal = 0) => { const o = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: metal })); o.position.set(x, y, z); o.castShadow = true; g.add(o); return o; };
         if (kind === 'saw') { m(new THREE.BoxGeometry(0.03, 0.06, 0.1), 0x9a3412, 0, -0.06, 0); m(new THREE.BoxGeometry(0.004, 0.09, 0.4), 0xc0c4c8, 0, -0.08, 0.24, 0.9); }
+        else if (kind === 'twist') { m(new THREE.BoxGeometry(0.025, 0.025, 0.2), 0x9ca3af, 0, -0.06, 0.06, 0.9); m(new THREE.BoxGeometry(0.06, 0.02, 0.05), 0x9ca3af, 0, -0.06, 0.17, 0.9); }
         else if (kind === 'drill') { m(new THREE.BoxGeometry(0.05, 0.13, 0.12), 0x1d4ed8, 0, -0.07, 0.04); m(new THREE.CylinderGeometry(0.006, 0.006, 0.1, 6), 0xc0c4c8, 0, -0.16, 0.08, 0.9); }
         else if (kind === 'hammer') { m(new THREE.BoxGeometry(0.03, 0.03, 0.26), 0x6e4b2a, 0, -0.06, 0.08); m(new THREE.BoxGeometry(0.05, 0.12, 0.04), 0x4b5563, 0, -0.06, 0.22, 0.8); }
         else m(new THREE.BoxGeometry(0.09, 0.05, 0.14), 0xd6b88a, 0, -0.09, 0.02);

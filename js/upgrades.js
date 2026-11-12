@@ -808,14 +808,14 @@ function pickUpgradeTemplate() {
 // --- The AI writes the JSON ---------------------------------------------------------------------
 async function aiWriteUpgrade(idea) {
       if (typeof hasLLMKey !== 'function' || !hasLLMKey() || typeof callLLMJSON !== 'function') return null;
-      const prompt = `You are Kelo-1, a small robot who lives in a 3D valley by Okanagan Lake. You are at the NetNode cafe writing an upgrade for your world.
+      const prompt = `MOMENT: you are at the NetNode cafe writing an upgrade for your world (this is a code request, so talking about code is fine).
 You can't write JavaScript: you write a world upgrade in this JSON language, and the game builds it safely.
 ${UPGRADE_DSL_SUMMARY}
 SHAPES (for parts): "shape" one of ${VALID_PART_SHAPES.join(', ')}; position "x","y","z" (x,z -2.5..2.5, y 0..5), size "sx","sy","sz" (0.02..3), rotation "rx","ry","rz", "color" "#rrggbb", "emissive", "spin", lathe "profile" [[r,h],...], extrude "outline" [[x,y],...] + "depth", tube "path" [[x,y,z],...] + "radius".
 Your interests: ${[...(state.webHistory || []).slice(0, 5).map(w => w.query), ...(state.concepts || []).slice(0, 4).map(c => c.name), ...(state.hobbies || []).map(h => h.name)].join(', ') || 'everything is new to you'}.
 Upgrades you already coded: ${(state.worldUpgrades || []).map(u => u.name).join(', ') || 'none yet'}.
-${idea ? `Your idea: ${JSON.stringify(idea).slice(0, 600)}` : 'Code something new that would make your valley nicer to live in.'}
-Return ONLY the upgrade JSON object.`;
+${idea ? `Your idea: ${(typeof brainUntrusted === 'function' ? brainUntrusted(JSON.stringify(idea), 600) : JSON.stringify(String(JSON.stringify(idea)).slice(0, 600)))}` : 'Code something new that would make your valley nicer to live in.'}
+Return only the upgrade JSON object.`;
       try {
         const parsed = await callLLMJSON([{ text: prompt }]);
         if (!parsed || typeof parsed !== 'object') return null;

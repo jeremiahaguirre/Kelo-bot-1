@@ -82,10 +82,10 @@ function tidyCandidates() {
 async function chooseWhatToToss(candidates) {
       if (!candidates.length) return [];
       if (typeof hasLLMKey === 'function' && hasLLMKey()) {
-        const prompt = `You are Kelo-1, tidying your Storehouse and Museum. These are things you might not want or need any more:
+        const prompt = `MOMENT: you are tidying your Storehouse and Museum. These are things you might not want or need any more:
 ${candidates.slice(0, 15).map((c, i) => `${i + 1}. ${c.name} (${c.kind}) - ${c.reason}`).join('\n')}
 Pick up to ${MAX_TOSSES_PER_TIDY} to throw into your Disposal Pit (they're gone forever). Keep anything you still value.
-Return ONLY JSON: {"toss": [{"number": n, "why": "1 short sentence"}], "keep": "1 sentence about what you decided to keep and why"}`;
+Return JSON: {"toss": [{"number": n, "why": "1 short sentence"}], "keep": "1 sentence about what you decided to keep and why"}`;
         const parsed = await callLLMJSON([{ text: prompt }]).catch(() => null);
         if (parsed && Array.isArray(parsed.toss)) {
           const picks = parsed.toss.slice(0, MAX_TOSSES_PER_TIDY)

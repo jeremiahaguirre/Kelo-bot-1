@@ -279,7 +279,9 @@ async function buildProject(id, originLabel = 'Building Something Real') {
         state.moodTitle = `Carrying the ${plan.name.toLowerCase()} out`;
         renderAllUI();
         await waitForArrival(60000);
-        if (typeof setCarriedObject === 'function') setCarriedObject(null);
+        // (he sets it down on its spot and lets go; the placed build takes over there: js/kelo-handoff.js)
+        if (typeof setCarriedObject === 'function') setCarriedObject(null, 0, { to: { x: spot.x, y: getIslandGroundHeight(spot.x, spot.z), z: spot.z }, real: true });
+        if (typeof keloHandoffSettled === 'function') await keloHandoffSettled();
         Object.assign(p, { status: 'built', builtAt: Date.now(), x: spot.x, z: spot.z, rotY: Math.round(randRange(-0.6, 0.6) * 100) / 100 });
         // The materials are used up once it is set down (a reload on the way out keeps them): one of each (one stack of logs for each lot of lumber they stood in
         // for), plus a squeeze of glue if he has some (js/itemuse.js)

@@ -21,11 +21,12 @@ function postMail(parcel) {
         palette: parcel.palette || null,
         time: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
       };
-      if (parcel.image) parcelImages.set(entry.id, parcel.image);
       if (state.mailbox.length >= MAX_MAILBOX) {
         showToast('📮 The post office is full. Kelo-1 needs to pick up his mail first.');
         return null;
       }
+      // (only once it is accepted: a turned-away photo's full image would otherwise stay in memory)
+      if (parcel.image) parcelImages.set(entry.id, parcel.image);
       state.mailbox.push(entry);
       // Let the AI brain (if any) design a model of the exact item while it waits at the post office
       // and look up anything that has no model yet, so it never turns up as a plain box
@@ -98,9 +99,8 @@ async function pickUpMail(originLabel = 'Checking the Mail') {
       try {
         directKeloToActivity('post_office', `Walked to the post office to see what people sent (${state.mailbox.length} waiting).`, originLabel);
         await waitForArrival();
-        const parcels = state.mailbox.splice(0, MAX_PARCELS_PER_TRIP);
-        state.lettersReceived = (state.lettersReceived || 0) + parcels.length;
-        savePersistentBrainState();
+        // Each parcel leaves the mailbox only as he opens it: a reload or an error mid-trip keeps the rest waiting
+        const parcels = state.mailbox.slice(0, MAX_PARCELS_PER_TRIP);
         renderAllUI();
         showToast(`📬 Kelo-1 picked up ${parcels.length} item${parcels.length > 1 ? 's' : ''} from the post office`);
         for (const parcel of parcels) {
@@ -122,7 +122,12 @@ async function pickUpMail(originLabel = 'Checking the Mail') {
               setCarriedObject(model, parcel.kind === 'message' || isFood ? 4000 : 30000);
             }
           }
-          await openParcel(parcel);
+          const at = state.mailbox.indexOf(parcel);
+          if (at < 0) continue;
+          state.mailbox.splice(at, 1);
+          state.lettersReceived = (state.lettersReceived || 0) + 1;
+          savePersistentBrainState();
+          try { await openParcel(parcel); } catch (e) { console.warn('Could not open a parcel', e); }
         }
         savePersistentBrainState();
         renderAllUI();

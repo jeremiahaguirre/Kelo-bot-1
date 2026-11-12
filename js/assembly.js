@@ -627,6 +627,86 @@ function subReadiness(p, sub) {
       return { ok: true };
     }
 
+// --- Concrete foundations: footings and slabs are poured from ready-mix (his batch plant, or delivered),
+// poured visibly at the site, and cure (CONCRETE_CURE_DAYS, js/plants.js) before anything is built on them.
+const FOUNDATION_SUB_RE = /foundation|footing|slab|\bpad\b|\bbase\b|piers?/i;
+const FOUNDATION_MIX_RE = /\bready-?mix\b|\bconcrete (for|footings?|piers?|slab|mix)\b|\bbags? of (concrete|cement)\b|\bconcrete mix\b/i;
+function foundationNeedsPour(sub) {
+      return Boolean(sub && FOUNDATION_SUB_RE.test(`${sub.key} ${sub.name}`) && sub.lines.some(l => FOUNDATION_MIX_RE.test(l.name)));
+    }
+function foundationPourOf(p) {
+      const sub = p.bom.subs.find(x => x.pourId);
+      return sub ? (state.concretePours || []).find(c => c.id === sub.pourId) || null : null;
+    }
+// Still curing? Then nothing goes on top yet. Returns the pour while it cures, else null.
+function foundationCuring(p, sub) {
+      const pour = foundationPourOf(p);
+      if (!pour || !sub || sub.pourId === pour.id) return null;
+      return pour.stage === 'cured' ? null : pour;
+    }
+
+// Pour the footings or slab at the site: the forms, the pour from the mixer truck (or barrow), screed, cure
+async function pourFoundation(p, sub, site) {
+      const mix = typeof readyMixName === 'function' ? readyMixName() : null;
+      const bagLine = sub.lines.find(l => /\bbags? of (concrete|cement)|concrete mix\b/i.test(l.name) && l.got >= l.qty);
+      if (!mix && !bagLine) {
+        // The load set in the drum or was used: it has to be batched (or delivered) again
+        sub.lines.filter(l => FOUNDATION_MIX_RE.test(l.name) && /ready-?mix/i.test(l.name)).forEach(l => { l.got = 0; l.madeAt = null; l.casting = false; });
+        state.speechBubble = `The ready-mix for the ${subProse(sub.name)} isn't here (concrete only stays workable a couple of hours). I'll batch a fresh load.`;
+        renderAllUI();
+        return false;
+      }
+      const r = Math.max(1.2, (p.bom.r || 3) * 0.9);
+      const ang = site.rotY || 0;
+      const pour = { id: typeof newEditId === 'function' ? newEditId('pour') : 'pour-' + Date.now().toString(36), type: 'concrete', kind: 'pad',
+        x: Math.round((site.x - Math.cos(ang) * r / 2) * 10) / 10, z: Math.round((site.z + Math.sin(ang) * r / 2) * 10) / 10,
+        toX: Math.round((site.x + Math.cos(ang) * r / 2) * 10) / 10, toZ: Math.round((site.z - Math.sin(ang) * r / 2) * 10) / 10,
+        w: Math.round(r * 10) / 10, at: Date.now(), stage: 'forms', why: `The ${subProse(sub.name)} for my ${p.bom.name.toLowerCase()}`, forBuild: p.id,
+        mix: mix ? ((plantStateOf('batch').loads || [])[0] || {}).mix || 'ready-mix' : 'bagged concrete', wc: 0.5 };
+      if (!Array.isArray(state.concretePours)) state.concretePours = [];
+      state.concretePours.push(pour);
+      const truck = typeof findVehicle === 'function' ? findVehicle('mixer') : null;
+      try {
+        if (mix && truck && typeof driveVehicle === 'function' && typeof readyToOperate === 'function' && readyToOperate(truck.name, truck, { quiet: true })) {
+          await driveVehicle(truck, { x: site.x + 4.5, z: site.z - 2.4 }, 'Driving the mixer truck to the footings');
+        }
+        const stages = [['forms', 'Setting the forms', 'Forms set level and staked, and the rebar in.'], ['pouring', 'Pouring the concrete', mix ? 'Down the chute, spread into every corner.' : 'Mixing the bags in the barrow and shovelling it in.'], ['screeded', 'Screeding it level', 'Struck off level and floated. Now it has to cure.']];
+        for (const [stage, title, say] of stages) {
+          if (typeof holdJobTool === 'function') holdJobTool(stage === 'screeded' ? /screed|bull float|concrete float|level/i : /shovel|spade/i, 'digging');
+          state.moodTitle = `${p.bom.name} ${subProse(sub.name)}: ${title.toLowerCase()}`.slice(0, 80);
+          state.speechBubble = say;
+          if (stage === 'pouring' && truck) truck.pouring = true;
+          renderAllUI();
+          for (let i = 1; i <= 4; i++) {
+            pour.stage = stage;
+            if (typeof renderConcretePour === 'function') renderConcretePour(stage === 'forms' ? { ...pour } : pour, stage === 'forms' ? 0 : stage === 'pouring' ? i / 4 : 1);
+            state.targetPos = { x: pour.x + (pour.toX - pour.x) * i / 4 + 0.9, z: pour.z + (pour.toZ - pour.z) * i / 4 + 0.9 };
+            await waitForArrival(30000);
+            await sleepPace(700);
+          }
+          if (truck) truck.pouring = false;
+        }
+        pour.stage = 'curing';
+        pour.pouredAt = Date.now();
+        if (typeof renderConcretePour === 'function') renderConcretePour(pour, 1);
+        if (mix) useReadyMixFor(`the ${subProse(sub.name)} of my ${p.bom.name.toLowerCase()}`);
+        sub.pourId = pour.id;
+        sub.pouredAt = pour.pouredAt;
+        if (typeof gainSkill === 'function') gainSkill('pouring concrete', 'pouring concrete', 5);
+        state.diaryEntries.unshift({ time: 'Pouring a Foundation', location: site.name || currentPlaceLabel(), mood: `🧱 Poured the ${subProse(sub.name)}`.slice(0, 80), vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
+          text: `Dear Diary, I poured the ${subProse(sub.name)} for my ${p.bom.name.toLowerCase()} with ${mix ? 'ready-mix from my own batch plant' : 'bagged concrete'}: forms, rebar, pour, screed. Nothing goes on top until it has cured for ${CONCRETE_CURE_DAYS} days.` });
+        savePersistentBrainState();
+        return true;
+      } catch (e) {
+        console.warn('foundation pour', e);
+        state.concretePours = state.concretePours.filter(c => c !== pour);
+        if (typeof removeConcretePourMesh === 'function') removeConcretePourMesh(pour.id);
+        return false;
+      } finally {
+        if (truck) truck.pouring = false;
+      }
+    }
+
 async function buildNextSubAssembly(id, originLabel = 'Building Something Big') {
       const p = buildProjectById(id);
       if (!p || p.status !== 'gathering' || assemblyJobRunning) return false;
@@ -636,6 +716,12 @@ async function buildNextSubAssembly(id, originLabel = 'Building Something Big') 
       if (!ready.ok) {
         if (ready.why === 'tools') askForLists(p);
         return ready.why === 'tools' ? 'needs-tools' : 'needs-parts';
+      }
+      // A foundation that is still curing holds up everything that goes on it
+      const curing = foundationCuring(p, sub);
+      if (curing) {
+        p.waitingOn = `the concrete cures (${concretePourAge(curing).toFixed(1)} of ${CONCRETE_CURE_DAYS} days)`;
+        return 'curing';
       }
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || state.isCollectingMail) return false;
       assemblyJobRunning = true;
@@ -655,6 +741,11 @@ async function buildNextSubAssembly(id, originLabel = 'Building Something Big') 
         await waitForArrival(90000);
         const face = buildSiteToWorld(site, 0, 0);
         state.botRotY = Math.atan2(face.x - state.botPos.x, face.z - state.botPos.z);
+        // Footings or a slab: poured for real before the rest of this sub-assembly
+        if (foundationNeedsPour(sub) && !sub.pourId && typeof renderConcretePour === 'function') {
+          const poured = await pourFoundation(p, sub, site);
+          if (!poured) return 'needs-parts';
+        }
         const n = sub.steps.length;
         for (let i = sub.stepsDone; i < n; i++) {
           const step = sub.steps[i];

@@ -284,7 +284,8 @@ const MAKER_OUTSIDE_SHOPS = {
       if (typeof plantPreflight === 'function' && !readyMixName()) plantPreflight('batch', 'pad');
       groundworkReady('concretePour', context);
     },
-    run: (job, label) => makerCastRun(job, label)
+    // A ready-mix line on a build's parts list is batched for the pour, not cast in the yard
+    run: (job, label) => (/\bready-?mix\b/i.test(job.make || '') ? makerBatchRun(job, label) : makerCastRun(job, label))
   }
 };
 
@@ -674,6 +675,20 @@ async function makerCastRun(job, label = 'Casting Concrete') {
       }
     }
 
+// Ready-mix for a build's footings or slab: one batch at his plant, loaded in the mixer truck for the pour
+async function makerBatchRun(job, label = 'Batching Concrete for a Build') {
+      if (typeof runBatchPlant !== 'function') return false;
+      const line = makerJob && makerJob.line;
+      const r = readyMixName() ? true : await runBatchPlant('pad', `For ${String(job.make || 'a foundation').toLowerCase()}.`, label);
+      if (r !== true) return 'not-ready';
+      const p = line && buildProjectById(line.project);
+      const l = p && p.bom.subs.flatMap(x => x.lines).find(x => x.id === line.id);
+      if (l) { l.got = l.qty; l.madeAt = Date.now(); }
+      if (p) { state.requestsToUser.forEach(q => { if (q.category === 'bomlist' && q.listProject === p.id) q.listRev = Date.now(); }); if (typeof renderBuildProjectsList === 'function') renderBuildProjectsList(); }
+      savePersistentBrainState();
+      return true;
+    }
+
 // The castings in their forms in the plant yard (rebuilt after a reload)
 const makerCastMeshes = {};
 function makerShowCastings() {
@@ -768,8 +783,12 @@ function makerStartPartsList(an, { from = null, url = null, visitor = null, read
 function makerNextBuildPart() {
       const p = typeof activeBuild === 'function' ? activeBuild() : null;
       if (!p || p.status !== 'gathering') return null;
+      const next = typeof nextSubToBuild === 'function' ? nextSubToBuild(p) : null;
       for (const s of p.bom.subs) for (const l of s.lines) {
         if (!l.make || l.got >= l.qty || l.making || l.casting) continue;
+        // Ready-mix is batched only when it can be poured straight away: its sub-assembly is next and
+        // everything else for it is here (concrete sets in the drum in a couple of hours)
+        if (/\bready-?mix\b/i.test(l.name) && (s !== next || s.lines.some(o => o !== l && o.got < o.qty))) continue;
         if (!makerShopExists(l.make)) continue;
         return { p, l };
       }

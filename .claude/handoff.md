@@ -317,7 +317,7 @@ Every file starts with a header comment saying what it does; this is the short v
 - Check that every test run finishes with no page errors.
 
 ## Exact next steps (open tasks)
-Rain, lake ice, the three new builds, sawing logs into lumber and the Map tab are done. Ideas for what could come next:
+`.claude/tasks.md` is the owner's queue and wins over this list. State of the branches on 2026-11-12: merged into `main` are agenda, anim, anim2, assembly, design, engine, hudux, interiors, leftovers, machdetail, plant, quality, runthrough, shopview and uiux; still open are `agent/anim3` (hand-keyed action clips, waits for the owner's OK) and `agent/runway` (task 7b runway field and map layout). The Three.js upgrade (r128 to latest) is queued after those. Older ideas, not scheduled:
 1. Ice skating as a hobby once skates arrive, and ice fishing through his test hole.
 2. Puddles that splash under his feet and a rainbow after a shower.
 3. A kayak that actually sits on the kayak rack when he owns one, and a dog for the doghouse (a code wish).

@@ -1,0 +1,486 @@
+{
+ "walk": [
+  [
+   "bed→post_office",
+   10,
+   26.7,
+   true
+  ],
+  [
+   "bed→cyber",
+   10,
+   19.9,
+   true
+  ],
+  [
+   "bed→cafe",
+   10.8,
+   15.2,
+   true
+  ],
+  [
+   "bed→garden",
+   10.8,
+   13.9,
+   true
+  ],
+  [
+   "bed→shoreline",
+   10,
+   24.7,
+   true
+  ],
+  [
+   "bed→storehouse",
+   5,
+   18.6,
+   true
+  ],
+  [
+   "storehouse→museum",
+   76.4,
+   46.5,
+   false
+  ],
+  [
+   "post_office→storehouse",
+   30.6,
+   11.6,
+   false
+  ],
+  [
+   "weld→cyber",
+   47.4,
+   13.2,
+   false
+  ],
+  [
+   "weld→storehouse",
+   8.2,
+   8,
+   false
+  ],
+  [
+   "cafe→museum",
+   25.1,
+   23.9,
+   false
+  ],
+  [
+   "bed→weld",
+   5,
+   10.6,
+   true
+  ],
+  [
+   "storehouse→disposal_pit",
+   15.3,
+   14.5,
+   false
+  ],
+  [
+   "bed→meadow",
+   9.6,
+   17.3,
+   true
+  ],
+  [
+   "workbench→storehouse",
+   9.7,
+   0,
+   false
+  ],
+  [
+   "workbench→cyber",
+   0,
+   0,
+   true
+  ]
+ ],
+ "drive": [
+  [
+   "Dump truck",
+   "yard→Workshop door 1",
+   true,
+   38.4,
+   19,
+   false
+  ],
+  [
+   "Dump truck",
+   "yard→plant",
+   true,
+   50.7,
+   25,
+   false
+  ],
+  [
+   "Dump truck",
+   "dig (12,-14)→pit",
+   false,
+   12.5,
+   6,
+   false
+  ],
+  [
+   "Dump truck",
+   "yard→Museum",
+   true,
+   70.6,
+   35,
+   false
+  ],
+  [
+   "Dump truck",
+   "yard→Post Office",
+   true,
+   18.3,
+   9,
+   false
+  ],
+  [
+   "Dump truck",
+   "yard→Storehouse",
+   true,
+   15.5,
+   8,
+   false
+  ],
+  [
+   "Dump truck",
+   "yard→garage hall",
+   false,
+   177.4,
+   89,
+   false
+  ],
+  [
+   "Dump truck",
+   "yard→big hangar apron",
+   false,
+   210.4,
+   105,
+   false
+  ],
+  [
+   "Concrete mixer truck",
+   "yard→Workshop door 1",
+   true,
+   38.4,
+   21,
+   false
+  ],
+  [
+   "Concrete mixer truck",
+   "yard→plant",
+   true,
+   50.7,
+   28,
+   false
+  ],
+  [
+   "Concrete mixer truck",
+   "dig (12,-14)→pit",
+   true,
+   12.5,
+   7,
+   false
+  ],
+  [
+   "Concrete mixer truck",
+   "yard→Museum",
+   true,
+   70.6,
+   39,
+   false
+  ],
+  [
+   "Concrete mixer truck",
+   "yard→Post Office",
+   true,
+   18.3,
+   10,
+   false
+  ],
+  [
+   "Concrete mixer truck",
+   "yard→Storehouse",
+   true,
+   15.5,
+   9,
+   false
+  ],
+  [
+   "Concrete mixer truck",
+   "yard→garage hall",
+   true,
+   177.4,
+   99,
+   false
+  ],
+  [
+   "Concrete mixer truck",
+   "yard→big hangar apron",
+   true,
+   210.4,
+   117,
+   false
+  ],
+  [
+   "Pickup truck",
+   "yard→Workshop door 1",
+   true,
+   38.4,
+   19,
+   false
+  ],
+  [
+   "Pickup truck",
+   "yard→plant",
+   true,
+   50.7,
+   25,
+   false
+  ],
+  [
+   "Pickup truck",
+   "dig (12,-14)→pit",
+   false,
+   12.5,
+   6,
+   false
+  ],
+  [
+   "Pickup truck",
+   "yard→Museum",
+   true,
+   70.6,
+   35,
+   false
+  ],
+  [
+   "Pickup truck",
+   "yard→Post Office",
+   true,
+   18.3,
+   9,
+   false
+  ],
+  [
+   "Pickup truck",
+   "yard→Storehouse",
+   true,
+   15.5,
+   8,
+   false
+  ],
+  [
+   "Pickup truck",
+   "yard→garage hall",
+   false,
+   177.4,
+   89,
+   false
+  ],
+  [
+   "Pickup truck",
+   "yard→big hangar apron",
+   false,
+   210.4,
+   105,
+   false
+  ],
+  [
+   "Bicycle",
+   "yard→Workshop door 1",
+   true,
+   38.4,
+   21,
+   false
+  ],
+  [
+   "Bicycle",
+   "yard→plant",
+   true,
+   50.7,
+   28,
+   false
+  ],
+  [
+   "Bicycle",
+   "dig (12,-14)→pit",
+   false,
+   12.5,
+   7,
+   false
+  ],
+  [
+   "Bicycle",
+   "yard→Museum",
+   true,
+   70.6,
+   39,
+   false
+  ],
+  [
+   "Bicycle",
+   "yard→Post Office",
+   true,
+   18.3,
+   10,
+   false
+  ],
+  [
+   "Bicycle",
+   "yard→Storehouse",
+   true,
+   15.5,
+   9,
+   false
+  ],
+  [
+   "Bicycle",
+   "yard→garage hall",
+   false,
+   177.4,
+   99,
+   false
+  ],
+  [
+   "Bicycle",
+   "yard→big hangar apron",
+   false,
+   210.4,
+   117,
+   false
+  ],
+  [
+   "Excavator",
+   "yard→Workshop door 1",
+   false,
+   38.4,
+   35,
+   false
+  ],
+  [
+   "Excavator",
+   "yard→plant",
+   false,
+   50.7,
+   46,
+   false
+  ],
+  [
+   "Excavator",
+   "dig (12,-14)→pit",
+   true,
+   12.5,
+   11,
+   false
+  ],
+  [
+   "Excavator",
+   "yard→Museum",
+   false,
+   70.6,
+   64,
+   false
+  ],
+  [
+   "Excavator",
+   "yard→Post Office",
+   true,
+   18.3,
+   17,
+   false
+  ],
+  [
+   "Excavator",
+   "yard→Storehouse",
+   true,
+   15.5,
+   14,
+   false
+  ],
+  [
+   "Excavator",
+   "yard→garage hall",
+   false,
+   177.4,
+   161,
+   false
+  ],
+  [
+   "Excavator",
+   "yard→big hangar apron",
+   false,
+   210.4,
+   191,
+   false
+  ],
+  [
+   "Snowmobile",
+   "yard→Workshop door 1",
+   false,
+   38.4,
+   17,
+   false
+  ],
+  [
+   "Snowmobile",
+   "yard→plant",
+   false,
+   50.7,
+   23,
+   false
+  ],
+  [
+   "Snowmobile",
+   "dig (12,-14)→pit",
+   false,
+   12.5,
+   6,
+   false
+  ],
+  [
+   "Snowmobile",
+   "yard→Museum",
+   false,
+   70.6,
+   32,
+   false
+  ],
+  [
+   "Snowmobile",
+   "yard→Post Office",
+   false,
+   18.3,
+   8,
+   false
+  ],
+  [
+   "Snowmobile",
+   "yard→Storehouse",
+   false,
+   15.5,
+   7,
+   false
+  ],
+  [
+   "Snowmobile",
+   "yard→garage hall",
+   false,
+   177.4,
+   81,
+   false
+  ],
+  [
+   "Snowmobile",
+   "yard→big hangar apron",
+   false,
+   210.4,
+   96,
+   false
+  ]
+ ]
+}

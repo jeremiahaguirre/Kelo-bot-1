@@ -52,7 +52,9 @@ E. **Fitting in**: the wind sock and the campfire ring move off the street. The 
 
 F. **Old saves**: one generic pass on load moves Kelo-1, vehicles, placed items, plantings, edits, holes and piles out of any building footprint, road or pad that is now there (to the nearest door or open ground), the same way the town-scale pass did. Holes and piles keep their positions on the mountain.
 
-## Status (posted 2026-11-12, work continues without waiting)
+## Status: done and pushed (agent/runway 53dbfc9, 9a6a153; final results in REPORT.md)
+
+Earlier status note:
 - Built so far in a local worktree, not pushed yet: A (valley foot), B (the north row moved; the Museum joins it), C (roads), D (the col), E (the wind sock, stove, fire ring and garden tap moved off the routes), F (old-save moves).
 - One addition from the first route probe: the Post Office moves 1.3 units east, so **NetNode Lane** (2.7 units) opens between it and NetNode. The shore row was an unbroken wall: the gap was 0.9 m, and the welding studio → NetNode walk took 47 units against 20 straight.
 - The garden beds moved 0.8 east and the garden tap went behind them, so Garden Lane between the cafe and the garden is passable.

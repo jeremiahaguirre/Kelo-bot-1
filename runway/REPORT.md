@@ -2,6 +2,80 @@
 
 The screenshots in this folder were taken at deviceScaleFactor 2. `before-*` shots are from `main`, `after-*` shots from `agent/runway` at commit c92b684.
 
+## Update: map layout redesign, merges, final QA (agent/runway at a118573)
+
+### Commits since the first report
+- `53dbfc9` Map layout redesign (see `PLAN.md`): the mountain's foot moves back behind the town; the ridge over the pass becomes a col; the north row (Museum, house, welding studio, printer and work bench, Storehouse) moves onto the new level ground facing Main Street; roads and paths are data (`KELO_ROADS`, js/roads.js), drawn into the ground, kept clear, shown on the maps and preferred by A*; the Post Office moves 1.3 east for NetNode Lane; old saves move out of the new footprints.
+- `9a6a153` Gentler pass sides and mouth, a wider col, softer shoulders, so the explore camera rises over them smoothly.
+- `344caff`, `cfa6d53` Workshop viewer: the garage hall and big hangar are areas you can walk round (walkable rects, obstacles, start spots, see-through roofs).
+- `23667a1`, `0ecce71`, `a118573` Merges of `main`: Workshop viewer and HUD; design system, agenda and roadworks with the runway job; then the world chunks, the fixed-step simulation and the runway-number fix (35/17).
+- In the merges:
+  - **Road machines park off the haul road.** The plant's west yard strip is now the haul road's first leg, the only way over the range. So `rwParkingSlots` parks the dozer, grader, rollers and paver in a row along the plant's east side, at x 83.1 and z -4..11.5. At edge + 1.0 they clipped the plant's hopper, so the row sits at edge + 1.6.
+  - **Old saves.** `reparkOldVehicles` moves any land vehicle saved on the haul road to its slot.
+  - **The Workshop's scripted moves use the frame clock.** The north buildings' drives, turns and lift go through `keloTween`.
+
+### Route probe (A* path length in units; 7b = before the redesign, final = a118573)
+Raw data: `routes-7b.json`, `routes-final.json`.
+
+| Trip on foot | 7b | final |
+|---|---|---|
+| Storehouse → Museum | 76.4 | 31.5 |
+| Welding studio → NetNode | 47.4 | 23.6 |
+| Post Office → Storehouse | 30.6 | 25.0 |
+| Cafe → Museum | 25.1 | 23.2 |
+| Storehouse → Disposal Pit | 15.3 | 11.7 |
+| Work bench → NetNode | no path (bench stood in the gap) | 21.7 |
+| Bed → anywhere (post, cafe, garden, shore, Storehouse, meadow) | partial (inside the house) | complete, out of the front door onto Main Street (24-37) |
+
+| By vehicle | 7b | final |
+|---|---|---|
+| Dump truck / pickup / mixer / bike, yard → Museum | 70.6 | 45.4 |
+| Dump truck, pickup and bike: mountain dig (12, -14) → pit | refused by the trip planner (slope) | drivable |
+| Dump truck, pickup and bike: yard → garage hall / big hangar apron | refused (straight line over the ridge) | drivable through the pass (177.6 / 219.3) |
+| Excavator | short hops only (by design) | unchanged |
+| Snowmobile | snow only (by design) | unchanged |
+
+No vehicle route that worked before fails now.
+
+### Perf on the final branch (swiftshader, 1280x800, 6 s average; calls and triangles are exact)
+| View | main (first report) | 7b | final, with chunks |
+|---|---|---|---|
+| Town (default camera) | 1109-1152 calls, 232k tris | 1105 calls, 234k tris | 846 calls, 219k tris |
+| North yard | n/a | 105 calls, 167k tris | 119 calls, 170k tris |
+| Workshop looking up the pass | n/a | n/a | 72 calls, 170k tris |
+
+The town view is cheaper than `main` was.
+
+### Old save
+The `main` save described above loads on the final branch with every vehicle on its saved x, z and heading (truck, excavator, bike, both aircraft, pickup). There were no page errors.
+
+### Final tests (one at a time, KELO_ROOT = agent/runway at a118573)
+Every run below exited 0 with "page errors: none".
+
+| Script | Runs (seconds) |
+|---|---|
+| harness.js | reload 77, chat 334, ui 141, water 242, vehicle 59, snow 175, basement 132, haul 428, planitems 448, landfill 257 |
+| ws.js | garage 2537, forklift 1265, hangar 156 |
+| navtest.js | 36 |
+| navfollow.js | 38 |
+| itest.js | paths 41, netnode 278, cafe 229, post 285 |
+| visit.js (`NORTH_AREAS=1`) | 79 targets, 0 missing |
+
+Notes:
+- **ws.js garage:** the first run passed the tyre job but was killed by my 2400 s wrapper during the oil change. Swiftshader is slow here, and the same test took 2044 s before the merges. Rerun with a 5000 s limit: the tyres and oil both finished, result `true`.
+- **visit.js:** all 7 areas, including "Garage hall (north yard)" and "Big hangar (north yard)". Stairs and elevator worked, and the view restored on exit.
+- **navtest:** 6 camera paths with 0 frames under ground and 0 inside buildings. The max jerk of 6.7 is on "low over hills": the camera lifts over the new col shoulder by design. It was the same before the engine merge.
+- **forklift:** the "carrying" screenshot is still missed (`never saw carrying`), as in the first report. The job and the charging ran.
+- **basement:** the put-away note in its log is not new; the same note appears on `main`.
+
+### Screenshots (deviceScaleFactor 2, JPEG)
+`redesign-before-*` is the build before the redesign (6678473); `redesign-after-*` is the final branch.
+- **Views:** `town-top` (straight down on the town), `default` (the start camera), `mainstreet`, `northrow`, `garden`, `pass` (the col from above the plant), `haul` (Workshop, plant and the haul road into the pass), `whole` (the valley and the range from over the lake).
+- **Clouds** are hidden for these shots only.
+- **HUD:** the HUD looks different in the after shots because `main`'s design system came in with the merge.
+
+## First report (task 7b, before the redesign)
+
 ## Commits (agent/runway)
 - `4a6ee2b` Runway field, north land and bigger world: RUNWAY_FIELD, the Workshop's pass, east road and north yard, a 1.5-unit north patch and coarse far lands, the A* coarse layer, trip grid, explore bounds, minimap sheets, flight and parking checks.
 - `cdee58b` Bigger Workshop in the north yard: the four-bay garage hall and the big hangar; garage trips and build-bay choice wired in; paths cross the range by the pass.

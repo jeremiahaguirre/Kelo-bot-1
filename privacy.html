@@ -61,6 +61,15 @@
       <li><strong>Lookups.</strong> When Kelo-1 reads about something, the word or topic he is curious about is sent to
         Wikipedia (<code>en.wikipedia.org</code>), Wiktionary (<code>en.wiktionary.org</code>) or DuckDuckGo
         (<code>api.duckduckgo.com</code>). Nothing about you is included.</li>
+      <li><strong>Reference photos for his paintings.</strong> When Kelo-1 paints from a photo, the few plain words he is
+        looking for (for example "lighthouse" or "misty forest", never your name or anything you typed about yourself)
+        are sent to DuckDuckGo with safe search set to strict, and the picture is downloaded from where it is hosted.
+        On the website that is DuckDuckGo's Instant Answer service (<code>api.duckduckgo.com</code>, pictures from
+        <code>duckduckgo.com</code>) or, if it has no picture, Wikimedia Commons (<code>commons.wikimedia.org</code>,
+        pictures from <code>upload.wikimedia.org</code>). In the Windows and phone apps DuckDuckGo's image search
+        (<code>duckduckgo.com</code>) is used as well, and the picture comes from the site the search result points to
+        (often DuckDuckGo's or Bing's image servers). A tiny copy of each photo and its address are kept on your device
+        with the painting, to credit it.</li>
       <li><strong>His "dreams".</strong> The apps download a small public file (<code>brain/growth.json</code>) from this
         website on GitHub Pages to catch up on what he did while you were away.</li>
       <li><strong>The website only:</strong> the web version loads its 3D engine, icons, styles and fonts from public

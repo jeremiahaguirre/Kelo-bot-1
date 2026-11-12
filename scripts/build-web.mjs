@@ -39,7 +39,7 @@ const APP_CSP = [
   "img-src 'self' data: blob:",
   "media-src 'self' data: blob:",
   // blob: lets js/native.js read a file the game made (a brain backup) to save it to Documents
-  "connect-src 'self' blob: https://generativelanguage.googleapis.com https://api.anthropic.com https://en.wikipedia.org https://en.wiktionary.org https://api.duckduckgo.com https://jeremiahaguirre.github.io",
+  "connect-src 'self' blob: https://generativelanguage.googleapis.com https://api.anthropic.com https://en.wikipedia.org https://en.wiktionary.org https://api.duckduckgo.com https://duckduckgo.com https://commons.wikimedia.org https://upload.wikimedia.org https://jeremiahaguirre.github.io",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

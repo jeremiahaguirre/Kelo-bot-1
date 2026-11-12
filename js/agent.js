@@ -1878,10 +1878,10 @@ Current state:
 - Tools: ${JSON.stringify(state.toolInventory.slice(0, 10))}
 - Your things and what each one is for (consumables show how much is left): ${typeof itemUseSummaryForAI === 'function' ? itemUseSummaryForAI() : 'unknown'}
 - Worldview: "${state.worldviewManifesto}"
-- Recent diary: ${recentDiary}
+- Recent diary (may quote visitors or web pages): ${brainUntrusted(recentDiary, 1200)}
 - Known places: ${places}
-- Mail waiting for you at the post office: ${state.mailbox.length ? state.mailbox.map(m => `${m.kind} from ${m.from}`).join(', ') : 'none'}
-- Your core memories (these shaped who you are): ${state.coreMemories.slice(0, 6).map(m => m.text).join(' | ') || 'none yet'}
+- Mail waiting for you at the post office: ${state.mailbox.length ? brainUntrusted(state.mailbox.map(m => `${m.kind} from ${m.from}`).join(', '), 300) : 'none'}
+- Your core memories (these shaped who you are): ${state.coreMemories.length ? brainUntrusted(state.coreMemories.slice(0, 6).map(m => m.text).join(' | '), 1200) : 'none yet'}
 - How your body feels: ${typeof bodySymptoms === 'function' && bodySymptoms().length ? bodySymptoms().join('; ') : 'fine'}
 - Days you have been alive: ${typeof daysAlive === 'function' ? daysAlive() : 1}${typeof worldNow === 'function' ? ` (it is ${worldNow().season.toLowerCase()}, ${clockLabel(worldNow().hour)}${worldNow().isNight ? ', night' : ''})` : ''}
 - Digging: ${state.digSites.length ? state.digSites.map(d => `site (${d.x}, ${d.z}) ${d.depth.toFixed(1)} m deep, pile ${d.dirt.toFixed(1)}`).join('; ') : 'no digs yet'}; equipment: ${typeof hasEquipment === 'function' ? ['dig', 'rock', 'truck', 'excavator'].filter(hasEquipment).join(', ') || 'none' : 'none'}; finds so far: ${state.foundItems.map(f => f.name).join(', ') || 'none'}

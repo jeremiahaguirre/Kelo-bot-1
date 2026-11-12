@@ -44,403 +44,466 @@ const skinGlow = (color, opacity = 0.9) => new THREE.MeshBasicMaterial({ color, 
 // --- The skins -------------------------------------------------------------------------------------
 // A head or body profile made bigger (k across, ky up)
 const skinScaleProfile = (profile, k, ky = k) => profile.map(([r, y]) => [r * k, y * ky]);
-const SKIN_ROUND_HEAD = [[0, 0], [0.12, 0.01], [0.215, 0.05], [0.278, 0.12], [0.303, 0.21], [0.31, 0.3], [0.302, 0.39], [0.272, 0.47], [0.215, 0.545], [0.125, 0.598], [0, 0.615]];
+// A round head of radius r whose bottom dips `drop` below the neck joint (big chibi heads sit low)
+function skinBallHead(r, drop = 0.05, squash = 1) {
+      const p = [];
+      for (let i = 0; i <= 12; i++) {
+        const a = -Math.PI / 2 + Math.PI * i / 12;
+        p.push([Math.max(0, Math.cos(a) * r), -drop + (Math.sin(a) + 1) * r * squash]);
+      }
+      p[0][0] = 0; p[12][0] = 0;
+      return p;
+    }
+// A tube along a curve whose radius goes from r0 at the root to r1 at the tip
+function skinTaperTube(curve, r0, r1, seg = 48, radial = 12) {
+      const g = new THREE.TubeGeometry(curve, seg, 1, radial, false);
+      const pos = g.attributes.position, ring = radial + 1, v = new THREE.Vector3();
+      for (let i = 0; i <= seg; i++) {
+        const c = curve.getPointAt(i / seg), rad = r0 + (r1 - r0) * Math.pow(i / seg, 0.85);
+        for (let j = 0; j < ring; j++) {
+          const k = i * ring + j;
+          v.set(pos.getX(k), pos.getY(k), pos.getZ(k)).sub(c).multiplyScalar(rad).add(c);
+          pos.setXYZ(k, v.x, v.y, v.z);
+        }
+      }
+      g.computeVertexNormals();
+      return g;
+    }
+// Stick a mesh on a lathe shape at (y, phi), facing out
+function skinOnShape(mesh, prof, sx, sz, y, phi, lift) {
+      const at = keloOnSurface(keloProfileR(prof, y), y, phi, sx, sz, lift);
+      mesh.position.copy(at.p);
+      mesh.lookAt(at.p.clone().add(at.n));
+      return mesh;
+    }
 
 const KELO_SKINS = [
   {
     id: 'classic', name: 'Classic', priceCents: 0, currency: 'USD', rarity: 'standard',
     blurb: 'His own round teal body, cream panels and headphone ears.',
-    palette: {}, shape: null, parts: null
+    palette: {}, shape: null, parts: null, view: { yaw: 0.35, elev: 0.08 }
   },
   {
     id: 'explorer', name: 'Explorer', priceCents: 99, currency: 'USD', rarity: 'standard',
-    blurb: 'Heavy-duty field armour: a big rounded helmet, bulky gauntlets and shin guards over dark mechanical joints, ear discs with cyan rings and chunky boots.',
+    blurb: 'Heavy field armour: a huge dome helmet with stacked ear modules and twin aerials, big shoulder pads and gauntlets, a wide hip plate on wheel joints and big shin shells.',
+    view: { yaw: 0.12, elev: -0.05 },
     palette: {
-      shell: { color: 0xf1f3f5, metalness: 0.06, roughness: 0.34, clearcoat: 0.7, clearcoatRoughness: 0.14 },
-      cream: { color: 0x2b3036, roughness: 0.42, clearcoat: 0.4 },
-      cover: { color: 0x26292e, metalness: 0.35, roughness: 0.45 },
-      joint: { color: 0x1f2226, metalness: 0.4, roughness: 0.5 },
-      rubber: { color: 0x17191c },
-      frame: { color: 0x9aa3ad },
-      amber: { color: 0xff9d2e, emissive: 0x3a1800, emissiveIntensity: 0.4 },
-      led: { color: 0x7af0ff },
-      eye: { color: 0x7ff0ff },
-      eyeGlow: { color: 0x3fdcff, opacity: 0.4 }
+      shell: { color: 0xf3f4f5, metalness: 0.05, roughness: 0.4, clearcoat: 0.5, clearcoatRoughness: 0.2 },
+      cream: { color: 0xe9ebee, roughness: 0.45 },
+      cover: { color: 0x2c2f34, metalness: 0.4, roughness: 0.5 },
+      joint: { color: 0x2a2d32, metalness: 0.45, roughness: 0.45 },
+      rubber: { color: 0x1a1c1f },
+      seam: { color: 0x9aa1a8 },
+      frame: { color: 0x8c949c, metalness: 0.7 },
+      amber: { color: 0xf09a2a, emissive: 0x3a1800, emissiveIntensity: 0.3 },
+      glass: { color: 0x12161c },
+      eye: { color: 0x6ff4ff },
+      eyeGlow: { color: 0x2fd8ff, opacity: 0.55 },
+      led: { color: 0x6ff4ff }
     },
     idColor: '#38d6f5',
     shape: {
-      head: { kind: 'box', w: 0.76, h: 0.64, d: 0.66, r: 0.22 },
-      face: { yc: 0.31, w: 0.5, h: 0.3 },
-      eyes: { y: 0.32, x: 0.12, r: 0.072, mouthDy: 0.12, cheekDy: 0.07 },
-      ears: 'none',
-      torso: { kind: 'box', w: 0.52, h: 0.6, d: 0.42, r: 0.14 },
-      belly: { yc: 0.29, w: 0.26, h: 0.2 },
-      pack: { w: 0.3, h: 0.3, d: 0.12 },
-      arm: { kind: 'box', shoulder: 0.11, upper: [0.07, 0.066], elbow: 0.07, fore: [0.1, 0.094] },
-      leg: { kind: 'box', hip: 0.1, thigh: [0.09, 0.088], knee: 0.088, shin: [0.1, 0.104] },
-      boot: { kind: 'box', w: 0.145, h: 0.17, l: 0.24, toe: 0.055 }
+      head: { kind: 'lathe', profile: [[0, -0.06], [0.22, -0.05], [0.36, 0.03], [0.45, 0.16], [0.49, 0.31], [0.5, 0.44], [0.48, 0.57], [0.42, 0.68], [0.32, 0.76], [0.17, 0.81], [0, 0.825]], sx: 1.1, sz: 1.0 },
+      face: null, mouth: true, cheeks: false,
+      eyes: { y: 0.24, phi: 0.27, r: 0.075, mouthDy: 0.13, lift: 0.03 },
+      ears: 'none', antenna: false, neck: false,
+      torso: { kind: 'lathe', profile: [[0, 0.16], [0.2, 0.17], [0.255, 0.24], [0.275, 0.35], [0.275, 0.46], [0.25, 0.54], [0.18, 0.6], [0.09, 0.635], [0, 0.645]], sx: 1.12, sz: 0.88 },
+      belly: { yc: 0.4, hy: 0.04, phi: 0.2 },
+      pack: { w: 0.3, h: 0.28, d: 0.1 },
+      pelvis: { profile: [[0, -0.2], [0.14, -0.195], [0.25, -0.15], [0.285, -0.07], [0.28, 0.01], [0.22, 0.06], [0, 0.07]], sx: 1.14, sz: 0.9 },
+      pelvisMat: 'shell',
+      arm: { kind: 'capsule', shoulder: 0.07, upper: [0.05, 0.047], upperMat: 'joint', elbow: 0.06, fore: [0.112, 0.1] },
+      leg: { kind: 'capsule', hip: 0.08, thigh: [0.07, 0.065], thighMat: 'joint', knee: 0.075, shin: [0.13, 0.112] },
+      boot: { kind: 'box', w: 0.14, h: 0.1, l: 0.25, toe: 0.06, sole: 0.03 }
     },
     parts(M, R, add) {
-      const cyan = skinGlow(0x45e3ff, 1);
-      // Big round ear discs, a cyan ring round each
-      const disc = new THREE.CylinderGeometry(0.18, 0.18, 0.07, 30).rotateZ(Math.PI / 2);
-      const face = new THREE.CylinderGeometry(0.12, 0.12, 0.012, 24).rotateZ(Math.PI / 2);
-      const ring = new THREE.TorusGeometry(0.145, 0.014, 6, 30).rotateY(Math.PI / 2);
+      const cyan = skinGlow(0x5ff0ff, 1), dark = M.joint;
+      const H = R.headProfile, sx = R.HSX, sz = R.HSZ;
+      // the face: a slightly raised plate low on the dome, with deep dark sockets for the eyes
+      add(R.head, keloMesh(keloPatchGeometry(H, sx, sz, { yc: 0.21, hy: 0.17, phi: 0.78 }, 0.006, 0.15), M.cream, { shadow: false }));
+      [-1, 1].forEach(s => add(R.head, skinOnShape(keloMesh(new THREE.CircleGeometry(0.105, 28), M.glass, { shadow: false }), H, sx, sz, 0.24, s * 0.27, 0.022)));
+      // a sensor bar on the forehead (cyan behind dark glass) and panel seams over the dome
+      const bar = skinOnShape(new THREE.Group(), H, sx, sz, 0.5, 0, 0.004);
+      bar.add(keloMesh(keloRoundedBox(0.2, 0.07, 0.03, 0.03, 0.008), dark, { shadow: false }));
+      bar.add(keloMesh(keloRoundedBox(0.15, 0.03, 0.012, 0.012, 0.004), cyan, { pos: [0, 0, 0.016], shadow: false }));
+      add(R.head, bar);
+      [0.38, 0.62].forEach(y => add(R.head, keloSeamRing(H, y, sx, sz, M, 0.005)));
+      [[-0.55, 0.62], [0.55, 0.62], [-0.9, 0.42], [0.9, 0.42]].forEach(([ph, y]) => add(R.head, skinOnShape(keloMesh(new THREE.CircleGeometry(0.022, 12), ph > 0 ? M.amber : M.frame, { shadow: false }), H, sx, sz, y, ph, 0.006)));
+      // stacked ear modules: a grey drum, a white ring, a dark lens with a cyan centre
       [-1, 1].forEach(s => {
-        add(R.head, keloMesh(disc, M.shell, { pos: [s * (R.earX + 0.025), 0.33, -0.02] }));
-        add(R.head, keloMesh(face, M.cover, { pos: [s * (R.earX + 0.062), 0.33, -0.02], shadow: false }));
-        add(R.head, keloMesh(ring, cyan, { pos: [s * (R.earX + 0.064), 0.33, -0.02] }));
-        // a short aerial off the back of each disc
-        add(R.head, keloMesh(new THREE.CylinderGeometry(0.008, 0.01, 0.26, 6), M.frame, { pos: [s * (R.earX + 0.03), 0.58, -0.1], shadow: false }));
+        const x = s * R.earX;
+        add(R.head, keloMesh(new THREE.CylinderGeometry(0.22, 0.22, 0.09, 32).rotateZ(Math.PI / 2), dark, { pos: [x + s * 0.0, 0.33, -0.02] }));
+        add(R.head, keloMesh(new THREE.CylinderGeometry(0.18, 0.2, 0.08, 32).rotateZ(Math.PI / 2), M.shell, { pos: [x + s * 0.075, 0.33, -0.02] }));
+        add(R.head, keloMesh(new THREE.CylinderGeometry(0.115, 0.115, 0.06, 28).rotateZ(Math.PI / 2), dark, { pos: [x + s * 0.12, 0.33, -0.02] }));
+        add(R.head, keloMesh(new THREE.CylinderGeometry(0.06, 0.06, 0.02, 24).rotateZ(Math.PI / 2), cyan, { pos: [x + s * 0.152, 0.33, -0.02], shadow: false }));
+        // a thin aerial from each upper corner
+        const ae = keloMesh(new THREE.CylinderGeometry(0.009, 0.012, 0.42, 6), M.frame, { pos: [s * 0.36, 0.86, -0.08], shadow: false });
+        ae.rotation.z = -s * 0.12;
+        add(R.head, ae);
       });
-      // A brow ridge over the visor, a crown plate and a cyan strip over the top
-      add(R.head, keloMesh(keloRoundedBox(0.58, 0.06, 0.07, 0.025, 0.008), M.cover, { pos: [0, 0.5, 0.31] }));
-      add(R.head, keloMesh(keloRoundedBox(0.4, 0.05, 0.44, 0.04, 0.01), M.shell, { pos: [0, 0.645, -0.02] }));
-      add(R.head, keloMesh(keloRoundedBox(0.07, 0.02, 0.5, 0.008, 0.004), cyan, { pos: [0, 0.672, -0.02], shadow: false }));
-      // Knee caps and shin guards (orange tags), elbow caps and gauntlet plates, shoulder pads
-      const kneeCap = skinCapGeometry(0.11, 1.15);
-      const shinPlate = keloRoundedBox(0.2, 0.24, 0.04, 0.05, 0.01);
-      const tag = keloRoundedBox(0.05, 0.024, 0.012, 0.008, 0.003);
-      const elbowCap = skinCapGeometry(0.085, 1.2).rotateY(Math.PI);
-      const forePlate = keloRoundedBox(0.16, 0.18, 0.035, 0.04, 0.008);
-      ['lKnee', 'rKnee'].forEach(k => {
-        add(R[k], keloMesh(kneeCap, M.shell, { pos: [0, -0.025, 0.04] }));
-        add(R[k], keloMesh(shinPlate, M.shell, { pos: [0, -0.25, 0.1] }));
-        add(R[k], keloMesh(tag, M.amber, { pos: [0, -0.3, 0.123], shadow: false }));
-      });
+      // dark mechanical neck and waist: stacked rings
+      [0.62, 0.66, 0.7].forEach(y => add(R.body, keloMesh(new THREE.CylinderGeometry(0.1, 0.1, 0.03, 16), dark, { pos: [0, y, 0] })));
+      [0.08, 0.12, 0.16].forEach((y, i) => add(R.body, (() => { const m = keloMesh(new THREE.CylinderGeometry(0.19 - i * 0.01, 0.19 - i * 0.01, 0.035, 22), dark, { pos: [0, y, 0] }); m.scale.set(1.1, 1, 0.85); return m; })()));
+      // chest: a cyan light slot and two bolts
+      add(R.body, skinOnShape(keloMesh(keloRoundedBox(0.12, 0.035, 0.014, 0.016, 0.004), cyan, { shadow: false }), R.torsoProfile, R.TSX, R.TSZ, 0.47, 0, 0.006));
+      [-1, 1].forEach(s => add(R.body, skinOnShape(keloMesh(new THREE.CircleGeometry(0.02, 12), dark, { shadow: false }), R.torsoProfile, R.TSX, R.TSZ, 0.52, s * 0.6, 0.005)));
+      // big rounded shoulder pads
+      const pad = skinCapGeometry(0.16, 1.25).rotateX(-Math.PI / 2);
+      ['lArm', 'rArm'].forEach(k => { const m = keloMesh(pad, M.shell, { pos: [0, 0.01, 0] }); m.scale.set(1, 0.95, 1.05); add(R[k], m); });
+      // gauntlet cuffs and a dark wrist
       ['lElbow', 'rElbow'].forEach(k => {
-        add(R[k], keloMesh(elbowCap, M.shell, { pos: [0, -0.01, -0.015] }));
-        add(R[k], keloMesh(forePlate, M.shell, { pos: [0, -0.15, -0.09] }));
+        add(R[k], skinLimbRing(0.1, 0.012, -0.05, M.seam));
+        add(R[k], keloMesh(new THREE.CylinderGeometry(0.075, 0.09, 0.05, 18), dark, { pos: [0, -0.285, 0] }));
       });
-      const pad = skinCapGeometry(0.15, 1.1).rotateX(-Math.PI / 2);
-      ['lArm', 'rArm'].forEach(k => add(R[k], keloMesh(pad, M.shell, { pos: [0, 0.02, 0] })));
-      // Dark ribbed waist (exposed mechanics) and chest vents with a cyan light
-      [0, 1, 2].forEach(i => add(R.body, keloMesh(new THREE.TorusGeometry(0.2, 0.018, 6, 26).rotateX(Math.PI / 2), M.joint, { pos: [0, 0.02 + i * 0.035, 0] })));
-      add(R.body, keloMesh(keloRoundedBox(0.12, 0.03, 0.012, 0.012, 0.004), cyan, { pos: [0, 0.47, 0.212], shadow: false }));
-      const vent = keloRoundedBox(0.09, 0.014, 0.01, 0.006, 0.003);
-      [-1, 1].forEach(s => [0, 1, 2].forEach(i => add(R.body, keloMesh(vent, M.cover, { pos: [s * 0.16, 0.14 + i * 0.03, 0.213], shadow: false }))));
-      // Orange toe caps on the boots
-      ['lFoot', 'rFoot'].forEach(k => add(R[k], keloMesh(keloRoundedBox(0.2, 0.05, 0.03, 0.015, 0.005), M.amber, { pos: [0, -R.ankleY + 0.06, 0.29] })));
+      // dark wheels at the hips
+      ['lLeg', 'rLeg'].forEach((k, i) => {
+        const s = i ? 1 : -1;
+        add(R[k], keloMesh(new THREE.CylinderGeometry(0.11, 0.11, 0.07, 26).rotateZ(Math.PI / 2), dark, { pos: [s * 0.15, -0.02, 0] }));
+        add(R[k], keloMesh(new THREE.CylinderGeometry(0.05, 0.05, 0.075, 16).rotateZ(Math.PI / 2), M.frame, { pos: [s * 0.152, -0.02, 0] }));
+      });
+      // shin shells: a seam, a hatch and an orange tag on each
+      ['lKnee', 'rKnee'].forEach(k => {
+        add(R[k], skinLimbRing(0.128, 0.008, -0.12, M.seam));
+        add(R[k], keloMesh(keloRoundedBox(0.06, 0.03, 0.012, 0.01, 0.003), M.amber, { pos: [0.03, -0.3, 0.118], shadow: false }));
+      });
+      // feet: two toe blocks on each, with orange tips
+      ['lFoot', 'rFoot'].forEach(k => [-1, 1].forEach(t => {
+        add(R[k], keloMesh(keloRoundedBox(0.11, 0.08, 0.1, 0.03, 0.01), M.shell, { pos: [t * 0.068, -R.ankleY + 0.07, 0.34] }));
+        add(R[k], keloMesh(keloRoundedBox(0.09, 0.03, 0.02, 0.01, 0.004), M.amber, { pos: [t * 0.068, -R.ankleY + 0.05, 0.395], shadow: false }));
+      }));
+    }
+  },
+  {
+    id: 'twirl', name: 'Twirl', priceCents: 199, currency: 'USD', rarity: 'epic',
+    blurb: 'A giant glossy pearl head with swirls on the crown, two thick curled horns and huge glowing almond eyes, on a tiny dark body in a flared white dress, with thin glowing limbs and white shoes.',
+    view: { yaw: -0.35, elev: 0.0 },
+    palette: {
+      shell: { color: 0xf2f3f6, metalness: 0.35, roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.03 },
+      cream: { color: 0xf4f5f8, metalness: 0.2, roughness: 0.2, clearcoat: 1 },
+      cover: { color: 0x1b2230, metalness: 0.4, roughness: 0.3, clearcoat: 0.6 },
+      joint: { color: 0x141a25, metalness: 0.3, roughness: 0.35 },
+      rubber: { color: 0x141a25 },
+      frame: { color: 0xdfe4ec, metalness: 0.7 },
+      amber: { color: 0x2fe0ea, emissive: 0x0a4a50, emissiveIntensity: 0.7 },
+      glass: { color: 0x0a1018 },
+      eye: { color: 0x3fe6f5 },
+      eyeGlow: { color: 0x1fb8e0, opacity: 0.55 },
+      led: { color: 0x5ff0f5 }
+    },
+    idColor: '#37e0e8',
+    shape: {
+      head: { kind: 'lathe', profile: skinBallHead(0.56, 0.1, 0.96), sx: 1.0, sz: 0.94 },
+      face: null, mouth: false, cheeks: false,
+      eyes: { y: 0.36, phi: 0.36, r: 0.13, sx: 0.78, sy: 1.12, tilt: -0.45 },
+      ears: 'none', antenna: false, neck: false,
+      torso: { kind: 'lathe', profile: [[0, 0.12], [0.09, 0.13], [0.11, 0.2], [0.12, 0.3], [0.14, 0.4], [0.15, 0.47], [0.13, 0.53], [0.08, 0.56], [0, 0.57]], sx: 1.0, sz: 0.85 },
+      torsoMat: 'cover',
+      belly: { yc: 0.43, hy: 0.075, phi: 0.95 },
+      pack: { w: 0.001, h: 0.001, d: 0.001 },
+      pelvis: { profile: [[0, 0.0], [0.06, 0.0], [0.09, 0.05], [0.1, 0.12], [0, 0.14]], sx: 1.0, sz: 0.85 },
+      pelvisMat: 'cover',
+      limbMat: 'cover',
+      arm: { kind: 'capsule', shoulder: 0.05, upper: [0.04, 0.036], elbow: 0.038, fore: [0.038, 0.032] },
+      leg: { kind: 'capsule', hip: 0.06, thigh: [0.05, 0.045], knee: 0.045, shin: [0.048, 0.04] },
+      boot: { kind: 'ball', w: 0.1, h: 0.1, l: 0.16, toe: 0.05, mat: 'cream' }
+    },
+    parts(M, R, add) {
+      const glow = skinGlow(0x4ff0f8, 1);
+      const dress = new THREE.MeshPhysicalMaterial({ color: 0xf6f7fa, metalness: 0.12, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.05, side: THREE.DoubleSide });
+      const H = R.headProfile, sx = R.HSX, sz = R.HSZ;
+      // deep dark almond sockets the eyes glow out of, with lashes
+      [-1, 1].forEach(s => {
+        const sock = skinOnShape(keloMesh(new THREE.CircleGeometry(0.16, 32), M.glass, { shadow: false }), H, sx, sz, 0.36, s * 0.36, 0.006);
+        sock.rotateZ(s * -0.45); sock.scale.set(0.82, 1.1, 1);
+        add(R.head, sock);
+      });
+      const lash = new THREE.BoxGeometry(0.014, 0.06, 0.004);
+      [R.lEye, R.rEye].forEach(eye => {
+        const s = eye.userData.side, open = eye.userData.open;
+        (s > 0 ? [0.25, 0.65, 1.05] : [Math.PI - 0.25, Math.PI - 0.65, Math.PI - 1.05]).forEach(a => {
+          const m = keloMesh(lash, M.glass, { shadow: false });
+          m.position.set(Math.cos(a) * 0.165, Math.sin(a) * 0.165, 0.003);
+          m.rotation.z = a - Math.PI / 2;
+          add(open, m);
+        });
+      });
+      // soft swirls moulded across the crown
+      [-0.27, -0.13, 0.0, 0.13, 0.27].forEach(ph => {
+        const sw = skinOnShape(keloMesh(new THREE.TorusGeometry(0.06, 0.016, 8, 18, Math.PI * 1.4), M.shell), H, sx, sz, 0.84 - Math.abs(ph) * 0.15, ph, 0.004);
+        sw.rotateZ(Math.PI * 0.8);
+        add(R.head, sw);
+      });
+      // two thick horns curling up and out from the top of the head, banded at the root
+      [-1, 1].forEach(s => {
+        const pts = [[0.3, 0.86], [0.42, 0.98], [0.56, 1.04], [0.69, 1.0], [0.75, 0.88], [0.72, 0.77], [0.65, 0.74]].map(([x, y]) => new THREE.Vector3(s * x, y, -0.05));
+        const curve = new THREE.CatmullRomCurve3(pts);
+        add(R.head, keloMesh(skinTaperTube(curve, 0.1, 0.035), M.shell));
+        [[0.06, M.cover, 0.1], [0.1, glow, 0.093], [0.14, M.cover, 0.088]].forEach(([u, m, r]) => {
+          const p = curve.getPointAt(u), tg = curve.getTangentAt(u);
+          const band = keloMesh(new THREE.TorusGeometry(r, 0.016, 8, 22), m, { shadow: false });
+          band.position.copy(p); band.lookAt(p.clone().add(tg));
+          add(R.head, band);
+        });
+      });
+      // a little dark neck
+      add(R.body, keloMesh(new THREE.CylinderGeometry(0.05, 0.06, 0.12, 12), M.cover, { pos: [0, 0.6, 0] }));
+      // glowing dots on her dark body and limbs
+      const dot = new THREE.SphereGeometry(0.013, 8, 6);
+      [[0.5, 0.4], [0.5, -0.4], [0.3, 0.9], [0.3, -0.9]].forEach(([y, ph]) => add(R.body, skinOnShape(keloMesh(dot, glow, { shadow: false }), R.torsoProfile, R.TSX, R.TSZ, y, ph, 0.004)));
+      ['lArm', 'rArm'].forEach(k => add(R[k], keloMesh(dot, glow, { pos: [0, -0.16, 0.038], shadow: false })));
+      ['lElbow', 'rElbow'].forEach(k => add(R[k], keloMesh(dot, glow, { pos: [0, -0.14, 0.036], shadow: false })));
+      ['lKnee', 'rKnee'].forEach(k => { add(R[k], keloMesh(dot, glow, { pos: [0, -0.15, 0.045], shadow: false })); add(R[k], keloMesh(dot, glow, { pos: [0.02, -0.3, 0.04], shadow: false })); });
+      // the dress: a bodice with two straps, and a flared skirt. The back half hangs from her waist;
+      // the front half is hinged at the waist and lifts with her knees (update below)
+      add(R.body, keloLathe([[0.17, 0.22], [0.15, 0.3], [0.145, 0.36], [0.155, 0.45]], dress, { sx: 1, sz: 0.85, seg: 26 }));
+      [-1, 1].forEach(s => { const st = keloMesh(new THREE.TorusGeometry(0.11, 0.014, 6, 14, Math.PI * 0.75), dress, { pos: [s * 0.07, 0.43, 0] }); st.rotation.set(0, Math.PI / 2, Math.PI * 0.12); add(R.body, st); });
+      const bell = [[0.47, -0.36], [0.4, -0.22], [0.31, -0.06], [0.23, 0.08], [0.175, 0.22]].map(([r, y]) => new THREE.Vector2(r, y));
+      const back = keloMesh(new THREE.LatheGeometry(bell, 28, Math.PI / 2, Math.PI), dress);
+      back.scale.set(1, 1, 0.88);
+      add(R.body, back);
+      const hemB = keloMesh(new THREE.TorusGeometry(0.47, 0.012, 6, 28, Math.PI).rotateX(Math.PI / 2).rotateY(Math.PI), dress, { pos: [0, -0.36, 0] });
+      hemB.scale.set(1, 1, 0.88); add(R.body, hemB);
+      const front = new THREE.Group();
+      front.name = 'skirtFront';
+      front.position.set(0, 0.22, 0);
+      const fm = keloMesh(new THREE.LatheGeometry(bell.map(v => new THREE.Vector2(v.x, v.y - 0.22)), 28, -Math.PI / 2, Math.PI), dress);
+      fm.scale.set(1, 1, 0.88);
+      front.add(fm);
+      const hemF = keloMesh(new THREE.TorusGeometry(0.47, 0.012, 6, 28, Math.PI).rotateX(Math.PI / 2), dress, { pos: [0, -0.58, 0] });
+      hemF.scale.set(1, 1, 0.88); front.add(hemF);
+      front.userData.skinPart = 'skirtFront';
+      add(R.body, front);
+      R.skirtFront = front;
+    },
+    // her skirt's front lifts over her knees when she sits or kneels, and swings a little as she walks
+    update(R) {
+      const f = R.skirtFront;
+      if (!f || !R.lLeg) return;
+      const lx = R.lLeg.rotation.x, rx = R.rLeg.rotation.x;
+      const lift = Math.min(0, Math.min(lx, rx));          // the leg furthest forward
+      f.rotation.x = lift * 0.95;
     }
   },
   {
     id: 'kitbot', name: 'Kitbot', priceCents: 149, currency: 'USD', rarity: 'rare',
-    blurb: 'A big space-helmet head with a dark screen face, cat-ear fins and chunky magenta headphones, a puffy suit and a colour-bar chest panel.',
+    blurb: 'A chibi space cat: a huge white helmet with a magenta rim round a dark screen face, cat ears and magenta headphones, on a short stubby suit with a colour-bar chest panel.',
+    view: { yaw: 0.15, elev: 0.05 },
     palette: {
-      shell: { color: 0xf8f8fb, metalness: 0.04, roughness: 0.32, clearcoat: 1, clearcoatRoughness: 0.08 },
-      cream: { color: 0xf8f8fb },
-      cover: { color: 0x2a2440, roughness: 0.45 },
-      joint: { color: 0xe8268f },
+      shell: { color: 0xf9f9fb, metalness: 0.03, roughness: 0.32, clearcoat: 1, clearcoatRoughness: 0.08 },
+      cream: { color: 0xf9f9fb },
+      cover: { color: 0xe8268f, metalness: 0.05, roughness: 0.38, clearcoat: 0.6 },
+      joint: { color: 0xd9dbe2 },
       rubber: { color: 0x2a2440 },
       frame: { color: 0xd0d3da },
       amber: { color: 0xe8268f, emissive: 0x3a0020, emissiveIntensity: 0.4 },
-      glass: { color: 0x120d24 },
+      glass: { color: 0x1a1430, metalness: 0.2, roughness: 0.08 },
       eye: { color: 0x7ff3ff },
-      eyeGlow: { color: 0x4fe3ff, opacity: 0.32 },
+      eyeGlow: { color: 0x4fe3ff, opacity: 0.3 },
       led: { color: 0xff4fb3 },
-      cheek: { color: 0xff6fae }
+      cheek: { color: 0xff8fc0, opacity: 0.5 }
     },
     idColor: '#ff5cb0',
     shape: {
-      head: { kind: 'lathe', profile: skinScaleProfile(SKIN_ROUND_HEAD, 1.34, 1.3), sx: 1.12, sz: 1.0 },
-      face: { yc: 0.38, hy: 0.27, phi: 1.12 },
-      eyes: { y: 0.41, phi: 0.33, r: 0.07, mouthDy: 0.11, cheekDy: 0.07 },
-      ears: 'none',
-      antenna: false,
-      torso: { kind: 'lathe', profile: [[0, 0], [0.18, 0.02], [0.24, 0.08], [0.26, 0.2], [0.26, 0.36], [0.25, 0.46], [0.21, 0.54], [0.12, 0.6], [0, 0.62]], sx: 1.04, sz: 0.88 },
-      belly: { yc: 0.28, hy: 0.13, phi: 0.5 },
-      pack: { w: 0.38, h: 0.4, d: 0.14 },
-      arm: { kind: 'capsule', shoulder: 0.095, upper: [0.08, 0.076], elbow: 0.065, fore: [0.082, 0.072] },
-      leg: { kind: 'capsule', hip: 0.1, thigh: [0.104, 0.1], knee: 0.085, shin: [0.1, 0.094] },
-      boot: { kind: 'ball', w: 0.14, h: 0.13, l: 0.18, toe: 0.045 }
+      head: { kind: 'lathe', profile: skinBallHead(0.53, 0.14, 0.93), sx: 1.1, sz: 0.97 },
+      face: { yc: 0.34, hy: 0.27, phi: 1.08 }, faceFrame: 'amber',
+      eyes: { y: 0.37, phi: 0.27, r: 0.072, mouthDy: 0.11, cheekDy: 0.07 },
+      ears: 'none', antenna: false, neck: false,
+      torso: { kind: 'lathe', profile: [[0, 0.1], [0.2, 0.11], [0.25, 0.18], [0.27, 0.3], [0.27, 0.42], [0.25, 0.5], [0.19, 0.56], [0.1, 0.59], [0, 0.6]], sx: 1.05, sz: 0.88 },
+      belly: { yc: 0.32, hy: 0.001, phi: 0.01 },
+      pack: { w: 0.4, h: 0.38, d: 0.14 },
+      pelvis: { profile: [[0, -0.14], [0.12, -0.135], [0.2, -0.09], [0.24, -0.02], [0.25, 0.06], [0.22, 0.12], [0, 0.13]], sx: 1.05, sz: 0.86 },
+      pelvisMat: 'shell',
+      arm: { kind: 'capsule', shoulder: 0.1, upper: [0.09, 0.088], elbow: 0.08, fore: [0.092, 0.088] },
+      leg: { kind: 'capsule', hip: 0.1, thigh: [0.11, 0.108], knee: 0.1, shin: [0.112, 0.108] },
+      boot: { kind: 'ball', w: 0.14, h: 0.14, l: 0.18, toe: 0.04 }
     },
     parts(M, R, add) {
-      // Cat-ear fins on top of the helmet, magenta inside
-      const tri = (w, h) => {
-        const s = new THREE.Shape();
-        s.moveTo(-w / 2, 0); s.lineTo(w / 2, 0); s.lineTo(w * 0.08, h); s.lineTo(-w * 0.08, h); s.lineTo(-w / 2, 0);
-        const g = new THREE.ExtrudeGeometry(s, { depth: 0.05, bevelEnabled: true, bevelSize: 0.014, bevelThickness: 0.014, bevelSegments: 2, curveSegments: 2 });
-        g.translate(0, 0, -0.025);
+      const H = R.headProfile, sx = R.HSX, sz = R.HSZ;
+      // a magenta band right round the helmet at the screen's middle, behind the face
+      const band = keloMesh(new THREE.TorusGeometry(keloProfileR(H, 0.34), 0.03, 8, 40, Math.PI * 1.25).rotateX(Math.PI / 2).rotateY(Math.PI * 1.125), M.amber, { pos: [0, 0.34, 0] });
+      band.scale.set(sx, 1, sz); add(R.head, band);
+      // cat ears: white outside, magenta and lilac inside
+      const tri = (w, h, d) => {
+        const sh = new THREE.Shape();
+        sh.moveTo(-w / 2, 0); sh.quadraticCurveTo(-w * 0.2, h * 0.7, 0, h); sh.quadraticCurveTo(w * 0.2, h * 0.7, w / 2, 0); sh.lineTo(-w / 2, 0);
+        const g = new THREE.ExtrudeGeometry(sh, { depth: d, bevelEnabled: true, bevelSize: 0.015, bevelThickness: 0.015, bevelSegments: 2, curveSegments: 6 });
+        g.translate(0, 0, -d / 2);
         return g;
       };
-      const fin = tri(0.25, 0.22), inner = tri(0.13, 0.13);
+      const lilac = new THREE.MeshStandardMaterial({ color: 0xb48cff, roughness: 0.5 });
       [-1, 1].forEach(s => {
         const g = new THREE.Group();
-        g.position.set(s * 0.25, 0.66, 0.04);
-        g.rotation.set(-0.1, 0, -s * 0.42);
-        g.add(keloMesh(fin, M.shell));
-        g.add(keloMesh(inner, M.amber, { pos: [0, 0.045, 0.035], shadow: false }));
+        g.position.set(s * 0.3, 0.74, 0.0);
+        g.rotation.set(-0.1, 0, -s * 0.5);
+        g.add(keloMesh(tri(0.28, 0.26, 0.06), M.shell));
+        g.add(keloMesh(tri(0.17, 0.16, 0.02), M.amber, { pos: [0, 0.03, 0.045], shadow: false }));
+        g.add(keloMesh(tri(0.09, 0.09, 0.01), lilac, { pos: [0, 0.05, 0.058], shadow: false }));
         add(R.head, g);
       });
-      // Chunky headphones: big cups and a thick band, behind the fins
-      const cup = new THREE.CylinderGeometry(0.17, 0.17, 0.1, 28).rotateZ(Math.PI / 2);
-      const pad = new THREE.TorusGeometry(0.14, 0.03, 8, 28).rotateY(Math.PI / 2);
-      const cap = new THREE.CylinderGeometry(0.1, 0.1, 0.014, 24).rotateZ(Math.PI / 2);
+      // magenta headphones on the sides
       [-1, 1].forEach(s => {
-        add(R.head, keloMesh(cup, M.amber, { pos: [s * (R.earX + 0.04), 0.36, -0.03] }));
-        add(R.head, keloMesh(pad, M.shell, { pos: [s * (R.earX - 0.005), 0.36, -0.03] }));
-        add(R.head, keloMesh(cap, M.shell, { pos: [s * (R.earX + 0.098), 0.36, -0.03], shadow: false }));
+        const x = s * R.earX;
+        add(R.head, keloMesh(new THREE.CylinderGeometry(0.19, 0.19, 0.11, 30).rotateZ(Math.PI / 2), M.amber, { pos: [x + s * 0.02, 0.36, -0.02] }));
+        add(R.head, keloMesh(new THREE.CylinderGeometry(0.12, 0.12, 0.02, 26).rotateZ(Math.PI / 2), M.shell, { pos: [x + s * 0.08, 0.36, -0.02], shadow: false }));
       });
-      const band = keloMesh(new THREE.TorusGeometry(R.earX + 0.05, 0.045, 8, 30, Math.PI), M.amber, { pos: [0, 0.36, -0.12] });
-      band.scale.set(1, 1.0, 1);
-      add(R.head, band);
-      // Magenta shoulder caps, cuffs and boot tops
-      const cap2 = skinCapGeometry(0.115, 1.2).rotateX(-Math.PI / 2);
-      ['lArm', 'rArm'].forEach(k => add(R[k], keloMesh(cap2, M.amber, { pos: [0, 0.01, 0] })));
-      const cuff = new THREE.TorusGeometry(0.08, 0.026, 8, 22).rotateX(Math.PI / 2);
-      ['lElbow', 'rElbow'].forEach(k => add(R[k], keloMesh(cuff, M.amber, { pos: [0, -0.27, 0] })));
-      const bootTop = new THREE.TorusGeometry(0.1, 0.03, 8, 22).rotateX(Math.PI / 2);
-      ['lKnee', 'rKnee'].forEach(k => add(R[k], keloMesh(bootTop, M.amber, { pos: [0, -0.4, 0] })));
-      // A dark chest panel with five glowing colour bars
-      const at = keloOnSurface(keloProfileR(R.torsoProfile, 0.3), 0.3, 0, R.TSX, R.TSZ, 0.006);
-      const panel = new THREE.Group();
-      panel.position.copy(at.p); panel.lookAt(at.p.clone().add(at.n));
-      panel.add(keloMesh(keloRoundedBox(0.2, 0.17, 0.02, 0.04, 0.006), M.cover, { shadow: false }));
-      [0xff5a5a, 0xffc23a, 0x5ee07a, 0x4fb3ff, 0xb07aff].forEach((c, i) => panel.add(keloMesh(keloRoundedBox(0.024, 0.11, 0.01, 0.008, 0.003), skinGlow(c, 1), { pos: [-0.064 + i * 0.032, 0, 0.012], shadow: false })));
+      // magenta shoulder caps, cuffs, gloves' rims, knee bands and boot tops
+      const cap = skinCapGeometry(0.13, 1.3).rotateX(-Math.PI / 2);
+      ['lArm', 'rArm'].forEach(k => add(R[k], keloMesh(cap, M.amber, { pos: [0, 0.01, 0] })));
+      ['lElbow', 'rElbow'].forEach(k => add(R[k], keloMesh(new THREE.TorusGeometry(0.095, 0.028, 8, 22).rotateX(Math.PI / 2), M.amber, { pos: [0, -0.26, 0] })));
+      ['lKnee', 'rKnee'].forEach(k => {
+        add(R[k], keloMesh(new THREE.TorusGeometry(0.115, 0.026, 8, 22).rotateX(Math.PI / 2), M.amber, { pos: [0, -0.04, 0] }));
+        add(R[k], keloMesh(new THREE.TorusGeometry(0.12, 0.03, 8, 22).rotateX(Math.PI / 2), M.amber, { pos: [0, -0.37, 0] }));
+      });
+      // the chest panel: a white frame, dark inset, four glowing upright colour bars
+      const panel = skinOnShape(new THREE.Group(), R.torsoProfile, R.TSX, R.TSZ, 0.33, 0, 0.004);
+      panel.add(keloMesh(keloRoundedBox(0.2, 0.19, 0.03, 0.045, 0.008), M.shell, { shadow: false }));
+      panel.add(keloMesh(keloRoundedBox(0.16, 0.15, 0.01, 0.035, 0.003), M.glass, { pos: [0, 0, 0.016], shadow: false }));
+      [0x3fe07a, 0xffd23a, 0xff5a5a, 0x4fb3ff].forEach((c, i) => panel.add(keloMesh(keloRoundedBox(0.026, 0.1, 0.01, 0.01, 0.003), skinGlow(c, 1), { pos: [-0.05 + i * 0.034, 0, 0.023], shadow: false })));
       add(R.body, panel);
     }
   },
   {
     id: 'marshmallow', name: 'Marshmallow', priceCents: 149, currency: 'USD', rarity: 'rare',
-    blurb: 'Soft-touch blush pink and all curves: a big smooth round head with a little window face and amber side lenses, a cosy sweater body, wide sleeves and trousers, and big round shoes.',
+    blurb: 'Soft-touch pastel pink: a smooth round head with a little window face and a gold side lens, a loose sweater with a light-up chest panel, wide sleeves and trousers, and chunky round shoes.',
+    view: { yaw: 0.6, elev: -0.2 },
     palette: {
-      shell: { kind: 'std', color: 0xf6c4cc, metalness: 0, roughness: 0.86 },
-      cream: { kind: 'std', color: 0xfdf3f0, metalness: 0, roughness: 0.6 },
-      cover: { color: 0xf0b3bf, metalness: 0, roughness: 0.85 },
-      joint: { color: 0xe8a9b6, roughness: 0.9 },
-      rubber: { color: 0xd38f9f, roughness: 0.9 },
-      seam: { color: 0xe3a2b0, metalness: 0 },
+      shell: { kind: 'std', color: 0xf7d0d2, metalness: 0, roughness: 0.82 },
+      cream: { kind: 'std', color: 0xe9b7bf, metalness: 0, roughness: 0.6 },
+      cover: { color: 0xf2c3c8, metalness: 0, roughness: 0.82 },
+      joint: { color: 0xeab8be, roughness: 0.85 },
+      rubber: { color: 0xe5aeb6, roughness: 0.85 },
+      seam: { color: 0xe8b5bb, metalness: 0 },
       frame: { color: 0xf6d6dc, metalness: 0.1, roughness: 0.8 },
-      amber: { color: 0xffb02e, emissive: 0x8a4a00, emissiveIntensity: 0.8 },
-      glass: { kind: 'std', color: 0xf7eef6, metalness: 0, roughness: 0.35 },
+      amber: { color: 0xffb02e, metalness: 0.5, roughness: 0.3, emissive: 0x8a4a00, emissiveIntensity: 0.6 },
+      glass: { kind: 'std', color: 0xfff8fa, metalness: 0, roughness: 0.25 },
       eye: { color: 0x2c3a9e },
       eyeGlow: { color: 0x000000, opacity: 0 },
-      shine: { color: 0xc9d3ff },
+      shine: { color: 0xdfe6ff },
       led: { color: 0xffc070 },
-      cheek: { color: 0xff9aa6, opacity: 0.55 },
-      visor: { opacity: 0.08 }
+      visor: { opacity: 0.06 }
     },
     idColor: '#ffb347',
     shape: {
-      head: { kind: 'lathe', profile: [[0, 0], [0.16, 0.015], [0.28, 0.08], [0.36, 0.19], [0.405, 0.32], [0.415, 0.45], [0.395, 0.57], [0.34, 0.68], [0.24, 0.765], [0.12, 0.81], [0, 0.82]], sx: 1.0, sz: 0.98 },
-      face: { yc: 0.45, hy: 0.15, phi: 0.72 },
-      eyes: { y: 0.46, phi: 0.2, r: 0.045, mouthDy: 0.08, cheekDy: 0.055, cheek: 0.8 },
-      ears: 'none',
-      torso: { kind: 'lathe', profile: [[0, -0.06], [0.24, -0.05], [0.275, 0.03], [0.285, 0.2], [0.285, 0.42], [0.27, 0.52], [0.21, 0.6], [0.11, 0.645], [0, 0.655]], sx: 0.94, sz: 0.86 },
-      belly: { yc: 0.3, hy: 0.16, phi: 0.36 },
-      pack: { w: 0.28, h: 0.3, d: 0.1 },
-      arm: { kind: 'capsule', shoulder: 0.1, upper: [0.092, 0.098], elbow: 0.08, fore: [0.1, 0.108] },
-      leg: { kind: 'capsule', hip: 0.1, thigh: [0.108, 0.11], knee: 0.1, shin: [0.112, 0.118] },
-      boot: { kind: 'ball', w: 0.155, h: 0.15, l: 0.21, toe: 0.06 }
+      head: { kind: 'lathe', profile: skinBallHead(0.39, 0.02, 1.0), sx: 1.0, sz: 0.97 },
+      face: { yc: 0.43, hy: 0.16, phi: 0.78 },
+      eyes: { y: 0.44, phi: 0.2, r: 0.048, lift: 0.02 },
+      mouth: false, cheeks: false,
+      ears: 'none', antenna: false,
+      torso: { kind: 'lathe', profile: [[0, -0.22], [0.27, -0.22], [0.3, -0.17], [0.295, 0.0], [0.29, 0.2], [0.29, 0.42], [0.27, 0.52], [0.21, 0.59], [0.1, 0.625], [0, 0.635]], sx: 1.0, sz: 0.8 },
+      belly: { yc: 0.3, hy: 0.001, phi: 0.01 },
+      pack: { w: 0.001, h: 0.001, d: 0.001 },
+      arm: { kind: 'capsule', shoulder: 0.1, upper: [0.098, 0.104], elbow: 0.09, fore: [0.106, 0.114] },
+      leg: { kind: 'capsule', hip: 0.1, thigh: [0.115, 0.115], knee: 0.11, shin: [0.118, 0.128] },
+      boot: { kind: 'ball', w: 0.165, h: 0.15, l: 0.235, toe: 0.07, sole: 0.06, mat: 'cream' }
     },
     parts(M, R, add) {
-      const warm = new THREE.MeshBasicMaterial({ color: 0xffb060, transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending });
-      const glowStrip = skinGlow(0xbfe9ff, 1);
-      // A tall rounded chest plate with an amber button and two light strips
-      const at = keloOnSurface(keloProfileR(R.torsoProfile, 0.3), 0.3, 0, R.TSX, R.TSZ, 0.01);
-      const plate = new THREE.Group();
-      plate.position.copy(at.p); plate.lookAt(at.p.clone().add(at.n));
-      plate.add(keloMesh(keloRoundedBox(0.13, 0.3, 0.02, 0.06, 0.008), M.cream, { shadow: false }));
-      plate.add(keloMesh(new THREE.CylinderGeometry(0.045, 0.048, 0.03, 24).rotateX(Math.PI / 2), M.amber, { pos: [0, -0.03, 0.014] }));
-      const halo = keloMesh(new THREE.CircleGeometry(0.085, 24), warm, { pos: [0, -0.03, 0.012], shadow: false });
-      halo.renderOrder = 1;
-      plate.add(halo);
-      [-0.03, 0.03].forEach(x => plate.add(keloMesh(keloRoundedBox(0.016, 0.06, 0.01, 0.006, 0.002), glowStrip, { pos: [x, 0.09, 0.012], shadow: false })));
-      add(R.body, plate);
-      // Amber lens on each side of the head, set in a soft ring
-      [-1, 1].forEach(s => {
-        const x = s * (R.earX - 0.01);
-        add(R.head, keloMesh(new THREE.CylinderGeometry(0.075, 0.075, 0.04, 24).rotateZ(Math.PI / 2), M.cover, { pos: [x, 0.42, 0.04] }));
-        add(R.head, keloMesh(new THREE.SphereGeometry(0.058, 18, 12), M.amber, { pos: [x + s * 0.018, 0.42, 0.04] }));
-      });
-      // A sweater hem, wide sleeve cuffs with an amber band, trouser hems
-      add(R.body, (() => { const m = keloMesh(new THREE.TorusGeometry(0.255, 0.03, 8, 30).rotateX(Math.PI / 2), M.cover, { pos: [0, -0.04, 0] }); m.scale.set(0.95, 1, 0.87); return m; })());
-      const sleeve = new THREE.TorusGeometry(0.105, 0.022, 8, 22).rotateX(Math.PI / 2);
+      const warm = new THREE.MeshBasicMaterial({ color: 0xffc060, transparent: true, opacity: 0.4, depthWrite: false, blending: THREE.AdditiveBlending });
+      const blue = skinGlow(0x9fd8ff, 1);
+      // a gold side lens set in a soft ring, on her left
+      const H = R.headProfile;
+      const lens = skinOnShape(new THREE.Group(), H, R.HSX, R.HSZ, 0.37, -1.25, 0.0);
+      lens.add(keloMesh(new THREE.CylinderGeometry(0.09, 0.095, 0.05, 28).rotateX(Math.PI / 2), M.cream));
+      lens.add(keloMesh(new THREE.SphereGeometry(0.07, 20, 14), M.amber, { pos: [0, 0, 0.02] }));
+      add(R.head, lens);
+      // a thin gold ring round the neck
+      add(R.body, keloMesh(new THREE.TorusGeometry(0.085, 0.014, 8, 24).rotateX(Math.PI / 2), M.amber, { pos: [0, 0.69, 0] }));
+      // the chest panel: a tall rounded plate with two blue light bars, a wide bar and a gold button
+      const panel = skinOnShape(new THREE.Group(), R.torsoProfile, R.TSX, R.TSZ, 0.33, 0, 0.006);
+      panel.add(keloMesh(keloRoundedBox(0.15, 0.36, 0.025, 0.07, 0.008), M.cream, { shadow: false }));
+      [-0.032, 0.032].forEach(x => panel.add(keloMesh(keloRoundedBox(0.018, 0.07, 0.01, 0.007, 0.002), blue, { pos: [x, 0.1, 0.016], shadow: false })));
+      panel.add(keloMesh(keloRoundedBox(0.07, 0.022, 0.01, 0.009, 0.002), blue, { pos: [0, 0.035, 0.016], shadow: false }));
+      panel.add(keloMesh(new THREE.CylinderGeometry(0.04, 0.042, 0.03, 24).rotateX(Math.PI / 2), M.amber, { pos: [0, -0.05, 0.018] }));
+      const halo = keloMesh(new THREE.CircleGeometry(0.075, 24), warm, { pos: [0, -0.05, 0.016], shadow: false });
+      halo.renderOrder = 1; panel.add(halo);
+      panel.add(keloMesh(keloRoundedBox(0.04, 0.012, 0.01, 0.005, 0.002), blue, { pos: [0, -0.13, 0.016], shadow: false }));
+      add(R.body, panel);
+      // sweater hem, sleeve cuffs with a gold band, trouser hems
+      add(R.body, (() => { const m = keloMesh(new THREE.TorusGeometry(0.285, 0.03, 8, 32).rotateX(Math.PI / 2), M.cover, { pos: [0, -0.2, 0] }); m.scale.set(1, 1, 0.82); return m; })());
       ['lElbow', 'rElbow'].forEach(k => {
-        add(R[k], keloMesh(sleeve, M.cover, { pos: [0, -0.275, 0] }));
-        add(R[k], keloMesh(new THREE.TorusGeometry(0.106, 0.009, 6, 22).rotateX(Math.PI / 2), M.amber, { pos: [0, -0.24, 0], shadow: false }));
+        add(R[k], keloMesh(new THREE.TorusGeometry(0.11, 0.022, 8, 22).rotateX(Math.PI / 2), M.cover, { pos: [0, -0.285, 0] }));
+        add(R[k], keloMesh(new THREE.TorusGeometry(0.112, 0.01, 6, 22).rotateX(Math.PI / 2), M.amber, { pos: [0, -0.245, 0], shadow: false }));
       });
-      const hem = new THREE.TorusGeometry(0.118, 0.024, 8, 22).rotateX(Math.PI / 2);
-      ['lKnee', 'rKnee'].forEach(k => add(R[k], keloMesh(hem, M.cover, { pos: [0, -0.39, 0] })));
-      // A soft warm pom on his antenna
-      add(R.antenna, keloMesh(new THREE.SphereGeometry(0.06, 16, 12), M.amber, { pos: [0, 0.2, 0] }));
-    }
-  },
-  {
-    id: 'twirl', name: 'Twirl', priceCents: 199, currency: 'USD', rarity: 'epic',
-    blurb: 'A big glossy pearl head with huge lashed eyes and two curled pigtail horns, a tiny body in a flared dress, and thin dark limbs dotted with light.',
-    palette: {
-      shell: { color: 0xf3f4f7, metalness: 0.3, roughness: 0.14, clearcoat: 1, clearcoatRoughness: 0.03 },
-      cream: { color: 0xf3f4f7 },
-      cover: { color: 0x1c2230, metalness: 0.35, roughness: 0.35 },
-      joint: { color: 0x151a24, metalness: 0.3, roughness: 0.4 },
-      rubber: { color: 0x151a24 },
-      frame: { color: 0xdfe4ec, metalness: 0.7 },
-      amber: { color: 0x37e0e8, emissive: 0x0a4a50, emissiveIntensity: 0.6 },
-      eye: { color: 0x4fe8f2 },
-      eyeGlow: { color: 0x1fb8d8, opacity: 0.5 },
-      led: { color: 0x5ff0f5 },
-      cheek: { color: 0xffb3d1, opacity: 0.5 }
-    },
-    idColor: '#37e0e8',
-    shape: {
-      head: { kind: 'lathe', profile: [[0, 0], [0.13, 0.012], [0.25, 0.07], [0.335, 0.17], [0.38, 0.3], [0.39, 0.42], [0.372, 0.54], [0.32, 0.65], [0.23, 0.735], [0.12, 0.78], [0, 0.79]], sx: 1.0, sz: 0.94 },
-      face: null,
-      eyes: { y: 0.33, phi: 0.43, r: 0.1, mouthDy: 0.16, cheekDy: 0.1 },
-      ears: 'none',
-      antenna: false,
-      torso: { kind: 'lathe', profile: [[0, 0.05], [0.1, 0.06], [0.12, 0.15], [0.12, 0.26], [0.14, 0.38], [0.165, 0.47], [0.16, 0.54], [0.12, 0.6], [0.07, 0.645], [0, 0.66]], sx: 1.0, sz: 0.85 },
-      belly: { yc: 0.42, hy: 0.06, phi: 0.3 },
-      pack: { w: 0.16, h: 0.18, d: 0.06 },
-      pelvis: { profile: [[0, -0.1], [0.07, -0.095], [0.11, -0.06], [0.13, 0.0], [0.13, 0.06], [0, 0.08]], sx: 1.0, sz: 0.85 },
-      limbMat: 'cover',
-      arm: { kind: 'capsule', shoulder: 0.058, upper: [0.042, 0.038], elbow: 0.04, fore: [0.04, 0.034] },
-      leg: { kind: 'capsule', hip: 0.065, thigh: [0.055, 0.048], knee: 0.048, shin: [0.05, 0.042] },
-      boot: { kind: 'dome', w: 0.095, h: 0.1, l: 0.18, toe: 0.06 }
-    },
-    parts(M, R, add) {
-      const glow = skinGlow(0x5ff0f5, 1);
-      const dress = new THREE.MeshPhysicalMaterial({ color: 0xf4f5f8, metalness: 0.15, roughness: 0.18, clearcoat: 1, clearcoatRoughness: 0.05, side: THREE.DoubleSide });
-      // Two curled pigtail horns, swept up and out from the top of the head, with glowing bands
-      [-1, 1].forEach(s => {
-        const pts = [[0.2, 0.66], [0.3, 0.74], [0.41, 0.8], [0.52, 0.78], [0.57, 0.69], [0.55, 0.6], [0.49, 0.58], [0.46, 0.63]]
-          .map(([x, y], i) => new THREE.Vector3(s * x, y, -0.04 - i * 0.01));
-        const curve = new THREE.CatmullRomCurve3(pts);
-        const tube = new THREE.TubeGeometry(curve, 48, 1, 10, false);
-        // thick at the root, thinning to the tip
-        const pos = tube.attributes.position, n = 49, ring = 11;
-        for (let i = 0; i < n; i++) {
-          const c = curve.getPointAt(i / (n - 1)), rad = 0.055 * (1 - i / (n - 1)) + 0.016;
-          for (let j = 0; j < ring; j++) {
-            const k = i * ring + j, v = new THREE.Vector3(pos.getX(k), pos.getY(k), pos.getZ(k)).sub(c).multiplyScalar(rad).add(c);
-            pos.setXYZ(k, v.x, v.y, v.z);
-          }
-        }
-        tube.computeVertexNormals();
-        add(R.head, keloMesh(tube, M.shell));
-        [0.08, 0.13].forEach(u => {
-          const p = curve.getPointAt(u), tg = curve.getTangentAt(u);
-          const band = keloMesh(new THREE.TorusGeometry(0.06 * (1 - u) + 0.022, 0.012, 6, 18), u < 0.1 ? M.cover : glow, { shadow: false });
-          band.position.copy(p); band.lookAt(p.clone().add(tg));
-          add(R.head, band);
-        });
-      });
-      // Soft swirls moulded on her crown
-      [-0.12, 0, 0.12].forEach(x => {
-        const sw = keloMesh(new THREE.TorusGeometry(0.045, 0.012, 6, 16, Math.PI * 1.5), M.shell, { pos: [x, 0.7, 0.2 - Math.abs(x) * 0.5] });
-        sw.rotation.set(-0.9, 0, x * 3);
-        add(R.head, sw);
-      });
-      // A flared dress: a bodice ring at the waist, the back and sides bell out from the hips, the
-      // front panels ride on her thighs (they lift with her legs when she sits)
-      add(R.body, keloLathe([[0.18, 0.0], [0.15, 0.1], [0.135, 0.2], [0.14, 0.26]], dress, { sx: 1, sz: 0.85, seg: 26 }));
-      const bell = [[0.4, -0.25], [0.33, -0.16], [0.25, -0.07], [0.19, 0.0]].map(([r, y]) => new THREE.Vector2(r, y));
-      const back = keloMesh(new THREE.LatheGeometry(bell, 28, 1.6, Math.PI * 2 - 3.2), dress);
-      back.scale.set(1, 1, 0.85);
-      add(R.body, back);
-      const front = [[0.22, -0.23], [0.18, -0.14], [0.14, -0.05], [0.12, 0.02]].map(([r, y]) => new THREE.Vector2(r, y));
-      [['lLeg', -1], ['rLeg', 1]].forEach(([k, s]) => add(R[k], keloMesh(new THREE.LatheGeometry(front, 14, s > 0 ? -0.55 : -1.6, 2.15), dress)));
-      // Light dots on her dark arms and legs, and a glowing band at her chest
-      const dot = new THREE.SphereGeometry(0.014, 8, 6);
-      ['lArm', 'rArm'].forEach(k => add(R[k], keloMesh(dot, glow, { pos: [0, -0.18, 0.04], shadow: false })));
-      ['lElbow', 'rElbow'].forEach(k => add(R[k], keloMesh(dot, glow, { pos: [0, -0.15, 0.038], shadow: false })));
-      ['lKnee', 'rKnee'].forEach(k => { add(R[k], keloMesh(dot, glow, { pos: [0, -0.16, 0.048], shadow: false })); add(R[k], keloMesh(dot, glow, { pos: [0, -0.3, 0.044], shadow: false })); });
-      add(R.body, (() => { const m = keloMesh(new THREE.TorusGeometry(0.155, 0.009, 6, 26).rotateX(Math.PI / 2), glow, { pos: [0, 0.47, 0], shadow: false }); m.scale.set(1.06, 1, 0.9); return m; })());
-      // Deep dark sockets the big eyes glow out of
-      [-1, 1].forEach(s => {
-        const at = keloOnSurface(keloProfileR(R.headProfile, 0.33), 0.33, s * 0.43, R.HSX, R.HSZ, 0.005);
-        const m = keloMesh(new THREE.CircleGeometry(0.135, 28), M.cover, { shadow: false });
-        m.position.copy(at.p); m.lookAt(at.p.clone().add(at.n)); m.scale.set(0.95, 1.08, 1);
-        add(R.head, m);
-      });
-      // Long glowing lashes drawn on the shell over each eye
-      const lash = new THREE.BoxGeometry(0.014, 0.05, 0.004);
-      [R.lEye, R.rEye].forEach(eye => {
-        const s = eye.userData.side, open = eye.userData.open;
-        (s > 0 ? [0.3, 0.7, 1.1] : [Math.PI - 0.3, Math.PI - 0.7, Math.PI - 1.1]).forEach(a => {
-          const m = keloMesh(lash, M.cover, { shadow: false });
-          m.position.set(Math.cos(a) * 0.15, Math.sin(a) * 0.15, 0.002);
-          m.rotation.z = a - Math.PI / 2;
-          add(open, m);
-        });
-      });
+      ['lKnee', 'rKnee'].forEach(k => add(R[k], keloMesh(new THREE.TorusGeometry(0.126, 0.024, 8, 22).rotateX(Math.PI / 2), M.cover, { pos: [0, -0.38, 0] })));
     }
   },
   {
     id: 'spark', name: 'Spark', priceCents: 299, currency: 'USD', rarity: 'legendary',
-    blurb: 'Brushed silver with a big helmet head and a full black face screen, glowing ear spikes and crown light, blue glow rings at every joint and chunky boots.',
+    blurb: 'A chibi silver bot: a huge helmet with a big black visor face, sparkling eyes and a smile, glowing ear spikes and crown light, a small body with a blue core, and stubby glowing limbs on chunky boots.',
+    view: { yaw: 0.25, elev: 0.15 },
     palette: {
-      shell: { color: 0xd3d8e0, metalness: 0.8, roughness: 0.2, clearcoat: 0.8, clearcoatRoughness: 0.08 },
-      cream: { color: 0xd3d8e0, metalness: 0.8, roughness: 0.2, clearcoat: 0.8 },
-      cover: { color: 0x15181e, metalness: 0.4, roughness: 0.25 },
-      joint: { color: 0x2a2e36, metalness: 0.5 },
+      shell: { color: 0xd5dae2, metalness: 0.75, roughness: 0.18, clearcoat: 0.9, clearcoatRoughness: 0.06 },
+      cream: { color: 0xd5dae2, metalness: 0.75, roughness: 0.18, clearcoat: 0.9 },
+      cover: { color: 0xc5cbd4, metalness: 0.75, roughness: 0.22 },
+      joint: { color: 0x22262e, metalness: 0.5 },
       rubber: { color: 0x15171b },
       frame: { color: 0xdfe4ea, metalness: 0.9, roughness: 0.2 },
       amber: { color: 0x4fc3ff, emissive: 0x0a3a66, emissiveIntensity: 0.8 },
-      glass: { color: 0x05070c },
-      visor: { color: 0x8fb8ff, opacity: 0.22 },
-      eye: { color: 0x8fdcff },
-      eyeGlow: { color: 0x3fa8ff, opacity: 0.45 },
+      glass: { color: 0x05070c, metalness: 0.3, roughness: 0.05 },
+      visor: { color: 0x8fb8ff, opacity: 0.2 },
+      eye: { color: 0x6fd0ff },
+      eyeGlow: { color: 0x2f8fff, opacity: 0.45 },
       led: { color: 0x6fd0ff },
-      cheek: { color: 0xff5c90, opacity: 0.75 }
+      cheek: { color: 0xff5c90, opacity: 0.8 }
     },
     idColor: '#6fc3ff',
     shape: {
-      head: { kind: 'lathe', profile: skinScaleProfile(SKIN_ROUND_HEAD, 1.33, 1.25), sx: 1.13, sz: 1.0 },
-      face: { yc: 0.37, hy: 0.27, phi: 1.2 },
-      eyes: { y: 0.4, phi: 0.36, r: 0.09, mouthDy: 0.14, cheekDy: 0.1, cheek: 1.2 },
-      ears: 'none',
-      antenna: false,
-      torso: { kind: 'lathe', profile: [[0, 0], [0.15, 0.02], [0.18, 0.1], [0.2, 0.22], [0.24, 0.36], [0.262, 0.46], [0.242, 0.54], [0.16, 0.61], [0.08, 0.645], [0, 0.66]], sx: 1.0, sz: 0.8 },
-      belly: { yc: 0.15, hy: 0.12, phi: 0.75 },
-      arm: { kind: 'capsule', shoulder: 0.1, upper: [0.075, 0.07], elbow: 0.062, fore: [0.086, 0.08] },
-      leg: { kind: 'capsule', hip: 0.095, thigh: [0.098, 0.092], knee: 0.082, shin: [0.105, 0.1] },
-      boot: { kind: 'dome', w: 0.14, h: 0.14, l: 0.205, toe: 0.05 }
+      head: { kind: 'lathe', profile: skinBallHead(0.54, 0.14, 0.92), sx: 1.07, sz: 0.98 },
+      face: { yc: 0.33, hy: 0.3, phi: 1.2 },
+      eyes: { y: 0.38, phi: 0.3, r: 0.1, mouthDy: 0.17, cheekDy: 0.1, cheek: 1.3 },
+      ears: 'none', antenna: false, neck: false,
+      torso: { kind: 'lathe', profile: [[0, 0.08], [0.16, 0.09], [0.2, 0.16], [0.22, 0.27], [0.245, 0.38], [0.25, 0.46], [0.22, 0.53], [0.14, 0.58], [0, 0.6]], sx: 1.02, sz: 0.85 },
+      belly: { yc: 0.33, hy: 0.001, phi: 0.01 },
+      pack: { w: 0.26, h: 0.26, d: 0.1 },
+      pelvis: { profile: [[0, -0.12], [0.12, -0.115], [0.19, -0.07], [0.22, 0.0], [0.22, 0.08], [0.18, 0.12], [0, 0.13]], sx: 1.05, sz: 0.86 },
+      pelvisMat: 'joint',
+      arm: { kind: 'capsule', shoulder: 0.1, upper: [0.085, 0.08], elbow: 0.07, fore: [0.092, 0.088] },
+      leg: { kind: 'capsule', hip: 0.095, thigh: [0.104, 0.1], knee: 0.09, shin: [0.112, 0.108] },
+      boot: { kind: 'dome', w: 0.15, h: 0.16, l: 0.21, toe: 0.04 }
     },
     parts(M, R, add) {
       const blue = skinGlow(0x5cc8ff, 1);
-      const soft = new THREE.MeshBasicMaterial({ color: 0x3f9cff, transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending });
-      // The belly panel is black glass (the cream material is silver on Spark)
-      // Glow rings round his chest light
-      const at = keloOnSurface(keloProfileR(R.torsoProfile, 0.36), 0.36, 0, R.TSX, R.TSZ, 0.01);
-      const chest = new THREE.Group();
-      chest.position.copy(at.p); chest.lookAt(at.p.clone().add(at.n));
-      chest.add(keloMesh(new THREE.CircleGeometry(0.06, 24), M.cover, { shadow: false }));
-      chest.add(keloMesh(new THREE.TorusGeometry(0.06, 0.012, 6, 28), blue, { pos: [0, 0, 0.004], shadow: false }));
-      chest.add(keloMesh(new THREE.CircleGeometry(0.03, 20), blue, { pos: [0, 0, 0.003], shadow: false }));
-      const halo = keloMesh(new THREE.RingGeometry(0.05, 0.12, 32), soft, { pos: [0, 0, -0.002], shadow: false });
-      halo.renderOrder = 1;
-      chest.add(halo);
-      add(R.body, chest);
-      add(R.body, keloMesh(keloPatchGeometry(R.torsoProfile, R.TSX, R.TSZ, { yc: 0.13, hy: 0.12, phi: 0.95 }, 0.006, 0.1), M.cover, { shadow: false }));
-      // Ear cups with glow rings and swept-up spikes, and a glowing disc on the crown
-      const cup = new THREE.CylinderGeometry(0.15, 0.15, 0.09, 28).rotateZ(Math.PI / 2);
-      const ring = new THREE.TorusGeometry(0.11, 0.016, 6, 28).rotateY(Math.PI / 2);
+      const soft = new THREE.MeshBasicMaterial({ color: 0x3f9cff, transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending });
+      const H = R.headProfile;
+      // a black belly and a glowing blue core on his chest
+      add(R.body, keloMesh(keloPatchGeometry(R.torsoProfile, R.TSX, R.TSZ, { yc: 0.17, hy: 0.1, phi: 1.1 }, 0.004, 0.0), M.joint, { shadow: false }));
+      const core = skinOnShape(new THREE.Group(), R.torsoProfile, R.TSX, R.TSZ, 0.38, 0, 0.008);
+      core.add(keloMesh(new THREE.CylinderGeometry(0.075, 0.08, 0.03, 28).rotateX(Math.PI / 2), M.shell));
+      core.add(keloMesh(new THREE.TorusGeometry(0.06, 0.012, 6, 28), blue, { pos: [0, 0, 0.017], shadow: false }));
+      core.add(keloMesh(new THREE.CircleGeometry(0.04, 24), blue, { pos: [0, 0, 0.016], shadow: false }));
+      const halo = keloMesh(new THREE.RingGeometry(0.06, 0.13, 32), soft, { pos: [0, 0, 0.004], shadow: false });
+      halo.renderOrder = 1; core.add(halo);
+      add(R.body, core);
+      // the crown light: a silver cap with a glowing blue disc
+      add(R.head, keloMesh(new THREE.CylinderGeometry(0.13, 0.15, 0.04, 30), M.shell, { pos: [0, keloShapeTop(R.S.head) - 0.005, 0] }));
+      add(R.head, keloMesh(new THREE.CylinderGeometry(0.1, 0.1, 0.012, 28), blue, { pos: [0, keloShapeTop(R.S.head) + 0.018, 0], shadow: false }));
+      // ear cups with a glow ring, and a spike with a blue tip rising from each
       [-1, 1].forEach(s => {
-        add(R.head, keloMesh(cup, M.shell, { pos: [s * (R.earX + 0.02), 0.36, -0.02] }));
-        add(R.head, keloMesh(ring, blue, { pos: [s * (R.earX + 0.067), 0.36, -0.02] }));
-        const spike = keloMesh(new THREE.ConeGeometry(0.045, 0.22, 14), M.shell, { pos: [s * (R.earX + 0.03), 0.52, -0.04] });
-        spike.rotation.z = -s * 0.25;
+        const x = s * R.earX;
+        add(R.head, keloMesh(new THREE.CylinderGeometry(0.16, 0.17, 0.1, 30).rotateZ(Math.PI / 2), M.shell, { pos: [x + s * 0.01, 0.34, -0.02] }));
+        add(R.head, keloMesh(new THREE.TorusGeometry(0.12, 0.018, 6, 28).rotateY(Math.PI / 2), blue, { pos: [x + s * 0.062, 0.34, -0.02] }));
+        add(R.head, keloMesh(new THREE.CylinderGeometry(0.07, 0.07, 0.02, 22).rotateZ(Math.PI / 2), M.joint, { pos: [x + s * 0.062, 0.34, -0.02], shadow: false }));
+        const spike = new THREE.Group();
+        spike.position.set(x + s * 0.0, 0.48, -0.03);
+        spike.rotation.z = -s * 0.22;
+        spike.add(keloMesh(new THREE.CylinderGeometry(0.035, 0.06, 0.2, 16), M.shell, { pos: [0, 0.1, 0] }));
+        spike.add(keloMesh(new THREE.ConeGeometry(0.036, 0.13, 16), blue, { pos: [0, 0.265, 0], shadow: false }));
         add(R.head, spike);
-        const tip = keloMesh(new THREE.ConeGeometry(0.03, 0.08, 12), blue, { pos: [s * (R.earX + 0.058), 0.64, -0.04], shadow: false });
-        tip.rotation.z = -s * 0.25;
-        add(R.head, tip);
       });
-      add(R.head, keloMesh(new THREE.CylinderGeometry(0.1, 0.11, 0.025, 28), M.shell, { pos: [0, 0.762, 0] }));
-      add(R.head, keloMesh(new THREE.TorusGeometry(0.08, 0.014, 6, 26).rotateX(Math.PI / 2), blue, { pos: [0, 0.777, 0], shadow: false }));
-      // Blue glow rings at his joints: shoulders, elbows, wrists, hips, knees, ankles
-      ['lArm', 'rArm'].forEach(k => add(R[k], skinLimbRing(0.082, 0.012, -0.08, blue)));
-      ['lElbow', 'rElbow'].forEach(k => { add(R[k], skinLimbRing(0.07, 0.012, -0.03, blue)); add(R[k], skinLimbRing(0.084, 0.01, -0.27, blue)); });
-      ['lLeg', 'rLeg'].forEach(k => add(R[k], skinLimbRing(0.104, 0.012, -0.12, blue)));
-      ['lKnee', 'rKnee'].forEach(k => { add(R[k], skinLimbRing(0.094, 0.014, -0.02, blue)); add(R[k], skinLimbRing(0.108, 0.012, -0.38, blue)); });
-      // Blush strokes on his face screen, by the cheek lights
-      const stroke = keloRoundedBox(0.01, 0.036, 0.003, 0.004, 0.001);
+      // blush strokes on the visor
+      const stroke = keloRoundedBox(0.012, 0.04, 0.003, 0.005, 0.001);
       const pink = skinGlow(0xff7fae, 1);
-      [-1, 1].forEach(s => [-0.06, 0, 0.06].forEach(d => {
-        const m = skinSurfaceTile(stroke, pink, R.headProfile, R.HSX, R.HSZ, 0.3, s * (0.62 + d), 0.03);
+      [-1, 1].forEach(s => [-0.05, 0, 0.05].forEach(d => {
+        const m = skinOnShape(keloMesh(stroke, pink, { shadow: false }), H, R.HSX, R.HSZ, 0.27, s * (0.55 + d), 0.03);
         m.rotateZ(-s * 0.5);
         add(R.head, m);
       }));
+      // glow rings: shoulders, elbows, wrists, knees, ankles
+      ['lArm', 'rArm'].forEach(k => add(R[k], skinLimbRing(0.09, 0.013, -0.08, blue)));
+      ['lElbow', 'rElbow'].forEach(k => { add(R[k], skinLimbRing(0.084, 0.016, -0.03, blue)); add(R[k], skinLimbRing(0.094, 0.014, -0.27, blue)); });
+      ['lKnee', 'rKnee'].forEach(k => { add(R[k], skinLimbRing(0.112, 0.018, -0.02, blue)); add(R[k], skinLimbRing(0.118, 0.015, -0.36, blue)); });
+      // big silver shoulder caps
+      const cap = skinCapGeometry(0.12, 1.25).rotateX(-Math.PI / 2);
+      ['lArm', 'rArm'].forEach(k => add(R[k], keloMesh(cap, M.shell, { pos: [0, 0.01, 0] })));
     }
   }
 ];
@@ -570,6 +633,8 @@ function equipKeloSkinLook(id) {
           O.add(c);
         });
       });
+      // The skin's own rig (for moving parts) now points at the live joints
+      if (keloSkinRig) Object.keys(neu).forEach(k => { if (keloSkinRig[k] === neu[k]) keloSkinRig[k] = old[k]; });
       // The hands' finger rig moves over with the grip they had
       ['lHand', 'rHand'].forEach(k => {
         const grip = old[k].userData.grip;

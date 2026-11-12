@@ -24,6 +24,7 @@ let keloMouth, keloCheeks = [], keloAntenna;
 // own parts from things other code hung on him (a carried box, a held item); and the materials it made
 const keloBuiltParts = new WeakSet();
 let keloSkinBuilt = null;
+let keloSkinRig = null;   // the bones and shapes the skin was dressed on (skins with moving parts read it each frame)
 const KELO_HIP_Y = 1.06;                       // where his upper body hangs from, above his feet
 const KELO_LEG_Y = 1.04;                       // his hip joints (the top of his legs)
 const KELO_SHOULDER = { x: 0.33, y: 1.66 };    // shoulder joints, above his feet
@@ -341,7 +342,8 @@ function buildKelo1Character3D(opts = {}) {
 
       // Pelvis: a soft rounded cover with a belt line
       const P = S.pelvis;
-      keloBody.add(keloLathe(P.profile, M.cover, { sx: P.sx, sz: P.sz, seg: 28 }));
+      const mat = (k, d) => (k && M[k]) || d;
+      keloBody.add(keloLathe(P.profile, mat(S.pelvisMat, M.cover), { sx: P.sx, sz: P.sz, seg: 28 }));
       const belt = keloMesh(new THREE.TorusGeometry(keloProfileR(P.profile, 0.06), 0.012, 6, 28).rotateX(Math.PI / 2), M.amber, { pos: [0, 0.06, 0], shadow: false });
       belt.scale.set(P.sx, 1, P.sz);
       keloBody.add(belt);
@@ -349,7 +351,7 @@ function buildKelo1Character3D(opts = {}) {
       // Torso, with a belly panel, his K-1 badge and a little heart-light
       const T = S.torso;
       const torsoProfile = T.profile || KELO_SHAPE_CLASSIC.torso.profile, TSX = T.sx || 1, TSZ = T.sz || 1;
-      keloBody.add(keloShapeMesh(T, M.shell, 32));
+      keloBody.add(keloShapeMesh(T, mat(S.torsoMat, M.shell), 32));
       if (T.kind !== 'box') keloBody.add(keloSeamRing(T.profile, 0.535, TSX, TSZ, M), keloSeamRing(T.profile, 0.075, TSX, TSZ, M));
       keloBody.add(keloShapePanel(T, S.belly, 0.004, M.cream, 0.1));
       const idAt = keloShapePoint(T, 0.5, 0.5, 0.008);
@@ -374,8 +376,10 @@ function buildKelo1Character3D(opts = {}) {
       keloBody.add(pack);
 
       // Neck: short and soft
-      keloBody.add(keloLathe([[0.09, 0.6], [0.078, 0.64], [0.075, 0.73]], M.rubber, { seg: 20 }));
-      keloBellows(keloBody, 0.08, 0.69, 2, 0.03, M);
+      if (S.neck !== false) {
+        keloBody.add(keloLathe([[0.09, 0.6], [0.078, 0.64], [0.075, 0.73]], M.rubber, { seg: 20 }));
+        keloBellows(keloBody, 0.08, 0.69, 2, 0.03, M);
+      }
 
       // --- Head, with a face screen, ears and an antenna
       keloHead = new THREE.Group();
@@ -391,7 +395,7 @@ function buildKelo1Character3D(opts = {}) {
       const shrink = (v, k, dy) => Hd.kind === 'box' ? { yc: v.yc, w: v.w * k, h: v.h * k - dy } : { yc: v.yc, hy: v.hy - dy, phi: v.phi * k };
       // (a skin with face: null has its eyes straight on the shell, no screen)
       if (F) {
-        keloHead.add(keloShapePanel(Hd, F, 0.004, M.cream, 0.25));
+        keloHead.add(keloShapePanel(Hd, F, 0.004, mat(S.faceFrame, M.cream), 0.25));
         keloHead.add(keloShapePanel(Hd, shrink(F, 0.89, 0.03), 0.008, M.glass, 0.25));
         const visor = keloShapePanel(Hd, shrink(F, 0.92, 0.025), Hd.kind === 'box' ? 0.016 : 0.02, M.visor, 0.25);
         visor.renderOrder = 2;
@@ -404,7 +408,7 @@ function buildKelo1Character3D(opts = {}) {
       const eyeHalo = new THREE.CircleGeometry(er * 1.45, 24);
       const eyeArc = new THREE.TorusGeometry(er * 0.83, er * 0.24, 6, 16, Math.PI);
       const sparkle = new THREE.CircleGeometry(er * 0.28, 10);
-      const eyeLift = Hd.kind === 'box' ? 0.016 : 0.011;
+      const eyeLift = E.lift || (Hd.kind === 'box' ? 0.016 : 0.011);
       const makeEye = s => {
         const eye = new THREE.Group();
         const open = new THREE.Group();
@@ -422,7 +426,10 @@ function buildKelo1Character3D(opts = {}) {
         const at = Hd.kind === 'box'
           ? { p: new THREE.Vector3(s * (E.x || 0.11), E.y, Hd.d / 2 + eyeLift), n: new THREE.Vector3(0, 0, 1) }
           : keloOnSurface(keloProfileR(Hd.profile, E.y), E.y, s * E.phi, HSX, HSZ, eyeLift);
-        return keloStick(eye, keloHead, at.p, at.n);
+        keloStick(eye, keloHead, at.p, at.n);
+        // almond or tilted eyes: the eye group is squashed and turned (the face code animates the open eye inside it)
+        if (E.sx || E.sy || E.tilt) { eye.rotateZ(s * (E.tilt || 0)); eye.scale.set(E.sx || 1, E.sy || 1, 1); }
+        return eye;
       };
       keloLeftEye = makeEye(-1);
       keloRightEye = makeEye(1);
@@ -431,6 +438,7 @@ function buildKelo1Character3D(opts = {}) {
       const mouthY = E.y - (E.mouthDy || 0.13);
       const mouthAt = Hd.kind === 'box' ? { p: new THREE.Vector3(0, mouthY, Hd.d / 2 + eyeLift), n: new THREE.Vector3(0, 0, 1) } : keloOnSurface(keloProfileR(Hd.profile, mouthY) + 0.008, mouthY, 0, HSX, HSZ, 0.011);
       keloStick(keloMouth, keloHead, mouthAt.p, mouthAt.n);
+      if (S.mouth === false) keloMouth.visible = false;
       keloMouth.rotateZ(Math.PI);  // the arc's open side up: a smile
       // Rosy cheek lights
       keloCheeks = [-1, 1].map(s => {
@@ -438,6 +446,7 @@ function buildKelo1Character3D(opts = {}) {
         const cy = E.y - (E.cheekDy || 0.095);
         const at = Hd.kind === 'box' ? { p: new THREE.Vector3(s * ((E.x || 0.11) + 0.06), cy, Hd.d / 2 + eyeLift + 0.001), n: new THREE.Vector3(0, 0, 1) } : keloOnSurface(keloProfileR(Hd.profile, cy) + 0.0034, cy, s * (E.phi + 0.25), HSX, HSZ, 0.012);
         keloStick(c, keloHead, at.p, at.n);
+        if (S.cheeks === false) c.visible = false;
         c.scale.set(1.35 * (E.cheek || 1), 0.8 * (E.cheek || 1), 1);
         return c;
       });
@@ -481,13 +490,13 @@ function buildKelo1Character3D(opts = {}) {
         const shoulder = new THREE.Group();
         shoulder.position.set(s * KELO_SHOULDER.x, KELO_SHOULDER.y - KELO_HIP_Y, 0);
         shoulder.add(keloMesh(shoulderBall, M.shell));
-        shoulder.add(keloMesh(upperArm, limbMat, { pos: [0, -0.02, 0] }));
+        shoulder.add(keloMesh(upperArm, mat(A.upperMat, limbMat), { pos: [0, -0.02, 0] }));
         const elbow = new THREE.Group();
         elbow.position.set(0, -KELO_UPPER_ARM, 0);
         shoulder.add(elbow);
         elbow.add(keloMesh(elbowBall, M.joint));
         keloBellows(elbow, A.elbow * 0.95, 0.026, 3, 0.026, M);
-        elbow.add(keloMesh(forearm, limbMat, { pos: [0, -0.025, 0] }));
+        elbow.add(keloMesh(forearm, mat(A.foreMat, limbMat), { pos: [0, -0.025, 0] }));
         if (A.kind !== 'box') elbow.add(keloMesh(cuff, M.amber, { pos: [0, -KELO_FOREARM + 0.04, 0], shadow: false }));
         const hand = new THREE.Group();
         hand.position.set(0, -KELO_FOREARM, 0);
@@ -518,27 +527,28 @@ function buildKelo1Character3D(opts = {}) {
         const hip = new THREE.Group();
         hip.position.set(s * 0.12, KELO_LEG_Y, 0);
         hip.add(keloMesh(hipBall, M.joint));
-        hip.add(keloMesh(thigh, limbMat, { pos: [0, -0.02, 0] }));
+        hip.add(keloMesh(thigh, mat(G.thighMat, limbMat), { pos: [0, -0.02, 0] }));
         const knee = new THREE.Group();
         knee.position.set(0, -KELO_THIGH, 0);
         hip.add(knee);
         knee.add(keloMesh(kneeBall, M.joint));
         keloBellows(knee, G.knee * 0.96, 0.034, 3, 0.034, M);
-        knee.add(keloMesh(shin, limbMat, { pos: [0, -0.04, 0] }));
+        knee.add(keloMesh(shin, mat(G.shinMat, limbMat), { pos: [0, -0.04, 0] }));
         const ankle = new THREE.Group();
         ankle.position.set(0, -KELO_SHIN, 0);
         knee.add(ankle);
         ankle.add(keloMesh(ankleBall, M.joint));
         const toe = B.toe !== undefined ? B.toe : 0.05;
         if (B.kind === 'box') {
-          ankle.add(keloMesh(bootGeo, M.shell, { pos: [0, -ankleY + 0.025 + B.h / 2, toe] }));
+          ankle.add(keloMesh(bootGeo, mat(B.mat, M.shell), { pos: [0, -ankleY + (B.sole || 0.025) + B.h / 2, toe] }));
         } else {
-          const b = keloMesh(bootGeo, M.shell, { pos: [0, -ankleY + 0.025, toe] });
+          const b = keloMesh(bootGeo, mat(B.mat, M.shell), { pos: [0, -ankleY + (B.sole || 0.025), toe] });
           b.scale.set(B.w, B.h, B.l);
           ankle.add(b);
         }
-        const so = keloMesh(sole, M.rubber, { pos: [0, -ankleY + 0.0125, toe] });
-        so.scale.set(B.w + 0.005, 0.025, B.l + 0.005);
+        const soleH = B.sole || 0.025;
+        const so = keloMesh(sole, M.rubber, { pos: [0, -ankleY + soleH / 2, toe] });
+        so.scale.set(B.w + 0.005, soleH, B.l + 0.005);
         ankle.add(so);
         keloGroup.add(hip);
         return { hip, knee, ankle };
@@ -553,8 +563,9 @@ function buildKelo1Character3D(opts = {}) {
         .forEach(g => keloJoinRigid(g, keep));
 
       // His skin's own parts (js/skins.js), each in a "skin" group on the bone it rides on
+      keloSkinRig = {};
       if (typeof keloDressSkin === 'function') {
-        keloDressSkin(skinId, M, {
+        keloDressSkin(skinId, M, keloSkinRig = {
           group: keloGroup, body: keloBody, head: keloHead, pack,
           lArm: L.shoulder, rArm: R.shoulder, lElbow: L.elbow, rElbow: R.elbow, lHand: L.hand, rHand: R.hand,
           lLeg: LL.hip, rLeg: RL.hip, lKnee: LL.knee, rKnee: RL.knee, lFoot: LL.ankle, rFoot: RL.ankle,
@@ -564,7 +575,8 @@ function buildKelo1Character3D(opts = {}) {
       }
 
       buildKeloHandTools(M);
-      keloSkinBuilt = { skin: skinId, M };
+      const skinDef = typeof keloSkinDef === 'function' ? keloSkinDef(skinId) : null;
+      keloSkinBuilt = { skin: skinId, M, update: skinDef && skinDef.update ? skinDef.update.bind(null, keloSkinRig) : null };
       keloGroup.traverse(o => keloBuiltParts.add(o));
       if (opts.detached) return;
 
@@ -709,6 +721,8 @@ function updateKeloFace(t, dt, resting) {
       }
       a.last = _keloAntennaPos.clone();
       keloAntenna.rotation.set(a.rx, 0, -0.12 + a.rz);
+      // a skin's moving parts (a skirt that lifts with his knees...)
+      if (keloSkinBuilt && keloSkinBuilt.update) { try { keloSkinBuilt.update(dt); } catch (e) {} }
     }
 
 // The built-in tools he holds in his right fist: a core drill / auger and a TIG welding torch.

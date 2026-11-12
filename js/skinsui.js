@@ -13,16 +13,16 @@ function buildKeloFigure(skinId) {
       const keep = {
         keloGroup, keloBody, keloHead, keloLeftArm, keloRightArm, keloLeftElbow, keloRightElbow, keloLeftHand, keloRightHand,
         keloLeftLeg, keloRightLeg, keloLeftKnee, keloRightKnee, keloLeftFoot, keloRightFoot, keloLeftEye, keloRightEye,
-        keloMouth, keloCheeks, keloAntenna, keloDrillToolGroup, keloDrillBitMesh, keloWeldTorchGroup, keloWeldTipGlow, keloSkinBuilt
+        keloMouth, keloCheeks, keloAntenna, keloDrillToolGroup, keloDrillBitMesh, keloWeldTorchGroup, keloWeldTipGlow, keloSkinBuilt, keloSkinRig
       };
       let fig;
       try {
         buildKelo1Character3D({ skin: skinId, detached: true });
-        fig = { group: keloGroup, M: keloSkinBuilt.M, lArm: keloLeftArm, rArm: keloRightArm, lElbow: keloLeftElbow, rElbow: keloRightElbow, head: keloHead };
+        fig = { group: keloGroup, M: keloSkinBuilt.M, update: keloSkinBuilt.update, lArm: keloLeftArm, rArm: keloRightArm, lElbow: keloLeftElbow, rElbow: keloRightElbow, head: keloHead };
       } finally {
         ({ keloGroup, keloBody, keloHead, keloLeftArm, keloRightArm, keloLeftElbow, keloRightElbow, keloLeftHand, keloRightHand,
           keloLeftLeg, keloRightLeg, keloLeftKnee, keloRightKnee, keloLeftFoot, keloRightFoot, keloLeftEye, keloRightEye,
-          keloMouth, keloCheeks, keloAntenna, keloDrillToolGroup, keloDrillBitMesh, keloWeldTorchGroup, keloWeldTipGlow, keloSkinBuilt } = keep);
+          keloMouth, keloCheeks, keloAntenna, keloDrillToolGroup, keloDrillBitMesh, keloWeldTorchGroup, keloWeldTipGlow, keloSkinBuilt, keloSkinRig } = keep);
       }
       // His standing pose: arms a little out, elbows soft
       fig.lArm.rotation.z = -0.12; fig.rArm.rotation.z = 0.12;
@@ -54,7 +54,7 @@ function skinStudio() {
 
 // Draw a figure from angle `yaw` into a 2D canvas (rendered at 2x and scaled down for smooth edges)
 const _skinPx = { buf: null, img: null, tmp: null };
-function drawKeloFigure(fig, yaw, canvas, ss = 2) {
+function drawKeloFigure(fig, yaw, canvas, ss = 2, view = {}) {
       if (typeof renderer === 'undefined' || !renderer) return false;
       const S = skinStudio();
       const W = canvas.width, H = canvas.height, RW = Math.round(W * ss), RH = Math.round(H * ss);
@@ -68,8 +68,14 @@ function drawKeloFigure(fig, yaw, canvas, ss = 2) {
       fig.group.position.set(0, 0, 0);
       fig.group.rotation.set(0, yaw, 0);
       S.cam.aspect = W / H;
-      S.cam.position.set(0, 1.5, 5.9);
-      S.cam.lookAt(0, 1.32, 0);
+      // frame the whole figure (skins have different heights), seen from view.elev radians above level
+      if (!fig.box) { fig.group.updateMatrixWorld(true); fig.box = new THREE.Box3().setFromObject(fig.group); }
+      const bh = fig.box.max.y - Math.min(0, fig.box.min.y), cy = bh * 0.5;
+      const half = Math.tan(THREE.MathUtils.degToRad(S.cam.fov / 2));
+      const dist = Math.max(bh * 0.56 / half, (fig.box.max.x - fig.box.min.x) * 0.62 / (half * S.cam.aspect));
+      const el = view.elev || 0.08;
+      S.cam.position.set(0, cy + Math.sin(el) * dist, Math.cos(el) * dist);
+      S.cam.lookAt(0, cy, 0);
       S.cam.updateProjectionMatrix();
       const prevTarget = renderer.getRenderTarget(), prevClear = renderer.getClearColor(new THREE.Color()), prevAlpha = renderer.getClearAlpha();
       const prevShadow = renderer.shadowMap.autoUpdate;

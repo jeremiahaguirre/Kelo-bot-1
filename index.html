@@ -696,6 +696,14 @@
           </div>
           <p class="ui-note">Drag the ground to slide the map, right-drag or twist two fingers to turn, scroll or pinch to zoom, and WASD or the arrow keys to move. Double-click to fly somewhere; click the ground to send Kelo-1 there or ask what it is. <button type="button" data-explore-help class="underline text-amber-300 hover:text-amber-200">How to explore</button></p>
         </section>
+        <section id="skinsSection" class="ui-card" aria-labelledby="skinsTitle">
+          <div class="ui-section-head">
+            <h3 id="skinsTitle" class="ui-section-title">Skins</h3>
+            <span id="skinsMeta" class="ui-section-meta" title="Skins he has">1/6</span>
+          </div>
+          <ul id="skinsGrid" class="skins-grid" aria-labelledby="skinsTitle"></ul>
+          <p id="skinsNote" class="ui-note"></p>
+        </section>
         <div id="tryItPanel" class="space-y-3"></div>
       </div>
 
@@ -824,12 +832,45 @@
         <input id="shopContactInput" type="text" autocomplete="off" maxlength="300" placeholder="you@example.com or https://..." class="ui-input">
         <p id="shopContactStatus" class="ui-note" aria-live="polite"></p>
       </section>
+      <section class="ui-dialog-section">
+        <h4 class="ui-section-title">Skins</h4>
+        <label class="flex items-center justify-between gap-3 text-xs text-slate-300"><span>Dev mode: Buy unlocks skins free (no payment taken). Off: Buy says payments are coming soon.</span><input id="devUnlockToggle" type="checkbox" role="switch" class="ui-toggle" checked></label>
+      </section>
       <details class="ui-dialog-section">
         <summary class="text-xs font-semibold text-slate-300 cursor-pointer">His last decision</summary>
         <pre id="lastAgentStructuredOutput" class="mt-2 p-3 rounded-xl bg-slate-950 text-2xs font-mono text-slate-300 whitespace-pre-wrap max-h-48 overflow-y-auto"></pre>
       </details>
       <div class="ui-dialog-foot">
         <button id="btnSaveAIConfig" class="ui-btn ui-btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Skins (js/skinsui.js): the big turning preview, and the dev-mode unlock sheet -->
+  <div id="skinPreviewDialog" class="hidden ui-dialog" role="dialog" aria-modal="true" aria-labelledby="skinPreviewTitle">
+    <div class="ui-dialog-panel max-w-md">
+      <div class="ui-dialog-head">
+        <h3 id="skinPreviewTitle" class="ui-dialog-title">Skin</h3>
+        <button id="btnCloseSkinPreview" type="button" class="ui-icon-btn" aria-label="Close preview"><i class="ph-bold ph-x" data-hud-emoji="✕" aria-hidden="true"></i></button>
+      </div>
+      <canvas id="skinPreviewCanvas" class="skin-preview-canvas" tabindex="0" role="img" aria-label="Kelo-1 in this skin, turning. Drag or use the arrow keys to turn him."></canvas>
+      <div class="ui-dialog-section">
+        <p id="skinPreviewRarity" class="ui-section-meta"></p>
+        <p id="skinPreviewBlurb" class="text-xs text-slate-300"></p>
+      </div>
+      <div id="skinPreviewActions" class="ui-dialog-foot"></div>
+    </div>
+  </div>
+  <div id="skinBuyDialog" class="hidden ui-dialog" role="alertdialog" aria-modal="true" aria-labelledby="skinBuyTitle" aria-describedby="skinBuyNote">
+    <div class="ui-dialog-panel max-w-sm">
+      <div class="ui-dialog-head">
+        <h3 id="skinBuyTitle" class="ui-dialog-title">Unlock?</h3>
+        <span id="skinBuyPrice" class="ui-section-meta"></span>
+      </div>
+      <p id="skinBuyNote" class="text-xs text-slate-300">Dev mode: free unlock, no payment taken.</p>
+      <div class="ui-dialog-foot">
+        <button id="btnSkinBuyNo" type="button" class="ui-btn ui-btn-quiet">Cancel</button>
+        <button id="btnSkinBuyYes" type="button" class="ui-btn ui-btn-primary">Unlock free</button>
       </div>
     </div>
   </div>
@@ -852,6 +893,7 @@
   <script src="./js/mining.js"></script>
   <script src="./js/growth.js"></script>
   <script src="./js/kelo-body.js"></script>
+  <script src="./js/skins.js"></script>
   <script src="./js/scene.js"></script>
   <script src="./js/realism.js"></script>
   <script src="./js/weldstudio.js"></script>
@@ -933,5 +975,6 @@
   <script src="./js/agendalinks.js"></script>
   <script src="./js/hud.js"></script>
   <script src="./js/menuui.js"></script>
+  <script src="./js/skinsui.js"></script>
 </body>
 </html>

@@ -774,3 +774,21 @@ body.shopvisit-on #btnShowMinimap, body.shopvisit-on [data-where-kelo], body.sho
 :is(.ui-btn, .ui-chip, .ui-section-title, .explore-mode-btn, .explore-bar-btn, .hud-chip, .menu-btn, .explore-place, .explore-spot-btn) > i { line-height: 1; transform: translateY(-0.03em); }
 .ui-section-meta, .brain-count, .hud-need-val, .hud-clock, .journal-when, .menu-toolbar-note { font-variant-numeric: tabular-nums; }
 .hud-round-btn, .ui-icon-btn, .explore-round { padding: 0; }
+
+/* Skins (js/skinsui.js): a grid of cards, each a picture of him in that skin */
+.skins-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: var(--hud-s-3); margin: 0; padding: 0; list-style: none; }
+.skin-card { display: grid; gap: var(--hud-s-2); padding: var(--hud-s-2); border-radius: var(--hud-r-md); background: var(--hud-surface-1); }
+.skin-card.skin-on { background: var(--hud-accent-soft); }
+.skin-face { display: grid; gap: 2px; justify-items: center; padding: 0; background: none; border: 0; border-radius: var(--hud-r-sm); color: inherit; text-align: center; cursor: pointer; }
+.skin-face:focus-visible { outline: 2px solid var(--hud-focus); outline-offset: 2px; }
+.skin-pic { position: relative; display: block; width: 100%; aspect-ratio: 1; border-radius: var(--hud-r-sm); background: var(--hud-surface-0); overflow: hidden; }
+.skin-thumb { width: 100%; height: 100%; object-fit: contain; transition: opacity var(--hud-dur) var(--hud-ease); }
+.skin-locked .skin-thumb { opacity: 0.5; filter: grayscale(0.45); }
+.skin-lock { position: absolute; top: var(--hud-s-2); right: var(--hud-s-2); font-size: 16px; color: var(--hud-text-2); }
+.skin-name { font-size: var(--hud-fs-xs); font-weight: var(--hud-fw-semibold); color: var(--hud-text); }
+.skin-sub { font-size: var(--hud-fs-3xs); color: var(--hud-muted); font-variant-numeric: tabular-nums; }
+.skin-locked .skin-name { color: var(--hud-text-2); }
+.skin-act { display: flex; justify-content: center; }
+.skin-act .ui-btn, .skin-act .ui-chip { width: 100%; justify-content: center; }
+.skin-preview-canvas { display: block; margin: 0 auto; border-radius: var(--hud-r-md); background: var(--hud-surface-0); touch-action: none; cursor: grab; }
+.skin-preview-canvas:focus-visible { outline: 2px solid var(--hud-focus); outline-offset: 2px; }

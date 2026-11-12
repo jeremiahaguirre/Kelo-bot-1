@@ -106,8 +106,8 @@ function renderShop(listings, contact, updatedAt) {
         const external = href.startsWith('https:');
         const art = l.kind === 'painting';
         const badge = art
-          ? '<span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-rose-600/90 text-white text-[10px] font-bold tracking-wide shadow">🖼️ ORIGINAL PAINTING</span>'
-          : '<span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-sky-600/90 text-white text-[10px] font-bold tracking-wide shadow">🖨️ 3D PRINT FILE</span>';
+          ? '<span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-rose-600/90 text-white text-2xs font-bold tracking-wide shadow">🖼️ ORIGINAL PAINTING</span>'
+          : '<span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-sky-600/90 text-white text-2xs font-bold tracking-wide shadow">🖨️ 3D PRINT FILE</span>';
         return `
         <article class="rounded-3xl bg-slate-900/80 border ${art ? 'border-rose-400/30 hover:border-rose-300/60' : 'border-slate-800 hover:border-amber-400/50'} overflow-hidden shadow-xl flex flex-col transition">
           <div class="relative aspect-square ${art ? 'bg-stone-200' : 'bg-gradient-to-b from-amber-100 to-orange-200'} flex items-center justify-center">
@@ -120,12 +120,12 @@ function renderShop(listings, contact, updatedAt) {
               <span class="text-sm font-mono font-bold text-emerald-300 shrink-0">${shopEscape(priceText(l.price))}</span>
             </div>
             ${l.description ? `<p class="font-serif italic text-slate-300 text-sm leading-relaxed flex-1">"${shopEscape(l.description)}"<span class="not-italic text-slate-500 text-xs"> — Kelo-1</span></p>` : '<div class="flex-1"></div>'}
-            ${art ? `<div class="text-[11px] text-rose-200 space-y-0.5">
+            ${art ? `<div class="text-2xs text-rose-200 space-y-0.5">
               ${l.medium ? `<div>🎨 ${shopEscape(l.medium)}${l.size ? ` · ${shopEscape(l.size.replace('x', '×'))}` : ''}</div>` : ''}
               ${l.subject ? `<div class="text-slate-300">Subject: ${shopEscape(l.subject)}</div>` : ''}
               <div class="font-semibold">Original, one of a kind · signed</div>
-            </div>` : (l.details ? `<div class="text-[10px] font-mono text-sky-300">🖨️ ${shopEscape(l.details)}</div>` : '')}
-            ${l.listedAt ? `<div class="text-[10px] font-mono text-slate-500">Listed ${shopEscape(l.listedAt.toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' }))}</div>` : ''}
+            </div>` : (l.details ? `<div class="text-2xs font-mono text-sky-300">🖨️ ${shopEscape(l.details)}</div>` : '')}
+            ${l.listedAt ? `<div class="text-2xs font-mono text-slate-500">Listed ${shopEscape(l.listedAt.toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' }))}</div>` : ''}
             ${href
               ? `<a href="${shopEscape(href)}" ${external ? 'target="_blank" rel="noopener noreferrer"' : ''} class="block text-center px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-sm transition">✉️ Contact to buy</a>`
               : '<div class="text-center px-4 py-2.5 rounded-2xl bg-slate-800 text-slate-400 text-xs font-semibold">Not taking orders yet</div>'}

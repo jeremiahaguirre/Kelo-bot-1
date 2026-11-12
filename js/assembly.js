@@ -439,24 +439,24 @@ function bomListCardHtml(req) {
         const sent = (l.sent || 0) >= l.qty, got = l.got >= l.qty;
         // A part he makes in one of his own shops: not something to send
         if (l.make) return `<div class="flex items-start gap-2 px-2 py-1 rounded-lg ${got ? 'bg-emerald-500/10' : 'bg-violet-500/10'}">
-          <span class="mt-0.5 text-[11px]">🛠️</span>
-          <span class="flex-1 text-[11px] text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="font-mono font-bold text-amber-300">× ${escapeHtml(bomFmtQty(l.qty))}</span> <span class="block text-[10px] text-violet-300 italic">I'll make this on the ${escapeHtml(l.makeOn || l.make)}</span></span>
-          <span class="text-[10px] font-mono shrink-0 ${got ? 'text-emerald-300' : 'text-violet-300'}">${got ? '✓ made' : l.making ? 'making' : 'my shop'}</span>
+          <span class="mt-0.5 text-2xs">🛠️</span>
+          <span class="flex-1 text-2xs text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="font-mono font-bold text-amber-300">× ${escapeHtml(bomFmtQty(l.qty))}</span> <span class="block text-2xs text-violet-300 italic">I'll make this on the ${escapeHtml(l.makeOn || l.make)}</span></span>
+          <span class="text-2xs font-mono shrink-0 ${got ? 'text-emerald-300' : 'text-violet-300'}">${got ? '✓ made' : l.making ? 'making' : 'my shop'}</span>
         </div>`;
         return `<label class="flex items-start gap-2 px-2 py-1 rounded-lg ${got ? 'bg-emerald-500/10' : sent ? 'bg-sky-500/10' : 'hover:bg-slate-800/60'} cursor-pointer">
           <input type="checkbox" class="bom-line-cb mt-0.5 accent-amber-400" data-req-id="${id}" data-line-id="${escapeHtml(l.id)}" ${sent || got ? 'disabled' : 'checked'} />
-          <span class="flex-1 text-[11px] text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="font-mono font-bold text-amber-300">× ${escapeHtml(bomFmtQty(l.qty))}${l.unit ? ' ' + escapeHtml(l.unit) : ''}</span>${kindTag[l.kind] ? ` <span class="text-[9px] uppercase text-slate-500">${kindTag[l.kind]}</span>` : ''}${l.forShop ? ` <span class="text-[9px] text-violet-300">for my ${escapeHtml(typeof makerShopName === 'function' ? makerShopName(l.forShop) : l.forShop)}</span>` : ''}</span>
-          <span class="text-[10px] font-mono shrink-0 ${got ? 'text-emerald-300' : sent ? 'text-sky-300' : 'text-slate-500'}">${got ? '✓ here' : sent ? '📮 sent' : `${bomFmtQty(Math.min(l.got, l.qty))}/${bomFmtQty(l.qty)}`}</span>
+          <span class="flex-1 text-2xs text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="font-mono font-bold text-amber-300">× ${escapeHtml(bomFmtQty(l.qty))}${l.unit ? ' ' + escapeHtml(l.unit) : ''}</span>${kindTag[l.kind] ? ` <span class="text-3xs uppercase text-slate-500">${kindTag[l.kind]}</span>` : ''}${l.forShop ? ` <span class="text-3xs text-violet-300">for my ${escapeHtml(typeof makerShopName === 'function' ? makerShopName(l.forShop) : l.forShop)}</span>` : ''}</span>
+          <span class="text-2xs font-mono shrink-0 ${got ? 'text-emerald-300' : sent ? 'text-sky-300' : 'text-slate-500'}">${got ? '✓ here' : sent ? '📮 sent' : `${bomFmtQty(Math.min(l.got, l.qty))}/${bomFmtQty(l.qty)}`}</span>
         </label>`;
       }).join('');
       const left = lines.filter(l => !l.make && (l.sent || 0) < l.qty && l.got < l.qty).length;
       return `<div class="p-4 rounded-2xl border ${req.fulfilled ? 'bg-slate-950/60 border-emerald-500/30' : 'bg-slate-950 border-amber-500/50 shadow-lg'} space-y-2.5" data-bom-card="${id}">
         <div class="flex items-center justify-between gap-2">
           <span class="text-xs font-bold text-white flex items-center gap-1.5"><span class="text-lg">${escapeHtml(req.icon)}</span><span>${escapeHtml(req.title)}</span></span>
-          <span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${req.fulfilled ? 'bg-emerald-500/20 text-emerald-300' : req.declined ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/25 text-amber-300 border border-amber-400/40'}">${req.declined ? '✗ Not now' : req.fulfilled ? '📮 All sent' : `${lines.filter(l => !l.make).length - left}/${lines.filter(l => !l.make).length} sent`}</span>
+          <span class="text-2xs font-mono px-2 py-0.5 rounded-full shrink-0 ${req.fulfilled ? 'bg-emerald-500/20 text-emerald-300' : req.declined ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/25 text-amber-300 border border-amber-400/40'}">${req.declined ? '✗ Not now' : req.fulfilled ? '📮 All sent' : `${lines.filter(l => !l.make).length - left}/${lines.filter(l => !l.make).length} sent`}</span>
         </div>
         <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
-        ${sub ? `<div class="text-[10px] font-mono text-slate-400">${lines.length} lines · ${escapeHtml(bomFmtQty(bomFastenerCount(sub)))} fasteners · ${bomSubReceived(sub)}/${lines.length} received</div>` : ''}
+        ${sub ? `<div class="text-2xs font-mono text-slate-400">${lines.length} lines · ${escapeHtml(bomFmtQty(bomFastenerCount(sub)))} fasteners · ${bomSubReceived(sub)}/${lines.length} received</div>` : ''}
         <div class="max-h-72 overflow-y-auto space-y-0.5 rounded-xl bg-slate-900/70 border border-slate-800 p-1">${rows}</div>
         <div class="flex flex-wrap gap-1.5">
           ${!req.fulfilled && !req.declined ? `<button data-req-id="${id}" class="bom-send-sel flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-bold text-xs">📦 Send checked</button>
@@ -1359,7 +1359,7 @@ function renderBuildProjectsList() {
         const tools = b.tools.filter(bomToolOwned).length;
         const subs = b.subs.map(s => {
           const f = s.built ? 1 : s.stepsDone / Math.max(1, s.steps.length);
-          return `<div class="flex items-center gap-2 text-[10px]">
+          return `<div class="flex items-center gap-2 text-2xs">
             <span class="w-4">${s.built ? '✅' : bomSubComplete(s) ? '📦' : '○'}</span>
             <span class="flex-1 text-slate-300">${escapeHtml(s.name)}</span>
             <span class="font-mono text-slate-400">${bomSubReceived(s)}/${s.lines.length} parts</span>
@@ -1367,14 +1367,14 @@ function renderBuildProjectsList() {
             <span class="w-12 h-1.5 rounded bg-slate-700 overflow-hidden"><span class="block h-full bg-amber-400" style="width:${Math.round(f * 100)}%"></span></span>
           </div>`;
         }).join('');
-        const tests = Object.values(p.tests || {}).map(t => `<div class="text-[10px] ${t.ok ? 'text-emerald-300' : 'text-rose-300'}">${t.ok ? '✓' : '✗'} ${escapeHtml(t.name)}: ${escapeHtml(t.note)}</div>`).join('');
-        return `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200 space-y-1.5" data-build-project="${escapeHtml(p.id)}">
-          <div class="flex items-center gap-2"><span class="font-semibold flex-1">${escapeHtml(b.emoji)} ${escapeHtml(b.name)}</span><span class="text-[10px] text-slate-400">${escapeHtml(statusText[p.status] || p.status)}</span></div>
-          <div class="text-[10px] text-slate-400">${pct}% built · ${rec}% of parts received · ${tools}/${b.tools.length} tools${b.vehicle === 'plane' ? ` · pilot: ${pilotTrained() ? 'trained' : 'not yet'}` : ''}</div>
+        const tests = Object.values(p.tests || {}).map(t => `<div class="text-2xs ${t.ok ? 'text-emerald-300' : 'text-rose-300'}">${t.ok ? '✓' : '✗'} ${escapeHtml(t.name)}: ${escapeHtml(t.note)}</div>`).join('');
+        return `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-200 space-y-1.5" data-build-project="${escapeHtml(p.id)}">
+          <div class="flex items-center gap-2"><span class="font-semibold flex-1">${escapeHtml(b.emoji)} ${escapeHtml(b.name)}</span><span class="text-2xs text-slate-400">${escapeHtml(statusText[p.status] || p.status)}</span></div>
+          <div class="text-2xs text-slate-400">${pct}% built · ${rec}% of parts received · ${tools}/${b.tools.length} tools${b.vehicle === 'plane' ? ` · pilot: ${pilotTrained() ? 'trained' : 'not yet'}` : ''}</div>
           <div class="w-full h-2 rounded bg-slate-800 overflow-hidden"><span class="block h-full bg-gradient-to-r from-amber-400 to-emerald-400" style="width:${pct}%"></span></div>
           <div class="space-y-0.5">${subs}</div>${tests}
         </div>`;
-      }).join('') : '<div class="text-[11px] text-slate-500 italic">No big builds yet. He can build anything with the right parts.</div>';
+      }).join('') : '<div class="text-2xs text-slate-500 italic">No big builds yet. He can build anything with the right parts.</div>';
       if (typeof perfSetHtml === 'function') perfSetHtml(el, html); else el.innerHTML = html;
     }
 

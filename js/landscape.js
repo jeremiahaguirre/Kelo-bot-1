@@ -664,7 +664,7 @@ function renderLandscapeList() {
       if (!el) return;
       const label = { chop: '🪓 Chopped a tree', plant: '🌱 Planted', road: '🛤️ Built a road', hill: '⛰️ Raised a hill' };
       el.innerHTML = state.worldEdits.slice().reverse().slice(0, 12).map(e => `
-        <div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200">
+        <div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-200">
           ${escapeHtml(e.type === 'hill' && e.h < 0 ? '🕳️ Dug a hollow' : (label[e.type] || e.type))}${e.type === 'plant' ? ` ${escapeHtml(e.kind === 'tree' ? 'a tree' : 'flowers')} <span class="text-slate-500">(${typeof plantStageOf === 'function' ? escapeHtml(plantStageOf(e)) + ', ' : ''}${Math.round(growthOf(e) * 100)}% grown)</span>` : ''}
           ${e.why ? `<div class="text-slate-400 italic">${escapeHtml(e.why)}</div>` : ''}
         </div>`).join('');

@@ -134,7 +134,7 @@ function renderViewer() {
           <button data-viewer="prev" class="w-12 h-12 rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xl font-bold" aria-label="Previous" ${pages < 2 ? 'disabled style="opacity:.35"' : ''}>◀</button>
           <span class="min-w-[7rem] text-center text-xs font-mono text-slate-300">${pages ? `${viewerState.page + 1} / ${pages}` : ''}</span>
           <button data-viewer="next" class="w-12 h-12 rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xl font-bold" aria-label="Next" ${pages < 2 ? 'disabled style="opacity:.35"' : ''}>▶</button>
-          <button data-viewer="exit" class="ml-4 px-4 h-12 rounded-lg bg-red-700 hover:bg-red-600 border-2 border-red-300 text-white font-black tracking-widest text-sm flex items-center gap-2 shadow-lg" aria-label="Exit to the world"><span class="text-lg">🚪</span> EXIT</button>
+          <button data-viewer="exit" class="ml-4 px-4 h-12 rounded-lg bg-red-700 hover:bg-red-600 border-2 border-red-300 text-white font-bold tracking-widest text-sm flex items-center gap-2 shadow-lg" aria-label="Exit to the world"><span class="text-lg">🚪</span> EXIT</button>
         </div>`;
       if (viewerState.kind === 'art') {
         const m = viewerState.art;
@@ -144,13 +144,13 @@ function renderViewer() {
             <img src="${escapeHtml(paintingImageUrl(m))}" alt="${escapeHtml(m.title)}" class="max-w-full max-h-[62vh] object-contain shadow-2xl ${['oil', 'acrylic'].includes(m.medium) ? 'border-[10px] border-amber-600' : 'border-[18px] border-stone-50 outline outline-[6px] outline-stone-800'}">
             <div class="text-center space-y-1 max-w-xl">
               <div class="text-base font-serif italic text-amber-100">"${escapeHtml(m.title)}"</div>
-              <div class="text-[11px] font-mono text-slate-300">${escapeHtml(m.on || m.medium)} · ${escapeHtml(m.size || '')} · ${escapeHtml(m.subjectLabel || '')}</div>
-              <div class="text-[10px] font-mono text-slate-500">Kelo-1, ${escapeHtml(m.season || '')} · skill ${escapeHtml(m.skill)}/100${m.keep ? ' · he is keeping this one' : ''}${m.for ? ` · painted for ${escapeHtml(m.for)}` : ''}</div>
+              <div class="text-2xs font-mono text-slate-300">${escapeHtml(m.on || m.medium)} · ${escapeHtml(m.size || '')} · ${escapeHtml(m.subjectLabel || '')}</div>
+              <div class="text-2xs font-mono text-slate-500">Kelo-1, ${escapeHtml(m.season || '')} · skill ${escapeHtml(m.skill)}/100${m.keep ? ' · he is keeping this one' : ''}${m.for ? ` · painted for ${escapeHtml(m.for)}` : ''}</div>
             </div>
           </div>
           <div class="shrink-0 flex items-center justify-center gap-3 p-3 border-t border-slate-800 bg-slate-950">
             <button data-viewer="back" class="px-4 h-12 rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-sm font-bold">◀ Back to the Museum</button>
-            <button data-viewer="exit" class="ml-4 px-4 h-12 rounded-lg bg-red-700 hover:bg-red-600 border-2 border-red-300 text-white font-black tracking-widest text-sm flex items-center gap-2 shadow-lg" aria-label="Exit to the world"><span class="text-lg">🚪</span> EXIT</button>
+            <button data-viewer="exit" class="ml-4 px-4 h-12 rounded-lg bg-red-700 hover:bg-red-600 border-2 border-red-300 text-white font-bold tracking-widest text-sm flex items-center gap-2 shadow-lg" aria-label="Exit to the world"><span class="text-lg">🚪</span> EXIT</button>
           </div>`;
         el.querySelector('[data-viewer="back"]').onclick = () => { viewerState = viewerState.back; renderViewer(); };
         el.querySelector('[data-viewer="exit"]').onclick = closeViewer;
@@ -164,7 +164,7 @@ function renderViewer() {
             ${ph ? `<img src="${escapeHtml(ph.thumb)}" alt="${escapeHtml(ph.caption || 'Photo')}" class="max-w-full max-h-[65vh] rounded-2xl border border-slate-700 object-contain shadow-2xl">
             <div class="text-center space-y-1 max-w-xl">
               <div class="text-sm text-slate-100">${escapeHtml(ph.caption || '')}</div>
-              <div class="text-[11px] font-mono text-slate-400">from ${escapeHtml(ph.from || '')}${ph.time ? ` • ${escapeHtml(ph.time)}` : ''}</div>
+              <div class="text-2xs font-mono text-slate-400">from ${escapeHtml(ph.from || '')}${ph.time ? ` • ${escapeHtml(ph.time)}` : ''}</div>
               ${ph.reaction ? `<p class="text-xs text-amber-200 italic font-serif">Kelo-1: "${escapeHtml(ph.reaction)}"</p>` : ''}
             </div>` : '<p class="text-slate-400">No photos yet.</p>'}
           </div>${nav}`;
@@ -177,10 +177,10 @@ function renderViewer() {
           <figure class="flex flex-col items-center justify-end gap-1 min-w-0">
             ${it.art ? `<button data-art="${escapeHtml(it.art.id)}" class="w-full max-w-[110px] aspect-square flex items-center" title="See it full size"><img src="${escapeHtml(it.image())}" alt="${escapeHtml(it.label)}" class="w-full object-contain drop-shadow-lg border-[3px] ${['oil', 'acrylic'].includes(it.art.medium) ? 'border-amber-600' : 'border-stone-800 bg-white p-1'}"></button>`
               : `<img src="${escapeHtml(it.image())}" alt="" class="w-full max-w-[110px] aspect-square object-contain drop-shadow-lg">`}
-            <figcaption class="w-full text-center text-[10px] leading-tight text-amber-50 bg-black/40 rounded px-1 py-0.5 truncate" title="${escapeHtml(it.label)}">${escapeHtml(it.label)}${it.sub ? ` <span class="text-amber-300/80">· ${escapeHtml(it.sub)}</span>` : ''}</figcaption>
+            <figcaption class="w-full text-center text-2xs leading-tight text-amber-50 bg-black/40 rounded px-1 py-0.5 truncate" title="${escapeHtml(it.label)}">${escapeHtml(it.label)}${it.sub ? ` <span class="text-amber-300/80">· ${escapeHtml(it.sub)}</span>` : ''}</figcaption>
             <div class="flex gap-1">
-              ${it.sub === 'Painting' ? '' : `<button data-take="${which === 'museum' ? 'display' : 'use'}" data-name="${escapeHtml(it.name || '')}" class="px-1.5 py-0.5 rounded bg-emerald-700/80 hover:bg-emerald-600 text-[9px] text-white">${which === 'museum' ? 'Put outside' : 'Use it'}</button>`}
-              <button data-take="dispose" data-name="${escapeHtml(it.name || '')}" class="px-1.5 py-0.5 rounded bg-rose-800/80 hover:bg-rose-700 text-[9px] text-white">Throw out</button>
+              ${it.sub === 'Painting' ? '' : `<button data-take="${which === 'museum' ? 'display' : 'use'}" data-name="${escapeHtml(it.name || '')}" class="px-1.5 py-0.5 rounded bg-emerald-700/80 hover:bg-emerald-600 text-3xs text-white">${which === 'museum' ? 'Put outside' : 'Use it'}</button>`}
+              <button data-take="dispose" data-name="${escapeHtml(it.name || '')}" class="px-1.5 py-0.5 rounded bg-rose-800/80 hover:bg-rose-700 text-3xs text-white">Throw out</button>
             </div>
           </figure>` : '<div></div>';
         const rows = [0, 1, 2].map(r => `
@@ -191,7 +191,7 @@ function renderViewer() {
         el.innerHTML = `
           <div class="shrink-0 px-4 py-3 flex items-center justify-between gap-2">
             <div class="text-sm font-bold text-white">${which === 'museum' ? '🏛️ Museum of Art & Ideas' : '📦 Storehouse'}</div>
-            <div class="text-[11px] font-mono text-slate-400">${items.length} ${which === 'museum' ? 'pieces' : 'items'}${items.length ? ` • ${escapeHtml(floorLabel)}` : ''}</div>
+            <div class="text-2xs font-mono text-slate-400">${items.length} ${which === 'museum' ? 'pieces' : 'items'}${items.length ? ` • ${escapeHtml(floorLabel)}` : ''}</div>
           </div>
           <div class="flex-1 min-h-0 overflow-auto p-3 flex justify-center">
             <div class="w-full max-w-3xl rounded-2xl p-2 space-y-1" style="background:${which === 'museum' ? 'linear-gradient(#f5f1e8,#d6d0c4)' : 'linear-gradient(#6b3a1f,#4a2810)'}">

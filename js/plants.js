@@ -1132,7 +1132,7 @@ function renderPlantsPanel() {
       const el = document.getElementById('plantsPanelContainer');
       if (!el) return;
       const bp = plantStateOf('batch'), ap = plantStateOf('asphalt');
-      const card = (title, known, body) => `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200 space-y-1">
+      const card = (title, known, body) => `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-200 space-y-1">
           <div class="font-semibold">${title} <span class="text-slate-500 font-normal">${known ? '· researched' : '· not researched yet (he reads up at NetNode first)'}</span></div>${body}</div>`;
       const bars = (rows) => `<div class="space-y-0.5">${rows.join('')}</div>`;
       const rmLoad = bp.loads[0], hmLoad = ap.loads[0];
@@ -1160,8 +1160,8 @@ function renderPlantsPanel() {
       const log = [...bp.log.map(l => ({ ...l, k: '🏗️' })), ...ap.log.map(l => ({ ...l, k: '🛢️' }))].sort((a, b) => b.at - a.at).slice(0, 5)
         .map(l => `<div class="text-slate-400">${l.k} ${escapeHtml(l.text)}</div>`).join('');
       perfSetHtml(el, card('🏗️ Ready-mix concrete plant', jobKnown('batchPlant'), cBody) + card('🛢️ Hot-mix asphalt plant', jobKnown('asphaltPlant'), aBody)
-        + (pours ? `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200 space-y-0.5"><div class="font-semibold">Concrete he has poured</div>${pours}</div>` : '')
-        + (log ? `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] space-y-0.5">${log}</div>` : ''));
+        + (pours ? `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-200 space-y-0.5"><div class="font-semibold">Concrete he has poured</div>${pours}</div>` : '')
+        + (log ? `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-2xs space-y-0.5">${log}</div>` : ''));
     }
 
 function injectPlantsPanel() {

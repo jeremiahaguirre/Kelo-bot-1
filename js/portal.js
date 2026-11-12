@@ -71,7 +71,7 @@ function savePhotoAlbum() {
 function setPortalMode(mode) {
       document.querySelectorAll('.portal-mode-btn').forEach(btn => {
         const active = btn.getAttribute('data-portal-mode') === mode;
-        btn.className = `portal-mode-btn px-2.5 py-1 rounded-lg transition ${active ? 'bg-sky-500/30 text-sky-100' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`;
+        btn.className = 'portal-mode-btn ui-chip';
         btn.setAttribute('aria-selected', String(active));
       });
       document.querySelectorAll('.portal-pane').forEach(pane => {
@@ -86,13 +86,13 @@ function renderMailbox() {
       const list = document.getElementById('mailboxList');
       if (!list) return;
       perfSetHtml(list, state.mailbox.length === 0
-        ? '<p class="text-[11px] text-slate-500 italic">The post office is empty. Anything you send waits here until Kelo-1 decides to pick it up.</p>'
+        ? '<p class="text-2xs text-slate-500 italic">The post office is empty. Anything you send waits here until Kelo-1 decides to pick it up.</p>'
         : state.mailbox.map(m => `
           <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-900/80 border border-red-500/25 text-xs">
             ${m.thumbs && m.thumbs[0] ? `<img src="${escapeHtml(m.thumbs[0])}" alt="" class="w-8 h-8 rounded-lg object-cover shrink-0">` : `<span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">${escapeHtml(m.emoji)}</span>`}
             <div class="min-w-0 flex-1">
               <div class="font-semibold text-red-100 truncate">${escapeHtml(m.kind === 'message' ? 'Letter' : (m.name || m.kind))}</div>
-              <div class="text-[10px] font-mono text-slate-400 truncate">from ${escapeHtml(m.from)} • ${escapeHtml(m.time)}${m.note ? ` • "${escapeHtml(m.note.slice(0, 60))}"` : ''}</div>
+              <div class="text-2xs font-mono text-slate-400 truncate">from ${escapeHtml(m.from)} • ${escapeHtml(m.time)}${m.note ? ` • "${escapeHtml(m.note.slice(0, 60))}"` : ''}</div>
             </div>
           </div>`).join(''));
     }
@@ -123,7 +123,7 @@ function renderPortal() {
         const PILLS_STEP = 60;
         const shown = typeof perfListLimit === 'function' ? perfListLimit('toolInventoryPills', PILLS_STEP) : owned.length;
         const html = owned.slice(0, shown).map(o => `
-          <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-[10px] font-mono flex items-center gap-1">
+          <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-2xs font-mono flex items-center gap-1">
             <span>${escapeHtml(o.emoji)}</span> ${escapeHtml(o.name)}${o.left ? ` <span class="text-emerald-300">(${escapeHtml(o.left)})</span>` : ''}${floorOf.get(o.name) > 0 ? ` <span class="text-slate-400">· B${floorOf.get(o.name)}</span>` : ''}
           </span>`).join('') + (typeof perfMoreButton === 'function' ? perfMoreButton('toolInventoryPills', shown, owned.length, PILLS_STEP) : '');
         if (typeof perfSetHtml === 'function') perfSetHtml(pills, html); else pills.innerHTML = html;
@@ -134,26 +134,26 @@ function renderPortal() {
       const log = document.getElementById('giftLogList');
       if (log) {
         perfSetHtml(log, state.giftLog.length === 0
-          ? '<p class="text-[11px] text-slate-500 italic">Nothing yet. Gifts, deliveries and photos you send show up here with his reaction.</p>'
+          ? '<p class="text-2xs text-slate-500 italic">Nothing yet. Gifts, deliveries and photos you send show up here with his reaction.</p>'
           : state.giftLog.map(g => `
           <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-xs space-y-0.5">
             <div class="flex items-center justify-between gap-2">
-              <span class="font-bold text-rose-200 truncate">${escapeHtml(g.emoji)} ${escapeHtml(g.name)} <span class="font-mono text-[10px] text-slate-400">(${escapeHtml(g.type === 'request' ? 'requested ' : '')}${escapeHtml(g.category)})</span></span>
-              <span class="text-[10px] font-mono text-slate-500 shrink-0">${escapeHtml(g.time)}</span>
+              <span class="font-bold text-rose-200 truncate">${escapeHtml(g.emoji)} ${escapeHtml(g.name)} <span class="font-mono text-2xs text-slate-400">(${escapeHtml(g.type === 'request' ? 'requested ' : '')}${escapeHtml(g.category)})</span></span>
+              <span class="text-2xs font-mono text-slate-500 shrink-0">${escapeHtml(g.time)}</span>
             </div>
-            <div class="text-[10px] font-mono text-slate-400">from ${escapeHtml(g.from)}${g.note ? ` • "${escapeHtml(g.note)}"` : ''}</div>
-            ${g.reaction ? `<p class="text-[11px] text-slate-300 font-serif italic">Kelo-1: "${escapeHtml(g.reaction)}"</p>` : '<p class="text-[11px] text-slate-500 italic">Thinking about it...</p>'}
+            <div class="text-2xs font-mono text-slate-400">from ${escapeHtml(g.from)}${g.note ? ` • "${escapeHtml(g.note)}"` : ''}</div>
+            ${g.reaction ? `<p class="text-2xs text-slate-300 font-serif italic">Kelo-1: "${escapeHtml(g.reaction)}"</p>` : '<p class="text-2xs text-slate-500 italic">Thinking about it...</p>'}
           </div>`).join(''));
       }
 
       const wall = document.getElementById('photoWallGrid');
       // (only rebuilt, and its click handlers re-attached, when the photos change)
       if (wall && perfSetHtml(wall, state.photoAlbum.length === 0
-          ? '<p class="col-span-full text-[11px] text-slate-500 italic">No photos yet.</p>'
+          ? '<p class="col-span-full text-2xs text-slate-500 italic">No photos yet.</p>'
           : state.photoAlbum.map(ph => `
           <figure data-photo-idx="${state.photoAlbum.indexOf(ph)}" role="button" tabindex="0" aria-label="View photo" class="rounded-xl overflow-hidden border border-indigo-500/30 bg-slate-900 cursor-pointer hover:border-indigo-300 transition" title="${escapeHtml(ph.reaction || 'Click to view')}">
             <img src="${escapeHtml(ph.thumb)}" alt="${escapeHtml(ph.caption || 'Photo for Kelo-1')}" class="w-full h-20 object-cover">
-            <figcaption class="px-1.5 py-1 text-[10px] text-slate-300 truncate">${escapeHtml(ph.caption || `from ${ph.from}`)}</figcaption>
+            <figcaption class="px-1.5 py-1 text-2xs text-slate-300 truncate">${escapeHtml(ph.caption || `from ${ph.from}`)}</figcaption>
           </figure>`).join(''))) {
         wall.querySelectorAll('[data-photo-idx]').forEach(fig => {
           const open = () => typeof openPhotoViewer === 'function' && openPhotoViewer(Number(fig.getAttribute('data-photo-idx')));
@@ -169,7 +169,7 @@ function renderPhotoPreview() {
       preview.innerHTML = pendingPortalPhotos.map((p, i) => `
         <div class="relative">
           <img src="${escapeHtml(p.thumb)}" alt="${escapeHtml(p.name)}" class="w-14 h-14 rounded-lg object-cover border border-sky-500/40">
-          <button type="button" data-remove-photo="${i}" aria-label="Remove ${escapeHtml(p.name)}" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-[9px] text-white leading-none">✕</button>
+          <button type="button" data-remove-photo="${i}" aria-label="Remove ${escapeHtml(p.name)}" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-3xs text-white leading-none">✕</button>
         </div>`).join('');
       preview.querySelectorAll('[data-remove-photo]').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -226,7 +226,7 @@ window.addEventListener('DOMContentLoaded', () => {
   let chosenEmoji = null;
   if (catalog) {
     catalog.innerHTML = GIFT_CATALOG.map((g, i) => `
-      <button type="button" data-gift-idx="${i}" class="gift-chip px-2 py-1 rounded-xl bg-slate-950 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-400/40 text-[11px] text-slate-200 transition">${escapeHtml(g.emoji)} ${escapeHtml(g.name)}</button>
+      <button type="button" data-gift-idx="${i}" class="gift-chip px-2 py-1 rounded-xl bg-slate-950 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-400/40 text-2xs text-slate-200 transition">${escapeHtml(g.emoji)} ${escapeHtml(g.name)}</button>
     `).join('');
     catalog.querySelectorAll('.gift-chip').forEach(chip => {
       chip.addEventListener('click', () => {

@@ -398,7 +398,7 @@ async function copyCodeRequestSpec(id) {
 // Open letters say whether they are "Ready to switch on" (the feature is built) or "Need new code".
 function codeRequestCardHtml(req) {
       const match = typeof wishCardStatus === 'function' ? wishCardStatus(req) : { status: 'needs-code', feature: null };
-      const pill = (cls, text) => `<span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${cls}">${text}</span>`;
+      const pill = (cls, text) => `<span class="text-2xs font-mono px-2 py-0.5 rounded-full shrink-0 ${cls}">${text}</span>`;
       let status;
       if (req.fulfilled) {
         status = req.declined ? pill('bg-slate-700/60 text-slate-300', 'Not now')
@@ -411,18 +411,18 @@ function codeRequestCardHtml(req) {
       }
       const src = CODE_WISH_SOURCES[req.codeSource] || null;
       const note = req.fulfilled
-        ? (req.notBuilt ? '<p class="text-[11px] text-amber-200/90">You answered "coded in", but nothing in this version of his world matches it yet, so it still needs new code.</p>' : '')
+        ? (req.notBuilt ? '<p class="text-2xs text-amber-200/90">You answered "coded in", but nothing in this version of his world matches it yet, so it still needs new code.</p>' : '')
         : match.status === 'needs-code'
-          ? `<p class="text-[11px] text-amber-200/90">${req.willCode ? 'You said you\'d code this. It stays here (and in the copied wishlist) until it\'s built.' : 'Nothing in this version of his world can do this yet. It needs new code.'}</p>`
-          : `<p class="text-[11px] text-emerald-200/90">Already built: ${escapeHtml(match.feature.label)}. Answering "Done" switches it on for good.</p>`;
+          ? `<p class="text-2xs text-amber-200/90">${req.willCode ? 'You said you\'d code this. It stays here (and in the copied wishlist) until it\'s built.' : 'Nothing in this version of his world can do this yet. It needs new code.'}</p>`
+          : `<p class="text-2xs text-emerald-200/90">Already built: ${escapeHtml(match.feature.label)}. Answering "Done" switches it on for good.</p>`;
       const id = escapeHtml(req.id);
       const specRow = `
             <div class="flex gap-1.5 flex-wrap">
-              <button type="button" data-code-copy="${id}" class="px-2.5 py-1 rounded-lg bg-violet-500/15 hover:bg-violet-500/30 text-violet-200 text-[11px] font-semibold transition" title="Copy a spec (user story, acceptance criteria, where it goes) for a developer or an AI coding assistant">📋 Copy as spec</button>
-              <a href="${escapeHtml(codeRequestIssueUrl(req))}" target="_blank" rel="noopener noreferrer" data-code-issue="${id}" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold transition" title="Opens a prefilled new issue on GitHub in your browser (nothing is sent until you submit it there)">🐙 Open as GitHub issue</a>
-              <button type="button" data-code-spec-toggle="${id}" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-semibold transition">View spec</button>
+              <button type="button" data-code-copy="${id}" class="px-2.5 py-1 rounded-lg bg-violet-500/15 hover:bg-violet-500/30 text-violet-200 text-2xs font-semibold transition" title="Copy a spec (user story, acceptance criteria, where it goes) for a developer or an AI coding assistant">📋 Copy as spec</button>
+              <a href="${escapeHtml(codeRequestIssueUrl(req))}" target="_blank" rel="noopener noreferrer" data-code-issue="${id}" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-2xs font-semibold transition" title="Opens a prefilled new issue on GitHub in your browser (nothing is sent until you submit it there)">🐙 Open as GitHub issue</a>
+              <button type="button" data-code-spec-toggle="${id}" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-2xs font-semibold transition">View spec</button>
             </div>
-            <pre data-code-spec="${id}" class="hidden whitespace-pre-wrap text-[10.5px] leading-snug font-mono text-slate-300 bg-slate-950 border border-slate-800 rounded-lg p-2 max-h-64 overflow-auto">${escapeHtml(codeRequestSpec(req))}</pre>`;
+            <pre data-code-spec="${id}" class="hidden whitespace-pre-wrap text-2xs leading-snug font-mono text-slate-300 bg-slate-950 border border-slate-800 rounded-lg p-2 max-h-64 overflow-auto">${escapeHtml(codeRequestSpec(req))}</pre>`;
       const buttons = req.fulfilled ? '' : match.status === 'needs-code' ? `
             <div class="flex gap-1.5 pt-1">
               ${req.willCode ? '' : `<button data-code-req-id="${id}" data-code-done="1" class="code-request-btn flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-300 to-orange-400 hover:from-amber-200 hover:to-orange-300 text-slate-950 font-bold text-xs transition">🛠️ I'll code it</button>`}
@@ -441,8 +441,8 @@ function codeRequestCardHtml(req) {
             </span>
             ${status}
           </div>
-          <div class="text-[11px] font-mono text-violet-200 bg-violet-950/50 border border-violet-500/30 px-2.5 py-1.5 rounded-lg">feature: ${escapeHtml(req.codeFeature)}</div>
-          ${src ? `<div class="text-[10px] font-mono text-slate-400">${src.emoji} ${escapeHtml(src.label)}</div>` : ''}
+          <div class="text-2xs font-mono text-violet-200 bg-violet-950/50 border border-violet-500/30 px-2.5 py-1.5 rounded-lg">feature: ${escapeHtml(req.codeFeature)}</div>
+          ${src ? `<div class="text-2xs font-mono text-slate-400">${src.emoji} ${escapeHtml(src.label)}</div>` : ''}
           <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
           ${note}${specRow}${buttons}
         </div>`;
@@ -474,11 +474,11 @@ function codeRequestsGroupHtml() {
           <details class="code-group rounded-2xl bg-violet-950/20 border border-violet-500/25 px-2.5 py-2" data-code-group="${g.id}" ${g.closed ? '' : 'open'}>
             <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-violet-200">
               <span>💻 ${g.title}</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-violet-500/20">${g.list.length}</span>
+              <span class="text-2xs font-mono px-2 py-0.5 rounded-full bg-violet-500/20">${g.list.length}</span>
             </summary>
             <div class="pt-2 space-y-2.5">
               ${g.list.slice(0, shown).map(codeRequestCardHtml).join('')}
-              ${more > 0 ? `<button type="button" data-code-more="${g.id}" class="w-full px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-semibold">Show more (${more} more)</button>` : ''}
+              ${more > 0 ? `<button type="button" data-code-more="${g.id}" class="w-full px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-2xs font-semibold">Show more (${more} more)</button>` : ''}
             </div>
           </details>`;
       }).join('')}</div>`;

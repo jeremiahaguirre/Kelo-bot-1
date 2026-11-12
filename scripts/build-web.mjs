@@ -129,11 +129,12 @@ writeFileSync(join(VENDOR_CSS, 'fonts', 'fonts.css'), fontsCss);
 log('vendored three.js, Capacitor, Phosphor icons and fonts');
 
 // --- 3. Tailwind, compiled once instead of generated in the browser -----------------------------
-// Same Tailwind version as the website's CDN script, with its default settings, scanning every
+// Same Tailwind version and theme as the website's CDN script, scanning every
 // page and script for class names.
 const twConfig = join(OUT, '.tailwind.config.cjs');
 const twInput = join(OUT, '.tailwind.input.css');
-writeFileSync(twConfig, `module.exports = { content: ${JSON.stringify([join(ROOT, '*.html'), join(ROOT, 'js', '**', '*.js')].map(p => p.replace(/\\/g, '/')))} };\n`);
+// The theme maps Tailwind's colours, sizes, radii and shadows onto the design tokens (js/twtheme.js)
+writeFileSync(twConfig, `module.exports = { content: ${JSON.stringify([join(ROOT, '*.html'), join(ROOT, 'js', '**', '*.js')].map(p => p.replace(/\\/g, '/')))}, theme: { extend: require(${JSON.stringify(join(ROOT, 'js', 'twtheme.js').replace(/\\/g, '/'))}) } };\n`);
 writeFileSync(twInput, '@tailwind base;\n@tailwind components;\n@tailwind utilities;\n');
 execFileSync(process.execPath, [require.resolve('tailwindcss/lib/cli.js'), '-c', twConfig, '-i', twInput, '-o', join(OUT, 'css', 'tailwind.css'), '--minify'], { stdio: 'inherit' });
 rmSync(twConfig);

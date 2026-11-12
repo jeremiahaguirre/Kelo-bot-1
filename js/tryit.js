@@ -153,13 +153,13 @@ function tryRenderPanel() {
       root.innerHTML = `
         <div class="flex items-center justify-between gap-2">
           <div class="text-xs font-bold text-slate-200">🧪 Try it</div>
-          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-200 border border-sky-500/30">preview only · not saved</span>
+          <span class="text-2xs font-mono px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-200 border border-sky-500/30">preview only · not saved</span>
         </div>
-        <p class="text-[11px] text-slate-400">See his world's features now instead of waiting for them. Previews last until you reload or press "Back to his real calendar". His real season is ${escapeHtml(realSeason.toLowerCase())}.</p>
+        <p class="text-2xs text-slate-400">See his world's features now instead of waiting for them. Previews last until you reload or press "Back to his real calendar". His real season is ${escapeHtml(realSeason.toLowerCase())}.</p>
         <div class="space-y-1">
           <div class="try-label">Season</div>
           <div class="flex flex-wrap gap-1.5">${TRY_SEASONS.map(s => btn(`data-try-season="${s.key}"`, `${s.emoji} ${s.key}`, previewSeason === s.key, s.hint)).join('')}</div>
-          ${previewSeason ? `<p class="text-[11px] text-slate-400">${escapeHtml(TRY_SEASONS.find(s => s.key === previewSeason).hint)}</p>` : ''}
+          ${previewSeason ? `<p class="text-2xs text-slate-400">${escapeHtml(TRY_SEASONS.find(s => s.key === previewSeason).hint)}</p>` : ''}
         </div>
         <div class="space-y-1">
           <div class="try-label">Time of day</div>
@@ -185,8 +185,8 @@ function tryRenderPanel() {
           <div class="space-y-1.5">${TRY_GIFTS.map((g, i) => `
             <button type="button" data-try-gift="${i}" class="try-gift">
               <span class="text-base leading-none" aria-hidden="true">${g.emoji}</span>
-              <span class="min-w-0"><span class="block text-[11px] font-semibold text-amber-100">${escapeHtml(g.items.join(' + '))}</span>
-              <span class="block text-[10px] text-slate-400 leading-snug">${escapeHtml(g.unlocks)}</span></span>
+              <span class="min-w-0"><span class="block text-2xs font-semibold text-amber-100">${escapeHtml(g.items.join(' + '))}</span>
+              <span class="block text-2xs text-slate-400 leading-snug">${escapeHtml(g.unlocks)}</span></span>
             </button>`).join('')}</div>
         </div>`;
     }

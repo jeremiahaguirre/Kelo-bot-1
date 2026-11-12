@@ -453,15 +453,15 @@ function renderHobbiesUI() {
       const el = document.getElementById('hobbiesContainer');
       if (!el) return;
       el.innerHTML = state.hobbies.length === 0
-        ? '<p class="text-[11px] text-slate-500 italic">No hobbies yet. Some gifts (spray paint, a kite, an instrument, seeds, a paint set...) might spark one.</p>'
+        ? '<p class="text-2xs text-slate-500 italic">No hobbies yet. Some gifts (spray paint, a kite, an instrument, seeds, a paint set...) might spark one.</p>'
         : state.hobbies.map((h, i) => `
           <button data-hobby-idx="${i}" class="hobby-card w-full text-left p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-orange-500/25 hover:border-orange-400/60 transition space-y-1">
             <div class="flex items-center justify-between gap-2 text-xs">
               <span class="font-bold text-orange-200">${escapeHtml(h.emoji)} ${escapeHtml(h.name)}</span>
-              <span class="text-[10px] font-mono text-slate-400">practised ${escapeHtml(h.practiced)}×</span>
+              <span class="text-2xs font-mono text-slate-400">practised ${escapeHtml(h.practiced)}×</span>
             </div>
             <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-orange-400" style="width:${Math.max(0, Math.min(100, Number(h.skill) || 0))}%"></div></div>
-            <div class="text-[10px] font-mono text-slate-500 truncate">Skill ${escapeHtml(h.skill)}/100${h.sparkedBy ? ` • sparked by ${escapeHtml(h.sparkedBy)}` : ''}</div>
+            <div class="text-2xs font-mono text-slate-500 truncate">Skill ${escapeHtml(h.skill)}/100${h.sparkedBy ? ` • sparked by ${escapeHtml(h.sparkedBy)}` : ''}</div>
           </button>`).join('');
       el.querySelectorAll('.hobby-card').forEach(card => {
         card.addEventListener('click', () => {

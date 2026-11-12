@@ -246,10 +246,10 @@
     box.id = 'phoneSettings';
     box.className = 'mt-4 pt-3 border-t border-slate-800 space-y-2 text-xs text-slate-300';
     box.innerHTML = `
-      <h3 class="text-[11px] font-bold uppercase tracking-wide text-slate-400">On this phone</h3>
+      <h3 class="text-2xs font-bold uppercase tracking-wide text-slate-400">On this phone</h3>
       <label class="flex items-center justify-between gap-3"><span>Keep the screen on while the app is open</span><input id="phoneKeepAwake" type="checkbox" class="w-4 h-4 accent-amber-500"></label>
       <label class="flex items-center justify-between gap-3"><span>Gentle vibration for news</span><input id="phoneHaptics" type="checkbox" class="w-4 h-4 accent-amber-500"></label>
-      <a href="https://jeremiahaguirre.github.io/Kelo-bot-1/privacy.html" target="_blank" rel="noopener noreferrer" class="inline-block text-[11px] text-sky-300 hover:underline">Privacy policy</a>`;
+      <a href="https://jeremiahaguirre.github.io/Kelo-bot-1/privacy.html" target="_blank" rel="noopener noreferrer" class="inline-block text-2xs text-sky-300 hover:underline">Privacy policy</a>`;
     panel.appendChild(box);
     const awake = box.querySelector('#phoneKeepAwake');
     const buzz = box.querySelector('#phoneHaptics');

@@ -625,7 +625,7 @@ function exploreOpenSpotMenu(x, y, pt) {
       const where = exploreDescribeSpot(pt, true);
       menu.innerHTML = `
         <div class="flex items-start justify-between gap-2">
-          <div class="text-[11px] font-bold text-amber-200 leading-snug">${escapeHtml(where)}</div>
+          <div class="text-2xs font-bold text-amber-200 leading-snug">${escapeHtml(where)}</div>
           <button type="button" data-spot="close" class="explore-x" aria-label="Close">✕</button>
         </div>
         <div class="flex flex-col gap-1 mt-1.5">
@@ -633,7 +633,7 @@ function exploreOpenSpotMenu(x, y, pt) {
           <button type="button" data-spot="send" class="explore-spot-btn"><span aria-hidden="true">🤖</span> Send Kelo-1 here</button>
           <button type="button" data-spot="info" class="explore-spot-btn"><span aria-hidden="true">❓</span> What's this?</button>
         </div>
-        <p data-spot-info class="hidden mt-1.5 text-[11px] text-slate-300 leading-snug"></p>`;
+        <p data-spot-info class="hidden mt-1.5 text-2xs text-slate-300 leading-snug"></p>`;
       menu.classList.remove('hidden');
       const vw = window.innerWidth, vh = window.innerHeight;
       const r = menu.getBoundingClientRect();

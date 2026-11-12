@@ -671,3 +671,10 @@ body.hud-kelo-away #exploreTouchColumn .explore-touch-where { display: flex; }
 .brain-empty { font-size: var(--hud-fs-xs); color: var(--m-faint); }
 /* The many existing cards in the Brain tab read a little larger and calmer */
 #brainSections .brain-body .font-serif { font-size: var(--hud-fs-sm); line-height: 1.5; }
+/* Brain summary (js/menuui.js renders it; styled here so its markup stays as it is):
+   the tiles' labels already say what each number is, so their emoji icons go; his mood title wraps */
+.brain-stat-icon { display: none; }
+.brain-stat { padding: 12px 4px; }
+.brain-hero .brain-hero-title.truncate { white-space: normal; overflow: visible; text-overflow: clip; }
+.brain-hero-goal .text-amber-300 { color: var(--hud-text); }
+.brain-focus .truncate { white-space: normal; }

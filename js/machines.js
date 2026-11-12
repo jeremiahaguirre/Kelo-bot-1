@@ -313,7 +313,8 @@ async function runMachineJob(key, job = {}, originLabel = 'In the Workshop') {
         state.moodTitle = wsBadgeTitle(plan.title || `Using the ${def.name}`);
         state.speechBubble = plan.speech || `Off to the Workshop to use the ${def.name}.`;
         renderAllUI();
-        const results = await goIntoWorkshop({ vehicle: job.vehicle || null, stops: plan.stops });
+        // (a plan with its own visit, like the garage hall's, goes there instead of into the Workshop)
+        const results = plan.visit ? await plan.visit() : await goIntoWorkshop({ vehicle: job.vehicle || null, stops: plan.stops });
         if (!results) {
           state.speechBubble = `I couldn't get into the Workshop just now. I'll try the ${def.name} later.`;
           return false;

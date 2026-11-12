@@ -1964,10 +1964,29 @@ function pathOffGrid(p) {
 function pathGridEdge(p) {
       return { x: Math.max(PATH_MIN_X + 0.6, Math.min(PATH_MAX_X - 0.6, p.x)), z: Math.max(PATH_MIN_Z + 0.6, Math.min(PATH_MAX_Z - 0.6, p.z)) };
     }
+// Paths only see obstacles, not the ground's slope, so between the valley and the land over the range
+// (the Workshop's north yard, the runway field) they go by the pass: up the east road behind the
+// Workshop and along the cut (WORKSHOP_LAND.eastRoad / pass, js/workshopbuilding.js)
+function pathPassRoute(from, to) {
+      if (typeof WORKSHOP_LAND === 'undefined' || !WORKSHOP_LAND.pass) return null;
+      const valley = p => p.z > -30, north = p => p.z < -62;
+      const E = WORKSHOP_LAND.eastRoad, P = WORKSHOP_LAND.pass, ex = (E.minX + E.maxX) / 2;
+      const route = [{ x: ex, z: E.maxZ + 1 }, { x: ex, z: E.minZ + 1 }, { x: ex - 2, z: -62 }, { x: (P.minX + P.maxX) / 2, z: P.minZ - 1 }];
+      if (valley(from) && north(to)) return route;
+      if (north(from) && valley(to)) return route.reverse();
+      return null;
+    }
 // Reused between searches (the grid is about 50k cells)
 const pathBuf = { g: null, came: null, closed: null };
 function findPath(from, to) {
       currentPathPartial = false;
+      const pass = pathPassRoute(from, to);
+      if (pass) {
+        const first = findPath(from, pass[0]);
+        if (currentPathPartial) return first;
+        const last = findPath(pass[pass.length - 1], to);
+        return [...first, ...pass.slice(1), ...last];
+      }
       if (segmentClear(from.x, from.z, to.x, to.z, to)) return [{ x: to.x, z: to.z }];
       if (pathOffGrid(to)) {
         const edge = pathGridEdge(to), part = findPath(from, edge), partial = currentPathPartial;

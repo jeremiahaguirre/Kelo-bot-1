@@ -16,6 +16,8 @@ function hudSetText(el, text) {
     }
 
 function renderAllUI() {
+      // The roof button names the saved roof style (it is kept across reloads)
+      hudSetText(document.querySelector('#btnToggleRoof span'), state.roofCutaway ? 'Roofs: Cutaway' : 'Roofs: Solid');
       // How he feels: six small meters in the status block (numbers in its pop-up)
       [['Health', state.health], ['Fullness', state.fullness], ['Happy', state.happiness],
         ['Wonder', state.wonderLevel], ['Calm', state.calmLevel]].forEach(([k, v]) => {

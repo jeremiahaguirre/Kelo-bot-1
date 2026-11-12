@@ -202,6 +202,8 @@ Each step merges, passes the regression tests and is pushed before the next star
       - The Workshop machines on all floors look like the real machines, with footprints, stand spots and job animations unchanged.
       - The menu UI and UX, especially the Brain and Diary tabs (owner, 2026-11-09): a journal-style Diary and an at-a-glance Brain dashboard, plus a consistency pass on every tab, on desktop and phone.
 
+- **QUEUED (owner, 2026-11-12): upgrade Three.js from r128 to the latest release.** Start only after the five running machines are merged (anim3, runway + map redesign, hudux, shopview, engine), on its own machine. Needs: an ES-module loader shim that sets window.THREE before the classic scripts run (no build step, CSP-safe, works in the Windows/Capacitor wrappers); OrbitControls etc. from the matching examples/jsm version; colour management (outputColorSpace/SRGBColorSpace) and the physically based light intensities (re-tune every light, material, sky and water so it looks at least as good); renamed/removed APIs; vendor copies in qa-tools updated; full regression set, perf numbers, before/after screenshots.
+
 ## Owner notes to keep in mind
 - Owner (2026-11-04): helpers may add as much land as needed for machines, workshops and plants (natural shoreline, walkable, clear of town, one shared land constant/helper). Kelo-1 must never end up standing in water.
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.

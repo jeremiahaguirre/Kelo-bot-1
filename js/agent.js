@@ -333,6 +333,8 @@ const state = {
   "placesNoticed": {},
   "basementDepth": 0,
   "projects": [],
+  "agenda": { "tasks": [], "focusId": null },
+  "roadworks": {},
   "buildProjects": [],
   "pilotTraining": { "groundSchoolAt": null, "taxiRuns": 0 },
   "landFills": [],
@@ -491,10 +493,12 @@ function trimBrainState() {
       const openCode = r => r.category === 'code' && !r.fulfilled;
       if (state.requestsToUser.filter(r => !openCode(r)).length > MAX_REQUESTS) {
         // Drop the oldest answered requests first, then the oldest open ones
-        const open = state.requestsToUser.filter(r => !r.fulfilled && !openCode(r));
+        // Open requests one of his open tasks is waiting on are never dropped (js/agenda.js)
+        const awaited = new Set(typeof agendaAwaitedRequestIds === 'function' ? agendaAwaitedRequestIds() : []);
+        const open = state.requestsToUser.filter(r => !r.fulfilled && !openCode(r) && !awaited.has(r.id));
         const done = state.requestsToUser.filter(r => r.fulfilled);
         const keep = new Set([...open, ...done].slice(0, MAX_REQUESTS));
-        state.requestsToUser = state.requestsToUser.filter(r => openCode(r) || keep.has(r));
+        state.requestsToUser = state.requestsToUser.filter(r => openCode(r) || keep.has(r) || awaited.has(r.id));
       }
       // Too many pieces standing around the valley? The oldest move into his Museum: nothing is thrown away
       const outdoors = state.inventedCreations.filter(c => !c.inMuseum);
@@ -1882,6 +1886,7 @@ Current state:
 - The wind: ${typeof windSummaryForAI === 'function' ? windSummaryForAI() : 'unknown'}
 - The weather: ${typeof weatherSummaryForAI === 'function' ? weatherSummaryForAI() : 'unknown'} (spring rain soaks plants so they grow faster; winter freezes the lake, and you only walk on ice you have measured at 10 cm or more: open water still drowns you)
 - New land in the lake: ${typeof landFillSummaryForAI === 'function' ? landFillSummaryForAI() : 'none'}
+- YOUR OPEN TASKS (your agenda: you finish the step you are on before starting anything new, and come back to paused and waiting ones; only drop one on purpose, with a reason): ${typeof agendaSummaryForAI === 'function' ? agendaSummaryForAI() : 'none'}
 - Real things you are building from plans: ${typeof projectsSummaryForAI === 'function' ? projectsSummaryForAI() : 'none'}
 - Big builds from a bill of materials: ${typeof assemblySummaryForAI === 'function' ? assemblySummaryForAI() : 'none'}
 - How you have shaped the valley (you can undo anything but a chopped tree): ${typeof landscapeSummaryForAI === 'function' ? landscapeSummaryForAI() : 'nothing yet'}
@@ -1892,6 +1897,7 @@ Current state:
 - Your welding setup (gas, wire, hoses): ${typeof weldingSummaryForAI === 'function' ? weldingSummaryForAI() : 'unknown'}
 - Your real skills (practise with the things you asked for and were given; this matters more than welding): ${typeof skillsSummaryForAI === 'function' ? skillsSummaryForAI() : 'none yet'}
 - Groundwork you've researched (roads, asphalt paving, moving earth, planting): ${typeof groundworkSummaryForAI === 'function' ? groundworkSummaryForAI() : 'nothing yet'}
+- Proper roads and the runway (survey, clear, grade, drain, compact, base, prime, pave from your plant, roll, cure, stripe; real machines and materials from your parts list): ${typeof roadworksSummaryForAI === 'function' ? roadworksSummaryForAI() : 'none'}
 - Your concrete and asphalt plant (right beside the Workshop, to its east): ${typeof plantSummaryForAI === 'function' ? plantSummaryForAI() : 'none'}
 - In your Storehouse: ${typeof storehouseSummaryForAI === 'function' ? storehouseSummaryForAI() : 'empty'}
 - Tidying up: ${typeof tidySummaryForAI === 'function' ? tidySummaryForAI() : 'nothing to tidy'}
@@ -1949,6 +1955,7 @@ ${typeof buildAnythingPromptLine === 'function' ? buildAnythingPromptLine() + '\
   "takeOut": null OR {"item": "something in your Storehouse or a piece in your Museum", "purpose": "use" | "display", "for": "what you will do with it"} (fetch it: use a stored thing for what it is for, or stand a Museum piece out in the valley again; to throw something out use "discard"),
   "useItem": null OR {"item": "exact name of something you own", "for": "what you will do with it, which must be what it is for (eat a banana, hammer with a hammer, paint murals with spray paint)"},
   "emote": null OR "wave" | "cheer" | "dance" | "think" | "stretch" | "shiver" | "sit" | "celebrate" (a gesture you make right now to show how you feel),
+  "agenda": null OR {"task": "the 4-character tag of one of your open tasks", "do": "resume" | "drop", "why": "1 sentence (needed to drop one)"},
   "checkMail": true OR false (whether you feel like walking to the post office to pick up your mail after this),
 ${state.balloonWreck ? `  "repairBalloon": true OR false (gather the pieces of your crashed hot-air balloon and weld it back together at the welding table),
 ` : ''}${state.knowsDigging ? `  "dig": null OR {"x": number, "z": number} (dig or mine at that spot; you need a shovel or pickaxe, a jackhammer once you hit rock, and a dump truck plus excavator once the dirt pile is big; if you lack them you will ask for them),
@@ -2110,6 +2117,7 @@ function applyDecision(decision, originLabel) {
       // Something his human switched on (wildlife, his pet, fishing...): see js/wishfeatures.js
       if (typeof applyWishFeatureDecision === 'function') applyWishFeatureDecision(decision);
       if (typeof applyPlantDecision === 'function') applyPlantDecision(decision);
+      if (typeof applyAgendaDecision === 'function') applyAgendaDecision(decision);
       if (decision.print && typeof printDecision === 'function') printDecision(decision.print);
       if (decision.useMachine && typeof useMachineDecision === 'function') useMachineDecision(decision.useMachine);
 
@@ -2396,6 +2404,10 @@ function runAutonomousLifeTick() {
       }
       // Something a visitor asked him to go and do (js/skills.js)
       if (typeof takeSkillAsk === 'function' && takeSkillAsk()) return;
+      // What he was waiting for is at the Post Office: he goes for it, then carries on (js/agenda.js)
+      if (typeof agendaMailWaiting === 'function' && typeof pickUpMail === 'function' && agendaMailWaiting() && canTryKey('mail')) { tryKey('mail', () => pickUpMail('What I Was Waiting For Came')); return; }
+      // Focus: the next step of the task he committed to comes before any whim (js/agenda.js)
+      if (typeof agendaLifeTick === 'function' && agendaLifeTick()) return;
       // A painting a visitor asked for (or he planned) whose supplies have now arrived (js/paintstudio.js)
       if (typeof paintPlanTick === 'function' && paintPlanTick()) return;
       // Plants that are dry, hungry or wilting get looked after (js/plantcare.js)

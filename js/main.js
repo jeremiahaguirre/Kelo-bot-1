@@ -224,7 +224,8 @@ function renderRequestsTab() {
       // Code letters are grouped with "Show more" (js/coderequests.js), after the other letters
       const grouped = typeof codeRequestsGroupHtml === 'function';
       list.innerHTML = state.requestsToUser.filter(req => !(grouped && req.category === 'code')).map(req => req.category === 'code' && typeof codeRequestCardHtml === 'function' ? codeRequestCardHtml(req)
-        : req.category === 'bomlist' && typeof bomListCardHtml === 'function' ? bomListCardHtml(req) : `
+        : req.category === 'bomlist' && typeof bomListCardHtml === 'function' ? bomListCardHtml(req)
+        : req.category === 'joblist' && typeof roadworkListCardHtml === 'function' ? roadworkListCardHtml(req) : `
         <div class="ui-card ${req.fulfilled ? 'ui-card-done' : ''}">
           <div class="ui-section-head">
             <h4 class="ui-section-title min-w-0">
@@ -271,6 +272,7 @@ function renderRequestsTab() {
 
       if (typeof bindCodeRequestButtons === 'function') bindCodeRequestButtons(list);
       if (typeof bindBomListButtons === 'function') bindBomListButtons(list);
+      if (typeof bindRoadworkListButtons === 'function') bindRoadworkListButtons(list);
 
       const submitPerspective = (reqId, answerText) => {
         const req = state.requestsToUser.find(r => r.id === reqId);

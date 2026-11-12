@@ -161,7 +161,7 @@ function holdJobTool(re, pose = 'digging') {
 
 // Pave one of his gravel roads with asphalt: wheel the hot asphalt in, rake it smooth, roll it flat
 async function paveRoad(id = 'any', why = '', originLabel = 'Paving a Road') {
-      const roads = state.worldEdits.filter(e => e.type === 'road' && e.surface !== 'asphalt');
+      const roads = state.worldEdits.filter(e => e.type === 'road' && !e.pro && e.surface !== 'asphalt');
       const e = roads.find(r => r.id === id) || (id === 'any' || id === 'last' ? roads[roads.length - 1] : null);
       if (!e) {
         state.speechBubble = 'Asphalt goes on a packed gravel base, so I need a gravel road first.';

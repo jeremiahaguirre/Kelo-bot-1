@@ -760,6 +760,7 @@ body.shopvisit-on #btnShowMinimap, body.shopvisit-on [data-where-kelo], body.sho
 .brain-chip { padding: 1px 7px; border-radius: var(--hud-r-sm); background: rgb(var(--hud-n-800) / 0.9); color: var(--m-dim); font-size: var(--hud-fs-2xs); }
 .brain-chip-ok { background: rgb(var(--hud-ok-500) / 0.14); color: var(--hud-ok); }
 .brain-empty { font-size: var(--hud-fs-xs); color: var(--m-faint); }
+.brain-pill-active { background: rgb(var(--hud-a-500) / 0.16); color: var(--hud-accent-text); }
 /* The many existing cards in the Brain tab read a little larger and calmer */
 #brainSections .brain-body .font-serif { font-size: var(--hud-fs-sm); line-height: 1.5; }
 /* Brain summary (js/menuui.js renders it; styled here so its markup stays as it is):

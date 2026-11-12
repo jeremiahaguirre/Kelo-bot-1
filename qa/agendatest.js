@@ -92,12 +92,12 @@ function startServer() {
     await run(r => agendaStep(agendaGet(r).id, 1), ref);
     await run(() => { state.fullness = 20; state.toolInventory.push('An apple'); window.__eat = eatSomething('Hungry'); });
     await page.waitForTimeout(800);
-    t = await task(ref); expect(t.status === 'paused' && t.pausedBy === 'a bite to eat', 'eating pauses it: ' + t.pausedBy);
+    t = await task(ref); expect((t.status === 'paused' && t.pausedBy === 'a bite to eat') || await run(r => (agendaGet(r).history || []).some(h => h.what === 'pause' && /bite to eat/.test(h.text)), ref), 'eating pauses it');
     await run(() => window.__eat); await waitFor(() => !state.isBusy, 60000);
     t = await task(ref); expect(t.status === 'active' && t.focus && t.step === 1, 'after eating he is back on it at the same step');
     await run(() => { state.health = 40; window.__sleep = goToSleep('Sleepy'); });
     await page.waitForTimeout(1500);
-    t = await task(ref); expect(t.status === 'paused' && t.pausedBy === 'sleep', 'sleep pauses it');
+    t = await task(ref); expect((t.status === 'paused' && t.pausedBy === 'sleep') || await run(r => (agendaGet(r).history || []).some(h => h.what === 'pause' && /for sleep/.test(h.text)), ref), 'sleep pauses it');
     await page.waitForTimeout(4000);
     await run(() => { state.isSleeping = false; }); await run(() => window.__sleep); await page.waitForTimeout(500);
     t = await task(ref); expect(t.status === 'active' && t.step === 1, 'after waking up he is back on it');

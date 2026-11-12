@@ -1,0 +1,15 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+storehouse: {"slots":36,"stored":70,"levels":1,"lastLevel":1}
+put away: false deepest went: 0.0 { level: 0, title: 'Found a Workshop', depthNow: 0 }
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+after reload: {"belongings":71,"levels":1}
+museum: {"sculptures":20,"paintings":11,"levels":2,"next":2,"summary":"20 sculptures and 11 paintings, over 3 floors"}
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+shot basement-museum
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+shot basement-storehouse
+page errors: none

@@ -1,0 +1,18 @@
+{
+ "The Frozen Lake": "painting title (a Museum picture, not a shelf item); a name-only fallback is a sculpture form",
+ "The Peaks above the Valley": "painting title (a Museum picture, not a shelf item); a name-only fallback is a sculpture form",
+ "The Range from the Valley": "painting title (a Museum picture, not a shelf item); a name-only fallback is a sculpture form",
+ "The West Meadow": "painting title (a Museum picture, not a shelf item); a name-only fallback is a sculpture form",
+ "The Little House by the Lake": "painting title (a Museum picture, not a shelf item); a name-only fallback is a sculpture form",
+ "Snapped sturdy shovel": "shown intact: broken variants keep the whole model",
+ "Bent sturdy shovel": "shown intact: broken variants keep the whole model",
+ "Snapped claw hammer": "shown intact: broken variants keep the whole model",
+ "A larger island to explore": "a wish for a place, shown as a small token model, not a real object",
+ "A lakeside dock": "a wish for a place, shown as a small token model, not a real object",
+ "A tiny observatory on the peak": "a wish for a place, shown as a small token model, not a real object",
+ "A treehouse platform": "a wish for a place, shown as a small token model, not a real object",
+ "A friendly goat": "a companion, not stored; simple block model kept",
+ "A pair of homing pigeons": "a companion, not stored; simple block model kept",
+ "Circular saw": "recognisable but rough (guard and motor read as one dark mass)",
+ "A mini submarine": "toy-like yellow blob (the wish has no real-size meaning)"
+}

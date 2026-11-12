@@ -1,0 +1,9314 @@
+[
+ {
+  "name": "A basket of Okanagan cherries",
+  "route": "rule /^(?!.*(pie|tart|cobbler|cake|jam|muffi/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.31,
+   0.238,
+   0.31
+  ],
+  "minY": 0,
+  "meshes": 63,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A warm sourdough loaf",
+  "route": "rule /bread|loaf|sourdough|baguette|\\bbun\\b|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.26,
+   0.135,
+   0.24
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "Butter tarts",
+  "route": "rule /tart|\\bpies?\\b|cobbler|cake|cookie/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.26,
+   0.047,
+   0.26
+  ],
+  "minY": 0,
+  "meshes": 11,
+  "labels": 0,
+  "canvasTex": 9,
+  "realSize": true
+ },
+ {
+  "name": "Honeycrisp apples",
+  "route": "rule /^(?!.*(pie|tart|cobbler|cake|crumble|j/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.31,
+   0.238,
+   0.31
+  ],
+  "minY": 0,
+  "meshes": 21,
+  "labels": 0,
+  "canvasTex": 10,
+  "realSize": true
+ },
+ {
+  "name": "A bowl of ramen",
+  "route": "rule /ramen|noodle|soup|stew|bowl/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.26,
+   0.113,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Maple fudge",
+  "route": "rule /fudge|chocolate|brownie/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.195,
+   0.024,
+   0.106
+  ],
+  "minY": 0,
+  "meshes": 12,
+  "labels": 0,
+  "canvasTex": 10,
+  "realSize": true
+ },
+ {
+  "name": "Fresh peach cobbler",
+  "route": "rule /tart|\\bpies?\\b|cobbler|cake|cookie/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.26,
+   0.047,
+   0.26
+  ],
+  "minY": 0,
+  "meshes": 11,
+  "labels": 0,
+  "canvasTex": 9,
+  "realSize": true
+ },
+ {
+  "name": "A thermos of hot cocoa",
+  "route": "rule /cocoa|coffee|\\btea\\b|thermos|juice|mil/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.074,
+   0.285,
+   0.074
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Smoked salmon",
+  "route": "glb fish.glb | rule /salmon|fish|trout/",
+  "shelfScale": 1.538,
+  "shelfMinY": 0,
+  "m": [
+   0.65,
+   0.291,
+   0.144
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A wheel of aged cheddar",
+  "route": "rule /cheese|cheddar/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.145,
+   0.079,
+   0.09
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A high-torque diamond drill",
+  "route": "rule /drill/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.34,
+   0.248,
+   0.075
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "A brass telescope",
+  "route": "rule /telescope/",
+  "shelfScale": 0.571,
+  "shelfMinY": 0,
+  "m": [
+   1.002,
+   1.297,
+   0.599
+  ],
+  "minY": 0,
+  "meshes": 10,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "A soldering iron",
+  "route": "rule /soldering (iron|station)/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.283,
+   0.121,
+   0.126
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Climbing rope and carabiners",
+  "route": "rule /^(?!.*(jump|skipping|power|extension|e/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.363,
+   0.116,
+   0.386
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pocket spectrometer",
+  "route": "rule /infrared thermometer|ir thermometer|sl/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.12,
+   0.026,
+   0.026
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A field microphone",
+  "route": "rule /microphone|mic\\b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.078,
+   0.2,
+   0.078
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A box kite",
+  "route": "rule /kite/",
+  "shelfScale": 0.87,
+  "shelfMinY": 0,
+  "m": [
+   0.54,
+   0.462,
+   1.15
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "A yo-yo",
+  "route": "rule /yo-?yo/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.06,
+   0.221,
+   0.032
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A kaleidoscope",
+  "route": "rule /kaleidoscope|spyglass/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.25,
+   0.158,
+   0.079
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A wind-up frog",
+  "route": "rule /frog/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.104,
+   0.077,
+   0.104
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of juggling balls",
+  "route": "rule /ball|juggl|marble/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.231,
+   0.07,
+   0.068
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 3D puzzle cube",
+  "route": "rule /rubik|puzzle cube|speed cube|magic cub/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.058,
+   0.058,
+   0.058
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A larger island to explore",
+  "route": "rule /island|land|territory/",
+  "shelfScale": 0.9,
+  "shelfMinY": 0,
+  "m": [
+   0.5,
+   0.288,
+   0.5
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "A treehouse platform",
+  "route": "rule /treehouse|cabin|\\bhouse\\b|observatory|/",
+  "shelfScale": 0.849,
+  "shelfMinY": 0,
+  "m": [
+   0.53,
+   0.325,
+   0.53
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "A lakeside dock",
+  "route": "rule /dock|pier|plank|cedar|lumber|timber/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.375,
+   0.063,
+   0.319
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": false
+ },
+ {
+  "name": "A tiny observatory on the peak",
+  "route": "rule /treehouse|cabin|\\bhouse\\b|observatory|/",
+  "shelfScale": 0.849,
+  "shelfMinY": 0,
+  "m": [
+   0.53,
+   0.325,
+   0.53
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "A canoe",
+  "route": "rule /canoe|kayak|boat|\\braft\\b|paddle ?boar/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.36,
+   0.083,
+   0.438
+  ],
+  "minY": -0.031,
+  "meshes": 21,
+  "labels": 0,
+  "canvasTex": 13,
+  "realSize": false
+ },
+ {
+  "name": "A hot air balloon",
+  "route": "rule /hot.?air balloon|balloon basket/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.24,
+   0.438,
+   0.24
+  ],
+  "minY": 0,
+  "meshes": 30,
+  "labels": 0,
+  "canvasTex": 13,
+  "realSize": false
+ },
+ {
+  "name": "A tandem bicycle",
+  "route": "rule /bike|bicycle|scooter/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.236,
+   0.153
+  ],
+  "minY": 0,
+  "meshes": 43,
+  "labels": 0,
+  "canvasTex": 10,
+  "realSize": false
+ },
+ {
+  "name": "A mini submarine",
+  "route": "rule /submarine/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.55,
+   0.306,
+   0.244
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "A friendly goat",
+  "route": "rule /goat|sheep/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.331,
+   0.306,
+   0.125
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "A pair of homing pigeons",
+  "route": "rule /pigeon|bird/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.258,
+   0.206,
+   0.175
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "A tank of glowing jellyfish",
+  "route": "rule /aquarium|fish ?tank|tank of .*(fish|je/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.62,
+   0.392,
+   0.32
+  ],
+  "minY": 0,
+  "meshes": 9,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "100 m of copper wire",
+  "route": "rule /spool|reel of|\\bwire\\b(?!.*(stripper|b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.076,
+   0.15,
+   0.15
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Sheets of stained glass",
+  "route": "rule /glass/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.4,
+   0.348,
+   0.104
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A crate of reclaimed cedar",
+  "route": "rule /dock|pier|plank|cedar|lumber|timber/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.375,
+   0.063,
+   0.319
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": false
+ },
+ {
+  "name": "A bag of river clay",
+  "route": "rule /^(?!.*\\b(bolts|nuts|screws|washers|nai/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.448,
+   0.1,
+   0.298
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "High-Torque Diamond Core Bits, Solar Smelting Crucible",
+  "route": "LIST[rule /drill bits?|\\bbits\\b/ ; rule /crucible|cauldron|bucket|\\bpot\\b|kettl/]",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.35,
+   0.15,
+   0.16
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": true
+ },
+ {
+  "name": "50L Sterile Oat Substrate, Infrared Thermal Imaging Lens",
+  "route": "LIST[rule /flux|powder|sand|salt|flour|substrate|/ ; rule /\\blens\\b|mirror|monocle/]",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.37,
+   0.35,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "Brushless Geared Traction Motors, 100m Steel Bar Stock",
+  "route": "LIST[rule /motor|engine|generator|turbine/ ; rule /(block|billet|bar|slab|chunk) of .*(al/]",
+  "shelfScale": 1.547,
+  "shelfMinY": 0,
+  "m": [
+   0.646,
+   0.194,
+   0.188
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "Argon Shielding Gas Refill, Anodizing Power Supply",
+  "route": "LIST[rule /shielding gas|gas cylinder|argon|\\bco2/ ; rule /capacitor|battery|power cell|power sup/]",
+  "shelfScale": 0.876,
+  "shelfMinY": 0,
+  "m": [
+   0.276,
+   0.845,
+   0.139
+  ],
+  "minY": 0,
+  "meshes": 9,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "Hydraulic Rock Splitter, Gold Smelting Furnace",
+  "route": "LIST[rule /rock splitter|plug and feathers|feathe/ ; rule /smelting furnace|melting furnace|\\bkil/]",
+  "shelfScale": 0.745,
+  "shelfMinY": 0,
+  "m": [
+   1.34,
+   0.993,
+   0.624
+  ],
+  "minY": 0,
+  "meshes": 15,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": true
+ },
+ {
+  "name": "20kg Titanium Welding Rod, Solar Capacitor Bank",
+  "route": "LIST[rule /tungsten|filler rods?|tig rods?|electr/ ; rule /capacitor|battery|power cell|power sup/]",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.179,
+   0.052,
+   0.45
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 6,
+  "realSize": true
+ },
+ {
+  "name": "Okanagan Peaches",
+  "route": "rule /^(?!.*(pie|tart|cobbler|cake|jam)).*(p/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.31,
+   0.238,
+   0.31
+  ],
+  "minY": 0,
+  "meshes": 21,
+  "labels": 0,
+  "canvasTex": 10,
+  "realSize": true
+ },
+ {
+  "name": "Heritage Tomatoes",
+  "route": "rule /\\b(pears?|tomato(es)?|oranges?|lemons?/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.31,
+   0.238,
+   0.31
+  ],
+  "minY": 0,
+  "meshes": 35,
+  "labels": 0,
+  "canvasTex": 17,
+  "realSize": true
+ },
+ {
+  "name": "Carrots",
+  "route": "rule /carrot/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.579,
+   0.076,
+   0.199
+  ],
+  "minY": 0,
+  "meshes": 87,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "Blueberries",
+  "route": "rule /^(?!.*(pie|tart|cobbler|cake|jam|muffi/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.31,
+   0.238,
+   0.31
+  ],
+  "minY": 0,
+  "meshes": 123,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "Magnifying glass",
+  "route": "rule /magnif/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.145,
+   0.22,
+   0.024
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Pocket compass",
+  "route": "rule /compass/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.07,
+   0.014,
+   0.07
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "Headlamp",
+  "route": "rule /^(?!.*(weld|plasma|propane|blow ?torch/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.176,
+   0.064,
+   0.209
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Multitool",
+  "route": "rule /multi-?tool|leatherman|swiss army knif/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.169,
+   0.029,
+   0.024
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Watercolor paint set",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.023,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Box kite",
+  "route": "rule /kite/",
+  "shelfScale": 0.87,
+  "shelfMinY": 0,
+  "m": [
+   0.54,
+   0.462,
+   1.15
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "Yo-yo",
+  "route": "rule /yo-?yo/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.06,
+   0.221,
+   0.032
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Kaleidoscope",
+  "route": "rule /kaleidoscope|spyglass/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.25,
+   0.158,
+   0.079
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "Harmonica",
+  "route": "rule /harmonica/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.104,
+   0.033,
+   0.029
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "Rubber duck",
+  "route": "rule /duck/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.161,
+   0.114,
+   0.09
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Spinning top",
+  "route": "rule /spinning top|\\btop\\b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.104,
+   0.09,
+   0.104
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Okanagan cherries",
+  "route": "rule /^(?!.*(pie|tart|cobbler|cake|jam|muffi/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.31,
+   0.238,
+   0.31
+  ],
+  "minY": 0,
+  "meshes": 63,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "Cinnamon bun",
+  "route": "rule /bread|loaf|sourdough|baguette|\\bbun\\b|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.11,
+   0.055,
+   0.11
+  ],
+  "minY": 0,
+  "meshes": 25,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A photo",
+  "route": "rule /picture frame|photo frame|\\bphotos?\\b|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.251,
+   0.108
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "3 photos",
+  "route": "rule /picture frame|photo frame|\\bphotos?\\b|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.251,
+   0.108
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "An axe",
+  "route": "rule /^(?!.*pick ?ax).*(\\baxe\\b|hatchet)/",
+  "shelfScale": 0.983,
+  "shelfMinY": 0,
+  "m": [
+   0.23,
+   0.753,
+   0.044
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "A packet of tree seeds",
+  "route": "rule /\\b(box|carton|case|pack|packet) of\\b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.1,
+   0.141
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A load of gravel",
+  "route": "rule /(\\d+(\\.\\d+)?\\s*t\\b.*\\bload\\b|\\bload of/",
+  "shelfScale": 0.222,
+  "shelfMinY": 0,
+  "m": [
+   3.243,
+   1.135,
+   3.243
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A sturdy shovel",
+  "route": "rule /shovel|spade/",
+  "shelfScale": 0.657,
+  "shelfMinY": 0,
+  "m": [
+   0.245,
+   1.126,
+   0.078
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "Pine planks",
+  "route": "rule /\\b(2x4|2x6|2x8|2 ?× ?4|1x\\d|4x4|6x6)\\b/",
+  "shelfScale": 0.41,
+  "shelfMinY": 0,
+  "m": [
+   2.44,
+   0.038,
+   0.283
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A box of wood screws",
+  "route": "rule /\\bbox(es)? of (\\w+ )?(screws|nails|bol/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.12,
+   0.07,
+   0.147
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A hand saw",
+  "route": "rule /\\bsaw\\b|handsaw/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.152,
+   0.74,
+   0.035
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A cordless drill",
+  "route": "rule /drill/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.34,
+   0.248,
+   0.075
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "A bundle of asphalt roof shingles",
+  "route": "rule /shingles|roofing felt|tar paper/",
+  "shelfScale": 1.075,
+  "shelfMinY": 0,
+  "m": [
+   0.93,
+   0.072,
+   0.32
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A box of nails",
+  "route": "rule /\\bbox(es)? of (\\w+ )?(screws|nails|bol/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.12,
+   0.07,
+   0.152
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A claw hammer",
+  "route": "rule /hammer|mallet/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.255,
+   0.35,
+   0.054
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "A pair of snowshoes",
+  "route": "rule /snow ?shoes?/",
+  "shelfScale": 1.247,
+  "shelfMinY": 0,
+  "m": [
+   0.578,
+   0.06,
+   0.624
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A kite",
+  "route": "rule /kite/",
+  "shelfScale": 0.87,
+  "shelfMinY": 0,
+  "m": [
+   0.54,
+   0.462,
+   1.15
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "A dump truck",
+  "route": "rule /dump ?truck|truck/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.22,
+   0.193
+  ],
+  "minY": 0,
+  "meshes": 108,
+  "labels": 0,
+  "canvasTex": 24,
+  "realSize": false
+ },
+ {
+  "name": "A jerry can of diesel",
+  "route": "rule /(drum|barrel) of|jerry ?can|gas can|fu/",
+  "shelfScale": 1.44,
+  "shelfMinY": 0,
+  "m": [
+   0.34,
+   0.514,
+   0.174
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A spool of PLA filament",
+  "route": "rule /filament/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.073,
+   0.2,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A 50 lb bag of clear glass cullet",
+  "route": "rule /^(?!.*\\b(bolts|nuts|screws|washers|nai/",
+  "shelfScale": 1.479,
+  "shelfMinY": 0,
+  "m": [
+   0.676,
+   0.12,
+   0.418
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A jar of coloured glass frit and colour rod",
+  "route": "LIST[rule /^(an? )?(jar|bottle|flask|tub|tin|vial/ ; rule /bar stock|steel bar|rods?\\b|pipe|tubin/]",
+  "shelfScale": 0.969,
+  "shelfMinY": 0,
+  "m": [
+   1.032,
+   0.135,
+   0.347
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": true
+ },
+ {
+  "name": "A month of furnace gas on the gas meter",
+  "route": "rule /infrared thermometer|ir thermometer|sl/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.24,
+   0.33,
+   0.162
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pair of didymium safety glasses",
+  "route": "rule /respirator|gas mask|dust mask|ear (def/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.154,
+   0.045,
+   0.13
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pair of Kevlar heat gloves",
+  "route": "rule /respirator|gas mask|dust mask|ear (def/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.25,
+   0.06,
+   0.24
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A wheelbarrow",
+  "route": "rule /wheelbarrow/",
+  "shelfScale": 0.505,
+  "shelfMinY": 0,
+  "m": [
+   0.891,
+   0.398,
+   0.992
+  ],
+  "minY": 0,
+  "meshes": 10,
+  "labels": 0,
+  "canvasTex": 7,
+  "realSize": false
+ },
+ {
+  "name": "A landscape rake",
+  "route": "rule /asphalt rake|\\blute\\b|\\brake\\b/",
+  "shelfScale": 0.509,
+  "shelfMinY": 0,
+  "m": [
+   0.262,
+   0.908,
+   0.039
+  ],
+  "minY": 0,
+  "meshes": 14,
+  "labels": 0,
+  "canvasTex": 14,
+  "realSize": false
+ },
+ {
+  "name": "A plate compactor",
+  "route": "rule /plate compactor|compactor|tamper/",
+  "shelfScale": 0.904,
+  "shelfMinY": 0,
+  "m": [
+   0.313,
+   0.512,
+   0.641
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": false
+ },
+ {
+  "name": "A load of crushed gravel",
+  "route": "rule /(\\d+(\\.\\d+)?\\s*t\\b.*\\bload\\b|\\bload of/",
+  "shelfScale": 0.222,
+  "shelfMinY": 0,
+  "m": [
+   3.243,
+   1.135,
+   3.243
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An asphalt rake",
+  "route": "rule /asphalt rake|\\blute\\b|\\brake\\b/",
+  "shelfScale": 0.519,
+  "shelfMinY": 0,
+  "m": [
+   0.313,
+   0.891,
+   0.022
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "A walk-behind road roller",
+  "route": "rule /road roller/",
+  "shelfScale": 0.799,
+  "shelfMinY": 0,
+  "m": [
+   0.375,
+   0.579,
+   0.655
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": false
+ },
+ {
+  "name": "A load of hot-mix asphalt",
+  "route": "rule /^(?!.*(shingle|roof|drum|emulsion|tank/",
+  "shelfScale": 0.962,
+  "shelfMinY": 0,
+  "m": [
+   0.468,
+   0.139,
+   0.475
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "A garden trowel",
+  "route": "rule /trowel/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.063,
+   0.181,
+   0.025
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "A watering can",
+  "route": "rule /watering can/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.342,
+   0.25,
+   0.188
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": false
+ },
+ {
+  "name": "A toolbox",
+  "route": "rule /multitool|iron|tool/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.52,
+   0.311,
+   0.26
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A can of spray paint",
+  "route": "rule /spray ?paint|aerosol|brake cleaner|fix/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.067,
+   0.268,
+   0.067
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A watercolour paint set",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.023,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A jackhammer",
+  "route": "rule /jack ?hammer|rock breaker/",
+  "shelfScale": 0.745,
+  "shelfMinY": 0,
+  "m": [
+   0.72,
+   0.993,
+   0.554
+  ],
+  "minY": 0,
+  "meshes": 9,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "A ukulele",
+  "route": "rule /guitar|ukulele|violin/",
+  "shelfScale": 1.288,
+  "shelfMinY": 0,
+  "m": [
+   0.194,
+   0.574,
+   0.087
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "A good book",
+  "route": "rule /book|novel|journal|notebook|manual/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.173,
+   0.033,
+   0.24
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A camera",
+  "route": "glb antique-camera.glb | CATEGORY:tool",
+  "shelfScale": 0.462,
+  "shelfMinY": 0,
+  "m": [
+   0.577,
+   1.6,
+   0.753
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A bicycle",
+  "route": "rule /bike|bicycle|scooter/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.236,
+   0.153
+  ],
+  "minY": 0,
+  "meshes": 43,
+  "labels": 0,
+  "canvasTex": 10,
+  "realSize": false
+ },
+ {
+  "name": "A warm scarf",
+  "route": "rule /scarf|toque|beanie|knit hat|winter hat/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.182,
+   0.05,
+   0.495
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A lantern",
+  "route": "rule /^(?!.*(weld|plasma|propane|blow ?torch/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.15,
+   0.303,
+   0.15
+  ],
+  "minY": 0,
+  "meshes": 9,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A bag of birdseed",
+  "route": "rule /^(?!.*\\b(bolts|nuts|screws|washers|nai/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.318,
+   0.09,
+   0.199
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pack of AA batteries",
+  "route": "rule /^(?!.*charger).*(\\b(aa|aaa|9 ?v|c|d)( /",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.074,
+   0.017,
+   0.066
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pair of binoculars",
+  "route": "rule /binoculars|opera glasses|field glasses/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.144,
+   0.07,
+   0.157
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A compass",
+  "route": "rule /compass/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.07,
+   0.014,
+   0.07
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A fishing rod",
+  "route": "rule /fishing (rod|pole)/",
+  "shelfScale": 0.51,
+  "shelfMinY": 0,
+  "m": [
+   1.96,
+   0.079,
+   0.026
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A bag of all-purpose fertilizer",
+  "route": "rule /fertili[sz]er|compost|bone ?meal|blood/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.188,
+   0.298,
+   0.097
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": false
+ },
+ {
+  "name": "A can of gasoline",
+  "route": "rule /(drum|barrel) of|jerry ?can|gas can|fu/",
+  "shelfScale": 1.44,
+  "shelfMinY": 0,
+  "m": [
+   0.34,
+   0.514,
+   0.174
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A drum of jet fuel",
+  "route": "rule /(drum|barrel) of|jerry ?can|gas can|fu/",
+  "shelfScale": 0.831,
+  "shelfMinY": 0,
+  "m": [
+   0.6,
+   0.891,
+   0.6
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A full propane tank",
+  "route": "rule /(drum|barrel) of|jerry ?can|gas can|fu/",
+  "shelfScale": 1.345,
+  "shelfMinY": 0,
+  "m": [
+   0.31,
+   0.55,
+   0.31
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 1 L bottle of grey photopolymer resin",
+  "route": "rule /\\bglue\\b|epoxy|caulk|silicone|sealant|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.165,
+   0.302,
+   0.111
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 4 L jug of 99% isopropyl alcohol (IPA)",
+  "route": "rule /\\bglue\\b|epoxy|caulk|silicone|sealant|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.165,
+   0.302,
+   0.111
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A box of nitrile gloves",
+  "route": "rule /respirator|gas mask|dust mask|ear (def/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.24,
+   0.072,
+   0.121
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 10 kg bag of PA12 nylon powder",
+  "route": "rule /^(?!.*\\b(bolts|nuts|screws|washers|nai/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.448,
+   0.1,
+   0.298
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 10 kg flask of 316L stainless steel powder",
+  "route": "rule /(flask|tub|jar|bottle|canister|can|dru/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.141,
+   0.27,
+   0.141
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A cylinder of high-purity argon",
+  "route": "rule /shielding gas|gas cylinder|argon|\\bco2/",
+  "shelfScale": 0.876,
+  "shelfMinY": 0,
+  "m": [
+   0.139,
+   0.845,
+   0.139
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A P100 half-face respirator",
+  "route": "rule /respirator|gas mask|dust mask|ear (def/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.196,
+   0.12,
+   0.195
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A spool of brass EDM wire",
+  "route": "rule /spool|reel of|\\bwire\\b(?!.*(stripper|b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.076,
+   0.15,
+   0.15
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A bi-metal bandsaw blade",
+  "route": "rule /bandsaw blade|band saw blade|saw blade/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.378,
+   0.02,
+   0.356
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An HP 3D600 fusing agent cartridge",
+  "route": "rule /cartridge/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.315,
+   0.12,
+   0.092
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An HP 3D600 detailing agent cartridge",
+  "route": "rule /cartridge/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.315,
+   0.12,
+   0.092
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A PolyJet VeroWhite model cartridge",
+  "route": "rule /cartridge/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.315,
+   0.12,
+   0.092
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A PolyJet SUP706 support cartridge",
+  "route": "rule /cartridge/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.315,
+   0.12,
+   0.092
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 5 kg tub of 17-4PH binder-jet powder",
+  "route": "rule /(flask|tub|jar|bottle|canister|can|dru/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.224,
+   0.25,
+   0.224
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A jug of binder-jet liquid binder",
+  "route": "rule /\\bglue\\b|epoxy|caulk|silicone|sealant|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.165,
+   0.302,
+   0.111
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A spool of 316L stainless welding wire",
+  "route": "rule /welding wire|mig wire|er70s-6|er4043.*/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.178,
+   0.061,
+   0.18
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A cylinder of argon shielding gas",
+  "route": "rule /shielding gas|gas cylinder|argon|\\bco2/",
+  "shelfScale": 0.876,
+  "shelfMinY": 0,
+  "m": [
+   0.139,
+   0.845,
+   0.139
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "An auto-darkening welding helmet",
+  "route": "rule /welding (hood|helmet|mask)|auto-?darke/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.419,
+   0.266,
+   0.207
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 10 kg flask of Ti-6Al-4V titanium powder",
+  "route": "rule /(flask|tub|jar|bottle|canister|can|dru/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.141,
+   0.27,
+   0.141
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A ream of LOM paper sheets",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.282,
+   0.05,
+   0.222
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A bottle of LOM adhesive",
+  "route": "rule /^(an? )?(jar|bottle|flask|tub|tin|vial/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.068,
+   0.19,
+   0.068
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pack of LOM knife blades",
+  "route": "rule /knife blades|blade pack|utility blades/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.1,
+   0.012,
+   0.026
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A bag of glass bead blasting media",
+  "route": "rule /^(?!.*\\b(bolts|nuts|screws|washers|nai/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.448,
+   0.1,
+   0.298
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of carbide end mills",
+  "route": "rule /end ?mills?|router bits?|milling bits?/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.085,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 60-degree V-bit",
+  "route": "rule /end ?mills?|router bits?|milling bits?/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.012,
+   0.06,
+   0.012
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 1/4 inch compression bit",
+  "route": "rule /end ?mills?|router bits?|milling bits?/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.012,
+   0.065,
+   0.012
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 3 inch face mill with carbide inserts",
+  "route": "rule /end ?mills?|router bits?|milling bits?/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.084,
+   0.075,
+   0.076
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 4x8 sheet of Baltic birch plywood",
+  "route": "rule /plywood|\\bmdf\\b|\\bosb\\b|drywall sheet|/",
+  "shelfScale": 0.817,
+  "shelfMinY": 0,
+  "m": [
+   1.224,
+   0.025,
+   0.613
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 4x8 sheet of MDF",
+  "route": "rule /plywood|\\bmdf\\b|\\bosb\\b|drywall sheet|/",
+  "shelfScale": 0.817,
+  "shelfMinY": 0,
+  "m": [
+   1.224,
+   0.036,
+   0.613
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A block of 6061 aluminium",
+  "route": "rule /(block|billet|bar|slab|chunk) of .*(al/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.15,
+   0.051,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A block of 1018 steel",
+  "route": "rule /(block|billet|bar|slab|chunk) of .*(al/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.15,
+   0.051,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A large bronze propeller casting",
+  "route": "rule /propeller|impeller/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.342,
+   0.07,
+   0.387
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "A set of hold-down clamps",
+  "route": "rule /\\bclamps?\\b|chisels?|gouges|\\bfiles?\\b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.45,
+   0.03,
+   0.212
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A sacrificial MDF spoilboard",
+  "route": "rule /plywood|\\bmdf\\b|\\bosb\\b|drywall sheet|/",
+  "shelfScale": 0.817,
+  "shelfMinY": 0,
+  "m": [
+   1.224,
+   0.036,
+   0.613
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A vacuum table pump",
+  "route": "rule /vacuum (table )?pump/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.521,
+   0.43,
+   0.29
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 6 inch Kurt machining vise",
+  "route": "rule /bandsaw(?! blade)|band saw(?! blade)|\\/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.18,
+   0.17,
+   0.347
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A modular fixture plate set",
+  "route": "rule /plywood|\\bmdf\\b|\\bosb\\b|drywall sheet|/",
+  "shelfScale": 0.817,
+  "shelfMinY": 0,
+  "m": [
+   1.224,
+   0.025,
+   0.613
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 4 inch dust collection hose",
+  "route": "rule /garden hose|water hose|\\bhose\\b(?!.*(c/",
+  "shelfScale": 1.029,
+  "shelfMinY": 0,
+  "m": [
+   0.7,
+   0.28,
+   0.7
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 5 gal pail of water-soluble coolant",
+  "route": "rule /\\b(5 ?gal(lon)?|pail|bucket) of\\b/",
+  "shelfScale": 1.442,
+  "shelfMinY": 0,
+  "m": [
+   0.31,
+   0.513,
+   0.31
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pair of safety glasses",
+  "route": "rule /respirator|gas mask|dust mask|ear (def/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.154,
+   0.045,
+   0.13
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pair of ear defenders",
+  "route": "rule /respirator|gas mask|dust mask|ear (def/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.205,
+   0.168,
+   0.08
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A jar of SAC305 solder paste",
+  "route": "rule /^(an? )?(jar|bottle|flask|tub|tin|vial/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.062,
+   0.047,
+   0.062
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A laser-cut stainless stencil",
+  "route": "rule /plywood|\\bmdf\\b|\\bosb\\b|drywall sheet|/",
+  "shelfScale": 0.817,
+  "shelfMinY": 0,
+  "m": [
+   1.224,
+   0.025,
+   0.613
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A kit of SMD component reels",
+  "route": "rule /component reels|smd reels|reels? of (s/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.204,
+   0.04,
+   0.18
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pack of bare FR-4 circuit boards",
+  "route": "rule /raspberry ?pi|arduino|esp32|esp8266|mi/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.172,
+   0.007,
+   0.109
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A bottle of no-clean flux",
+  "route": "rule /^(an? )?(jar|bottle|flask|tub|tin|vial/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.092,
+   0.126,
+   0.092
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A bar of SAC305 wave solder",
+  "route": "rule /bar of .*solder|solder bar/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.16,
+   0.107
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "A sheet of clear acrylic",
+  "route": "rule /plywood|\\bmdf\\b|\\bosb\\b|drywall sheet|/",
+  "shelfScale": 0.817,
+  "shelfMinY": 0,
+  "m": [
+   1.224,
+   0.013,
+   0.613
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of PCB milling bits",
+  "route": "rule /end ?mills?|router bits?|milling bits?/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.085,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An ESD wrist strap",
+  "route": "rule /respirator|gas mask|dust mask|ear (def/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.253,
+   0.016,
+   0.095
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 5 L jug of 5W-30 engine oil",
+  "route": "rule /\\bglue\\b|epoxy|caulk|silicone|sealant|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.165,
+   0.302,
+   0.111
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An oil filter",
+  "route": "rule /sprocket|roller chain|\\bchain\\b(?!saw|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.076,
+   0.094,
+   0.076
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of brake pads",
+  "route": "rule /sprocket|roller chain|\\bchain\\b(?!saw|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.25,
+   0.015,
+   0.05
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of four truck tires",
+  "route": "rule /\\btyres?\\b|\\btires?\\b(?! chains)|caste/",
+  "shelfScale": 1.121,
+  "shelfMinY": 0,
+  "m": [
+   0.44,
+   0.66,
+   0.66
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A box of wheel weights",
+  "route": "rule /\\b(box|carton|case|pack|packet) of\\b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.1,
+   0.141
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A can of brake cleaner",
+  "route": "rule /spray ?paint|aerosol|brake cleaner|fix/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.067,
+   0.268,
+   0.067
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A drum of parts washer solvent",
+  "route": "rule /(drum|barrel) of|jerry ?can|gas can|fu/",
+  "shelfScale": 0.831,
+  "shelfMinY": 0,
+  "m": [
+   0.6,
+   0.891,
+   0.6
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An engine gasket set",
+  "route": "rule /gaskets?|o-rings?/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.18,
+   0.006,
+   0.24
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A plasma torch consumables kit",
+  "route": "rule /consumables kit|rusty bolt|\\ba bolt\\b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.16,
+   0.07,
+   0.111
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A sheet of 10-gauge steel plate",
+  "route": "rule /plywood|\\bmdf\\b|\\bosb\\b|drywall sheet|/",
+  "shelfScale": 0.817,
+  "shelfMinY": 0,
+  "m": [
+   1.224,
+   0.025,
+   0.613
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A spool of ER70S-6 welding wire",
+  "route": "rule /welding wire|mig wire|er70s-6|er4043.*/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.178,
+   0.061,
+   0.18
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A bottle of air tool oil",
+  "route": "rule /^(an? )?(jar|bottle|flask|tub|tin|vial/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.165,
+   0.302,
+   0.111
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pair of jack stands",
+  "route": "rule /jack stands?|floor jack|trolley jack/",
+  "shelfScale": 1.51,
+  "shelfMinY": 0,
+  "m": [
+   0.513,
+   0.49,
+   0.194
+  ],
+  "minY": 0,
+  "meshes": 12,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An excavator",
+  "route": "rule /excavator|digger|backhoe/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.438,
+   0.241,
+   0.167
+  ],
+  "minY": 0.002,
+  "meshes": 70,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": false
+ },
+ {
+  "name": "A wooden field easel",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 0.46,
+  "shelfMinY": 0,
+  "m": [
+   0.67,
+   1.609,
+   0.661
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 6,
+  "realSize": true
+ },
+ {
+  "name": "A brush-rinsing water jar",
+  "route": "rule /tank|canister|cylinder|bottle|jar|flas/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.054,
+   0.15,
+   0.054
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of artist oil paints (12 tubes)",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.047,
+   0.14
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of hog-bristle oil brushes",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.095,
+   0.265,
+   0.099
+  ],
+  "minY": 0,
+  "meshes": 11,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pack of 3 stretched canvases (12x9 in)",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.234,
+   0.093
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A bottle of linseed oil and odourless solvent",
+  "route": "LIST[rule /^(an? )?(jar|bottle|flask|tub|tin|vial/ ; rule /\\bglue\\b|epoxy|caulk|silicone|sealant|/]",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.37,
+   0.302,
+   0.111
+  ],
+  "minY": 0,
+  "meshes": 10,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A palette knife",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.33,
+   0.011,
+   0.24
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A set of heavy-body acrylic paints",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.047,
+   0.14
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of synthetic flat brushes",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.095,
+   0.265,
+   0.099
+  ],
+  "minY": 0,
+  "meshes": 11,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pack of 3 canvas panels (16x12 in)",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.426,
+   0.31,
+   0.101
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "A stay-wet palette",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.3,
+   0.032,
+   0.22
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A watercolour paint set (24 half pans)",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.023,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of round watercolour brushes",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.095,
+   0.265,
+   0.099
+  ],
+  "minY": 0,
+  "meshes": 11,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A block of cold-press watercolour paper (20 sheets)",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.3,
+   0.014,
+   0.23
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of gouache paints",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.047,
+   0.14
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of synthetic round brushes",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.095,
+   0.265,
+   0.099
+  ],
+  "minY": 0,
+  "meshes": 11,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pad of hot-press gouache paper (12 sheets)",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.3,
+   0.014,
+   0.23
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A ceramic mixing palette",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.33,
+   0.011,
+   0.24
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A box of soft pastels (48 sticks)",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.22,
+   0.03,
+   0.13
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pad of tinted pastel paper (12 sheets)",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.3,
+   0.014,
+   0.23
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of blending stumps",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.052,
+   0.016,
+   0.13
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A can of workable fixative",
+  "route": "rule /spray ?paint|aerosol|brake cleaner|fix/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.067,
+   0.268,
+   0.067
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A bottle of sumi ink",
+  "route": "rule /^(an? )?(jar|bottle|flask|tub|tin|vial/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.052,
+   0.095,
+   0.052
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of bamboo sumi-e brushes",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.095,
+   0.265,
+   0.099
+  ],
+  "minY": 0,
+  "meshes": 11,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pad of xuan rice paper (30 sheets)",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.3,
+   0.014,
+   0.23
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A box of vine and compressed charcoal sticks",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.22,
+   0.03,
+   0.13
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pad of drawing paper (30 sheets)",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.3,
+   0.014,
+   0.23
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A kneaded eraser",
+  "route": "rule /easel|stretched canvas|canvas(es| pane/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.07,
+   0.025,
+   0.05
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A slump cone test kit",
+  "route": "rule /infrared thermometer|ir thermometer|sl/",
+  "shelfScale": 1.44,
+  "shelfMinY": 0,
+  "m": [
+   0.601,
+   0.3,
+   0.5
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An infrared thermometer",
+  "route": "rule /infrared thermometer|ir thermometer|sl/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.05,
+   0.163,
+   0.142
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of concrete form boards and stakes",
+  "route": "rule /\\b(2x4|2x6|2x8|2 ?× ?4|1x\\d|4x4|6x6)\\b/",
+  "shelfScale": 0.41,
+  "shelfMinY": 0,
+  "m": [
+   2.44,
+   0.038,
+   0.283
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A concrete screed board and bull float",
+  "route": "LIST[rule /screed|bull float|darby|concrete float/ ; rule /screed|bull float|darby|concrete float/]",
+  "shelfScale": 0.299,
+  "shelfMinY": 0,
+  "m": [
+   3.34,
+   0.145,
+   1.402
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A load of portland cement (5 t)",
+  "route": "rule /^(?!.*\\b(bolts|nuts|screws|washers|nai/",
+  "shelfScale": 1.479,
+  "shelfMinY": 0,
+  "m": [
+   0.676,
+   0.12,
+   0.418
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A load of washed concrete sand (10 t)",
+  "route": "rule /(\\d+(\\.\\d+)?\\s*t\\b.*\\bload\\b|\\bload of/",
+  "shelfScale": 0.176,
+  "shelfMinY": 0,
+  "m": [
+   4.086,
+   1.43,
+   4.086
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A load of 20 mm concrete stone (10 t)",
+  "route": "rule /(\\d+(\\.\\d+)?\\s*t\\b.*\\bload\\b|\\bload of/",
+  "shelfScale": 0.176,
+  "shelfMinY": 0,
+  "m": [
+   4.086,
+   1.43,
+   4.086
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A drum of water-reducing admixture (200 L)",
+  "route": "rule /(drum|barrel) of|jerry ?can|gas can|fu/",
+  "shelfScale": 0.831,
+  "shelfMinY": 0,
+  "m": [
+   0.6,
+   0.891,
+   0.6
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A load of 19 mm crushed asphalt aggregate (10 t)",
+  "route": "rule /^(?!.*(shingle|roof|drum|emulsion|tank/",
+  "shelfScale": 0.962,
+  "shelfMinY": 0,
+  "m": [
+   0.468,
+   0.139,
+   0.475
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "A load of manufactured sand screenings (10 t)",
+  "route": "rule /(\\d+(\\.\\d+)?\\s*t\\b.*\\bload\\b|\\bload of/",
+  "shelfScale": 0.176,
+  "shelfMinY": 0,
+  "m": [
+   4.086,
+   1.43,
+   4.086
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A tanker of bitumen binder (PG 58-28, 10 t)",
+  "route": "rule /(drum|barrel) of|jerry ?can|gas can|fu/",
+  "shelfScale": 1.44,
+  "shelfMinY": 0,
+  "m": [
+   0.34,
+   0.514,
+   0.174
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A drum of burner diesel (200 L)",
+  "route": "rule /(drum|barrel) of|jerry ?can|gas can|fu/",
+  "shelfScale": 0.831,
+  "shelfMinY": 0,
+  "m": [
+   0.6,
+   0.891,
+   0.6
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of silo dust-collector filter cartridges",
+  "route": "rule /sprocket|roller chain|\\bchain\\b(?!saw|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.246,
+   0.094,
+   0.076
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of twin-shaft mixer paddles and liners",
+  "route": "rule /sprocket|roller chain|\\bchain\\b(?!saw|/",
+  "shelfScale": 1.111,
+  "shelfMinY": 0,
+  "m": [
+   0.9,
+   0.021,
+   0.019
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of baghouse filter bags",
+  "route": "rule /filter bags?|baghouse/",
+  "shelfScale": 0.833,
+  "shelfMinY": 0,
+  "m": [
+   1.2,
+   0.28,
+   0.375
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A burner service kit (nozzle, igniter and fuel filter)",
+  "route": "rule /service kit|repair kit|tune.?up kit|re/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.16,
+   0.07,
+   0.111
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Cedar boards",
+  "route": "rule /\\b(2x4|2x6|2x8|2 ?× ?4|1x\\d|4x4|6x6)\\b/",
+  "shelfScale": 0.41,
+  "shelfMinY": 0,
+  "m": [
+   2.44,
+   0.038,
+   0.283
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "Oak planks",
+  "route": "rule /\\b(2x4|2x6|2x8|2 ?× ?4|1x\\d|4x4|6x6)\\b/",
+  "shelfScale": 0.41,
+  "shelfMinY": 0,
+  "m": [
+   2.44,
+   0.038,
+   0.283
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "A tin of wood stain",
+  "route": "rule /^(an? )?(jar|bottle|flask|tub|tin|vial/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.092,
+   0.126,
+   0.092
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Bags of garden soil",
+  "route": "rule /^(?!.*\\b(bolts|nuts|screws|washers|nai/",
+  "shelfScale": 1.479,
+  "shelfMinY": 0,
+  "m": [
+   0.676,
+   0.12,
+   0.418
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Copper pipes",
+  "route": "rule /^(?!.*(paint|glue|caulk|cream|notcher)/",
+  "shelfScale": 0.833,
+  "shelfMinY": 0,
+  "m": [
+   1.2,
+   0.041,
+   0.066
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A spool of fishing line",
+  "route": "rule /spool|reel of|\\bwire\\b(?!.*(stripper|b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.076,
+   0.15,
+   0.15
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Pressure-treated 4x4 posts",
+  "route": "rule /\\b(2x4|2x6|2x8|2 ?× ?4|1x\\d|4x4|6x6)\\b/",
+  "shelfScale": 0.41,
+  "shelfMinY": 0,
+  "m": [
+   2.44,
+   0.089,
+   0.181
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A bag of carriage bolts",
+  "route": "rule /\\b(bolts?|nuts|nylock|washers|cotter p/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.12,
+   0.027,
+   0.16
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A length of foam pipe insulation",
+  "route": "rule /bar stock|steel bar|rods?\\b|pipe|tubin/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.063,
+   0.169
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": false
+ },
+ {
+  "name": "Pressure-treated 2x8 joists",
+  "route": "rule /\\b(2x4|2x6|2x8|2 ?× ?4|1x\\d|4x4|6x6)\\b/",
+  "shelfScale": 0.41,
+  "shelfMinY": 0,
+  "m": [
+   2.44,
+   0.076,
+   0.371
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Cedar decking boards",
+  "route": "rule /\\b(2x4|2x6|2x8|2 ?× ?4|1x\\d|4x4|6x6)\\b/",
+  "shelfScale": 0.41,
+  "shelfMinY": 0,
+  "m": [
+   2.44,
+   0.038,
+   0.283
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "A box of structural lag screws",
+  "route": "rule /\\bbox(es)? of (\\w+ )?(screws|nails|bol/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.12,
+   0.07,
+   0.147
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A coil of rope",
+  "route": "rule /^(?!.*(jump|skipping|power|extension|e/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.363,
+   0.108,
+   0.362
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A survey kit: total station, tripod and prism pole",
+  "route": "rule /total station|survey(ing)? kit/",
+  "shelfScale": 0.442,
+  "shelfMinY": 0,
+  "m": [
+   0.529,
+   1.047,
+   0.403
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": false
+ },
+ {
+  "name": "A crawler bulldozer with a six-way blade",
+  "route": "rule /bull ?dozer|crawler dozer/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.262,
+   0.269
+  ],
+  "minY": 0,
+  "meshes": 74,
+  "labels": 0,
+  "canvasTex": 20,
+  "realSize": false
+ },
+ {
+  "name": "A motor grader with a 14 ft moldboard",
+  "route": "rule /motor grader|road grader/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.167,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 83,
+  "labels": 0,
+  "canvasTex": 18,
+  "realSize": false
+ },
+ {
+  "name": "A single-drum vibratory soil compactor",
+  "route": "rule /single.?drum|soil compactor|vibratory /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.256,
+   0.21
+  ],
+  "minY": 0,
+  "meshes": 41,
+  "labels": 0,
+  "canvasTex": 7,
+  "realSize": false
+ },
+ {
+  "name": "A tandem vibratory asphalt roller",
+  "route": "rule /tandem (vibratory )?(asphalt )?roller/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.297,
+   0.17
+  ],
+  "minY": 0,
+  "meshes": 27,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": false
+ },
+ {
+  "name": "A tracked asphalt paver with a heated screed",
+  "route": "rule /asphalt paver|paving machine|road pave/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.273,
+   0.307
+  ],
+  "minY": 0,
+  "meshes": 55,
+  "labels": 0,
+  "canvasTex": 17,
+  "realSize": false
+ },
+ {
+  "name": "An asphalt distributor (emulsion sprayer cart)",
+  "route": "rule /asphalt distributor|emulsion sprayer|t/",
+  "shelfScale": 0.702,
+  "shelfMinY": 0,
+  "m": [
+   0.891,
+   0.65,
+   0.625
+  ],
+  "minY": 0,
+  "meshes": 22,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": false
+ },
+ {
+  "name": "A walk-behind line striper (airless)",
+  "route": "rule /line striper|striping machine|line mar/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.346,
+   0.35,
+   0.206
+  ],
+  "minY": 0,
+  "meshes": 32,
+  "labels": 0,
+  "canvasTex": 7,
+  "realSize": true
+ },
+ {
+  "name": "A bundle of 100 wooden grade stakes and lath",
+  "route": "rule /\\b(2x4|2x6|2x8|2 ?× ?4|1x\\d|4x4|6x6)\\b/",
+  "shelfScale": 0.41,
+  "shelfMinY": 0,
+  "m": [
+   2.44,
+   0.076,
+   0.181
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A case of 12 cans of inverted marking paint",
+  "route": "rule /(case|box|pack) of .*(spray|marking|in/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.067,
+   0.268,
+   0.067
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A corrugated HDPE culvert pipe, 450 mm × 6 m",
+  "route": "rule /culvert/",
+  "shelfScale": 0.625,
+  "shelfMinY": 0,
+  "m": [
+   1.6,
+   0.514,
+   0.514
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A dump-truck load of crushed aggregate base course, 3/4 in. minus (15 t)",
+  "route": "rule /(\\d+(\\.\\d+)?\\s*t\\b.*\\bload\\b|\\bload of/",
+  "shelfScale": 0.154,
+  "shelfMinY": 0,
+  "m": [
+   4.677,
+   1.637,
+   4.677
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 205 L drum of asphalt prime emulsion (MS-2 / SS-1h)",
+  "route": "rule /(drum|barrel) of|jerry ?can|gas can|fu/",
+  "shelfScale": 0.831,
+  "shelfMinY": 0,
+  "m": [
+   0.6,
+   0.891,
+   0.6
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 5 gal pail of yellow traffic paint",
+  "route": "rule /yellow traffic paint/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.19,
+   0.241,
+   0.19
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "A 5 gal pail of white traffic paint",
+  "route": "rule /^(?!.*drum).*(white traffic paint|prim/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.19,
+   0.241,
+   0.19
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "A 30 t load of runway-mix coarse aggregate",
+  "route": "rule /(\\d+(\\.\\d+)?\\s*t\\b.*\\bload\\b|\\bload of/",
+  "shelfScale": 0.122,
+  "shelfMinY": 0,
+  "m": [
+   5.893,
+   2.063,
+   5.893
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 30 t load of runway-mix fine aggregate (crusher dust)",
+  "route": "rule /(\\d+(\\.\\d+)?\\s*t\\b.*\\bload\\b|\\bload of/",
+  "shelfScale": 0.122,
+  "shelfMinY": 0,
+  "m": [
+   5.893,
+   2.063,
+   5.893
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 30 t tanker of polymer-modified runway binder",
+  "route": "rule /(drum|barrel) of|jerry ?can|gas can|fu/",
+  "shelfScale": 1.44,
+  "shelfMinY": 0,
+  "m": [
+   0.34,
+   0.514,
+   0.174
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An elevated LED runway edge light (white)",
+  "route": "rule /runway (edge |threshold )?light|thresh/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.14,
+   0.41,
+   0.14
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A runway threshold and end light (green / red)",
+  "route": "rule /runway (edge |threshold )?light|thresh/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.14,
+   0.41,
+   0.14
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A lighted runway designation sign",
+  "route": "rule /runway (edge |threshold )?light|thresh/",
+  "shelfScale": 0.833,
+  "shelfMinY": 0,
+  "m": [
+   1.2,
+   0.775,
+   0.204
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A lit windsock on an 18 ft mast",
+  "route": "rule /runway (edge |threshold )?light|thresh/",
+  "shelfScale": 0.124,
+  "shelfMinY": 0,
+  "m": [
+   1.608,
+   5.984,
+   0.464
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 50 lb bag of reflective glass beads",
+  "route": "rule /^(?!.*\\b(bolts|nuts|screws|washers|nai/",
+  "shelfScale": 1.479,
+  "shelfMinY": 0,
+  "m": [
+   0.676,
+   0.12,
+   0.418
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A snowmobile trailer with a tilt deck",
+  "route": "rule /^(?!.*hitch).*(trailer|low-?boy|low-?b/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.172,
+   0.175
+  ],
+  "minY": 0,
+  "meshes": 31,
+  "labels": 0,
+  "canvasTex": 14,
+  "realSize": false
+ },
+ {
+  "name": "A boat trailer",
+  "route": "rule /^(?!.*hitch).*(trailer|low-?boy|low-?b/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.161,
+   0.164
+  ],
+  "minY": 0,
+  "meshes": 39,
+  "labels": 0,
+  "canvasTex": 21,
+  "realSize": false
+ },
+ {
+  "name": "A lowboy trailer for hauling the excavator",
+  "route": "rule /^(?!.*hitch).*(trailer|low-?boy|low-?b/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.115,
+   0.152
+  ],
+  "minY": 0,
+  "meshes": 52,
+  "labels": 0,
+  "canvasTex": 20,
+  "realSize": false
+ },
+ {
+  "name": "A welding hood with an auto-darkening lens",
+  "route": "rule /welding (hood|helmet|mask)|auto-?darke/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.419,
+   0.266,
+   0.207
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pair of leather welding gloves",
+  "route": "rule /welding (gloves|gauntlets)|welder'?s g/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.311,
+   0.029,
+   0.28
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "A 75/25 argon-CO2 shielding gas cylinder",
+  "route": "rule /shielding gas|gas cylinder|argon|\\bco2/",
+  "shelfScale": 0.876,
+  "shelfMinY": 0,
+  "m": [
+   0.139,
+   0.845,
+   0.139
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A spool of ER70S-6 MIG wire (0.030 inch)",
+  "route": "rule /welding wire|mig wire|er70s-6|er4043.*/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.178,
+   0.061,
+   0.18
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A 100% argon shielding gas cylinder",
+  "route": "rule /shielding gas|gas cylinder|argon|\\bco2/",
+  "shelfScale": 0.876,
+  "shelfMinY": 0,
+  "m": [
+   0.139,
+   0.845,
+   0.139
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A spool of ER4043 aluminium MIG wire",
+  "route": "rule /welding wire|mig wire|er70s-6|er4043.*/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.178,
+   0.061,
+   0.18
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A tri-mix (helium-argon-CO2) shielding gas cylinder",
+  "route": "rule /shielding gas|gas cylinder|argon|\\bco2/",
+  "shelfScale": 0.876,
+  "shelfMinY": 0,
+  "m": [
+   0.139,
+   0.845,
+   0.139
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A spool of ER308L stainless MIG wire",
+  "route": "rule /welding wire|mig wire|er70s-6|er4043.*/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.178,
+   0.061,
+   0.18
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A pack of 2% lanthanated tungsten electrodes",
+  "route": "rule /tungsten|filler rods?|tig rods?|electr/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.066,
+   0.052,
+   0.205
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": true
+ },
+ {
+  "name": "A tube of ER70S-2 TIG filler rods",
+  "route": "rule /tungsten|filler rods?|tig rods?|electr/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.12,
+   0.052,
+   0.45
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": true
+ },
+ {
+  "name": "A tube of ER4043 aluminium TIG filler rods",
+  "route": "rule /tungsten|filler rods?|tig rods?|electr/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.12,
+   0.052,
+   0.45
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": true
+ },
+ {
+  "name": "A tube of ER308L stainless TIG filler rods",
+  "route": "rule /tungsten|filler rods?|tig rods?|electr/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.12,
+   0.052,
+   0.45
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": true
+ },
+ {
+  "name": "A box of E7018 stick electrodes",
+  "route": "rule /tungsten|filler rods?|tig rods?|electr/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.12,
+   0.052,
+   0.45
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": true
+ },
+ {
+  "name": "A box of aluminium stick electrodes (E4043)",
+  "route": "rule /tungsten|filler rods?|tig rods?|electr/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.12,
+   0.052,
+   0.45
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": true
+ },
+ {
+  "name": "A box of E308L-16 stainless electrodes",
+  "route": "rule /tungsten|filler rods?|tig rods?|electr/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.12,
+   0.052,
+   0.45
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": true
+ },
+ {
+  "name": "A stack of rough-sawn maple lumber",
+  "route": "rule /\\b(2x4|2x6|2x8|2 ?× ?4|1x\\d|4x4|6x6)\\b/",
+  "shelfScale": 0.41,
+  "shelfMinY": 0,
+  "m": [
+   2.44,
+   0.076,
+   0.181
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "A bottle of wood glue",
+  "route": "rule /^(an? )?(jar|bottle|flask|tub|tin|vial/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.068,
+   0.19,
+   0.068
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A pack of sandpaper (80 to 220 grit)",
+  "route": "rule /sandpaper|sanding (sheets|discs|paper)/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.264,
+   0.028,
+   0.306
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A can of wipe-on polyurethane",
+  "route": "rule /(cans?|tins?|gallons?|quarts?|pails?|b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.171,
+   0.276,
+   0.168
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of push sticks and a push block",
+  "route": "rule /push sticks?|push block/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.32,
+   0.112,
+   0.19
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A cherry bowl blank",
+  "route": "rule /bowl blank|turning blank|pen blanks?|\\/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.248,
+   0.079,
+   0.261
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of turning gouges",
+  "route": "rule /\\bclamps?\\b|chisels?|gouges|\\bfiles?\\b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.32,
+   0.03,
+   0.16
+  ],
+  "minY": 0,
+  "meshes": 9,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "A full face shield",
+  "route": "rule /respirator|gas mask|dust mask|ear (def/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.224,
+   0.232,
+   0.224
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A roll of camera film",
+  "route": "rule /camera film|roll of film|film roll|\\b3/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.105,
+   0.06,
+   0.05
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A spool of PETG filament",
+  "route": "rule /filament/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.073,
+   0.2,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A spool of TPU filament",
+  "route": "rule /filament/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.073,
+   0.2,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A spool of ABS filament",
+  "route": "rule /filament/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.073,
+   0.2,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A 3D printer",
+  "route": "rule /\\b3-?d printer\\b/",
+  "shelfScale": 1.334,
+  "shelfMinY": 0,
+  "m": [
+   0.43,
+   0.555,
+   0.438
+  ],
+  "minY": 0,
+  "meshes": 21,
+  "labels": 0,
+  "canvasTex": 12,
+  "realSize": true
+ },
+ {
+  "name": "A 3D-printed little tugboat",
+  "route": "rule /3-?d-printed/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.081,
+   0.061,
+   0.03
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "A 3D-printed wall hook",
+  "route": "rule /3-?d-printed/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.03,
+   0.062,
+   0.037
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A 3D-printed spiral vase",
+  "route": "rule /3-?d-printed/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.1,
+   0.12,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A 3D-printed gear",
+  "route": "rule /3-?d-printed/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.08,
+   0.012,
+   0.08
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A 3D-printed figurine of himself",
+  "route": "rule /3-?d-printed/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.054,
+   0.108,
+   0.026
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "A 3D-printed pencil cup",
+  "route": "rule /3-?d-printed/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.07,
+   0.09,
+   0.07
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A 3D-printed star ornament",
+  "route": "rule /3-?d-printed/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.067,
+   0.005,
+   0.063
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A 3D-printed phone stand",
+  "route": "rule /3-?d-printed/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.07,
+   0.075,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A 3D-printed whistle",
+  "route": "rule /3-?d-printed/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.066,
+   0.018,
+   0.018
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A 3D-printed planter for a seedling",
+  "route": "rule /3-?d-printed/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.087,
+   0.075,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A bag of garden compost",
+  "route": "rule /fertili[sz]er|compost|bone ?meal|blood/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.188,
+   0.298,
+   0.097
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": false
+ },
+ {
+  "name": "A box of bone meal",
+  "route": "rule /fertili[sz]er|compost|bone ?meal|blood/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.157,
+   0.25,
+   0.082
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A load of ready-mix concrete (2 m³)",
+  "route": "rule /ready.?mix|load of (fresh |wet )?concr/",
+  "shelfScale": 0.962,
+  "shelfMinY": 0,
+  "m": [
+   0.468,
+   0.129,
+   0.475
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "A load of hot-mix asphalt (5 t)",
+  "route": "rule /^(?!.*(shingle|roof|drum|emulsion|tank/",
+  "shelfScale": 0.962,
+  "shelfMinY": 0,
+  "m": [
+   0.468,
+   0.139,
+   0.475
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "A concrete mixer truck",
+  "route": "rule /concrete mixer truck|cement mixer truc/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.174,
+   0.159
+  ],
+  "minY": 0,
+  "meshes": 106,
+  "labels": 0,
+  "canvasTex": 27,
+  "realSize": false
+ },
+ {
+  "name": "Firewood logs",
+  "route": "rule /firewood|\\blogs?\\b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.445,
+   0.359,
+   0.403
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 6,
+  "realSize": true
+ },
+ {
+  "name": "A pair of cross-country skis",
+  "route": "rule /\\bskis?\\b/",
+  "shelfScale": 0.625,
+  "shelfMinY": 0,
+  "m": [
+   1.6,
+   0.119,
+   0.42
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A snowmobile",
+  "route": "rule /snowmobile|snow ?machine/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.156,
+   0.143
+  ],
+  "minY": -0.001,
+  "meshes": 24,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": false
+ },
+ {
+  "name": "An umbrella",
+  "route": "rule /umbrella|parasol/",
+  "shelfScale": 1.024,
+  "shelfMinY": 0,
+  "m": [
+   0.977,
+   0.134,
+   0.084
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A pair of ice skates",
+  "route": "rule /ice skates|roller skates|inline skates/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.23,
+   0.28,
+   0.3
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A small rowboat",
+  "route": "rule /canoe|kayak|boat|\\braft\\b|paddle ?boar/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.36,
+   0.083,
+   0.438
+  ],
+  "minY": -0.031,
+  "meshes": 21,
+  "labels": 0,
+  "canvasTex": 13,
+  "realSize": false
+ },
+ {
+  "name": "An electric workshop forklift",
+  "route": "rule /fork ?lift|lift truck/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.35,
+   0.181
+  ],
+  "minY": 0,
+  "meshes": 34,
+  "labels": 0,
+  "canvasTex": 23,
+  "realSize": false
+ },
+ {
+  "name": "A new kite",
+  "route": "rule /kite/",
+  "shelfScale": 0.87,
+  "shelfMinY": 0,
+  "m": [
+   0.54,
+   0.462,
+   1.15
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "Broken kite",
+  "route": "rule /broken kite/",
+  "shelfScale": 1.268,
+  "shelfMinY": 0,
+  "m": [
+   0.42,
+   0.201,
+   0.729
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "Torn balloon envelope",
+  "route": "rule /torn balloon envelope/",
+  "shelfScale": 0.593,
+  "shelfMinY": 0,
+  "m": [
+   1.214,
+   0.464,
+   1.529
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Bent burner frame",
+  "route": "rule /bent burner frame/",
+  "shelfScale": 0.818,
+  "shelfMinY": 0,
+  "m": [
+   1.179,
+   0.667,
+   0.88
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 6,
+  "realSize": true
+ },
+ {
+  "name": "Cracked wicker basket",
+  "route": "rule /cracked wicker basket/",
+  "shelfScale": 0.808,
+  "shelfMinY": 0,
+  "m": [
+   0.692,
+   0.916,
+   0.856
+  ],
+  "minY": 0,
+  "meshes": 12,
+  "labels": 0,
+  "canvasTex": 12,
+  "realSize": true
+ },
+ {
+  "name": "A set of tire chains",
+  "route": "rule /tire chains|tyre chains|snow chains|lo/",
+  "shelfScale": 0.862,
+  "shelfMinY": 0,
+  "m": [
+   1.16,
+   0.112,
+   0.66
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A pickup truck with a tow hitch",
+  "route": "rule /^(?!.*\\bhitch(es)? for\\b).*(\\bpick-?up/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.177,
+   0.167
+  ],
+  "minY": 0,
+  "meshes": 59,
+  "labels": 0,
+  "canvasTex": 12,
+  "realSize": false
+ },
+ {
+  "name": "A trailer hitch for the pickup truck",
+  "route": "rule /trailer hitch|tow hitch|hitch ball|bal/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.395,
+   0.15,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A trailer hitch for the dump truck",
+  "route": "rule /trailer hitch|tow hitch|hitch ball|bal/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.395,
+   0.15,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A set of chains and load binders",
+  "route": "rule /tire chains|tyre chains|snow chains|lo/",
+  "shelfScale": 0.862,
+  "shelfMinY": 0,
+  "m": [
+   1.16,
+   0.112,
+   0.66
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A set of ratchet straps",
+  "route": "rule /ratchet straps?|tie-?down straps?|carg/",
+  "shelfScale": 1.282,
+  "shelfMinY": 0,
+  "m": [
+   0.78,
+   0.285,
+   0.14
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 6,
+  "realSize": true
+ },
+ {
+  "name": "Amethyst geode",
+  "route": "rule /geode|amethyst|garnet/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.12,
+   0.12,
+   0.081
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "Quartz crystal cluster",
+  "route": "rule /quartz|crystal|jade/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.08,
+   0.067,
+   0.032
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Gold nugget",
+  "route": "rule /fossil|trilobite|ammonite|petrified|di/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.031,
+   0.014,
+   0.024
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Ammonite fossil",
+  "route": "rule /fossil|trilobite|ammonite|petrified|di/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.192,
+   0.054,
+   0.16
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Dinosaur rib bone",
+  "route": "rule /fossil|trilobite|ammonite|petrified|di/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.62,
+   0.082,
+   0.117
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Old miner's lantern",
+  "route": "rule /^(?!.*(weld|plasma|propane|blow ?torch/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.15,
+   0.303,
+   0.15
+  ],
+  "minY": 0,
+  "meshes": 9,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Meteorite fragment",
+  "route": "rule /fossil|trilobite|ammonite|petrified|di/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.096,
+   0.06,
+   0.08
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Jade pebble",
+  "route": "rule /mica|river stone|pebble|\\bstone\\b(?!.*/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.052,
+   0.022,
+   0.039
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Buried time capsule",
+  "route": "rule /time capsule/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.34,
+   0.17,
+   0.17
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Silver coin from 1898",
+  "route": "rule /fossil|trilobite|ammonite|petrified|di/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.026,
+   0.003,
+   0.026
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Trilobite fossil",
+  "route": "rule /fossil|trilobite|ammonite|petrified|di/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.192,
+   0.053,
+   0.16
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 6,
+  "realSize": true
+ },
+ {
+  "name": "Garnet vein sample",
+  "route": "rule /geode|amethyst|garnet/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.06,
+   0.06,
+   0.041
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "Petrified wood",
+  "route": "rule /fossil|trilobite|ammonite|petrified|di/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.202,
+   0.158,
+   0.155
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Obsidian arrowhead",
+  "route": "rule /fossil|trilobite|ammonite|petrified|di/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.036,
+   0.006,
+   0.058
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "an oddly round pebble",
+  "route": "rule /mica|river stone|pebble|\\bstone\\b(?!.*/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.052,
+   0.022,
+   0.039
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "a rusty bolt",
+  "route": "rule /consumables kit|rusty bolt|\\ba bolt\\b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.077,
+   0.021,
+   0.022
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "a smooth river stone",
+  "route": "rule /mica|river stone|pebble|\\bstone\\b(?!.*/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.13,
+   0.055,
+   0.098
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "a chunk of mica that sparkles",
+  "route": "rule /mica|river stone|pebble|\\bstone\\b(?!.*/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.091,
+   0.053,
+   0.07
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "an old bottle cap",
+  "route": "rule /bottle caps?|crown caps?/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.032,
+   0.007,
+   0.032
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A cracked glass piece",
+  "route": "rule /shards of|broken glass|cracked glass|g/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.172,
+   0.004,
+   0.124
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Snapped sturdy shovel",
+  "route": "rule /shovel|spade/",
+  "shelfScale": 0.657,
+  "shelfMinY": 0,
+  "m": [
+   0.245,
+   1.126,
+   0.078
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "Bent sturdy shovel",
+  "route": "rule /shovel|spade/",
+  "shelfScale": 0.657,
+  "shelfMinY": 0,
+  "m": [
+   0.245,
+   1.126,
+   0.078
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "Snapped claw hammer",
+  "route": "rule /hammer|mallet/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.255,
+   0.35,
+   0.054
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "Shards of hand-blown glass vase",
+  "route": "rule /shards of|broken glass|cracked glass|g/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.172,
+   0.004,
+   0.124
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "sturdy shovel",
+  "route": "rule /shovel|spade/",
+  "shelfScale": 0.657,
+  "shelfMinY": 0,
+  "m": [
+   0.245,
+   1.126,
+   0.078
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "An FDM-printed PETG bracket",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.132,
+   0.106,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "An FDM-printed cable clip set",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.077,
+   0.017,
+   0.012
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An FDM-printed go-kart dash mount",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.08,
+   0.06,
+   0.05
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An SLA-printed resin miniature figure",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.06,
+   0.081,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An SLA-printed resin gear",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.148,
+   0.02,
+   0.148
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An SLA-printed resin jewellery master",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.022,
+   0.025,
+   0.006
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A DLP-printed resin ring",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.022,
+   0.025,
+   0.006
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A DLP-printed resin micro gear",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.148,
+   0.02,
+   0.148
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An MSLA-printed tabletop miniature",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.06,
+   0.081,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An MSLA-printed resin enclosure",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.122,
+   0.042,
+   0.082
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An SLS-printed nylon hinge",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.084,
+   0.008,
+   0.03
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An SLS-printed nylon drone arm",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.166,
+   0.004,
+   0.032
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An SLS-printed nylon go-kart duct",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.18,
+   0.1,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A DMLS-printed stainless steel bracket",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.132,
+   0.106,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "A DMLS-printed stainless rocket nozzle",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.16,
+   0.11,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 6,
+  "realSize": true
+ },
+ {
+  "name": "A DMLS-printed stainless manifold",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.16,
+   0.11,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 6,
+  "realSize": true
+ },
+ {
+  "name": "An MJF-printed nylon go-kart pedal",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.1,
+   0.037,
+   0.26
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An MJF-printed nylon gear set",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.148,
+   0.02,
+   0.148
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An MJF-printed nylon lattice insole",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.085,
+   0.008,
+   0.26
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A PolyJet-printed multi-colour prototype",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.122,
+   0.042,
+   0.082
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A PolyJet-printed clear enclosure",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.122,
+   0.042,
+   0.082
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A binder-jetted stainless impeller",
+  "route": "rule /binder-jetted|-printed\\b|-sintered|-ma/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.342,
+   0.07,
+   0.387
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "A binder-jetted stainless gear",
+  "route": "rule /binder-jetted|-printed\\b|-sintered|-ma/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.148,
+   0.02,
+   0.148
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 13,
+  "realSize": true
+ },
+ {
+  "name": "A DED-built stainless turbine blade",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.16,
+   0.11,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 6,
+  "realSize": true
+ },
+ {
+  "name": "A DED-built stainless flange",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.1,
+   0.037,
+   0.08
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "An EBM-printed titanium lattice bracket",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.132,
+   0.106,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "An EBM-printed titanium implant cup",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.054,
+   0.027,
+   0.054
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A LOM-built paper architectural model",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.3,
+   0.128,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A LOM-built laminated mold pattern",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.043,
+   0.15
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An Avid-routed plywood sign",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.6,
+   0.024,
+   0.3
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "An Avid-routed plywood go-kart seat back",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.4,
+   0.447,
+   0.079
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An Avid-routed plywood workbench top",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 0.667,
+  "shelfMinY": 0,
+  "m": [
+   1.5,
+   0.08,
+   0.7
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An Avid-routed plywood kayak rack",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 0.617,
+  "shelfMinY": 0,
+  "m": [
+   0.9,
+   1.2,
+   0.58
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An AltMill-routed MDF cabinet door",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.233,
+  "shelfMinY": 0,
+  "m": [
+   0.4,
+   0.6,
+   0.037
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "An AltMill-routed MDF speaker baffle",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.24,
+   0.36,
+   0.019
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A ShopSaber-routed plywood shelving set",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 0.411,
+  "shelfMinY": 0,
+  "m": [
+   0.8,
+   1.8,
+   0.3
+  ],
+  "minY": 0,
+  "meshes": 60,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A ShopSaber-routed plywood go-kart floor pan",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.44,
+  "shelfMinY": 0,
+  "m": [
+   0.6,
+   0.012,
+   0.5
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A Laguna-routed plywood cabinet carcass",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.057,
+  "shelfMinY": 0,
+  "m": [
+   0.618,
+   0.7,
+   0.5
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 6,
+  "realSize": true
+ },
+ {
+  "name": "A Laguna-routed plywood shop sign",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.6,
+   0.024,
+   0.3
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "A Haas-machined aluminium bracket",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.132,
+   0.106,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "A Haas-machined aluminium go-kart pedal",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.1,
+   0.037,
+   0.26
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "A Haas-machined steel go-kart spindle",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.1,
+   0.037,
+   0.26
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "A Haas-machined aluminium mold plate",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.043,
+   0.15
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A Haas-machined aluminium drone frame plate",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.166,
+   0.004,
+   0.15
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A Taurus-machined bronze ship propeller",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.342,
+   0.07,
+   0.387
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "A Taurus-machined aluminium wing spar",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.16,
+   0.11,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 6,
+  "realSize": true
+ },
+ {
+  "name": "A PCB-milled prototype board",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.1,
+   0.007,
+   0.07
+  ],
+  "minY": 0,
+  "meshes": 11,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A laser-cut acrylic sign",
+  "route": "rule /(acrylic|wooden|routed|laser-cut|metal/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.4,
+   0.214,
+   0.062
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A laser-cut acrylic front panel",
+  "route": "rule /binder-jetted|-printed\\b|-sintered|-ma/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.3,
+   0.12,
+   0.005
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A homemade weather station",
+  "route": "rule /homemade (weather station|fm radio|rad/",
+  "shelfScale": 1.37,
+  "shelfMinY": 0,
+  "m": [
+   0.14,
+   0.54,
+   0.144
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 6,
+  "realSize": true
+ },
+ {
+  "name": "A homemade FM radio",
+  "route": "glb boombox.glb | rule /homemade (weather station|fm radio|rad/",
+  "shelfScale": 1.462,
+  "shelfMinY": 0,
+  "m": [
+   0.492,
+   0.485,
+   0.5
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A homemade robot-friend controller",
+  "route": "rule /homemade (weather station|fm radio|rad/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.12,
+   0.06,
+   0.08
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A homemade game console",
+  "route": "rule /homemade (weather station|fm radio|rad/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.18,
+   0.036,
+   0.08
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "A plasma-cut steel bracket",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.132,
+   0.106,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "A plasma-cut steel go-kart frame gusset",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.1,
+   0.005,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A handmade maple side table",
+  "route": "rule /book ?(case|shelf)|bookshelves|shelvin/",
+  "shelfScale": 1.233,
+  "shelfMinY": 0,
+  "m": [
+   0.5,
+   0.6,
+   0.45
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A dovetailed walnut box",
+  "route": "rule /dovetail(ed)?.*\\bbox\\b|wooden box|keep/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.256,
+   0.132,
+   0.165
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "A handmade cherry wall shelf",
+  "route": "rule /\\b(handmade|wooden|floating|wall) (woo/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.6,
+   0.173,
+   0.193
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "A turned cherry bowl",
+  "route": "rule /\\b(turned|carved|wooden|walnut|cherry|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.24,
+   0.07,
+   0.24
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A hand-blown glass vase",
+  "route": "rule /^(?!.*shards).*(\\bglass vase\\b|hand-?b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.144,
+   0.28,
+   0.144
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A hand-blown glass bowl",
+  "route": "rule /\\bglass bowl\\b|hand-?blown (glass )?bo/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.221,
+   0.07,
+   0.221
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A hand-blown glass ornament",
+  "route": "rule /\\bglass ornament\\b|hand-?blown (glass /",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.1,
+   0.114,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "A hand-blown glass cup",
+  "route": "rule /\\bglass (cup|tumbler|mug)\\b|hand-?blow/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.085,
+   0.1,
+   0.085
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A handmade maple stool",
+  "route": "rule /\\b(stool|chair)\\b(?!.*(seat back|lift)/",
+  "shelfScale": 1.545,
+  "shelfMinY": 0,
+  "m": [
+   0.376,
+   0.479,
+   0.376
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "A handmade oak bookcase",
+  "route": "rule /book ?(case|shelf)|bookshelves|shelvin/",
+  "shelfScale": 0.411,
+  "shelfMinY": 0,
+  "m": [
+   0.8,
+   1.8,
+   0.3
+  ],
+  "minY": 0,
+  "meshes": 60,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "A handmade pine birdhouse",
+  "route": "rule /pigeon|bird/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.258,
+   0.206,
+   0.175
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "A turned cherry mug",
+  "route": "rule /\\bmugs?\\b|coffee cup|\\b(ceramic|camp|e/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.127,
+   0.1,
+   0.088
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A hand-blown glass mug",
+  "route": "rule /\\bglass (cup|tumbler|mug)\\b|hand-?blow/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.085,
+   0.1,
+   0.085
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A turned maple spinning top",
+  "route": "rule /spinning top|\\btop\\b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.104,
+   0.09,
+   0.104
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A handmade oak coat rack",
+  "route": "rule /book ?(case|shelf)|bookshelves|shelvin/",
+  "shelfScale": 0.418,
+  "shelfMinY": 0,
+  "m": [
+   0.438,
+   1.77,
+   0.504
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "A home-built table lamp",
+  "route": "glb table-lamp.glb | rule /\\b(table|desk|bedside|handmade) (woode/",
+  "shelfScale": 1.48,
+  "shelfMinY": 0,
+  "m": [
+   0.312,
+   0.5,
+   0.317
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "A hand-blown glass paperweight",
+  "route": "rule /paperweight/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.08,
+   0.034,
+   0.08
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An Avid-routed plywood coaster",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.112,
+   0.017,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "A laser-cut acrylic coaster",
+  "route": "rule /coaster/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.112,
+   0.017,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A home-built bird feeder",
+  "route": "rule /bird ?feeder/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.14,
+   0.343,
+   0.14
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A handmade maple wall shelf",
+  "route": "rule /\\b(handmade|wooden|floating|wall) (woo/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.6,
+   0.173,
+   0.193
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "A handmade walnut footstool",
+  "route": "rule /footstool|foot stool|step stool(?!.*la/",
+  "shelfScale": 1.545,
+  "shelfMinY": 0,
+  "m": [
+   0.376,
+   0.479,
+   0.376
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "An FDM-printed PLA phone stand",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.08,
+   0.1,
+   0.07
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An SLA-printed resin figurine",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.06,
+   0.081,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A plasma-cut steel fire pit",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 0.947,
+  "shelfMinY": 0,
+  "m": [
+   0.76,
+   0.315,
+   0.76
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A PCB-milled controller",
+  "route": "rule /\\b(fdm|sla|dlp|msla|sls|dmls|mjf|polyj/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.1,
+   0.007,
+   0.07
+  ],
+  "minY": 0,
+  "meshes": 11,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "#8 x 3/4 in. wood screws",
+  "route": "rule /\\bbox(es)? of (\\w+ )?(screws|nails|bol/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.12,
+   0.07,
+   0.147
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Two-part epoxy",
+  "route": "rule /\\bglue\\b|epoxy|caulk|silicone|sealant|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.08,
+   0.012,
+   0.3
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "A screwdriver",
+  "route": "rule /screwdriver/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.048,
+   0.257,
+   0.048
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "Wire strippers",
+  "route": "rule /pliers|wire strippers|wire cutters|sid/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.294,
+   0.032,
+   0.129
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "light bulb",
+  "route": "rule /light ?bulbs?|led bulbs?|edison bulbs?/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.06,
+   0.11,
+   0.06
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "lamp socket",
+  "route": "rule /^(?!.*(weld|plasma|propane|blow ?torch/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.12,
+   0.08,
+   0.054
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "power cord with plug",
+  "route": "rule /\\b(usb|hdmi|ethernet|charging|aux|audi/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.172,
+   0.015,
+   0.124
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "inline switch",
+  "route": "rule /speaker driver|potentiometers?|pickups/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.1,
+   0.035,
+   0.13
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "AA batteries",
+  "route": "rule /^(?!.*charger).*(\\b(aa|aaa|9 ?v|c|d)( /",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.074,
+   0.017,
+   0.066
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "small DC motor",
+  "route": "rule /motor|engine|generator|turbine/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.3,
+   0.184,
+   0.184
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "speaker driver",
+  "route": "rule /speaker driver|potentiometers?|pickups/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.172,
+   0.058,
+   0.172
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "caster wheels",
+  "route": "rule /\\btyres?\\b|\\btires?\\b(?! chains)|caste/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.095,
+   0.095,
+   0.08
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "brass hinges",
+  "route": "rule /hinges?\\b|joist hangers?|hurricane tie/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.123,
+   0.008,
+   0.14
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "magnets",
+  "route": "rule /sprocket|roller chain|\\bchain\\b(?!saw|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.02,
+   0.02,
+   0.02
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "springs",
+  "route": "rule /sprocket|roller chain|\\bchain\\b(?!saw|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.027,
+   0.027,
+   0.083
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "clock movement",
+  "route": "rule /speaker driver|potentiometers?|pickups/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.056,
+   0.036,
+   0.093
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "seat cushion fabric",
+  "route": "rule /pillow|cushion|blanket|quilt|throw\\b|t/",
+  "shelfScale": 0.893,
+  "shelfMinY": 0,
+  "m": [
+   1.12,
+   0.1,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "mirror glass",
+  "route": "rule /^(?!.*(rear|side|telescope|hand)).*\\bm/",
+  "shelfScale": 1.058,
+  "shelfMinY": 0,
+  "m": [
+   0.5,
+   0.699,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "guitar strings",
+  "route": "rule /speaker driver|potentiometers?|pickups/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.1,
+   0.009,
+   0.13
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Home-built FPV quadcopter",
+  "route": "rule /^(?!(parts kit|tools for)).*home-built/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.266,
+   0.074,
+   0.264
+  ],
+  "minY": 0,
+  "meshes": 21,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Home-built electric guitar",
+  "route": "rule /^(?!(parts kit|tools for)).*home-built/",
+  "shelfScale": 0.84,
+  "shelfMinY": 0,
+  "m": [
+   1.19,
+   0.065,
+   0.33
+  ],
+  "minY": 0,
+  "meshes": 47,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "TIG welder (AC/DC, 200 A)",
+  "route": "rule /bandsaw(?! blade)|band saw(?! blade)|\\/",
+  "shelfScale": 1.538,
+  "shelfMinY": 0,
+  "m": [
+   0.468,
+   0.335,
+   0.568
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Metal-cutting bandsaw",
+  "route": "rule /bandsaw(?! blade)|band saw(?! blade)|\\/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.612,
+   0.38,
+   0.35
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Tube notcher (hole-saw type)",
+  "route": "rule /tube notcher|pipe notcher/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.18,
+   0.17,
+   0.347
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Drill press",
+  "route": "rule /drill press/",
+  "shelfScale": 0.924,
+  "shelfMinY": 0,
+  "m": [
+   0.3,
+   0.801,
+   0.525
+  ],
+  "minY": 0,
+  "meshes": 10,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Pneumatic pop-rivet gun",
+  "route": "rule /angle grinder|jig ?saw(?! puzzle)|circ/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.255,
+   0.18,
+   0.04
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Cleco fasteners 1/8 in. (100) with cleco pliers",
+  "route": "rule /pliers|wire strippers|wire cutters|sid/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.294,
+   0.032,
+   0.129
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "Torque wrench (inch-pounds)",
+  "route": "rule /wrench|spanner/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.376,
+   0.02,
+   0.071
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "Combination wrench set (3/8–3/4 in.)",
+  "route": "rule /socket (and wrench )?set|wrench set|sp/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.36,
+   0.085,
+   0.22
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Nicopress swaging tool",
+  "route": "rule /pliers|wire strippers|wire cutters|sid/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.294,
+   0.032,
+   0.129
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "Safety-wire pliers",
+  "route": "rule /pliers|wire strippers|wire cutters|sid/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.294,
+   0.032,
+   0.129
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "Calibrated fabric iron",
+  "route": "rule /fabric iron|clothes iron|steam iron|^(/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.26,
+   0.154,
+   0.1
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "HVLP spray gun",
+  "route": "rule /angle grinder|jig ?saw(?! puzzle)|circ/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.167,
+   0.252,
+   0.08
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Ratcheting wire crimper",
+  "route": "rule /pliers|wire strippers|wire cutters|sid/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.294,
+   0.032,
+   0.129
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "Digital multimeter",
+  "route": "rule /multimeter|voltmeter/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.145,
+   0.042,
+   0.212
+  ],
+  "minY": 0,
+  "meshes": 9,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Screwdriver set",
+  "route": "rule /socket (and wrench )?set|wrench set|sp/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.36,
+   0.085,
+   0.22
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Aircraft weighing scales (3-pad)",
+  "route": "rule /weighing scales?|\\bscales\\b(?! (model|/",
+  "shelfScale": 0.702,
+  "shelfMinY": 0,
+  "m": [
+   1.425,
+   0.082,
+   0.9
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "MIG welder (140 A)",
+  "route": "rule /bandsaw(?! blade)|band saw(?! blade)|\\/",
+  "shelfScale": 1.538,
+  "shelfMinY": 0,
+  "m": [
+   0.468,
+   0.335,
+   0.568
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Abrasive chop saw",
+  "route": "rule /table saw|chop saw|mitre saw|miter saw/",
+  "shelfScale": 1.574,
+  "shelfMinY": 0,
+  "m": [
+   0.45,
+   0.47,
+   0.365
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Angle grinder",
+  "route": "rule /angle grinder|jig ?saw(?! puzzle)|circ/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.353,
+   0.158,
+   0.075
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Cordless drill",
+  "route": "rule /drill/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.34,
+   0.248,
+   0.075
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "Socket and wrench set",
+  "route": "rule /socket (and wrench )?set|wrench set|sp/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.36,
+   0.085,
+   0.22
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Tape measure",
+  "route": "rule /tape measure|measuring tape/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.131,
+   0.043,
+   0.07
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Table saw (for ripping strips)",
+  "route": "rule /table saw|chop saw|mitre saw|miter saw/",
+  "shelfScale": 1.309,
+  "shelfMinY": 0,
+  "m": [
+   0.65,
+   0.39,
+   0.55
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Jigsaw",
+  "route": "rule /angle grinder|jig ?saw(?! puzzle)|circ/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.22,
+   0.23,
+   0.08
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Block plane",
+  "route": "rule /(block|hand|jack|smoothing|bench|rabbe/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.16,
+   0.069,
+   0.05
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "Staple gun",
+  "route": "rule /angle grinder|jig ?saw(?! puzzle)|circ/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.2,
+   0.22,
+   0.04
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Random-orbit sander",
+  "route": "rule /angle grinder|jig ?saw(?! puzzle)|circ/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.14,
+   0.133,
+   0.227
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Epoxy squeegees and roller",
+  "route": "rule /\\bglue\\b|epoxy|caulk|silicone|sealant|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.08,
+   0.012,
+   0.3
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Spring clamps (24)",
+  "route": "rule /\\bclamps?\\b|chisels?|gouges|\\bfiles?\\b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.45,
+   0.03,
+   0.212
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Circular saw",
+  "route": "rule /angle grinder|jig ?saw(?! puzzle)|circ/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.3,
+   0.244,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Framing hammer",
+  "route": "rule /hammer|mallet/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.255,
+   0.35,
+   0.054
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "4 ft level",
+  "route": "rule /spirit level|\\blevel\\b(?!.*(up|meter))/",
+  "shelfScale": 0.833,
+  "shelfMinY": 0,
+  "m": [
+   1.2,
+   0.057,
+   0.027
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Shovel",
+  "route": "rule /shovel|spade/",
+  "shelfScale": 0.657,
+  "shelfMinY": 0,
+  "m": [
+   0.245,
+   1.126,
+   0.078
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "Hammer stapler",
+  "route": "rule /hammer|mallet/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.255,
+   0.35,
+   0.054
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "Temperature-controlled soldering iron (60 W)",
+  "route": "rule /soldering (iron|station)/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.283,
+   0.121,
+   0.126
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Hex drivers 1.5, 2, 2.5 mm",
+  "route": "rule /socket (and wrench )?set|wrench set|sp/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.36,
+   0.085,
+   0.22
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Prop wrench",
+  "route": "rule /wrench|spanner/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.376,
+   0.02,
+   0.071
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "LiPo balance charger",
+  "route": "rule /\\b(usb|hdmi|ethernet|charging|aux|audi/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.172,
+   0.028,
+   0.124
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Bandsaw",
+  "route": "rule /bandsaw(?! blade)|band saw(?! blade)|\\/",
+  "shelfScale": 0.925,
+  "shelfMinY": 0,
+  "m": [
+   0.43,
+   0.8,
+   0.3
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Router with flush-trim bit",
+  "route": "rule /angle grinder|jig ?saw(?! puzzle)|circ/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.22,
+   0.225,
+   0.15
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Clamps (6)",
+  "route": "rule /\\bclamps?\\b|chisels?|gouges|\\bfiles?\\b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.45,
+   0.03,
+   0.212
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Fret press or fret hammer",
+  "route": "rule /hammer|mallet/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.255,
+   0.35,
+   0.054
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "Fret crowning file",
+  "route": "rule /\\bclamps?\\b|chisels?|gouges|\\bfiles?\\b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.29,
+   0.028,
+   0.028
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "Soldering iron",
+  "route": "rule /soldering (iron|station)/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.283,
+   0.121,
+   0.126
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Strobe or clip-on tuner",
+  "route": "rule /clip-?on tuner|strobe (or clip-on )?tu/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.1,
+   0.018,
+   0.13
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Pliers and wire cutters",
+  "route": "LIST[rule /pliers|wire strippers|wire cutters|sid/ ; rule /pliers|wire strippers|wire cutters|sid/]",
+  "shelfScale": 1.593,
+  "shelfMinY": 0,
+  "m": [
+   0.628,
+   0.032,
+   0.129
+  ],
+  "minY": 0,
+  "meshes": 14,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "Clamps (12)",
+  "route": "rule /\\bclamps?\\b|chisels?|gouges|\\bfiles?\\b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.45,
+   0.03,
+   0.212
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Impact driver",
+  "route": "rule /angle grinder|jig ?saw(?! puzzle)|circ/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.195,
+   0.232,
+   0.075
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Drill with a 1-1/4 in. auger bit",
+  "route": "rule /drill/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.34,
+   0.248,
+   0.075
+  ],
+  "minY": 0,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "Socket wrench with 3/4 in. socket",
+  "route": "rule /wrench|spanner/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.376,
+   0.02,
+   0.071
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "Fall-arrest harness and rope",
+  "route": "rule /^(?!.*(jump|skipping|power|extension|e/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.363,
+   0.108,
+   0.362
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Tools for the ultralight airplane (16)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Fuselage frame (14 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Landing gear (16 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Tail surfaces (11 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Wings (pair) (17 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Flight controls (15 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Fabric covering (11 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Engine and propeller (17 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Fuel system (9 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Instruments (12 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Electrical system (13 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Tools for the go-kart (6)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Frame (8 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Steering (8 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Rear axle and brake (10 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Wheels and tyres (5 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Engine and drive (10 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Seat and body (4 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Tools for the cedar-strip canoe (8)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Strongback and forms (5 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Hull stripping (4 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Fibreglass and epoxy (4 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Gunwales, seats and yoke (8 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Varnish (2 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Tools for the garden shed (7)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Foundation (3 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Floor (5 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Wall framing (4 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Roof framing (5 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Roofing (7 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Siding, door and window (8 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Paint (3 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Tools for the quadcopter drone (5)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Frame (4 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Motors and ESC (8 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Flight controller (3 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Radio and video (8 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Battery and props (4 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Tools for the electric guitar (10)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Body (3 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Neck and fingerboard (5 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Frets and nut (3 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Finish (6 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Hardware (9 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Electronics (9 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Strings and setup (1 line)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Tools for the wooden sea kayak (6)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Hull panels (3 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Stitching (2 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Fillets and fibreglass (3 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Deck and cockpit (4 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Hatches and outfitting (9 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Tools for the tree fort (7)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Tree supports (3 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Beams and joists (5 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Decking (2 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Walls and railing (3 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Roof (3 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Parts kit: Ladder and trap door (4 lines)",
+  "route": "rule /^parts (kit|crate)|^tools for /",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.325,
+   0.2,
+   0.237
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Roadwork kit (12 lines)",
+  "route": "rule /^roadwork kit|^runway kit|parts crate|/",
+  "shelfScale": 1.155,
+  "shelfMinY": 0,
+  "m": [
+   0.82,
+   0.51,
+   0.623
+  ],
+  "minY": 0,
+  "meshes": 23,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Runway kit (14 lines)",
+  "route": "rule /^roadwork kit|^runway kit|parts crate|/",
+  "shelfScale": 1.155,
+  "shelfMinY": 0,
+  "m": [
+   0.82,
+   0.51,
+   0.623
+  ],
+  "minY": 0,
+  "meshes": 23,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "a hazelnut croissant",
+  "route": "rule /bread|loaf|sourdough|baguette|\\bbun\\b|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.145,
+   0.055,
+   0.136
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "a bowl of soup",
+  "route": "rule /ramen|noodle|soup|stew|bowl/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.26,
+   0.113,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "a toasted bagel",
+  "route": "rule /bagel|doughnut|\\bdonut\\b/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.16,
+   0.048,
+   0.16
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "a slice of peach pie",
+  "route": "rule /tart|\\bpies?\\b|cobbler|cake|cookie/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.26,
+   0.047,
+   0.26
+  ],
+  "minY": 0,
+  "meshes": 11,
+  "labels": 0,
+  "canvasTex": 9,
+  "realSize": true
+ },
+ {
+  "name": "rainbow trout",
+  "route": "glb fish.glb | rule /salmon|fish|trout/",
+  "shelfScale": 1.538,
+  "shelfMinY": 0,
+  "m": [
+   0.65,
+   0.291,
+   0.144
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "kokanee salmon",
+  "route": "glb fish.glb | rule /salmon|fish|trout/",
+  "shelfScale": 1.538,
+  "shelfMinY": 0,
+  "m": [
+   0.65,
+   0.291,
+   0.144
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "lake whitefish",
+  "route": "glb fish.glb | rule /salmon|fish|trout/",
+  "shelfScale": 1.538,
+  "shelfMinY": 0,
+  "m": [
+   0.65,
+   0.291,
+   0.144
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "yellow perch",
+  "route": "glb fish.glb | INFERRED",
+  "shelfScale": 1.538,
+  "shelfMinY": 0,
+  "m": [
+   0.65,
+   0.291,
+   0.144
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "smallmouth bass",
+  "route": "glb fish.glb | CATEGORY:thing",
+  "shelfScale": 1.538,
+  "shelfMinY": 0,
+  "m": [
+   0.65,
+   0.291,
+   0.144
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "burbot",
+  "route": "glb fish.glb | CATEGORY:thing",
+  "shelfScale": 1.538,
+  "shelfMinY": 0,
+  "m": [
+   0.65,
+   0.291,
+   0.144
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "pan-fried rainbow trout",
+  "route": "glb fish.glb | rule /salmon|fish|trout/",
+  "shelfScale": 1.538,
+  "shelfMinY": 0,
+  "m": [
+   0.65,
+   0.291,
+   0.144
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "peach and blueberry cobbler",
+  "route": "rule /tart|\\bpies?\\b|cobbler|cake|cookie/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.26,
+   0.047,
+   0.26
+  ],
+  "minY": 0,
+  "meshes": 11,
+  "labels": 0,
+  "canvasTex": 9,
+  "realSize": true
+ },
+ {
+  "name": "tomato and carrot soup",
+  "route": "rule /ramen|noodle|soup|stew|bowl/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.26,
+   0.113,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "roasted tomato soup",
+  "route": "rule /ramen|noodle|soup|stew|bowl/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.26,
+   0.113,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "maple-glazed carrots",
+  "route": "rule /carrot/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.579,
+   0.076,
+   0.199
+  ],
+  "minY": 0,
+  "meshes": 87,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "grilled peaches with honey",
+  "route": "rule /^(?!.*(pie|tart|cobbler|cake|jam)).*(p/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.31,
+   0.238,
+   0.31
+  ],
+  "minY": 0,
+  "meshes": 21,
+  "labels": 0,
+  "canvasTex": 10,
+  "realSize": true
+ },
+ {
+  "name": "A ceramic jug",
+  "route": "rule /\\bglue\\b|epoxy|caulk|silicone|sealant|/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.227,
+   0.237,
+   0.15
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "An apple",
+  "route": "rule /^(?!.*(pie|tart|cobbler|cake|crumble|j/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.31,
+   0.238,
+   0.31
+  ],
+  "minY": 0,
+  "meshes": 21,
+  "labels": 0,
+  "canvasTex": 10,
+  "realSize": true
+ },
+ {
+  "name": "A pear",
+  "route": "rule /\\b(pears?|tomato(es)?|oranges?|lemons?/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.069,
+   0.117,
+   0.068
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "The Frozen Lake",
+  "route": "FORM",
+  "shelfScale": 0.25,
+  "shelfMinY": 0,
+  "m": [
+   2.496,
+   1.267,
+   0.562
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "The Peaks above the Valley",
+  "route": "FORM",
+  "shelfScale": 0.273,
+  "shelfMinY": 0,
+  "m": [
+   1.805,
+   1.266,
+   1.65
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": false
+ },
+ {
+  "name": "The Range from the Valley",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "The Little House by the Lake",
+  "route": "rule /treehouse|cabin|\\bhouse\\b|observatory|/",
+  "shelfScale": 0.849,
+  "shelfMinY": 0,
+  "m": [
+   0.53,
+   0.325,
+   0.53
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "The West Meadow",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ }
+]

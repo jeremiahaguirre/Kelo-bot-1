@@ -1,0 +1,4967 @@
+[
+ {
+  "name": "A basket of Okanagan cherries",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A warm sourdough loaf",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "Butter tarts",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "Honeycrisp apples",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A bowl of ramen",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "Maple fudge",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "Fresh peach cobbler",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A thermos of hot cocoa",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "Smoked salmon",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A wheel of aged cheddar",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A high-torque diamond drill",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A brass telescope",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A soldering iron",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "Climbing rope and carabiners",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A pocket spectrometer",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A field microphone",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A box kite",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A yo-yo",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A kaleidoscope",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A wind-up frog",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of juggling balls",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A 3D puzzle cube",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A larger island to explore",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A treehouse platform",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A lakeside dock",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A tiny observatory on the peak",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A canoe",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A hot air balloon",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A tandem bicycle",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A mini submarine",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A friendly goat",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A pair of homing pigeons",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A tank of glowing jellyfish",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "100 m of copper wire",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "Sheets of stained glass",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A crate of reclaimed cedar",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "A bag of river clay",
+  "src": "agent.js:REQUEST_IDEAS",
+  "where": "shelf"
+ },
+ {
+  "name": "High-Torque Diamond Core Bits, Solar Smelting Crucible",
+  "src": "agent.js:gearRequested",
+  "where": "shelf"
+ },
+ {
+  "name": "50L Sterile Oat Substrate, Infrared Thermal Imaging Lens",
+  "src": "agent.js:gearRequested",
+  "where": "shelf"
+ },
+ {
+  "name": "Brushless Geared Traction Motors, 100m Steel Bar Stock",
+  "src": "agent.js:gearRequested",
+  "where": "shelf"
+ },
+ {
+  "name": "Argon Shielding Gas Refill, Anodizing Power Supply",
+  "src": "agent.js:gearRequested",
+  "where": "shelf"
+ },
+ {
+  "name": "Hydraulic Rock Splitter, Gold Smelting Furnace",
+  "src": "agent.js:gearRequested",
+  "where": "shelf"
+ },
+ {
+  "name": "20kg Titanium Welding Rod, Solar Capacitor Bank",
+  "src": "agent.js:gearRequested",
+  "where": "shelf"
+ },
+ {
+  "name": "Okanagan Peaches",
+  "src": "agent.js:gardenPlots",
+  "where": "shelf"
+ },
+ {
+  "name": "Heritage Tomatoes",
+  "src": "agent.js:gardenPlots",
+  "where": "shelf"
+ },
+ {
+  "name": "Carrots",
+  "src": "agent.js:gardenPlots",
+  "where": "shelf"
+ },
+ {
+  "name": "Blueberries",
+  "src": "agent.js:gardenPlots",
+  "where": "shelf"
+ },
+ {
+  "name": "Magnifying glass",
+  "src": "portal.js:GIFT_CATALOG",
+  "where": "shelf"
+ },
+ {
+  "name": "Pocket compass",
+  "src": "portal.js:GIFT_CATALOG",
+  "where": "shelf"
+ },
+ {
+  "name": "Headlamp",
+  "src": "portal.js:GIFT_CATALOG",
+  "where": "shelf"
+ },
+ {
+  "name": "Multitool",
+  "src": "portal.js:GIFT_CATALOG",
+  "where": "shelf"
+ },
+ {
+  "name": "Watercolor paint set",
+  "src": "portal.js:GIFT_CATALOG",
+  "where": "shelf"
+ },
+ {
+  "name": "Box kite",
+  "src": "portal.js:GIFT_CATALOG",
+  "where": "shelf"
+ },
+ {
+  "name": "Yo-yo",
+  "src": "portal.js:GIFT_CATALOG",
+  "where": "shelf"
+ },
+ {
+  "name": "Kaleidoscope",
+  "src": "portal.js:GIFT_CATALOG",
+  "where": "shelf"
+ },
+ {
+  "name": "Harmonica",
+  "src": "portal.js:GIFT_CATALOG",
+  "where": "shelf"
+ },
+ {
+  "name": "Rubber duck",
+  "src": "portal.js:GIFT_CATALOG",
+  "where": "shelf"
+ },
+ {
+  "name": "Spinning top",
+  "src": "portal.js:GIFT_CATALOG",
+  "where": "shelf"
+ },
+ {
+  "name": "Okanagan cherries",
+  "src": "portal.js:GIFT_CATALOG",
+  "where": "shelf"
+ },
+ {
+  "name": "Cinnamon bun",
+  "src": "portal.js:GIFT_CATALOG",
+  "where": "shelf"
+ },
+ {
+  "name": "A photo",
+  "src": "portal.js:mailPendingPhotos",
+  "where": "shelf"
+ },
+ {
+  "name": "3 photos",
+  "src": "portal.js:mailPendingPhotos",
+  "where": "shelf"
+ },
+ {
+  "name": "An axe",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A packet of tree seeds",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A load of gravel",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A sturdy shovel",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "Pine planks",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A box of wood screws",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A hand saw",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A cordless drill",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A bundle of asphalt roof shingles",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A box of nails",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A claw hammer",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A pair of snowshoes",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A kite",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A dump truck",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A jerry can of diesel",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A spool of PLA filament",
+  "src": "tryit.js:TRY_GIFTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A 50 lb bag of clear glass cullet",
+  "src": "glassstudio.js:glassFumeHoodModel",
+  "where": "shelf"
+ },
+ {
+  "name": "A jar of coloured glass frit and colour rod",
+  "src": "glassstudio.js:glassFumeHoodModel",
+  "where": "shelf"
+ },
+ {
+  "name": "A month of furnace gas on the gas meter",
+  "src": "glassstudio.js:glassFumeHoodModel",
+  "where": "shelf"
+ },
+ {
+  "name": "A pair of didymium safety glasses",
+  "src": "glassstudio.js:glassFumeHoodModel",
+  "where": "shelf"
+ },
+ {
+  "name": "A pair of Kevlar heat gloves",
+  "src": "glassstudio.js:glassFumeHoodModel",
+  "where": "shelf"
+ },
+ {
+  "name": "A wheelbarrow",
+  "src": "groundwork.js:GROUND_JOBS",
+  "where": "shelf"
+ },
+ {
+  "name": "A landscape rake",
+  "src": "groundwork.js:GROUND_JOBS",
+  "where": "shelf"
+ },
+ {
+  "name": "A plate compactor",
+  "src": "groundwork.js:GROUND_JOBS",
+  "where": "shelf"
+ },
+ {
+  "name": "A load of crushed gravel",
+  "src": "groundwork.js:GROUND_JOBS",
+  "where": "shelf"
+ },
+ {
+  "name": "An asphalt rake",
+  "src": "groundwork.js:GROUND_JOBS",
+  "where": "shelf"
+ },
+ {
+  "name": "A walk-behind road roller",
+  "src": "groundwork.js:GROUND_JOBS",
+  "where": "shelf"
+ },
+ {
+  "name": "A load of hot-mix asphalt",
+  "src": "groundwork.js:GROUND_JOBS",
+  "where": "shelf"
+ },
+ {
+  "name": "A garden trowel",
+  "src": "groundwork.js:GROUND_JOBS",
+  "where": "shelf"
+ },
+ {
+  "name": "A watering can",
+  "src": "groundwork.js:GROUND_JOBS",
+  "where": "shelf"
+ },
+ {
+  "name": "A toolbox",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A can of spray paint",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A watercolour paint set",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A jackhammer",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A ukulele",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A good book",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A camera",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A bicycle",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A warm scarf",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A lantern",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A bag of birdseed",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A pack of AA batteries",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A pair of binoculars",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A compass",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A fishing rod",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A bag of all-purpose fertilizer",
+  "src": "itemuse.js:PURPOSE_INFO",
+  "where": "shelf"
+ },
+ {
+  "name": "A can of gasoline",
+  "src": "knowhow.js:FUEL_TYPES",
+  "where": "shelf"
+ },
+ {
+  "name": "A drum of jet fuel",
+  "src": "knowhow.js:FUEL_TYPES",
+  "where": "shelf"
+ },
+ {
+  "name": "A full propane tank",
+  "src": "knowhow.js:FUEL_TYPES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 1 L bottle of grey photopolymer resin",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 4 L jug of 99% isopropyl alcohol (IPA)",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A box of nitrile gloves",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 10 kg bag of PA12 nylon powder",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 10 kg flask of 316L stainless steel powder",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A cylinder of high-purity argon",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A P100 half-face respirator",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A spool of brass EDM wire",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A bi-metal bandsaw blade",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "An HP 3D600 fusing agent cartridge",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "An HP 3D600 detailing agent cartridge",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A PolyJet VeroWhite model cartridge",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A PolyJet SUP706 support cartridge",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 5 kg tub of 17-4PH binder-jet powder",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A jug of binder-jet liquid binder",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A spool of 316L stainless welding wire",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A cylinder of argon shielding gas",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "An auto-darkening welding helmet",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 10 kg flask of Ti-6Al-4V titanium powder",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A ream of LOM paper sheets",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A bottle of LOM adhesive",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A pack of LOM knife blades",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A bag of glass bead blasting media",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of carbide end mills",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 60-degree V-bit",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 1/4 inch compression bit",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 3 inch face mill with carbide inserts",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 4x8 sheet of Baltic birch plywood",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 4x8 sheet of MDF",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A block of 6061 aluminium",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A block of 1018 steel",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A large bronze propeller casting",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of hold-down clamps",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A sacrificial MDF spoilboard",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A vacuum table pump",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 6 inch Kurt machining vise",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A modular fixture plate set",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 4 inch dust collection hose",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 5 gal pail of water-soluble coolant",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A pair of safety glasses",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A pair of ear defenders",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A jar of SAC305 solder paste",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A laser-cut stainless stencil",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A kit of SMD component reels",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A pack of bare FR-4 circuit boards",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A bottle of no-clean flux",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A bar of SAC305 wave solder",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A sheet of clear acrylic",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of PCB milling bits",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "An ESD wrist strap",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 5 L jug of 5W-30 engine oil",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "An oil filter",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of brake pads",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of four truck tires",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A box of wheel weights",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A can of brake cleaner",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A drum of parts washer solvent",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "An engine gasket set",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A plasma torch consumables kit",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A sheet of 10-gauge steel plate",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A spool of ER70S-6 welding wire",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A bottle of air tool oil",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A pair of jack stands",
+  "src": "machines.js:WORKSHOP_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "An excavator",
+  "src": "mining.js:TOOL_NEEDS",
+  "where": "shelf"
+ },
+ {
+  "name": "A wooden field easel",
+  "src": "paintstudio.js:PAINT_EASEL",
+  "where": "shelf"
+ },
+ {
+  "name": "A brush-rinsing water jar",
+  "src": "paintstudio.js:PAINT_WATER",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of artist oil paints (12 tubes)",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of hog-bristle oil brushes",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A pack of 3 stretched canvases (12x9 in)",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A bottle of linseed oil and odourless solvent",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A palette knife",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of heavy-body acrylic paints",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of synthetic flat brushes",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A pack of 3 canvas panels (16x12 in)",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A stay-wet palette",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A watercolour paint set (24 half pans)",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of round watercolour brushes",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A block of cold-press watercolour paper (20 sheets)",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of gouache paints",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of synthetic round brushes",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A pad of hot-press gouache paper (12 sheets)",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A ceramic mixing palette",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A box of soft pastels (48 sticks)",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A pad of tinted pastel paper (12 sheets)",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of blending stumps",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A can of workable fixative",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A bottle of sumi ink",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of bamboo sumi-e brushes",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A pad of xuan rice paper (30 sheets)",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A box of vine and compressed charcoal sticks",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A pad of drawing paper (30 sheets)",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A kneaded eraser",
+  "src": "paintstudio.js:PAINT_MEDIA",
+  "where": "shelf"
+ },
+ {
+  "name": "A slump cone test kit",
+  "src": "plants.js:plantSpot",
+  "where": "shelf"
+ },
+ {
+  "name": "An infrared thermometer",
+  "src": "plants.js:plantSpot",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of concrete form boards and stakes",
+  "src": "plants.js:plantSpot",
+  "where": "shelf"
+ },
+ {
+  "name": "A concrete screed board and bull float",
+  "src": "plants.js:plantSpot",
+  "where": "shelf"
+ },
+ {
+  "name": "A load of portland cement (5 t)",
+  "src": "plants.js:PLANT_FEEDS",
+  "where": "shelf"
+ },
+ {
+  "name": "A load of washed concrete sand (10 t)",
+  "src": "plants.js:PLANT_FEEDS",
+  "where": "shelf"
+ },
+ {
+  "name": "A load of 20 mm concrete stone (10 t)",
+  "src": "plants.js:PLANT_FEEDS",
+  "where": "shelf"
+ },
+ {
+  "name": "A drum of water-reducing admixture (200 L)",
+  "src": "plants.js:PLANT_FEEDS",
+  "where": "shelf"
+ },
+ {
+  "name": "A load of 19 mm crushed asphalt aggregate (10 t)",
+  "src": "plants.js:PLANT_FEEDS",
+  "where": "shelf"
+ },
+ {
+  "name": "A load of manufactured sand screenings (10 t)",
+  "src": "plants.js:PLANT_FEEDS",
+  "where": "shelf"
+ },
+ {
+  "name": "A tanker of bitumen binder (PG 58-28, 10 t)",
+  "src": "plants.js:PLANT_FEEDS",
+  "where": "shelf"
+ },
+ {
+  "name": "A drum of burner diesel (200 L)",
+  "src": "plants.js:PLANT_FEEDS",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of silo dust-collector filter cartridges",
+  "src": "plants.js:PLANT_SPARES",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of twin-shaft mixer paddles and liners",
+  "src": "plants.js:PLANT_SPARES",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of baghouse filter bags",
+  "src": "plants.js:PLANT_SPARES",
+  "where": "shelf"
+ },
+ {
+  "name": "A burner service kit (nozzle, igniter and fuel filter)",
+  "src": "plants.js:PLANT_SPARES",
+  "where": "shelf"
+ },
+ {
+  "name": "Cedar boards",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "shelf"
+ },
+ {
+  "name": "Oak planks",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "shelf"
+ },
+ {
+  "name": "A tin of wood stain",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "shelf"
+ },
+ {
+  "name": "Bags of garden soil",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "shelf"
+ },
+ {
+  "name": "Copper pipes",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "shelf"
+ },
+ {
+  "name": "A spool of fishing line",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "shelf"
+ },
+ {
+  "name": "Pressure-treated 4x4 posts",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "shelf"
+ },
+ {
+  "name": "A bag of carriage bolts",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "shelf"
+ },
+ {
+  "name": "A length of foam pipe insulation",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "shelf"
+ },
+ {
+  "name": "Pressure-treated 2x8 joists",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "shelf"
+ },
+ {
+  "name": "Cedar decking boards",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "shelf"
+ },
+ {
+  "name": "A box of structural lag screws",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "shelf"
+ },
+ {
+  "name": "A coil of rope",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "shelf"
+ },
+ {
+  "name": "A survey kit: total station, tripod and prism pole",
+  "src": "roadworks.js:RW_GEAR",
+  "where": "shelf"
+ },
+ {
+  "name": "A crawler bulldozer with a six-way blade",
+  "src": "roadworks.js:RW_GEAR",
+  "where": "shelf"
+ },
+ {
+  "name": "A motor grader with a 14 ft moldboard",
+  "src": "roadworks.js:RW_GEAR",
+  "where": "shelf"
+ },
+ {
+  "name": "A single-drum vibratory soil compactor",
+  "src": "roadworks.js:RW_GEAR",
+  "where": "shelf"
+ },
+ {
+  "name": "A tandem vibratory asphalt roller",
+  "src": "roadworks.js:RW_GEAR",
+  "where": "shelf"
+ },
+ {
+  "name": "A tracked asphalt paver with a heated screed",
+  "src": "roadworks.js:RW_GEAR",
+  "where": "shelf"
+ },
+ {
+  "name": "An asphalt distributor (emulsion sprayer cart)",
+  "src": "roadworks.js:RW_GEAR",
+  "where": "shelf"
+ },
+ {
+  "name": "A walk-behind line striper (airless)",
+  "src": "roadworks.js:RW_GEAR",
+  "where": "shelf"
+ },
+ {
+  "name": "A bundle of 100 wooden grade stakes and lath",
+  "src": "roadworks.js:RW_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A case of 12 cans of inverted marking paint",
+  "src": "roadworks.js:RW_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A corrugated HDPE culvert pipe, 450 mm × 6 m",
+  "src": "roadworks.js:RW_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A dump-truck load of crushed aggregate base course, 3/4 in. minus (15 t)",
+  "src": "roadworks.js:RW_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 205 L drum of asphalt prime emulsion (MS-2 / SS-1h)",
+  "src": "roadworks.js:RW_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 5 gal pail of yellow traffic paint",
+  "src": "roadworks.js:RW_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 5 gal pail of white traffic paint",
+  "src": "roadworks.js:RW_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 30 t load of runway-mix coarse aggregate",
+  "src": "roadworks.js:RW_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 30 t load of runway-mix fine aggregate (crusher dust)",
+  "src": "roadworks.js:RW_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 30 t tanker of polymer-modified runway binder",
+  "src": "roadworks.js:RW_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "An elevated LED runway edge light (white)",
+  "src": "roadworks.js:RW_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A runway threshold and end light (green / red)",
+  "src": "roadworks.js:RW_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A lighted runway designation sign",
+  "src": "roadworks.js:RW_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A lit windsock on an 18 ft mast",
+  "src": "roadworks.js:RW_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 50 lb bag of reflective glass beads",
+  "src": "roadworks.js:RW_SUPPLIES",
+  "where": "shelf"
+ },
+ {
+  "name": "A snowmobile trailer with a tilt deck",
+  "src": "trips.js:TRAILER_KINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "A boat trailer",
+  "src": "trips.js:TRAILER_KINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "A lowboy trailer for hauling the excavator",
+  "src": "trips.js:TRAILER_KINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "A welding hood with an auto-darkening lens",
+  "src": "welding.js:WELD_SAFETY",
+  "where": "shelf"
+ },
+ {
+  "name": "A pair of leather welding gloves",
+  "src": "welding.js:WELD_SAFETY",
+  "where": "shelf"
+ },
+ {
+  "name": "A 75/25 argon-CO2 shielding gas cylinder",
+  "src": "welding.js:WELD_CONSUMABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A spool of ER70S-6 MIG wire (0.030 inch)",
+  "src": "welding.js:WELD_CONSUMABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 100% argon shielding gas cylinder",
+  "src": "welding.js:WELD_CONSUMABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A spool of ER4043 aluminium MIG wire",
+  "src": "welding.js:WELD_CONSUMABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A tri-mix (helium-argon-CO2) shielding gas cylinder",
+  "src": "welding.js:WELD_CONSUMABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A spool of ER308L stainless MIG wire",
+  "src": "welding.js:WELD_CONSUMABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A pack of 2% lanthanated tungsten electrodes",
+  "src": "welding.js:WELD_CONSUMABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A tube of ER70S-2 TIG filler rods",
+  "src": "welding.js:WELD_CONSUMABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A tube of ER4043 aluminium TIG filler rods",
+  "src": "welding.js:WELD_CONSUMABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A tube of ER308L stainless TIG filler rods",
+  "src": "welding.js:WELD_CONSUMABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A box of E7018 stick electrodes",
+  "src": "welding.js:WELD_CONSUMABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A box of aluminium stick electrodes (E4043)",
+  "src": "welding.js:WELD_CONSUMABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A box of E308L-16 stainless electrodes",
+  "src": "welding.js:WELD_CONSUMABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A stack of rough-sawn maple lumber",
+  "src": "woodshop.js:woodDustModel",
+  "where": "shelf"
+ },
+ {
+  "name": "A bottle of wood glue",
+  "src": "woodshop.js:woodDustModel",
+  "where": "shelf"
+ },
+ {
+  "name": "A pack of sandpaper (80 to 220 grit)",
+  "src": "woodshop.js:woodDustModel",
+  "where": "shelf"
+ },
+ {
+  "name": "A can of wipe-on polyurethane",
+  "src": "woodshop.js:woodDustModel",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of push sticks and a push block",
+  "src": "woodshop.js:woodDustModel",
+  "where": "shelf"
+ },
+ {
+  "name": "A cherry bowl blank",
+  "src": "woodshop.js:woodDustModel",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of turning gouges",
+  "src": "woodshop.js:woodDustModel",
+  "where": "shelf"
+ },
+ {
+  "name": "A full face shield",
+  "src": "woodshop.js:woodDustModel",
+  "where": "shelf"
+ },
+ {
+  "name": "A roll of camera film",
+  "src": "itemuse.js:askForFilm",
+  "where": "shelf"
+ },
+ {
+  "name": "A spool of PETG filament",
+  "src": "printer.js:requestFilament",
+  "where": "shelf"
+ },
+ {
+  "name": "A spool of TPU filament",
+  "src": "printer.js:requestFilament",
+  "where": "shelf"
+ },
+ {
+  "name": "A spool of ABS filament",
+  "src": "printer.js:requestFilament",
+  "where": "shelf"
+ },
+ {
+  "name": "A 3D printer",
+  "src": "printer.js:sendWelcomePrinter",
+  "where": "shelf"
+ },
+ {
+  "name": "A 3D-printed little tugboat",
+  "src": "printer.js:PRINTABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 3D-printed wall hook",
+  "src": "printer.js:PRINTABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 3D-printed spiral vase",
+  "src": "printer.js:PRINTABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 3D-printed gear",
+  "src": "printer.js:PRINTABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 3D-printed figurine of himself",
+  "src": "printer.js:PRINTABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 3D-printed pencil cup",
+  "src": "printer.js:PRINTABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 3D-printed star ornament",
+  "src": "printer.js:PRINTABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 3D-printed phone stand",
+  "src": "printer.js:PRINTABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 3D-printed whistle",
+  "src": "printer.js:PRINTABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A 3D-printed planter for a seedling",
+  "src": "printer.js:PRINTABLES",
+  "where": "shelf"
+ },
+ {
+  "name": "A bag of garden compost",
+  "src": "plantcare.js:askForFertilizer",
+  "where": "shelf"
+ },
+ {
+  "name": "A box of bone meal",
+  "src": "plantcare.js:askForFertilizer",
+  "where": "shelf"
+ },
+ {
+  "name": "A load of ready-mix concrete (2 m³)",
+  "src": "plants.js:READY_MIX_ITEM",
+  "where": "shelf"
+ },
+ {
+  "name": "A load of hot-mix asphalt (5 t)",
+  "src": "plants.js:HOT_MIX_ITEM",
+  "where": "shelf"
+ },
+ {
+  "name": "A concrete mixer truck",
+  "src": "plants.js:askForTruck",
+  "where": "shelf"
+ },
+ {
+  "name": "Firewood logs",
+  "src": "landscape.js:chopTree",
+  "where": "shelf"
+ },
+ {
+  "name": "A pair of cross-country skis",
+  "src": "seasons.js:askForSnowGear",
+  "where": "shelf"
+ },
+ {
+  "name": "A snowmobile",
+  "src": "seasons.js:askForSnowGear",
+  "where": "shelf"
+ },
+ {
+  "name": "An umbrella",
+  "src": "weather.js:askForUmbrella",
+  "where": "shelf"
+ },
+ {
+  "name": "A pair of ice skates",
+  "src": "weather.js:askForSkates",
+  "where": "shelf"
+ },
+ {
+  "name": "A small rowboat",
+  "src": "vehicles.js:nearlyDrown",
+  "where": "shelf"
+ },
+ {
+  "name": "An electric workshop forklift",
+  "src": "forklift.js:askForForklift",
+  "where": "shelf"
+ },
+ {
+  "name": "A new kite",
+  "src": "wind.js:askForKite",
+  "where": "shelf"
+ },
+ {
+  "name": "Broken kite",
+  "src": "wind.js:BROKEN_KITE",
+  "where": "shelf"
+ },
+ {
+  "name": "Torn balloon envelope",
+  "src": "wind.js:BALLOON_PIECES",
+  "where": "shelf"
+ },
+ {
+  "name": "Bent burner frame",
+  "src": "wind.js:BALLOON_PIECES",
+  "where": "shelf"
+ },
+ {
+  "name": "Cracked wicker basket",
+  "src": "wind.js:BALLOON_PIECES",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of tire chains",
+  "src": "trips.js:planTrip",
+  "where": "shelf"
+ },
+ {
+  "name": "A pickup truck with a tow hitch",
+  "src": "trips.js:planTrip",
+  "where": "shelf"
+ },
+ {
+  "name": "A trailer hitch for the pickup truck",
+  "src": "trips.js:planTrip",
+  "where": "shelf"
+ },
+ {
+  "name": "A trailer hitch for the dump truck",
+  "src": "trips.js:planTrip",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of chains and load binders",
+  "src": "trips.js:planTrip",
+  "where": "shelf"
+ },
+ {
+  "name": "A set of ratchet straps",
+  "src": "trips.js:planTrip",
+  "where": "shelf"
+ },
+ {
+  "name": "Amethyst geode",
+  "src": "mining.js:HIDDEN_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "Quartz crystal cluster",
+  "src": "mining.js:HIDDEN_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "Gold nugget",
+  "src": "mining.js:HIDDEN_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "Ammonite fossil",
+  "src": "mining.js:HIDDEN_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "Dinosaur rib bone",
+  "src": "mining.js:HIDDEN_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "Old miner's lantern",
+  "src": "mining.js:HIDDEN_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "Meteorite fragment",
+  "src": "mining.js:HIDDEN_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "Jade pebble",
+  "src": "mining.js:HIDDEN_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "Buried time capsule",
+  "src": "mining.js:HIDDEN_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "Silver coin from 1898",
+  "src": "mining.js:HIDDEN_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "Trilobite fossil",
+  "src": "mining.js:HIDDEN_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "Garnet vein sample",
+  "src": "mining.js:HIDDEN_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "Petrified wood",
+  "src": "mining.js:HIDDEN_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "Obsidian arrowhead",
+  "src": "mining.js:HIDDEN_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "an oddly round pebble",
+  "src": "disposal.js:JUNK_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "a rusty bolt",
+  "src": "disposal.js:JUNK_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "a smooth river stone",
+  "src": "disposal.js:JUNK_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "a chunk of mica that sparkles",
+  "src": "disposal.js:JUNK_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "an old bottle cap",
+  "src": "disposal.js:JUNK_FINDS",
+  "where": "shelf"
+ },
+ {
+  "name": "A cracked glass piece",
+  "src": "glassstudio.js:glassPipeFollow",
+  "where": "shelf"
+ },
+ {
+  "name": "Snapped sturdy shovel",
+  "src": "materials.js:applyForce",
+  "where": "shelf"
+ },
+ {
+  "name": "Bent sturdy shovel",
+  "src": "materials.js:applyForce",
+  "where": "shelf"
+ },
+ {
+  "name": "Snapped claw hammer",
+  "src": "materials.js:applyForce",
+  "where": "shelf"
+ },
+ {
+  "name": "Shards of hand-blown glass vase",
+  "src": "materials.js:applyForce",
+  "where": "shelf"
+ },
+ {
+  "name": "sturdy shovel",
+  "src": "materials.js:straightenAtBench",
+  "where": "shelf"
+ },
+ {
+  "name": "An FDM-printed PETG bracket",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An FDM-printed cable clip set",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An FDM-printed go-kart dash mount",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An SLA-printed resin miniature figure",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An SLA-printed resin gear",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An SLA-printed resin jewellery master",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A DLP-printed resin ring",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A DLP-printed resin micro gear",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An MSLA-printed tabletop miniature",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An MSLA-printed resin enclosure",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An SLS-printed nylon hinge",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An SLS-printed nylon drone arm",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An SLS-printed nylon go-kart duct",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A DMLS-printed stainless steel bracket",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A DMLS-printed stainless rocket nozzle",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A DMLS-printed stainless manifold",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An MJF-printed nylon go-kart pedal",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An MJF-printed nylon gear set",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An MJF-printed nylon lattice insole",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A PolyJet-printed multi-colour prototype",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A PolyJet-printed clear enclosure",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A binder-jetted stainless impeller",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A binder-jetted stainless gear",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A DED-built stainless turbine blade",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A DED-built stainless flange",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An EBM-printed titanium lattice bracket",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An EBM-printed titanium implant cup",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A LOM-built paper architectural model",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A LOM-built laminated mold pattern",
+  "src": "additive.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An Avid-routed plywood sign",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An Avid-routed plywood go-kart seat back",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An Avid-routed plywood workbench top",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An Avid-routed plywood kayak rack",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An AltMill-routed MDF cabinet door",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "An AltMill-routed MDF speaker baffle",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A ShopSaber-routed plywood shelving set",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A ShopSaber-routed plywood go-kart floor pan",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A Laguna-routed plywood cabinet carcass",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A Laguna-routed plywood shop sign",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A Haas-machined aluminium bracket",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A Haas-machined aluminium go-kart pedal",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A Haas-machined steel go-kart spindle",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A Haas-machined aluminium mold plate",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A Haas-machined aluminium drone frame plate",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A Taurus-machined bronze ship propeller",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A Taurus-machined aluminium wing spar",
+  "src": "cnc.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A PCB-milled prototype board",
+  "src": "electronics.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A laser-cut acrylic sign",
+  "src": "electronics.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A laser-cut acrylic front panel",
+  "src": "electronics.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A homemade weather station",
+  "src": "electronics.js:GADGETS",
+  "where": "shelf"
+ },
+ {
+  "name": "A homemade FM radio",
+  "src": "electronics.js:GADGETS",
+  "where": "shelf"
+ },
+ {
+  "name": "A homemade robot-friend controller",
+  "src": "electronics.js:GADGETS",
+  "where": "shelf"
+ },
+ {
+  "name": "A homemade game console",
+  "src": "electronics.js:GADGETS",
+  "where": "shelf"
+ },
+ {
+  "name": "A plasma-cut steel bracket",
+  "src": "garage.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A plasma-cut steel go-kart frame gusset",
+  "src": "garage.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A handmade maple side table",
+  "src": "woodshop.js:WOOD_PROJECTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A dovetailed walnut box",
+  "src": "woodshop.js:WOOD_PROJECTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A handmade cherry wall shelf",
+  "src": "woodshop.js:WOOD_PROJECTS",
+  "where": "shelf"
+ },
+ {
+  "name": "A turned cherry bowl",
+  "src": "woodshop.js:products",
+  "where": "shelf"
+ },
+ {
+  "name": "A hand-blown glass vase",
+  "src": "glassstudio.js:GLASS_PIECES",
+  "where": "shelf"
+ },
+ {
+  "name": "A hand-blown glass bowl",
+  "src": "glassstudio.js:GLASS_PIECES",
+  "where": "shelf"
+ },
+ {
+  "name": "A hand-blown glass ornament",
+  "src": "glassstudio.js:GLASS_PIECES",
+  "where": "shelf"
+ },
+ {
+  "name": "A hand-blown glass cup",
+  "src": "glassstudio.js:GLASS_PIECES",
+  "where": "shelf"
+ },
+ {
+  "name": "A handmade maple stool",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "A handmade oak bookcase",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "A handmade pine birdhouse",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "A turned cherry mug",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "A hand-blown glass mug",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "A turned maple spinning top",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "A handmade oak coat rack",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "A home-built table lamp",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "A hand-blown glass paperweight",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "An Avid-routed plywood coaster",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "A laser-cut acrylic coaster",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "A home-built bird feeder",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "A handmade maple wall shelf",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "A handmade walnut footstool",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "An FDM-printed PLA phone stand",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "An SLA-printed resin figurine",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "A plasma-cut steel fire pit",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "A PCB-milled controller",
+  "src": "shopmaker.js:MAKER_CAPS(MAKER_IDEA_TOPICS)",
+  "where": "shelf"
+ },
+ {
+  "name": "#8 x 3/4 in. wood screws",
+  "src": "shopmaker.js:makerStartPartsList",
+  "where": "shelf"
+ },
+ {
+  "name": "Two-part epoxy",
+  "src": "shopmaker.js:makerStartPartsList",
+  "where": "shelf"
+ },
+ {
+  "name": "A screwdriver",
+  "src": "shopmaker.js:makerStartPartsList",
+  "where": "shelf"
+ },
+ {
+  "name": "Wire strippers",
+  "src": "shopmaker.js:makerStartPartsList",
+  "where": "shelf"
+ },
+ {
+  "name": "light bulb",
+  "src": "shopmaker.js:MAKER_BOUGHT",
+  "where": "shelf"
+ },
+ {
+  "name": "lamp socket",
+  "src": "shopmaker.js:MAKER_BOUGHT",
+  "where": "shelf"
+ },
+ {
+  "name": "power cord with plug",
+  "src": "shopmaker.js:MAKER_BOUGHT",
+  "where": "shelf"
+ },
+ {
+  "name": "inline switch",
+  "src": "shopmaker.js:MAKER_BOUGHT",
+  "where": "shelf"
+ },
+ {
+  "name": "AA batteries",
+  "src": "shopmaker.js:MAKER_BOUGHT",
+  "where": "shelf"
+ },
+ {
+  "name": "small DC motor",
+  "src": "shopmaker.js:MAKER_BOUGHT",
+  "where": "shelf"
+ },
+ {
+  "name": "speaker driver",
+  "src": "shopmaker.js:MAKER_BOUGHT",
+  "where": "shelf"
+ },
+ {
+  "name": "caster wheels",
+  "src": "shopmaker.js:MAKER_BOUGHT",
+  "where": "shelf"
+ },
+ {
+  "name": "brass hinges",
+  "src": "shopmaker.js:MAKER_BOUGHT",
+  "where": "shelf"
+ },
+ {
+  "name": "magnets",
+  "src": "shopmaker.js:MAKER_BOUGHT",
+  "where": "shelf"
+ },
+ {
+  "name": "springs",
+  "src": "shopmaker.js:MAKER_BOUGHT",
+  "where": "shelf"
+ },
+ {
+  "name": "clock movement",
+  "src": "shopmaker.js:MAKER_BOUGHT",
+  "where": "shelf"
+ },
+ {
+  "name": "seat cushion fabric",
+  "src": "shopmaker.js:MAKER_BOUGHT",
+  "where": "shelf"
+ },
+ {
+  "name": "mirror glass",
+  "src": "shopmaker.js:MAKER_BOUGHT",
+  "where": "shelf"
+ },
+ {
+  "name": "guitar strings",
+  "src": "shopmaker.js:MAKER_BOUGHT",
+  "where": "shelf"
+ },
+ {
+  "name": "Birdhouse",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "build"
+ },
+ {
+  "name": "Picnic table",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "build"
+ },
+ {
+  "name": "Garden bench",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "build"
+ },
+ {
+  "name": "Raised garden bed",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "build"
+ },
+ {
+  "name": "Bird feeder",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "build"
+ },
+ {
+  "name": "Wind chime",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "build"
+ },
+ {
+  "name": "Doghouse",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "build"
+ },
+ {
+  "name": "Kayak rack",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "build"
+ },
+ {
+  "name": "Treehouse platform",
+  "src": "projects.js:BUILD_PLANS",
+  "where": "build"
+ },
+ {
+  "name": "Home-built ultralight airplane",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.item",
+  "where": "build"
+ },
+ {
+  "name": "Home-built go-kart",
+  "src": "bom.js:BOM_TEMPLATES.gokart.item",
+  "where": "build"
+ },
+ {
+  "name": "Cedar-strip canoe",
+  "src": "bom.js:BOM_TEMPLATES.canoe.item",
+  "where": "build"
+ },
+ {
+  "name": "Garden shed",
+  "src": "bom.js:BOM_TEMPLATES.shed.item",
+  "where": "build"
+ },
+ {
+  "name": "Home-built FPV quadcopter",
+  "src": "bom.js:BOM_TEMPLATES.drone.item",
+  "where": "shelf"
+ },
+ {
+  "name": "Home-built electric guitar",
+  "src": "bom.js:BOM_TEMPLATES.guitar.item",
+  "where": "shelf"
+ },
+ {
+  "name": "Wooden sea kayak",
+  "src": "bom.js:BOM_TEMPLATES.kayak.item",
+  "where": "build"
+ },
+ {
+  "name": "Tree fort",
+  "src": "bom.js:BOM_TEMPLATES.treefort.item",
+  "where": "build"
+ },
+ {
+  "name": "TIG welder (AC/DC, 200 A)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Metal-cutting bandsaw",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Tube notcher (hole-saw type)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Drill press",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Pneumatic pop-rivet gun",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Cleco fasteners 1/8 in. (100) with cleco pliers",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Torque wrench (inch-pounds)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Combination wrench set (3/8–3/4 in.)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Nicopress swaging tool",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Safety-wire pliers",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Calibrated fabric iron",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "HVLP spray gun",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Ratcheting wire crimper",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Digital multimeter",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Screwdriver set",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Aircraft weighing scales (3-pad)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "MIG welder (140 A)",
+  "src": "bom.js:BOM_TEMPLATES.gokart.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Abrasive chop saw",
+  "src": "bom.js:BOM_TEMPLATES.gokart.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Angle grinder",
+  "src": "bom.js:BOM_TEMPLATES.gokart.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Cordless drill",
+  "src": "bom.js:BOM_TEMPLATES.gokart.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Socket and wrench set",
+  "src": "bom.js:BOM_TEMPLATES.gokart.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Tape measure",
+  "src": "bom.js:BOM_TEMPLATES.gokart.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Table saw (for ripping strips)",
+  "src": "bom.js:BOM_TEMPLATES.canoe.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Jigsaw",
+  "src": "bom.js:BOM_TEMPLATES.canoe.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Block plane",
+  "src": "bom.js:BOM_TEMPLATES.canoe.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Staple gun",
+  "src": "bom.js:BOM_TEMPLATES.canoe.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Random-orbit sander",
+  "src": "bom.js:BOM_TEMPLATES.canoe.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Epoxy squeegees and roller",
+  "src": "bom.js:BOM_TEMPLATES.canoe.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Spring clamps (24)",
+  "src": "bom.js:BOM_TEMPLATES.canoe.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Circular saw",
+  "src": "bom.js:BOM_TEMPLATES.shed.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Framing hammer",
+  "src": "bom.js:BOM_TEMPLATES.shed.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "4 ft level",
+  "src": "bom.js:BOM_TEMPLATES.shed.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Shovel",
+  "src": "bom.js:BOM_TEMPLATES.shed.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Hammer stapler",
+  "src": "bom.js:BOM_TEMPLATES.shed.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Temperature-controlled soldering iron (60 W)",
+  "src": "bom.js:BOM_TEMPLATES.drone.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Hex drivers 1.5, 2, 2.5 mm",
+  "src": "bom.js:BOM_TEMPLATES.drone.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Prop wrench",
+  "src": "bom.js:BOM_TEMPLATES.drone.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "LiPo balance charger",
+  "src": "bom.js:BOM_TEMPLATES.drone.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Bandsaw",
+  "src": "bom.js:BOM_TEMPLATES.guitar.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Router with flush-trim bit",
+  "src": "bom.js:BOM_TEMPLATES.guitar.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Clamps (6)",
+  "src": "bom.js:BOM_TEMPLATES.guitar.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Fret press or fret hammer",
+  "src": "bom.js:BOM_TEMPLATES.guitar.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Fret crowning file",
+  "src": "bom.js:BOM_TEMPLATES.guitar.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Soldering iron",
+  "src": "bom.js:BOM_TEMPLATES.guitar.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Strobe or clip-on tuner",
+  "src": "bom.js:BOM_TEMPLATES.guitar.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Pliers and wire cutters",
+  "src": "bom.js:BOM_TEMPLATES.kayak.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Clamps (12)",
+  "src": "bom.js:BOM_TEMPLATES.kayak.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Impact driver",
+  "src": "bom.js:BOM_TEMPLATES.treefort.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Drill with a 1-1/4 in. auger bit",
+  "src": "bom.js:BOM_TEMPLATES.treefort.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Socket wrench with 3/4 in. socket",
+  "src": "bom.js:BOM_TEMPLATES.treefort.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "Fall-arrest harness and rope",
+  "src": "bom.js:BOM_TEMPLATES.treefort.tools",
+  "where": "shelf"
+ },
+ {
+  "name": "4130 chromoly tube 1 in. × 0.035 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuselage.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "4130 chromoly tube 7/8 in. × 0.035 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuselage.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "4130 chromoly tube 3/4 in. × 0.035 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuselage.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "4130 chromoly tube 5/8 in. × 0.035 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuselage.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "4130 steel sheet 0.063 in. (gussets and tabs)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuselage.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "4130 wing-attach fittings (machined)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuselage.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Aluminium firewall 0.025 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuselage.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN3-5A bolts",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuselage.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN365-1032 nylock nuts",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuselage.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN960-10 washers",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuselage.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "ER70S-2 TIG filler rod 1/16 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuselage.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Argon shielding gas (80 cu ft cylinder)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuselage.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Linseed oil (inside the tubes)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuselage.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Epoxy primer for steel tube",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuselage.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Main gear legs, 4130 welded",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.gear.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Axles 3/4 in. 4130",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.gear.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Main wheels 6 in. with drum brakes",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.gear.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Tyres 15 × 6.00-6 with tubes",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.gear.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Bungee shock cord 5/8 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.gear.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Steerable tailwheel assembly 6 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.gear.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Tailwheel leaf spring",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.gear.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Brake master cylinders",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.gear.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Nylon brake line 3/16 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.gear.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN5-24A bolts (gear legs)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.gear.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN365-524 nylock nuts",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.gear.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN3-7A bolts",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.gear.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "MS24665-132 cotter pins",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.gear.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Brake fluid MIL-H-5606",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.gear.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Wheel-bearing grease",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.gear.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "4130 chromoly tube 1/2 in. × 0.028 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tail.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Hinge fittings 4130",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tail.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Tail brace wires 1/8 in. with fork ends",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tail.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN155-8S turnbuckles",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tail.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN3-6A bolts",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tail.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Safety wire 0.032 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.tail.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "6061-T6 aluminium spar tube 2 in. × 0.058 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Pre-formed 6061-T6 wing ribs",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "2024-T3 aluminium sheet 0.016 in., 4 × 12 ft (leading edges)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Aluminium compression struts 3/4 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Drag and anti-drag wires 1/8 in. with fittings",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Wing-tip bows",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Flaperon frames (aluminium)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Streamlined 6061 lift struts",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Jury struts",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "1/8 in. aluminium pop rivets",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN365-1032 nylock nuts (rib fittings and struts)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN4-11A bolts (spar attach)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN365-428 nylock nuts",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN3-12A bolts (strut fittings)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN960-416 washers",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Zinc-chromate primer (aerosol)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.wings.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Control stick (4130, with grip)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.controls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Torque tube 1-1/8 in. 4130",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.controls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Rudder pedals",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.controls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Flaperon push-pull tubes 6061 3/4 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.controls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Rod-end bearings 3/8 in. (HM-6)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.controls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "7×19 galvanised control cable 1/8 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.controls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN210-2A pulleys",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.controls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Throttle lever and cable",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.controls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Seat sling and 4-point harness",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.controls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Nicopress sleeves 1/8 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.controls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN100-4 thimbles",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.controls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN3-10A bolts",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.controls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Ceconite 102 fabric",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.covering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Poly-Fiber finishing tape 2 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.covering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Rib-lacing cord",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.covering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Inspection rings",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.covering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Drain grommets",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.covering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Lexan windshield and windows 0.060 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.covering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Poly-Tak fabric cement",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.covering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Poly-Brush sealer",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.covering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Poly-Spray UV block (silver)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.covering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Poly-Tone topcoat (Cub yellow)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.covering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "MEK reducer",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.covering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Rotax 582 engine (dual CDI, B gearbox 2.58:1)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Engine mount, 4130 welded",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Lord rubber mount isolators",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "68 in. two-blade propeller",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Propeller spinner 9 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Radiator (twin core)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Coolant hose 1 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Tuned exhaust with muffler",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Spark plugs NGK BR8ECS",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "M8 propeller bolts with lock nuts",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "AN5-14A bolts (engine mount)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Worm-drive hose clamps",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Exhaust springs",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Engine coolant 50/50",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Two-stroke injection oil",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Gearbox oil",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Aluminium wing-root fuel tanks, 5 gal",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuel.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "SAE J30R7 fuel hose 1/4 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuel.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Fuel shutoff valve",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuel.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Gascolator (fuel filter)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuel.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Mikuni pulse fuel pump",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuel.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Primer bulb",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuel.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Fuel sight gauges",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuel.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Fuel-hose clamps",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuel.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Premium unleaded fuel (91 octane)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.fuel.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Airspeed indicator 0–100 mph, 2-1/4 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.instruments.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Altimeter 2-1/4 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.instruments.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Tachometer (Rotax)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.instruments.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Dual EGT gauge with probes",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.instruments.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Coolant-temperature gauge",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.instruments.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Compass",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.instruments.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Slip indicator",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.instruments.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Pitot tube",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.instruments.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Pitot-static tubing 3/16 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.instruments.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Instrument panel, 6061 0.063 in.",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.instruments.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "#6-32 panel screws",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.instruments.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "#6-32 nylock nuts",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.instruments.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "12 V AGM battery, 9 Ah",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.electrical.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Battery master switch",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.electrical.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Ignition kill switches",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.electrical.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Starter solenoid",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.electrical.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Rotax voltage regulator",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.electrical.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "6-way blade fuse block",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.electrical.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "LED nav and strobe light set",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.electrical.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Tefzel wire 18 AWG",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.electrical.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Wire 10 AWG",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.electrical.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Battery cable 4 AWG",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.electrical.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Crimp ring terminals",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.electrical.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Nylon cable ties",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.electrical.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Heat-shrink tubing",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.electrical.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "DOM mild-steel tube 1 in. × 0.065 in.",
+  "src": "bom.js:BOM_TEMPLATES.gokart.frame.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "DOM mild-steel tube 3/4 in. × 0.065 in.",
+  "src": "bom.js:BOM_TEMPLATES.gokart.frame.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Steel plate 3/16 in. (mounts)",
+  "src": "bom.js:BOM_TEMPLATES.gokart.frame.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "16-gauge steel floor pan",
+  "src": "bom.js:BOM_TEMPLATES.gokart.frame.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "ER70S-6 MIG wire 0.030 in.",
+  "src": "bom.js:BOM_TEMPLATES.gokart.frame.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "75/25 argon-CO2 gas (40 cu ft)",
+  "src": "bom.js:BOM_TEMPLATES.gokart.frame.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Cut-off and flap discs",
+  "src": "bom.js:BOM_TEMPLATES.gokart.frame.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Rattle-can primer and enamel",
+  "src": "bom.js:BOM_TEMPLATES.gokart.frame.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Steering wheel 11 in. with hub",
+  "src": "bom.js:BOM_TEMPLATES.gokart.steering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Steering shaft 3/4 in.",
+  "src": "bom.js:BOM_TEMPLATES.gokart.steering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Steering-shaft flange bearings",
+  "src": "bom.js:BOM_TEMPLATES.gokart.steering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Kingpin spindles (pair)",
+  "src": "bom.js:BOM_TEMPLATES.gokart.steering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Tie rods 5/16 in.",
+  "src": "bom.js:BOM_TEMPLATES.gokart.steering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Heim joints 5/16 in.",
+  "src": "bom.js:BOM_TEMPLATES.gokart.steering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Grade 8 bolts 5/16-18",
+  "src": "bom.js:BOM_TEMPLATES.gokart.steering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Nylock nuts 5/16-18",
+  "src": "bom.js:BOM_TEMPLATES.gokart.steering.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Keyed live axle 1 in. × 36 in.",
+  "src": "bom.js:BOM_TEMPLATES.gokart.axle.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Pillow-block bearings 1 in.",
+  "src": "bom.js:BOM_TEMPLATES.gokart.axle.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Brake disc 6 in. with hub",
+  "src": "bom.js:BOM_TEMPLATES.gokart.axle.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Mechanical disc-brake caliper",
+  "src": "bom.js:BOM_TEMPLATES.gokart.axle.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Brake pedal and cable",
+  "src": "bom.js:BOM_TEMPLATES.gokart.axle.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "#35 sprocket 60-tooth with hub",
+  "src": "bom.js:BOM_TEMPLATES.gokart.axle.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Keyed wheel hubs 1 in.",
+  "src": "bom.js:BOM_TEMPLATES.gokart.axle.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Set screws 5/16 in.",
+  "src": "bom.js:BOM_TEMPLATES.gokart.axle.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Grade 8 bolts 3/8-16",
+  "src": "bom.js:BOM_TEMPLATES.gokart.axle.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Nylock nuts 3/8-16",
+  "src": "bom.js:BOM_TEMPLATES.gokart.axle.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Front tyres 10 × 4.50-5 on rims",
+  "src": "bom.js:BOM_TEMPLATES.gokart.wheels.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Rear tyres 11 × 7.10-5 on rims",
+  "src": "bom.js:BOM_TEMPLATES.gokart.wheels.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Front wheel bearings 5/8 in.",
+  "src": "bom.js:BOM_TEMPLATES.gokart.wheels.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Lug bolts 5/16 in.",
+  "src": "bom.js:BOM_TEMPLATES.gokart.wheels.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Axle nuts and cotter pins",
+  "src": "bom.js:BOM_TEMPLATES.gokart.wheels.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "212 cc (6.5 hp) OHV engine",
+  "src": "bom.js:BOM_TEMPLATES.gokart.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Centrifugal clutch 3/4 in., 12-tooth #35",
+  "src": "bom.js:BOM_TEMPLATES.gokart.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "#35 roller chain",
+  "src": "bom.js:BOM_TEMPLATES.gokart.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Engine mount plate",
+  "src": "bom.js:BOM_TEMPLATES.gokart.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Throttle pedal and cable",
+  "src": "bom.js:BOM_TEMPLATES.gokart.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Chain guard",
+  "src": "bom.js:BOM_TEMPLATES.gokart.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Kill switch",
+  "src": "bom.js:BOM_TEMPLATES.gokart.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Grade 8 bolts 3/8-16 (engine)",
+  "src": "bom.js:BOM_TEMPLATES.gokart.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Engine oil 10W-30",
+  "src": "bom.js:BOM_TEMPLATES.gokart.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Regular gasoline",
+  "src": "bom.js:BOM_TEMPLATES.gokart.engine.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Moulded kart seat",
+  "src": "bom.js:BOM_TEMPLATES.gokart.seat.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Seat struts",
+  "src": "bom.js:BOM_TEMPLATES.gokart.seat.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Front bumper and nerf bars",
+  "src": "bom.js:BOM_TEMPLATES.gokart.seat.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "M8 bolts with nylock nuts (seat)",
+  "src": "bom.js:BOM_TEMPLATES.gokart.seat.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "3/4 in. plywood 4 × 8 ft (strongback)",
+  "src": "bom.js:BOM_TEMPLATES.canoe.forms.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "1/2 in. particleboard 4 × 8 ft (station molds)",
+  "src": "bom.js:BOM_TEMPLATES.canoe.forms.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "2 × 4 lumber 8 ft",
+  "src": "bom.js:BOM_TEMPLATES.canoe.forms.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Drywall screws 1-5/8 in.",
+  "src": "bom.js:BOM_TEMPLATES.canoe.forms.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Packing tape (mold edges)",
+  "src": "bom.js:BOM_TEMPLATES.canoe.forms.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Western red cedar strips 1/4 × 3/4 in. bead-and-cove, 17 ft",
+  "src": "bom.js:BOM_TEMPLATES.canoe.strips.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Ash inner and outer stems",
+  "src": "bom.js:BOM_TEMPLATES.canoe.strips.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Staples 9/16 in. (pulled later)",
+  "src": "bom.js:BOM_TEMPLATES.canoe.strips.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Titebond III wood glue",
+  "src": "bom.js:BOM_TEMPLATES.canoe.strips.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "6 oz E-glass cloth 50 in. wide",
+  "src": "bom.js:BOM_TEMPLATES.canoe.glass.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Fibreglass bias tape 3 in.",
+  "src": "bom.js:BOM_TEMPLATES.canoe.glass.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Epoxy resin and hardener",
+  "src": "bom.js:BOM_TEMPLATES.canoe.glass.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Sandpaper 80, 120 and 220 grit",
+  "src": "bom.js:BOM_TEMPLATES.canoe.glass.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Ash gunwale strips 3/4 × 1 in., 17 ft",
+  "src": "bom.js:BOM_TEMPLATES.canoe.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Ash cane seats",
+  "src": "bom.js:BOM_TEMPLATES.canoe.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Ash carry yoke",
+  "src": "bom.js:BOM_TEMPLATES.canoe.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Ash thwarts",
+  "src": "bom.js:BOM_TEMPLATES.canoe.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Cherry deck plates",
+  "src": "bom.js:BOM_TEMPLATES.canoe.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Brass stem bands 3/8 in.",
+  "src": "bom.js:BOM_TEMPLATES.canoe.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Silicon-bronze screws #8 × 1-1/4 in.",
+  "src": "bom.js:BOM_TEMPLATES.canoe.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Stainless carriage bolts 3/16 in. with nuts",
+  "src": "bom.js:BOM_TEMPLATES.canoe.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Spar varnish (UV)",
+  "src": "bom.js:BOM_TEMPLATES.canoe.finish.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Foam brushes",
+  "src": "bom.js:BOM_TEMPLATES.canoe.finish.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Concrete deck blocks",
+  "src": "bom.js:BOM_TEMPLATES.shed.foundation.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Pressure-treated 4 × 4 skids, 10 ft",
+  "src": "bom.js:BOM_TEMPLATES.shed.foundation.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "3/4 in. crushed gravel",
+  "src": "bom.js:BOM_TEMPLATES.shed.foundation.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Pressure-treated 2 × 6 joists, 8 ft",
+  "src": "bom.js:BOM_TEMPLATES.shed.floor.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Pressure-treated 2 × 6 rim joists, 10 ft",
+  "src": "bom.js:BOM_TEMPLATES.shed.floor.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "3/4 in. tongue-and-groove plywood 4 × 8",
+  "src": "bom.js:BOM_TEMPLATES.shed.floor.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "16d galvanised framing nails",
+  "src": "bom.js:BOM_TEMPLATES.shed.floor.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Deck screws 1-5/8 in.",
+  "src": "bom.js:BOM_TEMPLATES.shed.floor.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "2 × 4 studs, 8 ft",
+  "src": "bom.js:BOM_TEMPLATES.shed.walls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "2 × 4 plates, 10 ft",
+  "src": "bom.js:BOM_TEMPLATES.shed.walls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "2 × 6 door and window headers, 8 ft",
+  "src": "bom.js:BOM_TEMPLATES.shed.walls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "16d framing nails",
+  "src": "bom.js:BOM_TEMPLATES.shed.walls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "2 × 4 rafters, 8 ft",
+  "src": "bom.js:BOM_TEMPLATES.shed.roofframe.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "2 × 6 ridge board, 10 ft",
+  "src": "bom.js:BOM_TEMPLATES.shed.roofframe.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Hurricane ties",
+  "src": "bom.js:BOM_TEMPLATES.shed.roofframe.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Connector nails 1-1/2 in.",
+  "src": "bom.js:BOM_TEMPLATES.shed.roofframe.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "7/16 in. OSB sheathing 4 × 8",
+  "src": "bom.js:BOM_TEMPLATES.shed.roofing.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "#15 roofing felt",
+  "src": "bom.js:BOM_TEMPLATES.shed.roofing.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Drip edge, 10 ft",
+  "src": "bom.js:BOM_TEMPLATES.shed.roofing.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Asphalt shingles (bundles)",
+  "src": "bom.js:BOM_TEMPLATES.shed.roofing.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Ridge-cap shingles (bundle)",
+  "src": "bom.js:BOM_TEMPLATES.shed.roofing.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Roofing nails 1-1/4 in.",
+  "src": "bom.js:BOM_TEMPLATES.shed.roofing.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "8d sheathing nails",
+  "src": "bom.js:BOM_TEMPLATES.shed.roofing.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "T1-11 siding panels 4 × 8",
+  "src": "bom.js:BOM_TEMPLATES.shed.siding.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "House wrap",
+  "src": "bom.js:BOM_TEMPLATES.shed.siding.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "1 × 4 trim boards, 8 ft",
+  "src": "bom.js:BOM_TEMPLATES.shed.siding.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Window 24 × 36 in.",
+  "src": "bom.js:BOM_TEMPLATES.shed.siding.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Strap hinges 8 in.",
+  "src": "bom.js:BOM_TEMPLATES.shed.siding.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Hasp and padlock",
+  "src": "bom.js:BOM_TEMPLATES.shed.siding.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "8d galvanised siding nails",
+  "src": "bom.js:BOM_TEMPLATES.shed.siding.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Exterior caulk",
+  "src": "bom.js:BOM_TEMPLATES.shed.siding.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Exterior primer",
+  "src": "bom.js:BOM_TEMPLATES.shed.paint.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Exterior paint (barn green)",
+  "src": "bom.js:BOM_TEMPLATES.shed.paint.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Trim paint (white)",
+  "src": "bom.js:BOM_TEMPLATES.shed.paint.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "5 in. carbon-fibre frame kit (220 mm)",
+  "src": "bom.js:BOM_TEMPLATES.drone.frame.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "M3 standoffs",
+  "src": "bom.js:BOM_TEMPLATES.drone.frame.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "M3 × 8 mm frame screws",
+  "src": "bom.js:BOM_TEMPLATES.drone.frame.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "M3 nylock nuts",
+  "src": "bom.js:BOM_TEMPLATES.drone.frame.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "2306 2450 KV brushless motors",
+  "src": "bom.js:BOM_TEMPLATES.drone.power.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "4-in-1 45 A BLHeli_32 ESC",
+  "src": "bom.js:BOM_TEMPLATES.drone.power.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "XT60 battery lead",
+  "src": "bom.js:BOM_TEMPLATES.drone.power.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Low-ESR capacitor 35 V 1,000 µF",
+  "src": "bom.js:BOM_TEMPLATES.drone.power.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "12 AWG silicone wire",
+  "src": "bom.js:BOM_TEMPLATES.drone.power.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "M3 × 6 mm motor screws",
+  "src": "bom.js:BOM_TEMPLATES.drone.power.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "60/40 rosin-core solder",
+  "src": "bom.js:BOM_TEMPLATES.drone.power.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Flux pen",
+  "src": "bom.js:BOM_TEMPLATES.drone.power.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "F7 flight controller (30 × 30)",
+  "src": "bom.js:BOM_TEMPLATES.drone.brain.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Rubber soft-mount grommets",
+  "src": "bom.js:BOM_TEMPLATES.drone.brain.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "M3 nylon nuts",
+  "src": "bom.js:BOM_TEMPLATES.drone.brain.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "ELRS 2.4 GHz receiver",
+  "src": "bom.js:BOM_TEMPLATES.drone.radio.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "ELRS radio transmitter",
+  "src": "bom.js:BOM_TEMPLATES.drone.radio.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "FPV camera (micro, 1200TVL)",
+  "src": "bom.js:BOM_TEMPLATES.drone.radio.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "5.8 GHz video transmitter 25–800 mW",
+  "src": "bom.js:BOM_TEMPLATES.drone.radio.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "RHCP antenna",
+  "src": "bom.js:BOM_TEMPLATES.drone.radio.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "FPV goggles",
+  "src": "bom.js:BOM_TEMPLATES.drone.radio.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Zip ties",
+  "src": "bom.js:BOM_TEMPLATES.drone.radio.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "4S LiPo 1,500 mAh 100C",
+  "src": "bom.js:BOM_TEMPLATES.drone.props.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "5 × 4.3 × 3 tri-blade propellers",
+  "src": "bom.js:BOM_TEMPLATES.drone.props.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Battery straps",
+  "src": "bom.js:BOM_TEMPLATES.drone.props.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "M5 prop nuts",
+  "src": "bom.js:BOM_TEMPLATES.drone.props.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Alder body blank 14 × 20 × 1-3/4 in.",
+  "src": "bom.js:BOM_TEMPLATES.guitar.body.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "MDF body and routing templates",
+  "src": "bom.js:BOM_TEMPLATES.guitar.body.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Double-sided tape",
+  "src": "bom.js:BOM_TEMPLATES.guitar.body.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Hard maple neck blank 1 × 3-1/2 × 26 in.",
+  "src": "bom.js:BOM_TEMPLATES.guitar.neck.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Rosewood fingerboard, slotted 25.5 in., 9.5 in. radius",
+  "src": "bom.js:BOM_TEMPLATES.guitar.neck.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Dual-action truss rod 18 in.",
+  "src": "bom.js:BOM_TEMPLATES.guitar.neck.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Pearl dot inlays 1/4 in.",
+  "src": "bom.js:BOM_TEMPLATES.guitar.neck.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Titebond wood glue",
+  "src": "bom.js:BOM_TEMPLATES.guitar.neck.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Medium-jumbo fret wire",
+  "src": "bom.js:BOM_TEMPLATES.guitar.frets.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Bone nut",
+  "src": "bom.js:BOM_TEMPLATES.guitar.frets.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Fret-end files and crowning (sandpaper 400–1,000)",
+  "src": "bom.js:BOM_TEMPLATES.guitar.frets.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Grain filler",
+  "src": "bom.js:BOM_TEMPLATES.guitar.finish.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Sanding sealer (aerosol)",
+  "src": "bom.js:BOM_TEMPLATES.guitar.finish.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Nitrocellulose lacquer, red (aerosol)",
+  "src": "bom.js:BOM_TEMPLATES.guitar.finish.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Clear nitro lacquer (aerosol)",
+  "src": "bom.js:BOM_TEMPLATES.guitar.finish.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Tru-Oil (neck)",
+  "src": "bom.js:BOM_TEMPLATES.guitar.finish.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Sandpaper 320–2,000 grit",
+  "src": "bom.js:BOM_TEMPLATES.guitar.finish.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Vintage tremolo bridge (6-screw)",
+  "src": "bom.js:BOM_TEMPLATES.guitar.hardware.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Tuners (set of 6)",
+  "src": "bom.js:BOM_TEMPLATES.guitar.hardware.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "String trees",
+  "src": "bom.js:BOM_TEMPLATES.guitar.hardware.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Strap buttons",
+  "src": "bom.js:BOM_TEMPLATES.guitar.hardware.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Neck plate",
+  "src": "bom.js:BOM_TEMPLATES.guitar.hardware.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Tremolo springs and claw",
+  "src": "bom.js:BOM_TEMPLATES.guitar.hardware.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Neck bolts #8 × 2 in.",
+  "src": "bom.js:BOM_TEMPLATES.guitar.hardware.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Bridge screws",
+  "src": "bom.js:BOM_TEMPLATES.guitar.hardware.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Pickguard screws",
+  "src": "bom.js:BOM_TEMPLATES.guitar.hardware.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Single-coil pickups",
+  "src": "bom.js:BOM_TEMPLATES.guitar.electronics.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "5-way blade switch",
+  "src": "bom.js:BOM_TEMPLATES.guitar.electronics.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "250 kΩ potentiometers",
+  "src": "bom.js:BOM_TEMPLATES.guitar.electronics.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "0.022 µF tone capacitor",
+  "src": "bom.js:BOM_TEMPLATES.guitar.electronics.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Output jack and plate",
+  "src": "bom.js:BOM_TEMPLATES.guitar.electronics.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Three-ply pickguard",
+  "src": "bom.js:BOM_TEMPLATES.guitar.electronics.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Cloth push-back wire 22 AWG",
+  "src": "bom.js:BOM_TEMPLATES.guitar.electronics.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Copper shielding tape",
+  "src": "bom.js:BOM_TEMPLATES.guitar.electronics.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Nickel strings 10–46",
+  "src": "bom.js:BOM_TEMPLATES.guitar.setup.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "4 mm okoume marine plywood 4 × 8 ft (BS1088)",
+  "src": "bom.js:BOM_TEMPLATES.kayak.panels.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Wood flour",
+  "src": "bom.js:BOM_TEMPLATES.kayak.panels.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Copper stitching wire 18 AWG",
+  "src": "bom.js:BOM_TEMPLATES.kayak.stitch.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Wire stitches (twisted)",
+  "src": "bom.js:BOM_TEMPLATES.kayak.stitch.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "6 oz fibreglass cloth 50 in.",
+  "src": "bom.js:BOM_TEMPLATES.kayak.glass.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Sandpaper 80–220 grit",
+  "src": "bom.js:BOM_TEMPLATES.kayak.glass.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "3 mm okoume plywood 4 × 8 ft",
+  "src": "bom.js:BOM_TEMPLATES.kayak.deck.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Deck beams 3/4 × 1-1/2 in.",
+  "src": "bom.js:BOM_TEMPLATES.kayak.deck.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Laminated cockpit coaming rings",
+  "src": "bom.js:BOM_TEMPLATES.kayak.deck.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "6 mm okoume bulkheads",
+  "src": "bom.js:BOM_TEMPLATES.kayak.deck.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Hatch lids with lips",
+  "src": "bom.js:BOM_TEMPLATES.kayak.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Hatch straps",
+  "src": "bom.js:BOM_TEMPLATES.kayak.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Bungee cord 1/4 in.",
+  "src": "bom.js:BOM_TEMPLATES.kayak.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Padeyes",
+  "src": "bom.js:BOM_TEMPLATES.kayak.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Foam seat and backband",
+  "src": "bom.js:BOM_TEMPLATES.kayak.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Adjustable foot braces",
+  "src": "bom.js:BOM_TEMPLATES.kayak.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Carry toggles",
+  "src": "bom.js:BOM_TEMPLATES.kayak.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Stainless #8 screws",
+  "src": "bom.js:BOM_TEMPLATES.kayak.outfit.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Treehouse attachment bolts (TAB) 1-1/4 × 8 in.",
+  "src": "bom.js:BOM_TEMPLATES.treefort.supports.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Pressure-treated 4 × 4 knee braces, 8 ft",
+  "src": "bom.js:BOM_TEMPLATES.treefort.supports.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Galvanised lag screws 1/2 × 6 in.",
+  "src": "bom.js:BOM_TEMPLATES.treefort.supports.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Pressure-treated 2 × 8 beams, 10 ft",
+  "src": "bom.js:BOM_TEMPLATES.treefort.platform.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Joist hangers 2 × 6",
+  "src": "bom.js:BOM_TEMPLATES.treefort.platform.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Joist-hanger nails",
+  "src": "bom.js:BOM_TEMPLATES.treefort.platform.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Carriage bolts 1/2 × 6 in. with nuts and washers",
+  "src": "bom.js:BOM_TEMPLATES.treefort.platform.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "5/4 × 6 cedar decking, 8 ft",
+  "src": "bom.js:BOM_TEMPLATES.treefort.deck.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Deck screws 2-1/2 in.",
+  "src": "bom.js:BOM_TEMPLATES.treefort.deck.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "2 × 4 posts and rails, 8 ft",
+  "src": "bom.js:BOM_TEMPLATES.treefort.walls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Cedar fence boards 1 × 6 × 6 ft",
+  "src": "bom.js:BOM_TEMPLATES.treefort.walls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Deck screws 2 in.",
+  "src": "bom.js:BOM_TEMPLATES.treefort.walls.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Corrugated metal roofing 26 in. × 8 ft",
+  "src": "bom.js:BOM_TEMPLATES.treefort.roof.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Roofing screws with neoprene washers",
+  "src": "bom.js:BOM_TEMPLATES.treefort.roof.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Pressure-treated 2 × 6 ladder rails, 12 ft",
+  "src": "bom.js:BOM_TEMPLATES.treefort.access.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "2 × 4 rungs",
+  "src": "bom.js:BOM_TEMPLATES.treefort.access.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Trap-door hinges",
+  "src": "bom.js:BOM_TEMPLATES.treefort.access.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Structural screws 3 in.",
+  "src": "bom.js:BOM_TEMPLATES.treefort.access.lines",
+  "where": "parts-line"
+ },
+ {
+  "name": "Fuselage frame",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Landing gear",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Tail surfaces",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Wings (pair)",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Flight controls",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Fabric covering",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Engine and propeller",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Fuel system",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Instruments",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Electrical system",
+  "src": "bom.js:BOM_TEMPLATES.ultralight.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Frame",
+  "src": "bom.js:BOM_TEMPLATES.gokart.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Steering",
+  "src": "bom.js:BOM_TEMPLATES.gokart.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Rear axle and brake",
+  "src": "bom.js:BOM_TEMPLATES.gokart.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Wheels and tyres",
+  "src": "bom.js:BOM_TEMPLATES.gokart.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Engine and drive",
+  "src": "bom.js:BOM_TEMPLATES.gokart.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Seat and body",
+  "src": "bom.js:BOM_TEMPLATES.gokart.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Strongback and forms",
+  "src": "bom.js:BOM_TEMPLATES.canoe.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Hull stripping",
+  "src": "bom.js:BOM_TEMPLATES.canoe.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Fibreglass and epoxy",
+  "src": "bom.js:BOM_TEMPLATES.canoe.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Gunwales, seats and yoke",
+  "src": "bom.js:BOM_TEMPLATES.canoe.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Varnish",
+  "src": "bom.js:BOM_TEMPLATES.canoe.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Foundation",
+  "src": "bom.js:BOM_TEMPLATES.shed.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Floor",
+  "src": "bom.js:BOM_TEMPLATES.shed.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Wall framing",
+  "src": "bom.js:BOM_TEMPLATES.shed.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Roof framing",
+  "src": "bom.js:BOM_TEMPLATES.shed.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Roofing",
+  "src": "bom.js:BOM_TEMPLATES.shed.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Siding, door and window",
+  "src": "bom.js:BOM_TEMPLATES.shed.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Paint",
+  "src": "bom.js:BOM_TEMPLATES.shed.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Motors and ESC",
+  "src": "bom.js:BOM_TEMPLATES.drone.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Flight controller",
+  "src": "bom.js:BOM_TEMPLATES.drone.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Radio and video",
+  "src": "bom.js:BOM_TEMPLATES.drone.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Battery and props",
+  "src": "bom.js:BOM_TEMPLATES.drone.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Body",
+  "src": "bom.js:BOM_TEMPLATES.guitar.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Neck and fingerboard",
+  "src": "bom.js:BOM_TEMPLATES.guitar.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Frets and nut",
+  "src": "bom.js:BOM_TEMPLATES.guitar.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Finish",
+  "src": "bom.js:BOM_TEMPLATES.guitar.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Hardware",
+  "src": "bom.js:BOM_TEMPLATES.guitar.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Electronics",
+  "src": "bom.js:BOM_TEMPLATES.guitar.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Strings and setup",
+  "src": "bom.js:BOM_TEMPLATES.guitar.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Hull panels",
+  "src": "bom.js:BOM_TEMPLATES.kayak.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Stitching",
+  "src": "bom.js:BOM_TEMPLATES.kayak.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Fillets and fibreglass",
+  "src": "bom.js:BOM_TEMPLATES.kayak.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Deck and cockpit",
+  "src": "bom.js:BOM_TEMPLATES.kayak.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Hatches and outfitting",
+  "src": "bom.js:BOM_TEMPLATES.kayak.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Tree supports",
+  "src": "bom.js:BOM_TEMPLATES.treefort.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Beams and joists",
+  "src": "bom.js:BOM_TEMPLATES.treefort.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Decking",
+  "src": "bom.js:BOM_TEMPLATES.treefort.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Walls and railing",
+  "src": "bom.js:BOM_TEMPLATES.treefort.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Roof",
+  "src": "bom.js:BOM_TEMPLATES.treefort.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Ladder and trap door",
+  "src": "bom.js:BOM_TEMPLATES.treefort.subs",
+  "where": "sub-assembly"
+ },
+ {
+  "name": "Tools for the ultralight airplane (16)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Fuselage frame (14 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Landing gear (16 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Tail surfaces (11 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Wings (pair) (17 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Flight controls (15 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Fabric covering (11 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Engine and propeller (17 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Fuel system (9 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Instruments (12 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Electrical system (13 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Tools for the go-kart (6)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Frame (8 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Steering (8 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Rear axle and brake (10 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Wheels and tyres (5 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Engine and drive (10 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Seat and body (4 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Tools for the cedar-strip canoe (8)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Strongback and forms (5 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Hull stripping (4 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Fibreglass and epoxy (4 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Gunwales, seats and yoke (8 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Varnish (2 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Tools for the garden shed (7)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Foundation (3 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Floor (5 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Wall framing (4 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Roof framing (5 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Roofing (7 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Siding, door and window (8 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Paint (3 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Tools for the quadcopter drone (5)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Frame (4 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Motors and ESC (8 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Flight controller (3 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Radio and video (8 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Battery and props (4 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Tools for the electric guitar (10)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Body (3 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Neck and fingerboard (5 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Frets and nut (3 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Finish (6 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Hardware (9 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Electronics (9 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Strings and setup (1 line)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Tools for the wooden sea kayak (6)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Hull panels (3 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Stitching (2 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Fillets and fibreglass (3 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Deck and cockpit (4 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Hatches and outfitting (9 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Tools for the tree fort (7)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Tree supports (3 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Beams and joists (5 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Decking (2 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Walls and railing (3 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Roof (3 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Parts kit: Ladder and trap door (4 lines)",
+  "src": "assembly.js:sendBomList",
+  "where": "shelf"
+ },
+ {
+  "name": "Roadwork kit (12 lines)",
+  "src": "roadworks.js:sendRoadworkList",
+  "where": "shelf"
+ },
+ {
+  "name": "Runway kit (14 lines)",
+  "src": "roadworks.js:sendRoadworkList",
+  "where": "shelf"
+ },
+ {
+  "name": "a hazelnut croissant",
+  "src": "needs.js:eatSomething",
+  "where": "shelf"
+ },
+ {
+  "name": "a bowl of soup",
+  "src": "needs.js:eatSomething",
+  "where": "shelf"
+ },
+ {
+  "name": "a toasted bagel",
+  "src": "needs.js:eatSomething",
+  "where": "shelf"
+ },
+ {
+  "name": "a slice of peach pie",
+  "src": "needs.js:eatSomething",
+  "where": "shelf"
+ },
+ {
+  "name": "rainbow trout",
+  "src": "pastimes.js:LAKE_FISH",
+  "where": "shelf"
+ },
+ {
+  "name": "kokanee salmon",
+  "src": "pastimes.js:LAKE_FISH",
+  "where": "shelf"
+ },
+ {
+  "name": "lake whitefish",
+  "src": "pastimes.js:LAKE_FISH",
+  "where": "shelf"
+ },
+ {
+  "name": "yellow perch",
+  "src": "pastimes.js:LAKE_FISH",
+  "where": "shelf"
+ },
+ {
+  "name": "smallmouth bass",
+  "src": "pastimes.js:LAKE_FISH",
+  "where": "shelf"
+ },
+ {
+  "name": "burbot",
+  "src": "pastimes.js:LAKE_FISH",
+  "where": "shelf"
+ },
+ {
+  "name": "pan-fried rainbow trout",
+  "src": "pastimes.js:cookAMeal",
+  "where": "shelf"
+ },
+ {
+  "name": "peach and blueberry cobbler",
+  "src": "pastimes.js:cookAMeal",
+  "where": "shelf"
+ },
+ {
+  "name": "tomato and carrot soup",
+  "src": "pastimes.js:cookAMeal",
+  "where": "shelf"
+ },
+ {
+  "name": "roasted tomato soup",
+  "src": "pastimes.js:cookAMeal",
+  "where": "shelf"
+ },
+ {
+  "name": "maple-glazed carrots",
+  "src": "pastimes.js:cookAMeal",
+  "where": "shelf"
+ },
+ {
+  "name": "grilled peaches with honey",
+  "src": "pastimes.js:cookAMeal",
+  "where": "shelf"
+ },
+ {
+  "name": "A ceramic jug",
+  "src": "paintstudio.js:stillLifeItems",
+  "where": "shelf"
+ },
+ {
+  "name": "An apple",
+  "src": "paintstudio.js:stillLifeItems",
+  "where": "shelf"
+ },
+ {
+  "name": "A pear",
+  "src": "paintstudio.js:stillLifeItems",
+  "where": "shelf"
+ },
+ {
+  "name": "Okanagan Lake in Winter",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "The Frozen Lake",
+  "src": "paintstudio.js:paintTitle",
+  "where": "shelf"
+ },
+ {
+  "name": "Rain on Okanagan Lake",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Grey Day at the Lake",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Okanagan Sunset",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Evening on Okanagan Lake",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Last Light over the Lake",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Night over the Lake",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Moonlight on Okanagan Lake",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Stars above the Valley",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Snow on the High Peaks",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Winter Mountains",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "The Peaks above the Valley",
+  "src": "paintstudio.js:paintTitle",
+  "where": "shelf"
+ },
+ {
+  "name": "Mountain Morning",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "The Range from the Valley",
+  "src": "paintstudio.js:paintTitle",
+  "where": "shelf"
+ },
+ {
+  "name": "My House in the Snow",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Home in Winter",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "My House at Golden Hour",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Home",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "The Little House by the Lake",
+  "src": "paintstudio.js:paintTitle",
+  "where": "shelf"
+ },
+ {
+  "name": "Mule Deer in the West Meadow",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Grazing Deer",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Deer at the Edge of the Woods",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "The West Meadow",
+  "src": "paintstudio.js:paintTitle",
+  "where": "shelf"
+ },
+ {
+  "name": "Where the Deer Would Be",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Still Life with Ceramic Jug and Apple",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Self-Portrait",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ },
+ {
+  "name": "Study: Okanagan Sunset",
+  "src": "paintstudio.js:paintTitle",
+  "where": "painting"
+ }
+]

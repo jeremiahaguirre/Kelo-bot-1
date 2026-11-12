@@ -1,0 +1,2162 @@
+[
+ {
+  "name": "Cast iron skillet",
+  "route": "rule /multitool|iron|tool/",
+  "shelfScale": 1.192,
+  "shelfMinY": 0,
+  "m": [
+   0.52,
+   0.311,
+   0.26
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "Stainless steel saucepan",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.234,
+   0.234,
+   0.234
+  ],
+  "minY": 0.008,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": false
+ },
+ {
+  "name": "Wooden cutting board",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.313,
+   0.044,
+   0.231
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": false
+ },
+ {
+  "name": "Chef's knife",
+  "route": "rule /knife/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.29,
+   0.02,
+   0.031
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "Whisk",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Rolling pin",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Ceramic coffee mug",
+  "route": "rule /cocoa|coffee|\\btea\\b|thermos|juice|mil/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.09,
+   0.15,
+   0.09
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "French press",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Toaster",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Blender",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Electric kettle",
+  "route": "rule /crucible|cauldron|bucket|\\bpot\\b|kettl/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.275,
+   0.188,
+   0.275
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": false
+ },
+ {
+  "name": "Mixing bowl set",
+  "route": "rule /ramen|noodle|soup|stew|bowl/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.26,
+   0.113,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": true
+ },
+ {
+  "name": "Spatula",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Measuring cups",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.3,
+   0.048,
+   0.3
+  ],
+  "minY": 0.007,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": false
+ },
+ {
+  "name": "Dinner plates",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.313,
+   0.044,
+   0.231
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Laptop",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Smartphone",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Tablet",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Wireless headphones",
+  "route": "rule /rope|cable|wire/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.338,
+   0.119,
+   0.338
+  ],
+  "minY": 0.006,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Bluetooth speaker",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.234,
+   0.234,
+   0.234
+  ],
+  "minY": 0.008,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Mechanical keyboard",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.313,
+   0.044,
+   0.231
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Computer mouse",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Raspberry Pi 4",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Arduino Uno",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Soldering iron",
+  "route": "rule /multitool|iron|tool/",
+  "shelfScale": 1.192,
+  "shelfMinY": 0,
+  "m": [
+   0.52,
+   0.311,
+   0.26
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "Multimeter",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "USB cable",
+  "route": "rule /rope|cable|wire/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.338,
+   0.119,
+   0.338
+  ],
+  "minY": 0.006,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Desk fan",
+  "route": "FORM",
+  "shelfScale": 0.344,
+  "shelfMinY": 0,
+  "m": [
+   1.125,
+   0.6,
+   0.688
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": false
+ },
+ {
+  "name": "Alarm clock",
+  "route": "FORM",
+  "shelfScale": 0.181,
+  "shelfMinY": 0,
+  "m": [
+   1.344,
+   2.143,
+   0.156
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 13,
+  "realSize": false
+ },
+ {
+  "name": "Digital camera",
+  "route": "glb antique-camera.glb | CATEGORY:tool",
+  "shelfScale": 0.387,
+  "shelfMinY": 0,
+  "m": [
+   0.577,
+   1.6,
+   0.753
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "Game controller",
+  "route": "CATEGORY:toy",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.22,
+   0.22,
+   0.22
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Walkie-talkies",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Power bank",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Tennis racket",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Baseball bat",
+  "route": "rule /ball|juggl|marble/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.22,
+   0.22,
+   0.22
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Baseball glove",
+  "route": "rule /ball|juggl|marble/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.22,
+   0.22,
+   0.22
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Soccer ball",
+  "route": "rule /ball|juggl|marble/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.22,
+   0.22,
+   0.22
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Basketball",
+  "route": "rule /ball|juggl|marble/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.22,
+   0.22,
+   0.22
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Hockey stick",
+  "route": "INFERRED",
+  "shelfScale": 0.787,
+  "shelfMinY": 0,
+  "m": [
+   0.493,
+   0.166,
+   0.037
+  ],
+  "minY": 0.042,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": false
+ },
+ {
+  "name": "Skateboard",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.313,
+   0.044,
+   0.231
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Fishing rod",
+  "route": "rule /bar stock|steel bar|rods?\\b|pipe|tubin/",
+  "shelfScale": 0.886,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.063,
+   0.169
+  ],
+  "minY": 0.003,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": false
+ },
+ {
+  "name": "Tackle box",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.262,
+   0.162,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Yoga mat",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Dumbbells",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Jump rope",
+  "route": "rule /rope|cable|wire/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.338,
+   0.119,
+   0.338
+  ],
+  "minY": 0.006,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Frisbee",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Golf club",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Camping tent",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Sleeping bag",
+  "route": "rule /flux|powder|sand|salt|flour|substrate|/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.25,
+   0.35,
+   0.2
+  ],
+  "minY": -0.013,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Backpack",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Life jacket",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Bike helmet",
+  "route": "rule /bike|bicycle|scooter/",
+  "shelfScale": 0.886,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.236,
+   0.153
+  ],
+  "minY": 0,
+  "meshes": 43,
+  "labels": 0,
+  "canvasTex": 10,
+  "realSize": false
+ },
+ {
+  "name": "Climbing rope",
+  "route": "rule /rope|cable|wire/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.338,
+   0.119,
+   0.338
+  ],
+  "minY": 0.006,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Bag of cement",
+  "route": "rule /flux|powder|sand|salt|flour|substrate|/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.25,
+   0.35,
+   0.2
+  ],
+  "minY": -0.013,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Box of drywall screws",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.262,
+   0.162,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Sheet of plywood",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.313,
+   0.044,
+   0.231
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": false
+ },
+ {
+  "name": "2x4 lumber",
+  "route": "rule /dock|pier|plank|cedar|lumber|timber/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.375,
+   0.063,
+   0.319
+  ],
+  "minY": 0.003,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 4,
+  "realSize": false
+ },
+ {
+  "name": "Bucket of paint",
+  "route": "rule /crucible|cauldron|bucket|\\bpot\\b|kettl/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.275,
+   0.188,
+   0.275
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": false
+ },
+ {
+  "name": "Roll of duct tape",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Galvanized nails",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Bricks",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.156,
+   0.156,
+   0.156
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Roof shingles",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "PVC pipe",
+  "route": "rule /bar stock|steel bar|rods?\\b|pipe|tubin/",
+  "shelfScale": 0.886,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.063,
+   0.169
+  ],
+  "minY": 0.003,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": false
+ },
+ {
+  "name": "Copper wire spool",
+  "route": "rule /rope|cable|wire/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.338,
+   0.119,
+   0.338
+  ],
+  "minY": 0.006,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Sandpaper",
+  "route": "rule /flux|powder|sand|salt|flour|substrate|/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.25,
+   0.35,
+   0.2
+  ],
+  "minY": -0.013,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": false
+ },
+ {
+  "name": "Wood glue",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.234,
+   0.234,
+   0.234
+  ],
+  "minY": 0.008,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": false
+ },
+ {
+  "name": "Caulking gun",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Tape measure",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Spirit level",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Utility knife",
+  "route": "rule /knife/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.29,
+   0.02,
+   0.031
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "Ladder",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Wheelbarrow",
+  "route": "rule /wheelbarrow/",
+  "shelfScale": 0.391,
+  "shelfMinY": 0,
+  "m": [
+   0.891,
+   0.398,
+   0.992
+  ],
+  "minY": -0.017,
+  "meshes": 10,
+  "labels": 0,
+  "canvasTex": 7,
+  "realSize": false
+ },
+ {
+  "name": "Garden hose",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.3,
+   0.048,
+   0.3
+  ],
+  "minY": 0.007,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": false
+ },
+ {
+  "name": "Rake",
+  "route": "rule /asphalt rake|lute|\\brake\\b/",
+  "shelfScale": 0.427,
+  "shelfMinY": 0,
+  "m": [
+   0.262,
+   0.908,
+   0.039
+  ],
+  "minY": -0.002,
+  "meshes": 14,
+  "labels": 0,
+  "canvasTex": 14,
+  "realSize": false
+ },
+ {
+  "name": "Pruning shears",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Watering can",
+  "route": "rule /watering can/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.342,
+   0.25,
+   0.188
+  ],
+  "minY": 0,
+  "meshes": 4,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": false
+ },
+ {
+  "name": "Leaf blower",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Chainsaw",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Lawn mower",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Teddy bear",
+  "route": "FORM",
+  "shelfScale": 0.302,
+  "shelfMinY": 0,
+  "m": [
+   1.266,
+   1.281,
+   0.437
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": false
+ },
+ {
+  "name": "Rubber duck",
+  "route": "rule /duck/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.161,
+   0.114,
+   0.09
+  ],
+  "minY": 0.002,
+  "meshes": 6,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Toy train set",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.262,
+   0.162,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Doll",
+  "route": "CATEGORY:toy",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.22,
+   0.22,
+   0.22
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Kite",
+  "route": "rule /kite/",
+  "shelfScale": 0.539,
+  "shelfMinY": 0,
+  "m": [
+   0.54,
+   0.462,
+   1.15
+  ],
+  "minY": -0.226,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "Building blocks",
+  "route": "rule /puzzle|cube|block|lego/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.102,
+   0.064,
+   0.082
+  ],
+  "minY": 0,
+  "meshes": 28,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Jigsaw puzzle",
+  "route": "rule /puzzle|cube|block|lego/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.102,
+   0.064,
+   0.082
+  ],
+  "minY": 0,
+  "meshes": 28,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Board game",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.313,
+   0.044,
+   0.231
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Deck of playing cards",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Rubik's cube",
+  "route": "rule /puzzle|cube|block|lego/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.102,
+   0.064,
+   0.082
+  ],
+  "minY": 0,
+  "meshes": 28,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Toy robot",
+  "route": "FORM",
+  "shelfScale": 0.201,
+  "shelfMinY": 0,
+  "m": [
+   0.902,
+   1.931,
+   0.456
+  ],
+  "minY": 0,
+  "meshes": 10,
+  "labels": 0,
+  "canvasTex": 10,
+  "realSize": false
+ },
+ {
+  "name": "Remote control car",
+  "route": "glb car.glb | CATEGORY:vehicle",
+  "shelfScale": 0.138,
+  "shelfMinY": 0,
+  "m": [
+   4.223,
+   3.208,
+   4.5
+  ],
+  "minY": 1.301,
+  "meshes": 23,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "Plush dinosaur",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Acoustic guitar",
+  "route": "rule /guitar|ukulele|violin/",
+  "shelfScale": 0.594,
+  "shelfMinY": 0,
+  "m": [
+   0.352,
+   1.044,
+   0.159
+  ],
+  "minY": 0,
+  "meshes": 10,
+  "labels": 0,
+  "canvasTex": 10,
+  "realSize": true
+ },
+ {
+  "name": "Violin",
+  "route": "rule /guitar|ukulele|violin/",
+  "shelfScale": 0.989,
+  "shelfMinY": 0,
+  "m": [
+   0.211,
+   0.627,
+   0.095
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "Ukulele",
+  "route": "rule /guitar|ukulele|violin/",
+  "shelfScale": 1.079,
+  "shelfMinY": 0,
+  "m": [
+   0.194,
+   0.574,
+   0.087
+  ],
+  "minY": 0,
+  "meshes": 8,
+  "labels": 0,
+  "canvasTex": 8,
+  "realSize": true
+ },
+ {
+  "name": "Drum set",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.262,
+   0.162,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Flute",
+  "route": "rule /asphalt rake|lute|\\brake\\b/",
+  "shelfScale": 0.435,
+  "shelfMinY": 0,
+  "m": [
+   0.313,
+   0.891,
+   0.022
+  ],
+  "minY": 0.016,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Trumpet",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Keyboard piano",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.313,
+   0.044,
+   0.231
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Harmonica",
+  "route": "rule /harmonica/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.104,
+   0.033,
+   0.029
+  ],
+  "minY": -0.002,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "Tambourine",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Saxophone",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Field guide to birds",
+  "route": "rule /pigeon|bird/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.258,
+   0.206,
+   0.175
+  ],
+  "minY": 0.012,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Cookbook",
+  "route": "rule /book|novel|journal|notebook|manual/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.173,
+   0.033,
+   0.24
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Atlas",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Dictionary",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Comic book",
+  "route": "rule /book|novel|journal|notebook|manual/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.173,
+   0.033,
+   0.24
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Sketchbook",
+  "route": "rule /book|novel|journal|notebook|manual/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.173,
+   0.033,
+   0.24
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Hardcover novel",
+  "route": "rule /book|novel|journal|notebook|manual/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.173,
+   0.033,
+   0.24
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Umbrella",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Wristwatch",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Sunglasses",
+  "route": "glb sunglasses.glb | rule /glass/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.135,
+   0.052,
+   0.145
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "Wool sweater",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Rain boots",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Winter jacket",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Baseball cap",
+  "route": "rule /ball|juggl|marble/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.22,
+   0.22,
+   0.22
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Scarf",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Wall clock",
+  "route": "FORM",
+  "shelfScale": 0.181,
+  "shelfMinY": 0,
+  "m": [
+   1.344,
+   2.143,
+   0.156
+  ],
+  "minY": 0,
+  "meshes": 13,
+  "labels": 0,
+  "canvasTex": 13,
+  "realSize": false
+ },
+ {
+  "name": "Picture frame",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Pillow",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Blanket",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Rug",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Bookshelf",
+  "route": "rule /book|novel|journal|notebook|manual/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.173,
+   0.033,
+   0.24
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": true
+ },
+ {
+  "name": "Desk",
+  "route": "FORM",
+  "shelfScale": 0.344,
+  "shelfMinY": 0,
+  "m": [
+   1.125,
+   0.6,
+   0.688
+  ],
+  "minY": 0,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 5,
+  "realSize": false
+ },
+ {
+  "name": "Mirror",
+  "route": "rule /\\blens\\b|mirror|monocle/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.237,
+   0.237,
+   0.025
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Fire extinguisher",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.234,
+   0.234,
+   0.234
+  ],
+  "minY": 0.008,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": false
+ },
+ {
+  "name": "First aid kit",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.262,
+   0.162,
+   0.2
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": false
+ },
+ {
+  "name": "Binoculars",
+  "route": "CATEGORY:tool",
+  "shelfScale": 1.192,
+  "shelfMinY": 0,
+  "m": [
+   0.52,
+   0.311,
+   0.26
+  ],
+  "minY": 0,
+  "meshes": 7,
+  "labels": 0,
+  "canvasTex": 2,
+  "realSize": true
+ },
+ {
+  "name": "Globe",
+  "route": "INFERRED",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.225,
+   0.225,
+   0.225
+  ],
+  "minY": 0,
+  "meshes": 1,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Hourglass",
+  "route": "rule /glass/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.288,
+   0.25,
+   0.075
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Bird feeder",
+  "route": "rule /pigeon|bird/",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.258,
+   0.206,
+   0.175
+  ],
+  "minY": 0.012,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Flower pot",
+  "route": "glb vase-of-flowers.glb | rule /crucible|cauldron|bucket|\\bpot\\b|kettl/",
+  "shelfScale": 1.6,
+  "shelfMinY": 0,
+  "m": [
+   0.35,
+   0.327,
+   0.23
+  ],
+  "minY": 0,
+  "meshes": 3,
+  "labels": 0,
+  "canvasTex": 1,
+  "realSize": true
+ },
+ {
+  "name": "Snow shovel",
+  "route": "rule /shovel|spade/",
+  "shelfScale": 0.551,
+  "shelfMinY": 0,
+  "m": [
+   0.245,
+   1.126,
+   0.078
+  ],
+  "minY": -0.04,
+  "meshes": 5,
+  "labels": 0,
+  "canvasTex": 3,
+  "realSize": true
+ },
+ {
+  "name": "Ice skates",
+  "route": "CATEGORY:thing",
+  "shelfScale": 1,
+  "shelfMinY": 0,
+  "m": [
+   0.213,
+   0.287,
+   0.213
+  ],
+  "minY": 0,
+  "meshes": 2,
+  "labels": 0,
+  "canvasTex": 0,
+  "realSize": false
+ },
+ {
+  "name": "Sled",
+  "route": "CATEGORY:vehicle",
+  "shelfScale": 0.886,
+  "shelfMinY": 0,
+  "m": [
+   0.437,
+   0.22,
+   0.193
+  ],
+  "minY": 0,
+  "meshes": 108,
+  "labels": 0,
+  "canvasTex": 24,
+  "realSize": false
+ }
+]

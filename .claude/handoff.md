@@ -19,6 +19,13 @@ He may change the world freely. He can never move or change the buildings, and h
 - Tests: `qa/agendatest.js agenda|roadwork|roadfinish|runway` on branch `qa-results-agenda` (REPORT.md there). The full `roadwork` run takes about 100 min (it ran every step in order and hit its time limit during line marking); `roadfinish` checks the last step on its own. Regressions reload chat ui skills haul landfill planitems printshop gear: all exit 0, no page errors.
 - Leftovers: visitor Workshop asks (`workshopAsks`) are still memory-only; big runway tonnage comes off the bulk ledger; no pushing/operating pose (machines use the driving seat, walking tools use normal/digging).
 
+## Reference-photo paintings (branch `agent/refpaint`, not merged)
+- `js/refpaint.js` (after paintstudio.js): at the NetNode cafe he searches for reference photos and paints from one (`single`) or combines two (`combine`, how `subject-setting` or `split`). Sources by platform: desktop = DuckDuckGo image results via IPC (`desktop/imagesearch.js`, `kelo:image-search` / `kelo:image-fetch`), phone = the same through Capacitor's built-in `CapacitorHttp`, web = DuckDuckGo Instant Answer `Image`/`RelatedTopics[].Icon` (CORS), then Wikimedia Commons for all. Offline: his own subjects from life.
+- `paintPicture(medium, subject, { reference })`: reference `{mode, query, queryB, how, why}`; `paintPlan.reference` keeps it. `renderPaintingInMedium` uses `refpSceneFromReference(spec)` when `spec.refImages` is set (photo -> his crop -> palette/value simplification -> the medium's brushwork).
+- Record: `murals[].subject = 'reference'`, `murals[].reference = {mode: single|combined, how, sources:[{query, source, host, pageUrl, imageUrl, title, license, artist}]}`; tiny reference copies in `paintingImages[id].refs` (newest 40 paintings keep them). Old saves: no fields, nothing to migrate.
+- AI: the paint decision has a `reference` field (`refpPromptHint()`); no key: `refpChooseProcedural()` (70% of his own paintings online). Visitors: "paint me a lighthouse" -> `refpPlanFromRequest`.
+- Credits: Museum viewer (`refpCreditHtml`), website listing `painting.credit` / export `credit` (`refpCreditLine`).
+
 ## Recently shipped (on `main`, pushed)
 - **Design pass, polish only** (branch `agent/design`; DESIGN.md has the full token table and component patterns).
   - One token set: `:root --hud-*` at the top of css/style.css (neutral/accent/status ramps as RGB triplets, text roles, surfaces, borders, type scale `--hud-fs-3xs..4xl`, weights, spacing `--hud-s-*`, radii, two shadows, motion, z-layers). `#sideMenu --m-*` are aliases of them.

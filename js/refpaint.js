@@ -47,7 +47,7 @@ const REFP_SETTINGS = ['northern lights', 'desert dunes', 'misty forest', 'autum
 // His search words: a few plain words, no names, addresses, numbers or anything not fit for all ages
 function refpCleanQuery(text, avoid = []) {
       let t = String(text || '').normalize('NFKC');
-      t = t.replace(/https?:\/\/\S+|www\.\S+/gi, ' ').replace(/\S+@\S+/g, ' ').replace(/\d{4,}/g, ' ');
+      t = t.replace(/<[^>]*>/g, ' ').replace(/https?:\/\/\S+|www\.\S+/gi, ' ').replace(/\S+@\S+/g, ' ').replace(/\d{4,}/g, ' ');
       const names = [...avoid, typeof companionName === 'function' ? companionName() : '', state && state.ownerName, state && state.visitorName]
         .map(n => String(n || '').trim()).filter(n => n.length > 1);
       names.forEach(n => { t = t.split(new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi')).join(' '); });

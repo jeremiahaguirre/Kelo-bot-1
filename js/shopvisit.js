@@ -267,7 +267,9 @@ function svUpdateBoxes(all = false) {
           const c = Math.abs(Math.cos(a)), s = Math.abs(Math.sin(a));
           svSetBox(t.box, S.x + d.at.x, svFloorY(d.floor), S.z + d.at.z, c * sz.w / 2 + s * sz.d / 2, sz.h || 1.2, s * sz.w / 2 + c * sz.d / 2);
         } else if (t.type === 'elevator') {
-          const y = svFloorY(1) + (typeof workshopTrip !== 'undefined' ? workshopTrip.liftY || 0 : 0);
+          // (the car, or its shaft and landing gate on your floor while the car is on another)
+          let y = svFloorY(1) + (typeof workshopTrip !== 'undefined' ? workshopTrip.liftY || 0 : 0);
+          if (shopVisit.on && svFloorOfY(y + 0.2) !== shopVisit.floor) y = svFloorY(shopVisit.floor);
           svSetBox(t.box, S.x + WS_LIFT.x, y - 0.15, S.z + WS_LIFT.z, WS_LIFT.w / 2, 1.25, WS_LIFT.d / 2);
         } else if (t.type === 'forklift') {
           const v = typeof theForklift === 'function' ? theForklift() : null;
@@ -588,7 +590,9 @@ function svToggleList(open) {
 function svSeesFrom(t, x, z, floor) {
       const c = t.box.getCenter(_svT);
       _svRay.origin.set(x, svFloorY(floor) + SV_EYE, z);
-      _svRay.direction.set(c.x - x, Math.min(c.y, svFloorY(floor) + SV_EYE + 0.5) - _svRay.origin.y, c.z - z).normalize();
+      // (aim low on a floor-standing machine, at the middle of something overhead like the fume hood)
+      const eye = _svRay.origin.y, ay = t.box.min.y > eye - 0.3 ? c.y : Math.min(c.y, eye + 0.5);
+      _svRay.direction.set(c.x - x, ay - eye, c.z - z).normalize();
       const fl = shopVisit.floor;
       shopVisit.floor = floor;
       const hit = svPick(_svRay, 12);
@@ -646,7 +650,7 @@ function svGoToTarget(t) {
       const c = t.box.getCenter(_svT);
       const dy = c.y - (svFloorY(floor) + SV_EYE), dist = Math.hypot(c.x - spot.x, c.z - spot.z) || 1;
       svPin(t);
-      svTravel({ floor, x: spot.x, z: spot.z, yaw: Math.atan2(c.x - spot.x, c.z - spot.z), pitch: Math.max(0.05, Math.min(0.6, -Math.atan2(dy, dist) + 0.08)) });
+      svTravel({ floor, x: spot.x, z: spot.z, yaw: Math.atan2(c.x - spot.x, c.z - spot.z), pitch: Math.max(-0.6, Math.min(0.6, -Math.atan2(dy, dist) + (dy > 0.6 ? 0 : 0.08))) });
     }
 
 // --- Moving between places --------------------------------------------------------------------------
@@ -667,6 +671,7 @@ function svTravel(to, ms) {
 function svSetFloor(f) {
       shopVisit.floor = f;
       svEnsureFloorBuilt(f);
+      if (shopVisit.targets) svUpdateBoxes(false);
       svApplyCutaway();
       svUpdateFloorButtons();
     }

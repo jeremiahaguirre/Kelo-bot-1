@@ -1,6 +1,6 @@
 // Kelo-1's body language: smooth blending between poses, a weighted walk cycle, breathing and
 // glancing around while he stands, actions with a wind-up and follow-through, and emotes.
-// Loaded right after scene.js.
+// Loaded after house.js.
 //
 // How it fits together: every frame scene.js calls beginKeloPose(), which puts his joints back at
 // rest. It then writes the pose it wants for whatever he is doing (vehicles.js does too while he
@@ -518,6 +518,8 @@ function finishKeloPose(t) {
       if (typeof keloApplyIK === 'function') keloApplyIK(t, dt, { walking, riding, resting });
 
       if (holding) keloHoldInHands(riding || resting ? null : a.mode);
+      // Things on their way into or out of his hands (js/kelo-handoff.js)
+      if (typeof keloHandoffFrame === 'function') keloHandoffFrame(dt);
       if (typeof keloClipEndFrame === 'function') keloClipEndFrame();
     }
 
@@ -530,7 +532,7 @@ function keloHoldInHands(mode) {
         keloGroup.updateMatrixWorld(true);
         keloPalmLocal(keloRightHand, _keloHandL);
         if (!obj.userData.gripHeight) obj.userData.gripHeight = Math.max(0.05, keloCarrySize(obj).y * 0.8);
-        obj.rotation.set(-0.2 + keloClipValue('tool'), 0, keloClipValue('toolZ'));
+        obj.rotation.set(-0.2 + keloClipValue('tool'), keloClipValue('toolY'), keloClipValue('toolZ'));
         _keloGrip.set(0, obj.userData.gripHeight, 0).applyEuler(obj.rotation);
         obj.position.copy(_keloHandL).sub(_keloGrip);
         return;
@@ -549,9 +551,14 @@ function keloHoldInHands(mode) {
         // Grip it near the top: the handle sits in his hands and the business end points down
         const frac = typeof keloClip !== 'undefined' && keloClip.cur && keloClip.cur.A.grip || 0.8;
         obj.userData.gripHeight = Math.max(0.2, keloCarrySize(obj).y * frac);
-        // (the clip swings it: back over his shoulder for a pickaxe, out and flat for an axe)
-        obj.rotation.set(-0.2 + (typeof keloClipValue === 'function' ? keloClipValue('tool') : 0), 0, typeof keloClipValue === 'function' ? keloClipValue('toolZ') : 0);
+        // (the clip swings it in all three axes: over his shoulder and down for a pickaxe, across and
+        // down with a roll for an axe, turned over to tip a shovel's load off to the side)
+        const cv = typeof keloClipValue === 'function' ? keloClipValue : () => 0;
+        obj.rotation.set(-0.2 + cv('tool'), cv('toolY'), cv('toolZ'));
         _keloGrip.set(0, obj.userData.gripHeight, 0).applyEuler(obj.rotation);
+        // a two-handed tool hangs from his right hand; his left hand holds the handle further along it
+        // (js/kelo-clips.js keloToolReach puts it there)
+        if (typeof keloToolSep === 'function' && keloToolSep() > 0) keloPalmLocal(keloRightHand, _keloHandL);
         obj.position.copy(_keloHandL).sub(_keloGrip);
       } else {
         // Something small or wide sits between his palms; something tall is held a third of the way up

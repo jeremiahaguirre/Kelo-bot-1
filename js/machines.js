@@ -389,18 +389,7 @@ function addMadeThing(name, from, { gadget = false, emoji = '⚙️' } = {}) {
       });
       state.happiness = Math.min(100, state.happiness + 6);
       showToast(`${emoji} Kelo-1 made ${wsThing(name)}`);
-      workshopPartToAssembly(name);
       return name;
-    }
-
-// Hook for the assembly system (js/bom.js on its branch): a made part can count toward a parts list
-function workshopPartToAssembly(name) {
-      const hooks = ['bomReceivePart', 'bomAcceptPart', 'assemblyReceivePart', 'assemblyAcceptPart', 'bomPartArrived'];
-      for (const h of hooks) {
-        const fn = window[h];
-        if (typeof fn === 'function') { try { fn(name, { from: 'workshop' }); } catch (e) { console.warn(h, e); } return true; }
-      }
-      return false;
     }
 
 // For the assembly system: which machine could make this parts-list line, and make it
@@ -509,10 +498,15 @@ function answerWorkshopAsk(ask, visitor) {
 const workshopAsks = [];
 function takeWorkshopAsk() {
       if (!workshopAsks.length || workshopJobRunning) return false;
-      if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) { setTimeout(takeWorkshopAsk, 8000); return false; }
+      if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || state.isCollectingMail) { setTimeout(takeWorkshopAsk, 8000); return false; }
       const ask = workshopAsks.shift();
       if (!machineKnown(ask.key)) { researchMachine(ask.key, 'A Visitor Asked'); workshopAsks.unshift(ask); setTimeout(takeWorkshopAsk, 20000); return true; }
-      if (!machineReady(ask.key, ask.job, { context: 'A visitor asked' })) return true;
+      // Not ready yet (its supplies were just asked for): keep the ask and try again later, for about a day
+      if (!machineReady(ask.key, ask.job, { context: 'A visitor asked', quiet: ask.tries > 0 })) {
+        ask.tries = (ask.tries || 0) + 1;
+        if (ask.tries < 300) { workshopAsks.push(ask); setTimeout(takeWorkshopAsk, 5 * 60000); }
+        return true;
+      }
       runMachineJob(ask.key, ask.job, 'A Visitor Asked');
       return true;
     }

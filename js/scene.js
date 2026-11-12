@@ -1,5 +1,5 @@
 // Kelo-bot-1 — js/scene.js
-// Loaded SECOND. Uses state & TOWN_LOCATIONS from js/agent.js to render the 3D Kelowna world,
+// Loaded after kelo-body.js. Uses state & TOWN_LOCATIONS from js/agent.js to render the 3D Kelowna world,
 // continuous mountain/valley altitude raycasting, 3D mining/welding tools, and Bird's-Eye flight.
 
 let scene, camera, renderer, controls, clock;
@@ -1759,12 +1759,6 @@ function addObstacle(...list) {
       list.flat().forEach(o => { if (o) worldObstacles.push(o); });
       obstacleVersion++;
       return list[0];
-    }
-
-function removeObstacle(o) {
-      const n = worldObstacles.length;
-      worldObstacles = worldObstacles.filter(x => x !== o);
-      if (worldObstacles.length !== n) obstacleVersion++;
     }
 
 // Changes whenever an obstacle is added, removed or moved, whoever did it

@@ -11,9 +11,7 @@
 //   then decubing). Each print visibly builds, layer by layer.
 
 // --- Shared bits ---------------------------------------------------------------------------------
-function wsPick(list) {
-      return list[Math.floor(Math.random() * list.length)];
-    }
+const wsPick = pick;
 
 // The thing he asked for, named as what this machine makes ("An SLS-printed nylon hinge")
 function madeName(prefix, material, make, fallback) {

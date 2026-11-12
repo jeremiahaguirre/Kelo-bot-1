@@ -162,7 +162,7 @@ const weldRig = {
   hood: null, gauntlets: [], clock: 0
 };
 
-const _weldV = new THREE.Vector3(), _weldV2 = new THREE.Vector3(), _weldPalm = new THREE.Vector3();
+const _weldV = new THREE.Vector3(), _weldV2 = new THREE.Vector3();
 
 // Studio-local to world (the studio group is not rotated)
 function weldLocal(x, y, z, out = new THREE.Vector3()) {
@@ -679,7 +679,7 @@ function ensureWeldGauntlets() {
     }
 
 // --- Moving him through the steps ---------------------------------------------------------------------
-const weldWait = ms => new Promise(r => setTimeout(r, ms));
+const weldWait = sleep;
 
 function weldSay(title, speech) {
       if (title) state.moodTitle = title.slice(0, 80);

@@ -861,7 +861,7 @@ function shopVisitFrame(dt) {
 
       let moving = 0;
       if (v.trans) {
-        const T = v.trans, u = Math.min(1, (now - T.t0) / T.ms), e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+        const T = v.trans, u = Math.min(1, (now - T.t0) / T.ms), e = exploreEase(u);
         v.x = T.x0 + (T.x1 - T.x0) * e;
         v.z = T.z0 + (T.z1 - T.z0) * e;
         v.yaw = T.yaw0 + (T.yaw1 - T.yaw0) * e;
@@ -901,7 +901,7 @@ function shopVisitFrame(dt) {
       // glide in from the previous view for the first moment
       const u = Math.min(1, (now - v.enterT) / 800);
       if (u < 1 && v.saved) {
-        const e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+        const e = exploreEase(u);
         camera.position.lerpVectors(v.saved.pos, pos, e);
         controls.target.lerpVectors(v.saved.target, target, e);
         camera.fov = v.saved.fov + (fov - v.saved.fov) * e;
@@ -1141,6 +1141,8 @@ function svBuildDom() {
       // Esc closes the chooser (and the list, when typing in its filter)
       document.addEventListener('keydown', ev => {
         if (ev.code !== 'Escape') return;
+        // A dialog over the chooser (settings, code) closes first
+        if (document.querySelector('#aiConfigModal:not(.hidden), #codeViewerModal:not(.hidden), #exploreHelp:not(.hidden)')) return;
         const ch = document.getElementById('svChooser');
         if (ch && !ch.classList.contains('hidden')) { svCloseChooser(); ev.stopPropagation(); return; }
         if (ev.target && ev.target.id === 'svFilter') { svToggleList(false); document.querySelector('#svHud [data-sv="list"]')?.focus(); }

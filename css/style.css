@@ -792,3 +792,8 @@ body.shopvisit-on #btnShowMinimap, body.shopvisit-on [data-where-kelo], body.sho
 .skin-act .ui-btn, .skin-act .ui-chip { width: 100%; justify-content: center; }
 .skin-preview-canvas { display: block; margin: 0 auto; border-radius: var(--hud-r-md); background: var(--hud-surface-0); touch-action: none; cursor: grab; }
 .skin-preview-canvas:focus-visible { outline: 2px solid var(--hud-focus); outline-offset: 2px; }
+
+/* .hidden always hides. In the app builds Tailwind's stylesheet loads before this one, so a component's own
+   display (.ui-btn, .ui-row, .ui-empty, .journal-featured ...) used to win and "hidden" things stayed on screen.
+   Elements with a responsive override (hidden sm:grid) are left to Tailwind. */
+.hidden:not([class*="sm:"]):not([class*="md:"]):not([class*="lg:"]):not([class*="xl:"]) { display: none !important; }

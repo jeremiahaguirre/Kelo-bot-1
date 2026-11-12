@@ -338,11 +338,14 @@ registerWorkshopMachine({
     const pk = Object.keys(WOOD_PROJECTS).find(k => WOOD_PROJECTS[k].words.test(job.make || '')) || wsPick(Object.keys(WOOD_PROJECTS));
     // A named order (js/shopmaker.js: a stool from an article, a visitor's ask) keeps its own name
     const pr = job.product ? { ...WOOD_PROJECTS[pk], name: job.product } : WOOD_PROJECTS[pk];
+    // The step animations run every frame: take each supply once per job, not once per frame
+    const used = new Set();
+    const useOnce = (supply, n, why) => { if (used.has(supply)) return; used.add(supply); useWorkshopSupply(supply, n, why); };
     const at = (k, title, ms, speech, fn) => ({ floor: 3, key: k, act: async ctx => { await machineStep(ctx, title, ms, (kk, t) => fn && fn(ctx.model.userData, kk, t, ctx), speech); machineSkill(k, 2); return true; } });
     return {
       title: `Making ${wsWhat(pr.name)} in the woodshop`, product: pr.name, speech: 'Ear defenders, safety glasses, dust collector on.',
       stops: [
-        at('lumberrack', 'Picking boards and checking the moisture (7%)', 2200, 'Seven percent moisture. Dry enough to work.', (u, k) => { if (k < 0.05) useWorkshopSupply('roughLumber', 1, 'Woodworking'); }),
+        at('lumberrack', 'Picking boards and checking the moisture (7%)', 2200, 'Seven percent moisture. Dry enough to work.', (u, k) => { useOnce('roughLumber', 1, 'Woodworking'); }),
         at('jointer', 'Jointing a face and an edge flat', 2600, 'One flat face, one square edge.', (u, k, t, ctx) => { u.head.rotation.y = t * 40; sawdust(ctx.model, new THREE.Vector3(0, 0.8, 0)); }),
         at('planer', 'Planing to thickness', 2400, 'Planed to three quarters of an inch.', (u, k, t, ctx) => { u.roller.rotation.x = t * 30; sawdust(ctx.model, new THREE.Vector3(0, 0.8, -0.5)); }),
         at('tablesaw', 'Ripping to width on the table saw', 3000, 'Push stick in hand, riving knife on, blade guard down.', (u, k, t, ctx) => {
@@ -358,9 +361,9 @@ registerWorkshopMachine({
           if (u.head) u.head.position.y = 1.45 - Math.abs(Math.sin(t * 2)) * 0.08;
           sawdust(ctx.model, new THREE.Vector3(0, 0.95, 0));
         }),
-        at('woodbench', 'Glue-up: glue on, clamps on, square checked', 3000, 'Even squeeze-out all along the joint. Clamps on, check it square.', (u, k) => { if (k < 0.05) useWorkshopSupply('woodGlue', 1, 'Glue-up'); }),
-        at('sanders', 'Sanding through 80, 120, 180 and 220 grit', 2600, null, (u, k, t, ctx) => { if (k < 0.05) useWorkshopSupply('sandpaper', 1, 'Sanding'); u.spindle.rotation.y = t * 30; sawdust(ctx.model, new THREE.Vector3(0.35, 0.9, 0), 0xf5e6c8); }),
-        at('spraybooth', 'Finishing it in the spray booth', 2800, 'Three thin coats, a light sand between them.', (u, k, t) => { if (k < 0.05) useWorkshopSupply('woodFinish', 1, 'Finish'); u.stand.rotation.y = t; })
+        at('woodbench', 'Glue-up: glue on, clamps on, square checked', 3000, 'Even squeeze-out all along the joint. Clamps on, check it square.', (u, k) => { useOnce('woodGlue', 1, 'Glue-up'); }),
+        at('sanders', 'Sanding through 80, 120, 180 and 220 grit', 2600, null, (u, k, t, ctx) => { useOnce('sandpaper', 1, 'Sanding'); u.spindle.rotation.y = t * 30; sawdust(ctx.model, new THREE.Vector3(0.35, 0.9, 0), 0xf5e6c8); }),
+        at('spraybooth', 'Finishing it in the spray booth', 2800, 'Three thin coats, a light sand between them.', (u, k, t) => { useOnce('woodFinish', 1, 'Finish'); u.stand.rotation.y = t; })
       ],
       finish: () => { addMadeThing(pr.name, 'woodshop', { emoji: '🪵' }); machineSkill(key, 8); }
     };

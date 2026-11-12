@@ -759,7 +759,7 @@ function keloClipLayer(out, t, dt, ctx) {
       const A = cur ? cur.A : null;
       const wantW = cur ? 1 : 0;
       const rate = cur ? 1 / (A.bi || (A.in ? 0.2 : 0.4)) : (C.prev ? C.prev.rate : 3);
-      C.w = wantW > C.w ? Math.min(1, C.w + rate * dt) : Math.max(0, C.w - rate * dt);
+      C.w = wantW ? Math.min(1, C.w + rate * dt) : Math.max(0, C.w - rate * dt);
       if (C.prev) {
         C.prev.t += C.prev.loop ? dt : 0;
         C.prev.k -= dt * C.prev.rate;

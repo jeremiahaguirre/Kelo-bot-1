@@ -797,7 +797,7 @@ const UPGRADE_TEMPLATES = [
 ];
 
 function pickUpgradeTemplate() {
-      const built = new Set((state.worldUpgrades || []).map(u => u.template).filter(Boolean));
+      const built = new Set([...(state.worldUpgrades || []), ...(state.upgradePlans || [])].map(u => u.template).filter(Boolean));
       const options = UPGRADE_TEMPLATES.filter(t => !built.has(t.key));
       if (!options.length) return null;
       const scored = options.map(t => { let s = 1; try { s = t.score(); } catch (e) {} return { t, s: s + Math.random() * 1.5 }; });
@@ -850,6 +850,104 @@ function commitUpgradeToRepo(rec) {
 
 // He codes an upgrade: walk to NetNode, write it (AI or template), check it, then walk over and
 // unveil it. given: JSON the AI already wrote in a decision (codeUpgrade), checked like any other.
+// --- Materials: an upgrade is coded at NetNode, but built from real things that come through the Post Office
+// state.upgradePlans: [{ id, code, by, template, mats: [{ ask, re }], at }] waiting for their materials.
+function upgradeMaterialsFor(code) {
+      const mats = [];
+      const add = (ask, re) => { if (!mats.some(m => m.ask === ask)) mats.push({ ask, re: re.source }); };
+      const parts = Array.isArray(code.parts) ? code.parts : [];
+      if (parts.length) {
+        const metal = parts.filter(pt => (pt.metalness || 0) > 0.5).length > parts.length / 2;
+        if (metal) add('A bundle of mild steel stock (square tube, angle, flat bar and plate)', /mild steel (bar|tube|stock|angle|plate)|steel stock bundle/i);
+        else add('A bundle of cedar boards (1 × 6 in., 8 ft)', /cedar boards?|lumber bundle/i);
+        add('A box of exterior deck screws', /deck screws|exterior screws/i);
+        if (parts.some(pt => pt.emissive)) add('A solar LED lamp kit', /solar (led )?lamp|led lamp kit/i);
+      }
+      if (Array.isArray(code.lights) && code.lights.length) add('A solar LED lamp kit', /solar (led )?lamp|led lamp kit/i);
+      if (code.sign) { add('A cedar sign board', /sign board|cedar board/i); add('A can of exterior sign paint', /sign paint|exterior paint/i); }
+      if (code.path) {
+        add('A pallet of flagstone pavers', /flagstones?|pavers?/i);
+        if (code.path.lamps) add(`A box of ${code.path.lamps} solar path lights`, /solar path lights?/i);
+      }
+      if (code.fence) {
+        add('A bundle of cedar fence pickets and rails', /fence pickets|pickets and rails/i);
+        add('Pressure-treated fence posts', /fence posts?/i);
+        add('A box of galvanised fence nails', /fence nails|galvani[sz]ed nails/i);
+      }
+      (code.effects || []).forEach(e => {
+        if (e.type === 'fountain') { add('A submersible fountain pump kit', /fountain pump|submersible pump/i); add('A cast stone fountain basin', /fountain basin|stone basin/i); }
+        if (e.type === 'fireflies') add('A string of warm-white solar fairy lights', /fairy lights|string lights/i);
+        if (e.type === 'chimes') add('A set of aluminium wind chime tubes', /wind chimes?|chime tubes/i);
+      });
+      return mats;
+    }
+function upgradeMatOwned(m) { return [...new Set(ownedItemNames())].find(n => new RegExp(m.re, 'i').test(n)) || null; }
+function upgradeMatsMissing(mats) { return (mats || []).filter(m => !upgradeMatOwned(m)); }
+function upgradeAskForMats(plan) {
+      upgradeMatsMissing(plan.mats).forEach(m => addItemRequest(m.ask, 'material', `I coded "${plan.code.name}" for my world. To build it for real I need ${plainItem(m.ask).toLowerCase()}.`, `Building ${plan.code.name}`));
+    }
+// Used up when he builds it: each material goes into the upgrade
+function upgradeUseMats(mats) {
+      const used = [];
+      (mats || []).forEach(m => {
+        const n = upgradeMatOwned(m);
+        if (!n) return;
+        if (typeof isConsumableItem === 'function' && isConsumableItem(n)) useUpItem(n, 1, { quiet: true, why: 'building an upgrade' });
+        else if (typeof forgetItem === 'function') forgetItem(n);
+        used.push(plainItem(n).toLowerCase());
+      });
+      return used;
+    }
+
+// Materials here: go out and build the coded upgrade, then unveil it
+async function buildPlannedUpgrade(id, originLabel = 'Building an Upgrade') {
+      const plan = (state.upgradePlans || []).find(x => x.id === id);
+      if (!plan || upgradeSessionRunning || state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
+      if (upgradeMatsMissing(plan.mats).length) return 'needs-materials';
+      upgradeSessionRunning = true;
+      state.isBusy = true;
+      state.isPracticing = true;
+      try {
+        const res = installWorldUpgrade(plan.code, { by: plan.by, template: plan.template, unveil: false });
+        if (!res.ok) { state.upgradePlans = state.upgradePlans.filter(x => x !== plan); return 'rejected'; }
+        const rec = res.rec;
+        const b = upgradeBuilt.get(rec.id);
+        if (b) b.root.visible = false;
+        state.moodEmoji = '🔨';
+        state.moodTitle = `Building ${rec.name}`.slice(0, 80);
+        state.speechBubble = `Everything for ${rec.name} came. Off to build it.`;
+        renderAllUI();
+        const dest = { x: rec.x + 2.2, z: rec.z + 2.2 };
+        if (typeof travelTo === 'function') await travelTo(dest, rec.name); else { state.targetPos = dest; if (typeof waitForArrival === 'function') await waitForArrival(60000); }
+        state.microPose = 'crouch_inspect';
+        state.speechBubble = `Measuring, cutting, fixing. ${rec.name}, built from the real thing.`;
+        renderAllUI();
+        await new Promise(r => setTimeout(r, 5000));
+        state.microPose = 'normal';
+        const used = upgradeUseMats(plan.mats);
+        rec.materials = used;
+        state.upgradePlans = state.upgradePlans.filter(x => x !== plan);
+        upgradeDiary(originLabel, `🔨 Built: ${rec.name}`.slice(0, 80), `Dear Diary, the materials for ${rec.name} came through the Post Office (${used.join(', ') || 'what it needed'}), and I built it where I'd planned. The code says how it works; the boards and bulbs make it real.`);
+        unveilWorldUpgrade(rec);
+        return true;
+      } finally {
+        state.isBusy = false;
+        state.isPracticing = false;
+        state.microPose = 'normal';
+        upgradeSessionRunning = false;
+      }
+    }
+
+function upgradePlansTick() {
+      const plans = state.upgradePlans || [];
+      const ready = plans.find(pl => !upgradeMatsMissing(pl.mats).length);
+      if (ready) { doWhenFree(() => buildPlannedUpgrade(ready.id), { key: `upgrade-build:${ready.id}` }); return true; }
+      // Asks turned down for two days: he lets that idea go
+      const stale = plans.find(pl => Date.now() - pl.at > 48 * 3600000);
+      if (stale) state.upgradePlans = plans.filter(x => x !== stale);
+      return false;
+    }
+
 async function codeAnUpgrade(originLabel = 'Coding an Upgrade', given = null) {
       if (upgradeSessionRunning || state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
       if ((state.worldUpgrades || []).length >= MAX_WORLD_UPGRADES && !given) return 'full';
@@ -890,6 +988,24 @@ async function codeAnUpgrade(originLabel = 'Coding an Upgrade', given = null) {
           renderAllUI();
           await new Promise(r => setTimeout(r, 1100));
         }
+        // The materials it takes come through the Post Office before it is built (never out of thin air)
+        const check2 = validateWorldUpgrade(code);
+        const mats = check2.ok ? upgradeMaterialsFor(check2.code) : [];
+        if (check2.ok && upgradeMatsMissing(mats).length) {
+          if (!Array.isArray(state.upgradePlans)) state.upgradePlans = [];
+          const plan = { id: 'upl-' + Date.now().toString(36), code: check2.code, by, template, mats, at: Date.now() };
+          state.upgradePlans = state.upgradePlans.filter(x => x.code.name.toLowerCase() !== plan.code.name.toLowerCase());
+          state.upgradePlans.push(plan);
+          state.lastUpgradeAt = Date.now();
+          upgradeAskForMats(plan);
+          const need = upgradeMatsMissing(mats).map(m => plainItem(m.ask).toLowerCase());
+          upgradeDiary(originLabel, `⌨️ Coded: ${check2.code.name}`.slice(0, 80), `Dear Diary, I sat at NetNode and coded an upgrade for my world: ${check2.code.name}. ${check2.code.about || ''} Before I can build it I need ${need.join(', ')}, so I asked at the Post Office. Here is my code: ${JSON.stringify(check2.code)}`);
+          state.speechBubble = `I coded ${check2.code.name}! To build it for real I need ${need.join(', ')}. I asked for ${need.length === 1 ? 'it' : 'them'}.`.slice(0, 380);
+          showToast(`⌨️ Kelo-1 coded ${check2.code.name} and asked for its materials`);
+          savePersistentBrainState();
+          renderAllUI();
+          return 'needs-materials';
+        }
         const res = installWorldUpgrade(code, { by, template, unveil: false });
         if (!res.ok) {
           upgradeDiary(originLabel, '🐛 My code didn\'t pass', `Dear Diary, I tried to code ${code.name || 'an upgrade'}, but the checks said no: ${res.errors.slice(0, 2).join('; ')}.`);
@@ -898,6 +1014,7 @@ async function codeAnUpgrade(originLabel = 'Coding an Upgrade', given = null) {
           return 'rejected';
         }
         const rec = res.rec;
+        rec.materials = upgradeUseMats(mats);
         commitUpgradeToRepo(rec);
         upgradeDiary(originLabel, `⌨️ Coded: ${rec.name}`.slice(0, 80),
           `Dear Diary, I sat at NetNode and coded an upgrade for my world: ${rec.name}${rec.version > 1 ? ` (version ${rec.version})` : ''}. ${rec.about} Here is my code: ${JSON.stringify(rec.code)}`);
@@ -1044,6 +1161,7 @@ function routineCandidates() {
 function upgradeCodingChance() {
       if ((state.worldUpgrades || []).length >= MAX_WORLD_UPGRADES) return 0;
       if (state.lastUpgradeAt && Date.now() - state.lastUpgradeAt < UPGRADE_PACE_MS) return 0;
+      if ((state.upgradePlans || []).length >= 2) return 0;   // two coded and waiting for materials is enough
       if (!hasLLMKeySafe() && !pickUpgradeTemplate()) return 0;
       return 0.04;
     }
@@ -1055,6 +1173,7 @@ function hasLLMKeySafe() {
 // From the life tick (agent.js): now and then he codes an upgrade or runs a routine he coded
 function upgradeLifeTick() {
       if (typeof canTryKey !== 'function') return false;
+      if ((state.upgradePlans || []).length && upgradePlansTick()) return true;
       if (canTryKey('upgrade') && Math.random() < upgradeCodingChance()) { tryKey('upgrade', () => codeAnUpgrade()); return true; }
       const routines = routineCandidates();
       if (routines.length && canTryKey('routine') && Math.random() < 0.06) { tryKey('routine', () => runUpgradeRoutine(pick(routines))); return true; }

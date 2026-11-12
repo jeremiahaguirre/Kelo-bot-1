@@ -533,9 +533,20 @@ async function talkSendPhoto(text, attach) {
       if (!(await talkWaitUntilFree())) { talkSetStatus(chip, 'blocked', 'He was busy; try again in a while'); return; }
       talkSetStatus(chip, 'doing');
       try {
+        const before = (state.pendingBuilds || []).length;
         await synthesizeUnboundedExperience(text || `Weld a new 3D structure inspired by ${visitor}'s uploaded image "${attach.name}"`, 'Image-Inspired 3D Weld', null, attach.analyzed);
-        state.chatLog.push({ sender: 'Kelo-1', text: state.speechBubble, time: 'Just now', isBot: true, at: Date.now() });
-        talkSetStatus(chip, 'done');
+        // The weld is real: it waits for its steel, gas and wire from the Post Office (js/welding.js weldingReady)
+        const queued = (state.pendingBuilds || []).length > before ? state.pendingBuilds[state.pendingBuilds.length - 1] : null;
+        const plan = queued && typeof weldPlanFor === 'function' ? weldPlanFor(queued.creation) : null;
+        const missing = plan && typeof missingForJob === 'function' && jobKnown(plan.key) ? missingForJob(plan.key) : null;
+        if (queued && plan && (!jobKnown(plan.key) || (missing && missing.length))) {
+          const need = missing && missing.length ? missing.map(m => plainItem(m.ask).toLowerCase()).join(', ') : 'to learn how first';
+          state.chatLog.push({ sender: 'Kelo-1', text: `I'll weld "${queued.creation.title}" from your photo for real. ${missing && missing.length ? `First I need ${need} from the Post Office.` : 'First I need to read up on welding at NetNode, then get the steel and supplies.'}`, time: 'Just now', isBot: true, at: Date.now() });
+          talkSetStatus(chip, 'queued', `Waiting for ${need}`);
+        } else {
+          state.chatLog.push({ sender: 'Kelo-1', text: state.speechBubble, time: 'Just now', isBot: true, at: Date.now() });
+          talkSetStatus(chip, 'done');
+        }
       } catch (e) {
         talkSetStatus(chip, 'stopped');
       }

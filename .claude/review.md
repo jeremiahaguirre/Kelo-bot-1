@@ -56,6 +56,7 @@ Found in the final watch: `noticeNewPlaces` (plants.js) gives up if he hasn't re
 - Under the SwiftShader harness (about 1 fps) he never arrived, so he spent the whole 10 minutes walking to the Workshop.
 - A device below about 10 fps would loop the same way.
 - Fix later: compute the walk time from the distance and speed, or keep walking instead of breaking off.
+- Since fixed (checked 2026-11-12): it now gives up only after 30 s with no progress and then backs off 5 to 30 minutes (plants.js `noticeNewPlaces`).
 
 Still open:
 - hotspots 9–11 (the remaining per-frame `Vector3`s in `projectLabelsToScreen`, the per-frame text regex, the spinner traversal)

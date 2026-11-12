@@ -2078,7 +2078,7 @@ function applyDecision(decision, originLabel) {
       const dest = decision.destination;
       if (dest && typeof dest === 'object' && Number(dest.z) > 9.5 && typeof wadeIntoLake === 'function') {
         // Somewhere out on the lake: by boat if he has one, otherwise he finds out about deep water
-        doWhenFree(() => wadeIntoLake('Wanted to Go Out on the Lake'));
+        doWhenFree(() => wadeIntoLake('Wanted to Go Out on the Lake'), { key: 'wade-lake' });
       } else if (dest && typeof dest === 'object' && !state.isCollectingMail) {
         // (Reacting to a parcel mid mail run, he stays at the post office until it's all opened)
         const x = Math.round(clampNumber(dest.x, WORLD_MIN_X, WORLD_MAX_X, state.botPos.x) * 10) / 10;
@@ -2255,7 +2255,7 @@ function applyDecision(decision, originLabel) {
 
       if (decision.buildAnything && typeof applyBuildAnythingDecision === 'function') applyBuildAnythingDecision(decision.buildAnything);
 
-      if (decision.repairBalloon === true && state.balloonWreck && typeof repairBalloon === 'function') doWhenFree(() => repairBalloon('Decided to Fix the Balloon'));
+      if (decision.repairBalloon === true && state.balloonWreck && typeof repairBalloon === 'function') doWhenFree(() => repairBalloon('Decided to Fix the Balloon'), { key: 'repair-balloon' });
 
       const dc = decision.discard;
       if (dc && typeof dc === 'object' && typeof disposeItem === 'function' && (findOwnedName(dc.item) || (typeof findMuseumPiece === 'function' && findMuseumPiece(dc.item)))) {
@@ -2303,9 +2303,13 @@ function keloIsFree() {
       return !(state.isBusy || state.isBuilding || state.isPracticing || state.isCollectingMail || state.isSleeping);
     }
 
+// Each call site names its job with opts.key (its argument included), so two different jobs never merge and the
+// same job is queued once. A call without a key is its own job: it never merges with another (the old default,
+// the closure's source text, merged every call from one line whatever its arguments).
+let freeQueueAnon = 0;
 function doWhenFree(fn, opts = {}) {
       if (typeof fn !== 'function') return false;
-      const key = opts.key ? String(opts.key) : 'code:' + fn.toString();
+      const key = opts.key ? String(opts.key) : 'anon:' + (++freeQueueAnon);
       if (freeQueue.some(j => j.key === key)) return false;
       const now = Date.now();
       freeQueue.push({ fn, key, notBefore: now + (opts.delayMs ?? 3000), expires: now + (opts.maxWaitMs || 45 * 60000) });
@@ -2434,7 +2438,7 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
         if (!state.knowsDigging && typeof discoverDigging === 'function') discoverDigging(`${giver} gave me ${item}. It's made for digging!`);
         const site = state.digSites[0];
         const spot = site || chooseDigSpot();
-        doWhenFree(() => digAt(spot.x, spot.z, `Back to Digging with the ${item}`));
+        doWhenFree(() => digAt(spot.x, spot.z, `Back to Digging with the ${item}`), { key: `dig:${spot.x},${spot.z}` });
       }
       // Some things spark a lasting hobby (spray paint, a kite, an instrument, seeds...)
       if (cat !== 'food' && typeof maybeStartHobbyFromItem === 'function') maybeStartHobbyFromItem(item, giver);

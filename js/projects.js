@@ -719,7 +719,7 @@ window.addEventListener('DOMContentLoaded', () => {
           buildsQueued.set(p.id, Date.now());
           doWhenFree(async () => {
             try { await buildProject(p.id); } finally { buildsQueued.delete(p.id); }
-          });
+          }, { key: 'build-project:' + p.id });
         }
       }
     }, 8000);

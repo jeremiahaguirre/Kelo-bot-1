@@ -80,7 +80,7 @@ async function getStuckInSnow() {
         });
         if (typeof addConcept === 'function') addConcept({ name: 'Weight Over Width', emoji: '❄️', definition: 'Soft snow holds you up only if your weight is spread out wide.', builtFrom: ['getting stuck in snow'] }, 'Learned the hard way');
         savePersistentBrainState();
-        doWhenFree(() => researchSnowTravel());
+        doWhenFree(() => researchSnowTravel(), { key: 'research-snow' });
       } else {
         askForSnowGear();
       }

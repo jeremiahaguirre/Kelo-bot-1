@@ -165,7 +165,7 @@ function enableWishFeature(key, { req = null, quiet = false, migrated = false } 
       if (!quiet && f.run) {
         doWhenFree(() => {
           try { Promise.resolve(f.run('Trying Something New')).catch(e => console.warn('Try-out failed:', e)); } catch (e) { console.warn('Try-out failed:', e); }
-        });
+        }, { key: 'wish-try:' + f.key });
       }
       savePersistentBrainState();
       return true;
@@ -251,7 +251,7 @@ function applyWishFeatureDecision(decision) {
       // studyWildlife: true is accepted too
       const f = WISH_FEATURES.find(w => w.ai && (w.ai === want || (decision && decision[w.ai] === true)));
       if (!f || !featureOn(f.key) || !wishFeatureReady(f)) return false;
-      doWhenFree(() => { try { Promise.resolve(f.run('Decided to ' + (f.aiHint.split(' (')[0]))).catch(() => {}); } catch (e) {} });
+      doWhenFree(() => { try { Promise.resolve(f.run('Decided to ' + (f.aiHint.split(' (')[0]))).catch(() => {}); } catch (e) {} }, { key: 'wish:' + f.key });
       return true;
     }
 

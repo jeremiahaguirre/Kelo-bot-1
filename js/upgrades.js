@@ -946,7 +946,7 @@ function codeUpgradeDecision(raw, title) {
         upgradeLogEntry({ name: typeof raw.name === 'string' ? raw.name.slice(0, 40) : 'AI upgrade', ok: false, by: 'ai', errors: check.errors.slice(0, 4) });
         return false;
       }
-      doWhenFree(() => { Promise.resolve(codeAnUpgrade(title ? `Decided: ${String(title).slice(0, 40)}` : 'Coding an Upgrade', check.code)).catch(e => console.warn('Upgrade failed:', e)); });
+      doWhenFree(() => { Promise.resolve(codeAnUpgrade(title ? `Decided: ${String(title).slice(0, 40)}` : 'Coding an Upgrade', check.code)).catch(e => console.warn('Upgrade failed:', e)); }, { key: `upgrade:${String(title || '').slice(0, 40)}:${String(check.code).length}:${String(check.code).slice(0, 160)}` });
       return true;
     }
 

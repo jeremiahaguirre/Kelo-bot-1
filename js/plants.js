@@ -1126,7 +1126,7 @@ function applyPlantDecision(decision) {
         const fn = kind === 'asphalt' ? () => paveWithOwnAsphalt(why, 'Decided to Run the Asphalt Plant')
           : () => pourConcrete(rp.pour === 'pad' ? 'pad' : 'path', null, null, null, null, why, 'Decided to Run the Concrete Plant');
         return typeof tryKey === 'function' ? tryKey('plant', fn) : fn();
-      });
+      }, { key: `plant:${kind}:${rp.pour === 'pad' ? 'pad' : 'path'}` });
     }
 
 // --- The Brain tab ---------------------------------------------------------------------------------

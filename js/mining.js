@@ -370,7 +370,7 @@ async function digAt(x, z, originLabel = 'Digging') {
         }
         savePersistentBrainState();
         renderAllUI();
-        if (found.length && typeof putAwayItems === 'function') doWhenFree(putAwayItems);
+        if (found.length && typeof putAwayItems === 'function') doWhenFree(putAwayItems, { key: 'putaway' });
         return found.length ? 'found' : 'dug';
       } finally {
         if (typeof setCarriedObject === 'function') setCarriedObject(null);

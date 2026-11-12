@@ -670,7 +670,7 @@ function applyShapeDecision(shape) {
         hollow: () => raiseHill(x, z, why, 'Decided to Shape the Land', true),
         undo: () => undoEdit(String(shape.id || 'last'), why, 'Changed His Mind')
       }[String(shape.action || '').toLowerCase()];
-      if (run) doWhenFree(run);
+      if (run) doWhenFree(run, { key: `land:${String(shape.action).toLowerCase()}:${shape.id || ''}:${x},${z}` });
     }
 
 function landscapeSummaryForAI() {

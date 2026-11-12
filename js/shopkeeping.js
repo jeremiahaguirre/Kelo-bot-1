@@ -365,7 +365,7 @@ function sellItemDecision(si) {
       const c = resolveSellable(si.item);
       if (!c) return;
       const price = Number(si.price);
-      doWhenFree(() => listForSale(c, Number.isFinite(price) && price > 0 ? price : guessPrice(c), typeof si.description === 'string' ? si.description : '', 'Decided to Sell Something'));
+      doWhenFree(() => listForSale(c, Number.isFinite(price) && price > 0 ? price : guessPrice(c), typeof si.description === 'string' ? si.description : '', 'Decided to Sell Something'), { key: 'sell:' + String(si.item).slice(0, 120) });
     }
 
 // A print file is a copy: selling it takes nothing away from him. An original painting sells once:

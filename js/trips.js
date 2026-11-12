@@ -1441,7 +1441,7 @@ function applyTripDecision(decision) {
         tripsQueued.delete(k);
         if (cooling()) return;
         return typeof tryActivity === 'function' ? tryActivity(k, () => takeTrip(v || String(t.vehicle), String(t.to || ''), String(t.why || '').slice(0, 200), 'Decided to Take a Trip')) : takeTrip(v || String(t.vehicle), t.to, t.why);
-      });
+      }, { key: k });
       return true;
     }
 

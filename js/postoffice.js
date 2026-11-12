@@ -132,7 +132,7 @@ async function pickUpMail(originLabel = 'Checking the Mail') {
         savePersistentBrainState();
         renderAllUI();
         // New things go to the Storehouse once he is free
-        if (state.unstoredItems.length && typeof putAwayItems === 'function') doWhenFree(putAwayItems);
+        if (state.unstoredItems.length && typeof putAwayItems === 'function') doWhenFree(putAwayItems, { key: 'putaway' });
         return true;
       } finally {
         state.isCollectingMail = false;

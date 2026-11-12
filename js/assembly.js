@@ -846,7 +846,7 @@ function finishBuild(id) {
         // A practical thing he built (its kind and uses were registered when he planned it, js/shopmaker.js)
         state.belongings.unshift({ name: bom.item, category: 'made', emoji: bom.emoji, from: 'his own build' });
         state.unstoredItems.push(bom.item);
-        if (typeof putAwayItems === 'function') doWhenFree(putAwayItems, { key: 'putaway-made' });
+        if (typeof putAwayItems === 'function') doWhenFree(putAwayItems, { key: 'putaway' });
       } else {
         const s = siteFor(p);
         if (!p.obstacle && bom.site !== 'tree') { worldObstacles.push({ x: s.x, z: s.z, r: bom.r || 2 }); p.obstacle = true; }
@@ -1435,7 +1435,7 @@ function buildAnythingPromptLine() {
 function applyBuildAnythingDecision(d) {
       if (!d || typeof d !== 'object' || typeof d.target !== 'string' || !d.target.trim() || activeBuild()) return false;
       const target = d.target.trim().slice(0, 60), why = typeof d.why === 'string' ? d.why.slice(0, 200) : '';
-      doWhenFree(() => tryKey('assembly', () => researchBuild(target, why, 'Decided to Build Something Big')));
+      doWhenFree(() => tryKey('assembly', () => researchBuild(target, why, 'Decided to Build Something Big')), { key: `build:${target}` });
       return true;
     }
 
@@ -1457,7 +1457,7 @@ function answerBuildRequest(ask, visitor) {
         const plane = state.buildProjects.find(p => p.bom.vehicle === 'plane');
         if (plane.status === 'gathering' || plane.status === 'testing') return sayToVisitor(bomPercentBuilt(plane.bom) >= 100 ? `Not yet, ${visitor}! My airplane is built, but it doesn't fly until it has passed its inspections.` : `Not yet, ${visitor}! My airplane is ${bomPercentBuilt(plane.bom)}% built, and it doesn't fly until it has passed its inspections.`, visitor);
         sayToVisitor(pilotTrained() ? `Okay ${visitor}! Preflight, then up over the lake.` : `I'd love to, ${visitor}, but I have to learn to fly first: ground school, then taxi practice.`, visitor);
-        doWhenFree(() => flyBuiltAirplane(`Asked by ${visitor}`));
+        doWhenFree(() => flyBuiltAirplane(`Asked by ${visitor}`), { key: 'fly-plane' });
         return;
       }
       if (ask.list) {
@@ -1528,7 +1528,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const work = assemblyWork();
       if (!work || (!p && Math.random() > 0.2)) return;
       assemblyQueued.set(key, Date.now());
-      doWhenFree(async () => { try { await tryKey('assembly', work); } finally { assemblyQueued.delete(key); } });
+      doWhenFree(async () => { try { await tryKey('assembly', work); } finally { assemblyQueued.delete(key); } }, { key: 'assembly-work:' + key });
     }, 8000);
   }, 700);
 });

@@ -503,7 +503,7 @@ if (typeof addMadeThing === 'function') {
       state.diaryEntries[0].text = state.diaryEntries[0].text.replace(`I made ${wsThing(name)} on`, `I made ${(/^[aeiou]/i.test(plainItem(name)) ? 'an ' : 'a ') + plainItem(name).replace(/^[A-Z][a-z]+\b(?!-)/, w => w.toLowerCase())} on`).replace('It goes on the shelf until a build needs it.', `It's ${k.label}, so it goes in my Storehouse and I'll use it for ${k.uses.filter(u => u !== 'display').map(purposeSay).join(' and ') || 'decoration'}.`);
     }
     if (job && job.order) { job.order.madeAt = Date.now(); job.order.where = 'storehouse'; }
-    if (typeof putAwayItems === 'function') doWhenFree(putAwayItems, { key: 'putaway-made' });
+    if (typeof putAwayItems === 'function') doWhenFree(putAwayItems, { key: 'putaway' });
     return out;
   };
 }
@@ -746,7 +746,7 @@ async function sitOnMadeSeat(name, originLabel = 'Sitting Down') {
           if (seatMesh.parent) seatMesh.parent.remove(seatMesh);
           if (typeof setCarriedObject === 'function') setCarriedObject(lifeSize(buildItemModel3D(name, { label: false }), 1.2));
           if (!state.unstoredItems.includes(name)) state.unstoredItems.push(name);
-          if (typeof putAwayItems === 'function') doWhenFree(putAwayItems, { key: 'putaway-made' });
+          if (typeof putAwayItems === 'function') doWhenFree(putAwayItems, { key: 'putaway' });
         }
         state.isPracticing = false;
         renderAllUI();
@@ -791,7 +791,7 @@ async function storeThingsInMade(name, originLabel = 'Putting Things Away') {
       } finally {
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
         if (!state.unstoredItems.includes(name)) state.unstoredItems.push(name);
-        if (typeof putAwayItems === 'function') doWhenFree(putAwayItems, { key: 'putaway-made' });
+        if (typeof putAwayItems === 'function') doWhenFree(putAwayItems, { key: 'putaway' });
         state.isPracticing = false;
         renderAllUI();
       }
@@ -830,7 +830,7 @@ async function arrangeFlowersIn(name, originLabel = 'Picking Flowers') {
       } finally {
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
         if (!state.unstoredItems.includes(name)) state.unstoredItems.push(name);
-        if (typeof putAwayItems === 'function') doWhenFree(putAwayItems, { key: 'putaway-made' });
+        if (typeof putAwayItems === 'function') doWhenFree(putAwayItems, { key: 'putaway' });
         state.microPose = 'normal';
         state.isPracticing = false;
         renderAllUI();

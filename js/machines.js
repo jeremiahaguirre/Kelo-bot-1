@@ -466,7 +466,7 @@ function useMachineDecision(um) {
       doWhenFree(() => {
         if (!machineKnown(def.key)) return researchMachine(def.key, 'Decided to Learn a Machine');
         return runMachineJob(def.key, job, 'Decided to Use a Machine');
-      });
+      }, { key: `machine:${def.key}:${job.make}` });
       return true;
     }
 

@@ -6,6 +6,7 @@ const OUT = path.join(__dirname, 'shots');
 require('fs').mkdirSync(OUT, { recursive: true });
 
 const http = require('http'), fs = require('fs');
+const REFSTUBS = require('./refstubs');
 const ROOT = process.env.KELO_ROOT || '/home/user/jeremiahaguirre/kelo-bot-1';
 const PORT = +process.env.PORT || 8765;
 const TYPES = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png' };
@@ -24,6 +25,7 @@ function startServer() {
   });
 }
 
+const REFSOK = s => Boolean(s && ['pd', 'pdm', 'cc0', 'by', 'by-sa', 'pexels', 'unsplash', 'pixabay'].includes(s.licence) && s.pageUrl);
 (async () => {
   const server = await startServer().catch(() => null);
   const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
@@ -38,32 +40,8 @@ function startServer() {
     if (u.includes('cdn.tailwindcss.com')) return route.fulfill({ path: path.join(V, 'tailwind.js'), contentType: 'application/javascript' });
     if (u.includes('phosphor-icons')) return route.fulfill({ body: '', contentType: 'application/javascript' });
     if (u.includes('generativelanguage') || u.includes('anthropic.com')) return route.fulfill({ status: 500, body: '{}' });
-    // Reference photos (scenario refpaint): DuckDuckGo's Instant Answer has a picture only for "cat"; anything
-    // else falls back to Wikimedia Commons. Pictures come from qa/fixtures/refpaint, with CORS headers.
-    {
-      const FXD = path.join(__dirname, 'fixtures', 'refpaint');
-      const FX = { cat: 'chelsea.png', coffee: 'coffee.png', rocket: 'rocket.jpg', venice: 'venice_sunset.jpg', harbour: 'venice_sunset.jpg', beach: 'quarry_01.jpg', quarry: 'quarry_01.jpg', field: 'moonless_golf.jpg', night: 'moonless_golf.jpg' };
-      const fxFor = q => { const k = Object.keys(FX).find(k => q.toLowerCase().includes(k)); return k ? FX[k] : null; };
-      const img = f => route.fulfill({ path: path.join(FXD, f), contentType: f.endsWith('.png') ? 'image/png' : 'image/jpeg', headers: { 'Access-Control-Allow-Origin': '*' } });
-      if (process.env.REFP_OFFLINE && /duckduckgo\.com|wikimedia\.org/.test(u)) return route.abort('internetdisconnected');
-      if (u.startsWith('https://api.duckduckgo.com/')) {
-        global.refpQueries = (global.refpQueries || []).concat(u);
-        const q = new URL(u).searchParams.get('q') || '';
-        const body = /\bcat\b/i.test(q) ? { Heading: 'Cat', Image: '/i/fixture-cat.png', AbstractURL: 'https://en.wikipedia.org/wiki/Cat', RelatedTopics: [] } : { Heading: '', Image: '', RelatedTopics: [] };
-        return route.fulfill({ body: JSON.stringify(body), contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' } });
-      }
-      if (u.startsWith('https://duckduckgo.com/i/fixture-')) return img('chelsea.png');
-      if (u.startsWith('https://commons.wikimedia.org/w/api.php')) {
-        global.refpQueries = (global.refpQueries || []).concat(u);
-        const q = new URL(u).searchParams.get('gsrsearch') || '';
-        const f = fxFor(q);
-        const pages = f ? { 101: { index: 1, title: `File:${f.replace(/\..*$/, '').replace(/_/g, ' ')} <b>test</b>.jpg`, imageinfo: [{ mime: 'image/jpeg', width: 1024, height: 680,
-          thumburl: `https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/${f}/640px-${f}`, url: `https://upload.wikimedia.org/wikipedia/commons/a/ab/${f}`,
-          descriptionurl: `https://commons.wikimedia.org/wiki/File:${f}`, extmetadata: { LicenseShortName: { value: 'CC0' }, Artist: { value: '<a href="javascript:alert(1)">Fixture <script>x</script>Artist</a>' } } }] } } : {};
-        return route.fulfill({ body: JSON.stringify({ query: { pages } }), contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' } });
-      }
-      if (u.startsWith('https://upload.wikimedia.org/')) { const f = u.split('/').pop().replace(/^640px-/, ''); return fs.existsSync(path.join(FXD, f)) ? img(f) : route.fulfill({ status: 404, body: '' }); }
-    }
+    // Photo sources (scenarios refpaint, photobrowse): stubbed with fixture metadata and pictures (qa/refstubs.js)
+    if (REFSTUBS.handle(route, u)) return;
     if (u.includes('wikipedia.org') && /summary\/kalimba/i.test(u)) return route.fulfill({ body: JSON.stringify({ type: 'standard', title: 'Kalimba', extract: 'The kalimba is a musical instrument of the lamellophone family, consisting of a wooden board with attached metal tines.' }), contentType: 'application/json' });
     if (u.includes('wikipedia.org') && /summary\/Quokka/i.test(u)) return route.fulfill({ body: JSON.stringify({ type: 'standard', title: 'Quokka', extract: 'The quokka is a small macropod about the size of a domestic cat, found on islands off Western Australia. It is known for its smiling face.' }), contentType: 'application/json' });
     if (u.includes('wikipedia.org')) return route.fulfill({ body: '{"query":{"search":[]}}', contentType: 'application/json' });
@@ -937,98 +915,154 @@ function startServer() {
   }
 
   // Reload: the pit must persist and nothing should come back
+  if (scenario === 'refpaint' || scenario === 'photobrowse') {
+    var run = fn => page.evaluate(fn);
+    var fails = 0;
+    var ok = (name, cond, extra = '') => { if (!cond) fails++; console.log(`${cond ? 'PASS' : 'FAIL'} ${name}${extra ? ' ' + extra : ''}`); };
+    // every keyed source gets a (fake) key so its adapter runs; the key must only go to its own host
+    await run(() => { refsSetKeys({ pexels: 'k-pexels', unsplash: 'k-unsplash', pixabay: 'k-pixabay', flickr: 'k-flickr', smithsonian: 'k-si', europeana: 'k-eu', rijksmuseum: 'k-rijks' }); });
+  }
+
   if (scenario === 'refpaint') {
-    // Paintings from live reference photos (js/refpaint.js), with the network stubbed by fixtures
-    const run = fn => page.evaluate(fn);
-    const ok = (name, cond, extra = '') => console.log(`${cond ? 'PASS' : 'FAIL'} ${name}${extra ? ' ' + extra : ''}`);
-    // He knows oil, watercolour and pastel and has every supply for them
+    // Paintings from live reference photos (js/refpaint.js, js/refsources.js) with every source stubbed
     await run(() => {
       state.isCollectingMail = false;
       ['oil', 'watercolour', 'pastel'].forEach(m => { state.paintKnowledge[m] = { at: Date.now() }; PAINT_MEDIA[m].needs.forEach(n => { if (!hasItem(n.re)) state.toolInventory.push(n.ask); }); });
-      // an old-style painting and plan from before reference photos existed
-      state.murals.unshift({ wallId: 'art-old1', id: 'art-old1', kind: 'art', medium: 'oil', subject: 'lake', title: 'Old Lake', text: 'Old Lake', on: 'Oil on stretched canvas', size: '12x9 in', subjectLabel: 'the Okanagan lake at sunset', season: 'Summer', weather: 'clear', palette: ['#806040'], skill: 30, level: 1, seed: 'art-old1', at: 1, place: 'the lakeshore', for: null, keep: false });
+      // an old painting from life (sellable) and an old reference painting with no licence data (not sellable)
+      state.murals.unshift({ wallId: 'art-old1', id: 'art-old1', kind: 'art', medium: 'oil', subject: 'lake', title: 'Old Lake', text: 'Old Lake', on: 'Oil on stretched canvas', size: '12x9 in', subjectLabel: 'the Okanagan lake at sunset', season: 'Summer', weather: 'clear', palette: ['#806040'], skill: 60, level: 3, seed: 'art-old1', at: 1, place: 'the lakeshore', for: null, keep: false });
+      state.murals.unshift({ wallId: 'art-old2', id: 'art-old2', kind: 'art', medium: 'oil', subject: 'reference', title: 'Old Photo Cat', text: 'Old Photo Cat', on: 'Oil on stretched canvas', size: '12x9 in', subjectLabel: 'cat, after a reference photo', season: 'Summer', skill: 60, level: 3, seed: 'art-old2', at: 2, keep: false,
+        reference: { mode: 'single', sources: [{ query: 'cat', source: 'DuckDuckGo', host: 'en.wikipedia.org', pageUrl: 'https://en.wikipedia.org/wiki/Cat', imageUrl: 'https://duckduckgo.com/i/x.png', title: 'Cat', license: '', artist: '' }] } });
       savePersistentBrainState();
     });
-    // Safety of what he searches for
-    console.log('queries:', JSON.stringify(await run(() => ({
+
+    // 1. The licence gate and the risk check, source by source (fixture metadata: one bad item, one good per page)
+    const gate = await run(async () => {
+      const out = {};
+      for (const src of REFS_SOURCES) {
+        const r = await refsSearchSource(src, 'cat', 1);
+        out[src.id] = r.items.map(i => ({ t: i.title.slice(0, 40), lic: i.licence, look: i.lookOnly, licOk: refLicenceOk(i), risk: refRiskOk(i).why, paint: refPaintable(i), author: i.author }));
+      }
+      return out;
+    });
+    console.log('gate:', JSON.stringify(gate));
+    const expectGood = { commons: 1, openverse: 1, met: 4, aic: 1, cma: 1, nasa: 1, loc: 1, pexels: 1, unsplash: 1, pixabay: 1, flickr: 1, smithsonian: 1, europeana: 1, rijks: 1 };
+    Object.keys(expectGood).forEach(id => {
+      const items = gate[id] || [];
+      const good = items.filter(i => i.paint).length;
+      ok(`gate ${id}: only the free-to-use, risk-free item passes`, good === expectGood[id], `${good}/${items.length} ${JSON.stringify(items.filter(i => !i.paint).map(i => i.risk || i.lic || 'licence'))}`);
+    });
+    ok('gate ddg: DuckDuckGo is looking only', (gate.ddg || []).length > 0 && gate.ddg.every(i => i.look && !i.paint));
+    ok('gate: a person, a logo and a restricted file are refused', JSON.stringify(gate).includes('a person seems to be the subject') && JSON.stringify(gate).includes('brand or logo') && JSON.stringify(gate).includes('restricted'));
+    ok('commons author html stripped', (gate.commons || []).every(i => !/[<>]/.test(i.author || '')));
+    const lic = await run(() => ({
+      nc: refsNormaliseLicence('CC BY-NC-SA 4.0'), nd: refsNormaliseLicence('CC BY-ND 2.0'), arr: refsNormaliseLicence('All rights reserved'), none: refsNormaliseLicence(''),
+      bysa: refsNormaliseLicence('CC BY-SA 3.0'), by: refsNormaliseLicence('CC BY 4.0'), cc0: refsNormaliseLicence('', 'https://creativecommons.org/publicdomain/zero/1.0/'), pd: refsNormaliseLicence('Public domain'),
+      chars: refRiskOk({ title: 'Pikachu plush', licence: 'cc0', pageUrl: 'https://x.org' }).ok, mural: refRiskOk({ title: 'Street mural in Lisbon', licence: 'by', sourceId: 'commons', pageUrl: 'https://x.org' }).ok,
+      museumArt: refRiskOk({ title: 'Painting of a ship', licence: 'cc0', sourceId: 'met', pageUrl: 'https://x.org' }).ok,
       visitor: refpPlanFromRequest('Hi Kelo, I am Alice (alice@example.com), paint me a watercolour of a lighthouse please', 'Alice'),
-      combo: refpPlanFromRequest('paint a fox in the desert', 'Bob'),
-      none: refpPlanFromRequest('paint me something nice', 'Bob'),
-      unsafe: refpCleanQuery('naked people'), url: refpCleanQuery('https://evil.example/x?a=1 red barn 5551234567'),
-      ai: refpPlanFrom({ mode: 'combine', query: 'Heron', queryB: 'misty forest', how: 'split' }), aiBad: refpPlanFrom({ query: '<script>alert(1)</script>' })
-    }))));
-    const q1 = await run(() => ({ v: refpPlanFromRequest('Hi Kelo, I am Alice (alice@example.com), paint me a watercolour of a lighthouse please', 'Alice'), u: refpCleanQuery('naked people') }));
-    ok('visitor query has no personal data', q1.v && q1.v.query === 'lighthouse', JSON.stringify(q1.v));
-    ok('unsafe words refused', q1.u === null);
+      person: refpPlanFromRequest('paint me a portrait of my mom', 'Bob'), brand: refpPlanFrom({ query: 'nike shoes' }), unsafe: refpCleanQuery('naked people')
+    }));
+    console.log('licences:', JSON.stringify(lic));
+    ok('licence words: NC, ND, all rights reserved and none are refused', lic.nc === null && lic.nd === null && lic.arr === null && lic.none === null);
+    ok('licence words: BY-SA, BY, CC0, public domain are known', lic.bysa === 'by-sa' && lic.by === 'by' && lic.cc0 === 'cc0' && lic.pd === 'pd');
+    ok('characters and modern murals refused, museum public-domain art allowed', !lic.chars && !lic.mural && lic.museumArt);
+    ok('visitor query has no personal data', lic.visitor && lic.visitor.query === 'lighthouse', JSON.stringify(lic.visitor));
+    ok('people and brands are never searched to paint', lic.person === null && lic.brand === null && lic.unsafe === null);
+
+    // 2. Paintings
     const paint = (medium, reference) => page.evaluate(async ([medium, reference]) => {
       const t0 = Date.now();
       state.isBusy = false; state.isBrowsing = false; state.isPracticing = false; state.isSleeping = false; state.isCollectingMail = false;
       const r = await paintPicture(medium, null, { reference, originLabel: 'QA' });
       const m = artPaintings()[0];
-      return { r, ms: Date.now() - t0, id: m.id, title: m.title, subject: m.subject, label: m.subjectLabel, reference: m.reference || null, refs: (paintingImages()[m.id].refs || []).map(x => x.length), credit: refpCreditLine(m), diary: state.diaryEntries.slice(0, 5).map(d => d.text) };
+      return { r, ms: Date.now() - t0, id: m.id, title: m.title, subject: m.subject, label: m.subjectLabel, reference: m.reference || null, originality: m.originality || null, study: Boolean(m.study),
+        refs: ((paintingImages()[m.id] || {}).refs || []).map(x => x.length), credit: refpCreditLine(m), sellable: paintingVerdict(m), diary: state.diaryEntries.slice(0, 5).map(d => d.text),
+        netDiary: (state.diaryEntries.find(d => d.location === 'NetNode Cyber Cafe') || {}).text || '' };
     }, [medium, reference]);
     const single = await paint('oil', { mode: 'single', query: 'cat', why: 'Cats are my favourite.' });
-    console.log('single:', JSON.stringify(single).slice(0, 1500));
-    ok('single painting made', single.r === true && single.subject === 'reference' && single.reference && single.reference.mode === 'single');
-    ok('single source is DuckDuckGo (Instant Answer)', single.reference && single.reference.sources[0].source === 'DuckDuckGo' && single.reference.sources[0].host === 'en.wikipedia.org');
-    ok('single keeps a reference thumbnail', single.refs.length === 1 && single.refs[0] > 1000 && single.refs[0] < 40000, JSON.stringify(single.refs));
-    ok('diary says what and why', /searched DuckDuckGo for "cat"/.test(single.diary.join(' ')) && /favourite/.test(single.diary.join(' ')));
+    console.log('single:', JSON.stringify({ ...single, diary: single.diary.slice(0, 3) }).slice(0, 1800));
+    const s0 = single.reference && single.reference.sources[0];
+    ok('single painting made from a licence-checked source (not DuckDuckGo)', single.r === true && s0 && s0.sourceId !== 'ddg' && REFSOK(s0), s0 && `${s0.source} ${s0.licence}`);
+    console.log('netnode diary:', single.netDiary);
+    ok('single: DuckDuckGo was only looked at (diary says so)', /DuckDuckGo's pictures for ideas/.test(single.netDiary) && /favourite/.test(single.netDiary));
+    ok('single: >= 3 transformations logged', single.originality && single.originality.transforms.length >= 3, JSON.stringify(single.originality && single.originality.transforms));
+    ok('single: similarity score logged and under the threshold', single.originality && Number.isFinite(single.originality.corr) && !single.study, JSON.stringify(single.originality && { corr: single.originality.corr, palette: single.originality.palette }));
+    ok('single: credit names title, licence and link', /^Painted from a reference photo: (after|based on a public-domain image)/.test(single.credit) && /https:\/\//.test(single.credit), single.credit);
+    ok('single keeps a reference thumbnail', single.refs.length === 1 && single.refs[0] > 1000 && single.refs[0] < 40000);
     const combo = await paint('watercolour', { mode: 'combine', query: 'coffee cup', queryB: 'night field', how: 'subject-setting', why: 'I wonder how coffee looks under the stars.' });
-    console.log('combined:', JSON.stringify(combo).slice(0, 1500));
-    ok('combined painting made', combo.r === true && combo.reference && combo.reference.mode === 'combined' && combo.reference.sources.length === 2);
-    ok('combined fell back to Wikimedia Commons and says so', combo.reference && combo.reference.sources.every(s => s.source === 'Wikimedia Commons') && /Wikimedia Commons/.test(combo.diary.join(' ')));
-    ok('commons artist html stripped', combo.reference && !/[<>]/.test(JSON.stringify(combo.reference.sources.map(s => s.artist + s.title))));
-    ok('two different results', combo.reference && combo.reference.sources[0].imageUrl !== combo.reference.sources[1].imageUrl);
+    console.log('combined:', JSON.stringify({ ...combo, diary: [] }).slice(0, 1500));
+    const cs = combo.reference ? combo.reference.sources : [];
+    ok('combined painting made from two licence-checked sources', combo.r === true && cs.length === 2 && cs.every(REFSOK));
+    ok('combined: subject and setting from different sources', cs.length === 2 && cs[0].sourceId !== cs[1].sourceId, cs.map(x => x.sourceId).join(' + '));
     const split = await paint('pastel', { mode: 'combine', query: 'rocket', queryB: 'venice harbour', how: 'split' });
-    ok('split painting made', split.r === true && split.reference && split.reference.how === 'split', split.title);
-    // Shop listing keeps the credit
+    ok('split painting made, different sources', split.r === true && split.reference && split.reference.how === 'split' && split.reference.sources[0].sourceId !== split.reference.sources[1].sourceId, split.title);
+    // CC BY-SA carries over to the painting
+    const sa = await run(() => refpCreditLine({ title: 'T', reference: { mode: 'single', sources: [{ title: 'Boat', author: 'Ann', licence: 'by-sa', licenceLabel: 'CC BY-SA 4.0', pageUrl: 'https://commons.wikimedia.org/wiki/File:Boat.jpg', source: 'Wikimedia Commons' }] } }));
+    ok('CC BY-SA reference: painting shared under CC BY-SA 4.0', /shared under CC BY-SA 4\.0/.test(sa) && /after "Boat" by Ann, CC BY-SA 4\.0, https:\/\/commons/.test(sa), sa);
+    const pdc = await run(() => refpCreditLine({ title: 'T', reference: { mode: 'single', sources: [{ title: 'Moon', author: 'NASA', licence: 'pd', licenceLabel: 'Public domain (NASA)', pageUrl: 'https://images.nasa.gov/details/x', source: 'NASA Image Library' }] } }));
+    ok('public-domain reference: "based on a public-domain image"', /based on a public-domain image/.test(pdc), pdc);
+
+    // 3. Originality: a painting that stays too close is reworked, then kept as a study, never sold
+    await run(() => { window.__T = { ...REFP_ORIGINALITY }; REFP_ORIGINALITY.maxCorr = -1; });
+    const close = await paint('oil', { mode: 'single', query: 'beach' });
+    await run(() => { Object.assign(REFP_ORIGINALITY, window.__T); });
+    console.log('too close:', JSON.stringify({ title: close.title, originality: close.originality, study: close.study, sellable: close.sellable }));
+    ok('too close: reworked, then a study', close.r === true && close.originality && close.originality.reworked && close.study && /^Study/.test(close.title));
+    ok('too close: rework changed more (mirrored crop)', close.originality && close.originality.transforms.some(t => /mirrored/.test(t)));
+    ok('website gate refuses the study', close.sellable && close.sellable.ok === false && /study/i.test(close.sellable.why));
+    const gateOld = await run(() => ({ life: paintingVerdict(artPaintings().find(p => p.id === 'art-old1')), oldRef: paintingVerdict(artPaintings().find(p => p.id === 'art-old2')) }));
+    ok('website gate: old life painting still sellable, old reference painting without licence refused', gateOld.life.ok === true && gateOld.oldRef.ok === false, JSON.stringify(gateOld));
+    // Shop listing keeps the credit (a good painting he doesn't keep)
     const shop = await run(async () => {
-      const m = artPaintings().find(p => p.reference && p.reference.mode === 'single');
-      // a good one he doesn't keep (his first clumsy tries are never sold)
+      const m = artPaintings().find(p => p.reference && !p.study && p.reference.mode === 'single');
       m.keep = false; m.level = Math.max(m.level || 0, PAINT_SELL_LEVEL);
       state.isBusy = false; state.isBrowsing = false; state.isPracticing = false;
-      await listForSale(paintingCandidate(m), 120, '', 'QA');
+      const listed = await listForSale(paintingCandidate(m), 120, '', 'QA');
+      const st = artPaintings().find(p => p.study); st.keep = false; st.level = 5;
+      state.isBusy = false; state.isBrowsing = false; state.isPracticing = false;
+      const listedStudy = await listForSale(paintingCandidate(st), 120, '', 'QA');
       const ex = shopExportData();
       const l = ex.listings.find(x => x.kind === 'painting');
-      return { credit: l && l.credit, desc: l && l.description };
+      return { listed, listedStudy, credit: l && l.credit, n: ex.listings.filter(x => x.kind === 'painting').length };
     });
     console.log('shop:', JSON.stringify(shop));
-    ok('website listing keeps the credit', shop.credit && /^After a reference photo/.test(shop.credit));
-    // Museum viewer label (escaped, https links only)
+    ok('website listing keeps the credit', shop.listed && shop.credit && /^Painted from a reference photo/.test(shop.credit));
+    ok('website refuses to list the study', shop.listedStudy === false && shop.n === 1);
     const viewer = await run(() => { const m = artPaintings().find(p => p.reference && p.reference.mode === 'combined'); return refpCreditHtml(m); });
-    ok('viewer credit escaped', viewer && !/<script|javascript:/i.test(viewer) && /After two reference photos/.test(viewer));
-    ok('no player data in any query', !(global.refpQueries || []).some(u => /alice|example\.com|kelo-1/i.test(decodeURIComponent(u))), String((global.refpQueries || []).length));
-    ok('safe search on every DuckDuckGo query', (global.refpQueries || []).filter(u => u.includes('duckduckgo')).every(u => /[?&]kp=1\b/.test(u)));
+    ok('viewer credit escaped, with similarity', viewer && !/<script|javascript:/i.test(viewer) && /two reference photos/.test(viewer) && /similarity/.test(viewer));
+    const qlog = REFSTUBS.log.map(decodeURIComponent);
+    ok('no player data in any request', !qlog.some(u => /alice|example\.com/i.test(u)), String(qlog.length));
+    ok('safe search on every DuckDuckGo request', qlog.filter(u => /duckduckgo\.com\/\?|api\.duckduckgo/.test(u)).every(u => /[?&]kp=1\b/.test(u)));
+    ok('each key goes only to its own host', !qlog.some(u => /k-(pexels|unsplash|pixabay|flickr|si|eu|rijks)/.test(u) && !({ 'k-pixabay': /pixabay\.com\/api/, 'k-flickr': /api\.flickr\.com/, 'k-si': /api\.si\.edu/, 'k-eu': /api\.europeana\.eu/, 'k-rijks': /rijksmuseum\.nl/ }[(u.match(/k-[a-z]+/) || [''])[0]] || /$^/).test(u)));
     await page.evaluate(() => { state.isCollectingMail = true; savePersistentBrainState(); });
     await page.waitForTimeout(6000);
-    // Reload: paintings, credits and the small reference copies are all still there (offline-safe data)
+    // Reload: records, credits, scores and the small reference copies survive
     await page.reload({ timeout: 420000 });
     await page.waitForTimeout(5000);
     const after = await run(() => {
-      const arts = artPaintings();
-      const withRef = arts.filter(p => p.reference);
-      return { n: arts.length, withRef: withRef.length, thumbs: withRef.map(p => ((paintingImages()[p.id] || {}).refs || []).length).sort(), full: withRef.every(p => /^data:image\/jpeg/.test(paintingImageUrl(p))), old: arts.some(p => p.id === 'art-old1' && !p.reference), credit: withRef.map(refpCreditLine) };
+      const withRef = artPaintings().filter(p => p.reference && p.id !== 'art-old2');
+      return { withRef: withRef.length, thumbs: withRef.map(p => ((paintingImages()[p.id] || {}).refs || []).length).sort(), full: withRef.every(p => /^data:image\/jpeg/.test(paintingImageUrl(p))),
+        scores: withRef.every(p => p.originality && Number.isFinite(p.originality.corr)), study: withRef.filter(p => p.study).length, old: artPaintings().some(p => p.id === 'art-old1') };
     });
     console.log('after reload:', JSON.stringify(after));
-    ok('survives reload', after.withRef === 3 && after.thumbs.join() === '1,2,2' && after.full && after.old);
-    // The Museum viewer for a reference painting
+    ok('survives reload', after.withRef === 4 && after.thumbs.join() === '1,1,2,2' && after.full && after.scores && after.study === 1 && after.old);
     await run(() => { const m = artPaintings().find(p => p.reference && p.reference.mode === 'combined'); viewerState = { kind: 'art', art: m, back: { kind: 'museum', page: 0 } }; renderViewer(); });
     await page.waitForTimeout(1200);
     await shot('refpaint-viewer');
     await run(() => closeViewer());
     // An old save with no reference fields at all still loads
     await run(() => {
-      const strip = key => { const raw = keloStore.getItem(key); if (!raw) return; const d = JSON.parse(raw); (d.murals || []).forEach(m => { delete m.reference; if (m.subject === 'reference') m.subject = 'lake'; }); if (d.paintPlan) delete d.paintPlan.reference; if (d.paintingImages) Object.values(d.paintingImages).forEach(e => delete e.refs); keloStore.setItem(key, JSON.stringify(d)); };
+      const strip = key => { const raw = keloStore.getItem(key); if (!raw) return; const d = JSON.parse(raw); (d.murals || []).forEach(m => { delete m.reference; delete m.originality; delete m.study; if (m.subject === 'reference') m.subject = 'lake'; }); if (d.paintPlan) delete d.paintPlan.reference; delete d.photoFavourites; if (d.paintingImages) Object.values(d.paintingImages).forEach(e => delete e.refs); keloStore.setItem(key, JSON.stringify(d)); };
       state.isCollectingMail = true;
       ['kelo1_brain_v4', 'kelo1_brain_v4_paintings'].forEach(strip);
-      // nothing may write his memory again before the reload (pagehide saves too)
+      keloStore.removeItem('kelo1_brain_v4_photos');
       keloStore.setItem = () => {};
     });
     await page.reload({ timeout: 420000 });
     await page.waitForTimeout(5000);
-    const old = await run(() => ({ n: artPaintings().length, refs: artPaintings().filter(p => p.reference).length, credit: artPaintings().map(refpCreditLine).filter(Boolean).length, summary: paintingSummaryForAI().slice(-120) }));
+    const old = await run(() => ({ n: artPaintings().length, refs: artPaintings().filter(p => p.reference).length, favs: Array.isArray(state.photoFavourites) ? state.photoFavourites.length : -1, sellLife: paintingVerdict(artPaintings().find(p => p.id === 'art-old1')).ok }));
     console.log('old save:', JSON.stringify(old));
-    ok('old save without reference fields loads', old.n >= 4 && old.refs === 0 && old.credit === 0);
+    ok('old save without reference fields loads', old.n >= 6 && old.refs === 0 && old.favs === 0 && old.sellLife);
     // Offline: no reference, he paints one of his own subjects from life
     await page.context().setOffline(true);
     const off = await page.evaluate(async () => {
@@ -1041,6 +1075,71 @@ function startServer() {
     await page.context().setOffline(false);
     console.log('offline:', JSON.stringify(off));
     ok('offline paints from life', off.choice === null && off.r === true && off.subject === 'lake' && !off.ref);
+    console.log(fails ? `${fails} FAILED` : 'ALL PASSED');
+  }
+
+  if (scenario === 'photobrowse') {
+    // The NetNode photo-browsing pastime: endless paging, the cafe screen, diary, favourites board, bounded saves
+    const r1 = await page.evaluate(async () => {
+      state.isCollectingMail = false; state.isBusy = false; state.isBrowsing = false; state.isPracticing = false; state.wonderLevel = 100;
+      // 30 favourites already, the oldest one pinned: the board must stay at 24 and keep the pinned one
+      for (let i = 0; i < 30; i++) state.photoFavourites.push({ id: 'fav-old' + i, title: 'old ' + i, source: 'Openverse', licence: 'cc0', paintable: true, pageUrl: 'https://example.org/' + i, thumbUrl: '', thumb: '', at: i, pinned: i === 29 });
+      state.photoFavourites.splice(24);
+      state.photoFavourites.push({ id: 'fav-pinned', title: 'pinned one', source: 'Openverse', licence: 'cc0', paintable: true, pageUrl: 'https://example.org/p', thumbUrl: '', thumb: '', at: 0, pinned: true });
+      const real = Math.random;
+      Math.random = () => 0.2;              // stays curious, favourites often, keeps his topic
+      let shotAt = 0, maxPhotos = 0;
+      const watch = setInterval(() => { maxPhotos = Math.max(maxPhotos, phobScreenState.photos.length); }, 200);
+      try { const pages = await photoBrowse('cat', 'QA'); return { pages, maxPhotos }; }
+      finally { Math.random = real; clearInterval(watch); }
+    });
+    console.log('browse:', JSON.stringify(r1));
+    const st = await run(() => ({ favs: state.photoFavourites.length, pinned: state.photoFavourites.some(f => f.id === 'fav-pinned'), newFavs: state.photoFavourites.filter(f => !/^fav-old|fav-pinned/.test(f.id)).length,
+      thumbs: state.photoFavourites.filter(f => /^data:image\/jpeg/.test(f.thumb || '')).map(f => f.thumb.length), paintable: state.photoFavourites.filter(f => f.paintable && !/^fav-old|fav-pinned/.test(f.id)).length,
+      look: state.photoFavourites.filter(f => f.lookOnly).length, diary: state.diaryEntries[0].text, board: document.getElementById('photoFavouritesBoard').innerHTML.length, boardScript: /<script|javascript:/i.test(document.getElementById('photoFavouritesBoard').innerHTML) }));
+    console.log('favourites:', JSON.stringify({ ...st, thumbs: st.thumbs.slice(0, 5) }));
+    const pagesBySource = {};
+    REFSTUBS.log.forEach(u => { const m = u.match(/^https:\/\/([^/]+)\/.*?[?&](?:page|p|sp|skip|start|gsroffset)=(\d+)/); if (m) pagesBySource[m[1]] = Math.max(pagesBySource[m[1]] || 0, +m[2]); });
+    console.log('deepest page asked per host:', JSON.stringify(pagesBySource));
+    ok('browsing session paged on while he was interested', r1.pages >= 12, `${r1.pages} pages`);
+    // The cursor itself never stops early: it pages every source until each runs dry (the stubs end at page 3)
+    const deep = await run(async () => {
+      Object.keys(refsRestUntil).forEach(k => delete refsRestUntil[k]);
+      const cur = refsCursor('harbour');
+      const seen = {}; let n = 0, page;
+      while ((page = await cur.next()) && n < 400) { n++; seen[page.sourceId] = Math.max(seen[page.sourceId] || 0, page.page); }
+      return { n, seen };
+    });
+    console.log('cursor to the end:', JSON.stringify(deep));
+    ok('paging reaches every source\'s last page, one page at a time', deep.n >= 30 && Object.entries(deep.seen).filter(([k]) => k !== 'ddg').every(([, v]) => v === 3), `${deep.n} pages`);
+    ok('the cafe screen showed photos', r1.maxPhotos > 0);
+    ok('diary says what caught his eye', /paging through photos/.test(st.diary) && /caught my eye|kept coming back|good painting|colours/.test(st.diary));
+    ok('favourites board bounded at 24, pinned one kept', st.favs === 24 && st.pinned && st.newFavs > 0, JSON.stringify({ favs: st.favs, newFavs: st.newFavs }));
+    ok('favourite thumbnails are small', st.thumbs.length > 0 && st.thumbs.every(n => n < 12000), `max ${Math.max(...st.thumbs)} chars`);
+    ok('board rendered and escaped', st.board > 100 && !st.boardScript);
+    await page.evaluate(() => { const det = document.querySelector('[data-section="photos"]'); if (det) det.open = true; if (typeof openKeloMenu === 'function') openKeloMenu('brain'); });
+    await page.waitForTimeout(800);
+    await page.evaluate(() => { const det = document.querySelector('[data-section="photos"]'); if (det) det.scrollIntoView(); });
+    await shot('photobrowse-board');
+    // Paint from a favourite
+    const fromFav = await page.evaluate(async () => {
+      ['watercolour'].forEach(m => { state.paintKnowledge[m] = { at: Date.now() }; PAINT_MEDIA[m].needs.forEach(n => { if (!hasItem(n.re)) state.toolInventory.push(n.ask); }); });
+      const f = state.photoFavourites.find(x => x.paintable && !/^fav-old|fav-pinned/.test(x.id));
+      state.isBusy = false; state.isBrowsing = false; state.isPracticing = false; state.isSleeping = false; state.isCollectingMail = false;
+      const r = await paintPicture('watercolour', null, { reference: { mode: 'single', query: f.query || 'cat', favourite: f.id }, originLabel: 'QA favourite' });
+      const m = artPaintings()[0];
+      return { r, fav: f.pageUrl, used: m && m.reference ? m.reference.sources[0].pageUrl : null };
+    });
+    console.log('from favourite:', JSON.stringify(fromFav));
+    ok('paints from a favourite (its own picture)', fromFav.r === true && fromFav.used === fromFav.fav);
+    await page.evaluate(() => { state.isCollectingMail = true; savePersistentBrainState(); });
+    await page.waitForTimeout(6000);
+    await page.reload({ timeout: 420000 });
+    await page.waitForTimeout(5000);
+    const re = await run(() => ({ favs: state.photoFavourites.length, pinned: state.photoFavourites.some(f => f.id === 'fav-pinned'), stored: (keloStore.getItem('kelo1_brain_v4_photos') || '').length }));
+    console.log('after reload:', JSON.stringify(re));
+    ok('favourites survive reload in their own small save key', re.favs === 24 && re.pinned && re.stored > 0 && re.stored < 400000, `${re.stored} chars`);
+    console.log(fails ? `${fails} FAILED` : 'ALL PASSED');
   }
 
   if (scenario === 'reload') {

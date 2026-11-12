@@ -235,7 +235,6 @@ const state = {
   "worldviewManifesto": "I don't know anything yet. I want to find out what everything is.",
   "lastStructuredTick": "",
   "toolInventory": [],
-  "pendingImageAttachment": null,
   "unopenedNotesQueue": [],
   "gardenPlots": [
     {
@@ -1324,7 +1323,7 @@ function loadPersistentBrainState() {
 
 // Moment-to-moment flags and things stored elsewhere; everything else in state is saved
 const TRANSIENT_STATE_KEYS = new Set(['riding', 'ridingSpeed', 'ridingMode', 'isSleeping', 'isBusy', 'isWalking', 'isBuilding', 'isPracticing', 'isCollectingMail', 'isBrowsing',
-  'pendingImageAttachment', 'photoAlbum', 'rhythmPhaseText', 'unopenedNotesQueue', 'basementDepth']);
+  'photoAlbum', 'rhythmPhaseText', 'unopenedNotesQueue', 'basementDepth']);
 
 // Big parts of him that change rarely are kept under their own storage keys, so the main brain
 // stays small and an everyday save doesn't rewrite them: the words and things he has looked up,
@@ -2612,21 +2611,8 @@ function splashOgopogo() {
 
 async function handleVisitorChatMessage(userMessage) {
       const visitor = (document.getElementById('visitorNameInput').value || 'curiousWanderer').trim();
-      const attachedImg = state.pendingImageAttachment;
 
-      if (attachedImg) state.pendingImageAttachment = null;
-
-      // An image inspires a creation straight away
-      if (attachedImg) {
-        state.chatLog.push({ sender: visitor, text: `🖼️ [Attached Image: ${attachedImg.name}] ${userMessage ? `"${userMessage}"` : ''}`, time: 'Just now', isBot: false });
-        recordVisitorMemory(visitor, `Inspired me with image "${attachedImg.name}"`);
-        await synthesizeUnboundedExperience(userMessage || `Weld a new 3D structure inspired by ${visitor}'s uploaded image "${attachedImg.name}"`, 'Image-Inspired 3D Weld', null, attachedImg);
-        state.chatLog.push({ sender: 'Kelo-1', text: state.speechBubble, time: 'Just now', isBot: true });
-        renderAllUI();
-        return;
-      }
-
-      // Anything else: he listens to what was actually said and answers it (js/conversation.js)
+      // He listens to what was actually said and answers it (js/conversation.js); photos go through talk.js
       state.chatLog.push({ sender: visitor, text: userMessage, time: 'Just now', isBot: false });
       recordVisitorMemory(visitor, `Said to me: "${userMessage.slice(0, 80)}"`);
       renderAllUI();

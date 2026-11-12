@@ -270,7 +270,6 @@ function renderRequestsTab() {
         </div>
       `).join('') + (grouped ? codeRequestsGroupHtml() : '');
 
-      if (typeof bindCodeRequestButtons === 'function') bindCodeRequestButtons(list);
       if (typeof bindBomListButtons === 'function') bindBomListButtons(list);
       if (typeof bindRoadworkListButtons === 'function') bindRoadworkListButtons(list);
 

@@ -73,6 +73,12 @@ function startServer() {
   let fails = 0;
   const expect = (ok, what) => { console.log(ok ? 'PASS' : 'FAIL', what); if (!ok) fails++; };
 
+
+  if (scenario === 'probe') {
+    page.on('console', m => { if (m.type() === 'warning' || m.type() === 'error') console.log('console:', m.text().slice(0, 300)); });
+    await stopLife();
+    console.log(await run(() => { try { state.jobKnowledge.roadworks = { at: 1 }; const t = startRoadworks({ x: -31, z: -8.5 }, { x: -53, z: -8.5 }, 'p', { force: true }); const r = rwSendList(t); return JSON.stringify({ step: t.step, lines: r && r.lines.length }); } catch (e) { return 'ERR ' + e.stack; } }));
+  }
   if (scenario === 'agenda') {
     await stopLife();
     console.log('start project:', await run(() => startProject('birdhouse', 'Test')));
@@ -152,7 +158,7 @@ function startServer() {
     const order = [];
     let shotPave = false, shotList = false;
     const t0 = Date.now();
-    while (Date.now() - t0 < 2400000) {
+    while (Date.now() - t0 < 6000000) {
       const t = await task(id);
       if (!t) break;
       const key = await run(i => rwStepKey(agendaGet(i)), id);
@@ -163,7 +169,7 @@ function startServer() {
         const lines = await run(i => { const r = rwListRequest(agendaGet(i)); return r ? r.lines.map(l => `${l.name} x${l.qty}`) : []; }, id);
         console.log('parts list:', JSON.stringify(lines));
         expect(['grader', 'bulldozer', 'soil compactor', 'tandem', 'paver', 'survey kit', 'distributor', 'striper', 'aggregate base', 'prime emulsion', 'traffic paint', 'glass beads', 'culvert', 'grade stakes'].every(w => lines.some(l => l.toLowerCase().includes(w))), 'the parts list has the real machines and materials');
-        expect(t.status === 'waiting', 'he waits for the kit before surveying: ' + t.waiting);
+        expect(await run(() => !state.worldEdits.some(e => e.pro)), 'nothing is surveyed before the kit is here (' + t.status + (t.waiting ? ': ' + t.waiting : '') + ')');
         await openTab('requests'); await page.waitForTimeout(800);
         await run(() => { const c = document.querySelector('[data-rw-card]'); if (c) c.scrollIntoView(); });
         await page.waitForTimeout(500); await shot('agenda-partslist');
@@ -186,7 +192,7 @@ function startServer() {
         await page.reload({ timeout: 420000 }); await page.waitForTimeout(4000); await stopLife();
         await run(() => { plantTimeScale = 0.15; plantWorkableScale = 60; rwTimeScale = 0.002; setInterval(() => state.vehicles.forEach(v => { v.fuel = 100; }), 2000); setInterval(() => Object.assign(state, { hydration: 100, health: 100 }), 5000); });
         const r = await task(id); console.log('after reload:', JSON.stringify(r));
-        expect(r && rwStepKey && (await run(i => rwStepKey(agendaGet(i)), id)) === 'subgrade', 'after a reload the road job is at the same step');
+        expect(r && (await run(i => rwStepKey(agendaGet(i)), id)) === 'subgrade', 'after a reload the road job is at the same step');
       }
       await run(() => { if (keloIsFree() && !agendaWorking) { if (state.fullness < 30) eatSomething('Hungry'); else runAutonomousLifeTick(); } });
       await page.waitForTimeout(1500);

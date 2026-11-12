@@ -69,11 +69,11 @@ function svGeo() {
       const lift = { 1: L(3.9, 7.7, 4.4, 7.2), 2: L(2.85, 3.75, 4.9, 7.1), 3: L(2.85, 3.75, 4.9, 7.1) };
       const liftSpot = f => P(lx0 - 0.65, WS_LIFT_GATE, Math.PI);
       const toW = c => ({ x: S.x + c.x, z: S.z + c.z, r: c.r });
-      const circles = {
-        1: (typeof wsObstacles === 'function' ? wsObstacles(1) : []).concat(svStationCircles()).map(toW),
-        2: workshopMachinesOn(2).flatMap(d => machineCircles(d)).map(toW),
-        3: workshopMachinesOn(3).flatMap(d => machineCircles(d)).map(toW)
-      };
+      // (the same obstacles his own indoor routes use: every machine in WORKSHOP_MACHINES, the
+      // elevator's open edges, the deck columns; vehicles and Kelo-1 are added each frame instead)
+      const obst = f => (typeof wsObstacles === 'function' ? wsObstacles(f) : workshopMachinesOn(f).flatMap(d => machineCircles(d)))
+        .filter(c => f === 1 || c.r < 1.4);
+      const circles = { 1: obst(1).concat(svStationCircles()).map(toW), 2: obst(2).map(toW), 3: obst(3).map(toW) };
       const starts = {
         hangar: { floor: 1, x: H.x + 5.5, z: H.z + 0.5, yaw: -Math.PI / 2 },
         wing: { floor: 1, ...P(-6.0, WS_WING.aisleZ, Math.PI / 2) },
@@ -204,7 +204,8 @@ function svTargets() {
       const S = WORKSHOP_SITE, out = [];
       Object.values(WORKSHOP_MACHINES).forEach(def => {
         if (!def.at) return;
-        const area = def.floor === 1 ? (def.at.z < -S.d / 2 ? 'wing' : 'f1') : 'f' + def.floor;
+        const a = svAreaAt(S.x + def.at.x, S.z + def.at.z, svFloorY(def.floor) + 0.2);
+        const area = a ? a.key : def.floor === 1 ? (def.at.z < -S.d / 2 ? 'wing' : 'f1') : 'f' + def.floor;
         out.push({ key: def.key, type: 'machine', def, floor: def.floor, area, name: def.name, icon: def.emoji || svKindIcon(def.kind), box: new THREE.Box3(), model: undefined });
       });
       out.push({ key: 'elevator', type: 'elevator', floor: 0, area: 'shop', name: 'Car elevator', icon: '🛗', box: new THREE.Box3() });
@@ -212,6 +213,33 @@ function svTargets() {
       shopVisit.targets = out;
       svUpdateBoxes(true);
       return out;
+    }
+
+// What is in an area, for the chooser, read from the registries (WORKSHOP_MACHINES, WORKSHOP_STATIONS,
+// WORKSHOP_HANGAR_BAYS, WS_WING.spots), so new machines, bays and halls show without changes here
+function svAreaNote(a) {
+      const S = WORKSHOP_SITE, bits = [];
+      const add = b => { if (b && !bits.includes(b)) bits.push(b); };
+      const areaOf = (lx, lz, floor) => {
+        const g = svGeo(), r = g && svAreaAt(S.x + lx, S.z + lz, svFloorY(floor) + 0.2);
+        return r ? r.key : floor === 1 ? (lz < -S.d / 2 ? 'wing' : 'f1') : 'f' + floor;
+      };
+      Object.values(WORKSHOP_MACHINES).forEach(d => { if (d.at && areaOf(d.at.x, d.at.z, d.floor) === a.key) add(SV_KIND[d.kind] || d.kind); });
+      Object.values(WORKSHOP_STATIONS).forEach(st => {
+        if (!st.local || st.world || !/bay|bench/i.test(st.label || '')) return;
+        if (areaOf(st.local.x, st.local.z, st.floor || 1) === a.key && !/lift bay|assembly/i.test(st.label)) add(st.label.toLowerCase());
+      });
+      if (a.key === 'hangar' && typeof WORKSHOP_HANGAR_BAYS !== 'undefined') {
+        const n = k => WORKSHOP_HANGAR_BAYS.filter(b => b.kind === k).length;
+        if (n('build')) add(`${n('build')} build bay${n('build') > 1 ? 's' : ''}`);
+        if (n('parking')) add('parking');
+        add('bridge crane');
+      }
+      if (a.key === 'wing' && WS_WING.spots) {
+        if (WS_WING.spots.rack || WS_WING.spots.barRack) add('racking');
+        if (WS_WING.spots.charger) add('forklift charger');
+      }
+      return bits.length ? bits.join(', ') : a.note;
     }
 
 function svKindIcon(kind) {
@@ -556,41 +584,69 @@ function svToggleList(open) {
       }
     }
 
-// Walk (glide) over to a thing from the list, face it and show its card
-function svGoToTarget(t) {
-      if (!t) return;
+// Can you see it from here: the first thing a ray from the eye at (x, z) to its middle meets is t
+function svSeesFrom(t, x, z, floor) {
+      const c = t.box.getCenter(_svT);
+      _svRay.origin.set(x, svFloorY(floor) + SV_EYE, z);
+      _svRay.direction.set(c.x - x, Math.min(c.y, svFloorY(floor) + SV_EYE + 0.5) - _svRay.origin.y, c.z - z).normalize();
+      const fl = shopVisit.floor;
+      shopVisit.floor = floor;
+      const hit = svPick(_svRay, 12);
+      shopVisit.floor = fl;
+      return hit === t;
+    }
+
+// A clear spot to see a thing from: free to stand on, with nothing else in the way. Machines first try
+// a step back from where he stands to work them, then a ring round them at that distance; anything
+// else a ring round its box. A spot you can stand on but not see from is kept as a last resort.
+// Returns { x, z, clear } (world) or null.
+function svViewSpot(t) {
+      if (!t || !svGeo()) return null;
       const S = WORKSHOP_SITE;
       const floor = t.type === 'elevator' ? shopVisit.floor : t.floor || 1;
-      const c = t.box.getCenter(_svT);
-      let spot = null;
-      if (t.type === 'machine') {
-        // a step back from where he stands to work it, so you see the whole machine
-        const st = machineStand(t.def), ax = S.x + t.def.at.x, az = S.z + t.def.at.z;
-        const ex = S.x + st.x - ax, ez = S.z + st.z - az, el = Math.hypot(ex, ez) || 1;
-        const back = camera && camera.aspect < 0.8 ? 1.7 : 0.9;   // (a tall phone screen sees less across)
-        spot = svFindFree(S.x + st.x + ex / el * back, S.z + st.z + ez / el * back, floor, 0.4);
-        // else a free spot round it at that distance, the front first, then the operator's own spot
-        const a0 = Math.atan2(ex, ez), sz = t.def.size || { w: 1, d: 1 }, rr = Math.max(sz.w, sz.d) / 2 + back + 0.5;
-        for (let k = 1; k < 16 && !spot; k++) {
-          const ang = a0 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * Math.PI / 8;
-          const px = ax + Math.sin(ang) * rr, pz = az + Math.cos(ang) * rr;
-          if (svFree(px, pz, floor)) spot = { x: px, z: pz };
-        }
-        if (!spot) spot = svFindFree(S.x + st.x, S.z + st.z, floor, 2.5);
-      }
-      if (!spot) {
-        const r = Math.max(t.box.max.x - t.box.min.x, t.box.max.z - t.box.min.z) / 2 + 0.7;
-        const dx = shopVisit.x - c.x, dz = shopVisit.z - c.z, a0 = Math.atan2(dx, dz);
-        for (let k = 0; k < 16 && !spot; k++) {
+      const c = t.box.getCenter(new THREE.Vector3());
+      let fallback = null;
+      const ok = (x, z) => {
+        if (!svFree(x, z, floor)) return false;
+        if (svSeesFrom(t, x, z, floor)) return true;
+        if (!fallback) fallback = { x, z, clear: false };
+        return false;
+      };
+      const ring = (cx, cz, r, a0) => {
+        for (let k = 0; k < 16; k++) {
           const a = a0 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * Math.PI / 8;
-          const px = c.x + Math.sin(a) * r, pz = c.z + Math.cos(a) * r;
-          if (svFree(px, pz, floor)) spot = { x: px, z: pz };
+          const px = cx + Math.sin(a) * r, pz = cz + Math.cos(a) * r;
+          if (ok(px, pz)) return { x: px, z: pz, clear: true };
         }
+        return null;
+      };
+      const back = camera && camera.aspect < 0.8 ? 1.7 : 0.9;   // (a tall phone screen sees less across)
+      if (t.type === 'machine') {
+        const st = machineStand(t.def), ax = S.x + t.def.at.x, az = S.z + t.def.at.z;
+        const ex = S.x + st.x - ax, ez = S.z + st.z - az, el = Math.hypot(ex, ez) || 1, a0 = Math.atan2(ex, ez);
+        const sz = t.def.size || { w: 1, d: 1 }, rr = Math.max(sz.w, sz.d) / 2;
+        const px = S.x + st.x + ex / el * back, pz = S.z + st.z + ez / el * back;
+        if (ok(px, pz)) return { x: px, z: pz, clear: true };
+        for (const r of [rr + back + 0.5, rr + 0.7, rr + back + 1.4, rr + 2.4]) { const p = ring(ax, az, r, a0); if (p) return p; }
+        if (ok(S.x + st.x, S.z + st.z)) return { x: S.x + st.x, z: S.z + st.z, clear: true };
       }
-      if (!spot) spot = svFindFree(c.x, c.z, floor, 5);
+      const r0 = Math.max(t.box.max.x - t.box.min.x, t.box.max.z - t.box.min.z) / 2;
+      const a1 = Math.atan2(shopVisit.x - c.x, shopVisit.z - c.z);
+      for (const r of [r0 + 0.7, r0 + 1.5, r0 + 2.5]) { const p = ring(c.x, c.z, r, a1); if (p) return p; }
+      if (fallback) return fallback;
+      const f = svFindFree(c.x, c.z, floor, 5);
+      return f ? { x: f.x, z: f.z, clear: false } : null;
+    }
+
+// Walk (glide) over to a thing from the list, face it and show its card
+function svGoToTarget(t) {
+      const spot = svViewSpot(t);
       if (!spot) return;
+      const floor = t.type === 'elevator' ? shopVisit.floor : t.floor || 1;
+      const c = t.box.getCenter(_svT);
+      const dy = c.y - (svFloorY(floor) + SV_EYE), dist = Math.hypot(c.x - spot.x, c.z - spot.z) || 1;
       svPin(t);
-      svTravel({ floor, x: spot.x, z: spot.z, yaw: Math.atan2(c.x - spot.x, c.z - spot.z), pitch: 0.28 });
+      svTravel({ floor, x: spot.x, z: spot.z, yaw: Math.atan2(c.x - spot.x, c.z - spot.z), pitch: Math.max(0.05, Math.min(0.6, -Math.atan2(dy, dist) + 0.08)) });
     }
 
 // --- Moving between places --------------------------------------------------------------------------
@@ -673,10 +729,11 @@ function svApplyCutaway() {
       const f = shopVisit.floor;
       const roofs = svRoofs();
       for (let i = 0; i < roofs.length; i++) roofs[i].visible = false;
-      for (let i = 0; i < wsDeckMeshes.length; i++) { const m = wsDeckMeshes[i]; m.visible = f >= 2; if (f >= 2 && m.material.opacity !== 0.98) m.material.opacity = 0.98; }
-      for (let i = 0; i < wsDeck3Meshes.length; i++) { const m = wsDeck3Meshes[i]; m.visible = f >= 3; if (f >= 3 && m.material.opacity !== 0.98) m.material.opacity = 0.98; }
-      if (wsFloor2) wsFloor2.visible = f >= 2;
-      if (wsFloor3) wsFloor3.visible = f >= 3;
+      // (js/workshopbuilding.js wsSetDecksFor: the decks above hidden, and wsViewCull leaves out the
+      // machines under the deck you stand on; called again only when his trip changed them)
+      const d2 = wsDeckMeshes[0], d3 = wsDeck3Meshes[0];
+      if (typeof wsViewFloor === 'undefined' || wsViewFloor !== f || (d2 && (d2.visible !== f >= 2 || (f >= 2 && d2.material.opacity !== 0.98)))
+        || (d3 && d3.visible !== f >= 3) || (wsFloor2 && wsFloor2.visible !== f >= 2) || (wsFloor3 && wsFloor3.visible !== f >= 3)) wsSetDecksFor(f);
     }
 
 function svRestoreCutaway() {
@@ -698,6 +755,8 @@ function svEnsureFloorBuilt(f) {
 function shopVisitStart(areaKey = 'f1') {
       if (typeof wsGroup === 'undefined') return;
       if (!wsGroup && typeof buildWorkshop3D === 'function') buildWorkshop3D();
+      // (read the registries afresh each visit: machines, stations and halls added since show up)
+      if (!shopVisit.on) { shopVisit.geo = shopVisit.targets = shopVisit.roofs = null; }
       const g = svGeo();
       if (!g || !camera || !controls) return;
       svCloseChooser();
@@ -928,6 +987,10 @@ function shopVisitOpenChooser(x, y) {
       const el = document.getElementById('svChooser');
       if (!el) return;
       if (typeof exploreHideSpotMenu === 'function') exploreHideSpotMenu();
+      el.querySelectorAll('[data-sv-area]').forEach(b => {
+        const a = SV_AREAS.find(ar => ar.key === b.getAttribute('data-sv-area')), n = b.querySelector('.sv-choice-note');
+        if (a && n) { try { n.textContent = svAreaNote(a); } catch (e) { n.textContent = a.note; } }
+      });
       el.classList.remove('hidden');
       const vw = window.innerWidth, vh = window.innerHeight, r = el.getBoundingClientRect();
       if (Number.isFinite(x) && Number.isFinite(y) && vw > 640) {

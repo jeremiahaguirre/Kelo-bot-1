@@ -134,7 +134,7 @@ function startServer() {
     console.log('open tasks section:', await run(() => (document.getElementById('agendaListContainer') || {}).textContent.slice(0, 200)));
   }
 
-  if (scenario === 'roadwork' || scenario === 'runway') {
+  if (scenario === 'roadwork' || scenario === 'runway' || scenario === 'roadfinish') {
     await stopLife();
     await run(() => {
       plantTimeScale = 0.15; plantWorkableScale = 60; rwTimeScale = 0.002;
@@ -219,7 +219,7 @@ function startServer() {
       state.worldEdits.push(e); t.data.editId = e.id; renderEdit(e);
       ['A walk-behind line striper (airless)'].forEach(n => state.toolInventory.push(n));
       rwLearnGear();
-      Object.assign(state.roadworks.stock, { paintyellow: 19, beads: 22.7 });
+      Object.assign(rwState().stock, { paintyellow: 19, beads: 22.7 });
       return t.id;
     });
     const done = await waitFor(async i => { if (keloIsFree() && !agendaWorking) runAutonomousLifeTick(); const t = agendaGet(i) || state.agenda.tasks.find(x => x.id === i); return t && t.status === 'done'; }, 600000, id);

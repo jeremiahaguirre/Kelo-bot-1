@@ -46,14 +46,36 @@ const AMBIANCE_PRESETS = [
   }
 ];
 
+// The map's layout (2026-11 redesign): where the buildings of the town's north row stand. Their own files
+// (house.js, storehouse.js, museum.js, weldstudio.js, printer.js, workbench.js, wind.js) and the pins
+// below read these; `was` keeps the old spots so old saves can be moved out of what now stands there
+// (mapLayoutMigrate, js/town.js). The north row faces Main Street (MAIN_STREET, js/roads.js) across
+// the valley floor that the mountain's foot moved back to make (valleyFootZ, js/scene.js).
+const MAP_LAYOUT = {
+  house: { x: -9.5, z: -15.2 },
+  storehouse: { x: 9.6, z: -14.9 },
+  weld: { x: -1.2, z: -14.7 },              // the welding studio's table; the 3D printer bench is beside it
+  workBench: { x: 2.3, z: -12.3 },          // where he stands at it (the top is 1.4 units behind)
+  museum: { x: -23, z: -15.5 },
+  windSock: { x: -36, z: -2.5 },
+  stove: { x: -15.6, z: -12.6 },            // his outdoor wood stove, beside the house
+  campfire: { x: -33, z: -12.5 },
+  garden: { x: -10.7, z: 1.6 },             // the first raised planter (four in a 2 x 2 grid, 2.4 x 1.8 apart)           // the fire ring, at the west end of Main Street by the Museum
+  was: {
+    house: { x: -9.5, z: -8.7 }, storehouse: { x: 7.6, z: -8.4 }, weld: { x: -1.2, z: -8.2 },
+    workBench: { x: -3.2, z: -3.0 }, museum: { x: -40, z: -5 }, windSock: { x: -19.6, z: -6.4 },
+    stove: { x: -3.4, z: -4.2 }, campfire: { x: -17.5, z: -3.0 }, garden: { x: -11.5, z: 1.6 }
+  }
+};
+
 const TOWN_LOCATIONS = {
   "storehouse": {
     "id": "storehouse",
     "name": "Storehouse",
     "building": "Kelo-1 Storehouse",
     "icon": "📦",
-    "x": 6.4,
-    "z": -4.0,
+    "x": MAP_LAYOUT.storehouse.x - 1.2,
+    "z": MAP_LAYOUT.storehouse.z + 4.4,
     "showPin": true,
     "pinColor": "from-orange-500/90 to-red-700/90"
   },
@@ -62,7 +84,7 @@ const TOWN_LOCATIONS = {
     "name": "Post Office",
     "building": "Okanagan Post Office",
     "icon": "📮",
-    "x": 9.8,
+    "x": 11.1,
     "z": 7.1,
     "showPin": true,
     "pinColor": "from-red-500/90 to-rose-600/90"
@@ -72,19 +94,18 @@ const TOWN_LOCATIONS = {
     "name": "Cozy Quilt Bed",
     "building": "Kelo-1 Cutaway Homestead",
     "icon": "🛏️",
-    "x": -11.6,
-    "z": -8.8,
+    "x": MAP_LAYOUT.house.x - 2.1,
+    "z": MAP_LAYOUT.house.z - 0.1,
     "showPin": true,
-    "pinColor": "from-emerald-500/90 to-teal-600/90",
-    "groundY": -0.17324750423431112
+    "pinColor": "from-emerald-500/90 to-teal-600/90"
   },
   "couch": {
     "id": "couch",
     "name": "Living Room Couch",
     "building": "Kelo-1 Cutaway Homestead",
     "icon": "🛋️",
-    "x": -7.5,
-    "z": -6.8,
+    "x": MAP_LAYOUT.house.x + 2.0,
+    "z": MAP_LAYOUT.house.z + 1.9,
     "showPin": false,
     "pinColor": "from-amber-500/90 to-orange-600/90"
   },
@@ -93,18 +114,17 @@ const TOWN_LOCATIONS = {
     "name": "TIG Welding Forge",
     "building": "Outdoor Welding Studio",
     "icon": "👨‍🏭",
-    "x": -1.2,
-    "z": -6.6,
+    "x": MAP_LAYOUT.weld.x,
+    "z": MAP_LAYOUT.weld.z + 1.6,
     "showPin": true,
-    "pinColor": "from-amber-500/90 to-red-600/90",
-    "groundY": -0.026114585930713738
+    "pinColor": "from-amber-500/90 to-red-600/90"
   },
   "garden": {
     "id": "garden",
     "name": "Okanagan Bio-Garden",
     "building": "Raised Cedar Planters",
     "icon": "🍑",
-    "x": -10.3,
+    "x": MAP_LAYOUT.garden.x + 1.2,
     "z": 5.0,
     "showPin": true,
     "pinColor": "from-lime-500/90 to-emerald-600/90",
@@ -180,8 +200,8 @@ const TOWN_LOCATIONS = {
     "name": "Museum",
     "building": "Kelo-1 Museum of Art & Ideas",
     "icon": "🏛️",
-    "x": -40,
-    "z": -0.4,
+    "x": MAP_LAYOUT.museum.x,
+    "z": MAP_LAYOUT.museum.z + 4.6,
     "showPin": true,
     "pinColor": "from-amber-600/90 to-stone-700/90"
   },
@@ -627,11 +647,59 @@ const VALID_ARCHETYPES = ['gold_drill_rig', 'mycelium_dome', 'rail_track', 'cust
 const MAX_SCULPTURE_PARTS = 24;
 
 // Everywhere Kelo-1 can go: the whole valley and the entire mountain range behind it. The east
-// edge reaches past the Workshop to the concrete and asphalt plant's land (js/plants.js).
-const WORLD_MIN_X = -60, WORLD_MAX_X = 86, WORLD_MIN_Z = -44, WORLD_MAX_Z = 10;
+// edge reaches past the Workshop to the concrete and asphalt plant's land (js/plants.js). The north
+// edge (task 7b) reaches through the cut over the range (the Workshop's pass) to its north yard: the
+// garage hall and the big hangar at the south end of the runway field (js/workshopnorth.js).
+const WORLD_MIN_X = -60, WORLD_MAX_X = 86, WORLD_MIN_Z = -172, WORLD_MAX_Z = 10;
+// The old north edge (the crest of the mountain range): random wandering and "somewhere open" picks
+// stay south of it, so he doesn't keep heading over the back of the mountains
+const WORLD_VALLEY_MIN_Z = -44;
+// The runway field (task 7b): a 2,000 m undeveloped field north of the Workshop, past the range and
+// its north yard, running north along the valley like Kelowna's real runway (16/34). 1.6 world units
+// a metre: 3,200 units long and 240 wide (150 m: a 45 m strip, shoulders and the graded safety area).
+// Plain grass for now, reserved for his future runway jobs (clear, grade, compact, base, asphalt from
+// his plant, markings, lights): nothing else is built, planted, landscaped, dug or parked on it
+// (offLimits, js/landscape.js; runwayJobActive lets a runway job work it). Its south edge meets the big
+// hangar's apron through `taxiway` (reserved ground, not paved yet).
+const RUNWAY_FIELD = {
+  minX: -110, maxX: 130, minZ: -3372, maxZ: -172,
+  centerX: 10, unitsPerMetre: 1.6, metres: { length: 2000, width: 150 },
+  y: 0.05,                       // its ground level (the Workshop's pad level)
+  blend: 34,                     // the ground blends back to the hills this far round it
+  heading: 'north-south',        // the strip's centre line runs along x = centerX (runway 16/34)
+  developed: false,              // true once he has built the runway on it (future jobs)
+  stage: 'field',                // future: 'cleared', 'graded', 'compacted', 'base', 'paved', 'marked', 'lit'
+  // The short taxiway corridor from the big hangar's apron (js/workshopnorth.js) onto the field
+  taxiway: { minX: 14, maxX: 50, minZ: -172, maxZ: -150 }
+};
+// Is (x, z) on the runway field (pad grows it)?
+function onRunwayField(x, z, pad = 0) {
+  const f = RUNWAY_FIELD;
+  return x > f.minX - pad && x < f.maxX + pad && z > f.minZ - pad && z < f.maxZ + pad;
+}
+// Is (x, z) on the field or its reserved taxiway (kept for runway jobs only)?
+function onRunwayReserve(x, z, pad = 0) {
+  const t = RUNWAY_FIELD.taxiway;
+  return onRunwayField(x, z, pad) || (x > t.minX - pad && x < t.maxX + pad && z > t.minZ - pad && z < t.maxZ + pad);
+}
+// A point on the field in runway terms: along (0 at the south threshold, 1 at the north end) and
+// across (-1 west edge .. 1 east edge, 0 the centre line). runwayFieldPoint(0.5, 0) is mid-field.
+function runwayFieldPoint(along, across = 0) {
+  const f = RUNWAY_FIELD;
+  return { x: f.centerX + across * (f.maxX - f.minX) / 2, z: f.maxZ - along * (f.maxZ - f.minZ), y: f.y };
+}
+// Where something that may not stop on the field (a parked vehicle, a dropped load) goes instead: the
+// same spot if it is off the field and its taxiway, else just south of them, on the Workshop's yard
+function runwayKeepOff(p) {
+  if (!onRunwayReserve(p.x, p.z, 1) || runwayJobActive) return p;
+  const t = RUNWAY_FIELD.taxiway, inTaxiX = p.x > t.minX - 2 && p.x < t.maxX + 2;
+  return { ...p, z: inTaxiX ? t.maxZ + 3 : RUNWAY_FIELD.maxZ + 4 };
+}
+// The whole world with the field: what the explore camera, the Map tab and flying cover
+const WORLD_EXTENT = { minX: Math.min(WORLD_MIN_X, RUNWAY_FIELD.minX), maxX: Math.max(WORLD_MAX_X, RUNWAY_FIELD.maxX), minZ: RUNWAY_FIELD.minZ, maxZ: WORLD_MAX_Z };
 // The town: the buildings and the streets between them. Kelo-1 doesn't build, plant or dig here;
 // the beach south of it (z above TOWN.maxZ) is his to use.
-const TOWN = { minX: -24.5, maxX: 19, minZ: -11.5, maxZ: 7.8 };
+const TOWN = { minX: -24.5, maxX: 19, minZ: -20.5, maxZ: 7.8 };   // (north edge behind the north row, MAP_LAYOUT)
 // The town buildings at real size (1.6 units a metre: doors about 2.1 m, storeys about 3 m). Each one is
 // modelled in its own small units and its group is scaled up by `scale`; x, z is its centre and w, d its
 // footprint in world units. Furniture inside is drawn at `furniture` (js/interiors.js), so chairs, desks and
@@ -641,7 +709,8 @@ const TOWN_FURNITURE_SCALE = 1.5;
 const TOWN_BUILDINGS = {
   cafe: { x: -19.0, z: 0.5, w: 3.8 * TOWN_BLDG_SCALE, d: 2.8 * TOWN_BLDG_SCALE, scale: TOWN_BLDG_SCALE },
   cyber: { x: -1.8, z: 1.6, w: 4.2 * TOWN_BLDG_SCALE, d: 3.0 * TOWN_BLDG_SCALE, scale: TOWN_BLDG_SCALE },
-  post_office: { x: 9.8, z: 1.2, w: 4.2 * TOWN_BLDG_SCALE, d: 3.2 * TOWN_BLDG_SCALE, scale: TOWN_BLDG_SCALE }
+  post_office: { x: 11.1, z: 1.2,   // (1.3 east of where it stood: NetNode Lane runs between it and NetNode)
+     w: 4.2 * TOWN_BLDG_SCALE, d: 3.2 * TOWN_BLDG_SCALE, scale: TOWN_BLDG_SCALE }
 };
 // Did he weld something in the last 15 minutes?
 function recentlyWelded() {
@@ -1021,7 +1090,7 @@ async function synthesizeUnboundedExperience(promptOrImpulse = null, originLabel
         if (hasLLMKey()) {
           {
             const llmPrompt = `You are the backend AI cognitive engine for Kelo-1, an autonomous open-world robot living on an island and alpine mountain range in Kelowna, BC.
-You have FULL freedom to roam the entire island and mountain peaks (x between ${WORLD_MIN_X} and ${WORLD_MAX_X}, z between ${WORLD_MIN_Z} and ${WORLD_MAX_Z}; note z < -14 is high up on the steep snow-capped mountains).
+You have FULL freedom to roam the entire island and mountain peaks (x between ${WORLD_MIN_X} and ${WORLD_MAX_X}, z between ${WORLD_MIN_Z} and ${WORLD_MAX_Z}; note z < -14 is high up on the steep snow-capped mountains and the crest is near z ${WORLD_VALLEY_MIN_Z}; the pass cut behind your Workshop, x 51 to 73, leads over the range to your Workshop's north yard, x 0 to 118 and z -100 to ${RUNWAY_FIELD.maxZ}, with the garage hall and the big hangar; north of z ${RUNWAY_FIELD.maxZ} lies the runway field, kept clear for a runway).
 Equipped Tools in Inventory: ${JSON.stringify(state.toolInventory)}.
 What each of his things is for (use each only for that): ${typeof itemUseSummaryForAI === 'function' ? itemUseSummaryForAI() : 'unknown'}.
 User/Catalyst Input: "${promptOrImpulse || 'Invent an unscripted task: e.g., drilling for gold in the mountains, terraforming with your pneumatic auger, or welding a new 3D structure'}".
@@ -1806,7 +1875,7 @@ function generateProceduralDecision(context = {}) {
         destination = { x: loc.x, z: loc.z, placeName: loc.building };
       } else {
         const x = Math.round(randRange(WORLD_MIN_X + 2, WORLD_MAX_X - 2) * 10) / 10;
-        const z = Math.round(randRange(WORLD_MIN_Z + 2, WORLD_MAX_Z) * 10) / 10;
+        const z = Math.round(randRange(WORLD_VALLEY_MIN_Z + 2, WORLD_MAX_Z) * 10) / 10;
         destination = { x, z, placeName: z < -14 ? 'Somewhere on the Mountain' : 'Somewhere on the Island' };
       }
 
@@ -1927,7 +1996,7 @@ Current state:
 - Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
 - The town (x ${TOWN.minX} to ${TOWN.maxX}, z ${TOWN.minZ} to ${TOWN.maxZ}) is not yours to build in: put creations, plantings, roads and digs out of town or on the beach. Art you make for a spot in town goes to your Museum of Art & Ideas (${typeof museumSummaryForAI === 'function' ? museumSummaryForAI() : 'empty'}).
-- World bounds: x from ${WORLD_MIN_X} to ${WORLD_MAX_X}, z from ${WORLD_MIN_Z} to ${WORLD_MAX_Z} (z below -14 is the mountain range, which you can roam freely; z above 8 is the lake shore)
+- World bounds: x from ${WORLD_MIN_X} to ${WORLD_MAX_X}, z from ${WORLD_MIN_Z} to ${WORLD_MAX_Z} (z below -14 is the mountain range, which you can roam freely; its crest is near z ${WORLD_VALLEY_MIN_Z}; the pass cut behind the Workshop, x 51 to 73, leads over it to the Workshop's north yard, x 0 to 118 and z -100 to ${RUNWAY_FIELD.maxZ}, with its garage hall and big hangar; z above 8 is the lake shore; north of z ${RUNWAY_FIELD.maxZ} is the runway field, x ${RUNWAY_FIELD.minX} to ${RUNWAY_FIELD.maxX}: nothing is built, planted, dug or parked there)
 ${trigger ? `- Something just prompted you (you may follow it, reinterpret it, or decline): "${trigger}"` : '- Nothing prompted you. This is purely your own impulse.'}
 
 Return ONLY JSON:

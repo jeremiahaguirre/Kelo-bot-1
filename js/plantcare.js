@@ -20,8 +20,8 @@ const PC_MAX_STEPS = 40000;                  // catch-up limit (about 140 real d
 const PC_WILT_AT = 0.75;                     // health below this shows as wilting
 const PC_CAN_RE = /watering can|garden hose|\bhose\b/i;
 const PC_FERT_RE = /fertili[sz]er|compost|bone ?meal|blood ?meal|plant food|manure|worm castings/i;
-const PC_TAP = { x: -13.4, z: 2.5 };         // the garden's yard hydrant, west of the beds
-const PC_BEDS = [0, 1, 2, 3].map(p => ({ x: -11.5 + (p % 2) * 2.4, z: 1.6 + Math.floor(p / 2) * 1.8 })); // as built in js/scene.js
+const PC_TAP = { x: MAP_LAYOUT.garden.x + 1.2, z: MAP_LAYOUT.garden.z - 1.5 };   // the garden's yard hydrant, behind the beds (Garden Lane stays clear)
+const PC_BEDS = [0, 1, 2, 3].map(p => ({ x: MAP_LAYOUT.garden.x + (p % 2) * 2.4, z: MAP_LAYOUT.garden.z + Math.floor(p / 2) * 1.8 })); // as built in js/scene.js
 const PC_FEEDS = [
   { re: /bone ?meal/i, n: 0.35, label: 'bone meal' },
   { re: /compost|manure|worm castings/i, n: 0.3, m: 0.08, label: 'compost' },

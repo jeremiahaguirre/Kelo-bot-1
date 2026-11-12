@@ -8,11 +8,96 @@
 // (chopped trees, plantings, roads, hills, holes, dirt piles, new land and builds) with a legend and
 // a list; tap a mark or a row to fly there.
 
-// The world box it covers (the whole island: js/scene.js ISLAND_MIN_X/MAX_X, ISLAND_HALF_Z)
-const MINIMAP_X0 = ISLAND_MIN_X, MINIMAP_Z0 = -ISLAND_HALF_Z;
-const MINIMAP_W = ISLAND_MAX_X - ISLAND_MIN_X, MINIMAP_H = ISLAND_HALF_Z * 2;
-const MINIMAP_RES = 1.5;                      // terrain samples per world unit for the base picture
-const minimap = { canvas: null, ctx: null, base: null, baseSig: '', zoom: 1, lastDraw: 0 };
+// The world boxes it covers ("sheets"), all the same shape: the valley (the whole island: js/scene.js
+// ISLAND_MIN_X/MAX_X, ISLAND_HALF_Z), and since task 7b the north sheet: the Workshop's pass, its north
+// yard and the south end of the runway field (the field runs on north off the sheet). The corner map
+// shows the sheet the camera looks at; the Map tab has a button for each.
+const MINIMAP_SHEETS = {
+  valley: { x0: ISLAND_MIN_X, z0: -ISLAND_HALF_Z, w: ISLAND_MAX_X - ISLAND_MIN_X, h: ISLAND_HALF_Z * 2, res: 1.5, label: 'Valley' },
+  north: { x0: -125, z0: -232, w: 270, h: 270 * (ISLAND_HALF_Z * 2) / (ISLAND_MAX_X - ISLAND_MIN_X), res: 0.9, label: 'North yard & runway field' }
+};
+// (the current sheet's box: minimapUseSheet sets these)
+let MINIMAP_X0 = MINIMAP_SHEETS.valley.x0, MINIMAP_Z0 = MINIMAP_SHEETS.valley.z0;
+let MINIMAP_W = MINIMAP_SHEETS.valley.w, MINIMAP_H = MINIMAP_SHEETS.valley.h;
+let MINIMAP_RES = 1.5;                        // terrain samples per world unit for the base picture
+const minimap = { canvas: null, ctx: null, base: null, baseSig: '', zoom: 1, lastDraw: 0, sheet: 'valley', bases: {} };
+
+// Switch the map to a sheet (its terrain picture is kept per sheet and built when first needed)
+function minimapUseSheet(key) {
+      if (!MINIMAP_SHEETS[key]) key = 'valley';
+      if (key !== minimap.sheet) {
+        minimap.bases[minimap.sheet] = { base: minimap.base, sig: minimap.baseSig };
+        const S = MINIMAP_SHEETS[key];
+        MINIMAP_X0 = S.x0; MINIMAP_Z0 = S.z0; MINIMAP_W = S.w; MINIMAP_H = S.h; MINIMAP_RES = S.res;
+        minimap.sheet = key;
+        const kept = minimap.bases[key] || {};
+        minimap.base = kept.base || null;
+        minimap.baseSig = kept.sig || '';
+      }
+      if (!minimap.base || minimap.baseSig !== minimapSignature()) minimapBuildBase();
+    }
+
+// The sheet the camera is over (north of the range's crest: the north sheet)
+function minimapSheetFor(z) {
+      return z < -60 ? 'north' : 'valley';
+    }
+
+// The north sheet's own marks: the runway field (mown, its centre line dashed, labelled and running on
+// north off the sheet), its reserved taxiway, the Workshop's pass and yard
+function minimapNorthMarks(ctx, px, pz, sx, sz, dpr, big = false) {
+      if (typeof RUNWAY_FIELD === 'undefined') return;
+      const F = RUNWAY_FIELD, T = F.taxiway;
+      ctx.save();
+      ctx.fillStyle = 'rgba(190,242,100,0.22)';
+      ctx.fillRect(px(F.minX), pz(F.minZ), (F.maxX - F.minX) * sx, (F.maxZ - F.minZ) * sz);
+      // mowing stripes along it
+      ctx.fillStyle = 'rgba(255,255,255,0.07)';
+      for (let x = F.minX; x < F.maxX; x += 30) ctx.fillRect(px(x), pz(F.minZ), 15 * sx, (F.maxZ - F.minZ) * sz);
+      ctx.strokeStyle = 'rgba(236,252,203,0.85)'; ctx.lineWidth = 1.2 * dpr;
+      ctx.strokeRect(px(F.minX), pz(F.minZ), (F.maxX - F.minX) * sx, (F.maxZ - F.minZ) * sz);
+      ctx.setLineDash([6 * dpr, 5 * dpr]);
+      ctx.beginPath(); ctx.moveTo(px(F.centerX), pz(F.maxZ)); ctx.lineTo(px(F.centerX), pz(F.minZ)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(148,163,184,0.55)';
+      ctx.fillRect(px(T.minX), pz(T.minZ), (T.maxX - T.minX) * sx, (T.maxZ - T.minZ) * sz);
+      if (typeof WORKSHOP_LAND !== 'undefined' && WORKSHOP_LAND.yard) [WORKSHOP_LAND.pass, WORKSHOP_LAND.eastRoad, WORKSHOP_LAND.yard].forEach(r => {
+        ctx.fillStyle = 'rgba(168,162,158,0.55)';
+        ctx.fillRect(px(r.minX), pz(r.minZ), (r.maxX - r.minX) * sx, (r.maxZ - r.minZ) * sz);
+      });
+      const top = Math.max(pz(F.minZ), 0);
+      ctx.fillStyle = '#ecfccb'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.font = `bold ${Math.round((big ? 12 : 8) * dpr)}px sans-serif`;
+      ctx.fillText(`\u25B2 RUNWAY FIELD ${F.metres.length.toLocaleString('en')} m`, px(F.centerX), top + 4 * dpr);
+      ctx.font = `${Math.round((big ? 10 : 7) * dpr)}px sans-serif`;
+      ctx.fillText(F.developed ? 'runway' : 'kept clear for his runway', px(F.centerX), top + (big ? 19 : 13) * dpr);
+      ctx.restore();
+    }
+
+// His roads and paths (js/roads.js): gravel roads light brown with a dark edge, footpaths paler and thinner
+function minimapRoads(ctx, px, pz, sx, dpr) {
+      if (typeof KELO_ROADS === 'undefined') return;
+      ctx.save();
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      [true, false].forEach(edge => KELO_ROADS.forEach(r => {
+        const w = Math.max(r.kind === 'path' ? 1.2 : 2, r.w * sx);
+        ctx.strokeStyle = edge ? 'rgba(68,52,32,0.55)' : r.kind === 'path' ? '#e7dcc4' : '#cdb991';
+        ctx.lineWidth = edge ? w + 1.4 * dpr : w;
+        ctx.beginPath();
+        r.pts.forEach(([x, z], i) => (i ? ctx.lineTo(px(x), pz(z)) : ctx.moveTo(px(x), pz(z))));
+        ctx.stroke();
+      }));
+      ctx.restore();
+    }
+
+// On the valley sheet: where the pass leads (up off the top of the map)
+function minimapValleyPointer(ctx, px, pz, dpr) {
+      if (typeof WORKSHOP_LAND === 'undefined' || !WORKSHOP_LAND.pass) return;
+      const P = WORKSHOP_LAND.pass, x = px((P.minX + P.maxX) / 2), z = Math.max(pz(P.maxZ) - 2 * dpr, 10 * dpr);
+      ctx.save();
+      ctx.fillStyle = 'rgba(15,23,42,0.75)'; ctx.strokeStyle = '#ecfccb'; ctx.lineWidth = 1 * dpr;
+      ctx.beginPath(); ctx.moveTo(x, z - 8 * dpr); ctx.lineTo(x + 5 * dpr, z); ctx.lineTo(x - 5 * dpr, z); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.restore();
+    }
 
 // The buildings, as footprints (x, z = centre; w, d = size)
 function minimapBuildings() {
@@ -25,7 +110,7 @@ function minimapBuildings() {
         const t = TOWN_BUILDINGS[k];
         b.push({ x: t.x, z: t.z, w: t.w, d: t.d, color, icon });
       });
-      b.push({ x: -1.2, z: -8.2, w: 2.4, d: 1.6, color: '#334155', icon: '🔥' });   // welding studio
+      b.push({ x: MAP_LAYOUT.weld.x, z: MAP_LAYOUT.weld.z, w: 2.4, d: 1.6, color: '#334155', icon: '🔥' });   // welding studio
       return b;
     }
 
@@ -68,9 +153,13 @@ function minimapBuildBase() {
           const gz = (hs[Math.min(ch - 1, j + 1) * cw + i] - hs[Math.max(0, j - 1) * cw + i]) * MINIMAP_RES / 2;
           const snowy = typeof snowHoldsOn === 'function' ? snowHoldsOn(1 / Math.sqrt(1 + gx * gx + gz * gz)) > 0.5 : true;
           if (z > 7.5 && h < water) c = frozen ? mix([228, 238, 247], [176, 200, 222], (water - h) / 6) : mix([120, 190, 222], [24, 70, 120], (water - h) / 5);
+          // past the range (the north sheet): plain bands as drawn in 3D, forest, then rock, snow only on the tops
+          else if (z < -ISLAND_HALF_Z && h > 2.6) c = h > 30 ? [228, 233, 240] : h > 20 ? mix([112, 118, 108], [150, 154, 150], (h - 20) / 10) : mix([62, 112, 52], [92, 108, 80], (h - 2.6) / 18);
           else if (z < 7.8 && h > snowLine && snowy) c = [238, 243, 250];
           else if (typeof groundDugAt === 'function' && groundDugAt(x, z) > 0.05) c = [122, 75, 42];
-          else if (h > 8.5 && snowy) c = [236, 241, 250];
+          else if (h > 8.5 && snowy && (z > -ISLAND_HALF_Z || h > 26)) c = [236, 241, 250];
+          // (past the range the hills are forest up to the bare tops, as drawn in 3D)
+          else if (z < -ISLAND_HALF_Z && h > 2.6 && h < 22) c = mix([62, 112, 52], [96, 104, 92], (h - 8) / 14);
           else if (h > 2.6) c = mix([128, 136, 152], [92, 99, 118], (h - 2.6) / 6);
           else if (z > 8.2) c = [236, 217, 160];
           else c = mix([96, 196, 70], [60, 150, 50], (h + 0.3) / 2.6);
@@ -108,7 +197,7 @@ function minimapNeedsDraw() {
       const r = v => Math.round(v / q);
       const t = controls ? controls.target : { x: 0, z: 0 }, cp = camera ? camera.position : t;
       const k = keloGroup ? keloGroup.position : state.botPos;
-      let key = `${minimap.zoom}|${cv.width}|${r(t.x)},${r(t.z)}|${r(cp.x)},${r(cp.y)},${r(cp.z)}|${r(k.x)},${r(k.z)},${Math.round((state.botRotY || 0) * 20)}`;
+      let key = `${minimapSheetFor(t.z)}|${minimap.zoom}|${cv.width}|${r(t.x)},${r(t.z)}|${r(cp.x)},${r(cp.y)},${r(cp.z)}|${r(k.x)},${r(k.z)},${Math.round((state.botRotY || 0) * 20)}`;
       (state.vehicles || []).forEach(v => { key += `|${r(v.x)},${r(v.z)}`; });
       const now = performance.now();
       if (key === minimapDrawKey && now - minimapDrawnAt < 1000) return false;
@@ -119,7 +208,9 @@ function minimapNeedsDraw() {
 
 function minimapDraw() {
       const cv = minimap.canvas, ctx = minimap.ctx;
-      if (!cv || !ctx || !minimap.base) return;
+      if (!cv || !ctx) return;
+      minimapUseSheet(minimapSheetFor(controls ? controls.target.z : state.botPos.z));
+      if (!minimap.base) return;
       const W = cv.width, H = cv.height, v = minimapView();
       const sx = W / v.w, sz = H / v.h;
       const px = x => (x - v.x0) * sx, pz = z => (z - v.z0) * sz;
@@ -129,6 +220,9 @@ function minimapDraw() {
       ctx.imageSmoothingEnabled = true;
       ctx.drawImage(minimap.base, (v.x0 - MINIMAP_X0) * MINIMAP_RES, (v.z0 - MINIMAP_Z0) * MINIMAP_RES, v.w * MINIMAP_RES, v.h * MINIMAP_RES, 0, 0, W, H);
 
+      if (minimap.sheet === 'north') minimapNorthMarks(ctx, px, pz, sx, sz, dpr);
+      minimapRoads(ctx, px, pz, sx, dpr);
+      if (minimap.sheet !== 'north') minimapValleyPointer(ctx, px, pz, dpr);
       // Paved yard, helipad, balloon field, dock and the Disposal Pit
       ctx.lineWidth = 1 * dpr;
       if (typeof VEHICLE_YARD !== 'undefined') {
@@ -291,7 +385,7 @@ const CHANGE_KINDS = [
   { key: 'land', label: 'New land', emoji: '🏝️', color: '#fde047' },
   { key: 'build', label: 'Builds', emoji: '🔨', color: '#f472b6' }
 ];
-const changesMap = { canvas: null, hidden: new Set(), hits: [], sig: '' };
+const changesMap = { canvas: null, hidden: new Set(), hits: [], sig: '', sheet: 'valley' };
 
 // One entry per change, newest first: { kind, label, x, z, at, ... }
 function worldChangesList() {
@@ -320,7 +414,15 @@ function worldChangesList() {
 // The whole island, with every change marked in its own colour and shape
 function changesMapDraw() {
       const cv = changesMap.canvas;
-      if (!cv || !minimap.base || !cv.offsetParent) return;
+      if (!cv || !cv.offsetParent) return;
+      // (drawn from its own sheet; the corner map's sheet is put back after)
+      const was = minimap.sheet;
+      minimapUseSheet(changesMap.sheet);
+      try { changesMapDrawSheet(cv); } finally { minimapUseSheet(was); }
+    }
+
+function changesMapDrawSheet(cv) {
+      if (!minimap.base) return;
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       const w = cv.clientWidth || 400, h = cv.clientHeight || 300;
       if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
@@ -333,6 +435,8 @@ function changesMapDraw() {
       // Dim the land a little so the marks stand out
       ctx.fillStyle = 'rgba(15,23,42,0.18)';
       ctx.fillRect(0, 0, W, H);
+      if (changesMap.sheet === 'north') minimapNorthMarks(ctx, px, pz, sx, sz, dpr, true);
+      minimapRoads(ctx, px, pz, sx, dpr);
       minimapBuildings().forEach(b => {
         ctx.fillStyle = 'rgba(226,232,240,0.55)';
         ctx.fillRect(px(b.x - b.w / 2), pz(b.z - b.d / 2), b.w * sx, b.d * sz);
@@ -426,9 +530,30 @@ function initChangesMap() {
         const X = (e.clientX - r.left) * dpr, Z = (e.clientY - r.top) * dpr;
         const near = changesMap.hits.map(h => ({ h, d: Math.hypot(h.X - X, h.Z - Z) })).sort((a, b) => a.d - b.d)[0];
         if (near && near.d < 14 * dpr) return changesMapFlyTo(near.h.c);
-        // Anywhere else: fly to that spot of the island
-        if (typeof exploreFlyTo === 'function') exploreFlyTo({ x: MINIMAP_X0 + X / cv.width * MINIMAP_W, z: MINIMAP_Z0 + Z / cv.height * MINIMAP_H, dist: 24 });
+        // Anywhere else: fly to that spot of the sheet
+        const S = MINIMAP_SHEETS[changesMap.sheet];
+        if (typeof exploreFlyTo === 'function') exploreFlyTo({ x: S.x0 + X / cv.width * S.w, z: S.z0 + Z / cv.height * S.h, dist: changesMap.sheet === 'north' ? 60 : 24 });
       });
+      // A button for each sheet, above the map (the valley first: the town and everything he changes)
+      const bar = document.createElement('div');
+      bar.className = 'flex gap-1.5';
+      bar.setAttribute('role', 'group');
+      bar.setAttribute('aria-label', 'Which part of the world');
+      const paint = () => bar.querySelectorAll('button').forEach(b => {
+        const on = b.getAttribute('data-map-sheet') === changesMap.sheet;
+        b.setAttribute('aria-pressed', String(on));
+        b.className = `px-2.5 py-1 rounded-lg text-[11px] border transition ${on ? 'border-amber-500 bg-amber-500/15 text-amber-200' : 'border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800'}`;
+      });
+      Object.entries(MINIMAP_SHEETS).forEach(([key, S]) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.setAttribute('data-map-sheet', key);
+        b.textContent = (key === 'north' ? '\u2708\uFE0F ' : '\uD83C\uDFD8\uFE0F ') + S.label;
+        b.addEventListener('click', () => { changesMap.sheet = key; paint(); changesMapDraw(); });
+        bar.appendChild(b);
+      });
+      paint();
+      cv.parentNode.insertBefore(bar, cv);
       document.getElementById('btnOpenChangesMap')?.addEventListener('click', () => { if (typeof window.openKeloMenu === 'function') window.openKeloMenu('map'); });
       document.getElementById('changesMapLegend')?.addEventListener('click', (e) => {
         const b = e.target.closest('[data-change-kind]');

@@ -8,7 +8,7 @@
 // - campfire: a fire ring by his house, lit at night, that he sits beside
 // - stars: named constellations drawn in the night sky when he looks up (or uses his telescope)
 
-const PASTIME_SPOTS = { dock: { x: -8.5, z: 8.75 }, stove: { x: -3.4, z: -4.2 }, campfire: { x: -17.5, z: -3.0 }, beach: { x: -6, z: 8.4 } };
+const PASTIME_SPOTS = { dock: { x: -8.5, z: 8.75 }, stove: { x: MAP_LAYOUT.stove.x, z: MAP_LAYOUT.stove.z }, campfire: { x: MAP_LAYOUT.campfire.x, z: MAP_LAYOUT.campfire.z }, beach: { x: -6, z: 8.4 } };
 
 // --- Small shared helpers -------------------------------------------------------------------
 function pastimeBusy() {

@@ -219,7 +219,7 @@ function digToolModelName(site) {
 async function digAt(x, z, originLabel = 'Digging') {
       if (state.isBusy || state.isBuilding || state.isPracticing) return 'busy';
       x = Math.round(clampNumber(x, WORLD_MIN_X + 1, WORLD_MAX_X - 1, 0) * 10) / 10;
-      z = Math.round(clampNumber(z, WORLD_MIN_Z + 1, 7, -20) * 10) / 10;
+      z = Math.round(clampNumber(z, WORLD_VALLEY_MIN_Z + 1, 7, -20) * 10) / 10;
       // Town isn't his to dig up
       if (typeof inTown === 'function' && inTown(x, z)) {
         state.speechBubble = "That's in town. I'll dig out on the mountain instead.";

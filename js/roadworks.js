@@ -139,13 +139,14 @@ if (typeof SKILL_WORDS !== 'undefined') {
     { kind: 'paver', re: /\basphalt paver\b/i, verb: 'running', noun: 'asphalt paver' }
   );
 }
-// Road machines park in a row on the plant's gravel yard, by the asphalt plant, so they're near the work
+// Road machines park in a row by the asphalt plant, so they're near the work
 const RW_PARK_KINDS = new Set(['dozer', 'grader', 'soilroller', 'tandemroller', 'paver']);
 function rwParkingSlots() {
       if (typeof AGGREGATE_PLANT_SITE === 'undefined') return null;
-      const S = AGGREGATE_PLANT_SITE, west = S.x - S.w / 2;
-      // The yard strip along the plant's west side (PLANT_YARD_W wide), vehicles nose to tail along z
-      const x = west + (typeof PLANT_YARD_W === 'number' ? PLANT_YARD_W : 4) / 2;
+      const S = AGGREGATE_PLANT_SITE;
+      // Along the plant's east side, nose to tail along z. (The yard strip on its west side is the haul
+      // road up to the pass and the north yard, KELO_ROADS in js/roads.js, so nothing parks there.)
+      const x = S.x + S.w / 2 + 1.6;
       return [-5.5, -1.5, 2.5, 6.5, 10.0].map(dz => [x, Math.min(typeof PLANT_DRY_Z === 'number' ? PLANT_DRY_Z - 1 : 11, S.z + dz)]);
     }
 if (typeof parkingSlotsFor === 'function') {

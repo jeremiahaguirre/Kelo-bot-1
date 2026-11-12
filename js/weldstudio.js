@@ -8,7 +8,7 @@
 // flashes blue-white and lights the room. The table top stays where it always was (centre -1.2, -8.2,
 // 0.92 up), so his walk to the bench, his stand spot and the workpiece are unchanged.
 
-const WELD_STUDIO = { x: -1.2, z: -8.2 };
+const WELD_STUDIO = { x: MAP_LAYOUT.weld.x, z: MAP_LAYOUT.weld.z };
 let weldStudio = null;
 
 // Concrete with trowel marks, stains, and burn marks where hot slag and spatter land around the table

@@ -10,7 +10,7 @@
 // the things on the shelves are shown at their own size (shelfHolderFor).
 const STOREHOUSE_SCALE = 1.6;
 const STOREHOUSE_MODEL = { w: 5.2, d: 3.6, wallH: 2.6 };
-const STOREHOUSE = { x: 7.6, z: -8.4, w: 5.2 * STOREHOUSE_SCALE, d: 3.6 * STOREHOUSE_SCALE, wallH: 2.6 * STOREHOUSE_SCALE };
+const STOREHOUSE = { x: MAP_LAYOUT.storehouse.x, z: MAP_LAYOUT.storehouse.z, w: 5.2 * STOREHOUSE_SCALE, d: 3.6 * STOREHOUSE_SCALE, wallH: 2.6 * STOREHOUSE_SCALE };
 const SHELF_SLOT = 0.68;
 // The room a thing has in its shelf slot (world units): the slot's width, the clear height under the
 // next shelf and the plank's depth. A thing bigger than that is shown smaller; long things lie across.

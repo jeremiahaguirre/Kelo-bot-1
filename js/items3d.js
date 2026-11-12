@@ -773,7 +773,7 @@ Make it look like the actual object (proportions, colours, distinctive features)
 // --- Post office pickup counter: deliveries wait here as their real models ------------------
 let parcelDisplayGroup = null;
 // The pick-up table out front of the Post Office, east of its door (x, z its centre; the sign faces the lake)
-const PICKUP_TABLE = { x: 16.0, z: 6.0, rotY: 0, scale: 1.6 };
+const PICKUP_TABLE = { x: 17.6, z: 6.0, rotY: 0, scale: 1.6 };
 let parcelDisplayKey = null;
 
 function renderPostOfficeParcels3D() {

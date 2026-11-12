@@ -333,7 +333,7 @@ async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
         } else if (hobby.style === 'plant') {
           spot = { x: -22 - Math.random() * 6, z: 3 + Math.random() * 3, label: 'the wildflower patch west of town' };
         } else if (hobby.style === 'easel') {
-          spot = pick([{ x: 3, z: 8.4, label: 'the lakeshore' }, { x: -20, z: -12, label: 'the foot of the mountains' }]);
+          spot = pick([{ x: 3, z: 8.4, label: 'the lakeshore' }, { x: -38, z: -17.5, label: 'the foot of the mountains' }]);
         } else {
           spot = pick([{ x: -16, z: -1.5, label: 'the meadow' }, { x: 4.2, z: 9.6, label: 'the lake edge' }, { x: -4, z: -2, label: 'the valley' }]);
         }

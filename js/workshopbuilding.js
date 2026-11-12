@@ -42,8 +42,17 @@ const WORKSHOP_LAND = {
   lane: { minX: WORKSHOP_SITE.x + 5.85 - 2.6, maxX: WORKSHOP_SITE.x + WORKSHOP_SITE.w / 2 + 1.0, minZ: WORKSHOP_SITE.z, maxZ: 9.0 },
   // The hangar's pad (js/workshopbuilding.js, buildWorkshopHangar3D) and its apron down to the helipad
   hangar: { minX: 23.6, maxX: 45.6, minZ: -22.9, maxZ: -6.9 },
+  // Task 7b, the north land (js/workshopnorth.js): a haul road up the east side of the Workshop from the
+  // plant's pad, the pass cut through the range behind it, and the north yard over the crest where the
+  // garage hall and the big hangar stand at the south end of the runway field. Each has its own cut
+  // slope (blend) so the pass's sides are rock cuts and the yard eases into the hills.
+  eastRoad: { minX: 62.6, maxX: 68.4, minZ: -26, maxZ: -8, blend: 3 },
+  pass: { minX: 51, maxX: 73, minZ: -101, maxZ: -23.6, blend: 12, blendS: 2 },
+  yard: { minX: 0, maxX: 118, minZ: -173, maxZ: -100, blend: 16 },
   y: WORKSHOP_PAD_Y, blend: 3.2, blendNorth: 9, shore: 1.4
 };
+// Every piece of the Workshop's levelled land (the north land only once the field exists)
+const WORKSHOP_LAND_RECTS = [WORKSHOP_LAND.pad, WORKSHOP_LAND.lane, WORKSHOP_LAND.hangar, WORKSHOP_LAND.eastRoad, WORKSHOP_LAND.pass, WORKSHOP_LAND.yard];
 // The hangar and assembly high bay: a single big bay beside the Workshop (west, north of the
 // helipad) for his biggest projects and vehicles: an ultralight with a 10 m span (16 units), a
 // pickup with its trailer, the dump truck, the mixer truck. A wide, tall roll-up door faces the
@@ -105,9 +114,11 @@ function workshopRectDist(r, x, z) {
 function workshopLandAt(x, z, base) {
       const L = WORKSHOP_LAND;
       let k = 1;
-      [L.pad, L.lane, L.hangar].forEach(r => {
+      // (the north land and its slopes are all north of z -5: skip it for the valley's points)
+      const rects = z > -5 ? WORKSHOP_LAND_RECTS.slice(0, 3) : WORKSHOP_LAND_RECTS;
+      rects.forEach(r => {
         const d = workshopRectDist(r, x, z);
-        const blend = d.dzN > 0 ? L.blendNorth : d.dzS > 0 && r === L.lane ? L.shore : L.blend;
+        const blend = d.dzS > 0 && r.blendS ? r.blendS : r.blend || (d.dzN > 0 ? L.blendNorth : d.dzS > 0 && r === L.lane ? L.shore : L.blend);
         const out = Math.hypot(d.dx, d.dzN, d.dzS);
         const t = Math.min(1, out / blend);
         k = Math.min(k, t * t * (3 - 2 * t));
@@ -121,8 +132,7 @@ function workshopPadAt(x, z, base) {
     }
 
 function inWorkshopSite(x, z, pad = 0) {
-      const L = WORKSHOP_LAND;
-      return [L.pad, L.lane, L.hangar].some(r => x > r.minX - pad && x < r.maxX + pad && z > r.minZ - pad && z < r.maxZ + pad);
+      return WORKSHOP_LAND_RECTS.some(r => x > r.minX - pad && x < r.maxX + pad && z > r.minZ - pad && z < r.maxZ + pad);
     }
 
 // A point in the building's own coordinates (x across, z towards the front doors), as a world point

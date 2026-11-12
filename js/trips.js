@@ -150,8 +150,9 @@ function tripHasHitch(tow) {
       return Boolean(tow && (/hitch/i.test(tow.name) || (vehicleKindKey(tow.name) === 'dump truck' ? ownedItemNames().some(n => /hitch/i.test(n) && !PICKUP_RE.test(n)) : ownedItemNames().some(n => /trailer hitch|tow hitch|hitch receiver/i.test(n)))));
     }
 
-// A coarse grid over the island: ground height, snow, water, roads. Built fresh for each plan.
-const TRIP_GRID = { x0: WORLD_MIN_X, z0: WORLD_MIN_Z, step: 2, nx: Math.round((WORLD_MAX_X - WORLD_MIN_X) / 2) + 1, nz: 29 };
+// A coarse grid over the island, the range and the Workshop's north land (to 2 units past the shore):
+// ground height, snow, water, roads. Built fresh for each plan.
+const TRIP_GRID = { x0: WORLD_MIN_X, z0: WORLD_MIN_Z, step: 2, nx: Math.round((WORLD_MAX_X - WORLD_MIN_X) / 2) + 1, nz: Math.round((WORLD_MAX_Z + 2 - WORLD_MIN_Z) / 2) + 1 };
 
 function tripOnRoad(x, z) {
       if (typeof inParkingArea === 'function' && inParkingArea(x, z, 1)) return true;

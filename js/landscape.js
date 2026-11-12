@@ -45,8 +45,8 @@ function offLimits(x, z, pad = 0) {
       if (typeof inParkingArea === 'function' && inParkingArea(x, z, pad)) return 'the vehicle yard';
       if (Math.hypot(x - DISPOSAL_PIT.x, z - DISPOSAL_PIT.z) < DISPOSAL_PIT.r + 1 + pad) return 'the Disposal Pit';
       if (z > 9.2) return 'the lake';
-      // The runway field is kept for the runway (only a runway job may work on it)
-      if (typeof onRunwayField === 'function' && onRunwayField(x, z, pad) && !runwayJobActive) return 'the runway field';
+      // The runway field and its taxiway are kept for the runway (only a runway job may work on them)
+      if (typeof onRunwayReserve === 'function' && onRunwayReserve(x, z, pad) && !runwayJobActive) return 'the runway field';
       return null;
     }
 // Set by a runway job (future) while it works the field, so offLimits lets it clear, grade and pave
@@ -396,7 +396,7 @@ async function plantSeeds(x, z, why = '', originLabel = 'Shaping the Valley') {
       }
       if (typeof groundworkReady === 'function' && !groundworkReady('planting', 'Planting')) return 'getting-ready';
       x = Math.round(clampNumber(x, WORLD_MIN_X + 2, WORLD_MAX_X - 2, state.botPos.x) * 10) / 10;
-      z = Math.round(clampNumber(z, WORLD_MIN_Z + 2, 9, state.botPos.z) * 10) / 10;
+      z = Math.round(clampNumber(z, WORLD_VALLEY_MIN_Z + 2, 9, state.botPos.z) * 10) / 10;
       if (!startJob(x, z)) return false;
       try {
         state.currentLocKey = 'custom';
@@ -513,7 +513,7 @@ async function raiseHill(x, z, why = '', originLabel = 'Shaping the Valley', low
       }
       if (typeof readyToOperate === 'function' && !readyToOperate(shovel)) return 'learning';
       x = Math.round(clampNumber(x, WORLD_MIN_X + 3, WORLD_MAX_X - 3, state.botPos.x) * 10) / 10;
-      z = Math.round(clampNumber(z, WORLD_MIN_Z + 3, 8.5, state.botPos.z) * 10) / 10;
+      z = Math.round(clampNumber(z, WORLD_VALLEY_MIN_Z + 3, 8.5, state.botPos.z) * 10) / 10;
       const full = lower ? -HILL_HEIGHT * 0.7 : HILL_HEIGHT;
       if (offLimits(x, z, HILL_RADIUS) || !startJob(x, z)) {
         if (offLimits(x, z, HILL_RADIUS)) { state.speechBubble = `${lower ? 'A hollow' : 'A hill'} there would spill onto ${offLimits(x, z, HILL_RADIUS)}. I'll leave it.`; renderAllUI(); }

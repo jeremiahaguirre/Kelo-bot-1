@@ -12,7 +12,8 @@
 // This file drives the camera itself; OrbitControls (js/scene.js) stays only to aim it, with its own
 // mouse and touch handling switched off.
 
-const EXPLORE_BOUNDS = { minX: WORLD_MIN_X, maxX: WORLD_MAX_X, minZ: WORLD_MIN_Z, maxZ: 20 };
+// (the whole world with the runway field, js/agent.js WORLD_EXTENT, a little past the field's ends)
+const EXPLORE_BOUNDS = { minX: WORLD_EXTENT.minX - 10, maxX: WORLD_EXTENT.maxX + 10, minZ: WORLD_EXTENT.minZ - 10, maxZ: 20 };
 const EXPLORE_LIMITS = { minDist: 5, maxDist: 140, minPitch: 0.12, maxPitch: 1.45 };
 const EXPLORE_CLEARANCE = 1.4;   // the camera always stays at least this far above the ground
 const EXPLORE_IDLE_MS = 90000;   // "go back to Kelo-1" after this long without touching anything
@@ -51,20 +52,14 @@ function exploreSavePrefs() {
     }
 
 // The ground (or the lake surface) at a spot. Inside the island this is the exact terrain; beyond
-// it, the backdrop lands are measured with a ray now and then
+// it the backdrop lands' own height function (what their meshes are built from). The far lands'
+// mesh is coarse, so there the camera keeps a little extra room over the hills.
 function exploreGroundAt(x, z) {
       const water = typeof WATER_LEVEL === 'number' ? WATER_LEVEL : -0.18;
       if (islandContains(x, z)) return Math.max(water, getAnalyticalGroundHeight(x, z));
-      const o = exploreCam.outerGround;
-      if (Date.now() - o.at > 150 || Math.hypot(o.x - x, o.z - z) > 4) {
-        o.at = Date.now(); o.x = x; o.z = z; o.y = water;
-        if (terrainSwapGroup) {
-          const ray = new THREE.Raycaster(new THREE.Vector3(x, 120, z), new THREE.Vector3(0, -1, 0));
-          const hit = ray.intersectObjects(terrainSwapGroup.children, true)[0];
-          if (hit) o.y = Math.max(water, hit.point.y);
-        }
-      }
-      return o.y;
+      const y = Math.max(water, outerTerrainHeight(x, z));
+      const coarse = !inRectXZ(NORTH_PATCH, x, z) && !(Math.abs(x) < OUTER_LANDS_HALF && Math.abs(z) < OUTER_LANDS_HALF);
+      return coarse && !onRunwayField(x, z) ? y + Math.min(4, y * 0.15) : y;
     }
 
 const EXPLORE_GROUND_SAMPLES = [0.2, 0.4, 0.6, 0.8, 1];

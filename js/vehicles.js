@@ -442,7 +442,9 @@ function vehicleDestination(v, type, target) {
         // would otherwise send it 10 units off the pad, and it would never come home)
         const pad = [...AIR_SLOTS, ...BALLOON_SLOTS].find(([x, z]) => Math.hypot(dest.x - x, dest.z - z) < 1.5);
         if (pad) return { x: pad[0], z: pad[1] };
-        return openGroundNear(dest, /balloon/i.test(v.name) ? 2.2 : 3.0) || dest;
+        // (none near: the nearest open ground back in the valley; never the runway field or the north yard)
+        const r = /balloon/i.test(v.name) ? 2.2 : 3.0;
+        return openGroundNear(dest, r) || openGroundNear({ x: dest.x, z: Math.max(dest.z, WORLD_VALLEY_MIN_Z + 4) }, r) || dest;
       }
       if (type.mode === 'water') {
         const from = { x: state.botPos.x, z: state.botPos.z };
@@ -463,6 +465,8 @@ function vehicleDestination(v, type, target) {
 // Walk to a vehicle, climb in, drive to a target, and park there
 async function driveVehicle(v, target, label) {
       const type = vehicleTypeFor(v.name);
+      // Nothing parks on the runway field or its taxiway (js/agent.js)
+      if (typeof runwayKeepOff === 'function') target = runwayKeepOff(target);
       state.targetPos = boardingSpot(v);
       state.moodTitle = `Walking to the ${v.name.replace(/^(an?|the)\s+/i, '')}`;
       renderAllUI();

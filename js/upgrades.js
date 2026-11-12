@@ -72,7 +72,7 @@ const UPGRADE_SCHEMA = {
     name: UPG_TEXT(40, 2),
     kind: { type: 'string', enum: UPGRADE_KINDS },
     about: UPG_TEXT(160),
-    place: { type: 'object', props: { near: { type: 'string', enum: UPGRADE_PLACE_KEYS }, x: UPG_NUM(WORLD_MIN_X, WORLD_MAX_X), z: UPG_NUM(WORLD_MIN_Z, WORLD_MAX_Z), facing: UPG_NUM(-3.2, 3.2) } },
+    place: { type: 'object', props: { near: { type: 'string', enum: UPGRADE_PLACE_KEYS }, x: UPG_NUM(WORLD_MIN_X, WORLD_MAX_X), z: UPG_NUM(WORLD_VALLEY_MIN_Z, WORLD_MAX_Z), facing: UPG_NUM(-3.2, 3.2) } },
     scale: UPG_NUM(0.3, 2.5),
     parts: { type: 'array', maxItems: MAX_SCULPTURE_PARTS, items: UPG_PART_SCHEMA },
     lights: { type: 'array', maxItems: 4, items: { type: 'object', props: { x: UPG_NUM(-2.5, 2.5), y: UPG_NUM(0, 6), z: UPG_NUM(-2.5, 2.5), color: UPG_COLOR, intensity: UPG_NUM(0, 3), range: UPG_NUM(1, 12), on: { type: 'string', enum: ['night', 'always'] } } } },
@@ -176,7 +176,7 @@ function validateWorldUpgrade(raw, { replacing = null } = {}) {
 
 // --- Where it goes ----------------------------------------------------------------------------
 function upgradeSpotOk(x, z, pad) {
-      if (x < WORLD_MIN_X + 3 || x > WORLD_MAX_X - 3 || z < WORLD_MIN_Z + 3 || z > 9) return false;
+      if (x < WORLD_MIN_X + 3 || x > WORLD_MAX_X - 3 || z < WORLD_VALLEY_MIN_Z + 3 || z > 9) return false;
       if (typeof offLimits === 'function' && offLimits(x, z, pad)) return false;
       if (typeof pointBlocked === 'function' && pointBlocked(x, z, { x: 999, z: 999 })) return false;
       if ((state.worldUpgrades || []).some(u => u.enabled !== false && Math.hypot(u.x - x, u.z - z) < 3.2)) return false;

@@ -179,7 +179,7 @@ function tryRenderPanel() {
             ${btn('data-try-rain="0"', 'Dry spell', rainOverride === false, 'No rain, even in spring')}
           </div>
         </div>` : ''}
-        <button type="button" data-try="reset" class="w-full px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${tryPreviewActive() ? 'bg-sky-500/20 hover:bg-sky-500/30 border-sky-400/50 text-sky-100' : 'bg-slate-900 border-slate-800 text-slate-500'}">📅 Back to his real calendar</button>
+        <button type="button" data-try="reset" class="ui-btn w-full" ${tryPreviewActive() ? '' : 'disabled'}>Back to his real calendar</button>
         <div class="space-y-1 pt-1 border-t border-slate-800">
           <div class="try-label">Send him a sample gift <span class="normal-case font-normal text-slate-500">(real parcels at his Post Office)</span></div>
           <div class="space-y-1.5">${TRY_GIFTS.map((g, i) => `

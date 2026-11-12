@@ -1441,7 +1441,7 @@ function renderVehiclesList() {
         const ready = vehicleReadiness(v);
         const ok = ready === 'ready' || ready.startsWith('carrying') || ready === 'empty';
         return `
-        <div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200 space-y-0.5">
+        <div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-200 space-y-0.5">
           <div class="flex items-center gap-2">
             <span class="flex-1 font-semibold">${escapeHtml(v.name)}</span>
             <span class="${ok ? 'text-emerald-300' : 'text-amber-300'}">${escapeHtml(ready)}</span>
@@ -1452,7 +1452,7 @@ function renderVehiclesList() {
           </div>
           <div class="text-slate-500">${escapeHtml(((VEHICLE_TERRAIN[key] || {}).text || '').replace(/^./, c => c.toUpperCase()))}</div>
         </div>`;
-      }).join('') : '<div class="text-[11px] text-slate-500 italic">No vehicles yet. He has to ask for each one.</div>';
+      }).join('') : '<div class="text-2xs text-slate-500 italic">No vehicles yet. He has to ask for each one.</div>';
       if (typeof perfSetHtml === 'function') perfSetHtml(el, html); else el.innerHTML = html;
     }
 

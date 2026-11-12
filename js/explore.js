@@ -634,15 +634,15 @@ function exploreOpenSpotMenu(x, y, pt) {
       const where = exploreDescribeSpot(pt, true);
       menu.innerHTML = `
         <div class="flex items-start justify-between gap-2">
-          <div class="text-[11px] font-bold text-amber-200 leading-snug">${escapeHtml(where)}</div>
-          <button type="button" data-spot="close" class="explore-x" aria-label="Close">✕</button>
+          <div class="text-xs font-semibold text-white leading-snug">${escapeHtml(where)}</div>
+          <button type="button" data-spot="close" class="explore-x" aria-label="Close"><i class="ph-bold ph-x" data-hud-emoji="✕" aria-hidden="true"></i></button>
         </div>
         <div class="flex flex-col gap-1 mt-1.5">
-          <button type="button" data-spot="fly" class="explore-spot-btn"><span aria-hidden="true">✈️</span> Fly here</button>
-          <button type="button" data-spot="send" class="explore-spot-btn"><span aria-hidden="true">🤖</span> Send Kelo-1 here</button>
-          <button type="button" data-spot="info" class="explore-spot-btn"><span aria-hidden="true">❓</span> What's this?</button>
+          <button type="button" data-spot="fly" class="explore-spot-btn"><i class="ph-bold ph-airplane-tilt" data-hud-emoji="✈️" aria-hidden="true"></i> Fly here</button>
+          <button type="button" data-spot="send" class="explore-spot-btn"><i class="ph-bold ph-person-simple-walk" data-hud-emoji="🤖" aria-hidden="true"></i> Send Kelo-1 here</button>
+          <button type="button" data-spot="info" class="explore-spot-btn"><i class="ph-bold ph-question" data-hud-emoji="❓" aria-hidden="true"></i> What's this?</button>
         </div>
-        <p data-spot-info class="hidden mt-1.5 text-[11px] text-slate-300 leading-snug"></p>`;
+        <p data-spot-info class="hidden mt-1.5 text-2xs text-slate-300 leading-snug"></p>`;
       menu.classList.remove('hidden');
       const vw = window.innerWidth, vh = window.innerHeight;
       const r = menu.getBoundingClientRect();
@@ -783,14 +783,14 @@ function exploreRenderPlaces() {
       explorePlaces().forEach(p => { (groups[p.group] = groups[p.group] || []).push(p); });
       list.innerHTML = `
         <div class="grid grid-cols-2 gap-1">
-          <button type="button" data-place="kelo" class="explore-place explore-place-kelo"><span aria-hidden="true">🤖</span><span>Where is Kelo-1?</span></button>
-          <button type="button" data-place="eyes" class="explore-place explore-place-kelo"><span aria-hidden="true">👀</span><span>Through his eyes</span></button>
-          ${typeof shopVisitOpenChooser === 'function' ? '<button type="button" data-place="shopvisit" class="explore-place explore-place-kelo col-span-2"><span aria-hidden="true">🏭</span><span>Visit the Workshop</span></button>' : ''}
+          <button type="button" data-place="kelo" class="explore-place explore-place-kelo"><i class="ph-bold ph-robot" data-hud-emoji="🤖" aria-hidden="true"></i><span>Where is Kelo-1?</span></button>
+          <button type="button" data-place="eyes" class="explore-place explore-place-kelo"><i class="ph-bold ph-eye" data-hud-emoji="👀" aria-hidden="true"></i><span>Through his eyes</span></button>
+          ${typeof shopVisitOpenChooser === 'function' ? '<button type="button" data-place="shopvisit" class="explore-place explore-place-kelo col-span-2"><i class="ph-bold ph-factory" data-hud-emoji="🏭" aria-hidden="true"></i><span>Visit the Workshop</span></button>' : ''}
         </div>
         ${Object.entries(groups).map(([g, items]) => `
           <div class="explore-place-group">${escapeHtml(g)}</div>
           <div class="grid grid-cols-2 gap-1">
-            ${items.map(p => `<button type="button" data-place="${escapeHtml(p.id)}" class="explore-place"><span aria-hidden="true">${escapeHtml(p.icon)}</span><span class="truncate">${escapeHtml(p.name)}</span></button>`).join('')}
+            ${items.map(p => `<button type="button" data-place="${escapeHtml(p.id)}" class="explore-place"><span aria-hidden="true">${escapeHtml(p.icon)}</span><span class="min-w-0">${escapeHtml(p.name)}</span></button>`).join('')}
           </div>`).join('')}`;
     }
 

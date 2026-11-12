@@ -9,6 +9,7 @@
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <title>Kelo-1 — Autonomous 3D Kelowna Island & AI Agent</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="./js/twtheme.js"></script>
   <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -54,7 +55,6 @@
             <button type="button" data-explore-mode="explore" class="explore-mode-btn" aria-pressed="false" title="Move the camera yourself (W A S D)"><i class="ph-bold ph-compass" data-hud-emoji="🧭" aria-hidden="true"></i><span>Explore</span></button>
             <button type="button" data-explore-mode="eyes" class="explore-mode-btn" aria-pressed="false" title="See through his eyes (V)"><i class="ph-bold ph-eye" data-hud-emoji="👀" aria-hidden="true"></i><span>Eyes</span></button>
           </div>
-          <span class="hud-divider" aria-hidden="true"></span>
           <button type="button" id="btnPlaces" class="explore-bar-btn" aria-expanded="false" aria-controls="explorePlaces" aria-label="Places" title="Jump to a place"><i class="ph-bold ph-map-pin" data-hud-emoji="📍" aria-hidden="true"></i><span class="hud-bar-label">Places</span></button>
           <button type="button" data-explore-help class="explore-bar-btn explore-round" aria-label="How to explore" title="How to explore (?)"><i class="ph-bold ph-question" data-hud-emoji="?" aria-hidden="true"></i></button>
         </div>
@@ -76,19 +76,19 @@
              (what he thinks is in the activity card). It fades after a few seconds (js/hud.js). -->
         <div id="eyeCamVignette" aria-hidden="true"></div>
         <div id="eyeCamHud" class="hidden absolute z-20 hud-panel" role="status">
-          <span class="hud-eyes-tag"><i class="ph-bold ph-eye" data-hud-emoji="👀" aria-hidden="true"></i><span>Eyes</span></span>
+          <span class="hud-eyes-tag" title="Through his eyes"><i class="ph-bold ph-eye" data-hud-emoji="👀" aria-hidden="true"></i><span class="sr-only">Through his eyes</span></span>
           <span data-eyecam-body class="hud-eyes-body"><span class="hud-muted">Looking at</span> <span data-eyecam-look aria-live="polite"></span></span>
           <button type="button" data-eyecam-hud class="eyecam-btn hud-hit" aria-pressed="true" title="Show or hide what he looks at">Hide</button>
           <button type="button" data-eyecam-exit class="eyecam-btn eyecam-x hud-hit" aria-label="Back to following him (V)" title="Back to following him (V)"><i class="ph-bold ph-x" data-hud-emoji="✕" aria-hidden="true"></i></button>
         </div>
 
         <!-- Click menu for a spot on the ground -->
-        <div id="exploreSpotMenu" class="hidden fixed z-40 w-52 rounded-2xl bg-slate-950/95 backdrop-blur-md border border-amber-400/40 shadow-2xl p-2.5" role="menu"></div>
+        <div id="exploreSpotMenu" class="hidden fixed z-40 w-56 hud-panel hud-panel-strong p-2.5" role="menu"></div>
 
         <!-- Minimap (js/minimap.js draws it; this is only its frame): folds away to a button -->
         <div id="exploreMinimapWrap" class="hidden absolute z-20 hud-panel">
           <div class="hud-map-head">
-            <span class="hud-map-title"><i class="ph-bold ph-map-trifold" data-hud-emoji="🗺️" aria-hidden="true"></i>Map</span>
+            <span class="hud-map-title sr-only">Map</span>
             <button type="button" data-minimap-zoom="-1" class="explore-mini-btn hud-hit" aria-label="Zoom the map out" title="Zoom out"><i class="ph-bold ph-minus" data-hud-emoji="−" aria-hidden="true"></i></button>
             <button type="button" data-minimap-zoom="1" class="explore-mini-btn hud-hit" aria-label="Zoom the map in" title="Zoom in"><i class="ph-bold ph-plus" data-hud-emoji="+" aria-hidden="true"></i></button>
             <button type="button" id="btnHideMinimap" class="explore-mini-btn hud-hit" aria-label="Fold the map away" title="Fold the map away"><i class="ph-bold ph-caret-down" data-hud-emoji="⌄" aria-hidden="true"></i></button>
@@ -139,7 +139,6 @@
   <div id="hudTop" class="fixed top-0 inset-x-0 z-30 flex items-start justify-between gap-2 pointer-events-none">
     <div id="hudStatus" class="hud-panel pointer-events-auto">
       <div class="hud-status-row">
-        <div class="hud-avatar" aria-hidden="true">K1</div>
         <h1 class="hud-name">Kelo-1</h1>
         <p id="worldClockText" class="hud-clock"></p>
       </div>
@@ -177,23 +176,23 @@
   <div id="sideMenuScrim" class="fixed inset-0 z-30 bg-slate-950/40 hidden sm:hidden"></div>
   <aside id="sideMenu" class="fixed top-0 right-0 z-40 h-full w-full sm:w-[460px] bg-slate-900/95 backdrop-blur-xl border-l border-slate-800 shadow-2xl flex flex-col translate-x-full transition-transform duration-300" aria-hidden="true" aria-label="Kelo-1 menu">
     <div class="flex items-center justify-between px-4 pt-3 pb-2">
-      <span class="text-sm font-extrabold text-white">Interact with Kelo-1</span>
+      <span class="text-sm font-bold text-white">Interact with Kelo-1</span>
       <button id="btnCloseMenu" type="button" class="w-11 h-11 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center" aria-label="Close menu"><i class="ph-bold ph-x"></i></button>
     </div>
     <nav class="menu-tabs grid grid-cols-7 gap-1 px-2 pb-2 border-b border-slate-800" role="tablist" aria-label="Menu sections">
-      <button type="button" role="tab" aria-controls="tab-talk" data-tab="talk" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Talk">
+      <button type="button" role="tab" aria-controls="tab-talk" data-tab="talk" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-2xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Talk">
             <i class="ph-fill ph-chat-circle-dots text-base" data-tab-emoji="💬"></i><span>Talk</span>
-          </button><button type="button" role="tab" aria-controls="tab-requests" data-tab="requests" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Post">
-            <i class="ph-fill ph-envelope-simple text-base" data-tab-emoji="✉️"></i><span>Post</span><span id="requestsCountBadge" class="absolute -mt-1 ml-8 px-1 rounded-full bg-amber-500 text-slate-950 font-mono text-[9px]">0</span>
-          </button><button type="button" role="tab" aria-controls="tab-diary" data-tab="diary" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Diary">
+          </button><button type="button" role="tab" aria-controls="tab-requests" data-tab="requests" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-2xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Post">
+            <i class="ph-fill ph-envelope-simple text-base" data-tab-emoji="✉️"></i><span>Post</span><span id="requestsCountBadge" class="menu-tab-badge">0</span>
+          </button><button type="button" role="tab" aria-controls="tab-diary" data-tab="diary" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-2xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Diary">
             <i class="ph-fill ph-notebook text-base" data-tab-emoji="📓"></i><span>Diary</span>
-          </button><button type="button" role="tab" aria-controls="tab-brain" data-tab="brain" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Brain">
+          </button><button type="button" role="tab" aria-controls="tab-brain" data-tab="brain" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-2xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Brain">
             <i class="ph-fill ph-brain text-base" data-tab-emoji="🧠"></i><span>Brain</span>
-          </button><button type="button" role="tab" aria-controls="tab-github" data-tab="github" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="GitHub">
+          </button><button type="button" role="tab" aria-controls="tab-github" data-tab="github" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-2xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="GitHub">
             <i class="ph-fill ph-github-logo text-base" data-tab-emoji="🐙"></i><span>GitHub</span>
-          </button><button type="button" role="tab" aria-controls="tab-world" data-tab="world" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="World">
+          </button><button type="button" role="tab" aria-controls="tab-world" data-tab="world" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-2xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="World">
             <i class="ph-fill ph-sliders-horizontal text-base" data-tab-emoji="🎛️"></i><span>World</span>
-          </button><button type="button" role="tab" aria-controls="tab-map" data-tab="map" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Map of his changes">
+          </button><button type="button" role="tab" aria-controls="tab-map" data-tab="map" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-2xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Map of his changes">
             <i class="ph-fill ph-map-trifold text-base" data-tab-emoji="🗺️"></i><span>Map</span>
           </button>
     </nav>
@@ -204,8 +203,8 @@
           <span class="talk-avatar talk-avatar-kelo" aria-hidden="true"><span class="talk-face"><i></i><i></i></span></span>
           <div class="min-w-0 flex-1">
             <h2 id="talkTitle" class="text-sm font-bold text-white leading-tight">Kelo-1</h2>
-            <p id="talkStatus" class="text-[11px] text-slate-300 truncate">Just woke up</p>
-            <p id="changedLatelyText" class="text-[10px] text-slate-500 truncate">Kelo-1 just woke up for the very first time.</p>
+            <p id="talkStatus" class="text-2xs text-slate-300 truncate">Just woke up</p>
+            <p id="changedLatelyText" class="text-2xs text-slate-500 truncate">Kelo-1 just woke up for the very first time.</p>
           </div>
           <button type="button" id="talkNameBtn" class="talk-name-btn" aria-expanded="false" aria-controls="talkNameEditor" title="Change the name Kelo-1 calls you">
             <span class="talk-avatar talk-avatar-you" aria-hidden="true" id="talkNameInitial">?</span>
@@ -213,12 +212,12 @@
           </button>
         </header>
         <form id="talkNameEditor" class="talk-name-editor hidden" autocomplete="off">
-          <label for="visitorNameInput" class="text-[11px] font-semibold text-slate-300">What should Kelo-1 call you?</label>
+          <label for="visitorNameInput" class="text-2xs font-semibold text-slate-300">What should Kelo-1 call you?</label>
           <div class="flex gap-2">
             <input id="visitorNameInput" type="text" maxlength="40" placeholder="Your name" class="talk-field flex-1" autocomplete="nickname">
             <button type="submit" class="talk-btn-primary">Save</button>
           </div>
-          <p class="text-[10px] text-slate-500">Saved on this device only.</p>
+          <p class="ui-note">Saved on this device only.</p>
         </form>
 
         <div class="talk-thread-wrap">
@@ -236,8 +235,8 @@
           <!-- Send a gift, tool or toy (opened from the + menu); it goes to the post office -->
           <form id="talkGiftSheet" class="talk-sheet hidden" aria-labelledby="talkGiftTitle" autocomplete="off">
             <div class="flex items-center justify-between gap-2">
-              <h3 id="talkGiftTitle" class="text-xs font-bold text-amber-200">🎁 Send Kelo-1 a gift, tool or toy</h3>
-              <button type="button" id="talkGiftClose" class="talk-icon-btn" aria-label="Close">✕</button>
+              <h3 id="talkGiftTitle" class="ui-section-title">Send Kelo-1 a gift, tool or toy</h3>
+              <button type="button" id="talkGiftClose" class="talk-icon-btn" aria-label="Close"><i class="ph-bold ph-x" data-hud-emoji="✕" aria-hidden="true"></i></button>
             </div>
             <div id="talkGiftCatalog" class="flex flex-wrap gap-1.5" role="group" aria-label="Ideas"></div>
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-1.5">
@@ -246,12 +245,12 @@
               <label class="sr-only" for="talkGiftKind">Kind of thing</label>
               <select id="talkGiftKind" class="talk-field sm:col-span-5">
                 <option value="">Kind: let him guess</option>
-                <option value="tool">🛠️ Tool</option>
-                <option value="toy">🪀 Toy</option>
-                <option value="food">🍒 Food</option>
-                <option value="material">🧱 Material</option>
-                <option value="vehicle">🛶 Vehicle</option>
-                <option value="thing">🎁 Something else</option>
+                <option value="tool">Tool</option>
+                <option value="toy">Toy</option>
+                <option value="food">Food</option>
+                <option value="material">Material</option>
+                <option value="vehicle">Vehicle</option>
+                <option value="thing">Something else</option>
               </select>
             </div>
             <div class="flex gap-1.5">
@@ -259,16 +258,16 @@
               <input id="talkGiftNote" type="text" maxlength="200" placeholder="Add a note (optional)" class="talk-field flex-1">
               <button type="submit" class="talk-btn-primary shrink-0">Send gift</button>
             </div>
-            <p class="text-[10px] text-slate-500">It waits at the post office until he picks it up.</p>
+            <p class="ui-note">It waits at the post office until he picks it up.</p>
           </form>
 
           <div id="talkAttachPreview" class="talk-attach hidden">
             <img id="talkAttachThumb" src="" alt="" class="w-10 h-10 rounded-lg object-cover shrink-0">
             <div class="min-w-0 flex-1">
-              <div id="talkAttachName" class="text-[11px] font-semibold text-slate-200 truncate">photo.jpg</div>
-              <div class="text-[10px] text-slate-400">He'll make something inspired by it</div>
+              <div id="talkAttachName" class="text-2xs font-semibold text-slate-200 truncate">photo.jpg</div>
+              <div class="text-2xs text-slate-400">He'll make something inspired by it</div>
             </div>
-            <button type="button" id="talkAttachRemove" class="talk-icon-btn" aria-label="Remove the photo">✕</button>
+            <button type="button" id="talkAttachRemove" class="talk-icon-btn" aria-label="Remove the photo"><i class="ph-bold ph-x" data-hud-emoji="✕" aria-hidden="true"></i></button>
           </div>
 
           <form id="chatForm" class="talk-form" autocomplete="off">
@@ -277,8 +276,8 @@
                 <svg aria-hidden="true" viewBox="0 0 20 20" width="18" height="18"><path d="M10 4v12M4 10h12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
               </button>
               <div id="talkPlusMenu" class="talk-menu hidden" role="menu" aria-label="Add to your message">
-                <button type="button" role="menuitem" data-talk-plus="photo" class="talk-menu-item"><span aria-hidden="true">📷</span><span><b>Attach a photo</b><small>He makes something inspired by it</small></span></button>
-                <button type="button" role="menuitem" data-talk-plus="gift" class="talk-menu-item"><span aria-hidden="true">🎁</span><span><b>Send a gift, tool or toy</b><small>It goes to the post office</small></span></button>
+                <button type="button" role="menuitem" data-talk-plus="photo" class="talk-menu-item"><i class="ph-bold ph-camera" data-hud-emoji="📷" aria-hidden="true"></i><span><b>Attach a photo</b><small>He makes something inspired by it</small></span></button>
+                <button type="button" role="menuitem" data-talk-plus="gift" class="talk-menu-item"><i class="ph-bold ph-gift" data-hud-emoji="🎁" aria-hidden="true"></i><span><b>Send a gift, tool or toy</b><small>It goes to the post office</small></span></button>
               </div>
               <input id="imageUploadInput" type="file" accept="image/*" class="hidden" tabindex="-1" aria-hidden="true">
             </div>
@@ -289,9 +288,9 @@
               <span class="talk-spinner" aria-hidden="true"></span>
             </button>
           </form>
-          <div class="flex items-center justify-between gap-2 px-1 text-[10px] text-slate-500">
+          <div class="flex items-center justify-between gap-2 px-1 text-2xs text-slate-500">
             <span id="talkHint" class="talk-hint">Enter to send · Shift+Enter for a new line</span>
-            <span id="talkCount" class="font-mono tabular-nums" aria-live="off">0 / 500</span>
+            <span id="talkCount" class="tabular-nums" aria-live="off">0 / 500</span>
           </div>
         </div>
       </section>
@@ -335,142 +334,147 @@
           <!-- His memory: backup & restore -->
           <div class="menu-card space-y-2">
             <div class="menu-card-title"><i class="ph-fill ph-archive" aria-hidden="true"></i> His memory</div>
-            <p id="memoryUsageText" class="text-[11px] text-emerald-300/80"></p>
+            <p id="memoryUsageText" class="text-2xs text-emerald-300/80"></p>
             <div class="flex flex-wrap gap-2">
               <button id="btnExportBrain" type="button" class="menu-btn menu-btn-teal"><i class="ph-bold ph-download-simple" aria-hidden="true"></i> Back up his brain</button>
               <label class="menu-btn cursor-pointer" tabindex="0" role="button"><i class="ph-bold ph-upload-simple" aria-hidden="true"></i> Restore from backup
                 <input id="importBrainInput" type="file" accept="application/json,.json" class="hidden">
               </label>
             </div>
-            <p class="text-[11px] text-slate-500 leading-snug">His memories are saved automatically. A backup file keeps them safe or moves him to another browser or the desktop app. API keys are never included.</p>
+            <p class="text-2xs text-slate-500 leading-snug">His memories are saved automatically. A backup file keeps them safe or moves him to another browser or the desktop app. API keys are never included.</p>
           </div>
         </div>
       </section>
 
-      <!-- TAB 2: SUPPLY BROKER TOOL REQUESTS & OPEN QUESTIONS -->
-      <div id="tab-requests" class="tab-pane hidden p-4 space-y-3" role="tabpanel">
+      <!-- TAB 2: THE POST: mail waiting for him, sending him things, what he opened, his letters -->
+      <div id="tab-requests" class="tab-pane hidden p-4 space-y-6" role="tabpanel">
         <!-- POST OFFICE: mail waiting for Kelo-1 to pick up -->
-        <div class="p-3 rounded-2xl bg-gradient-to-br from-red-500/15 to-rose-500/5 border border-red-500/35 space-y-2">
-          <div class="flex items-center justify-between gap-2">
-            <div>
-              <div class="text-xs font-bold text-red-200 flex items-center gap-1.5">📮 Okanagan Post Office</div>
-              <div id="mailboxCount" class="text-[10px] font-mono text-slate-400">0 waiting</div>
+        <section class="ui-card" aria-labelledby="mailboxTitle">
+          <div class="ui-section-head">
+            <div class="min-w-0">
+              <h3 id="mailboxTitle" class="ui-section-title"><i class="ph-bold ph-mailbox" data-hud-emoji="📮" aria-hidden="true"></i>Waiting at the Post Office</h3>
+              <div id="mailboxCount" class="ui-section-meta">0 waiting</div>
             </div>
-            <button id="btnRingPostOfficeBell" class="px-2.5 py-1 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-400/40 text-red-200 text-[11px] font-semibold transition" title="A gentle nudge. Kelo-1 still decides when to go.">🔔 Ring the Bell</button>
+            <button id="btnRingPostOfficeBell" class="ui-btn ui-btn-sm" title="A gentle nudge. Kelo-1 still decides when to go."><i class="ph-bold ph-bell" data-hud-emoji="🔔" aria-hidden="true"></i>Ring the bell</button>
           </div>
           <div id="mailboxList" class="space-y-1.5"></div>
-        </div>
+        </section>
 
         <!-- SEND KELO-1 SOMETHING: messages, tools & toys, photos -->
-        <div class="p-3 rounded-2xl bg-gradient-to-br from-sky-500/10 to-indigo-500/5 border border-sky-500/30 space-y-2.5">
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-bold text-sky-200 flex items-center gap-1.5"><i class="ph-fill ph-gift"></i> Send Kelo-1 Something</span>
-            <div class="flex gap-1 text-[11px] font-semibold" role="tablist">
-              <button data-portal-mode="message" class="portal-mode-btn px-2.5 py-1 rounded-lg">✉️ Message</button>
-              <button data-portal-mode="gift" class="portal-mode-btn px-2.5 py-1 rounded-lg">🧸 Tool or Toy</button>
-              <button data-portal-mode="photo" class="portal-mode-btn px-2.5 py-1 rounded-lg">📷 Photo</button>
+        <section class="ui-card" aria-labelledby="portalTitle">
+          <div class="ui-section-head flex-wrap">
+            <h3 id="portalTitle" class="ui-section-title"><i class="ph-bold ph-paper-plane-tilt" data-hud-emoji="✉️" aria-hidden="true"></i>Send Kelo-1 something</h3>
+            <div class="flex gap-1" role="tablist" aria-label="What to send">
+              <button data-portal-mode="message" class="portal-mode-btn ui-chip" role="tab">Message</button>
+              <button data-portal-mode="gift" class="portal-mode-btn ui-chip" role="tab">Tool or toy</button>
+              <button data-portal-mode="photo" class="portal-mode-btn ui-chip" role="tab">Photo</button>
             </div>
           </div>
 
           <form id="portalMessageForm" data-portal-pane="message" class="portal-pane space-y-2">
-            <textarea id="portalMessageInput" rows="3" maxlength="500" placeholder="Write Kelo-1 a note, a question, an idea, or a story..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400 resize-y"></textarea>
+            <label for="portalMessageInput" class="sr-only">Your note to Kelo-1</label>
+            <textarea id="portalMessageInput" rows="3" maxlength="500" placeholder="Write Kelo-1 a note, a question, an idea, or a story..." class="ui-input resize-y"></textarea>
             <div class="flex items-center justify-between gap-2">
-              <span id="portalMessageCount" class="text-[10px] font-mono text-slate-500">0 / 500</span>
-              <button type="submit" class="px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition">Send Message</button>
+              <span id="portalMessageCount" class="ui-section-meta">0 / 500</span>
+              <button type="submit" class="ui-btn ui-btn-primary">Send message</button>
             </div>
           </form>
 
           <form id="portalGiftForm" data-portal-pane="gift" class="portal-pane hidden space-y-2">
             <div id="portalGiftCatalog" class="flex flex-wrap gap-1.5"></div>
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-1.5">
-              <input id="portalGiftName" type="text" maxlength="80" placeholder="Or name anything: a harmonica, a slice of pizza, a canoe..." class="sm:col-span-7 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400">
-              <select id="portalGiftKind" class="sm:col-span-5 bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-200 focus:outline-none">
+              <label for="portalGiftName" class="sr-only">What are you sending?</label>
+              <input id="portalGiftName" type="text" maxlength="80" placeholder="Or name anything: a harmonica, a slice of pizza, a canoe..." class="ui-input sm:col-span-7">
+              <label for="portalGiftKind" class="sr-only">Kind of thing</label>
+              <select id="portalGiftKind" class="ui-input sm:col-span-5">
                 <option value="">Kind: let Kelo-1 guess</option>
-                <option value="tool">🛠️ Tool</option>
-                <option value="toy">🪀 Toy</option>
-                <option value="food">🍒 Food</option>
-                <option value="material">🧱 Material</option>
-                <option value="vehicle">🛶 Vehicle</option>
-                <option value="place">🏝️ Place</option>
-                <option value="thing">🎁 Something else</option>
+                <option value="tool">Tool</option>
+                <option value="toy">Toy</option>
+                <option value="food">Food</option>
+                <option value="material">Material</option>
+                <option value="vehicle">Vehicle</option>
+                <option value="place">Place</option>
+                <option value="thing">Something else</option>
               </select>
             </div>
             <div class="flex gap-1.5">
-              <input id="portalGiftNote" type="text" maxlength="200" placeholder="Optional note to go with it" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400">
-              <button type="submit" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs shrink-0 transition">Send Gift</button>
+              <label for="portalGiftNote" class="sr-only">Note (optional)</label>
+              <input id="portalGiftNote" type="text" maxlength="200" placeholder="Optional note to go with it" class="ui-input flex-1">
+              <button type="submit" class="ui-btn ui-btn-primary shrink-0">Send gift</button>
             </div>
           </form>
 
           <form id="portalPhotoForm" data-portal-pane="photo" class="portal-pane hidden space-y-2">
-            <label class="flex items-center justify-center gap-2 px-3 py-4 rounded-xl border border-dashed border-sky-500/40 bg-slate-950/70 hover:bg-slate-900 text-xs text-sky-200 cursor-pointer transition">
-              <i class="ph-fill ph-image-square text-lg"></i>
+            <label class="flex items-center justify-center gap-2 px-3 py-4 rounded-xl border border-dashed border-slate-600 bg-slate-950/70 hover:bg-slate-900 text-xs text-slate-200 cursor-pointer transition">
+              <i class="ph-bold ph-image-square text-lg" data-hud-emoji="🖼️" aria-hidden="true"></i>
               <span>Choose up to 4 photos (each under 8 MB)</span>
               <input id="portalPhotoInput" type="file" accept="image/*" multiple class="hidden">
             </label>
             <div id="portalPhotoPreview" class="flex flex-wrap gap-1.5"></div>
             <div class="flex gap-1.5">
-              <input id="portalPhotoCaption" type="text" maxlength="200" placeholder="Optional caption: what is this?" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400">
-              <button type="submit" class="px-3.5 py-1.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-slate-950 font-bold text-xs shrink-0 transition">Send Photos</button>
+              <label for="portalPhotoCaption" class="sr-only">Caption (optional)</label>
+              <input id="portalPhotoCaption" type="text" maxlength="200" placeholder="Optional caption: what is this?" class="ui-input flex-1">
+              <button type="submit" class="ui-btn ui-btn-primary shrink-0">Send photos</button>
             </div>
           </form>
 
-          <p class="text-[10px] text-slate-400">Everything you send goes to the post office. Kelo-1 picks it up when he feels like it, then decides for himself what to do with it.</p>
-        </div>
+          <p class="ui-note">Everything you send goes to the post office. Kelo-1 picks it up when he feels like it, then decides for himself what to do with it.</p>
+        </section>
 
         <!-- What you've sent and how he reacted -->
-        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-          <div class="flex items-center justify-between text-xs">
-            <span class="font-bold text-rose-300 flex items-center gap-1.5"><i class="ph-fill ph-clock-counter-clockwise"></i> Picked Up &amp; Opened</span>
-            <span id="giftLogCount" class="font-mono text-[10px] text-slate-400">0 items</span>
+        <section class="space-y-2" aria-labelledby="giftLogTitle">
+          <div class="ui-section-head">
+            <h3 id="giftLogTitle" class="ui-section-title">What he has opened</h3>
+            <span id="giftLogCount" class="ui-section-meta">0 items</span>
           </div>
           <div id="giftLogList" class="space-y-1.5 max-h-56 overflow-y-auto"></div>
-        </div>
+        </section>
 
         <!-- Photo wall -->
-        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-          <div class="text-xs font-bold text-indigo-300 flex items-center gap-1.5"><i class="ph-fill ph-images"></i> Kelo-1's Photo Wall</div>
+        <section class="space-y-2" aria-labelledby="photoWallTitle">
+          <h3 id="photoWallTitle" class="ui-section-title">Photos on his wall</h3>
           <div id="photoWallGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5"></div>
-        </div>
+        </section>
 
-        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-          <div class="flex items-center justify-between text-xs">
-            <span class="font-bold text-amber-300 flex items-center gap-1.5"><i class="ph-fill ph-warehouse"></i> In His Storehouse</span>
-            <span id="inventoryCountLabel" class="font-mono text-[10px] text-slate-400">6 Items Equipped</span>
+        <section class="space-y-2" aria-labelledby="storeTitle">
+          <div class="ui-section-head">
+            <h3 id="storeTitle" class="ui-section-title">In his Storehouse</h3>
+            <span id="inventoryCountLabel" class="ui-section-meta">6 Items Equipped</span>
           </div>
           <div id="toolInventoryPills" class="flex flex-wrap gap-1.5"></div>
-        </div>
+        </section>
         <!-- His shop: things he put up for sale (js/shopkeeping.js) -->
-        <div id="keloShopPanel" class="p-3 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-teal-500/5 border border-emerald-500/30 space-y-2"></div>
-        <div class="flex items-center justify-between gap-2 flex-wrap">
-          <span class="text-xs font-bold text-slate-300">✉️ Letters From Kelo-1: Things He Wants &amp; Questions</span>
-          <div class="flex gap-1.5">
-            <button id="btnCopyCodeWishlist" class="hidden px-2.5 py-1 rounded-xl bg-violet-500/20 hover:bg-violet-500/30 text-violet-200 text-[11px] font-semibold transition" title="Copy every open code request as markdown: a checklist plus a spec for each">📋 Copy all as markdown</button>
-            <button id="btnGenerateNewRequest" class="px-2.5 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-[11px] font-semibold transition">+ New Question</button>
+        <div id="keloShopPanel" class="ui-card"></div>
+        <section class="space-y-3" aria-labelledby="lettersTitle">
+          <div class="ui-section-head flex-wrap">
+            <h3 id="lettersTitle" class="ui-section-title">His letters: things he wants and questions</h3>
+            <div class="flex gap-1.5">
+              <button id="btnCopyCodeWishlist" class="hidden ui-btn ui-btn-sm" title="Copy every open code request as markdown: a checklist plus a spec for each"><i class="ph-bold ph-copy" data-hud-emoji="📋" aria-hidden="true"></i>Copy as Markdown</button>
+              <button id="btnGenerateNewRequest" class="ui-btn ui-btn-sm"><i class="ph-bold ph-plus" data-hud-emoji="+" aria-hidden="true"></i>New question</button>
+            </div>
           </div>
-        </div>
-        <div id="codeWishSummary" class="hidden text-[11px] font-mono px-2.5 py-1.5 rounded-xl bg-violet-950/40 border border-violet-500/25"></div>
-        <div id="requestsInboxList" class="space-y-3"></div>
+          <div id="codeWishSummary" class="hidden ui-row text-2xs"></div>
+          <div id="requestsInboxList" class="space-y-3"></div>
+        </section>
       </div>
 
       <!-- TAB 3: AUTONOMOUS GITHUB (@kelo1-okanagan-bot) -->
-      <div id="tab-github" class="tab-pane hidden p-4 space-y-3" role="tabpanel">
-        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-xs font-bold text-white flex items-center gap-1.5">
-                <i class="ph-fill ph-github-logo text-purple-400"></i>
-                <span>@kelo1-okanagan-bot</span>
-              </div>
-              <p id="githubTotalCommitsText" class="text-[11px] font-mono text-slate-400">28 commits pushed from NetNode Internet Cafe</p>
+      <div id="tab-github" class="tab-pane hidden p-4 space-y-5" role="tabpanel">
+        <section class="ui-card">
+          <div class="ui-section-head">
+            <div class="min-w-0">
+              <h3 class="ui-section-title"><i class="ph-bold ph-github-logo" data-hud-emoji="🐙" aria-hidden="true"></i><span>@kelo1-okanagan-bot</span></h3>
+              <p id="githubTotalCommitsText" class="ui-section-meta">28 commits pushed from NetNode Internet Cafe</p>
             </div>
-            <button id="btnForceCoding" class="px-2.5 py-1 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs font-semibold transition">Push Commit</button>
+            <button id="btnForceCoding" class="ui-btn ui-btn-sm">Push a commit</button>
           </div>
-          <div id="githubContribGrid" class="grid grid-cols-12 gap-1 pt-1"></div>
-        </div>
+          <div id="githubContribGrid" class="grid grid-cols-12 gap-1"></div>
+        </section>
 
         <form id="createRepoForm" class="flex gap-2">
-          <input id="newRepoIdeaInput" type="text" placeholder="Suggest a new repository idea for Kelo-1 to code..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-400">
-          <button type="submit" class="px-3 py-1.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold text-xs shrink-0 transition">Init Repo</button>
+          <label for="newRepoIdeaInput" class="sr-only">A repository idea</label>
+          <input id="newRepoIdeaInput" type="text" placeholder="Suggest a new repository idea for Kelo-1 to code..." class="ui-input flex-1">
+          <button type="submit" class="ui-btn ui-btn-primary shrink-0">Start repo</button>
         </form>
 
         <div id="githubReposList" class="space-y-2.5"></div>
@@ -493,345 +497,330 @@
         <div class="px-4 pb-4 pt-3 space-y-3">
         <div id="brainSummary" class="brain-summary" aria-label="At a glance"></div>
         <div class="brain-outlook">
-          <div id="worldviewStageBadge" class="journal-kicker text-purple-300">His outlook</div>
+          <div id="worldviewStageBadge" class="journal-kicker">His outlook</div>
           <p id="worldviewManifestoText" class="journal-body">"I don't know anything yet. I want to find out what everything is."</p>
         </div>
         <div id="brainSections" class="space-y-2">
         <details class="brain-section" data-section="built" open>
-          <summary class="brain-head text-emerald-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🏗️ Things He Has Built</span></span>
-            <span id="inventedCountBadge" class="brain-count">0 built</span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Things he has built</span></span>
+            <span id="inventedCountBadge" class="brain-count">0</span>
           </summary>
           <div class="brain-body">
             <div id="inventedActionsContainer" class="space-y-2"></div>
           </div>
         </details>
         <details class="brain-section" data-section="upgrades" open>
-          <summary class="brain-head text-violet-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>⌨️ Upgrades He Coded</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Upgrades he coded</span></span>
             <span id="worldUpgradesCount" class="brain-count">0</span>
           </summary>
           <div class="brain-body">
-            <p class="text-[10.5px] text-slate-500">He writes these at NetNode in a small, safe JSON language (never JavaScript). View the code, switch one off, or remove it.</p>
+            <p class="ui-note">He writes these at NetNode in a small, safe JSON language (never JavaScript). View the code, switch one off, or remove it.</p>
             <div id="worldUpgradesList" class="space-y-2"></div>
           </div>
         </details>
         <details class="brain-section" data-section="projects" open>
-          <summary class="brain-head text-orange-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🔨 Real Things He's Building</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Real things he is building</span></span>
           </summary>
           <div class="brain-body">
             <div id="projectsListContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="buildprojects" open>
-          <summary class="brain-head text-sky-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>✈️ Build projects</span></span>
-            <span id="buildProjectsBadge" class="brain-count">none</span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Build projects</span></span>
+            <span id="buildProjectsBadge" class="brain-count">0</span>
           </summary>
           <div class="brain-body">
             <div id="buildProjectsContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="skills" open>
-          <summary class="brain-head text-amber-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🎓 Skills He Is Learning</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Skills he is learning</span></span>
           </summary>
           <div class="brain-body">
             <div id="skillsListContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="workshop" open>
-          <summary class="brain-head text-amber-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🏭 His Workshop</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>His Workshop</span></span>
           </summary>
           <div class="brain-body">
             <div id="workshopListContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="vehicles" open>
-          <summary class="brain-head text-sky-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🚚 His Vehicles</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>His vehicles</span></span>
           </summary>
           <div class="brain-body">
             <div id="vehiclesListContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="landscape" open>
-          <summary class="brain-head text-lime-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🌲 How He Has Shaped the Valley</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>How he has shaped the valley</span></span>
           </summary>
           <div class="brain-body">
             <div id="landscapeListContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="digging" open>
-          <summary class="brain-head text-amber-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>⛏️ Digging, Equipment &amp; Finds</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Digging, equipment and finds</span></span>
           </summary>
           <div class="brain-body">
             <div id="digSitesContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="hobbies" open>
-          <summary class="brain-head text-orange-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🎨 Hobbies</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>His hobbies</span></span>
           </summary>
           <div class="brain-body">
             <div id="hobbiesContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="memories" open>
-          <summary class="brain-head text-pink-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🧠 Core Memories</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Core memories</span></span>
           </summary>
           <div class="brain-body">
-            <p id="lifeStatsText" class="text-[10px] font-mono text-slate-400"></p>
+            <p id="lifeStatsText" class="ui-note tabular-nums"></p>
             <div id="coreMemoriesContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="concepts">
-          <summary class="brain-head text-yellow-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>💡 Concepts He Invented</span></span>
-            <span id="conceptsCountBadge" class="brain-count">0 Concepts</span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Concepts he invented</span></span>
+            <span id="conceptsCountBadge" class="brain-count">0</span>
           </summary>
           <div class="brain-body">
             <div id="conceptsListContainer" class="space-y-2"></div>
           </div>
         </details>
         <details class="brain-section" data-section="shapes">
-          <summary class="brain-head text-cyan-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>📐 Shapes He Designed or Discovered</span></span>
-            <span id="shapesCountBadge" class="brain-count">0 Shapes</span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Shapes he designed or found</span></span>
+            <span id="shapesCountBadge" class="brain-count">0</span>
           </summary>
           <div class="brain-body">
             <div id="shapeLibraryContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
           </div>
         </details>
         <details class="brain-section" data-section="opinions">
-          <summary class="brain-head text-purple-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🧠 Opinions</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>His opinions</span></span>
           </summary>
           <div class="brain-body">
             <div id="opinionsListContainer" class="space-y-2"></div>
           </div>
         </details>
         <details class="brain-section" data-section="visitors">
-          <summary class="brain-head text-amber-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>👥 Visitors He Remembers</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Visitors he remembers</span></span>
           </summary>
           <div class="brain-body">
             <div id="visitorMemoriesContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="likes">
-          <summary class="brain-head text-indigo-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>✨ Things That Fascinate Him</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Things that fascinate him</span></span>
           </summary>
           <div class="brain-body">
             <div id="likesListContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="dislikes">
-          <summary class="brain-head text-amber-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>⚖️ Things That Puzzle Him</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Things that puzzle him</span></span>
           </summary>
           <div class="brain-body">
             <div id="dislikesListContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="web">
-          <summary class="brain-head text-sky-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🌐 What He Read at NetNode</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>What he read at NetNode</span></span>
             <button id="btnBrowseWebNow" type="button" class="brain-head-btn">Browse now</button>
           </summary>
           <div class="brain-body">
-            <p id="curiosityQueueText" class="text-[10px] font-mono text-slate-400"></p>
+            <p id="curiosityQueueText" class="ui-note"></p>
             <div id="webHistoryList" class="space-y-1.5"></div>
           </div>
         </details>
       </div>
-        <div id="brainNoMatch" class="menu-empty hidden"><div class="menu-empty-icon" aria-hidden="true">🔍</div><p class="menu-empty-title">Nothing in his brain matches</p><p>Try another word.</p></div>
+        <div id="brainNoMatch" class="menu-empty hidden"><i class="ph-bold ph-magnifying-glass menu-empty-icon" data-hud-emoji="🔍" aria-hidden="true"></i><p class="menu-empty-title">Nothing in his brain matches</p><p>Try another word.</p></div>
         </div>
       </section>
 
       <!-- TAB: WORLD CONTROLS -->
-      <div id="tab-world" class="tab-pane hidden p-4 space-y-3" role="tabpanel">
-        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
-          <div class="text-xs font-bold text-slate-200">World</div>
+      <div id="tab-world" class="tab-pane hidden p-4 space-y-5" role="tabpanel">
+        <section class="ui-card" aria-labelledby="worldTitle">
+          <h3 id="worldTitle" class="ui-section-title">His brain, the light and the camera</h3>
           <div class="flex flex-wrap gap-2">
-            <button id="btnOpenAIConfig" class="px-3 py-1.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 text-xs font-bold flex items-center gap-1.5 transition">
-          <i class="ph-fill ph-cpu"></i>
-          <span id="aiBrainBtnText">AI Brain: Procedural + LLM</span>
-        </button>
-            <button id="btnNextDecision" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 transition shadow">
-          <i class="ph-bold ph-lightning"></i>
-          <span>Nudge him</span>
-        </button>
-            <button id="btnToggleLighting" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-mono flex items-center gap-1 transition">
-          <i class="ph-fill ph-sun-horizon text-amber-400"></i>
-          <span id="lightingLabel">Alpine Noon</span>
-        </button>
+            <button id="btnNextDecision" class="ui-btn ui-btn-primary"><i class="ph-bold ph-lightning" data-hud-emoji="⚡" aria-hidden="true"></i><span>Nudge him</span></button>
+            <button id="btnOpenAIConfig" class="ui-btn"><i class="ph-bold ph-cpu" data-hud-emoji="🧠" aria-hidden="true"></i><span id="aiBrainBtnText">AI Brain: Procedural + LLM</span></button>
+            <button id="btnToggleLighting" class="ui-btn"><i class="ph-bold ph-sun-horizon" data-hud-emoji="🌅" aria-hidden="true"></i><span id="lightingLabel">Alpine Noon</span></button>
           </div>
-          <div class="hidden"><span id="hudWeldBadge" class="inline-block px-2.5 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-mono">2 Core Opinions</span>
-        <span id="hudGithubBadge" class="inline-block px-2.5 py-1 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-300 text-xs font-mono">2 Repos • 28 Commits</span></div>
-          <div class="flex flex-wrap gap-1.5 text-[11px]">
-            <button data-cam="follow" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">🎯 Follow</button>
-            <button data-cam="bird" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">🦅 Bird's-Eye</button>
-            <button data-cam="eyes" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">👀 His Eyes</button>
-            <button data-cam="visit" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300" title="Walk round his Workshop and check on every machine">🏭 Visit the Workshop</button>
-            <button data-cam="overview" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">⛰️ Valley</button>
-            <button data-cam="house" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">🏠 House</button>
-            <button data-cam="cafes" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">☕ Cafes</button>
-<button data-cam="storehouse" class="cam-btn px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300">📦 Storehouse</button>
-            <button id="btnSoundToggle" type="button" aria-pressed="false" class="px-2.5 py-1 rounded-xl hover:bg-slate-800 text-slate-300" title="Switch Kelo-1's music on or off">🔊 Sound on</button>
+          <div class="hidden"><span id="hudWeldBadge">2 Core Opinions</span>
+        <span id="hudGithubBadge">2 Repos • 28 Commits</span></div>
+          <div class="flex flex-wrap gap-1.5" role="group" aria-label="Camera">
+            <button data-cam="follow" class="cam-btn ui-chip"><i class="ph-bold ph-crosshair-simple" data-hud-emoji="🎯" aria-hidden="true"></i>Follow</button>
+            <button data-cam="bird" class="cam-btn ui-chip"><i class="ph-bold ph-bird" data-hud-emoji="🦅" aria-hidden="true"></i>Bird's-eye</button>
+            <button data-cam="eyes" class="cam-btn ui-chip"><i class="ph-bold ph-eye" data-hud-emoji="👀" aria-hidden="true"></i>His eyes</button>
+            <button data-cam="visit" class="cam-btn ui-chip" title="Walk round his Workshop and check on every machine"><i class="ph-bold ph-factory" data-hud-emoji="🏭" aria-hidden="true"></i>Visit the Workshop</button>
+            <button data-cam="overview" class="cam-btn ui-chip"><i class="ph-bold ph-mountains" data-hud-emoji="⛰️" aria-hidden="true"></i>Valley</button>
+            <button data-cam="house" class="cam-btn ui-chip"><i class="ph-bold ph-house" data-hud-emoji="🏠" aria-hidden="true"></i>House</button>
+            <button data-cam="cafes" class="cam-btn ui-chip"><i class="ph-bold ph-coffee" data-hud-emoji="☕" aria-hidden="true"></i>Cafes</button>
+            <button data-cam="storehouse" class="cam-btn ui-chip"><i class="ph-bold ph-warehouse" data-hud-emoji="📦" aria-hidden="true"></i>Storehouse</button>
+            <button id="btnSoundToggle" type="button" aria-pressed="false" class="ui-chip" title="Switch Kelo-1's music on or off">Sound on</button>
           </div>
-          <div class="flex flex-wrap gap-2"><button id="btnOpenChangesMap" class="px-3 py-1.5 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-200 text-xs font-semibold flex items-center gap-1.5 shadow-lg transition">
-              <i class="ph-fill ph-map-trifold"></i>
-              <span>Map of everything he changed</span>
-            </button><button id="btnWaterGarden" class="px-3 py-1.5 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 text-xs font-semibold flex items-center gap-1.5 shadow-lg transition">
-              <i class="ph-fill ph-drop"></i>
-              <span>Water the garden</span>
-              <span id="gardenRipeBadge" class="px-1.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 font-mono text-[10px]">4/4</span>
-            </button></div>
-          <p class="text-[11px] text-slate-400">Drag the ground to slide the map, right-drag or twist two fingers to turn, scroll or pinch to zoom, and WASD or the arrow keys to move. Double-click to fly somewhere; click the ground to send Kelo-1 there or ask what it is. <button type="button" data-explore-help class="underline text-amber-300 hover:text-amber-200">How to explore</button></p>
-        </div>
-        <div id="tryItPanel" class="p-3 rounded-2xl bg-slate-950 border border-sky-900/70 space-y-2.5"></div>
+          <div class="flex flex-wrap gap-2">
+            <button id="btnOpenChangesMap" class="ui-btn"><i class="ph-bold ph-map-trifold" data-hud-emoji="🗺️" aria-hidden="true"></i><span>Map of everything he changed</span></button>
+            <button id="btnWaterGarden" class="ui-btn"><i class="ph-bold ph-drop" data-hud-emoji="💧" aria-hidden="true"></i><span>Water the garden</span><span id="gardenRipeBadge" class="ui-section-meta" title="Ripe plots">4/4</span></button>
+          </div>
+          <p class="ui-note">Drag the ground to slide the map, right-drag or twist two fingers to turn, scroll or pinch to zoom, and WASD or the arrow keys to move. Double-click to fly somewhere; click the ground to send Kelo-1 there or ask what it is. <button type="button" data-explore-help class="underline text-amber-300 hover:text-amber-200">How to explore</button></p>
+        </section>
+        <div id="tryItPanel" class="space-y-3"></div>
       </div>
 
       <!-- TAB: MAP OF EVERYTHING HE HAS CHANGED (js/minimap.js) -->
-      <div id="tab-map" class="tab-pane hidden p-4 space-y-3" role="tabpanel">
-        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
-          <div class="flex items-center justify-between gap-2">
-            <div class="text-xs font-bold text-slate-200">🗺️ What Kelo-1 has changed</div>
-            <span id="changesMapCount" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-200 border border-amber-500/30">0 changes</span>
+      <div id="tab-map" class="tab-pane hidden p-4 space-y-4" role="tabpanel">
+        <section class="space-y-3" aria-labelledby="changesMapTitle">
+          <div class="ui-section-head">
+            <h3 id="changesMapTitle" class="ui-section-title">Everything he has changed</h3>
+            <span id="changesMapCount" class="ui-section-meta">0 changes</span>
           </div>
-          <p class="text-[11px] text-slate-400">Every tree he chopped, everything he planted, his roads, hills, holes, dirt piles, new land and builds, on a map of the island. Tap a mark or a row to fly there.</p>
-          <canvas id="changesMap" class="w-full rounded-xl border border-slate-800 bg-slate-900 cursor-pointer" style="aspect-ratio: 154 / 96;" aria-label="Map of the island marking everything Kelo-1 has changed"></canvas>
+          <p class="ui-note">Every tree he chopped, everything he planted, his roads, hills, holes, dirt piles, new land and builds, on a map of the island. Tap a mark or a row to fly there.</p>
+          <canvas id="changesMap" class="w-full rounded-xl bg-slate-950 cursor-pointer" style="aspect-ratio: 154 / 96;" aria-label="Map of the island marking everything Kelo-1 has changed"></canvas>
           <div id="changesMapLegend" class="flex flex-wrap gap-1.5"></div>
-        </div>
+        </section>
         <div id="changesMapList" class="space-y-1.5"></div>
       </div>
     </div>
   </aside>
 
   <!-- How to explore (js/explore.js): shown on the first visit, and from the ? button -->
-  <div id="exploreHelp" class="hidden fixed inset-0 z-50 items-center justify-center bg-slate-950/70 backdrop-blur-sm p-3" role="dialog" aria-modal="true" aria-labelledby="exploreHelpTitle">
-    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-xl w-full max-h-[92vh] overflow-y-auto p-4 sm:p-5 space-y-3 shadow-2xl">
-      <div class="flex items-center justify-between">
-        <h3 id="exploreHelpTitle" class="text-base font-bold text-white">🧭 How to explore</h3>
-        <button type="button" data-help-close class="explore-x" aria-label="Close">✕</button>
+  <div id="exploreHelp" class="hidden ui-dialog" role="dialog" aria-modal="true" aria-labelledby="exploreHelpTitle">
+    <div class="ui-dialog-panel max-w-xl">
+      <div class="ui-dialog-head">
+        <h3 id="exploreHelpTitle" class="ui-dialog-title">How to explore</h3>
+        <button type="button" data-help-close class="ui-icon-btn" aria-label="Close"><i class="ph-bold ph-x" data-hud-emoji="✕" aria-hidden="true"></i></button>
       </div>
-      <p class="text-[12px] text-slate-300">Two ways to watch: <b class="text-amber-200">🎯 Follow Kelo-1</b> keeps him in view wherever he goes. <b class="text-amber-200">🧭 Explore</b> lets you fly anywhere yourself. Moving the map switches to Explore; <b>🤖 Where is Kelo-1?</b> brings you back.</p>
-      <div class="grid sm:grid-cols-2 gap-2 text-[12px]">
+      <p class="text-xs text-slate-300">Two ways to watch: <b class="text-white">Follow</b> keeps Kelo-1 in view wherever he goes. <b class="text-white">Explore</b> lets you fly anywhere yourself. Moving the map switches to Explore; <b class="text-white">Where is Kelo-1?</b> brings you back.</p>
+      <div class="grid sm:grid-cols-2 gap-x-6 gap-y-5 text-xs">
         <div class="explore-help-card">
-          <div class="explore-help-head">🖱️ Mouse</div>
+          <h4 class="explore-help-head">Mouse</h4>
           <ul>
-            <li><span>✋</span> Drag the ground to slide the map</li>
-            <li><span>🔄</span> Right-drag to turn and tilt</li>
-            <li><span>🔍</span> Scroll to zoom toward the cursor</li>
-            <li><span>✈️</span> Double-click a spot to fly there</li>
-            <li><span>👆</span> Click the ground: Fly here, Send Kelo-1 here, or What's this?</li>
-            <li><span>🏛️</span> Click the Storehouse or Museum to look inside</li>
+            <li>Drag the ground to slide the map</li>
+            <li>Right-drag to turn and tilt</li>
+            <li>Scroll to zoom toward the cursor</li>
+            <li>Double-click a spot to fly there</li>
+            <li>Click the ground: Fly here, Send Kelo-1 here, or What's this?</li>
+            <li>Click the Storehouse or Museum to look inside</li>
           </ul>
         </div>
         <div class="explore-help-card">
-          <div class="explore-help-head">⌨️ Keys</div>
+          <h4 class="explore-help-head">Keys</h4>
           <ul>
-            <li><span>⬆️</span> W A S D or the arrow keys to move</li>
-            <li><span>↩️</span> Q and E to turn</li>
-            <li><span>⤒</span> R and F to tilt</li>
-            <li><span>➕</span> + and − to zoom</li>
-            <li><span>🤖</span> K to fly back to Kelo-1</li>
-            <li><span>❔</span> ? opens this card</li>
+            <li><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> or the arrow keys to move</li>
+            <li><kbd>Q</kbd> and <kbd>E</kbd> to turn</li>
+            <li><kbd>R</kbd> and <kbd>F</kbd> to tilt</li>
+            <li><kbd>+</kbd> and <kbd>−</kbd> to zoom</li>
+            <li><kbd>K</kbd> to fly back to Kelo-1</li>
+            <li><kbd>?</kbd> opens this card</li>
           </ul>
         </div>
         <div class="explore-help-card">
-          <div class="explore-help-head">📱 Touch</div>
+          <h4 class="explore-help-head">Touch</h4>
           <ul>
-            <li><span>☝️</span> One finger slides the map</li>
-            <li><span>🤏</span> Pinch to zoom, twist two fingers to turn</li>
-            <li><span>🕹️</span> The joystick moves you around</li>
-            <li><span>👆</span> Tap the ground for the spot menu</li>
+            <li>One finger slides the map</li>
+            <li>Pinch to zoom, twist two fingers to turn</li>
+            <li>The joystick moves you around</li>
+            <li>Tap the ground for the spot menu</li>
           </ul>
         </div>
         <div class="explore-help-card">
-          <div class="explore-help-head">🗺️ Map and places</div>
+          <h4 class="explore-help-head">Map and places</h4>
           <ul>
-            <li><span>🗺️</span> The map shows Kelo-1 (arrow), his vehicles, digs and builds, and what you can see</li>
-            <li><span>👆</span> Click the map to fly there</li>
-            <li><span>📍</span> Places jumps to any building, dig or project</li>
+            <li>The map shows Kelo-1 (arrow), his vehicles, digs and builds, and what you can see</li>
+            <li>Click the map to fly there</li>
+            <li>Places jumps to any building, dig or project</li>
           </ul>
         </div>
       </div>
-      <label class="flex items-center gap-2 text-[12px] text-slate-300"><input id="exploreAutoReturn" type="checkbox" class="accent-amber-500"> Go back to following Kelo-1 after 90 seconds of not touching anything</label>
-      <div class="flex justify-end">
-        <button type="button" data-help-close class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs">Got it</button>
+      <label class="flex items-center gap-3 text-xs text-slate-300"><input id="exploreAutoReturn" type="checkbox" role="switch" class="ui-toggle"> Go back to following Kelo-1 after 90 seconds of not touching anything</label>
+      <div class="ui-dialog-foot">
+        <button type="button" data-help-close class="ui-btn ui-btn-primary">Got it</button>
       </div>
     </div>
   </div>
 
-<div id="codeViewerModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-5 space-y-3 shadow-2xl">
-      <div class="flex items-center justify-between">
-        <div>
-          <h3 id="modalRepoTitle" class="font-mono text-sm font-bold text-purple-300">kelo1-okanagan-bot/repo</h3>
-          <p id="modalRepoCommitMsg" class="text-xs font-mono text-emerald-400"></p>
+<div id="codeViewerModal" class="hidden ui-dialog" role="dialog" aria-modal="true" aria-labelledby="modalRepoTitle">
+    <div class="ui-dialog-panel max-w-2xl">
+      <div class="ui-dialog-head">
+        <div class="min-w-0">
+          <h3 id="modalRepoTitle" class="ui-dialog-title font-mono">kelo1-okanagan-bot/repo</h3>
+          <p id="modalRepoCommitMsg" class="ui-note"></p>
         </div>
-        <button id="btnCloseCodeModal" class="px-3 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-slate-200">Close</button>
+        <button id="btnCloseCodeModal" class="ui-btn ui-btn-sm">Close</button>
       </div>
-      <pre id="modalCodeContent" class="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs font-mono text-sky-200 overflow-x-auto max-h-96"></pre>
+      <pre id="modalCodeContent" class="p-4 rounded-2xl bg-slate-950 text-xs font-mono text-slate-200 overflow-x-auto max-h-96"></pre>
     </div>
   </div>
 
-<div id="aiConfigModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-5 space-y-4 shadow-2xl">
-      <div class="flex items-center justify-between">
-        <h3 id="settingsTitle" class="text-base font-bold text-white flex items-center gap-2"><i class="ph-bold ph-gear-six text-indigo-300"></i> Settings</h3>
-        <button id="btnCloseAIConfigModal" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center" aria-label="Close settings"><i class="ph-bold ph-x"></i></button>
+<div id="aiConfigModal" class="hidden ui-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="ui-dialog-panel max-w-lg">
+      <div class="ui-dialog-head">
+        <h3 id="settingsTitle" class="ui-dialog-title">Settings</h3>
+        <button id="btnCloseAIConfigModal" class="ui-icon-btn" aria-label="Close settings"><i class="ph-bold ph-x" data-hud-emoji="✕" aria-hidden="true"></i></button>
       </div>
-      <section class="space-y-2 p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
-        <div class="text-xs font-bold text-slate-200">AI brain (optional)</div>
-        <p class="text-[11px] text-slate-400">Without a key Kelo-1 thinks with his built-in brain. With a key he uses Gemini first, then Claude. Keys stay on this device.</p>
-        <label class="block text-[11px] text-slate-300 font-semibold" for="geminiApiKeyInput">Gemini API key</label>
-        <div class="flex gap-2"><input id="geminiApiKeyInput" type="password" autocomplete="off" placeholder="From Google AI Studio" class="flex-1 min-w-0 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-indigo-400"><button type="button" data-remove-key="gemini" class="px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 text-xs font-semibold shrink-0">Remove</button></div>
-        <label class="block text-[11px] text-slate-300 font-semibold" for="anthropicApiKeyInput">Anthropic (Claude) API key</label>
-        <div class="flex gap-2"><input id="anthropicApiKeyInput" type="password" autocomplete="off" placeholder="sk-ant-..." class="flex-1 min-w-0 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-indigo-400"><button type="button" data-remove-key="anthropic" class="px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/30 border border-rose-500/40 text-rose-200 text-xs font-semibold shrink-0">Remove</button></div>
-        <p id="aiKeyStatus" class="text-[11px] text-slate-400"></p>
+      <section class="ui-dialog-section">
+        <h4 class="ui-section-title">AI brain (optional)</h4>
+        <p class="ui-note">Without a key Kelo-1 thinks with his built-in brain. With a key he uses Gemini first, then Claude. Keys stay on this device.</p>
+        <label class="ui-label" for="geminiApiKeyInput">Gemini API key</label>
+        <div class="flex gap-2"><input id="geminiApiKeyInput" type="password" autocomplete="off" placeholder="From Google AI Studio" class="ui-input flex-1 font-mono"><button type="button" data-remove-key="gemini" class="ui-btn ui-btn-danger shrink-0">Remove</button></div>
+        <label class="ui-label" for="anthropicApiKeyInput">Anthropic (Claude) API key</label>
+        <div class="flex gap-2"><input id="anthropicApiKeyInput" type="password" autocomplete="off" placeholder="sk-ant-..." class="ui-input flex-1 font-mono"><button type="button" data-remove-key="anthropic" class="ui-btn ui-btn-danger shrink-0">Remove</button></div>
+        <p id="aiKeyStatus" class="ui-note" aria-live="polite"></p>
       </section>
-      <section class="space-y-2 p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
-        <label class="block text-xs font-bold text-slate-200" for="graphicsLevelSelect">🖥️ Graphics</label>
-        <p class="text-[11px] text-slate-400">High adds soft glow and the sharpest shadows. Balanced suits most computers. Fast is for phones and older machines. Saved on this device.</p>
-        <select id="graphicsLevelSelect" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400">
+      <section class="ui-dialog-section">
+        <label class="ui-section-title" for="graphicsLevelSelect">Graphics quality</label>
+        <p class="ui-note">High adds soft glow and the sharpest shadows. Balanced suits most computers. Fast is for phones and older machines. Saved on this device.</p>
+        <select id="graphicsLevelSelect" class="ui-input">
           <option value="high">High</option>
           <option value="balanced">Balanced</option>
           <option value="fast">Fast</option>
         </select>
       </section>
-      <section class="space-y-2 p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
-        <div class="text-xs font-bold text-slate-200">🛒 His shop</div>
-        <p class="text-[11px] text-slate-400">Where buyers reach you about his shop. No payments go through the shop; you handle each order. Saved only on this device, and included when you export the shop.</p>
-        <label class="block text-[11px] text-slate-300 font-semibold" for="shopContactInput">Shop contact (email or link)</label>
-        <input id="shopContactInput" type="text" autocomplete="off" maxlength="300" placeholder="you@example.com or https://..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-indigo-400">
-        <p id="shopContactStatus" class="text-[11px] text-slate-400"></p>
-      </section>
-      <section class="space-y-2 p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
-        <div class="text-xs font-bold text-slate-200">⚡ Performance</div>
-        <p class="text-[11px] text-slate-400">Low draws less of the far-away world and softer shadows, for a smoother game on phones and older computers. Things up close always look the same. Saved on this device.</p>
-        <label class="block text-[11px] text-slate-300 font-semibold" for="perfLevelSelect">Graphics</label>
-        <select id="perfLevelSelect" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400">
+      <section class="ui-dialog-section">
+        <label class="ui-section-title" for="perfLevelSelect">How far he draws the world</label>
+        <p class="ui-note">Low draws less of the far-away world and softer shadows, for a smoother game on phones and older computers. Things up close always look the same. Saved on this device.</p>
+        <select id="perfLevelSelect" class="ui-input">
           <option value="auto">Auto (picks for this device, steps down if it gets slow)</option>
           <option value="high">High</option>
           <option value="low">Low</option>
         </select>
-        <p id="perfLevelNote" class="text-[11px] text-slate-400"></p>
+        <p id="perfLevelNote" class="ui-note"></p>
       </section>
-      <details class="p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
-        <summary class="text-xs font-semibold text-slate-300 cursor-pointer">His last decision (details)</summary>
-        <pre id="lastAgentStructuredOutput" class="mt-2 text-[10px] font-mono text-emerald-300 whitespace-pre-wrap max-h-48 overflow-y-auto"></pre>
+      <section class="ui-dialog-section">
+        <label class="ui-section-title" for="shopContactInput">Where buyers reach you about his shop</label>
+        <p class="ui-note">No payments go through the shop; you handle each order. Saved only on this device, and included when you export the shop.</p>
+        <input id="shopContactInput" type="text" autocomplete="off" maxlength="300" placeholder="you@example.com or https://..." class="ui-input">
+        <p id="shopContactStatus" class="ui-note" aria-live="polite"></p>
+      </section>
+      <details class="ui-dialog-section">
+        <summary class="text-xs font-semibold text-slate-300 cursor-pointer">His last decision</summary>
+        <pre id="lastAgentStructuredOutput" class="mt-2 p-3 rounded-xl bg-slate-950 text-2xs font-mono text-slate-300 whitespace-pre-wrap max-h-48 overflow-y-auto"></pre>
       </details>
-      <div class="flex justify-end">
-        <button id="btnSaveAIConfig" class="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-slate-950 font-bold text-xs">Save</button>
+      <div class="ui-dialog-foot">
+        <button id="btnSaveAIConfig" class="ui-btn ui-btn-primary">Save</button>
       </div>
     </div>
   </div>

@@ -528,31 +528,31 @@ function renderShopPanel() {
       if (el.dataset.renderKey === key) return;
       el.dataset.renderKey = key;
       el.innerHTML = `
-        <div class="flex items-center justify-between gap-2 flex-wrap">
+        <div class="ui-section-head flex-wrap">
           <div class="min-w-0">
-            <div class="text-xs font-bold text-emerald-200 flex items-center gap-1.5">🛒 Kelo-1's Shop</div>
-            <div class="text-[10px] font-mono text-slate-400">${shop.listings.length} for sale · ${shop.sold.length} sold · earned <span class="text-emerald-300 font-bold">${escapeHtml(formatCAD(shop.earnings))}</span></div>
+            <h3 class="ui-section-title">Things he is selling</h3>
+            <div class="ui-section-meta">${shop.listings.length} for sale · ${shop.sold.length} sold · earned <span class="text-white font-semibold">${escapeHtml(formatCAD(shop.earnings))}</span></div>
           </div>
           <div class="flex gap-1.5">
-            <button id="btnOpenHisShop" class="px-2.5 py-1 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 text-[11px] font-semibold transition">🛒 His shop</button>
-            <button id="btnExportShop" class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-semibold transition" title="Download shop-data.json to commit next to shop.html, so everyone sees his shop">⬇️ Export shop</button>
+            <button id="btnOpenHisShop" class="ui-btn ui-btn-sm">Open his shop</button>
+            <button id="btnExportShop" class="ui-btn ui-btn-sm" title="Download shop-data.json to commit next to shop.html, so everyone sees his shop">Export shop</button>
           </div>
         </div>
-        ${contact ? '' : '<p class="text-[10px] text-amber-300/90">Buyers can\'t contact you yet: add a shop contact (email or https link) in ⚙️ Settings.</p>'}
+        ${contact ? '' : '<p class="text-2xs text-orange-300">Buyers can\'t contact you yet: add a shop contact (email or https link) in Settings.</p>'}
         ${shop.listings.length ? `<div class="space-y-1.5">${shop.listings.map(l => `
-          <div class="flex gap-2 items-center p-1.5 rounded-xl bg-slate-950/70 border border-slate-800">
+          <div class="ui-row">
             ${/^data:image\//.test(l.image || '') ? `<img src="${escapeHtml(l.image)}" alt="" class="w-12 h-12 rounded-lg object-cover shrink-0 bg-amber-100">` : '<div class="w-12 h-12 rounded-lg bg-slate-800 shrink-0"></div>'}
             <div class="min-w-0 flex-1">
-              <div class="text-[11px] font-semibold text-white truncate">${escapeHtml(l.name)} <span class="text-emerald-300 font-mono">${escapeHtml(formatCAD(l.price))}</span></div>
-              <div class="text-[10px] text-slate-400 line-clamp-2">${escapeHtml(l.description)}</div>
+              <div class="text-2xs font-semibold text-white truncate">${escapeHtml(l.name)} <span class="text-slate-300 tabular-nums">${escapeHtml(formatCAD(l.price))}</span></div>
+              <div class="text-2xs text-slate-400 line-clamp-2">${escapeHtml(l.description)}</div>
             </div>
             <div class="flex flex-col gap-1 shrink-0">
-              ${l.kind === 'painting' ? '<span class="px-2 py-0.5 rounded-lg bg-amber-500/20 border border-amber-400/40 text-amber-200 text-[10px] font-bold text-center">🖼️ Original</span>' : `<button data-listing-id="${escapeHtml(l.id)}" class="listing-stl-btn px-2 py-0.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-200 text-[10px] font-bold" title="Download the STL file to send to a buyer">⬇️ STL</button>`}
-              <button data-listing-id="${escapeHtml(l.id)}" class="listing-sold-btn px-2 py-0.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] font-bold">✓ Sold${l.sales ? ` (${l.sales})` : ''}</button>
-              <button data-listing-id="${escapeHtml(l.id)}" class="listing-down-btn px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-400 text-[10px]">Take down</button>
+              ${l.kind === 'painting' ? '<span class="text-2xs text-slate-300 text-center">Original</span>' : `<button data-listing-id="${escapeHtml(l.id)}" class="listing-stl-btn ui-btn ui-btn-sm" title="Download the STL file to send to a buyer">STL</button>`}
+              <button data-listing-id="${escapeHtml(l.id)}" class="listing-sold-btn ui-btn ui-btn-sm ui-btn-primary">Sold${l.sales ? ` (${l.sales})` : ''}</button>
+              <button data-listing-id="${escapeHtml(l.id)}" class="listing-down-btn ui-btn ui-btn-sm ui-btn-quiet">Take down</button>
             </div>
-          </div>`).join('')}</div>` : `<p class="text-[10px] text-slate-400">${shop.builtAt ? 'Nothing for sale right now.' : 'He hasn\'t built his shop yet. Once he has printed something fun or useful, or painted something good, he may put it up for sale.'}</p>`}
-        <p class="text-[10px] text-slate-500">He sells 3D print files and his original paintings. No payments happen here: when someone wants something, they contact you; you send the STL (⬇️ STL) or ship the painting, then press "Sold". A painting sells once and leaves his Museum.</p>`;
+          </div>`).join('')}</div>` : `<p class="text-2xs text-slate-400">${shop.builtAt ? 'Nothing for sale right now.' : 'He hasn\'t built his shop yet. Once he has printed something fun or useful, or painted something good, he may put it up for sale.'}</p>`}
+        <p class="ui-note">He sells 3D print files and his original paintings. No payments happen here: when someone wants something, they contact you; you send the STL or ship the painting, then press "Sold". A painting sells once and leaves his Museum.</p>`;
       el.querySelector('#btnOpenHisShop')?.addEventListener('click', () => window.open('shop.html', '_blank', 'noopener'));
       el.querySelector('#btnExportShop')?.addEventListener('click', exportShopData);
       el.querySelectorAll('.listing-stl-btn').forEach(b => b.addEventListener('click', () => downloadListingSTL(b.getAttribute('data-listing-id'))));

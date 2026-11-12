@@ -390,7 +390,7 @@ function setSoundMuted(muted) {
 function renderSoundToggle() {
       const btn = document.getElementById('btnSoundToggle');
       if (!btn) return;
-      btn.textContent = state.soundMuted ? '🔇 Sound off' : '🔊 Sound on';
+      btn.textContent = state.soundMuted ? 'Sound off' : 'Sound on';
       btn.setAttribute('aria-pressed', state.soundMuted ? 'true' : 'false');
     }
 

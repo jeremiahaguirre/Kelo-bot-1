@@ -1080,19 +1080,19 @@ function renderWorldUpgradesList() {
         <div data-upgrade-card="${id}" class="p-2.5 rounded-xl border ${on ? 'bg-violet-950/30 border-violet-500/30' : 'bg-slate-950/60 border-slate-800'} space-y-1.5">
           <div class="flex items-center justify-between gap-2">
             <span class="text-xs font-bold ${on ? 'text-violet-100' : 'text-slate-400'} truncate">${escapeHtml(u.name)}</span>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${u.broken ? 'bg-rose-500/20 text-rose-200' : on ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-700/60 text-slate-300'}">${u.broken ? 'failed checks' : on ? 'on' : 'off'} · v${u.version}</span>
+            <span class="text-2xs tabular-nums px-2 py-0.5 rounded-full shrink-0 ${u.broken ? 'bg-rose-500/20 text-rose-200' : on ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-700/60 text-slate-300'}">${u.broken ? 'failed checks' : on ? 'on' : 'off'} · v${u.version}</span>
           </div>
-          <div class="text-[10.5px] text-slate-400">${escapeHtml(u.kind)} · coded by his ${u.by === 'ai' ? 'AI brain' : 'built-in brain'}${u.code && u.code.routine ? ` · routine "${escapeHtml(u.code.routine.name)}"` : ''}</div>
-          ${u.about ? `<p class="text-[11px] text-slate-300 italic">${escapeHtml(u.about)}</p>` : ''}
+          <div class="text-2xs text-slate-400">${escapeHtml(u.kind)} · coded by his ${u.by === 'ai' ? 'AI brain' : 'built-in brain'}${u.code && u.code.routine ? ` · routine "${escapeHtml(u.code.routine.name)}"` : ''}</div>
+          ${u.about ? `<p class="text-2xs text-slate-300 italic">${escapeHtml(u.about)}</p>` : ''}
           <div class="flex gap-1.5 flex-wrap">
-            <button type="button" data-upg-view="${id}" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-[11px] font-semibold">${upgradeCodeOpen.has(u.id) ? 'Hide code' : 'View code'}</button>
-            <button type="button" data-upg-toggle="${id}" class="px-2.5 py-1 rounded-lg ${on ? 'bg-amber-500/15 hover:bg-amber-500/30 text-amber-200' : 'bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-200'} text-[11px] font-semibold" ${u.broken ? 'disabled' : ''}>${on ? 'Turn off' : 'Turn on'}</button>
-            <button type="button" data-upg-remove="${id}" class="px-2.5 py-1 rounded-lg ${armed ? 'bg-rose-500/40 text-white' : 'bg-rose-500/10 hover:bg-rose-500/25 text-rose-200'} text-[11px] font-semibold">${armed ? 'Tap again to remove' : 'Remove'}</button>
+            <button type="button" data-upg-view="${id}" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-2xs font-semibold">${upgradeCodeOpen.has(u.id) ? 'Hide code' : 'View code'}</button>
+            <button type="button" data-upg-toggle="${id}" class="px-2.5 py-1 rounded-lg ${on ? 'bg-amber-500/15 hover:bg-amber-500/30 text-amber-200' : 'bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-200'} text-2xs font-semibold" ${u.broken ? 'disabled' : ''}>${on ? 'Turn off' : 'Turn on'}</button>
+            <button type="button" data-upg-remove="${id}" class="px-2.5 py-1 rounded-lg ${armed ? 'bg-rose-500/40 text-white' : 'bg-rose-500/10 hover:bg-rose-500/25 text-rose-200'} text-2xs font-semibold">${armed ? 'Tap again to remove' : 'Remove'}</button>
           </div>
-          ${upgradeCodeOpen.has(u.id) ? `<pre class="whitespace-pre-wrap text-[10px] leading-snug font-mono text-violet-100 bg-slate-950 border border-slate-800 rounded-lg p-2 max-h-64 overflow-auto">${escapeHtml(JSON.stringify(u.code, null, 2))}</pre>` : ''}
+          ${upgradeCodeOpen.has(u.id) ? `<pre class="whitespace-pre-wrap text-2xs leading-snug font-mono text-violet-100 bg-slate-950 border border-slate-800 rounded-lg p-2 max-h-64 overflow-auto">${escapeHtml(JSON.stringify(u.code, null, 2))}</pre>` : ''}
         </div>`;
-      }).join('') : '<p class="text-[11px] text-slate-500 italic">Nothing yet. Now and then he sits at NetNode and codes an upgrade for his world: a fountain, a lantern path, a sign...</p>')
-        + (rejected.length ? `<div class="text-[10.5px] text-slate-500 pt-1">Recently turned away by the safety checks: ${rejected.map(r => `${escapeHtml(r.name)} (${escapeHtml((r.errors || [])[0] || '')})`).join('; ')}</div>` : '');
+      }).join('') : '<p class="text-2xs text-slate-500 italic">Nothing yet. Now and then he sits at NetNode and codes an upgrade for his world: a fountain, a lantern path, a sign...</p>')
+        + (rejected.length ? `<div class="text-2xs text-slate-500 pt-1">Recently turned away by the safety checks: ${rejected.map(r => `${escapeHtml(r.name)} (${escapeHtml((r.errors || [])[0] || '')})`).join('; ')}</div>` : '');
       perfSetHtml(el, html);
     }
 

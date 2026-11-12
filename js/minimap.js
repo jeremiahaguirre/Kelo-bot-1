@@ -395,17 +395,17 @@ function renderChangesMapPanel() {
       changesMap.sig = sig;
       legend.innerHTML = CHANGE_KINDS.map(k => {
         const n = all.filter(c => c.kind === k.key).length, off = changesMap.hidden.has(k.key);
-        return `<button type="button" data-change-kind="${k.key}" aria-pressed="${!off}" class="px-2 py-1 rounded-lg text-[11px] border flex items-center gap-1.5 transition ${off ? 'border-slate-800 text-slate-500' : 'border-slate-700 bg-slate-900 text-slate-200'}${n ? '' : ' opacity-50'}">
-          <span class="inline-block w-2.5 h-2.5 rounded-sm border border-slate-950" style="background:${k.color}"></span>${escapeHtml(k.emoji)} ${escapeHtml(k.label)} <span class="font-mono text-slate-400">${n}</span></button>`;
+        return `<button type="button" data-change-kind="${k.key}" aria-pressed="${!off}" class="px-2 py-1 rounded-lg text-2xs border flex items-center gap-1.5 transition ${off ? 'border-slate-800 text-slate-500' : 'border-slate-700 bg-slate-900 text-slate-200'}${n ? '' : ' opacity-50'}">
+          <span class="inline-block w-2.5 h-2.5 rounded-sm border border-slate-950" style="background:${k.color}"></span>${escapeHtml(k.emoji)} ${escapeHtml(k.label)} <span class="tabular-nums text-slate-400">${n}</span></button>`;
       }).join('');
       const shown = all.filter(c => !changesMap.hidden.has(c.kind));
       listEl.innerHTML = shown.length ? shown.slice(0, 40).map((c, i) => {
         const k = CHANGE_KINDS.find(x => x.key === c.kind);
-        return `<button type="button" data-change-row="${i}" class="w-full text-left px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] text-slate-200 flex items-start gap-2">
+        return `<button type="button" data-change-row="${i}" class="w-full text-left px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-2xs text-slate-200 flex items-start gap-2">
           <span class="mt-0.5 inline-block w-2.5 h-2.5 rounded-sm shrink-0 border border-slate-950" style="background:${k.color}"></span>
           <span class="min-w-0"><span class="block">${escapeHtml(c.emoji || k.emoji)} ${escapeHtml(c.label)}</span>${c.why ? `<span class="block text-slate-400 italic">${escapeHtml(c.why)}</span>` : ''}</span>
           <i class="ph ph-crosshair ml-auto text-slate-500" aria-hidden="true"></i></button>`;
-      }).join('') : `<p class="text-[11px] text-slate-500 italic">${all.length ? 'Nothing of those kinds is showing.' : "He hasn't changed anything in the world yet. Give him an axe, seeds, a shovel or some lumber and see what he does."}</p>`;
+      }).join('') : `<p class="text-2xs text-slate-500 italic">${all.length ? 'Nothing of those kinds is showing.' : "He hasn't changed anything in the world yet. Give him an axe, seeds, a shovel or some lumber and see what he does."}</p>`;
       listEl.querySelectorAll('[data-change-row]').forEach(b => b.addEventListener('click', () => changesMapFlyTo(shown[Number(b.getAttribute('data-change-row'))])));
     }
 

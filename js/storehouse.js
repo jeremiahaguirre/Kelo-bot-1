@@ -30,9 +30,9 @@ let shelfRenderKey = null;
 let storeHoverTag = null;
 let storeHovered = null;
 
-// Everything he owns, oldest first, except things he hasn't put away yet
-function storedItems() {
-      const unstored = new Set(state.unstoredItems.map(n => n.toLowerCase()));
+// Everything he owns that belongs on a shelf, one entry per copy, oldest first (the old shelf order,
+// used to lay out an older save's shelves exactly as they were)
+function storeShelfOwned() {
       const all = [
         ...state.toolInventory.map(name => ({ name, kind: 'tool' })),
         ...state.toys.map(t => ({ name: t.name, kind: 'toy' })),
@@ -40,10 +40,113 @@ function storedItems() {
       ].reverse();
       // Vehicles are parked outside (js/vehicles.js), not kept on shelves
       // (and a 3D printer that's set up stands on its own bench, js/printer.js; wreck pieces lie where the balloon crashed)
-      return all.filter(i => i.name && !unstored.has(i.name.toLowerCase()) && !(typeof vehicleTypeFor === 'function' && vehicleTypeFor(i.name))
+      return all.filter(i => i.name && typeof i.name === 'string' && !(typeof vehicleTypeFor === 'function' && vehicleTypeFor(i.name))
         && !(typeof wreckPieceAtCrash === 'function' && wreckPieceAtCrash(i.name))
         && !(typeof isSetUpMachine === 'function' && isSetUpMachine(i.name))
         && !(typeof keptAtWeldStudio === 'function' && keptAtWeldStudio(i.name)));
+    }
+
+// Each copy on the shelves has its own record: state.storeCopies = [{ id, name, slot, out }].
+// slot counts across floors (shelfSlots.length per floor: 0 is the first slot upstairs, then B1...).
+// out: he took that copy down to use it; its slot stays empty (and his) until he puts it back.
+// Things he owns but hasn't put away yet (state.unstoredItems, one name per copy) have no record.
+let storeCopyKinds = new Map();
+
+function storeCopyNewId() {
+      state.storeCopyNext = (Number(state.storeCopyNext) || 0) + 1;
+      return 'sc' + state.storeCopyNext;
+    }
+
+function storeLowestFreeSlot(used) {
+      let s = 0;
+      while (used.has(s)) s++;
+      return s;
+    }
+
+// An older save has no records: its copies take the slots they were shown in (the old order, where every
+// copy sharing a name with a thing still to put away was hidden), so the shelves look exactly as before
+function storeMigrateCopies(owned) {
+      const unstored = new Set(state.unstoredItems.map(n => String(n).toLowerCase()));
+      state.storeCopies = owned.filter(i => !unstored.has(i.name.toLowerCase())).map((i, slot) => ({ id: storeCopyNewId(), name: i.name, slot, out: false }));
+    }
+
+// Brings the records in line with what he owns. Code all over the game adds, uses up, renames and throws
+// out things straight in his lists, so this runs whenever the shelves are looked at: a copy that is gone
+// loses its record (one he had taken out first, else the highest slot), and a copy with no record gets
+// the slot just freed by the same change (a rename keeps its place) or the lowest empty one.
+function syncStoreCopies() {
+      const owned = storeShelfOwned();
+      if (!Array.isArray(state.storeCopies)) storeMigrateCopies(owned);
+      const want = new Map();
+      storeCopyKinds = new Map();
+      owned.forEach(i => {
+        const k = i.name.toLowerCase();
+        const w = want.get(k) || { name: i.name, n: 0 };
+        w.n++;
+        want.set(k, w);
+        if (!storeCopyKinds.has(k)) storeCopyKinds.set(k, i.kind);
+      });
+      state.unstoredItems.forEach(n => { const w = want.get(String(n).toLowerCase()); if (w && w.n > 0) w.n--; });
+      const have = new Map();
+      state.storeCopies.forEach(c => { const k = c.name.toLowerCase(); if (!have.has(k)) have.set(k, []); have.get(k).push(c); });
+      const freed = [], gone = new Set();
+      have.forEach((list, k) => {
+        const n = want.has(k) ? want.get(k).n : 0;
+        while (list.length > n) {
+          let victim = list.find(c => c.out);
+          if (!victim) victim = list.reduce((a, b) => (b.slot > a.slot ? b : a));
+          list.splice(list.indexOf(victim), 1);
+          gone.add(victim);
+          freed.push(victim.slot);
+        }
+      });
+      if (gone.size) state.storeCopies = state.storeCopies.filter(c => !gone.has(c));
+      const used = new Set(state.storeCopies.map(c => c.slot));
+      freed.sort((a, b) => a - b);
+      want.forEach((w, k) => {
+        const list = have.get(k) || [];
+        list.forEach(c => { if (c.name !== w.name && !owned.some(i => i.name === c.name)) c.name = w.name; });
+        for (let n = list.length; n < w.n; n++) {
+          let slot = freed.find(s => !used.has(s));
+          if (slot === undefined) slot = storeLowestFreeSlot(used);
+          used.add(slot);
+          state.storeCopies.push({ id: storeCopyNewId(), name: w.name, slot, out: false });
+        }
+      });
+      return state.storeCopies;
+    }
+
+// What is on the shelves right now, in slot order (a copy he has taken out is not: its slot shows empty)
+function storedItems() {
+      return syncStoreCopies().filter(c => !c.out).slice().sort((a, b) => a.slot - b.slot)
+        .map(c => ({ name: c.name, kind: storeCopyKinds.get(c.name.toLowerCase()) || 'thing', id: c.id, slot: c.slot }));
+    }
+
+// Copies he has taken down to use and not yet put back
+function storeCopiesOut() {
+      return syncStoreCopies().filter(c => c.out);
+    }
+
+// The last slot in use (taken-out copies keep theirs), or -1 when the shelves are empty
+function storeHighestSlot() {
+      return syncStoreCopies().reduce((m, c) => Math.max(m, c.slot), -1);
+    }
+
+// Older or damaged saves: keep only well-formed records, one per slot
+function cleanStoreCopies() {
+      if (!Array.isArray(state.storeCopies)) { state.storeCopies = null; return; }
+      const seenId = new Set(), seenSlot = new Set();
+      let top = Number(state.storeCopyNext) || 0;
+      state.storeCopies = state.storeCopies.filter(c => c && typeof c.name === 'string' && c.name && Number.isInteger(c.slot) && c.slot >= 0 && c.slot < 100000)
+        .map(c => ({ id: typeof c.id === 'string' ? c.id.slice(0, 40) : '', name: c.name, slot: c.slot, out: c.out === true }));
+      state.storeCopies.forEach(c => { const m = /^sc(\d+)$/.exec(c.id); if (m) top = Math.max(top, Number(m[1])); });
+      state.storeCopyNext = top;
+      state.storeCopies.forEach(c => {
+        if (!c.id || seenId.has(c.id)) c.id = storeCopyNewId();
+        seenId.add(c.id);
+        if (seenSlot.has(c.slot)) c.slot = storeLowestFreeSlot(seenSlot);
+        seenSlot.add(c.slot);
+      });
     }
 
 function buildStorehouse3D() {
@@ -206,13 +309,13 @@ function buildBasementHatch(at, floorY, entryAngle = 0) {
     }
 
 function storehouseBasementLevels() {
-      return Math.max(0, Math.ceil(storedItems().length / Math.max(1, shelfSlots.length)) - 1);
+      return Math.max(0, Math.ceil((storeHighestSlot() + 1) / Math.max(1, shelfSlots.length)) - 1);
     }
 
 // Which floor an item is kept on: 0 is the shelves upstairs, 1 is basement B1, and so on
 function storehouseLevelOf(name) {
-      const i = storedItems().findIndex(it => it.name === name);
-      return i < 0 || !shelfSlots.length ? 0 : Math.floor(i / shelfSlots.length);
+      const it = storedItems().find(i => i.name === name);
+      return !it || !shelfSlots.length ? 0 : Math.floor(it.slot / shelfSlots.length);
     }
 
 // Life size on the shelf (a screwdriver stays small, a toolbox big) unless it's too big to fit,
@@ -240,9 +343,10 @@ let shelfBuildQueue = [];
 
 function renderStorehouseShelves3D() {
       if (!shelfItemsGroup) return;
-      const items = storedItems();
-      const onShelf = items.slice(0, shelfSlots.length);
-      const key = (shelfModelsWanted ? 'models:' : 'boxes:') + onShelf.map(i => i.name).join('|') + '#' + storehouseBasementLevels();
+      // Each slot upstairs and what is in it (an empty slot, a copy taken out included, shows the bare plank)
+      const onShelf = [];
+      storedItems().forEach(it => { if (it.slot < shelfSlots.length) onShelf[it.slot] = it; });
+      const key = (shelfModelsWanted ? 'models:' : 'boxes:') + onShelf.map((i, k) => (i ? `${k}=${i.id}:${i.name}` : '')).filter(Boolean).join('|') + '#' + storehouseBasementLevels();
       if (key === shelfRenderKey) return;
       shelfRenderKey = key;
       // Models already on the right shelf with the right thing stay where they are
@@ -262,6 +366,7 @@ function renderStorehouseShelves3D() {
       // Stand-ins everywhere a model isn't built yet
       const spots = [];
       onShelf.forEach((item, i) => {
+        if (!item) return;
         const held = keep.get(`${i}:${item.name}`);
         if (held) { shelfItemsGroup.add(held); return; }
         const slot = shelfSlots[i];
@@ -300,6 +405,7 @@ function buildQueuedShelfModels(count) {
         const job = shelfBuildQueue.shift();
         const holder = shelfHolderFor(job.name, shelfSlots[job.index]);
         holder.userData.slotIndex = job.index;
+        holder.userData.storeLevel = 0;
         // Under the barn roof their own shadows hardly show, and real models would double their cost
         holder.traverse(o => { if (o.isMesh) o.castShadow = false; });
         shelfItemsGroup.add(holder);
@@ -370,53 +476,78 @@ function shelfHolderFor(name, slot) {
       return holder;
     }
 
-// Carry new things to the Storehouse and put them on the shelves: he walks in, goes to each
-// one's own shelf (down the stairs if it belongs in a basement) and sets it there
+// Anything waiting to go on a shelf: new things, or a copy he took down and is done with
+function storehouseHasPutAway() {
+      return state.unstoredItems.length > 0 || storeCopiesOut().length > 0;
+    }
+
+// Put one new copy of `name` on the shelves at `slot` (or the lowest empty one if that was taken meanwhile)
+function storePlaceNewCopy(name, slot) {
+      const i = state.unstoredItems.indexOf(name);
+      if (i < 0) return false;
+      const copies = syncStoreCopies();
+      const used = new Set(copies.map(c => c.slot));
+      state.unstoredItems.splice(i, 1);
+      copies.push({ id: storeCopyNewId(), name, slot: Number.isInteger(slot) && !used.has(slot) ? slot : storeLowestFreeSlot(used), out: false });
+      return true;
+    }
+
+// Carry new things to the Storehouse and put them on the shelves, and put back what he took down to use:
+// he walks in, goes to each one's own shelf (down the stairs if it belongs in a basement) and sets it there.
+// A copy he took out goes back to its own slot; each new copy gets an empty slot of its own.
 async function putAwayItems() {
-      if (state.unstoredItems.length === 0 || state.isBusy || state.isBuilding || state.isPracticing) return false;
+      if (!storehouseHasPutAway() || state.isBusy || state.isBuilding || state.isPracticing) return false;
       state.isPracticing = true;
       try {
         const items = state.unstoredItems.slice();
-        if (typeof setCarriedObject === 'function') setCarriedObject(buildItemModel3D(items[0], { label: false }));
+        const returns = storeCopiesOut().slice();
+        const names = [...items, ...returns.map(c => c.name)];
+        if (typeof setCarriedObject === 'function') setCarriedObject(buildItemModel3D(names[0], { label: false }));
         state.currentLocKey = 'custom';
         state.customPlaceName = 'his Storehouse';
         state.microPose = 'normal';
         state.moodEmoji = '📦';
-        state.moodTitle = `Putting away ${items.length > 1 ? `${items.length} things` : items[0]}`.slice(0, 80);
-        state.speechBubble = `Taking ${items.length > 1 ? 'my new things' : items[0]} to the Storehouse.`;
+        state.moodTitle = (items.length ? `Putting away ${names.length > 1 ? `${names.length} things` : names[0]}` : `Putting the ${names[0]} back`).slice(0, 80);
+        state.speechBubble = items.length ? `Taking ${names.length > 1 ? 'my new things' : names[0]} to the Storehouse.` : `Putting ${names.length > 1 ? 'my things' : `the ${names[0]}`} back where ${names.length > 1 ? 'they go' : 'it goes'}.`;
         renderAllUI();
-        // Where each one will sit once they are all put away (in shelf order, so nothing shifts)
-        const keep = state.unstoredItems;
-        state.unstoredItems = keep.filter(n => !items.includes(n));
-        const order = storedItems();
-        state.unstoredItems = keep;
-        const placed = items.map(name => ({ name, index: order.findIndex(it => it.name === name) }))
-          .sort((p, q) => p.index - q.index)
-          .map(p => ({ name: p.name, at: storehouseSlotFor(p.index) }));
-        const shelve = name => () => {
-          state.unstoredItems = state.unstoredItems.filter(n => n !== name);
+        // Where each one will sit (worked out now, so nothing shifts while he walks): a copy he took out
+        // goes back to its own slot, each new one to the lowest empty slot
+        const used = new Set(syncStoreCopies().map(c => c.slot));
+        const placed = [
+          ...returns.map(c => ({ name: c.name, slot: c.slot, copy: c })),
+          ...items.map(name => { const slot = storeLowestFreeSlot(used); used.add(slot); return { name, slot, copy: null }; })
+        ].sort((p, q) => p.slot - q.slot).map(p => ({ ...p, at: storehouseSlotFor(p.slot), done: false }));
+        const shelve = p => () => {
+          if (p.done) return true;
+          p.done = true;
+          if (p.copy) p.copy.out = false;
+          else storePlaceNewCopy(p.name, p.slot);
           renderStorehouseShelves3D();
           return true;
         };
         // He walks each of the first few to its shelf; the rest go on the shelves next to them
-        const jobs = placed.map(({ name, at }, k) => (at && k < 4 ? {
-          mode: 'place', level: at.level, slot: at.slot, stand: at.stand, what: name,
-          carry: () => buildItemModel3D(name, { label: false }),
-          landing: () => shelfHolderFor(name, at.slot),
-          onPlaced: shelve(name)
-        } : { mode: 'bookkeeping', onPlaced: shelve(name) }));
+        const jobs = placed.map((p, k) => (p.at && k < 4 ? {
+          mode: 'place', level: p.at.level, slot: p.at.slot, stand: p.at.stand, what: p.name,
+          carry: () => buildItemModel3D(p.name, { label: false }),
+          landing: () => shelfHolderFor(p.name, p.at.slot),
+          onPlaced: shelve(p)
+        } : { mode: 'bookkeeping', onPlaced: shelve(p) }));
         if (typeof goIndoors === 'function') await goIndoors('storehouse', jobs);
-        state.unstoredItems = state.unstoredItems.filter(n => !items.includes(n));
+        placed.forEach(p => shelve(p)());
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
         renderStorehouseShelves3D();
-        const listText = items.length > 3 ? `${items.slice(0, 3).join(', ')} and ${items.length - 3} more` : items.join(', ');
-        state.speechBubble = `All put away: ${listText}. The shelves are filling up.`;
-        state.diaryEntries.unshift({
-          time: 'Tidying Up', location: 'his Storehouse', mood: '📦 Putting things away',
-          vitals: `⚡ ${state.health}% • 🥕 ${state.fullness}% • ✨ ${state.wonderLevel}% • 🌊 ${state.calmLevel}%`,
-          text: `Dear Diary, I put ${listText} on the Storehouse shelves. I like knowing where everything is.`
-        });
-        state.calmLevel = Math.min(100, state.calmLevel + 4);
+        if (items.length) {
+          const listText = items.length > 3 ? `${items.slice(0, 3).join(', ')} and ${items.length - 3} more` : items.join(', ');
+          state.speechBubble = `All put away: ${listText}. The shelves are filling up.`;
+          state.diaryEntries.unshift({
+            time: 'Tidying Up', location: 'his Storehouse', mood: '📦 Putting things away',
+            vitals: `⚡ ${state.health}% • 🥕 ${state.fullness}% • ✨ ${state.wonderLevel}% • 🌊 ${state.calmLevel}%`,
+            text: `Dear Diary, I put ${listText} on the Storehouse shelves. I like knowing where everything is.`
+          });
+          state.calmLevel = Math.min(100, state.calmLevel + 4);
+        } else {
+          state.speechBubble = `The ${returns[0].name.replace(/^(an?|the)\s+/i, '')}${returns.length > 1 ? ` and ${returns.length - 1} more` : ''} ${returns.length > 1 ? 'are' : 'is'} back on the shelf.`;
+        }
         savePersistentBrainState();
         renderAllUI();
         return true;
@@ -427,11 +558,11 @@ async function putAwayItems() {
 
 // Before a job that needs a tool, he walks over, goes in to its shelf and takes it down.
 // Called from inside another activity, so it doesn't change the activity flags itself.
+// That copy is out (its slot shows empty) until he puts it back once he is free again.
 async function fetchFromStorehouse(matchName) {
       const list = storedItems();
-      const index = list.findIndex(i => (matchName instanceof RegExp ? matchName.test(i.name) : i.name.toLowerCase() === String(matchName).toLowerCase()));
-      if (index < 0) return null;
-      const item = list[index];
+      const item = list.find(i => (matchName instanceof RegExp ? matchName.test(i.name) : i.name.toLowerCase() === String(matchName).toLowerCase()));
+      if (!item) return null;
       if (typeof noteItemUsed === 'function') noteItemUsed(item.name);
       const plain = item.name.replace(/^(an?|the)\s+/i, '');
       state.currentLocKey = 'custom';
@@ -440,14 +571,19 @@ async function fetchFromStorehouse(matchName) {
       state.moodEmoji = '📦';
       state.moodTitle = `Grabbing the ${plain} from the Storehouse`.slice(0, 80);
       renderAllUI();
-      const at = storehouseSlotFor(index);
+      const at = storehouseSlotFor(item.slot);
       const carry = () => buildItemModel3D(item.name, { label: false });
       if (typeof goIndoors === 'function' && at) {
         await goIndoors('storehouse', [{
           mode: 'take', level: at.level, slot: at.slot, stand: at.stand, what: `The ${plain}`,
-          match: o => o.userData && o.userData.itemName === item.name, carried: carry
+          match: o => o.userData && o.userData.itemName === item.name && o.userData.slotIndex === item.slot % Math.max(1, shelfSlots.length) && (o.userData.storeLevel || 0) === at.level, carried: carry
         }]);
       }
+      // That copy is in his hands now: its slot stays empty until he puts it back
+      const copy = (state.storeCopies || []).find(c => c.id === item.id);
+      if (copy) copy.out = true;
+      renderStorehouseShelves3D();
+      if (typeof doWhenFree === 'function') doWhenFree(putAwayItems, { key: 'putaway' });
       if (typeof setCarriedObject === 'function' && (typeof carriedObject === 'undefined' || !carriedObject)) setCarriedObject(carry());
       return item;
     }

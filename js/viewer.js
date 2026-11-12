@@ -59,13 +59,24 @@ function modelThumbnail(key, buildModel) {
       return url;
     }
 
+// One cell per shelf slot, in slot order, so each page shows the same things in the same places as the
+// shelves themselves: an empty slot (or one whose thing he has taken out to use) is an empty cell
 function storehouseViewerItems() {
       const seen = {};
-      return storedItems().map((it, i) => ({
-        // How much is left of things that get used up: "Spray paint (2 of 3 left)" (js/itemuse.js)
-        label: typeof supplyLabel === 'function' ? supplyLabel(it.name, seen[it.name] = (seen[it.name] ?? -1) + 1) : it.name, name: it.name, floor: shelfSlots.length ? Math.floor(i / shelfSlots.length) : 0,
-        image: () => modelThumbnail('item:' + it.name, () => buildItemModel3D(it.name, { label: false }))
-      }));
+      const per = typeof shelfSlots !== 'undefined' && shelfSlots.length ? shelfSlots.length : 0;
+      const floorOf = slot => (per ? Math.floor(slot / per) : 0);
+      const cells = [];
+      const top = typeof storeHighestSlot === 'function' ? storeHighestSlot() : -1;
+      for (let s = 0; s <= top; s++) cells.push({ empty: true, floor: floorOf(s), slot: s });
+      if (typeof storeCopiesOut === 'function') storeCopiesOut().forEach(c => { if (cells[c.slot]) cells[c.slot].outName = c.name; });
+      storedItems().forEach(it => {
+        cells[it.slot] = {
+          // How much is left of things that get used up: "Spray paint (2 of 3 left)" (js/itemuse.js)
+          label: typeof supplyLabel === 'function' ? supplyLabel(it.name, seen[it.name] = (seen[it.name] ?? -1) + 1) : it.name, name: it.name, floor: floorOf(it.slot), slot: it.slot,
+          image: () => modelThumbnail('item:' + it.name, () => buildItemModel3D(it.name, { label: false }))
+        };
+      });
+      return cells;
     }
 
 function museumViewerItems() {
@@ -171,9 +182,14 @@ function renderViewer() {
       } else {
         const { which, items, page } = viewerState;
         const slice = items.slice(page * SHELF_PAGE, page * SHELF_PAGE + SHELF_PAGE);
-        const floors = [...new Set(slice.map(i => i.floor))];
+        const floors = [...new Set(slice.filter(Boolean).map(i => i.floor))];
+        const count = items.filter(i => i && !i.empty).length;
         const floorLabel = floors.map(f => (f === 0 ? 'Ground floor' : `Basement B${f}`)).join(' & ');
-        const cell = (it) => it ? `
+        const cell = (it) => it && it.empty ? `
+          <figure class="flex flex-col items-center justify-end gap-1 min-w-0" data-empty-slot="${it.slot}">
+            <div class="w-full max-w-[110px] aspect-square"></div>
+            ${it.outName ? `<figcaption class="w-full text-center text-3xs leading-tight text-amber-200/70 italic truncate" title="${escapeHtml(it.outName)} is out: he is using it">${escapeHtml(it.outName)} is out</figcaption>` : ''}
+          </figure>` : it ? `
           <figure class="flex flex-col items-center justify-end gap-1 min-w-0">
             ${it.art ? `<button data-art="${escapeHtml(it.art.id)}" class="w-full max-w-[110px] aspect-square flex items-center" title="See it full size"><img src="${escapeHtml(it.image())}" alt="${escapeHtml(it.label)}" class="w-full object-contain drop-shadow-lg border-[3px] ${['oil', 'acrylic'].includes(it.art.medium) ? 'border-amber-600' : 'border-stone-800 bg-white p-1'}"></button>`
               : `<img src="${escapeHtml(it.image())}" alt="" class="w-full max-w-[110px] aspect-square object-contain drop-shadow-lg">`}
@@ -191,7 +207,7 @@ function renderViewer() {
         el.innerHTML = `
           <div class="shrink-0 px-4 py-3 flex items-center justify-between gap-2">
             <h2 class="text-sm font-bold text-white">${which === 'museum' ? 'Museum of Art &amp; Ideas' : 'In his Storehouse'}</h2>
-            <div class="text-2xs tabular-nums text-slate-400">${items.length} ${which === 'museum' ? 'pieces' : 'items'}${items.length ? ` • ${escapeHtml(floorLabel)}` : ''}</div>
+            <div class="text-2xs tabular-nums text-slate-400">${count} ${which === 'museum' ? 'pieces' : 'items'}${items.length ? ` • ${escapeHtml(floorLabel)}` : ''}</div>
           </div>
           <div class="flex-1 min-h-0 overflow-auto p-3 flex justify-center">
             <div class="w-full max-w-3xl rounded-2xl p-2 space-y-1" style="background:${which === 'museum' ? 'linear-gradient(#f5f1e8,#d6d0c4)' : 'linear-gradient(#6b3a1f,#4a2810)'}">

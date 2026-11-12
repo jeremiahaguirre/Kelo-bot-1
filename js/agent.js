@@ -319,6 +319,9 @@ const state = {
   "knowsDigging": false,
   "itemDesigns": {},
   "unstoredItems": [],
+  // One record per copy on the Storehouse shelves, each with its own slot (js/storehouse.js); null until set up
+  "storeCopies": null,
+  "storeCopyNext": 0,
   "foundItems": [],
   "life": {
     "bornAt": null
@@ -1388,6 +1391,7 @@ function loadPersistentBrainState() {
           });
         }
         if (Array.isArray(saved.unstoredItems)) state.unstoredItems = saved.unstoredItems.filter(n => typeof n === 'string');
+        if (typeof cleanStoreCopies === 'function') cleanStoreCopies();
         if (Array.isArray(saved.digSites)) state.digSites = saved.digSites.filter(d => d && Number.isFinite(d.x) && Number.isFinite(d.z) && Number.isFinite(d.depth));
         if (Array.isArray(saved.foundItems)) state.foundItems = saved.foundItems.filter(f => f && typeof f.id === 'string');
         if (Array.isArray(saved.coreMemories)) state.coreMemories = saved.coreMemories.filter(m => m && typeof m.text === 'string');
@@ -2494,7 +2498,8 @@ function runAutonomousLifeTick() {
       // Finish the current thought, build or mail run before starting something new
       if (state.isBusy || state.isBuilding || state.isCollectingMail || state.isPracticing || state.isSleeping) return;
       // Tidy first: new things he is still holding go to the Storehouse
-      if (state.unstoredItems.length && typeof putAwayItems === 'function') {
+      // (and what he took down to use goes back on its own shelf)
+      if (typeof putAwayItems === 'function' && (typeof storehouseHasPutAway === 'function' ? storehouseHasPutAway() : state.unstoredItems.length)) {
         putAwayItems();
         return;
       }

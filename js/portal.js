@@ -115,7 +115,7 @@ function renderPortal() {
         // shows the first PILLS_STEP with a "Show more" button (js/perf.js)
         const floorOf = new Map();
         if (typeof storedItems === 'function' && typeof shelfSlots !== 'undefined' && shelfSlots.length) {
-          storedItems().forEach((it, i) => { if (!floorOf.has(it.name)) floorOf.set(it.name, Math.floor(i / shelfSlots.length)); });
+          storedItems().forEach(it => { if (!floorOf.has(it.name)) floorOf.set(it.name, Math.floor(it.slot / shelfSlots.length)); });
         }
         // Things that get used up show how much is left: "Spray paint (2 of 3 left)" (js/itemuse.js)
         const seen = {};

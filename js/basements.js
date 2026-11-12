@@ -339,9 +339,12 @@ function fillStorehouseRoom(g, level, fy) {
         post.position.set(x, fy + 1.0, z);
         g.add(post);
       });
-      const items = storedItems().slice(level * shelfSlots.length, (level + 1) * shelfSlots.length);
-      items.forEach((item, i) => {
-        const holder = shelfHolderFor(item.name, shelfSlots[i]);
+      // Each copy in its own slot on this floor (a copy he has taken out leaves its slot empty)
+      const per = shelfSlots.length;
+      storedItems().filter(it => Math.floor(it.slot / per) === level).forEach(item => {
+        const holder = shelfHolderFor(item.name, shelfSlots[item.slot % per]);
+        holder.userData.slotIndex = item.slot % per;
+        holder.userData.storeLevel = level;
         holder.position.y += shift;
         g.add(holder);
       });

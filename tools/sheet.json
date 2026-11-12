@@ -1,0 +1,9 @@
+[{"name":"01-cat-oil","label":"Single · Oil · \"cat\"","medium":"oil","q":0.65,"refs":["chelsea.png"]},
+ {"name":"02-venice-watercolour","label":"Single · Watercolour · \"harbour at sunset\"","medium":"watercolour","q":0.65,"refs":["venice_sunset.jpg"]},
+ {"name":"03-coffee-gouache","label":"Single · Gouache · \"coffee cup\"","medium":"gouache","q":0.65,"refs":["coffee.png"]},
+ {"name":"04-field-ink","label":"Single · Ink · \"night field\"","medium":"ink","q":0.65,"refs":["moonless_golf.jpg"]},
+ {"name":"05-rocket-charcoal","label":"Single · Charcoal · \"rocket\"","medium":"charcoal","q":0.65,"refs":["rocket.jpg"]},
+ {"name":"06-coffee-field-oil","label":"Combined (subject + setting) · Oil · \"coffee cup\" in \"night field\"","medium":"oil","q":0.65,"refs":["coffee.png","moonless_golf.jpg"],"how":"subject-setting"},
+ {"name":"07-cat-beach-pastel","label":"Combined (subject + setting) · Pastel · \"cat\" in \"beach\"","medium":"pastel","q":0.65,"refs":["chelsea.png","quarry_01.jpg"],"how":"subject-setting"},
+ {"name":"08-cat-harbour-acrylic","label":"Combined (split) · Acrylic · \"cat\" / \"harbour\"","medium":"acrylic","q":0.65,"refs":["chelsea.png","venice_sunset.jpg"],"how":"split"},
+ {"name":"09-rocket-harbour-watercolour","label":"Combined (split) · Watercolour · \"rocket\" / \"harbour\"","medium":"watercolour","q":0.65,"refs":["rocket.jpg","venice_sunset.jpg"],"how":"split","seed":"split-v"}]

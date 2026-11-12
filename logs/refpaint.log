@@ -1,0 +1,34 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+queries: {"visitor":{"mode":"single","query":"lighthouse","why":"Alice asked for it."},"combo":{"mode":"combine","query":"fox","queryB":"desert","how":"subject-setting","why":"Bob asked for it."},"none":null,"unsafe":null,"url":"red barn","ai":{"mode":"combine","query":"heron","queryB":"misty forest","how":"split","why":""},"aiBad":{"mode":"single","query":"alert 1","why":""}}
+PASS visitor query has no personal data {"mode":"single","query":"lighthouse","why":"Alice asked for it."}
+PASS unsafe words refused
+single: {"r":true,"ms":178256,"id":"art-mwdswsdt48","title":"Study: Cat","subject":"reference","label":"a cat, after a reference photo","reference":{"mode":"single","how":null,"sources":[{"query":"cat","source":"DuckDuckGo","host":"en.wikipedia.org","pageUrl":"https://en.wikipedia.org/wiki/Cat","imageUrl":"https://duckduckgo.com/i/fixture-cat.png","title":"Cat","license":"","artist":""}]},"refs":[4363],"credit":"After a reference photo: \"Cat\" (en.wikipedia.org)","diary":["Dear Diary, I painted \"Study: Cat\", an oil painting of a cat, after a reference photo (12x9 in, oil on stretched canvas). After a reference photo: \"Cat\" (en.wikipedia.org). It is clumsy, honestly: the colours went muddy and nothing is quite where I meant it. But it is mine. It used a fresh canvas and some of my paint. (oil painting: level 1)","Dear Diary, I can feel myself getting better at oil painting. I still wobble and second-guess every move, but it is starting to make sense.","Dear Diary, at the NetNode cafe I searched DuckDuckGo for \"cat\" to paint from, because cats are my favourite. I found \"Cat\" on DuckDuckGo (en.wikipedia.org). I'll paint it in my own way, not copy it.","Dear Diary, I put \"Get sturdy shovel\" on my list (I want to dig, but I have nothing to dig with. (I was in the middle of \"Digging\".)). It has 3 steps, starting with ask for it. I won't forget it.","Dear Diary, While I was exploring, something glinted between the rocks and then disappeared. So the ground isn't just ground; the
+PASS single painting made
+PASS single source is DuckDuckGo (Instant Answer)
+PASS single keeps a reference thumbnail [4363]
+PASS diary says what and why
+combined: {"r":true,"ms":254804,"id":"art-mwdt278re6","title":"Study: Coffee Cup in Night Field","subject":"reference","label":"a coffee cup in a night field, combined from two reference photos","reference":{"mode":"combined","how":"subject-setting","sources":[{"query":"coffee cup","source":"Wikimedia Commons","host":"commons.wikimedia.org","pageUrl":"https://commons.wikimedia.org/wiki/File:coffee.png","imageUrl":"https://upload.wikimedia.org/wikipedia/commons/a/ab/coffee.png","title":"coffee test","license":"CC0","artist":"Fixture xArtist"},{"query":"night field","source":"Wikimedia Commons","host":"commons.wikimedia.org","pageUrl":"https://commons.wikimedia.org/wiki/File:moonless_golf.jpg","imageUrl":"https://upload.wikimedia.org/wikipedia/commons/a/ab/moonless_golf.jpg","title":"moonless golf test","license":"CC0","artist":"Fixture xArtist"}]},"refs":[5195,2587],"credit":"After two reference photos: \"coffee test\" (Wikimedia Commons, Fixture xArtist, CC0) and \"moonless golf test\" (Wikimedia Commons, Fixture xArtist, CC0)","diary":["Dear Diary, I painted \"Study: Coffee Cup in Night Field\", a watercolour of a coffee cup in a night field, combined from two reference photos (12x9 in, watercolour on cold-press paper). After two reference photos: \"coffee test\" (Wikimedia Commons, Fixture xArtist, CC0) and \"moonless golf test\" (Wikimedia Commons, Fixture xArtist, CC0). It is clumsy, honestly: the colours went muddy and nothing is quite where I meant it. But it is mine. I'm keeping
+PASS combined painting made
+PASS combined fell back to Wikimedia Commons and says so
+PASS commons artist html stripped
+PASS two different results
+PASS split painting made Study: Diptych: Rocket and Venice Harbour
+shop: {"credit":"After a reference photo: \"Cat\" (en.wikipedia.org)","desc":"Study: Cat: a cat, after a reference photo, painted my own way from reference photos I found at the NetNode cafe. Oil on stretched canvas, 12x9 in. The original, one of a kind, signed by me."}
+PASS website listing keeps the credit
+PASS viewer credit escaped
+PASS no player data in any query 9
+PASS safe search on every DuckDuckGo query
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+after reload: {"n":4,"withRef":3,"thumbs":[1,2,2],"full":true,"old":true,"credit":["After two reference photos: \"rocket test\" (Wikimedia Commons, Fixture xArtist, CC0) and \"venice sunset test\" (Wikimedia Commons, Fixture xArtist, CC0)","After two reference photos: \"coffee test\" (Wikimedia Commons, Fixture xArtist, CC0) and \"moonless golf test\" (Wikimedia Commons, Fixture xArtist, CC0)","After a reference photo: \"Cat\" (en.wikipedia.org)"]}
+PASS survives reload
+shot refpaint-viewer
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+old save: {"n":4,"refs":0,"credit":0,"summary":"ountains, house, wildlife, stilllife, friend; or anything else from live reference photos at NetNode (0 painted so far)."}
+PASS old save without reference fields loads
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+offline: {"choice":null,"r":true,"subject":"lake","ref":false}
+PASS offline paints from life
+page errors: none
+EXIT 0

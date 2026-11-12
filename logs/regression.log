@@ -1,0 +1,51 @@
+=== reload
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+after reload {"d":1,"pin":true,"ground":"-1.38","rim":"0.20"}
+page errors: none
+EXIT 0
+=== ui
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+shot ui-d-main
+shot ui-d-talk
+shot ui-d-requests
+shot ui-d-diary
+shot ui-d-brain
+shot ui-d-world
+shot ui-d-settings
+page errors: none
+EXIT 0
+=== chat
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+> hi
+< Hi curiousWanderer! I was just thinking about the lake.  (3902ms)
+> How are you?
+< I feel good! Energy 80%, and my wonder is at 90%.  (3831ms)
+> What are you doing?
+< Right now: found a workshop.  (4244ms)
+> Where are you?
+< I'm at Workshop.  (4120ms)
+> What do you have?
+< Nothing yet. Everything I own comes through the post office.  (3975ms)
+> I saw a quokka at the zoo yesterday
+< I looked it up! "quokka": The quokka is a small macropod about the size of a domestic cat, found on islands off Western Australia. Now I understand what you meant, curiousWanderer.  (244804ms)
+> Did you know the lake is deep?
+< The lake is deep? I didn't know that! I'll remember it, curiousWanderer.  (4041ms)
+vocab: {"quokka":{"meaning":"The quokka is a small macropod about the size of a domestic cat, found on islands off Western Australia.","from":"Quokka","at":1794504705889}}
+unknown in "the lake is beautiful": []
+page errors: none
+EXIT 0
+=== vehicle
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+vehicle disposed false {"vehicles":["Dump truck","Excavator"],"tools":["Dump truck","Excavator","A sturdy shovel"],"meshes":2}
+shot vehicle-after
+page errors: none
+EXIT 0
+=== haul
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+shot haul-tipping
+hauled 4
+{"dirtDisposed":4,"load":0,"speech":"Tipped 4.0 loads of dirt into the Disposal Pit."}
+shot haul-after
+page errors: none
+EXIT 0

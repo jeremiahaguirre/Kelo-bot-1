@@ -680,8 +680,13 @@ async function pourFoundation(p, sub, site) {
           for (let i = 1; i <= 4; i++) {
             pour.stage = stage;
             if (typeof renderConcretePour === 'function') renderConcretePour(stage === 'forms' ? { ...pour } : pour, stage === 'forms' ? 0 : stage === 'pouring' ? i / 4 : 1);
-            state.targetPos = { x: pour.x + (pour.toX - pour.x) * i / 4 + 0.9, z: pour.z + (pour.toZ - pour.z) * i / 4 + 0.9 };
-            await waitForArrival(30000);
+            // He works from outside the forms, along one long side
+            const len = Math.hypot(pour.toX - pour.x, pour.toZ - pour.z) || 1, ux = (pour.toX - pour.x) / len, uz = (pour.toZ - pour.z) / len, off = pour.w / 2 + 0.7;
+            const t = (i - 0.5) / 4;
+            const spot = { x: pour.x + (pour.toX - pour.x) * t - uz * off, z: pour.z + (pour.toZ - pour.z) * t + ux * off };
+            state.targetPos = typeof openGroundNear === 'function' ? (openGroundNear(spot, 0.5) || spot) : spot;
+            await waitForArrival(15000);
+            state.botRotY = Math.atan2(pour.x + (pour.toX - pour.x) * t - state.botPos.x, pour.z + (pour.toZ - pour.z) * t - state.botPos.z);
             await sleepPace(700);
           }
           if (truck) truck.pouring = false;

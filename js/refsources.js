@@ -108,7 +108,8 @@ function refsItem(o) {
         sourceId: o.sourceId, source: o.source, title: refsText(o.title, 140) || 'Untitled', author: refsText(o.author, 80),
         licence: o.licence || null, licenceLabel: '', licenceUrl: refsUrl(o.licenceUrl) || '', pageUrl: refsUrl(o.pageUrl) || '',
         thumbUrl: refsUrl(o.thumbUrl, o.hosts) || '', imageUrl: refsUrl(o.imageUrl, o.hosts) || '', text: refsText(o.text, 400),
-        lookOnly: Boolean(o.lookOnly), restricted: Boolean(o.restricted), via: o.via || 'web'
+        lookOnly: Boolean(o.lookOnly), restricted: Boolean(o.restricted), via: o.via || 'web',
+        downloadLocation: refsUrl(o.downloadLocation, ['api.unsplash.com']) || ''
       };
       item.licenceLabel = o.licenceLabel ? refsText(o.licenceLabel, 40) : (REFS_LICENCE_LABEL[item.licence] || (item.lookOnly ? 'licence unknown (looking only)' : 'unknown'));
       return item;
@@ -287,7 +288,7 @@ const REFS_SOURCES = [
       const d = await refsJSON(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=20&page=${page}&content_filter=high`, { headers: { Authorization: `Client-ID ${refsKey('unsplash')}`, 'Accept-Version': 'v1' } });
       const items = (d && Array.isArray(d.results) ? d.results : []).map(p => refsItem({
         sourceId: 'unsplash', source: 'Unsplash', hosts: ['images.unsplash.com'], title: p.alt_description || p.description, author: p.user && p.user.name,
-        licence: 'unsplash', licenceUrl: 'https://unsplash.com/license', pageUrl: p.links && p.links.html, thumbUrl: p.urls && p.urls.small, imageUrl: p.urls && p.urls.regular,
+        licence: 'unsplash', licenceUrl: 'https://unsplash.com/license', pageUrl: p.links && p.links.html, downloadLocation: p.links && p.links.download_location, thumbUrl: p.urls && p.urls.small, imageUrl: p.urls && p.urls.regular,
         text: `${(Array.isArray(p.tags) ? p.tags.map(t => t && t.title).join(' ') : '')} ${p.description || ''}`
       }));
       return { items, more: Boolean(d && d.total_pages > page) };

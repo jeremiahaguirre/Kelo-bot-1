@@ -482,16 +482,17 @@ function paintOwnedFor(medium, role) {
 
 // Paint a picture: medium and subject may be null (he chooses). Returns true when a painting is done,
 // 'getting-ready' when he first has to learn the medium or get supplies (his plan is kept for later).
-async function paintPicture(medium, subject = null, { visitor = null, originLabel = 'Painting at His Easel', overrides = {} } = {}) {
+async function paintPicture(medium, subject = null, { visitor = null, originLabel = 'Painting at His Easel', overrides = {}, reference = null } = {}) {
       medium = PAINT_MEDIA[medium] ? medium : (paintReadyMedia()[0] || 'watercolour');
       subject = PAINT_SUBJECTS[subject] ? subject : pickPaintSubject();
       if (paintSessionRunning || state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || state.isCollectingMail) return false;
       if (!paintReady(medium, visitor ? `Painting for ${visitor}` : 'Painting')) {
-        state.paintPlan = { medium, subject, for: visitor || null, overrides, at: Date.now() };
+        state.paintPlan = { medium, subject, for: visitor || null, overrides, reference: reference || null, at: Date.now() };
         savePersistentBrainState();
         return 'getting-ready';
       }
-      const M = PAINT_MEDIA[medium], S = PAINT_SUBJECTS[subject];
+      const M = PAINT_MEDIA[medium];
+      let S = PAINT_SUBJECTS[subject];
       paintSessionRunning = true;
       state.isPracticing = true;
       try {
@@ -499,6 +500,16 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
         // the paints come out of the Storehouse first
         const paints = paintOwnedFor(medium, 'paint')[0];
         if (paints && typeof fetchFromStorehouse === 'function') { try { await fetchFromStorehouse(paints); } catch (e) {} }
+        // A reference photo (or two) from the NetNode cafe first (js/refpaint.js); offline or if nothing
+        // loads, he paints one of his own subjects from life instead
+        let found = null;
+        if (reference && typeof refpGatherAtNetNode === 'function') {
+          try { found = await refpGatherAtNetNode(reference, medium, { visitor }); } catch (e) { console.warn('reference search failed', e); }
+          if (found) {
+            S = { label: found.label, spot: PAINT_SUBJECTS.stilllife.spot, place: 'my yard', time: 'day' };
+            Object.assign(spec, { subject: 'reference', time: 'day', weather: 'clear', refImages: found.refs.map(r => r.canvas), refHow: found.how });
+          }
+        }
         const spot = S.spot;
         state.currentLocKey = 'custom';
         state.customPlaceName = S.place;
@@ -507,6 +518,7 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
         state.moodEmoji = M.emoji;
         state.moodTitle = `Off to paint ${S.label}`.slice(0, 80);
         state.speechBubble = visitor ? `${/^[aeiou]/i.test(M.title) ? 'An' : 'A'} ${M.title} of ${S.label}, for ${visitor}. I'll set up my easel.` : `I'm going to paint ${S.label} in ${M.title.replace(/ (painting|drawing)$/, '')}.`;
+        if (found) state.speechBubble = `I have my reference${found.refs.length > 1 ? 's' : ''}. Now to the easel: ${found.label.replace(/, (after|combined|a split).*$/, '')}, in ${M.title.replace(/ (painting|drawing)$/, '')}, my own way.`;
         renderAllUI();
         await waitForArrival(60000);
         state.botRotY = spot.face;
@@ -545,15 +557,18 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
         const avg = artCanvas(1, 1);
         avg.getContext('2d').drawImage(canvas, 0, 0, 1, 1);
         const px = avg.getContext('2d').getImageData(0, 0, 1, 1).data;
-        const title = paintTitle(spec);
+        const title = found ? refpTitle(found, spec) : paintTitle(spec);
         const record = {
-          wallId: id, id, kind: 'art', medium, subject, title, text: title, on: M.on, size: paintSizeLabel(medium),
+          wallId: id, id, kind: 'art', medium, subject: found ? 'reference' : subject, title, text: title, on: M.on, size: paintSizeLabel(medium),
           subjectLabel: S.label.replace(/\bmy\b/g, 'his').replace(/\bMy\b/g, 'His'), season: spec.season, weather: spec.weather,
           palette: ['#' + [px[0], px[1], px[2]].map(v => v.toString(16).padStart(2, '0')).join('')],
           skill: Math.round(spec.q * 100), level, seed: id, at: Date.now(), place: S.place, for: visitor || null,
           // he keeps his very first in each medium, and now and then one he loves
-          keep: firstInMedium || (spec.q > 0.4 && Math.random() < 0.12)
+          keep: firstInMedium || (spec.q > 0.4 && Math.random() < 0.12),
+          // where the reference photos came from: the credit stays with the painting (js/refpaint.js)
+          ...(found ? { reference: refpRecordInfo(found) } : {})
         };
+        if (found) refpStoreThumbs(id, found);
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
         state.microPose = 'normal';
         // Only the plan this painting was (a visitor's ask stays until their painting is done)
@@ -569,7 +584,8 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
           : spec.q < 0.45 ? 'It is getting better. Some parts work, some I would do again.'
             : spec.q < 0.75 ? 'I am starting to understand the medium. The light looks right.' : 'I think it is genuinely good. The paint does what I ask now.';
         const forWho = visitor ? ` ${visitor} asked me for it.` : '';
-        const result = `I painted "${title}", ${/^[aeiou]/i.test(M.title) ? 'an' : 'a'} ${M.title} of ${S.label} (${record.size}, ${M.on.toLowerCase()}).${forWho} ${verdict}${record.keep ? ' I\'m keeping this one.' : ''}`;
+        const credit = found ? ` ${refpCreditLine(record)}.` : '';
+        const result = `I painted "${title}", ${/^[aeiou]/i.test(M.title) ? 'an' : 'a'} ${M.title} of ${S.label} (${record.size}, ${M.on.toLowerCase()}).${forWho}${credit} ${verdict}${record.keep ? ' I\'m keeping this one.' : ''}`;
         state.speechBubble = `"${title}" is finished and hanging in my Museum.${ranOut.length ? ` That used the last of my ${ranOut.join(' and ')}.` : ''}`;
         state.changedLatelySummary = `Painted "${title}" (${M.title})`;
         state.happiness = Math.min(100, state.happiness + 8);
@@ -613,7 +629,7 @@ function paintPlanTick() {
         if (Date.now() - (plan.at || 0) > 48 * 3600000) { state.paintPlan = null; savePersistentBrainState(); }
         return false;
       }
-      tryKey('paint', () => paintPicture(plan.medium, plan.subject, { visitor: plan.for, overrides: plan.overrides || {}, originLabel: plan.for ? `Painting for ${plan.for}` : 'Painting at His Easel' }));
+      tryKey('paint', () => paintPicture(plan.medium, plan.subject, { visitor: plan.for, overrides: plan.overrides || {}, reference: plan.reference || null, originLabel: plan.for ? `Painting for ${plan.for}` : 'Painting at His Easel' }));
       return true;
     }
 
@@ -635,7 +651,10 @@ function pickPaintMedium() {
     }
 
 function paintOnMyOwn() {
-      return paintPicture(pickPaintMedium(), null, { originLabel: 'Felt Like Painting' });
+      const medium = pickPaintMedium();
+      // Online he often starts from a live reference photo (js/refpaint.js); offline, from life
+      const reference = typeof refpChooseProcedural === 'function' && paintReady(medium, '', { quiet: true }) ? refpChooseProcedural(medium) : null;
+      return paintPicture(medium, null, { originLabel: 'Felt Like Painting', reference });
     }
 
 // The old "Landscape Painting" hobby (a paint set, an easel...) paints for real now
@@ -661,7 +680,7 @@ function parsePaintRequest(message) {
       else if (/summer/i.test(m)) overrides.season = 'Summer';
       if (/\brain/i.test(m)) { overrides.weather = 'rain'; overrides.season = overrides.season || 'Spring'; }
       if (/snowing|snowfall/i.test(m)) overrides.weather = 'snow';
-      return { medium, subject, overrides };
+      return { medium, subject, overrides, text: m };
     }
 
 function answerPaintRequest(ask, visitor) {
@@ -669,9 +688,11 @@ function answerPaintRequest(ask, visitor) {
       const medium = ask.medium || ready.sort((a, b) => paintLevel(b) - paintLevel(a))[0] || Object.keys(PAINT_MEDIA).find(paintKnows) || 'watercolour';
       let subject = ask.subject || pickPaintSubject();
       const M = PAINT_MEDIA[medium];
-      let note = '';
-      if (subject === 'wildlife' && !paintSubjectAvailable('wildlife')) note = ' I haven\'t seen any deer here yet, so it will be the meadow where they would graze.';
-      const S = PAINT_SUBJECTS[subject];
+      // "Paint me a lighthouse": not one of his own subjects, so he looks up a reference photo first
+      const reference = !ask.subject && typeof refpPlanFromRequest === 'function' && refpOnline() ? refpPlanFromRequest(ask.text, visitor) : null;
+      let note = reference ? ` I'll find ${reference.mode === 'combine' ? `reference photos of ${reference.query} and ${reference.queryB}` : `a reference photo of ${reference.query}`} at NetNode first and paint from ${reference.mode === 'combine' ? 'them' : 'it'}.` : '';
+      if (!reference && subject === 'wildlife' && !paintSubjectAvailable('wildlife')) note = ' I haven\'t seen any deer here yet, so it will be the meadow where they would graze.';
+      const S = reference ? { label: reference.mode === 'combine' ? `${reference.query} in ${reference.queryB}` : reference.query } : PAINT_SUBJECTS[subject];
       const busy = state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping;
       if (!paintKnows(medium)) {
         sayToVisitor(`I'd love to, ${visitor}! I've never painted in ${M.title.replace(/ (painting|drawing)$/, '')}, so I'll read up on how it's done first, then ask for the right supplies.${note}`, visitor);
@@ -681,9 +702,9 @@ function answerPaintRequest(ask, visitor) {
       } else {
         sayToVisitor(`${busy ? 'As soon as I finish what I\'m doing, I' : 'Okay! I'}'ll set up my easel and paint you ${/^[aeiou]/i.test(M.title) ? 'an' : 'a'} ${M.title} of ${S.label}, ${visitor}.${note}`, visitor);
       }
-      state.paintPlan = { medium, subject, for: visitor, overrides: ask.overrides || {}, at: Date.now() };
+      state.paintPlan = { medium, subject, for: visitor, overrides: ask.overrides || {}, reference, at: Date.now() };
       savePersistentBrainState();
-      doWhenFree(() => paintPicture(medium, subject, { visitor, overrides: ask.overrides || {}, originLabel: `Painting for ${visitor}` }), { key: `paint:${visitor}:${medium}:${subject}`, maxWaitMs: 3 * 3600000 });
+      doWhenFree(() => paintPicture(medium, subject, { visitor, overrides: ask.overrides || {}, reference, originLabel: `Painting for ${visitor}` }), { key: `paint:${visitor}:${medium}:${reference ? reference.query : subject}`, maxWaitMs: 3 * 3600000 });
     }
 
 // --- The AI's "paint" decision ------------------------------------------------------------------
@@ -692,7 +713,9 @@ function paintDecision(p) {
       const text = typeof p === 'string' ? p : `${p.medium || ''} ${p.subject || ''}`;
       const medium = (typeof p === 'object' && PAINT_MEDIA[p.medium]) ? p.medium : paintMediumOf(text) || pickPaintMedium();
       const subject = (typeof p === 'object' && PAINT_SUBJECTS[p.subject]) ? p.subject : paintSubjectOf(text);
-      doWhenFree(() => paintPicture(medium, subject, { originLabel: 'Decided to Paint' }), { key: `paint:${medium}:${subject}` });
+      // The AI chose live reference photos (js/refpaint.js): "reference": {mode, query, queryB, how}
+      const reference = typeof p === 'object' && typeof refpPlanFrom === 'function' && refpOnline() ? refpPlanFrom(p.reference) : null;
+      doWhenFree(() => paintPicture(medium, subject, { originLabel: 'Decided to Paint', reference }), { key: `paint:${medium}:${reference ? reference.query : subject}` });
     }
 
 function paintingSummaryForAI() {
@@ -704,7 +727,8 @@ function paintingSummaryForAI() {
         return `${k} (level ${paintLevel(k)}, ${n} painted, ${miss.length ? 'needs ' + miss.join(', ') : 'supplies ready'})`;
       }).filter(Boolean);
       const plan = state.paintPlan ? ` Waiting to paint a ${state.paintPlan.medium} of ${state.paintPlan.subject}${state.paintPlan.for ? ` for ${state.paintPlan.for}` : ''}.` : '';
-      return `${parts.length ? parts.join('; ') : 'no medium learned yet'}. Media you could learn: ${Object.keys(PAINT_MEDIA).filter(k => !paintKnows(k)).join(', ') || 'none left'}. Subjects: ${Object.keys(PAINT_SUBJECTS).join(', ')}.${plan}`;
+      const fromPhotos = artPaintings().filter(p => p.reference).length;
+      return `${parts.length ? parts.join('; ') : 'no medium learned yet'}. Media you could learn: ${Object.keys(PAINT_MEDIA).filter(k => !paintKnows(k)).join(', ') || 'none left'}. Subjects from life: ${Object.keys(PAINT_SUBJECTS).join(', ')}; or anything else from live reference photos at NetNode (${fromPhotos} painted so far).${plan}`;
     }
 
 // He packs the easel away after each painting, so there is nothing to rebuild on load; older saves

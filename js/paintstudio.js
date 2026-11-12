@@ -487,7 +487,8 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
       subject = PAINT_SUBJECTS[subject] ? subject : pickPaintSubject();
       if (paintSessionRunning || state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || state.isCollectingMail) return false;
       if (!paintReady(medium, visitor ? `Painting for ${visitor}` : 'Painting')) {
-        state.paintPlan = { medium, subject, for: visitor || null, overrides, at: Date.now() };
+        const same = state.paintPlan && state.paintPlan.medium === medium && (state.paintPlan.for || null) === (visitor || null) ? state.paintPlan : null;
+        state.paintPlan = { id: same && same.id ? same.id : 'pp-' + Date.now().toString(36), medium, subject, for: visitor || null, overrides, at: same ? same.at : Date.now() };
         savePersistentBrainState();
         return 'getting-ready';
       }
@@ -556,7 +557,8 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
         };
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
         state.microPose = 'normal';
-        if (state.paintPlan && state.paintPlan.medium === medium) state.paintPlan = null;
+        // Painted: the plan is done (the same medium, or the one this visitor asked for), so nothing paints it again
+        if (state.paintPlan && (state.paintPlan.medium === medium || (visitor && state.paintPlan.for === visitor))) state.paintPlan = null;
         // into the Museum (it goes down to a lower gallery if the walls upstairs are full)
         if (typeof carryIntoMuseum === 'function') { try { await carryIntoMuseum('painting', record, `"${title}"`); } catch (e) {} }
         state.murals = [record, ...state.murals];
@@ -611,7 +613,9 @@ function paintPlanTick() {
         if (Date.now() - (plan.at || 0) > 48 * 3600000) { state.paintPlan = null; savePersistentBrainState(); }
         return false;
       }
-      tryKey('paint', () => paintPicture(plan.medium, plan.subject, { visitor: plan.for, overrides: plan.overrides || {}, originLabel: plan.for ? `Painting for ${plan.for}` : 'Painting at His Easel' }));
+      if (!plan.id) plan.id = 'pp-' + Date.now().toString(36);   // older saves
+      const id = plan.id;
+      tryKey('paint', () => paintPlanRun(id));
       return true;
     }
 
@@ -679,9 +683,19 @@ function answerPaintRequest(ask, visitor) {
       } else {
         sayToVisitor(`${busy ? 'As soon as I finish what I\'m doing, I' : 'Okay! I'}'ll set up my easel and paint you ${/^[aeiou]/i.test(M.title) ? 'an' : 'a'} ${M.title} of ${S.label}, ${visitor}.${note}`, visitor);
       }
-      state.paintPlan = { medium, subject, for: visitor, overrides: ask.overrides || {}, at: Date.now() };
+      // One plan, painted once: whichever of the free-queue job or paintPlanTick gets there first paints it,
+      // and the other finds the plan gone (paintPlanRun checks the id)
+      const id = 'pp-' + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
+      state.paintPlan = { id, medium, subject, for: visitor, overrides: ask.overrides || {}, at: Date.now() };
       savePersistentBrainState();
-      doWhenFree(() => paintPicture(medium, subject, { visitor, overrides: ask.overrides || {}, originLabel: `Painting for ${visitor}` }), { key: `paint:${visitor}:${medium}:${subject}`, maxWaitMs: 3 * 3600000 });
+      doWhenFree(() => paintPlanRun(id), { key: `paint:${id}`, maxWaitMs: 3 * 3600000 });
+    }
+
+// Paint the plan with this id, if it is still the plan (not painted already, not replaced)
+function paintPlanRun(id) {
+      const plan = state.paintPlan;
+      if (!plan || plan.id !== id) return false;
+      return paintPicture(plan.medium, plan.subject, { visitor: plan.for, overrides: plan.overrides || {}, originLabel: plan.for ? `Painting for ${plan.for}` : 'Painting at His Easel' });
     }
 
 // --- The AI's "paint" decision ------------------------------------------------------------------

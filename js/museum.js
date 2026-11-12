@@ -3,7 +3,7 @@
 // where his welded sculptures stand on plinths and his paintings hang in frames. Art he makes
 // for a spot in town comes here instead (the town itself is not his to build in).
 
-const MUSEUM = { x: -40, z: -5, w: 12, d: 8, wallH: 3.8 };
+const MUSEUM = { x: MAP_LAYOUT.museum.x, z: MAP_LAYOUT.museum.z, w: 12, d: 8, wallH: 3.8 };
 const MUSEUM_DOOR = { x: MUSEUM.x, z: MUSEUM.z + MUSEUM.d / 2 + 1.6 };
 const MUSEUM_HATCH_LOCAL = { x: 0, z: -2.6 }; // the elevator down to the lower galleries, between the back plinths
 const MUSEUM_PLINTHS = [];   // filled by buildMuseum3D: where sculptures stand

@@ -10,7 +10,7 @@ const HUD_EYES_FADE_MS = 4000;
 // Is Kelo-1 outside the picture (behind the camera or past an edge)?
 function hudKeloOutOfView() {
       if (typeof camera === 'undefined' || !camera || typeof exploreKeloSpot !== 'function') return false;
-      hudProjected.copy(exploreKeloSpot()).project(camera);
+      exploreKeloSpot(hudProjected).project(camera);
       return hudProjected.z > 1 || Math.abs(hudProjected.x) > 0.95 || Math.abs(hudProjected.y) > 0.95;
     }
 

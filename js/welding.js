@@ -509,7 +509,7 @@ function addWeldRipple(x, z, big = 1) {
 function updateWeldBead(t) {
       const b = weldRig.bead;
       if (!b) return;
-      const y = weldLocal(0, WELD_JOINT.y, 0).y;
+      const y = weldLocal(0, WELD_JOINT.y, 0, _weldV).y;
       b.ripples.forEach((r, i) => {
         const age = weldRig.clock - r.born;
         const T = Math.max(0, 1 - age / 7);

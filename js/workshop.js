@@ -5,7 +5,7 @@
 
 const buildQueue = [];
 // The welding table top's centre (js/weldstudio.js builds the table around it)
-const WELD_TABLE_TOP = { x: -1.2, z: -8.2 };
+const WELD_TABLE_TOP = { x: MAP_LAYOUT.weld.x, z: MAP_LAYOUT.weld.z };
 let workshopRunning = false;
 let benchWorkpiece = null;
 
@@ -68,7 +68,7 @@ async function runWeldJob(creation, destLabel) {
       if (typeof weldingReady === 'function' && !weldingReady(creation)) return 'waiting';
       state.isBuilding = true;
       const title = creation.title || 'something new';
-      let dest = { x: clampNumber(creation.x, WORLD_MIN_X, WORLD_MAX_X, 0), z: clampNumber(creation.z, WORLD_MIN_Z, WORLD_MAX_Z, 0) };
+      let dest = { x: clampNumber(creation.x, WORLD_MIN_X, WORLD_MAX_X, 0), z: clampNumber(creation.z, WORLD_VALLEY_MIN_Z, WORLD_MAX_Z, 0) };
       // His welded pieces and abstract ideas are art: they go on display in his Museum, not out on the
       // mountain or in town where they'd just be in the way (things he builds to use come from js/projects.js)
       if (typeof MUSEUM_DOOR !== 'undefined') {
@@ -137,7 +137,7 @@ async function runWeldJob(creation, destLabel) {
         // 4. Set it down just in front of him so he isn't standing inside it
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
         creation.x = Math.round(clampNumber(state.botPos.x + Math.sin(state.botRotY) * 1.7, WORLD_MIN_X, WORLD_MAX_X, dest.x) * 10) / 10;
-        creation.z = Math.round(clampNumber(state.botPos.z + Math.cos(state.botRotY) * 1.7, WORLD_MIN_Z, WORLD_MAX_Z + 1, dest.z) * 10) / 10;
+        creation.z = Math.round(clampNumber(state.botPos.z + Math.cos(state.botRotY) * 1.7, WORLD_VALLEY_MIN_Z, WORLD_MAX_Z + 1, dest.z) * 10) / 10;
         creation.createdTime = creation.inMuseum ? 'On display in the Museum' : 'Welded & placed';
         state.pendingBuilds = state.pendingBuilds.filter(j => j.creation !== creation && j.creation.title !== creation.title);
         state.inventedCreations.unshift(creation);

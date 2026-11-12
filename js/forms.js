@@ -247,8 +247,8 @@ function formForText(text, palette = {}) {
 // With an AI brain, design the exact thing he means when nothing else describes it
 async function designCreationWithAI(title) {
       if (!hasLLMKey()) return null;
-      const prompt = `Design a 3D welded sculpture that clearly looks like: "${title}".
-Return ONLY JSON: {"parts": [ ... ]} with 3 to 20 parts. It must be recognisable as that subject (correct proportions, distinctive features, sensible colours).
+      const prompt = `MOMENT: you are designing a 3D welded sculpture that clearly looks like: ${(typeof brainUntrusted === 'function' ? brainUntrusted(title, 120) : JSON.stringify(String(title).slice(0, 120)))}
+Return JSON: {"parts": [ ... ]} with 3 to 20 parts. It must be recognisable as that subject (correct proportions, distinctive features, sensible colours).
 Each part: "shape" (cylinder, box, sphere, cone, torus, knot, octahedron, dodecahedron, icosahedron, tetrahedron, ring, lathe, extrude, tube),
 "x","y","z" (y is height, it stands on y=0, keep within -2.5..2.5 and 0..5), "rx","ry","rz", "color" "#rrggbb",
 sizes "sx","sy","sz" for basic shapes; lathe uses "profile":[[radius,height],...]; extrude uses "outline":[[x,y],...] and "depth"; tube uses "path":[[x,y,z],...] and "radius".`;

@@ -130,6 +130,9 @@ registerWorkshopMachine({
     const service = job.service && GARAGE_SERVICES[job.service] ? job.service : Object.keys(GARAGE_SERVICES).find(k => GARAGE_SERVICES[k].words.test(job.make || '')) || 'oil';
     job.vehicle = v;
     job.service = service;
+    // Too big for door 1 and the car elevator (the mixer truck), or asked for there, or the pickup with
+    // its trailer: the garage hall over the pass does it instead (js/workshopnorth.js)
+    if (typeof garageHallWanted === 'function' && garageHallWanted(v, job)) return garageHallPlan(job, v, service);
     const svc = GARAGE_SERVICES[service];
     const vname = plainItem(v.name).toLowerCase();
     const side = { x: 3.9, z: -1.2 };

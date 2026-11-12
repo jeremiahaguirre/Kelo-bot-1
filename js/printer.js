@@ -15,8 +15,8 @@ const PRINTER_RE = /\b3-?d printer\b/i;
 const FILAMENT_RE = /filament/i;
 const SPOOL_GRAMS = 1000;
 // The bench beside the Welding Studio, out of the way of the path (scene.js builds the studio at -1.2, -8.2), between it and his house
-const PRINTER_SPOT = { x: -3.9, z: -8.6 };
-const PRINTER_STAND = { x: -3.9, z: -7.35 };
+const PRINTER_SPOT = { x: MAP_LAYOUT.weld.x - 2.7, z: MAP_LAYOUT.weld.z - 0.4 };
+const PRINTER_STAND = { x: MAP_LAYOUT.weld.x - 2.7, z: MAP_LAYOUT.weld.z + 0.85 };
 const PRINTER_SCALE = 1.6; // the bench and printer are modelled in metres, shown at life size (ITEM_LIFE_SCALE)
 // How long a print takes on screen (tests may shorten it)
 const PRINT_TIME = { perGram: 260, min: 9000, max: 42000, hold: 4000 };

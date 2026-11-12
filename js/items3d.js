@@ -752,8 +752,8 @@ async function designItemModelWithAI(name) {
       const lower = String(name || '').toLowerCase().trim();
       if (!lower || !hasLLMKey() || (state.itemDesigns && state.itemDesigns[lower])) return;
       if (ITEM_MODEL_RULES.some(([re]) => re.test(lower))) return;
-      const prompt = `Design a small, recognizable 3D model of this real object for a stylized game: "${name}".
-Use 2 to 14 parts. Return ONLY JSON: {"parts": [ ... ]}
+      const prompt = `MOMENT: you picture one of your things so it can appear in your world. Design a small, recognizable 3D model of this real object: ${(typeof brainUntrusted === 'function' ? brainUntrusted(name, 120) : JSON.stringify(String(name).slice(0, 120)))}
+Use 2 to 14 parts. Return JSON: {"parts": [ ... ]}
 Each part: "shape" (cylinder, box, sphere, cone, torus, knot, octahedron, dodecahedron, icosahedron, tetrahedron, ring, lathe, extrude, tube),
 "x","y","z" (y is height, object sits on y=0, keep within -2..2 and 0..3), "rx","ry","rz", "color" "#rrggbb" (realistic colours),
 sizes "sx","sy","sz" for basic shapes; lathe uses "profile":[[radius,height],...]; extrude uses "outline":[[x,y],...] and "depth"; tube uses "path":[[x,y,z],...] and "radius".
@@ -773,7 +773,7 @@ Make it look like the actual object (proportions, colours, distinctive features)
 // --- Post office pickup counter: deliveries wait here as their real models ------------------
 let parcelDisplayGroup = null;
 // The pick-up table out front of the Post Office, east of its door (x, z its centre; the sign faces the lake)
-const PICKUP_TABLE = { x: 16.0, z: 6.0, rotY: 0, scale: 1.6 };
+const PICKUP_TABLE = { x: 17.6, z: 6.0, rotY: 0, scale: 1.6 };
 let parcelDisplayKey = null;
 
 function renderPostOfficeParcels3D() {

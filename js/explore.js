@@ -12,7 +12,8 @@
 // This file drives the camera itself; OrbitControls (js/scene.js) stays only to aim it, with its own
 // mouse and touch handling switched off.
 
-const EXPLORE_BOUNDS = { minX: WORLD_MIN_X, maxX: WORLD_MAX_X, minZ: WORLD_MIN_Z, maxZ: 20 };
+// (the whole world with the runway field, js/agent.js WORLD_EXTENT, a little past the field's ends)
+const EXPLORE_BOUNDS = { minX: WORLD_EXTENT.minX - 10, maxX: WORLD_EXTENT.maxX + 10, minZ: WORLD_EXTENT.minZ - 10, maxZ: 20 };
 const EXPLORE_LIMITS = { minDist: 5, maxDist: 140, minPitch: 0.12, maxPitch: 1.45 };
 const EXPLORE_CLEARANCE = 1.4;   // the camera always stays at least this far above the ground
 const EXPLORE_IDLE_MS = 90000;   // "go back to Kelo-1" after this long without touching anything
@@ -51,20 +52,14 @@ function exploreSavePrefs() {
     }
 
 // The ground (or the lake surface) at a spot. Inside the island this is the exact terrain; beyond
-// it, the backdrop lands are measured with a ray now and then
+// it the backdrop lands' own height function (what their meshes are built from). The far lands'
+// mesh is coarse, so there the camera keeps a little extra room over the hills.
 function exploreGroundAt(x, z) {
       const water = typeof WATER_LEVEL === 'number' ? WATER_LEVEL : -0.18;
       if (islandContains(x, z)) return Math.max(water, getAnalyticalGroundHeight(x, z));
-      const o = exploreCam.outerGround;
-      if (Date.now() - o.at > 150 || Math.hypot(o.x - x, o.z - z) > 4) {
-        o.at = Date.now(); o.x = x; o.z = z; o.y = water;
-        if (terrainSwapGroup) {
-          const ray = new THREE.Raycaster(new THREE.Vector3(x, 120, z), new THREE.Vector3(0, -1, 0));
-          const hit = ray.intersectObjects(terrainSwapGroup.children, true)[0];
-          if (hit) o.y = Math.max(water, hit.point.y);
-        }
-      }
-      return o.y;
+      const y = Math.max(water, outerTerrainHeight(x, z));
+      const coarse = !inRectXZ(NORTH_PATCH, x, z) && !(Math.abs(x) < OUTER_LANDS_HALF && Math.abs(z) < OUTER_LANDS_HALF);
+      return coarse && !onRunwayField(x, z) ? y + Math.min(4, y * 0.15) : y;
     }
 
 const EXPLORE_GROUND_SAMPLES = [0.2, 0.4, 0.6, 0.8, 1];
@@ -79,9 +74,11 @@ function exploreCopy(s) {
       return { target: s.target.clone(), yaw: s.yaw, pitch: s.pitch, dist: s.dist };
     }
 
-function exploreOffset(s) {
+// (pass `out` in per-frame code, so nothing is allocated)
+const exploreOffsetTmp = new THREE.Vector3();
+function exploreOffset(s, out = new THREE.Vector3()) {
       const cp = Math.cos(s.pitch);
-      return new THREE.Vector3(Math.sin(s.yaw) * cp, Math.sin(s.pitch), Math.cos(s.yaw) * cp).multiplyScalar(s.dist);
+      return out.set(Math.sin(s.yaw) * cp, Math.sin(s.pitch), Math.cos(s.yaw) * cp).multiplyScalar(s.dist);
     }
 
 // Read where the camera is now (after another mode or a test moved it)
@@ -113,7 +110,7 @@ function exploreGoalCamera() {
       exploreScratchCam.near = camera.near;
       exploreScratchCam.far = camera.far;
       exploreScratchCam.updateProjectionMatrix();
-      exploreScratchCam.position.copy(g.target).add(exploreOffset(g));
+      exploreScratchCam.position.copy(g.target).add(exploreOffset(g, exploreOffsetTmp));
       exploreScratchCam.lookAt(g.target);
       exploreScratchCam.updateMatrixWorld();
       return exploreScratchCam;
@@ -146,13 +143,13 @@ function exploreTerrainPoint(clientX, clientY) {
       return explorePlanePoint(clientX, clientY, camera, controls.target.y);
     }
 
-function exploreKeloSpot() {
+function exploreKeloSpot(out = new THREE.Vector3()) {
       const p = keloGroup ? keloGroup.position : new THREE.Vector3(state.botPos.x, 0, state.botPos.z);
       // Follow the ground under him (not the bob of each step, or the drop when he sits or lies down),
       // unless he is clearly somewhere else: up on a bed, a ladder, a vehicle or down a basement
       const ground = Number.isFinite(state.botAltitudeY) ? state.botAltitudeY : p.y;
       const y = !state.riding && Math.abs(p.y - ground) < 1.2 ? ground : p.y;
-      return new THREE.Vector3(p.x, y + 1.6, p.z);
+      return out.set(p.x, y + 1.6, p.z);
     }
 
 // --- Taking over the camera ----------------------------------------------------------------------
@@ -253,7 +250,7 @@ function exploreCameraUpdate() {
 
       if (exploreCam.fly) {
         const f = exploreCam.fly;
-        if (f.follow) f.to.target.copy(exploreKeloSpot());
+        if (f.follow) exploreKeloSpot(f.to.target);
         const u = exploreClamp((now - f.t0) / f.ms, 0, 1), e = exploreEase(u);
         cur.target.lerpVectors(f.from.target, f.to.target, e);
         cur.yaw = f.from.yaw + (f.to.yaw - f.from.yaw) * e;
@@ -268,7 +265,7 @@ function exploreCameraUpdate() {
         }
       } else {
         exploreApplyHeldInput(dt);
-        if (state.cameraMode === 'follow') goal.target.copy(exploreKeloSpot());
+        if (state.cameraMode === 'follow') exploreKeloSpot(goal.target);
         else goal.target.y = exploreGroundAt(goal.target.x, goal.target.z) + 0.4;
         exploreClampState(goal);
         // Ease what is shown toward the goal: quick while dragging, gentler otherwise
@@ -313,7 +310,7 @@ function exploreCameraUpdate() {
       const v = exploreCopy(c);
       const blds = exploreNearBuildings(v.target, v.dist);
       const needFor = (withBuildings) => {
-        const off = exploreOffset(v);
+        const off = exploreOffset(v, exploreOffsetTmp);
         let need = -1;
         // The lens itself must clear the ground at once; the rest of the line (and roofs) eases in
         for (const t of (withBuildings ? EXPLORE_GROUND_SAMPLES : [1])) {
@@ -346,7 +343,7 @@ function exploreCameraUpdate() {
       const shown = { target: c.target, yaw: c.yaw, pitch: Math.min(1.5, c.pitch + adj.lift + adj.bld), dist: c.dist };
 
       controls.target.copy(shown.target);
-      camera.position.copy(shown.target).add(exploreOffset(shown));
+      camera.position.copy(shown.target).add(exploreOffset(shown, exploreOffsetTmp));
       exploreCam.driving = true;
 
       // Optional: drift back to Kelo-1 after a while with nobody touching anything
@@ -703,7 +700,7 @@ function exploreDescribeSpot(pt, short) {
       const ice = typeof iceThicknessCm === 'function' ? iceThicknessCm() : 0;
       if (z > 7.5 && h < water) ground = ice > 0 ? `frozen Okanagan Lake: ${ice} cm of ice over water about ${Math.max(1, Math.round(water - h))} m deep` : `Okanagan Lake, about ${Math.max(1, Math.round(water - h))} m deep here`;
       else if (z > 8.2 && h < 0.6) ground = 'the sandy beach';
-      else if (h > 2.6 || z < -12) ground = `the mountain, ${Math.round(h)} m up`;
+      else if (h > 2.6 || z < valleyFootZ(x)) ground = `the mountain, ${Math.round(h)} m up`;
       else if (x > 14 && z < -6) ground = 'the rise toward the Eastern Overlook';
       else ground = 'the valley meadow';
       if (short) return near ? `${near.l.icon || '📍'} Near ${near.l.name}` : `📍 On ${ground}`;
@@ -760,7 +757,7 @@ function explorePlaces() {
       const known = new Set(['storehouse', 'post_office', 'bed', 'couch', 'weld', 'garden', 'cafe', 'cyber', 'shoreline', 'meadow', 'mountain_peak', 'disposal_pit', 'museum', 'east_cliff']);
       Object.values(TOWN_LOCATIONS).forEach(l => { if (!known.has(l.id) && l.showPin !== false) add('His spots', l.id, l.icon || '📍', l.name, l.x, l.z, { dist: 18 }); });
       (state.digSites || []).forEach((s, i) => {
-        const mountain = s.z < -12 || getAnalyticalGroundHeight(s.x, s.z) > 2.2;
+        const mountain = s.z < valleyFootZ(s.x) || getAnalyticalGroundHeight(s.x, s.z) > 2.2;
         add('His digs', 'dig-' + i, '⛏️', `${mountain ? 'Mountain' : 'Valley'} dig (${s.depth.toFixed(1)} m deep)`, s.x, s.z, { dist: 14, pitch: 0.75 });
       });
       (state.projects || []).filter(p => Number.isFinite(p.x)).forEach(p => {

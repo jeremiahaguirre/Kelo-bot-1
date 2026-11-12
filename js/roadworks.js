@@ -1178,7 +1178,7 @@ function runwayStripGeometry() {
     }
 // Runway numbers from the strip's heading (magnetic, to the nearest 10°: 16/34 for a north-south strip near Kelowna)
 function runwayNumbers(e) {
-      const hdg = (Math.atan2(e.toX - e.x, -(e.toZ - e.z)) * 180 / Math.PI + 360 + 15) % 360;   // +15: about Kelowna's easterly variation
+      const hdg = (Math.atan2(e.toX - e.x, -(e.toZ - e.z)) * 180 / Math.PI + 360 - 15) % 360;   // magnetic = true - Kelowna's ~15° east variation
       const n = Math.round(hdg / 10) % 36 || 36, back = (n + 18) % 36 || 36;
       const two = v => String(v).padStart(2, '0');
       return [two(n), two(back)];

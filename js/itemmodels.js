@@ -12,7 +12,13 @@ function imKit() {
       const mats = new Map();
       const mat = (color, extra = {}) => {
         const key = color + '|' + JSON.stringify(extra);
-        if (!mats.has(key)) mats.set(key, new THREE.MeshStandardMaterial({ color, roughness: 0.55, ...extra }));
+        if (!mats.has(key)) {
+          const m = new THREE.MeshStandardMaterial({ color, roughness: 0.55, ...extra });
+          // A part modelled with its own finish keeps it (the name's words don't turn a bag of glass beads
+          // into glass); wooden parts still get their grain
+          if (Object.keys(extra).length && extra !== IM.wood) m.userData.keepLook = true;
+          mats.set(key, m);
+        }
         return mats.get(key);
       };
       const put = (geo, color, extra, x = 0, y = 0, z = 0) => {
@@ -245,6 +251,12 @@ function imPlatesModel(lower) {
 
 function imMugModel(lower) {
       const K = imKit();
+      if (/turned|wooden|maple|cherry|walnut|oak/.test(lower)) {
+        const wood = /cherry/.test(lower) ? 0x9a4a2b : /walnut/.test(lower) ? 0x5c3a21 : 0xd6a96c;
+        const cup = K.lathe([[0, 0], [0.042, 0], [0.044, 0.006], [0.044, 0.1], [0.038, 0.1], [0.036, 0.012], [0, 0.012]], wood, IM.wood, 28);
+        const h = K.torus(0.026, 0.009, wood, 0.048, 0.055, 0, IM.wood, Math.PI); h.rotation.z = -Math.PI / 2;
+        return K.done(cup, h);
+      }
       const col = /white/.test(lower) ? 0xf8fafc : /red/.test(lower) ? 0xb91c1c : /black/.test(lower) ? 0x1f2937 : /green/.test(lower) ? 0x15803d : /enamel|camp/.test(lower) ? 0x1e3a8a : 0x2f6f8f;
       const body = K.lathe([[0, 0], [0.04, 0], [0.042, 0.004], [0.042, 0.095], [0.039, 0.095], [0.039, 0.008], [0, 0.008]], col, { ...IM.ceramic, side: THREE.DoubleSide }, 32);
       const inside = K.cyl(0.038, 0.038, 0.001, 0x3b2010, 0, 0.07, 0, { roughness: 0.2 });
@@ -1995,7 +2007,10 @@ function imComponentModel(lower) {
       const K = imKit();
       const card = K.box(0.1, 0.002, 0.13, 0xf8fafc, 0, 0.001, 0, IM.paper);
       const parts = [card];
-      if (/potentiometer|pot\b|knob/.test(lower)) [-0.025, 0.025].forEach(x => parts.push(K.cyl(0.012, 0.012, 0.01, 0x9ca3af, x, 0.007, 0, IM.alu), K.cyl(0.003, 0.003, 0.02, 0xc9a227, x, 0.02, 0, IM.steel)));
+      if (/clip-on tuner/.test(lower)) parts.push(K.rr(0.05, 0.035, 0.015, 0.008, 0x111827, 0, 0.002, -0.02, IM.plastic), K.box(0.035, 0.001, 0.022, 0x22c55e, 0, 0.0175, -0.02, IM.screen), K.box(0.015, 0.012, 0.05, 0x111827, 0, 0.008, 0.025, IM.plastic));
+      else if (/speaker driver/.test(lower)) { parts.length = 0; const cone = K.lathe([[0.02, 0.01], [0.07, 0.045], [0.08, 0.05], [0.08, 0.055], [0.068, 0.05]], 0x111827, { roughness: 0.9, side: THREE.DoubleSide }); const magnet = K.cyl(0.035, 0.035, 0.025, 0x52525b, 0, 0.0125, 0, IM.steel); const frame = K.torus(0.082, 0.004, 0x9ca3af, 0, 0.054, 0, IM.alu); frame.rotation.x = Math.PI / 2; parts.push(cone, magnet, frame); }
+      else if (/clock movement/.test(lower)) { parts.length = 0; parts.push(K.box(0.056, 0.016, 0.056, 0x111827, 0, 0.008, 0, IM.plastic), K.cyl(0.004, 0.004, 0.02, 0xc9a227, 0, 0.026, 0, IM.steel), K.box(0.003, 0.001, 0.05, 0x111827, 0, 0.033, -0.02), K.box(0.002, 0.001, 0.07, 0x111827, 0, 0.034, -0.03), K.cyl(0.008, 0.008, 0.004, 0xd1d5db, 0, 0.018, 0.02, IM.steel)); }
+      else if (/potentiometer|pot\b|knob/.test(lower)) [-0.025, 0.025].forEach(x => parts.push(K.cyl(0.012, 0.012, 0.01, 0x9ca3af, x, 0.007, 0, IM.alu), K.cyl(0.003, 0.003, 0.02, 0xc9a227, x, 0.02, 0, IM.steel)));
       else if (/pickups?/.test(lower)) [-0.025, 0.025].forEach(x => parts.push(K.rr(0.02, 0.085, 0.018, 0.009, 0xf8fafc, x, 0.002, 0, IM.plastic)));
       else if (/switch/.test(lower)) parts.push(K.box(0.03, 0.015, 0.05, 0x111827, 0, 0.0095, 0, IM.plastic), K.box(0.006, 0.02, 0.006, 0xd1d5db, 0, 0.025, 0, IM.chrome));
       else if (/antenna/.test(lower)) parts.push(K.cyl(0.004, 0.004, 0.05, 0x111827, 0, 0.006, 0, IM.plastic), K.ball(0.012, 0x111827, 0, 0.006, -0.03));
@@ -2242,24 +2257,52 @@ const IM_RULES = [
   [/(drum|barrel) of|jerry ?can|gas can|fuel can|can of (gasoline|diesel|gas|fuel|kerosene)|propane tank|propane bottle|tanker of|bitumen|\b(200|205) ?l\b|55.?gal|gasoline|unleaded|\bdiesel\b|kerosene|jet fuel|\bfuel\b(?! (pump|hose|filter|shutoff|sight|system|valve|gauge|line|tank cap))/, l => imFuelContainerModel(l)],
   [/\btyres?\b|\btires?\b(?! chains)|caster wheels?|main wheels|tailwheel|wheels? with|on rims/, l => imTyreModel(l)],
   [/altimeter|tachometer|airspeed indicator|slip indicator|\b(temperature|pressure|fuel|oil|egt|sight|vacuum|tire|tyre|air) gauges?\b/, l => imGaugeModel(l)],
-  [/sprocket|roller chain|\bchain\b(?!saw| guard)|bearings?|brake disc|brake pads?|spark plugs?|oil filter|fuel filter|gascolator|filter cartridges?|\bsprings?\b|magnets?\b|\baxles?\b|steering shaft|torque tube|radiator|exhaust|muffler|kingpin|spindles|machined|\bhubs?\b|pulleys?|mixer paddles|paddles and liners/, l => imMechPartModel(l)],
+  [/sprocket|roller chain|\bchain\b(?!saw| guard)|bearings?|brake disc|brake pads?|spark plugs?|oil filter|fuel filter|gascolator|filter cartridges?|\bsprings?\b(?!\s*clamps?)|magnets?\b|\baxles?\b|steering shaft|torque tube|radiator|exhaust|muffler|kingpin|spindles|machined|\bhubs?\b|pulleys?|mixer paddles|paddles and liners/, l => imMechPartModel(l)],
   [/garden hose|water hose|\bhose\b(?!.*(clamp|fitting))|brake line|fuel line/, l => imHoseModel(l)],
   [/spray ?paint|aerosol|brake cleaner|fixative|wd-?40|spray (can|primer|lubricant)/, l => imAerosolModel(l)],
   [/\b(5 ?gal(lon)?|pail|bucket) of\b/, l => imPaintCanModel(l + ' pail')],
-  [/\b(aa|aaa|9 ?v|c|d)( size)? batter(y|ies)\b|\bbatteries\b|battery pack|lipo|car battery|\bbattery\b(?!.*(charger|powered|operated))/, l => imBatteryModel(l)],
+  [/^(?!.*charger).*(\b(aa|aaa|9 ?v|c|d)( size)? batter(y|ies)\b|\bbatteries\b|battery pack|lipo|car battery|\bbattery\b(?!.*(powered|operated)))/, l => imBatteryModel(l)],
   [/clip-?on tuner|strobe (or clip-on )?tuner/, l => imComponentModel('clip-on tuner')],
   [/cartridge/, l => imCartridgeModel(l)],
   [/(acrylic|wooden|routed|laser-cut|metal|hand-?painted) (sign|plaque)|\bsign\b(?!.*(runway|taxiway))/, l => imSignModel(l)],
   [/coaster/, l => imCoasterModel(l)],
   [/dovetail(ed)?.*\bbox\b|wooden box|keepsake box|jewe?l(le)?ry box|trinket box/, l => imWoodBoxModel(l)],
   [/bagel|doughnut|\bdonut\b/, l => imBagelModel(l)],
-  [/^(?!.*(jump|skipping)).*(bungee|shock cord|paracord|lacing cord|\bcord\b(?!less)|twine|climbing rope|\brope\b)/, l => imRopeCoilModel(l)],
+  [/^(?!.*(jump|skipping|power|extension|electric|charging|usb)).*(bungee|shock cord|paracord|lacing cord|\bcord\b(?!less)|twine|climbing rope|\brope\b)/, l => imRopeCoilModel(l)],
   [/bar of .*solder|solder bar/, () => imBase('ingot', 0.2)],
   [/component reels|smd reels|reels? of (smd|components)/, l => imSpoolModel('smd reel')],
   [/vacuum (table )?pump/, () => imBenchMachineModel('air compressor')],
   [/consumables kit|rusty bolt|\ba bolt\b/, l => imHardwareBagModel(l)],
   [/steering wheel/, l => imMechPartModel(l)],
   [/\b(pears?|tomato(es)?|oranges?|lemons?|limes?|plums?|mangoes?|nectarines?|onions?|potato(es)?|bell peppers?)\b(?!.*(pie|tart|jam|juice|sauce|soup))/, l => imProduceModel(l)],
+  [/easel|stretched canvas|canvas(es| panels?| boards?)|\b(drawing|sketch|watercolou?r|gouache|pastel|rice|xuan|bristol|tinted) (paper|pad|block)|\bpad of\b|ream of|soft pastels|box of pastels|\bpastels\b|crayons|charcoal sticks|drawing pencils|sketching pencils|palette|kneaded eraser|\beraser\b|blending stumps|tortillons|paint ?brush(es)?|brush set|brushes\b|watercolou?r (set|paints|pans)|paint set|oil paints|acrylic paints|gouache (set|paints)|tubes of paint/, l => imArtSupplyModel(l)],
+  [/aquarium|fish ?tank|tank of .*(fish|jellyfish|guppies|shrimp)/, l => imAquariumModel(l)],
+  [/multi-?tool|leatherman|swiss army knife|pocket knife|pen ?knife/, l => imMultitoolModel(l)],
+  [/^(?!.*(weld|plasma|propane|blow ?torch)).*(head ?lamp|head torch|flashlight|\btorch\b|lantern|lamp socket|light socket|bulb socket|lamp holder)/, l => imLightModel(l)],
+  [/(flask|tub|jar|bottle|canister|can|drum|pail) of .*powder|metal powder|stainless powder|ti-?6al-?4v|17-4 ?ph|316l powder|in718 powder/, l => imContainerModel(l + ' powder')],
+  [/^(an? )?(jar|bottle|flask|tub|tin|vial) of\b|solder paste|\bink\b(?! cartridge)|sumi ink/, l => imContainerModel(l)],
+  [/knife blades|blade pack|utility blades|scalpel blades|razor blades|spare blades/, () => imCartonModel(0.1, 0.012, 0.025, 0xdc2626, 0xf8fafc)],
+  [/(block|billet|bar|slab|chunk) of .*(aluminium|aluminum|steel|brass|bronze|copper|titanium|delrin|acetal|metal)|\b(round|flat|hex|square) (bar|stock)\b|bar stock|billet/, l => imMetalStockModel(l)],
+  [/propeller|impeller/, l => (typeof madePartModel === 'function' ? realSize(madePartModel(l)) : imMechPartModel('pulley'))],
+  [/bottle caps?|crown caps?/, () => imBottleCapModel()],
+  [/shards of|broken glass|cracked glass|glass shards|glass piece/, () => imGlassShardsModel()],
+  [/paperweight/, () => imPaperweightModel()],
+  [/\b(turned|carved|wooden|walnut|cherry|maple|oak|olive ?wood) .*\bbowl\b(?! blank)/, () => (typeof madeWoodBowlModel === 'function' ? madeWoodBowlModel() : imMixingBowlModel('wooden bowl'))],
+  [/bowl blank|turning blank|pen blanks?|\bwood blank/, l => imWoodBlankModel(l)],
+  [/trailer hitch|tow hitch|hitch ball|ball mount|hitch receiver/, () => imHitchModel()],
+  [/camera film|roll of film|film roll|\b35 ?mm film|\b(120|instant) film/, () => imFilmModel()],
+  [/filter bags?|baghouse/, () => imFilterBagsModel()],
+  [/fossil|trilobite|ammonite|petrified|dinosaur (bone|rib|tooth|fossil)|rib bone|\bbones?\b|arrowhead|\bcoins?\b|nuggets?|meteorite|obsidian/, l => imFindModel(l)],
+  [/pliers|wire strippers|wire cutters|side cutters|snips|crimpers?|crimping tool|swaging tool|nicopress tool/, () => realSize(pliersModel())],
+  [/fabric iron|clothes iron|steam iron|^(?!.*(cast|wrought|soldering|golf|tyre|tire|skillet|\bpan\b|\bore\b|pipe|filings|\brod|\bbar\b|angle|flat|corrugated|sheet|fence|gate|waffle|curling|flat ?iron)).*\biron\b/, () => imIronModel()],
+  [/drill press/, () => imDrillPressModel()],
+  [/weighing scales?|\bscales\b(?! (model|insect))|bathroom scale|kitchen scale|luggage scale/, l => imScalesModel(l)],
+  [/table saw|chop saw|mitre saw|miter saw|cut-?off saw|scroll saw/, l => imSawMachineModel(l)],
+  [/(block|hand|jack|smoothing|bench|rabbet|shoulder) plane\b/, () => imHandPlaneModel()],
+  [/footstool|foot stool|step stool(?!.*ladder)/, l => (typeof stoolModel === 'function' ? stoolModel('low ' + l) : imFurnitureModel('side table'))],
+  [/tube notcher|pipe notcher/, () => imBenchMachineModel('bench vise')],
+  [/gaskets?|o-rings?/, () => imGasketModel()],
+  [/(case|box|pack) of .*(spray|marking|inverted)|marking paint|inverted marking/, l => imAerosolModel(l)],
   // kitchen
   [/\b(skillet|frying pan|fry ?pan|saut[eé] pan|wok|griddle pan|crepe pan)\b/, l => imPanModel(l)],
   [/sauce ?pan|stock ?pot|dutch oven|casserole dish|cooking pot|soup pot|pots and pans/, l => imPotModel(l)],
@@ -2277,7 +2320,7 @@ const IM_RULES = [
   // electronics
   [/laptop|notebook computer|macbook|chromebook/, () => imLaptopModel()],
   [/\b(usb|hdmi|ethernet|charging|aux|audio|power|extension|phone|lightning|usb-c|network) (cables?|cords?|leads?)\b|\bchargers?\b|extension cords?|power cord|charging cable|\bcable$/, l => imCableModel(l)],
-  [/raspberry ?pi|arduino|esp32|esp8266|micro ?controller|breadboard|circuit boards?|\bpcbs?\b(?!-)|flight controller|\besc\b|\breceiver\b|dev(elopment)? board/, l => imCircuitBoardModel(l)],
+  [/raspberry ?pi|arduino|esp32|esp8266|micro ?controller|breadboard|circuit boards?|pcb-milled|\bpcbs?\b(?!-| milling| drill)|flight controller|\besc\b|\breceiver\b|dev(elopment)? board/, l => imCircuitBoardModel(l)],
   [/smart ?phone|cell ?phone|mobile phone|iphone|\bphone\b(?! (case|stand))|\btablet\b(?! (saw|press))|ipad|e-?reader|kindle/, l => imPhoneModel(l)],
   [/head ?phones|headset|ear ?buds|earphones|airpods/, l => imHeadphonesModel(l)],
   [/\bspeakers?\b(?! (driver|wire))/, l => imSpeakerModel(l)],
@@ -2319,7 +2362,7 @@ const IM_RULES = [
   [/umbrella|parasol/, () => imUmbrellaModel()],
   [/snow shovel/, () => imSnowShovelModel()],
   // building materials and supplies
-  [/\b(bags?|sacks?) of\b|\b(cement|concrete mix|mortar mix|mortar|grout|thinset|stucco|plaster|potting (soil|mix)|topsoil|play sand|flour|sugar|bird ?seed|chicken feed)\b/, l => imSackModel(l)],
+  [/^(?!.*\b(bolts|nuts|screws|washers|nails|parts|marbles)\b).*(\b(bags?|sacks?) of\b|\b(cement|concrete mix|mortar mix|mortar|grout|thinset|stucco|plaster|potting (soil|mix)|topsoil|play sand|flour|sugar|bird ?seed|chicken feed)\b)/, l => imSackModel(l)],
   [/\bbox(es)? of (\w+ )?(screws|nails|bolts|staples|brads|rivets|washers|fasteners|anchors|lag screws)|\b(deck|wood|drywall|structural|roofing|framing|siding|connector|sheathing|joist-hanger|lag|machine|sheet metal|stainless|silicon-bronze|neck|bridge|pickguard) (screws|nails)\b|\b(galvani[sz]ed|finishing|common|box|roofing|framing) nails\b|\bnails\b|\bscrews\b|\d+d (galvani[sz]ed )?\w* ?nails|staples\b/, l => imFastenerBoxModel(l)],
   [/\b(bolts?|nuts|nylock|washers|cotter pins|rivets|sleeves|thimbles|turnbuckles|set screws|standoffs|heim joints|zip ties|grommets|ring terminals|crimp|clevis pins|shackles)\b/, l => (/zip ties/.test(l) ? imHardwareBagModel('nylon pins') : imHardwareBagModel(l))],
   [/hinges?\b|joist hangers?|hurricane ties|padeyes?|pad eyes?|\bbrackets?\b|angle brackets|corner braces|wing-attach fittings|hinge fittings|strap buttons|neck plate/, l => imBracketModel(l)],
@@ -2329,10 +2372,10 @@ const IM_RULES = [
   [/\btape\b(?! measure)/, l => imTapeRollModel(l)],
   [/bricks?\b|cinder blocks?|concrete blocks?|\bpavers?\b|\bcmu\b/, l => imBricksModel(l)],
   [/shingles|roofing felt|tar paper/, () => imShinglesModel()],
-  [/\bpvc\b|\babs pipe|copper pipe|plumbing pipe|black iron pipe|galvani[sz]ed pipe|chromoly tube|\btubes?\b(?! of)|tubing|\bdom\b|spar tube|push-pull tubes|compression struts|lift struts|jury struts|seat struts/, l => imPipesModel(l)],
+  [/^(?!.*(paint|glue|caulk|cream|notcher)).*(\bpvc\b|\babs pipe|copper pipe|plumbing pipe|black iron pipe|galvani[sz]ed pipe|chromoly tube|\btubes?\b(?! of)|tubing|\bdom\b|spar tube|push-pull tubes|compression struts|lift struts|jury struts|seat struts)/, l => imPipesModel(l)],
   [/spool|reel of|\bwire\b(?!.*(stripper|brush|cutter))|solder\b(?!ing)/, l => imSpoolModel(l)],
   [/sandpaper|sanding (sheets|discs|paper)|emery/, () => imSandpaperModel()],
-  [/\bglue\b|epoxy|caulk|silicone|sealant|construction adhesive|liquid nails|\bjug\b|\bjugs?\b|coolant|antifreeze|brake fluid|gearbox oil|motor oil|injection oil|two-stroke oil|isopropyl|\bipa\b|resin(?! cartridge)|cutting fluid|liquid binder|mek reducer|solvent(?! drum)|thinner|tru-oil|grease|\boil\b(?! filter)/, l => imBottleModel(l)],
+  [/\bglue\b|epoxy|caulk|silicone|sealant|construction adhesive|liquid nails|\bjug\b|\bjugs?\b|coolant|antifreeze|brake fluid|gearbox oil|motor oil|injection oil|two-stroke oil|isopropyl|\bipa\b|resin(?! cartridge)|cutting fluid|liquid binder|mek reducer|solvent(?! drum)|thinner|tru-oil|grease|\boil\b(?! (filter|brush|paint|pastel))/, l => (/ceramic|pottery|stoneware|milk jug|water jug|pitcher/.test(l) ? imPitcherModel(l) : imBottleModel(l))],
   [/caulking gun|caulk gun/, () => imCaulkGunModel()],
   [/tape measure|measuring tape/, () => imTapeMeasureModel()],
   [/spirit level|\blevel\b(?!.*(up|meter))|torpedo level/, l => imLevelModel(l)],
@@ -2345,13 +2388,12 @@ const IM_RULES = [
   [/bandsaw(?! blade)|band saw(?! blade)|\b(mig|tig|stick|arc) welder|welding machine|plasma cutter|air compressor|shop vac|wet.?dry vac|machining vise|bench vise|\bvise\b|\bvice\b/, l => imBenchMachineModel(l)],
   [/\bclamps?\b|chisels?|gouges|\bfiles?\b|\brasp\b|socket set|ratchet set|crowning file/, l => imHandToolSetModel(l)],
   [/respirator|gas mask|dust mask|ear (defenders|muffs|protection)|earmuffs|face shield|safety glasses|safety goggles|esd|wrist strap|nitrile|latex gloves|disposable gloves|heat gloves|kevlar|work gloves|leather gloves/, l => imSafetyGearModel(l)],
-  [/end ?mills?|router bits?|v-?bit|compression bit|engraving bit|face mill|carbide inserts/, l => imCutterSetModel(l)],
+  [/end ?mills?|router bits?|milling bits?|engraving bits?|v-?bit|compression bit|engraving bit|face mill|carbide inserts/, l => imCutterSetModel(l)],
   [/bandsaw blade|band saw blade|saw blades?/, () => imBladeCoilModel()],
   [/jack stands?|floor jack|trolley jack/, l => imJackStandModel(l)],
   // art supplies
-  [/easel|stretched canvas|canvas(es| panels?| boards?)|\b(drawing|sketch|watercolou?r|gouache|pastel|rice|xuan|bristol|tinted) (paper|pad|block)|\bpad of\b|ream of|soft pastels|box of pastels|\bpastels\b|crayons|charcoal sticks|drawing pencils|sketching pencils|palette|kneaded eraser|\beraser\b|blending stumps|tortillons|paint ?brush(es)?|brush set|watercolou?r (set|paints|pans)|paint set|oil paints|acrylic paints|gouache (set|paints)|tubes of paint/, l => imArtSupplyModel(l)],
   // clothes, textiles, furniture and household things
-  [/scarf|toque|beanie|knit hat|winter hat|wool hat|\bcap\b|sun ?hat|\bhat\b|boots?\b|\bshoes\b|wellies|waders|\bgloves\b|mittens|\bmitts\b|\bsocks\b|\bpants\b|jeans|trousers|shorts\b|jacket|\bcoat\b|parka|\bvest\b|hoodie|fleece|sweater|jumper|cardigan|sweatshirt|t-?shirt|\bshirt\b|blouse|raincoat/, l => imClothingModel(l)],
+  [/scarf|toque|beanie|knit hat|winter hat|wool hat|(?<!bottle )\bcap\b|sun ?hat|\bhat\b|boots?\b|\bshoes\b|wellies|waders|\bgloves\b|mittens|\bmitts\b|\bsocks\b|\bpants\b|jeans|trousers|shorts\b|jacket|\bcoat\b(?! (rack|hook|hanger|stand))|parka|\bvest\b|hoodie|fleece|sweater|jumper|cardigan|sweatshirt|t-?shirt|\bshirt\b|blouse|raincoat/, l => imClothingModel(l)],
   [/pillow|cushion|blanket|quilt|throw\b|towel|duvet|\bfabric\b|cloth\b|ceconite/, l => imTextileModel(l)],
   [/book ?(case|shelf)|bookshelves|shelving unit|coat rack|hat stand|hall tree|garden bench|park bench|\bbench\b(?!.*(grinder|vise|vice|press|top))|raised (garden )?bed|planter box|picnic table|dresser|chest of drawers|\bcabinet\b|nightstand|bedside table|side table|end table|coffee table|dining table|kitchen table|\bdesk\b(?! (lamp|fan))|^(an? )?table$|(wooden|oak|maple|walnut|pine|handmade|small) (side )?table/, l => imFurnitureModel(l)],
   [/picture frame|photo frame|\bphotos?\b|framed (photo|picture|print)/, l => imPictureFrameModel(l)],
@@ -2381,7 +2423,15 @@ const IM_RULES = [
   [/\bflute\b|piccolo|clarinet|\boboe\b|recorder(?! (pen|box))/, l => imWoodwindModel(l)],
   [/drum (set|kit)|drum ?kit|drumset|bongos?|djembe|snare|\bdrums?\b(?! (of|brake))|tom-?tom/, l => imDrumModel(l)],
   [/tambourine/, () => imTambourineModel()],
-  [/kalimba|thumb piano|mbira/, () => imKalimbaModel()]
+  [/kalimba|thumb piano|mbira/, () => imKalimbaModel()],
+  [/^(?!.*(camping|landing|snow|climbing|rain|ski|fishing|safety|welding|hiking|winter|running|riot|scuba|dive|diving) gear).*\bgears?\b/, l => imMechPartModel(l.replace(/gears?/, 'gear '))],
+  [/\bvases?\b(?!.*flowers)/, () => (typeof madeGlassModel === 'function' ? madeGlassModel('vase') : imFlowerPotModel('vase'))],
+  [/pencil cup|pen holder|pencil holder/, () => imMugModel('pencil cup')],
+  [/phone stand|tablet stand/, l => imMadeShapeModel('pla ' + l)],
+  [/wall hook|coat hook|\bhooks?\b(?!.*(fish|crane|tow))/, () => imHookModel()],
+  [/whistle/, () => imWhistleModel()],
+  [/star ornament|christmas ornament|\bornament\b/, () => imStarModel()],
+  [/\b(box|carton|case|pack|packet) of\b/, l => imCartonModel(0.2, 0.1, 0.14, 0xc8a46a, 0xf8fafc)]
 ];
 
 // A snow shovel: a wide, shallow plastic scoop on a long handle
@@ -2416,7 +2466,7 @@ const IM_TRUE_METRES = [
 ];
 
 function imTrueSize(lower, drawn) {
-      if (!drawn || drawn.userData.realSize || drawn.userData.fullSize) return drawn;
+      if (!drawn || drawn.userData.realSize || drawn.userData.fullSize || /^(parts kit|tools for|roadwork kit|runway kit)/.test(lower)) return drawn;
       if (typeof vehicleTypeFor === 'function' && vehicleTypeFor(lower)) return drawn;
       const hit = IM_TRUE_METRES.find(([re]) => re.test(lower));
       if (!hit) return drawn;
@@ -2482,8 +2532,7 @@ function imSignModel(lower) {
       const K = imKit();
       const acrylic = /acrylic|laser/.test(lower), metal = /metal|steel|aluminium|aluminum/.test(lower);
       const col = acrylic ? 0xdbeafe : metal ? 0xb6bcc4 : 0xb88a52;
-      const board = K.rr(0.4, 0.012, 0.2, 0.02, col, 0, 0, 0, acrylic ? { transparent: true, opacity: 0.6, roughness: 0.1 } : metal ? IM.alu : IM.wood);
-      board.rotation.x = Math.PI / 2; board.position.set(0, 0.2 + 0.02, 0);
+      const board = K.box(0.4, 0.2, 0.012, col, 0, 0.115, 0, acrylic ? { transparent: true, opacity: 0.6, roughness: 0.1 } : metal ? IM.alu : IM.wood);
       const letters = K.many(new THREE.BoxGeometry(0.03, 0.05, 0.003), acrylic ? 0x1d4ed8 : 0x3f2a1d, [0, 1, 2, 3, 4, 5, 6].map(i => [-0.12 + i * 0.04, 0.12, 0.007]));
       const stand = K.box(0.3, 0.015, 0.06, acrylic ? 0x111827 : col, 0, 0.0075, 0, acrylic ? IM.plastic : IM.wood);
       const g = group(board, letters); g.rotation.x = -0.12; g.position.y = 0.0;
@@ -2584,4 +2633,348 @@ function imPushBlockModel() {
       const stick = K.slab([[0, 0], [0.3, 0], [0.32, -0.02], [0.3, 0.03], [0.05, 0.05], [0, 0.03]], 0.015, 0xf59e0b, IM.plastic);
       stick.rotation.x = -Math.PI / 2; stick.position.set(-0.15, 0.0075, 0.08);
       return K.done(block, grip, stick);
+    }
+
+// --- Second round: things the catalogue showed were still wrong --------------------------------
+function imAquariumModel(lower) {
+      const K = imKit();
+      const glassBox = K.box(0.6, 0.35, 0.3, 0xdbeafe, 0, 0.195, 0, { transparent: true, opacity: 0.25, roughness: 0.05, depthWrite: false }); glassBox.castShadow = false;
+      const water = K.box(0.58, 0.3, 0.28, 0x38bdf8, 0, 0.17, 0, { transparent: true, opacity: 0.3, roughness: 0.1, depthWrite: false }); water.castShadow = false;
+      const base = K.box(0.62, 0.02, 0.32, 0x111827, 0, 0.01, 0, IM.plastic), lid = K.box(0.62, 0.025, 0.32, 0x111827, 0, 0.38, 0, IM.plastic);
+      const gravel = K.box(0.58, 0.03, 0.28, 0xb8a58a, 0, 0.035, 0, { roughness: 1 });
+      const jelly = /jellyfish/.test(lower);
+      const swimmers = [[-0.15, 0.2, 0.02], [0.1, 0.26, -0.05], [0.18, 0.14, 0.06]].map(([x, y, z]) => {
+        const b = K.ball(jelly ? 0.03 : 0.018, jelly ? 0xf0abfc : 0xf97316, x, y, z, jelly ? { emissive: 0xc026d3, emissiveIntensity: 0.6, transparent: true, opacity: 0.85 } : { roughness: 0.4 });
+        b.scale.set(jelly ? 1 : 1.8, jelly ? 0.7 : 1, 1); return b;
+      });
+      const weed = K.cyl(0.004, 0.006, 0.2, 0x15803d, -0.22, 0.14, -0.08, { roughness: 0.8 });
+      return K.done(base, gravel, water, glassBox, lid, weed, ...swimmers);
+    }
+
+function imMultitoolModel(lower) {
+      const K = imKit();
+      const red = /swiss|pocket|pen ?knife/.test(lower);
+      const body = K.rr(0.1, 0.022, 0.018, 0.009, red ? 0xc81e1e : 0x9ca3af, 0, 0, 0, red ? IM.plastic : IM.alu);
+      const blade = K.slab([[0, 0.002], [0.07, 0.004], [0.075, 0.011], [0, 0.013]], 0.002, 0xe5e7eb, IM.chrome);
+      blade.rotation.x = -Math.PI / 2; blade.position.set(0.045, 0.012, 0.0); blade.rotation.y = 0.25;
+      const parts = [body, blade];
+      if (red) parts.push(K.box(0.012, 0.001, 0.012, 0xf8fafc, -0.02, 0.0185, 0));
+      else parts.push(K.box(0.05, 0.004, 0.006, 0x52525b, -0.02, 0.0185, 0, IM.steel), K.cyl(0.003, 0.003, 0.024, 0x52525b, -0.048, 0.009, 0, IM.steel));
+      return K.done(...parts);
+    }
+
+function imLightModel(lower) {
+      const K = imKit();
+      if (/socket|holder/.test(lower)) {
+        const body = K.cyl(0.02, 0.02, 0.06, 0x111827, 0, 0.03, 0, IM.plastic);
+        const thread = K.cyl(0.0135, 0.0135, 0.025, 0xc9a227, 0, 0.065, 0, IM.steel);
+        const cord = K.tube([[0, 0.0, 0], [0.04, 0.004, 0.03], [0.1, 0.004, 0.02]], 0.003, 0x111827, IM.rubber);
+        return K.done(body, thread, cord);
+      }
+      if (/head ?lamp|head torch/.test(lower)) {
+        const band = K.torus(0.08, 0.008, 0x1f2937, 0, 0.008, 0, IM.cloth); band.rotation.x = Math.PI / 2; band.scale.set(1, 1.15, 4);
+        const lamp = K.rr(0.05, 0.03, 0.035, 0.01, 0xf97316, 0, 0.0, 0.09, IM.plastic);
+        const lens = K.cyl(0.013, 0.013, 0.004, 0xfef9c3, 0, 0.0175, 0.106, { emissive: 0xfde68a, emissiveIntensity: 0.4 }); lens.rotation.x = Math.PI / 2;
+        return K.done(band, lamp, lens);
+      }
+      if (/flashlight|torch/.test(lower)) {
+        const body = K.cyl(0.014, 0.014, 0.13, 0x111827, -0.02, 0.018, 0, IM.alu); body.rotation.z = Math.PI / 2;
+        const head = K.cyl(0.022, 0.016, 0.04, 0x111827, 0.065, 0.022, 0, IM.alu); head.rotation.z = Math.PI / 2;
+        const lens = K.cyl(0.02, 0.02, 0.002, 0xfef9c3, 0.086, 0.022, 0, { emissive: 0xfde68a, emissiveIntensity: 0.4 }); lens.rotation.z = Math.PI / 2;
+        const button = K.box(0.012, 0.006, 0.01, 0xdc2626, 0.02, 0.033, 0, IM.rubber);
+        return K.done(body, head, lens, button);
+      }
+      // a lantern: a camping one, or a miner's / hurricane lantern with its glass globe and bail
+      const old = /miner|hurricane|oil|kerosene|old|antique|storm/.test(lower);
+      const col = old ? 0x7f1d1d : 0x15803d;
+      const fount = K.cyl(0.07, 0.075, 0.05, col, 0, 0.025, 0, { roughness: 0.5, metalness: 0.4 });
+      const globe = K.lathe([[0.03, 0.05], [0.055, 0.1], [0.055, 0.17], [0.035, 0.2]], 0xfef3c7, { transparent: true, opacity: 0.55, roughness: 0.1, emissive: 0xfbbf24, emissiveIntensity: 0.25 }); globe.castShadow = false;
+      const flame = K.ball(0.012, 0xfbbf24, 0, 0.115, 0, { emissive: 0xf59e0b, emissiveIntensity: 1 }); flame.scale.y = 1.8;
+      const guards = [0, 1, 2, 3].map(i => { const a = i * Math.PI / 2; return K.rod([Math.cos(a) * 0.06, 0.05, Math.sin(a) * 0.06], [Math.cos(a) * 0.04, 0.2, Math.sin(a) * 0.04], 0.003, col, IM.steel); });
+      const cap = K.cyl(0.03, 0.045, 0.035, col, 0, 0.215, 0, { roughness: 0.5, metalness: 0.4 });
+      const bail = K.torus(0.06, 0.003, 0x52525b, 0, 0.24, 0, IM.steel, Math.PI);
+      return K.done(fount, globe, flame, ...guards, cap, bail);
+    }
+
+// Jars, bottles, flasks and tubs of whatever is named: a metal powder flask, solder paste, ink, frit...
+function imContainerModel(lower) {
+      const K = imKit();
+      if (/glue|adhesive|epoxy|resin|oil|solvent|alcohol|binder\b|coolant/.test(lower) && !/powder/.test(lower)) return imBottleModel(lower);
+      if (/powder/.test(lower)) {
+        // a sealed metal-powder bottle (stainless, titanium) or a nylon powder tub
+        const tub = /tub|nylon|pa12/.test(lower);
+        if (tub) return K.done(K.cyl(0.11, 0.1, 0.22, 0xf8fafc, 0, 0.11, 0, IM.plastic, 24), K.cyl(0.112, 0.112, 0.03, 0x1d4ed8, 0, 0.235, 0, IM.plastic, 24), K.box(0.12, 0.08, 0.001, 0xfacc15, 0, 0.12, 0.105, IM.paper));
+        const body = K.cyl(0.07, 0.07, 0.2, 0xb6bcc4, 0, 0.1, 0, IM.alu, 24);
+        const shoulder = K.cyl(0.03, 0.07, 0.04, 0xb6bcc4, 0, 0.22, 0, IM.alu, 24);
+        const cap = K.cyl(0.032, 0.032, 0.03, 0x111827, 0, 0.255, 0, IM.plastic);
+        const label = K.cyl(0.0705, 0.0705, 0.08, /titan|ti-?6/.test(lower) ? 0x7c3aed : 0xdc2626, 0, 0.1, 0, IM.paper, 24);
+        return K.done(body, shoulder, cap, label);
+      }
+      const ink = /\bink\b/.test(lower), paste = /paste/.test(lower), frit = /frit|beads|glitter/.test(lower);
+      if (paste) return K.done(K.cyl(0.03, 0.03, 0.035, 0x9ca3af, 0, 0.0175, 0, IM.plastic, 20), K.cyl(0.031, 0.031, 0.012, 0x1d4ed8, 0, 0.041, 0, IM.plastic, 20));
+      if (ink) return K.done(K.lathe([[0, 0], [0.025, 0], [0.026, 0.05], [0.012, 0.065], [0.01, 0.075], [0, 0.075]], 0x111827, { roughness: 0.15 }, 18), K.cyl(0.012, 0.012, 0.02, 0xb91c1c, 0, 0.085, 0, IM.plastic), K.cyl(0.0262, 0.0262, 0.025, 0xf5f0e1, 0, 0.025, 0, IM.paper, 18));
+      // a glass jar with what's in it showing through
+      const fill = frit ? 0x2563eb : /honey/.test(lower) ? 0xd97706 : /jam/.test(lower) ? 0x9f1239 : /pickle/.test(lower) ? 0x65a30d : 0xd6c7a1;
+      const jar = K.cyl(0.045, 0.045, 0.11, 0xdbeafe, 0, 0.055, 0, { transparent: true, opacity: 0.3, roughness: 0.05, depthWrite: false }, 24); jar.castShadow = false;
+      const content = K.cyl(0.042, 0.042, 0.085, fill, 0, 0.044, 0, frit ? { roughness: 0.3, metalness: 0.2 } : { roughness: 0.6 }, 24);
+      const lid = K.cyl(0.046, 0.046, 0.016, 0xd1d5db, 0, 0.118, 0, IM.steel, 24);
+      return K.done(content, jar, lid);
+    }
+
+function imMetalStockModel(lower) {
+      const K = imKit();
+      const col = /brass|bronze/.test(lower) ? 0xc9a227 : /copper/.test(lower) ? 0xb87333 : /titanium/.test(lower) ? 0x8f8f99 : /steel|1018|4140|a36/.test(lower) ? 0x8a929b : /delrin|acetal/.test(lower) ? 0xf5f5f4 : 0xc8ccd0;
+      const fin = /delrin|acetal/.test(lower) ? IM.plastic : { metalness: 0.85, roughness: 0.38 };
+      if (/round|bar stock|rod/.test(lower)) { const b = K.cyl(0.0125, 0.0125, 0.3, col, 0, 0.0125, 0, fin, 20); b.rotation.z = Math.PI / 2; return K.done(b); }
+      if (/flat bar/.test(lower)) return K.done(K.box(0.3, 0.0064, 0.038, col, 0, 0.0032, 0, fin));
+      if (/hex/.test(lower)) { const b = K.cyl(0.013, 0.013, 0.3, col, 0, 0.0113, 0, fin, 6); b.rotation.z = Math.PI / 2; return K.done(b); }
+      const [w, h, d] = /billet/.test(lower) ? [0.2, 0.05, 0.1] : [0.15, 0.05, 0.1];
+      return K.done(K.box(w, h, d, col, 0, h / 2, 0, fin), K.box(w * 0.4, 0.0005, d * 0.3, 0x1d4ed8, -w * 0.2, h + 0.0003, 0));
+    }
+
+function imBottleCapModel() {
+      const K = imKit();
+      const cap = K.cyl(0.0145, 0.016, 0.006, 0xb91c1c, 0, 0.003, 0, { metalness: 0.6, roughness: 0.4 }, 21);
+      return K.done(cap, K.cyl(0.012, 0.012, 0.0005, 0xd1d5db, 0, 0.0063, 0, IM.steel));
+    }
+
+function imGlassShardsModel() {
+      const K = imKit(), parts = [];
+      [[0, 0, 0.06, 0], [0.05, 0.02, 0.04, 1.2], [-0.04, 0.03, 0.05, 2.4], [0.01, -0.04, 0.03, 3.6]].forEach(([x, z, r, a]) => {
+        const shard = K.slab([[0, 0], [r, r * 0.2], [r * 0.6, r * 0.9], [-r * 0.2, r * 0.5]], 0.004, 0xbfe3f5, { transparent: true, opacity: 0.55, roughness: 0.05, metalness: 0.1 });
+        shard.rotation.set(-Math.PI / 2, 0, a); shard.position.set(x, 0.002, z); shard.castShadow = false; parts.push(shard);
+      });
+      return K.done(...parts);
+    }
+
+function imPaperweightModel() {
+      const K = imKit();
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(0.04, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), K.mat(0xe0f2fe, { transparent: true, opacity: 0.4, roughness: 0.02 })); dome.scale.y = 0.85;
+      const swirl = K.torus(0.018, 0.006, 0x2563eb, 0, 0.014, 0, { roughness: 0.2 }); swirl.rotation.x = Math.PI / 2.5;
+      const swirl2 = K.torus(0.012, 0.005, 0xf97316, 0, 0.016, 0, { roughness: 0.2 }); swirl2.rotation.x = -Math.PI / 3;
+      return K.done(swirl, swirl2, dome);
+    }
+
+function imWoodBlankModel(lower) {
+      const K = imKit();
+      const wood = /cherry/.test(lower) ? 0x9a4a2b : /walnut/.test(lower) ? 0x5c3a21 : /maple|birch/.test(lower) ? 0xdcb17c : /oak/.test(lower) ? 0xb88a52 : 0xc29a68;
+      if (/pen/.test(lower)) return K.done(...[0, 1, 2].map(i => K.box(0.13, 0.02, 0.02, wood, 0, 0.01 + Math.floor(i / 2) * 0.02, (i % 2) * 0.022 - 0.011 + (i > 1 ? 0.011 : 0), IM.wood)));
+      const disc = K.cyl(0.13, 0.13, 0.075, wood, 0, 0.0375, 0, IM.wood, 10);
+      // end-grain sealed with green wax, the way turning blanks are sold
+      const wax = K.cyl(0.1305, 0.1305, 0.004, 0x16a34a, 0, 0.0765, 0, { roughness: 0.4 }, 10);
+      return K.done(disc, wax);
+    }
+
+function imHitchModel() {
+      const K = imKit();
+      const shank = K.box(0.3, 0.05, 0.05, 0x111827, -0.1, 0.03, 0, IM.iron);
+      const plate = K.box(0.05, 0.08, 0.1, 0x111827, 0.07, 0.06, 0, IM.iron);
+      const ball = K.ball(0.025, 0xd1d5db, 0.12, 0.13, 0, IM.chrome);
+      const neck = K.cyl(0.015, 0.02, 0.04, 0xd1d5db, 0.12, 0.1, 0, IM.chrome);
+      const pin = K.cyl(0.006, 0.006, 0.08, 0xd1d5db, -0.18, 0.03, 0, IM.steel); pin.rotation.x = Math.PI / 2;
+      return K.done(shank, plate, ball, neck, pin);
+    }
+
+function imFilmModel() {
+      const K = imKit();
+      const box = K.box(0.04, 0.06, 0.03, 0xfacc15, -0.03, 0.03, 0, IM.paper);
+      const can = K.cyl(0.0125, 0.0125, 0.05, 0x111827, 0.02, 0.0125, 0, IM.plastic); can.rotation.x = Math.PI / 2;
+      const leader = K.box(0.03, 0.0005, 0.03, 0x7c2d12, 0.04, 0.001, 0.01, { roughness: 0.3 });
+      return K.done(box, can, leader);
+    }
+
+function imFilterBagsModel() {
+      const K = imKit();
+      return K.done(...[0, 1, 2].map(i => { const b = K.cyl(0.075, 0.075, 1.2, 0xf5f5f4, 0, 0.075 + (i === 2 ? 0.13 : 0), (i - (i === 2 ? 1 : 0.5)) * 0.15, IM.cloth, 16); b.rotation.z = Math.PI / 2; return b; }));
+    }
+
+function imFindModel(lower) {
+      const K = imKit();
+      if (/coin/.test(lower)) {
+        const silver = /silver|nickel|dime|quarter/.test(lower);
+        const coin = K.cyl(0.0125, 0.0125, 0.0022, silver ? 0xd4d8dc : /copper|penny|cent/.test(lower) ? 0xb87333 : 0xd4a520, 0, 0.0011, 0, { metalness: 0.9, roughness: 0.35 }, 28);
+        const rim = K.torus(0.0122, 0.0006, silver ? 0xc0c4c8 : 0xc29a20, 0, 0.0022, 0, { metalness: 0.9, roughness: 0.3 }); rim.rotation.x = Math.PI / 2;
+        const relief = K.cyl(0.006, 0.006, 0.0004, silver ? 0xc0c4c8 : 0xc29a20, 0, 0.0023, 0, { metalness: 0.9, roughness: 0.5 });
+        return K.done(coin, rim, relief);
+      }
+      if (/nugget/.test(lower)) {
+        const n = new THREE.Mesh(new THREE.DodecahedronGeometry(0.012, 1), K.mat(0xd4a520, { metalness: 0.95, roughness: 0.3, flatShading: true }));
+        n.scale.set(1.3, 0.6, 1); n.position.y = 0.007; n.castShadow = true;
+        return K.done(n);
+      }
+      if (/arrowhead/.test(lower)) {
+        const p = K.slab([[0, 0.05], [0.018, 0.005], [0.012, 0], [0.006, -0.008], [-0.006, -0.008], [-0.012, 0], [-0.018, 0.005]], 0.006, 0x1c1917, { roughness: 0.2, metalness: 0.1, flatShading: true });
+        p.rotation.x = -Math.PI / 2; p.position.y = 0.003;
+        return K.done(p);
+      }
+      if (/meteorite|obsidian/.test(lower)) {
+        const r = new THREE.Mesh(new THREE.DodecahedronGeometry(0.04, 1), K.mat(/obsidian/.test(lower) ? 0x0b0b0f : 0x3f3a36, /obsidian/.test(lower) ? { roughness: 0.08, metalness: 0.2, flatShading: true } : { roughness: 0.7, metalness: 0.5, flatShading: true }));
+        r.scale.set(1.2, 0.75, 1); r.position.y = 0.03; r.castShadow = true;
+        return K.done(r);
+      }
+      if (/petrified/.test(lower)) {
+        const log = K.cyl(0.07, 0.08, 0.2, 0x8a6a4f, 0, 0.075, 0, { roughness: 0.6, flatShading: true }, 9); log.rotation.z = Math.PI / 2;
+        const rings = K.cyl(0.069, 0.069, 0.002, 0xb7894f, 0.101, 0.075, 0, { roughness: 0.3 }, 9); rings.rotation.z = Math.PI / 2;
+        return K.done(log, rings);
+      }
+      if (/bone|rib/.test(lower)) {
+        const shaft = K.tube([[-0.25, 0.03, 0], [-0.05, 0.05, 0.03], [0.15, 0.04, 0.06], [0.28, 0.025, 0.04]], 0.022, 0xe7dcc0, { roughness: 0.9 });
+        const ends = [[-0.26, 0.03, 0], [0.29, 0.025, 0.04]].map(([x, y, z]) => K.ball(0.035, 0xd6c7a1, x, y, z, { roughness: 0.9 }));
+        return K.done(shaft, ...ends);
+      }
+      // a fossil in its slab of stone: an ammonite's spiral, or a trilobite
+      const slab = new THREE.Mesh(new THREE.DodecahedronGeometry(0.08, 1), K.mat(0xc9b99a, { roughness: 0.95, flatShading: true }));
+      slab.scale.set(1.2, 0.3, 1); slab.position.y = 0.024; slab.castShadow = true;
+      const parts = [slab];
+      if (/trilobite/.test(lower)) {
+        const body = K.ball(0.03, 0x6b5b45, 0, 0.045, 0, { roughness: 0.7 }); body.scale.set(0.7, 0.25, 1.2); parts.push(body);
+        for (let i = 0; i < 6; i++) parts.push(K.box(0.04, 0.006, 0.004, 0x5a4a36, 0, 0.05, -0.025 + i * 0.01));
+      } else {
+        const pts = [];
+        for (let i = 0; i <= 60; i++) { const a = i / 60 * Math.PI * 5, r = 0.004 + i / 60 * 0.045; pts.push([Math.cos(a) * r, 0.048, Math.sin(a) * r]); }
+        parts.push(K.tube(pts, 0.006, 0x8b6b4a, { roughness: 0.6 }));
+      }
+      return K.done(...parts);
+    }
+
+function imIronModel() {
+      const K = imKit();
+      const plate = K.slab([[-0.13, -0.05], [0.07, -0.05], [0.13, 0], [0.07, 0.05], [-0.13, 0.05]], 0.02, 0xd1d5db, IM.chrome);
+      plate.rotation.x = -Math.PI / 2; plate.position.y = 0.01;
+      const shell = K.slab([[-0.12, -0.045], [0.06, -0.045], [0.115, 0], [0.06, 0.045], [-0.12, 0.045]], 0.04, 0x1d4ed8, IM.plastic);
+      shell.rotation.x = -Math.PI / 2; shell.position.y = 0.04;
+      const handle = K.tube([[-0.1, 0.06, 0], [-0.08, 0.13, 0], [0.04, 0.13, 0], [0.07, 0.06, 0]], 0.012, 0x1d4ed8, IM.plastic);
+      const dial = K.cyl(0.015, 0.015, 0.008, 0xf8fafc, -0.02, 0.064, 0, IM.plastic);
+      return K.done(plate, shell, handle, dial);
+    }
+
+function imDrillPressModel() {
+      const K = imKit();
+      const base = K.box(0.3, 0.04, 0.25, 0x1e3a8a, 0, 0.02, 0, IM.iron);
+      const column = K.cyl(0.035, 0.035, 0.75, 0xd1d5db, 0, 0.415, -0.07, IM.chrome);
+      const table = K.cyl(0.13, 0.13, 0.02, 0x52525b, 0, 0.32, 0.03, IM.iron, 24);
+      const head = K.box(0.18, 0.18, 0.4, 0x1e3a8a, 0, 0.7, 0.05, IM.iron);
+      const motor = K.cyl(0.07, 0.07, 0.15, 0x1e3a8a, 0, 0.7, -0.2, IM.iron); motor.rotation.x = Math.PI / 2;
+      const quill = K.cyl(0.02, 0.02, 0.12, 0xd1d5db, 0, 0.55, 0.15, IM.chrome);
+      const chuck = K.cyl(0.02, 0.015, 0.05, 0x52525b, 0, 0.47, 0.15, IM.steel);
+      const handles = [0, 1, 2].map(i => { const a = i * 2.09; return K.rod([0.1, 0.65, 0.05], [0.1 + 0.02, 0.65 + Math.cos(a) * 0.15, 0.05 + Math.sin(a) * 0.15], 0.006, 0x111827); });
+      return K.done(base, column, table, head, motor, quill, chuck, ...handles);
+    }
+
+function imScalesModel(lower) {
+      const K = imKit();
+      if (/aircraft|vehicle|\(3-?pad\)|pads/.test(lower)) {
+        const parts = [];
+        [-0.5, 0, 0.5].forEach((x, i) => parts.push(K.box(0.4, 0.05, 0.4, 0x1e3a8a, x, 0.025, i === 1 ? -0.5 : 0, IM.alu), K.box(0.36, 0.006, 0.36, 0x52525b, x, 0.053, i === 1 ? -0.5 : 0, IM.rubber)));
+        parts.push(K.rr(0.25, 0.15, 0.08, 0.02, 0xfacc15, 0.6, 0, -0.5, IM.plastic), K.box(0.15, 0.001, 0.06, 0x1e293b, 0.6, 0.081, -0.5, IM.screen));
+        return K.done(...parts);
+      }
+      const bath = /bathroom/.test(lower);
+      return K.done(K.rr(bath ? 0.3 : 0.2, bath ? 0.3 : 0.16, 0.025, 0.02, bath ? 0xf8fafc : 0x9ca3af, 0, 0, 0, IM.plastic), K.box(0.06, 0.001, 0.025, 0x1e293b, 0, 0.0255, bath ? -0.1 : 0.05, IM.screen));
+    }
+
+function imSawMachineModel(lower) {
+      const K = imKit();
+      if (/table saw/.test(lower)) {
+        const top = K.box(0.65, 0.04, 0.55, 0x9ca3af, 0, 0.32, 0, IM.alu);
+        const body = K.box(0.5, 0.28, 0.42, 0xb91c1c, 0, 0.16, 0, IM.plastic);
+        const blade = K.cyl(0.11, 0.11, 0.003, 0x52525b, 0, 0.34, 0, IM.steel, 28); blade.rotation.x = Math.PI / 2; blade.scale.set(1, 1, 1); blade.position.y = 0.3;
+        const fence = K.box(0.05, 0.06, 0.55, 0x111827, 0.18, 0.37, 0, IM.alu);
+        return K.done(top, body, blade, fence);
+      }
+      if (/scroll saw/.test(lower)) return K.done(K.box(0.5, 0.12, 0.25, 0x1e3a8a, 0, 0.06, 0, IM.iron), K.box(0.4, 0.02, 0.25, 0x9ca3af, 0, 0.13, 0, IM.alu), K.box(0.45, 0.06, 0.06, 0x1e3a8a, -0.02, 0.3, 0, IM.iron), K.box(0.002, 0.18, 0.004, 0xd1d5db, 0.18, 0.2, 0, IM.steel));
+      // a mitre / chop saw: a round table, a pivoting arm with a guarded blade
+      const base = K.box(0.45, 0.06, 0.35, 0x52525b, 0, 0.03, 0, IM.iron);
+      const turntable = K.cyl(0.15, 0.15, 0.03, 0x9ca3af, 0, 0.075, 0, IM.alu, 24);
+      const fence = K.box(0.45, 0.07, 0.03, 0x9ca3af, 0, 0.12, -0.08, IM.alu);
+      const arm = K.box(0.08, 0.06, 0.3, /chop|abrasive|cut-?off/.test(lower) ? 0xdc2626 : 0x0e9aa7, 0, 0.32, -0.02, IM.plastic); arm.rotation.x = -0.6;
+      const guard = K.cyl(0.13, 0.13, 0.05, 0xb6bcc4, 0, 0.26, 0.06, IM.alu, 24); guard.rotation.z = Math.PI / 2;
+      const handle = K.box(0.04, 0.1, 0.04, 0x111827, 0, 0.42, 0.12, IM.rubber);
+      return K.done(base, turntable, fence, arm, guard, handle);
+    }
+
+function imHandPlaneModel() {
+      const K = imKit();
+      const sole = K.box(0.16, 0.025, 0.05, 0x1e3a8a, 0, 0.0125, 0, IM.iron);
+      const cap = K.box(0.06, 0.03, 0.04, 0x52525b, 0.0, 0.04, 0, IM.steel); cap.rotation.z = -0.6;
+      const knob = K.cyl(0.012, 0.016, 0.03, 0x7c2d12, 0.055, 0.04, 0, IM.wood);
+      const iron = K.box(0.004, 0.05, 0.035, 0xd1d5db, -0.005, 0.04, 0, IM.steel); iron.rotation.z = -0.6;
+      return K.done(sole, cap, knob, iron);
+    }
+
+function imGasketModel() {
+      const K = imKit(), parts = [K.box(0.18, 0.002, 0.24, 0xf8fafc, 0, 0.001, 0, IM.paper)];
+      parts.push(...[[-0.04, -0.06, 0.035], [0.04, -0.06, 0.025], [0, 0.04, 0.05]].map(([x, z, r]) => { const g = K.torus(r, 0.004, 0x7c2d12, x, 0.004, z, { roughness: 0.6 }); g.rotation.x = Math.PI / 2; g.scale.z = 0.4; return g; }));
+      parts.push(K.box(0.12, 0.002, 0.04, 0x52525b, 0, 0.004, 0.1, { roughness: 0.7 }));
+      return K.done(...parts);
+    }
+
+function imPitcherModel(lower) {
+      const K = imKit();
+      const col = /blue/.test(lower) ? 0x1e40af : /white|milk/.test(lower) ? 0xf8fafc : 0xc8a27a;
+      const body = K.lathe([[0, 0], [0.06, 0], [0.075, 0.06], [0.07, 0.15], [0.055, 0.2], [0.062, 0.22], [0.058, 0.22], [0.05, 0.2], [0.064, 0.15], [0.068, 0.06], [0.055, 0.008], [0, 0.008]], col, { ...IM.ceramic, side: THREE.DoubleSide }, 28);
+      const spout = K.cyl(0.004, 0.02, 0.04, col, 0.065, 0.21, 0, IM.ceramic); spout.rotation.z = -1.1;
+      const handle = K.torus(0.05, 0.01, col, -0.075, 0.13, 0, IM.ceramic, Math.PI); handle.rotation.z = Math.PI / 2;
+      return K.done(body, spout, handle);
+    }
+
+// Workshop products whose shape is their own (called by madePartModel, js/machinemodels.js). The colour
+// is the material it was made from; null for things madePartModel already shapes well.
+function imMadeShapeModel(l) {
+      const tone = /titanium|ebm/.test(l) ? [0x8f8f99, IM.alu] : /alumin/.test(l) ? [0xc8ccd0, IM.alu] : /bronze|brass/.test(l) ? [0xb08d57, { metalness: 0.9, roughness: 0.35 }]
+        : /steel|stainless|metal|dmls|ded|binder/.test(l) ? [0xa8b0b8, { metalness: 0.85, roughness: 0.4 }] : /clear/.test(l) ? [0xdbeafe, { transparent: true, opacity: 0.5, roughness: 0.1 }]
+        : /acrylic/.test(l) ? [0xdbeafe, { transparent: true, opacity: 0.6, roughness: 0.1 }] : /resin|sla|dlp|msla|polyjet/.test(l) ? [0x9ca3af, { roughness: 0.3 }]
+        : /nylon|sls|mjf/.test(l) ? [0xe7e5e4, { roughness: 0.9 }] : /paper|lom/.test(l) ? [0xe7dcc0, IM.paper] : /mdf/.test(l) ? [0xa87442, IM.wood]
+        : /plywood|ply|routed/.test(l) ? [0xdcb88a, IM.wood] : /petg|pla|fdm/.test(l) ? [0xf97316, IM.plastic] : [0xa8b0b8, { metalness: 0.85, roughness: 0.4 }];
+      const [col, fin] = tone;
+      const K = imKit();
+      if (/pcb-milled|prototype board|controller board|\bcontroller\b/.test(l) && /pcb/.test(l)) return imCircuitBoardModel('pcb ' + l);
+      if (/\bring\b|jewel+e?ry/.test(l)) { const r = K.torus(0.009, 0.0022, col, 0, 0.0115, 0, fin); return K.done(r, K.ball(0.003, col, 0, 0.022, 0, fin)); }
+      if (/cable clip/.test(l)) return K.done(...[0, 1, 2, 3].map(i => { const c = K.torus(0.006, 0.0025, col, i * 0.02, 0.008, 0, fin, Math.PI * 1.5); return group(c, K.box(0.012, 0.003, 0.012, col, i * 0.02, 0.0015, 0, fin)); }));
+      if (/hinge/.test(l)) return K.done(K.box(0.04, 0.003, 0.03, col, -0.022, 0.0015, 0, fin), K.box(0.04, 0.003, 0.03, col, 0.022, 0.0015, 0, fin), (() => { const k = K.cyl(0.004, 0.004, 0.03, col, 0, 0.004, 0, fin); k.rotation.x = Math.PI / 2; return k; })());
+      if (/drone arm|frame plate|drone frame/.test(l)) return K.done(K.box(0.15, 0.004, 0.02, col, 0, 0.002, 0, fin), K.cyl(0.016, 0.016, 0.004, col, 0.075, 0.002, 0, fin), ...(/plate|frame/.test(l) ? [K.box(0.02, 0.004, 0.15, col, 0, 0.002, 0, fin)] : []));
+      if (/enclosure|prototype|housing/.test(l)) { const b = K.rr(0.12, 0.08, 0.035, 0.008, col, 0, 0, 0, fin); return K.done(b, K.rr(0.122, 0.082, 0.006, 0.008, col, 0, 0.035, 0, fin), ...[[-0.05, -0.03], [0.05, -0.03], [-0.05, 0.03], [0.05, 0.03]].map(([x, z]) => K.cyl(0.0025, 0.0025, 0.001, 0x52525b, x, 0.0415, z))); }
+      if (/cabinet door|door panel/.test(l)) return K.done(K.box(0.4, 0.6, 0.018, col, 0, 0.3, 0, fin), K.box(0.3, 0.5, 0.004, col, 0, 0.3, 0.008, fin), K.box(0.012, 0.1, 0.02, 0x52525b, 0.16, 0.3, 0.018, IM.steel));
+      if (/speaker baffle|baffle/.test(l)) return K.done(K.box(0.24, 0.36, 0.018, col, 0, 0.18, 0, fin), ...[[0.1, 0.1], [0.25, 0.04]].map(([y, r]) => { const h = K.cyl(r, r, 0.019, 0x1c1917, 0, y, 0.0005, IM.matte, 24); h.rotation.x = Math.PI / 2; return h; }));
+      if (/front panel|control panel/.test(l)) return K.done(K.box(0.3, 0.12, 0.004, col, 0, 0.06, 0, fin), ...[-0.1, -0.03, 0.04, 0.11].map(x => { const h = K.cyl(0.008, 0.008, 0.005, 0x111827, x, 0.06, 0); h.rotation.x = Math.PI / 2; return h; }));
+      if (/shelving|shelves/.test(l)) return imFurnitureModel('bookshelf ' + (/ply/.test(l) ? 'birch' : ''));
+      if (/carcass|cabinet\b/.test(l)) return K.done(K.box(0.018, 0.7, 0.5, col, -0.3, 0.35, 0, fin), K.box(0.018, 0.7, 0.5, col, 0.3, 0.35, 0, fin), K.box(0.6, 0.018, 0.5, col, 0, 0.009, 0, fin), K.box(0.6, 0.018, 0.5, col, 0, 0.69, 0, fin), K.box(0.6, 0.7, 0.006, col, 0, 0.35, -0.247, fin), K.box(0.58, 0.018, 0.48, col, 0, 0.35, 0, fin));
+      if (/workbench top|bench top|table top/.test(l)) return K.done(K.box(1.5, 0.04, 0.7, col, 0, 0.02, 0, fin), K.box(1.5, 0.04, 0.7, col, 0, 0.06, 0, fin));
+      if (/kayak rack|bike rack|rack\b/.test(l)) return K.done(...[-0.4, 0.4].map(x => K.box(0.05, 1.2, 0.05, col, x, 0.6, 0, fin)), ...[0.4, 0.8].map(y => K.box(0.9, 0.04, 0.4, col, 0, y, 0.18, fin)), K.box(0.9, 0.05, 0.4, col, 0, 0.025, 0, fin));
+      if (/seat back/.test(l)) { const p = K.box(0.4, 0.45, 0.012, col, 0, 0.225, 0, fin); p.rotation.x = -0.15; return K.done(p); }
+      if (/floor pan/.test(l)) return K.done(K.box(0.6, 0.012, 0.5, col, 0, 0.006, 0, fin));
+      if (/duct/.test(l)) { const d = K.cyl(0.04, 0.05, 0.18, col, 0, 0.05, 0, { ...fin, side: THREE.DoubleSide }); d.rotation.z = Math.PI / 2; return K.done(d); }
+      if (/insole/.test(l)) { const s = K.slab([[-0.04, 0], [0.04, 0], [0.045, 0.12], [0.035, 0.24], [0, 0.26], [-0.035, 0.24], [-0.04, 0.12]], 0.008, col, fin); s.rotation.x = -Math.PI / 2; s.position.set(0, 0.004, 0.13); return K.done(s); }
+      if (/implant cup|acetabular/.test(l)) { const c = new THREE.Mesh(new THREE.SphereGeometry(0.027, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), K.mat(col, { ...fin, side: THREE.DoubleSide })); c.rotation.x = Math.PI; c.position.y = 0.027; c.castShadow = true; return K.done(c); }
+      if (/architectural model|architecture/.test(l)) return K.done(K.box(0.3, 0.008, 0.2, col, 0, 0.004, 0, fin), ...[[-0.08, 0.06, 0.05], [0.03, 0.12, -0.03], [0.1, 0.04, 0.05]].map(([x, h, z]) => K.box(0.07, h, 0.06, col, x, 0.008 + h / 2, z, fin)));
+      if (/mold pattern|mould pattern|mold plate|mould plate/.test(l)) return K.done(K.box(0.2, 0.04, 0.15, col, 0, 0.02, 0, fin), K.cyl(0.04, 0.03, 0.005, 0x52525b, 0, 0.0405, 0, fin));
+      if (/gusset/.test(l)) { const g = K.slab([[0, 0], [0.1, 0], [0, 0.1]], 0.005, col, fin); g.rotation.x = -Math.PI / 2; g.position.y = 0.0025; return K.done(g); }
+      if (/fire pit/.test(l)) return K.done(K.lathe([[0, 0.02], [0.3, 0.02], [0.38, 0.3], [0.375, 0.3], [0.295, 0.025], [0, 0.025]], 0x3f3a36, { metalness: 0.6, roughness: 0.75, side: THREE.DoubleSide }, 28), ...[0, 1, 2].map(i => { const a = i * 2.09; return K.rod([Math.cos(a) * 0.25, 0.02, Math.sin(a) * 0.25], [Math.cos(a) * 0.3, 0, Math.sin(a) * 0.3], 0.012, 0x3f3a36, IM.iron); }));
+      if (/phone stand/.test(l)) { const s = K.slab([[0, 0], [0.08, 0], [0.08, 0.008], [0.02, 0.008], [0.045, 0.1], [0.037, 0.1], [0.01, 0.008], [0, 0.03]], 0.07, col, fin); return K.done(s); }
+      if (/coaster/.test(l)) return imCoasterModel(l);
+      if (/dash mount|mount\b/.test(l)) return K.done(K.box(0.08, 0.004, 0.05, col, 0, 0.002, 0, fin), K.box(0.004, 0.06, 0.05, col, -0.038, 0.03, 0, fin), K.cyl(0.012, 0.012, 0.02, 0x111827, 0, 0.012, 0));
+      return null;
+    }
+
+function imHookModel() {
+      const K = imKit();
+      const plate = K.box(0.03, 0.06, 0.006, 0xf97316, 0, 0.03, 0, IM.plastic);
+      const hook = K.tube([[0, 0.02, 0.003], [0, 0.015, 0.03], [0, 0.03, 0.045], [0, 0.045, 0.04]], 0.005, 0xf97316, IM.plastic);
+      return K.done(plate, hook);
+    }
+
+function imWhistleModel() {
+      const K = imKit();
+      const barrel = K.cyl(0.012, 0.012, 0.03, 0xf97316, 0, 0.012, 0, IM.plastic); barrel.rotation.x = Math.PI / 2;
+      const mouth = K.box(0.012, 0.008, 0.03, 0xf97316, 0, 0.016, -0.028, IM.plastic);
+      const ring = K.torus(0.006, 0.0015, 0xf97316, 0, 0.012, 0.02, IM.plastic);
+      return K.done(barrel, mouth, ring);
+    }
+
+function imStarModel() {
+      const K = imKit(), pts = [];
+      for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2 + Math.PI / 2, r = i % 2 ? 0.018 : 0.045; pts.push([Math.cos(a) * r, Math.sin(a) * r + 0.05]); }
+      const star = K.slab(pts, 0.008, 0xfacc15, { metalness: 0.4, roughness: 0.3 });
+      const loop = K.torus(0.006, 0.0015, 0xd1d5db, 0, 0.1, 0, IM.steel);
+      return K.done(star, loop);
     }

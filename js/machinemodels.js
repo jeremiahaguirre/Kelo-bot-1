@@ -2058,6 +2058,9 @@ function partsWasherModel() {
 // Built in metres (realSize), so they carry and shelve like everything else
 function madePartModel(lower) {
       const l = String(lower || '').toLowerCase();
+      // Products with a shape of their own (rings, hinges, enclosures, cabinet doors...: js/itemmodels.js)
+      const shaped = typeof imMadeShapeModel === 'function' ? imMadeShapeModel(l) : null;
+      if (shaped) return shaped;
       const g = new THREE.Group();
       const metal = /steel|stainless|titanium|aluminium|aluminum|metal|dmls|ebm|ded|machined|haas|taurus|plasma|binder/.test(l);
       const mat = /titanium|ebm/.test(l) ? 'tiPowder' : /alumin/.test(l) ? 'alu' : metal ? 'steel'
@@ -2077,7 +2080,7 @@ function madePartModel(lower) {
         mmBox(g, 0.08, 0.02, 0.22, mat, 0, 0, 0);
         mmBox(g, 0.1, 0.012, 0.08, mat, 0, 0.02, 0.1);
         mmCyl(g, 0.02, 0.06, mat, 0, 0.02, -0.1, { axis: 'x' });
-      } else if (/miniature|figure|robot/.test(l)) {
+      } else if (/miniature|figur|robot/.test(l)) {
         mmCyl(g, 0.03, 0.01, mat, 0, 0.005, 0);
         mmBox(g, 0.03, 0.04, 0.02, mat, 0, 0.01, 0);
         mmSphere(g, 0.016, mat, 0, 0.065, 0);

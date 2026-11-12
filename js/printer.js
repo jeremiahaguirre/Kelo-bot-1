@@ -378,7 +378,15 @@ function paintPrint(model, color, clipPlane = null) {
 function printedThingModel(lower) {
       const d = printerState().designs[lower];
       const color = d ? d.color : '#f97316';
-      const def = d && PRINTABLES.find(x => x.key === d.key);
+      const def = d ? PRINTABLES.find(x => x.key === d.key) : PRINTABLES.find(x => x.name.toLowerCase() === lower);
+      // No design saved for it (an old save, or a print named some other way): the named thing itself, in
+      // print plastic ("A 3D-printed wall hook" is a hook), else the printed figure
+      if (!d && !def) {
+        const what = lower.replace(/^(an?|the|some)\s+/, '').replace(/\b3-?d-printed\s*/, '').replace(/^(pla|petg|abs|tpu|resin|nylon)\s+/, '').trim();
+        const rule = what && ITEM_MODEL_RULES.find(([re]) => !re.test('3d-printed') && re.test(what));
+        const thing = rule ? rule[1](what) : null;
+        if (thing) return paintPrint(fitPrint(thing, Math.min(0.2, modelMaxSize(thing) * (thing.userData.realSize ? 1 : 1 / ITEM_LIFE_SCALE))), color);
+      }
       const raw = def ? def.build() : printedDesign(d && d.parts, color);
       return paintPrint(fitPrint(raw, d && d.size ? d.size : modelMaxSize(raw)), color);
     }

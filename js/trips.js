@@ -444,7 +444,7 @@ function tireChainsModel() {
 if (typeof ITEM_MODEL_RULES !== 'undefined') {
   ITEM_MODEL_RULES.unshift(
     [/^(?!.*hitch).*(trailer|low-?boy|low-?bed|low ?loader)/, lower => (trailerKindOf(lower) ? trailerModel(lower) : null) || trailerModel('snowmobile trailer')],
-    [/\bpick-?up\b.*truck|\bpick-?up\b$/, () => pickupTruckModel()],
+    [/^(?!.*\bhitch(es)? for\b).*(\bpick-?up\b.*truck|\bpick-?up\b$)/, () => pickupTruckModel()],
     [/ratchet straps?|tie-?down straps?|cargo straps?/, () => ratchetStrapsModel()],
     [/tire chains|tyre chains|snow chains|load binders?/, () => tireChainsModel()]
   );

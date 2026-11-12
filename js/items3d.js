@@ -236,7 +236,7 @@ const ITEM_MODEL_RULES = [
   [/^(?!.*(pie|tart|cobbler|cake|jam)).*(peach|apricot)/, () => fruitBasket(0xffa36c, 0.038, 9, 'peach')],
   [/^(?!.*(pie|tart|cobbler|cake|jam|muffin|juice)).*(blueberr|grape)/, () => fruitBasket(0x3b4cca, 0.009, 60, 'berry')],
   [/bread|loaf|sourdough|baguette|\bbun\b|croissant/, (lower) => realSize(loafModel(lower))],
-  [/tart|pie|cobbler|cake|cookie/, (lower) => realSize(bakedModel(lower))],
+  [/tart|\bpies?\b|cobbler|cake|cookie/, (lower) => realSize(bakedModel(lower))],
   [/ramen|noodle|soup|stew|bowl/, (lower) => realSize(noodleBowlModel())],
   [/cheese|cheddar/, (lower) => realSize(cheeseModel())],
   [/pizza/, (lower) => realSize(pizzaModel())],
@@ -257,10 +257,10 @@ const ITEM_MODEL_RULES = [
   [/duck/, (lower) => realSize(duckModel())],
   [/spinning top|\btop\b/, (lower) => realSize(spinningTopModel())],
   [/frog/, (lower) => realSize(frogModel())],
-  [/puzzle|cube|block|lego/, (lower) => realSize(blocksModel())],
+  [/puzzle|cube|\bblocks?\b|lego/, (lower) => realSize(blocksModel())],
   [/harmonica/, (lower) => realSize(harmonicaModel())],
   [/drill/, () => realSize(cordlessDrillModel())],
-  [/rope|cable|wire/, (lower) => {
+  [/\bropes?\b|cable|wire/, (lower) => {
     const coil = mesh(new THREE.TorusGeometry(0.22, 0.05, 8, 24), /wire|copper/.test(lower) ? 0xb45309 : 0xd6a35c);
     coil.rotation.x = Math.PI / 2;
     coil.position.y = 0.06;
@@ -316,7 +316,7 @@ const ITEM_MODEL_RULES = [
   [/knife/, () => realSize(knifeModel())],
   [/\bsaw\b|handsaw/, () => realSize(handSawModel())],
   [/multitool|iron|tool/, () => realSize(toolboxModel())],
-  [/canoe|kayak|boat|raft|paddle ?board/, () => rowboatModel()],
+  [/canoe|kayak|boat|\braft\b|paddle ?board/, () => rowboatModel()],
   [/bike|bicycle|scooter/, () => bicycleModel()],
   [/submarine/, () => {
     const hull = mesh(new THREE.SphereGeometry(0.2, 14, 10), 0xfacc15);
@@ -335,7 +335,7 @@ const ITEM_MODEL_RULES = [
     tree.position.y = 0.36;
     return group(water, isle, tree);
   }],
-  [/treehouse|cabin|house|observatory|tower/, () => {
+  [/treehouse|cabin|\bhouse\b|observatory|tower/, () => {
     const hut = mesh(new THREE.BoxGeometry(0.35, 0.3, 0.35), 0xa16207);
     hut.position.y = 0.15;
     const roof = mesh(new THREE.ConeGeometry(0.3, 0.22, 4), 0x7c2d12);
@@ -687,6 +687,8 @@ async function unboxInHands(itemModel) {
 // ("Climbing rope and carabiners" is one coil of rope with its carabiners).
 function splitItemList(name) {
       const lower = String(name || '').toLowerCase();
+      // A dish named for what is in it ("tomato and carrot soup") is one dish
+      if (/\b(soup|stew|pies?|cobbler|crumble|salad|sandwich|curry|cake|tart|muffins?|jam|sauce|smoothie|juice|pizza|pasta)$/.test(lower)) return null;
       if (/^(an? )?(parts kit|tools for|set of|kit of|pair of|box of|bundle of|bag of|survey kit)\b|\b(set|kit)$|^[^:]+:/.test(lower.replace(/\([^)]*\)/g, '').trim())) return null;
       const parts = lower.replace(/\([^)]*\)/g, ' ').split(/\s*(?:,|&|\+|\band\b)\s*/i).map(p => p.trim()).filter(p => p.length > 2);
       if (parts.length < 2 || parts.length > 5 || parts.some(p => !/[a-z]{3}/.test(p))) return null;
@@ -724,9 +726,11 @@ function buildItemModel3D(name, { kind = 'gift', thumb = null, label = true } = 
         } else {
           model = singleItemModel(lower);
         }
-        // Wood grain, brushed metal, see-through glass... (js/materials.js)
-        if (typeof applyMaterialLook === 'function') applyMaterialLook(model, name);
-        if (typeof polishItemSurfaces === 'function') polishItemSurfaces(model, name);
+        // Wood grain, brushed metal, see-through glass... (js/materials.js). A parts kit is a crate,
+        // whatever its lines are made of.
+        const kit = /^(parts kit|tools for|roadwork kit|runway kit)/.test(lower);
+        if (!kit && typeof applyMaterialLook === 'function') applyMaterialLook(model, name);
+        if (!kit && typeof polishItemSurfaces === 'function') polishItemSurfaces(model, name);
         // Standing on y = 0, so it sits on a shelf, the pick-up table or the ground (js/itemmodels.js)
         if (typeof imGround === 'function' && !model.userData.fullSize) imGround(model);
       }

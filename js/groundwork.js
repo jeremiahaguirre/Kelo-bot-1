@@ -315,7 +315,7 @@ ITEM_MODEL_RULES.unshift(
     g.add(blade, handle);
     return g;
   }],
-  [/asphalt|blacktop|tarmac/, () => {
+  [/^(?!.*(shingle|roof)).*(asphalt|blacktop|tarmac)/, () => {
     const g = group();
     const heap = mesh(new THREE.SphereGeometry(0.32, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), 0x1f1f22, { roughness: 0.95 });
     heap.scale.set(1, 0.6, 1);

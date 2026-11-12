@@ -517,7 +517,7 @@ function updateWorldUpgrades(t) {
           }
           if (active && bh.spec.do === 'particles' && now - bh.lastFire > 2500) { bh.lastFire = now; upgradeBurst(b); }
           bh.active = active;
-          bh.level += ((active ? 1 : 0) - bh.level) * Math.min(1, dt * 2.5);
+          bh.level += ((active ? 1 : 0) - bh.level) * (1 - Math.exp(-2.5 * dt));
           const lvl = bh.level;
           const targets = upgradeTargets(b, bh.spec.target);
           const amt = bh.spec.amount ?? 1;

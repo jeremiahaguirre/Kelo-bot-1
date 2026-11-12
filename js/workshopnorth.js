@@ -477,7 +477,13 @@ function wnSetFade(mat, opacity) {
 // --- The hall's own trips: a big vehicle in through its bay's door, serviced, and back out ----------
 const wnTrip = { active: false, vehicle: null, trailer: null };
 
+// fn(k 0..1 by the clock, seconds since start), once a frame (keloTween, js/scene.js: frame-driven, a slow
+// timer in a hidden tab)
 function wnAnimate(ms, fn) {
+      if (typeof keloTween === 'function') {
+        const t0 = performance.now();
+        return keloTween(ms, k => { try { fn(k, (performance.now() - t0) / 1000); } catch (e) { console.warn(e); } });
+      }
       return new Promise(resolve => {
         const start = performance.now();
         const step = () => {

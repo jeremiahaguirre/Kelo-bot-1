@@ -369,10 +369,7 @@ async function chopTree(x = state.botPos.x, z = state.botPos.z, why = '', origin
         state.speechBubble = 'Timber!';
         renderAllUI();
         // It topples away from him
-        for (let a = 0; a <= 16; a++) {
-          tree.group.rotation.z = -(a / 16) * (Math.PI / 2) * (a / 16);
-          await new Promise(r => setTimeout(r, 60));
-        }
+        await keloTween(1020, k => { tree.group.rotation.z = -k * (Math.PI / 2) * k; });
         await new Promise(r => setTimeout(r, 600));
         removeValleyTree(tree.id);
         const e = { id: newEditId('chop'), type: 'chop', treeId: tree.id, x: tree.x, z: tree.z, at: Date.now(), why: String(why).slice(0, 160) };

@@ -1013,7 +1013,7 @@ function updatePlantPlume(p, t, dt, wind = 0.35) {
       // Fades by real time, so a slow frame rate doesn't keep it faint
       const now = performance.now() / 1000, real = Math.max(0, now - (p.lastT || now));
       p.lastT = now;
-      p.level += ((p.on ? 1 : 0) - p.level) * Math.min(1, real * 1.5);
+      p.level += ((p.on ? 1 : 0) - p.level) * (1 - Math.exp(-1.5 * real));
       p.sprites.forEach(s => {
         if (p.level < 0.02) { s.visible = false; return; }
         const u = ((t / p.life) + s.userData.phase) % 1;

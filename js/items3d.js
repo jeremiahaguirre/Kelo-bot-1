@@ -669,15 +669,13 @@ async function unboxInHands(itemModel) {
       itemModel.userData.unboxBase = itemModel.scale.x;
       itemModel.scale.setScalar(itemModel.userData.unboxBase * 0.01);
       wrapper.add(itemModel);
-      for (let i = 1; i <= 12; i++) {
-        const t = i / 12;
+      await keloTween(540, t => {
         box.scale.setScalar(Math.max(0.01, 1.4 * (1 - t)));
         box.position.y = -t * 0.3;
         box.rotation.z = t * 0.6;
         itemModel.scale.setScalar(itemModel.userData.unboxBase * (0.01 + 0.99 * t));
         itemModel.position.y = 0.25 * Math.sin(t * Math.PI);
-        await new Promise(r => setTimeout(r, 45));
-      }
+      });
       wrapper.remove(box);
     }
 

@@ -20,6 +20,10 @@ let keloBody;
 let keloLeftElbow, keloRightElbow, keloLeftHand, keloRightHand;
 let keloLeftKnee, keloRightKnee, keloLeftFoot, keloRightFoot;
 let keloMouth, keloCheeks = [], keloAntenna;
+// Everything buildKelo1Character3D made (joints and the parts on them), so a skin change can tell his
+// own parts from things other code hung on him (a carried box, a held item); and the materials it made
+const keloBuiltParts = new WeakSet();
+let keloSkinBuilt = null;
 const KELO_HIP_Y = 1.06;                       // where his upper body hangs from, above his feet
 const KELO_LEG_Y = 1.04;                       // his hip joints (the top of his legs)
 const KELO_SHOULDER = { x: 0.33, y: 1.66 };    // shoulder joints, above his feet
@@ -29,7 +33,7 @@ const KELO_THIGH_R = 0.1;                      // thigh thickness, for sitting o
 const KELO_REST_GRIP = 0.3;                    // fingers loosely curled
 
 // His ID, "K-1", as a small decal
-function keloIdTexture() {
+function keloIdTexture(fill) {
       const c = document.createElement('canvas');
       c.width = 128; c.height = 64;
       const g = c.getContext('2d');
@@ -39,39 +43,61 @@ function keloIdTexture() {
       g.lineWidth = 6;
       g.strokeStyle = 'rgba(15,23,42,0.85)';
       g.strokeText('K-1', 64, 34);
-      g.fillStyle = '#ffb547';
+      g.fillStyle = fill || '#ffb547';
       g.fillText('K-1', 64, 34);
       const tex = new THREE.CanvasTexture(c);
       tex.anisotropy = 4;
       return tex;
     }
 
-function keloMaterials() {
-      return {
-        // Teal painted metal under a glossy clear lacquer, like a well-kept toy robot
-        shell: new THREE.MeshPhysicalMaterial({ color: 0x2bb8ae, metalness: 0.18, roughness: 0.36, clearcoat: 1, clearcoatRoughness: 0.09 }),
-        // Cream enamel belly and face-frame panels
-        cream: new THREE.MeshPhysicalMaterial({ color: 0xf3eee2, metalness: 0.0, roughness: 0.46, clearcoat: 0.65, clearcoatRoughness: 0.18 }),
-        // Soft slate-blue covers at the hands and ears
-        cover: new THREE.MeshStandardMaterial({ color: 0x3a4a60, metalness: 0.15, roughness: 0.5 }),
-        // Matte silicone rubber at his joints (shoulders, elbows, hips, knees, ankles)
-        joint: new THREE.MeshStandardMaterial({ color: 0x45556b, metalness: 0, roughness: 0.68 }),
-        rubber: new THREE.MeshStandardMaterial({ color: 0x232b38, metalness: 0, roughness: 0.85 }),
-        // Hairline panel seams between the painted parts
-        seam: new THREE.MeshStandardMaterial({ color: 0x0f1a20, metalness: 0.2, roughness: 0.6 }),
-        frame: new THREE.MeshStandardMaterial({ color: 0x9aa7b5, metalness: 0.7, roughness: 0.35 }),
-        amber: new THREE.MeshStandardMaterial({ color: 0xffb547, metalness: 0.2, roughness: 0.35, emissive: 0x4a2400, emissiveIntensity: 0.3 }),
-        glass: new THREE.MeshPhysicalMaterial({ color: 0x07101c, metalness: 0.2, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.04 }),
-        // A clear visor over the face screen: only its reflections show, the eyes glow through it
-        visor: new THREE.MeshPhysicalMaterial({ color: 0xbfe9ff, metalness: 0, roughness: 0.04, clearcoat: 1, clearcoatRoughness: 0.03, transparent: true, opacity: 0.16, depthWrite: false, envMapIntensity: 1.6 }),
-        eye: new THREE.MeshBasicMaterial({ color: 0x8ef6ff }),
-        // A soft glow round each eye on the dark glass
-        eyeGlow: new THREE.MeshBasicMaterial({ color: 0x5fe8ff, transparent: true, opacity: 0.28, depthWrite: false, blending: THREE.AdditiveBlending }),
-        shine: new THREE.MeshBasicMaterial({ color: 0xffffff }),
-        cheek: new THREE.MeshBasicMaterial({ color: 0xff7fa8, transparent: true, opacity: 0.5, depthWrite: false }),
-        led: new THREE.MeshBasicMaterial({ color: 0x5ef0b0 }),
-        id: new THREE.MeshBasicMaterial({ map: keloIdTexture(), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 })
-      };
+// His palette, as material kinds and settings. A skin (js/skins.js) overrides any of these by name:
+// { shell: { color: 0xf2f4f7, roughness: 0.3 } } keeps the kind and changes only those settings.
+const KELO_MAT_DEFS = {
+  // Teal painted metal under a glossy clear lacquer, like a well-kept toy robot
+  shell: ['phys', { color: 0x2bb8ae, metalness: 0.18, roughness: 0.36, clearcoat: 1, clearcoatRoughness: 0.09 }],
+  // Cream enamel belly and face-frame panels
+  cream: ['phys', { color: 0xf3eee2, metalness: 0.0, roughness: 0.46, clearcoat: 0.65, clearcoatRoughness: 0.18 }],
+  // Soft slate-blue covers at the hands and ears
+  cover: ['std', { color: 0x3a4a60, metalness: 0.15, roughness: 0.5 }],
+  // Matte silicone rubber at his joints (shoulders, elbows, hips, knees, ankles)
+  joint: ['std', { color: 0x45556b, metalness: 0, roughness: 0.68 }],
+  rubber: ['std', { color: 0x232b38, metalness: 0, roughness: 0.85 }],
+  // Hairline panel seams between the painted parts
+  seam: ['std', { color: 0x0f1a20, metalness: 0.2, roughness: 0.6 }],
+  frame: ['std', { color: 0x9aa7b5, metalness: 0.7, roughness: 0.35 }],
+  amber: ['std', { color: 0xffb547, metalness: 0.2, roughness: 0.35, emissive: 0x4a2400, emissiveIntensity: 0.3 }],
+  glass: ['phys', { color: 0x07101c, metalness: 0.2, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.04 }],
+  // A clear visor over the face screen: only its reflections show, the eyes glow through it
+  visor: ['phys', { color: 0xbfe9ff, metalness: 0, roughness: 0.04, clearcoat: 1, clearcoatRoughness: 0.03, transparent: true, opacity: 0.16, depthWrite: false, envMapIntensity: 1.6 }],
+  eye: ['basic', { color: 0x8ef6ff }],
+  // A soft glow round each eye on the dark glass
+  eyeGlow: ['basic', { color: 0x5fe8ff, transparent: true, opacity: 0.28, depthWrite: false, blending: THREE.AdditiveBlending }],
+  shine: ['basic', { color: 0xffffff }],
+  cheek: ['basic', { color: 0xff7fa8, transparent: true, opacity: 0.5, depthWrite: false }],
+  led: ['basic', { color: 0x5ef0b0 }],
+  id: ['basic', { transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }]
+};
+const KELO_MAT_KINDS = { phys: THREE.MeshPhysicalMaterial, std: THREE.MeshStandardMaterial, basic: THREE.MeshBasicMaterial };
+
+// His materials for a skin (default: the one he wears). Every call makes new materials; the old
+// set is disposed when he changes skin (equipKeloSkin, js/skins.js).
+function keloMaterials(skinId) {
+      const skin = typeof keloSkinDef === 'function' ? keloSkinDef(skinId === undefined ? keloEquippedSkinId() : skinId) : null;
+      const pal = (skin && skin.palette) || {};
+      const M = {};
+      Object.keys(KELO_MAT_DEFS).forEach(k => {
+        const [kind, base] = KELO_MAT_DEFS[k];
+        const over = pal[k] || {};
+        const Kind = KELO_MAT_KINDS[over.kind || kind] || THREE.MeshStandardMaterial;
+        const params = Object.assign({}, base, over);
+        delete params.kind;
+        // settings a plainer material kind doesn't have are left out
+        if (Kind !== THREE.MeshPhysicalMaterial) { delete params.clearcoat; delete params.clearcoatRoughness; }
+        if (Kind === THREE.MeshBasicMaterial) { ['metalness', 'roughness', 'emissive', 'emissiveIntensity', 'envMapIntensity'].forEach(n => delete params[n]); }
+        M[k] = new Kind(params);
+      });
+      M.id.map = keloIdTexture(skin && skin.idColor);
+      return M;
     }
 
 // A hairline seam round a lathe surface at height y (a dark ring sitting in the paint)
@@ -236,8 +262,11 @@ function keloCable(points, radius, mat) {
 
 // --- The body -------------------------------------------------------------------------------
 
-function buildKelo1Character3D() {
-      const M = keloMaterials();
+// opts.skin: which skin to dress him in (default: the one he wears, js/skins.js). opts.detached: build
+// the parts only, without putting him in the world (equipKeloSkin moves them onto his live rig).
+function buildKelo1Character3D(opts = {}) {
+      const skinId = opts.skin !== undefined ? opts.skin : (typeof keloEquippedSkinId === 'function' ? keloEquippedSkinId() : 'classic');
+      const M = keloMaterials(skinId);
       keloGroup = new THREE.Group();
       keloGroup.name = 'Kelo-1';
       keloBody = new THREE.Group();
@@ -436,7 +465,21 @@ function buildKelo1Character3D() {
       [keloBody, keloHead, pack, L.shoulder, L.elbow, L.hand, R.shoulder, R.elbow, R.hand, LL.hip, LL.knee, LL.ankle, RL.hip, RL.knee, RL.ankle]
         .forEach(g => keloJoinRigid(g, keep));
 
+      // His skin's own parts (js/skins.js), each in a "skin" group on the bone it rides on
+      if (typeof keloDressSkin === 'function') {
+        keloDressSkin(skinId, M, {
+          group: keloGroup, body: keloBody, head: keloHead, pack,
+          lArm: L.shoulder, rArm: R.shoulder, lElbow: L.elbow, rElbow: R.elbow, lHand: L.hand, rHand: R.hand,
+          lLeg: LL.hip, rLeg: RL.hip, lKnee: LL.knee, rKnee: RL.knee, lFoot: LL.ankle, rFoot: RL.ankle,
+          lEye: keloLeftEye, rEye: keloRightEye, antenna: keloAntenna, cheeks: keloCheeks,
+          headProfile, HSX, HSZ, torsoProfile, TSX, TSZ, ankleY
+        });
+      }
+
       buildKeloHandTools(M);
+      keloSkinBuilt = { skin: skinId, M };
+      keloGroup.traverse(o => keloBuiltParts.add(o));
+      if (opts.detached) return;
 
       const startGroundY = getIslandGroundHeight(state.botPos.x, state.botPos.z);
       state.botAltitudeY = startGroundY;

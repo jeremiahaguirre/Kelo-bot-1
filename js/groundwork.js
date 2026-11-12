@@ -281,7 +281,7 @@ ITEM_MODEL_RULES.unshift(
     g.add(rod([-0.2, 0.9, -0.65], [0.2, 0.9, -0.65], 0.028, 0x111827));
     return g;
   }],
-  [/asphalt rake|lute|\brake\b/, lower => {
+  [/asphalt rake|\blute\b|\brake\b/, lower => {
     const g = group();
     const asphalt = /asphalt|lute/.test(lower);
     g.add(rod([0, 0.08, 0], [0, 1.45, 0], 0.018, asphalt ? 0x9ca3af : 0xb08050, asphalt ? { metalness: 0.7 } : {}));

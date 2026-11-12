@@ -573,7 +573,9 @@ function aiDesignedItemModel(lower) {
 // truck), then one the AI designed for things nobody has a model for, then a guess from the name's
 // words and shapes he knows. A plain box only if all of that comes up empty.
 function singleItemModel(lower) {
-      const drawn = drawnItemModel(lower);
+      let drawn = drawnItemModel(lower);
+      // Older display-size models are scaled to the real thing's size (js/itemmodels.js)
+      if (typeof imTrueSize === 'function') drawn = imTrueSize(lower, drawn);
       // A real 3D model of the thing takes the drawn one's place once it has loaded (js/realmodels.js)
       return typeof withRealModel === 'function' ? withRealModel(lower, drawn) : drawn;
     }
@@ -695,18 +697,31 @@ function buildItemModel3D(name, { kind = 'gift', thumb = null, label = true } = 
         const list = aiDesignedItemModel(lower) ? null : splitItemList(lower);
         if (list) {
           model = group();
-          list.forEach((piece, i) => {
-            const sub = singleItemModel(piece);
-            sub.scale.multiplyScalar(0.8);
-            sub.position.x = (i - (list.length - 1) / 2) * 0.45;
+          // Side by side at their own sizes (realSize pieces in metres, the others at display size)
+          const subs = list.map(piece => singleItemModel(piece));
+          const anyReal = subs.some(sub => sub.userData.realSize);
+          const widths = subs.map(sub => {
+            if (anyReal && !sub.userData.realSize) sub.scale.multiplyScalar(1 / ITEM_LIFE_SCALE);
+            const box = new THREE.Box3().setFromObject(sub);
+            return box.isEmpty() ? 0.2 : box.max.x - box.min.x;
+          });
+          const gap = anyReal ? 0.04 : 0.08;
+          let x = -(widths.reduce((a, b) => a + b, 0) + gap * (subs.length - 1)) / 2;
+          subs.forEach((sub, i) => {
+            const box = new THREE.Box3().setFromObject(sub);
+            sub.position.x = x - (box.isEmpty() ? 0 : box.min.x);
+            x += widths[i] + gap;
             model.add(sub);
           });
+          if (anyReal) realSize(model);
         } else {
           model = singleItemModel(lower);
         }
         // Wood grain, brushed metal, see-through glass... (js/materials.js)
         if (typeof applyMaterialLook === 'function') applyMaterialLook(model, name);
         if (typeof polishItemSurfaces === 'function') polishItemSurfaces(model, name);
+        // Standing on y = 0, so it sits on a shelf, the pick-up table or the ground (js/itemmodels.js)
+        if (typeof imGround === 'function' && !model.userData.fullSize) imGround(model);
       }
       if (label && name) {
         const text = String(name).replace(/^(an?|the|some)\s+/i, '').slice(0, 22).toUpperCase();

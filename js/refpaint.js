@@ -156,46 +156,8 @@ async function refpSearchInstant(q) {
       return refpParseInstantAnswer(await res.json(), q);
     }
 
-// Wikimedia Commons: freely licensed photos, CORS-enabled (there is no safe-search switch, so titles,
-// categories and descriptions are filtered with the same all-ages word list)
-function refpParseCommons(d) {
-      const pages = Object.values((d && d.query && d.query.pages) || {}).sort((a, b) => (a.index || 0) - (b.index || 0));
-      const out = [];
-      pages.forEach(p => {
-        const ii = p && Array.isArray(p.imageinfo) ? p.imageinfo[0] : null;
-        if (!ii || !/^image\/(jpeg|png|webp)$/i.test(String(ii.mime || ''))) return;
-        if ((ii.width || 0) < 300 || (ii.height || 0) < 200) return;
-        const meta = ii.extmetadata || {};
-        const val = k => refpPlain(meta[k] && meta[k].value, 200);
-        const title = refpPlain(String(p.title || '').replace(/^File:/i, '').replace(/\.(jpe?g|png|webp|tiff?)$/i, '').replace(/_/g, ' '));
-        if (REFP_UNSAFE.test(`${title} ${val('Categories')} ${val('ImageDescription')} ${val('ObjectName')}`)) return;
-        const thumb = refpSafeUrl(ii.thumburl, ['upload.wikimedia.org']);
-        const page = refpSafeUrl(ii.descriptionurl, ['commons.wikimedia.org']);
-        if (!thumb || !page) return;
-        out.push({ thumbUrl: thumb, imageUrl: refpSafeUrl(ii.url, ['upload.wikimedia.org']), pageUrl: page, title, source: 'Wikimedia Commons', via: 'web',
-          license: val('LicenseShortName').slice(0, 60), artist: val('Artist').slice(0, 80) });
-      });
-      return out;
-    }
-
-async function refpSearchCommons(q) {
-      const params = `action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=12&gsrsearch=${encodeURIComponent(q + ' filetype:bitmap')}`
-        + '&prop=imageinfo&iiprop=url|mime|size|extmetadata&iiurlwidth=640&iiextmetadatafilter=LicenseShortName|Artist|ObjectName|Categories|ImageDescription';
-      const res = await refpFetch(`${REFP_COMMONS_API}?${params}`);
-      if (!res.ok) return [];
-      return refpParseCommons(await res.json());
-    }
-
-// The order he tries them in, by what this platform allows
-function refpSources() {
-      const p = refpPlatform();
-      const list = [];
-      if (p === 'desktop') list.push({ name: 'DuckDuckGo Images', search: refpSearchDesktop });
-      if (p === 'native') list.push({ name: 'DuckDuckGo Images', search: refpSearchNative });
-      list.push({ name: 'DuckDuckGo', search: refpSearchInstant });
-      list.push({ name: 'Wikimedia Commons', search: refpSearchCommons });
-      return list;
-    }
+// Every other source (Wikimedia Commons, Openverse, the museums, NASA, the keyed photo sites) is an
+// adapter in js/refsources.js, behind the licence gate refLicenceOk() and the risk check refRiskOk().
 
 // --- Loading a picture as data ------------------------------------------------------------------------------
 async function refpDecode(src) {
@@ -228,7 +190,7 @@ async function refpFetchImageData(url, via) {
         return refpDecode(`data:${type};base64,${b64.replace(/\s+/g, '')}`);
       }
       // The web page: only the hosts in the CSP, CORS mode, no cookies, checked type and size
-      const safe = refpSafeUrl(url, REFP_WEB_IMAGE_HOSTS);
+      const safe = refpSafeUrl(url, typeof refsImageHosts === 'function' ? refsImageHosts() : REFP_WEB_IMAGE_HOSTS);
       if (!safe) return null;
       const res = await refpFetch(safe, { mode: 'cors', cache: 'force-cache' });
       if (!res.ok) return null;
@@ -255,27 +217,48 @@ function refpThumb(canvas) {
       return t.toDataURL('image/jpeg', 0.7);
     }
 
-// Search for `query` and bring back the first picture that really loads. `avoid` holds picture
-// addresses already used (two different results for a combined painting).
-async function refpFindReference(query, { avoid = [] } = {}) {
-      const tried = [];
-      for (const src of refpSources()) {
-        let cands = [];
-        try { cands = await src.search(query); } catch (e) { tried.push(`${src.name}: ${e && e.message || 'failed'}`); continue; }
-        if (!cands.length) { tried.push(`${src.name}: nothing usable`); continue; }
-        for (const c of cands.slice(0, 6)) {
-          const url = c.thumbUrl || c.imageUrl;
-          if (!url || avoid.includes(url) || avoid.includes(c.imageUrl)) continue;
-          try {
-            const img = await refpFetchImageData(url, c.via);
-            const canvas = img && refpToCanvas(img);
-            if (!canvas || Math.min(canvas.width, canvas.height) < 96) continue;
-            return { ...c, query, usedUrl: url, host: refpHostOf(c.pageUrl), imageHost: refpHostOf(url), canvas, thumb: refpThumb(canvas), tried };
-          } catch (e) { /* that one didn't load (CORS, size, type): the next */ }
+// Load one search result as a picture he can paint from (or null if it won't load)
+async function refpLoadItem(item) {
+      const url = item.thumbUrl || item.imageUrl;
+      if (!url) return null;
+      try {
+        const img = await refpFetchImageData(url, item.via);
+        const canvas = img && refpToCanvas(img);
+        if (!canvas || Math.min(canvas.width, canvas.height) < 96) return null;
+        return canvas;
+      } catch (e) {
+        return null;
+      }
+    }
+
+// Search for `query` across the licence-checked sources (a rotating order) and bring back the first picture
+// that passes the licence gate and the risk check and really loads. `excludeSources`: source ids already
+// used (a combined painting takes its two photos from two different sources). `avoid`: picture addresses.
+async function refpFindReference(query, { avoid = [], excludeSources = [], maxPages = 6 } = {}) {
+      const cur = refsCursor(query, { paintableOnly: true, exclude: excludeSources });
+      const skipped = [];
+      for (let n = 0; n < maxPages; n++) {
+        const page = await cur.next();
+        if (!page) break;
+        for (const it of page.items.slice(0, 8)) {
+          if (!refPaintable(it)) { skipped.push(refRiskOk(it).why || 'licence'); continue; }
+          const url = it.thumbUrl || it.imageUrl;
+          if (avoid.includes(url)) continue;
+          const canvas = await refpLoadItem(it);
+          if (!canvas) continue;
+          return { ...it, query, usedUrl: url, host: refpHostOf(it.pageUrl), imageHost: refpHostOf(url), canvas, thumb: refpThumb(canvas), skipped };
         }
-        tried.push(`${src.name}: no picture would load`);
       }
       return null;
+    }
+
+// DuckDuckGo first, where usable, but only to look: its licences are unknown, so he never paints its
+// pixels. Returns a few results to show on the cafe screen and mention in the diary.
+async function refpLookOnDuckDuckGo(query) {
+      const ddg = REFS_SOURCES.find(s => s.id === 'ddg');
+      if (!ddg || refsRestUntil.ddg > Date.now()) return [];
+      const r = await refsSearchSource(ddg, query, 1);
+      return r.items.slice(0, 6);
     }
 
 // --- Turning a photo into an underpainting ------------------------------------------------------------------
@@ -326,14 +309,39 @@ function refpFocus(img) {
     }
 
 // His own crop of a photo onto the painting's shape, nudged so the subject sits off-centre a little
-function refpCompose(img, rng, zoomMax = 1.18) {
+function refpCompose(img, rng, zoomMax = 1.18, { minZoom = 1.06, mirror = false } = {}) {
       const c = artCanvas();
       const f = refpFocus(img);
-      const zoom = 1 + rng() * (zoomMax - 1);
+      // always at least a little reframed (his own crop), more when he reworks a painting
+      const zoom = minZoom + rng() * Math.max(0, zoomMax - minZoom);
       // a third of the way in, toward the side the subject already leans to
       const fx = f.x + (f.x < 0.5 ? 0.06 : -0.06) * (zoom - 1) * 5;
-      refpDrawCover(c.getContext('2d'), img, ART_W, ART_H, { x: fx, y: f.y }, zoom);
+      const ctx = c.getContext('2d');
+      if (mirror) { ctx.translate(ART_W, 0); ctx.scale(-1, 1); }
+      refpDrawCover(ctx, img, ART_W, ART_H, { x: fx, y: f.y }, zoom);
       return c;
+    }
+
+// His own light, season or time of day over the photo's (one of these on every painting)
+const REFP_LIGHTS = ['golden hour', 'dusk', 'winter', 'morning mist', 'summer noon'];
+function refpGrade(C, kind, amount = 1) {
+      const { w, h } = C;
+      for (let y = 0; y < h; y++) {
+        const up = 1 - y / h;
+        for (let x = 0; x < w; x++) {
+          const i = y * w + x;
+          let r = C.r[i], g = C.g[i], b = C.b[i];
+          const v = 0.299 * r + 0.587 * g + 0.114 * b;
+          let nr = r, ng = g, nb = b;
+          if (kind === 'golden hour') { nr = r * 1.1 + 0.05; ng = g * 1.0 + 0.025; nb = b * 0.8; }
+          else if (kind === 'dusk') { nr = r * 0.86 + 0.04; ng = g * 0.76; nb = b * 0.98 + 0.07; }
+          else if (kind === 'winter') { nr = artMix(r, v, 0.45) + 0.03; ng = artMix(g, v, 0.45) + 0.05; nb = artMix(b, v, 0.45) + 0.1; }
+          else if (kind === 'morning mist') { const m = 0.18 + 0.32 * up; nr = artMix(r, 0.84, m); ng = artMix(g, 0.86, m); nb = artMix(b, 0.9, m); }
+          else { nr = r * 1.04 + 0.02; ng = g * 1.03 + 0.02; nb = b * 0.96; const sat = 1.15; nr = v + (nr - v) * sat; ng = v + (ng - v) * sat; nb = v + (nb - v) * sat; }
+          C.r[i] = artClamp01(artMix(r, nr, amount)); C.g[i] = artClamp01(artMix(g, ng, amount)); C.b[i] = artClamp01(artMix(b, nb, amount));
+        }
+      }
+      return C;
     }
 
 // A palette ramp from dark to light: colour for any value
@@ -480,9 +488,13 @@ function refpSceneFromReference(spec) {
       const rng = makeRng(`ref:${spec.seed}`);
       const q = artClamp01(spec.q == null ? 0.5 : spec.q);
       const [A, B] = spec.refImages || [];
+      // A rework (spec.refStrength 2) changes more: a tighter, mirrored crop, stronger light, fewer colours
+      const strong = (spec.refStrength || 1) > 1;
+      const light = spec.refLight || REFP_LIGHTS[Math.floor(rng() * REFP_LIGHTS.length)];
+      const transforms = [strong ? 'his own tighter, mirrored crop' : 'his own crop', 'his own limited palette', `${light} light`, `${spec.medium} brushwork`];
       let C;
       if (!B) {
-        C = artChannels(refpCompose(A, rng));
+        C = artChannels(refpCompose(A, rng, strong ? 1.5 : 1.22, { minZoom: strong ? 1.3 : 1.06, mirror: strong }));
       } else if (spec.refHow === 'split') {
         // A planned split: one photo each side (or sky and land), harmonised into one palette, with a
         // wide, wavering blended seam
@@ -530,7 +542,10 @@ function refpSceneFromReference(spec) {
           }
         }
       }
-      const S = refpSimplify(C, q, rng);
+      refpGrade(C, light, strong ? 1 : 0.6);
+      if (B) transforms.push(spec.refHow === 'split' ? 'two photos joined in a split composition' : 'the subject set into another photo\'s place and light');
+      spec.refTransforms = transforms;
+      const S = refpSimplify(C, strong ? q * 0.4 : q, rng);
       const ref = artCanvas();
       artPutChannels(ref, S.r, S.g, S.b);
       // The horizon: the row with the strongest change in value through the middle band (ink mist sits there)
@@ -544,6 +559,50 @@ function refpSceneFromReference(spec) {
       return { ref, horizon: best, sun: null };
     }
 
+// --- Originality, measured -----------------------------------------------------------------------------------
+// The thresholds: a painting this close to its reference is reworked, and if it is still this close it
+// stays a study (never sold). corr: correlation of the 32x24 value maps (also against the mirrored photo);
+// palette: mean distance between their 6-colour palettes (RGB 0..1).
+const REFP_ORIGINALITY = { maxCorr: 0.9, nearCorr: 0.8, minPalette: 0.07 };
+
+function refpValueMap(img, mirror = false) {
+      const c = artCanvas(32, 24);
+      const ctx = c.getContext('2d');
+      if (mirror) { ctx.translate(32, 0); ctx.scale(-1, 1); }
+      refpDrawCover(ctx, img, 32, 24, { x: 0.5, y: 0.5 }, 1);
+      return artLum(artChannels(c));
+    }
+
+function refpCorr(a, b) {
+      const n = a.length;
+      let ma = 0, mb = 0;
+      for (let i = 0; i < n; i++) { ma += a[i]; mb += b[i]; }
+      ma /= n; mb /= n;
+      let sab = 0, saa = 0, sbb = 0;
+      for (let i = 0; i < n; i++) { const x = a[i] - ma, y = b[i] - mb; sab += x * y; saa += x * x; sbb += y * y; }
+      return saa > 1e-9 && sbb > 1e-9 ? sab / Math.sqrt(saa * sbb) : 0;
+    }
+
+function refpPaletteDistance(imgA, imgB) {
+      const pal = img => { const c = artCanvas(64, 48); refpDrawCover(c.getContext('2d'), img, 64, 48, { x: 0.5, y: 0.5 }, 1); return artPalette(artChannels(c), 6, makeRng('pal')); };
+      const pa = pal(imgA), pb = pal(imgB);
+      const near = (p, set) => Math.min(...set.map(q => Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2])));
+      return (pa.reduce((s, p) => s + near(p, pb), 0) / pa.length + pb.reduce((s, p) => s + near(p, pa), 0) / pb.length) / 2;
+    }
+
+// How close is the painting to its reference photo(s)? The closest one counts.
+function refpOriginality(canvas, refCanvases) {
+      const pv = refpValueMap(canvas);
+      let corr = -1, palette = 9;
+      (refCanvases || []).forEach(rc => {
+        corr = Math.max(corr, refpCorr(pv, refpValueMap(rc)), refpCorr(pv, refpValueMap(rc, true)));
+        palette = Math.min(palette, refpPaletteDistance(canvas, rc));
+      });
+      const T = REFP_ORIGINALITY;
+      const tooClose = corr >= T.maxCorr || (corr >= T.nearCorr && palette < T.minPalette);
+      return { corr: Math.round(corr * 1000) / 1000, palette: Math.round(palette * 1000) / 1000, tooClose };
+    }
+
 // --- What he looks for -------------------------------------------------------------------------------------
 function refpTitleCase(s) {
       return String(s || '').replace(/(^|\s)([a-z])/g, (all, sp, c, i, str) => /^(and|of|in|on|at|the|by|over|with|a|an|under)\b/.test(str.slice(i + sp.length)) && i > 0 ? all : sp + c.toUpperCase());
@@ -553,6 +612,8 @@ function refpTitleCase(s) {
 // practised he is, the more often he dares to combine two.
 function refpChooseProcedural(medium) {
       if (!refpOnline() || Math.random() > REFP_CHANCE) return null;
+      // sometimes one of the photos on his favourites board (js/photobrowse.js)
+      if (typeof phobPlanFromFavourite === 'function' && Math.random() < 0.35) { const f = phobPlanFromFavourite(); if (f) return f; }
       const q = typeof paintQuality === 'function' ? paintQuality(medium) : 0.3;
       const read = (state.webHistory || []).slice(0, 6).flatMap(w => (w.hops || []).map(h => h.title)).filter(Boolean);
       const likes = (state.likes || []).slice(0, 4).map(l => l.topic || l.item).filter(Boolean);
@@ -566,15 +627,21 @@ function refpChooseProcedural(medium) {
     }
 
 // The AI's choice (the paint decision's "reference" field), cleaned up and kept safe
+// Things he never paints from photos (people, brands, characters): the words alone are enough to say no
+function refpQueryRisky(q) {
+      return typeof REFS_PEOPLE !== 'undefined' && [REFS_PEOPLE, REFS_BRANDS, REFS_CHARACTERS].some(re => re.test(String(q || '')));
+    }
+
 function refpPlanFrom(r, avoid = []) {
       if (!r || typeof r !== 'object') return null;
       const query = refpCleanQuery(r.query, avoid);
-      if (!query) return null;
+      if (!query || refpQueryRisky(query) || refpQueryRisky(r.queryB)) return null;
       const combine = /^comb/i.test(String(r.mode || '')) || Boolean(r.queryB);
       const queryB = combine ? refpCleanQuery(r.queryB, avoid) : null;
       const why = typeof r.why === 'string' ? r.why.trim().slice(0, 200) : '';
       if (combine && queryB && queryB !== query) return { mode: 'combine', query, queryB, how: r.how === 'split' ? 'split' : 'subject-setting', why };
-      return { mode: 'single', query, why };
+      const favourite = typeof r.favourite === 'string' && /^fav-[a-z0-9]+$/.test(r.favourite) ? r.favourite : undefined;
+      return { mode: 'single', query, why, ...(favourite ? { favourite } : {}) };
     }
 
 // A visitor's "paint me a lighthouse" / "paint a fox in the desert": what to look up (only the things
@@ -582,13 +649,13 @@ function refpPlanFrom(r, avoid = []) {
 function refpPlanFromRequest(message, visitor) {
       const m = String(message || '');
       const after = m.split(/\b(?:paint|painting|draw|drawing|sketch)\b/i).slice(1).join(' ');
-      if (!after) return null;
+      if (!after || refpQueryRisky(after)) return null;
       let t = after.replace(/\b(an?|the|some|me|us|please|picture|painting|portrait|image|study|of|for|in (?:oils?|watercolou?rs?|acrylics?|gouache|pastels?|ink|charcoal|graphite|pencil))\b/gi, ' ');
       t = t.replace(/\b(oil|oils|acrylic|watercolou?r|gouache|pastel|ink|sumi|charcoal|graphite|pencil|sketch)\b/gi, ' ').replace(/[?!.]+$/, '').trim();
       t = t.replace(/\b(something|anything|whatever|nice|pretty|beautiful|cool|new|lovely|you like|your choice|one)\b/gi, ' ').replace(/\s+/g, ' ').trim();
       if (!t || t.length < 3) return null;
       const parts = t.split(/\s+(?:in|on|at|under|with|and|by|against|inside|over)\s+/i).map(s => refpCleanQuery(s, [visitor])).filter(Boolean);
-      if (!parts.length) return null;
+      if (!parts.length || parts.some(refpQueryRisky)) return null;
       if (parts.length > 1 && parts[0] !== parts[1]) return { mode: 'combine', query: parts[0], queryB: parts[1], how: 'subject-setting', why: `${visitor || 'A visitor'} asked for it.` };
       return { mode: 'single', query: parts[0], why: `${visitor || 'A visitor'} asked for it.` };
     }
@@ -614,35 +681,44 @@ async function refpGatherAtNetNode(plan, medium, { visitor = null } = {}) {
         renderAllUI();
         await waitForArrival(90000);
         await new Promise(r => setTimeout(r, 2500));
-        const a = await refpFindReference(plan.query);
+        // 1. A look at DuckDuckGo for ideas (looking only: its pictures' licences are unknown)
+        let looked = [];
+        try { looked = await refpLookOnDuckDuckGo(plan.query); } catch (e) {}
+        if (looked.length && typeof phobShowOnScreen === 'function') phobShowOnScreen(looked, plan.query);
+        // 2. The photo he paints from: a favourite he saved, or the licence-checked sources
+        let a = null;
+        if (plan.favourite && typeof phobFavouriteToRef === 'function') a = await phobFavouriteToRef(plan.favourite, plan.query);
+        if (!a) a = await refpFindReference(plan.query);
         let b = null;
         if (a && plan.mode === 'combine') {
           state.moodTitle = `Looking up ${plan.queryB} photos`.slice(0, 80);
-          state.speechBubble = `Found "${a.title || plan.query}". Now "${plan.queryB}"...`;
+          state.speechBubble = `Found "${a.title || plan.query}" on ${a.source}. Now "${plan.queryB}", from a different source...`;
           renderAllUI();
           await new Promise(r => setTimeout(r, 2000));
-          b = await refpFindReference(plan.queryB, { avoid: [a.usedUrl, a.imageUrl].filter(Boolean) });
+          // the setting comes from a different source than the subject
+          b = await refpFindReference(plan.queryB, { avoid: [a.usedUrl], excludeSources: [a.sourceId] });
         }
         const refs = [a, b].filter(Boolean);
+        refs.forEach(r => { if (typeof refsReportUse === 'function') refsReportUse(r); });
+        if (refs.length && typeof phobShowOnScreen === 'function') phobShowOnScreen(refs.map(r => ({ ...r, canvas: r.canvas })), plan.query);
         const mode = refs.length === 2 ? 'combine' : 'single';
         const why = plan.why || (visitor ? `${visitor} asked for it.` : '');
-        const srcText = r => `"${r.title || r.query}" on ${r.source}${r.host && r.source !== 'Wikimedia Commons' ? ` (${r.host})` : ''}`;
-        // His browsing history: what he searched and what he found (links only ever shown if https)
+        const srcText = r => `"${r.title || r.query}"${r.author ? ` by ${r.author}` : ''} (${r.source}, ${r.licenceLabel})`;
         state.webHistory.unshift({
           query: plan.mode === 'combine' ? `photos: ${plan.query} + ${plan.queryB}` : `photos: ${plan.query}`,
           time: 'Just now',
-          verdict: refs.length ? `Found reference ${refs.length === 2 ? 'photos' : 'a photo'} for a ${M.title}: ${refs.map(srcText).join(' and ')}.` : 'No picture would load, so I will paint from life instead.',
-          hops: refs.map(r => ({ title: r.title || r.query, url: r.pageUrl, extract: `${r.source}${r.license ? ` · ${r.license}` : ''}` }))
+          verdict: refs.length ? `Found reference ${refs.length === 2 ? 'photos' : 'a photo'} I may paint from for a ${M.title}: ${refs.map(srcText).join(' and ')}.` : 'No freely licensed picture would load, so I will paint from life instead.',
+          hops: refs.map(r => ({ title: r.title || r.query, url: r.pageUrl, extract: `${r.source} · ${r.licenceLabel}${r.author ? ` · ${r.author}` : ''}` }))
         });
         if (state.webHistory.length > MAX_WEB_HISTORY) state.webHistory.length = MAX_WEB_HISTORY;
         if (typeof bumpLifeStat === 'function') bumpLifeStat('searches', plan.mode === 'combine' ? 2 : 1);
-        const fellBack = refs.filter(r => r.source === 'Wikimedia Commons').length;
+        const lookLine = looked.length ? ` I looked at DuckDuckGo's pictures for ideas first, but nobody knows their licences, so I don't paint from those.` : '';
         const diary = !refs.length
-          ? `Dear Diary, I went to the NetNode cafe to find a reference photo of "${plan.query}" for a ${M.title}${why ? ` (${why.replace(/\.$/, '')})` : ''}, but no picture would load. I'll paint something I can see instead.`
-          : `Dear Diary, at the NetNode cafe I searched DuckDuckGo for ${mode === 'combine' ? `"${plan.query}" and "${plan.queryB}"` : `"${plan.query}"`} to paint from${why ? `, because ${why.replace(/^\w/, c => c.toLowerCase()).replace(/\.$/, '')}` : ''}. `
-            + `I found ${refs.map(srcText).join(' and ')}.${fellBack ? ` ${fellBack === refs.length ? 'DuckDuckGo had no picture I could use, so I took it from Wikimedia Commons, where photos are free to use.' : 'One came from Wikimedia Commons, because DuckDuckGo had nothing I could use.'}` : ''} `
-            + (mode === 'combine' ? `I'll combine them into one picture of my own: ${plan.how === 'split' ? 'a split composition with the edges blended' : `the ${plan.query} from one, in the light and colours of the other`}.` : 'I\'ll paint it in my own way, not copy it.')
-            + (plan.mode === 'combine' && mode === 'single' && refs.length ? ` The second search ("${plan.queryB}") found nothing usable, so it will be just the one.` : '');
+          ? `Dear Diary, I went to the NetNode cafe to find a reference photo of "${plan.query}" for a ${M.title}${why ? ` (${why.replace(/\.$/, '')})` : ''}, but no freely licensed picture would load.${lookLine} I'll paint something I can see instead.`
+          : `Dear Diary, at the NetNode cafe I searched for ${mode === 'combine' ? `"${plan.query}" and "${plan.queryB}"` : `"${plan.query}"`} to paint from${why ? `, because ${why.replace(/^\w/, c => c.toLowerCase()).replace(/\.$/, '')}` : ''}.${lookLine} `
+            + `I found ${refs.map(srcText).join(' and ')}: free to use, so a painting after ${refs.length > 1 ? 'them' : 'it'} can be sold with the credit. `
+            + (mode === 'combine' ? `I'll combine them into one picture of my own: ${plan.how === 'split' ? 'a split composition with the edges blended' : `the ${plan.query} from one, in the light and colours of the other`}.` : 'I\'ll paint it in my own way: my own crop, my own colours and light, not a copy.')
+            + (plan.mode === 'combine' && mode === 'single' && refs.length ? ` The second search ("${plan.queryB}") found nothing usable from another source, so it will be just the one.` : '');
         state.diaryEntries.unshift({
           time: visitor ? `Reference for ${visitor}` : 'Finding a Reference', location: 'NetNode Cyber Cafe', mood: `🔎 Looked up "${plan.query}"${mode === 'combine' ? ` + "${plan.queryB}"` : ''}`.slice(0, 80),
           vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '', text: diary
@@ -681,19 +757,43 @@ function refpRecordInfo(found) {
         mode: found.mode === 'combine' ? 'combined' : 'single',
         how: found.how || null,
         sources: found.refs.map(r => ({
-          query: String(r.query || '').slice(0, 60), source: String(r.source || '').slice(0, 40), host: String(r.host || '').slice(0, 80),
-          pageUrl: refpSafeUrl(r.pageUrl) || '', imageUrl: refpSafeUrl(r.imageUrl || r.usedUrl) || '', title: String(r.title || '').slice(0, 140),
-          license: String(r.license || '').slice(0, 60), artist: String(r.artist || '').slice(0, 80)
+          query: String(r.query || '').slice(0, 60), source: String(r.source || '').slice(0, 60), sourceId: String(r.sourceId || '').slice(0, 20),
+          host: String(r.host || '').slice(0, 80), pageUrl: refpSafeUrl(r.pageUrl) || '', imageUrl: refpSafeUrl(r.imageUrl || r.usedUrl) || '',
+          title: String(r.title || '').slice(0, 140), author: String(r.author || '').slice(0, 80),
+          licence: REFS_OK_LICENCES.includes(r.licence) ? r.licence : null, licenceLabel: String(r.licenceLabel || '').slice(0, 40), licenceUrl: refpSafeUrl(r.licenceUrl) || ''
         }))
       };
     }
 
-// The credit line: "After a reference photo: "…" (Wikimedia Commons, CC BY-SA 4.0)" — plain text
+// Does one recorded source pass the licence gate today? (old records without licence data never do)
+function refpSourceOk(src) {
+      return Boolean(src && typeof refLicenceOk === 'function' && refLicenceOk({ licence: src.licence, author: src.author, pageUrl: src.pageUrl }));
+    }
+
+function refpPublicDomain(src) {
+      return ['pd', 'pdm', 'cc0'].includes(src && src.licence);
+    }
+
+// One source's credit: after "Title" by Author, CC BY 4.0, https://… / based on a public-domain image …
+function refpCreditPart(s) {
+      const name = `"${s.title || s.query}"${s.author ? ` by ${s.author}` : ''}`;
+      if (refpPublicDomain(s)) return `based on a public-domain image, ${name} (${s.source}${s.licenceLabel ? `, ${s.licenceLabel}` : ''}, ${s.pageUrl})`;
+      return `after ${name}, ${s.licenceLabel || (REFS_LICENCE_LABEL[s.licence] || 'licence unknown')}, ${s.pageUrl} (${s.source})`;
+    }
+
+// A CC BY-SA reference means the painting itself is shared under CC BY-SA 4.0
+function refpShareAlike(m) {
+      return Boolean(m && m.reference && Array.isArray(m.reference.sources) && m.reference.sources.some(s => s.licence === 'by-sa'));
+    }
+
+// The credit line (plain text): Museum label, website listing, diary
 function refpCreditLine(m) {
       const ref = m && m.reference;
       if (!ref || !Array.isArray(ref.sources) || !ref.sources.length) return '';
-      const one = s => `"${s.title || s.query}" (${[s.source === 'Wikimedia Commons' ? 'Wikimedia Commons' : (s.host || s.source), s.artist, s.license].filter(Boolean).join(', ')})`;
-      return `${ref.sources.length > 1 ? 'After two reference photos' : 'After a reference photo'}: ${ref.sources.map(one).join(' and ')}`.slice(0, 300);
+      let line = `${ref.sources.length > 1 ? 'Painted from two reference photos' : 'Painted from a reference photo'}: ${ref.sources.map(refpCreditPart).join('; and ')}.`;
+      if (refpShareAlike(m)) line += ' This painting is shared under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).';
+      if (m.study) line += ' A study, not for sale.';
+      return line.slice(0, 600);
     }
 
 // The same credit as HTML for the Museum viewer: everything escaped, links only to checked https pages
@@ -701,14 +801,30 @@ function refpCreditHtml(m) {
       const ref = m && m.reference;
       if (!ref || !Array.isArray(ref.sources) || !ref.sources.length) return '';
       const thumbs = (paintingImages()[m.id] && paintingImages()[m.id].refs) || [];
+      const link = (href, text) => { const u = refpSafeUrl(href); return u ? `<a href="${escapeHtml(u)}" target="_blank" rel="noopener noreferrer" class="text-sky-300 hover:underline">${escapeHtml(text)}</a>` : escapeHtml(text); };
       const items = ref.sources.map((s, i) => {
-        const href = refpSafeUrl(s.pageUrl);
-        const name = escapeHtml(s.title || s.query);
-        const where = escapeHtml([s.source === 'Wikimedia Commons' ? 'Wikimedia Commons' : (s.host || s.source), s.artist, s.license].filter(Boolean).join(', '));
         const thumb = /^data:image\/jpeg;base64,[a-z0-9+/=]+$/i.test(String(thumbs[i] || '')) ? `<img src="${escapeHtml(thumbs[i])}" alt="Reference photo ${i + 1}" class="w-16 h-12 object-cover rounded border border-slate-700">` : '';
-        return `<span class="inline-flex items-center gap-1.5">${thumb}${href ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" class="text-sky-300 hover:underline">"${name}"</a>` : `"${name}"`} <span class="text-slate-400">(${where})</span></span>`;
+        const lic = s.licenceUrl ? link(s.licenceUrl, s.licenceLabel || s.licence || '') : escapeHtml(s.licenceLabel || s.licence || 'licence unknown');
+        const pre = refpPublicDomain(s) ? 'based on a public-domain image,' : 'after';
+        return `<span class="inline-flex items-center gap-1.5">${thumb}<span>${pre} ${link(s.pageUrl, `"${s.title || s.query}"`)}${s.author ? ` by ${escapeHtml(s.author)}` : ''}, ${lic} <span class="text-slate-400">(${escapeHtml(s.source)})</span></span></span>`;
       });
-      return `<div class="text-2xs text-slate-300 flex flex-wrap items-center justify-center gap-2">${ref.sources.length > 1 ? 'After two reference photos' : 'After a reference photo'}${ref.mode === 'combined' ? (ref.how === 'split' ? ' (split composition)' : ' (subject from one, setting from the other)') : ''}: ${items.join(' <span class="text-slate-500">+</span> ')}</div>`;
+      const o = m.originality;
+      const score = o && Number.isFinite(o.corr) ? ` · similarity ${escapeHtml(o.corr.toFixed(2))}, palette distance ${escapeHtml((o.palette || 0).toFixed(2))}` : '';
+      return `<div class="text-2xs text-slate-300 flex flex-wrap items-center justify-center gap-2">${ref.sources.length > 1 ? 'Painted from two reference photos' : 'Painted from a reference photo'}${ref.mode === 'combined' ? (ref.how === 'split' ? ' (split composition)' : ' (subject from one, setting from the other)') : ''}: ${items.join(' <span class="text-slate-500">+</span> ')}</div>`
+        + (refpShareAlike(m) ? `<div class="text-2xs text-slate-300">This painting is shared under ${link('https://creativecommons.org/licenses/by-sa/4.0/', 'CC BY-SA 4.0')}.</div>` : '')
+        + `<div class="text-2xs text-slate-400">${m.study ? 'A study, not for sale (too close to its reference).' : 'His own composition'}${score}</div>`;
+    }
+
+// The website gate: may this painting be sold? Paintings from life (no reference) always may; one from a
+// reference only if it is not a study and every source has licence data that passes the gate today.
+function refpSellable(m) {
+      if (!m) return { ok: false, why: 'no painting' };
+      if (m.study) return { ok: false, why: `"${m.title}" is a study that stayed too close to its reference photo. It stays in my Museum, not for sale.` };
+      const fromRef = m.subject === 'reference' || Boolean(m.reference);
+      if (!fromRef) return { ok: true, why: '' };
+      const srcs = m.reference && Array.isArray(m.reference.sources) ? m.reference.sources : [];
+      if (!srcs.length || !srcs.every(refpSourceOk)) return { ok: false, why: `I don't have clear licence details for the photo behind "${m.title}", so I won't sell it.` };
+      return { ok: true, why: '' };
     }
 
 // The tiny copies of the reference photos, kept with the painting's pictures (newest REFP_KEEP_THUMBS only)
@@ -722,5 +838,7 @@ function refpStoreThumbs(id, found) {
 
 // The paint decision's line in the AI prompt (js/agent.js)
 function refpPromptHint() {
-      return `"reference": null OR {"mode": "single|combine", "query": "2-5 plain words to search for a photo of what to paint, e.g. lighthouse in fog (never anything about a visitor)", "queryB": "combine only: a second, different search for the setting, light or palette", "how": "subject-setting|split", "why": "1 sentence"} (online you can look up live reference photos at the NetNode cafe: paint from one, or combine two into one original picture; null paints one of your subjects from life)`;
+      const favs = typeof phobFavourites === 'function' ? phobFavourites().filter(f => f.paintable).slice(0, 5) : [];
+      const favLine = favs.length ? ` Free-to-use photos on your favourites board you could paint from (put the id in "favourite"): ${favs.map(f => `${f.id} "${f.title.slice(0, 50)}"`).join('; ')}.` : '';
+      return `"reference": null OR {"mode": "single|combine", "query": "2-5 plain words to search for a photo of what to paint, e.g. lighthouse in fog (never anything about a visitor)", "queryB": "combine only: a second, different search for the setting, light or palette", "how": "subject-setting|split", "favourite": null OR "a favourite's id", "why": "1 sentence"} (online you can look up live reference photos at the NetNode cafe: paint from one, or combine two into one original picture; null paints one of your subjects from life; you only paint from photos whose licence allows it, never of people, brands or famous characters, and always change them into your own picture)${favLine}`;
     }

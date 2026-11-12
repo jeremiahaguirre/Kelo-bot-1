@@ -534,7 +534,7 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
         state.proceduralMotion = { headPitch: 0.05, headYawSpeed: 0.8, headTiltAmp: 0.15, armWaveAmp: 0.45, armRaiseOffset: -0.9, bodyBounceAmp: 0.02, spinSpeed: 0, crouchOffset: 0, sparkBurst: false, clip: 'paint' };
         renderAllUI();
         const t0 = Date.now();
-        const canvas = await renderPaintingInMedium(spec, {
+        let canvas = await renderPaintingInMedium(spec, {
           progress: async (c, frac) => {
             showOnEasel(c);
             const wait = Math.max(16, t0 + frac * PAINT_MINUTES - Date.now());
@@ -543,6 +543,25 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
         });
         showOnEasel(canvas);
         await new Promise(r => setTimeout(r, 1500));
+        // From a photo: is it his own picture, or too close to the photo? (js/refpaint.js) Too close: he
+        // reworks it with stronger changes; still too close: it stays a study in his Museum, never sold.
+        let originality = null, study = false;
+        if (found) {
+          const refCanvases = found.refs.map(r => r.canvas);
+          originality = refpOriginality(canvas, refCanvases);
+          if (originality.tooClose) {
+            const first = originality;
+            state.speechBubble = 'Hmm. That is too close to the photo. I\'ll rework it: tighter, flipped, a different light.';
+            renderAllUI();
+            Object.assign(spec, { refStrength: 2, seed: spec.seed + '-rework' });
+            canvas = await renderPaintingInMedium(spec, { progress: async c => { showOnEasel(c); await new Promise(r => setTimeout(r, 40)); } });
+            showOnEasel(canvas);
+            originality = { ...refpOriginality(canvas, refCanvases), reworked: true, first };
+            study = originality.tooClose;
+          }
+          originality.transforms = (spec.refTransforms || []).slice(0, 6);
+          originality.thresholds = { ...REFP_ORIGINALITY };
+        }
         // What it used up: a canvas or sheet, some paint, and solvent or fixative
         const used = [];
         ['surface', 'paint', 'medium'].forEach(role => {
@@ -557,16 +576,17 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
         const avg = artCanvas(1, 1);
         avg.getContext('2d').drawImage(canvas, 0, 0, 1, 1);
         const px = avg.getContext('2d').getImageData(0, 0, 1, 1).data;
-        const title = found ? refpTitle(found, spec) : paintTitle(spec);
+        let title = found ? refpTitle(found, spec) : paintTitle(spec);
+        if (study && !/^Study/.test(title)) title = `Study: ${title}`.slice(0, 60);
         const record = {
           wallId: id, id, kind: 'art', medium, subject: found ? 'reference' : subject, title, text: title, on: M.on, size: paintSizeLabel(medium),
           subjectLabel: S.label.replace(/\bmy\b/g, 'his').replace(/\bMy\b/g, 'His'), season: spec.season, weather: spec.weather,
           palette: ['#' + [px[0], px[1], px[2]].map(v => v.toString(16).padStart(2, '0')).join('')],
           skill: Math.round(spec.q * 100), level, seed: id, at: Date.now(), place: S.place, for: visitor || null,
           // he keeps his very first in each medium, and now and then one he loves
-          keep: firstInMedium || (spec.q > 0.4 && Math.random() < 0.12),
+          keep: firstInMedium || study || (spec.q > 0.4 && Math.random() < 0.12),
           // where the reference photos came from: the credit stays with the painting (js/refpaint.js)
-          ...(found ? { reference: refpRecordInfo(found) } : {})
+          ...(found ? { reference: refpRecordInfo(found), originality, study } : {})
         };
         if (found) refpStoreThumbs(id, found);
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
@@ -584,7 +604,7 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
           : spec.q < 0.45 ? 'It is getting better. Some parts work, some I would do again.'
             : spec.q < 0.75 ? 'I am starting to understand the medium. The light looks right.' : 'I think it is genuinely good. The paint does what I ask now.';
         const forWho = visitor ? ` ${visitor} asked me for it.` : '';
-        const credit = found ? ` ${refpCreditLine(record)}.` : '';
+        const credit = found ? ` ${refpCreditLine(record)}${study ? ' Even after reworking it, it stayed too close to the photo, so it is a study for my Museum, not for sale.' : originality && originality.reworked ? ' The first try was too close to the photo, so I reworked it until it was my own.' : ''}` : '';
         const result = `I painted "${title}", ${/^[aeiou]/i.test(M.title) ? 'an' : 'a'} ${M.title} of ${S.label} (${record.size}, ${M.on.toLowerCase()}).${forWho}${credit} ${verdict}${record.keep ? ' I\'m keeping this one.' : ''}`;
         state.speechBubble = `"${title}" is finished and hanging in my Museum.${ranOut.length ? ` That used the last of my ${ranOut.join(' and ')}.` : ''}`;
         state.changedLatelySummary = `Painted "${title}" (${M.title})`;
@@ -690,7 +710,8 @@ function answerPaintRequest(ask, visitor) {
       const M = PAINT_MEDIA[medium];
       // "Paint me a lighthouse": not one of his own subjects, so he looks up a reference photo first
       const reference = !ask.subject && typeof refpPlanFromRequest === 'function' && refpOnline() ? refpPlanFromRequest(ask.text, visitor) : null;
-      let note = reference ? ` I'll find ${reference.mode === 'combine' ? `reference photos of ${reference.query} and ${reference.queryB}` : `a reference photo of ${reference.query}`} at NetNode first and paint from ${reference.mode === 'combine' ? 'them' : 'it'}.` : '';
+      const risky = !ask.subject && !reference && typeof refpQueryRisky === 'function' && refpQueryRisky(String(ask.text || '').split(/\b(?:paint|painting|draw|drawing|sketch)\b/i).slice(1).join(' '));
+      let note = risky ? ` I don't paint people, brands or famous characters from photos, so I'll paint something of my own instead.` : reference ? ` I'll find ${reference.mode === 'combine' ? `reference photos of ${reference.query} and ${reference.queryB}` : `a reference photo of ${reference.query}`} at NetNode first and paint from ${reference.mode === 'combine' ? 'them' : 'it'}.` : '';
       if (!reference && subject === 'wildlife' && !paintSubjectAvailable('wildlife')) note = ' I haven\'t seen any deer here yet, so it will be the meadow where they would graze.';
       const S = reference ? { label: reference.mode === 'combine' ? `${reference.query} in ${reference.queryB}` : reference.query } : PAINT_SUBJECTS[subject];
       const busy = state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping;

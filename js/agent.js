@@ -379,6 +379,11 @@ const state = {
   "soundMuted": false,
   "shop": { "listings": [], "sold": [], "earnings": 0, "builtAt": null },
   "workshop": { "known": {}, "made": [], "jobs": 0, "programs": {}, "log": [], "asked": {}, "gadgetUses": 0 },
+  // Shop-maker kinds, things, orders and uses (js/shopmaker.js); listed here so a reload restores them
+  "makerKinds": {},
+  "makerThings": {},
+  "makerOrders": [],
+  "makerUses": {},
   "printer": { "setUp": false, "skill": 0, "prints": 0, "fails": 0, "spools": [], "loadedSpoolId": null, "lessons": {}, "history": [], "designs": {}, "welcomeSent": false }
 };
 

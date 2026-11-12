@@ -24,7 +24,7 @@
 const ASSEMBLY_SITES = {
   airfield: { x: -27, z: 9.5, rotY: -Math.PI / 2, name: 'his airfield build site' },
   beach: { x: -8.5, z: 8.3, rotY: 0, name: 'his boat-building spot on the beach' },
-  benchFallback: { x: 1.9, z: -7.4, rotY: 0, y: 0, top: 0.92, standX: 1.9, standZ: -6.2, name: 'the bench by the welding studio' }
+  benchFallback: { x: MAP_LAYOUT.workBench.x, z: MAP_LAYOUT.workBench.z - 1.2, rotY: 0, y: 0, top: 0.92, standX: MAP_LAYOUT.workBench.x, standZ: MAP_LAYOUT.workBench.z, name: 'the bench by the welding studio' }
 };
 // The airfield stands on new land along the shore west of town (the owner's permission): three
 // finished patches of fill, made with the same code as the land he makes from dug dirt

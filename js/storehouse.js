@@ -10,7 +10,7 @@
 // the things on the shelves are shown at their own size (shelfHolderFor).
 const STOREHOUSE_SCALE = 1.6;
 const STOREHOUSE_MODEL = { w: 5.2, d: 3.6, wallH: 2.6 };
-const STOREHOUSE = { x: 7.6, z: -8.4, w: 5.2 * STOREHOUSE_SCALE, d: 3.6 * STOREHOUSE_SCALE, wallH: 2.6 * STOREHOUSE_SCALE };
+const STOREHOUSE = { x: MAP_LAYOUT.storehouse.x, z: MAP_LAYOUT.storehouse.z, w: 5.2 * STOREHOUSE_SCALE, d: 3.6 * STOREHOUSE_SCALE, wallH: 2.6 * STOREHOUSE_SCALE };
 const SHELF_SLOT = 0.68;
 const ITEM_FIT = 0.62; // the most an item can measure and still fit on a shelf
 // The stairwell down to the basements, in the middle of the floor (local to the Storehouse).

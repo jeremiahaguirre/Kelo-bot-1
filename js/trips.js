@@ -157,6 +157,7 @@ const TRIP_GRID = { x0: WORLD_MIN_X, z0: WORLD_MIN_Z, step: 2, nx: Math.round((W
 function tripOnRoad(x, z) {
       if (typeof inParkingArea === 'function' && inParkingArea(x, z, 1)) return true;
       if (x > TOWN.minX && x < TOWN.maxX && z > TOWN.minZ && z < TOWN.maxZ) return true;
+      if (typeof onKeloRoad === 'function' && onKeloRoad(x, z, 0.5)) return true;
       return (state.worldEdits || []).some(e => {
         if (e.type !== 'road') return false;
         const dx = e.toX - e.x, dz = e.toZ - e.z, len2 = dx * dx + dz * dz || 1;
@@ -281,6 +282,17 @@ function canDriveThere(v, target) {
       if (tripLoadOf(v) || tripCargoOn(v)) return false; // strapped on a trailer, or a trailer itself
       if (key.includes('trailer') || key === 'lowboy') return false;
       const from = state.riding === v.id ? state.botPos : { x: v.x, z: v.z };
+      // Over the range it goes by the pass (pathPassRoute, js/scene.js): each leg must be drivable
+      const pass = typeof pathPassRoute === 'function' && key !== 'excavator' ? pathPassRoute(from, target) : null;
+      if (pass) {
+        const legs = [from, ...pass, target];
+        return legs.every((p, i) => !i || canDriveLeg(key, legs[i - 1], p));
+      }
+      return canDriveLeg(key, from, target);
+    }
+
+// Can this kind of vehicle drive straight from a to b?
+function canDriveLeg(key, from, target) {
       const steps = Math.max(2, Math.ceil(Math.hypot(target.x - from.x, target.z - from.z) / 2));
       if (key === 'excavator' && steps * 2 > VEHICLE_TERRAIN.excavator.reach) return false;
       let a = null;
@@ -636,7 +648,7 @@ function vehicleLocationLabel(v) {
       if (TRAILER_SLOTS.some(([x, z]) => Math.hypot(v.x - x, v.z - z) < 4)) return 'the trailer row by the yard';
       if (DOCK_SLOTS.some(([x, z]) => Math.hypot(v.x - x, v.z - z) < 3)) return 'the dock';
       if (v.z > 9.2) return 'out on the lake';
-      if (v.z < -12) return 'up the mountain';
+      if (v.z < valleyFootZ(v.x)) return 'up the mountain';
       const near = Object.values(TOWN_LOCATIONS).filter(l => l.building).sort((a, b) => Math.hypot(a.x - v.x, a.z - v.z) - Math.hypot(b.x - v.x, b.z - v.z))[0];
       return near ? `near the ${near.building}` : 'out in the valley';
     }

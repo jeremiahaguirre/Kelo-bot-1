@@ -5,7 +5,7 @@
 
 const buildQueue = [];
 // The welding table top's centre (js/weldstudio.js builds the table around it)
-const WELD_TABLE_TOP = { x: -1.2, z: -8.2 };
+const WELD_TABLE_TOP = { x: MAP_LAYOUT.weld.x, z: MAP_LAYOUT.weld.z };
 let workshopRunning = false;
 let benchWorkpiece = null;
 

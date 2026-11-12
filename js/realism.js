@@ -1226,6 +1226,7 @@ function grassFloorRects() {
       const out = [];
       if (typeof minimapBuildings === 'function') minimapBuildings().forEach(b => out.push({ minX: b.x - b.w / 2, maxX: b.x + b.w / 2, minZ: b.z - b.d / 2, maxZ: b.z + b.d / 2 }));
       if (typeof WORKSHOP_LAND !== 'undefined') [WORKSHOP_LAND.pad, WORKSHOP_LAND.lane, WORKSHOP_LAND.hangar].forEach(r => r && out.push(r));
+      if (typeof keloRoadRects === 'function') out.push(...keloRoadRects());
       if (typeof aggregatePlantSite === 'function') {
         const S = aggregatePlantSite();
         out.push({ minX: S.x - S.w / 2, maxX: S.x + S.w / 2, minZ: S.z - S.d / 2, maxZ: S.z + S.d / 2 });

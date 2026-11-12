@@ -8,7 +8,7 @@
 // front wall, so you can look in on him from the House camera.
 
 // Centre of the house walls in world space; the house faces south (+z) toward town
-const HOUSE = { x: -9.5, z: -8.7, w: 8.4, d: 6.3, wallH: 3.6, floorY: 0.02, doorW: 1.8, doorH: 3.1 };
+const HOUSE = { x: MAP_LAYOUT.house.x, z: MAP_LAYOUT.house.z, w: 8.4, d: 6.3, wallH: 3.6, floorY: 0.02, doorW: 1.8, doorH: 3.1 };
 let houseLights = null;
 
 // A straight wall along local x, with rectangular holes cut for windows and doors.
@@ -361,8 +361,8 @@ function buildKeloHouse3D() {
       [-0.2, 0.2].forEach(dz => mesh(new THREE.CylinderGeometry(0.11, 0.14, 0.42, 10), potMat, chimX, ridgeY + 1.27, chimZ + dz));
 
       // --- Inside ---------------------------------------------------------------------------
-      // Bed: Kelo-1 lies at (-11.6, 0.95, -8.8) with his head toward the back wall
-      const bedX = -11.6 - HOUSE.x, bedFoot = -8.4 - HOUSE.z, bedHead = -d / 2 + t + 0.06;
+      // Bed: Kelo-1 lies at the bed pin (house-local -2.1, -0.1; TOWN_LOCATIONS.bed) with his head toward the back wall
+      const bedX = -2.1, bedFoot = 0.3, bedHead = -d / 2 + t + 0.06;
       const bedLen = bedFoot - bedHead, bedMid = (bedFoot + bedHead) / 2, bedW = 1.8;
       box(bedW + 0.1, 0.3, bedLen, darkWood, bedX, floorY + 0.3, bedMid);
       [[-1, bedHead + 0.1], [1, bedHead + 0.1], [-1, bedFoot - 0.1], [1, bedFoot - 0.1]].forEach(([s, z]) => box(0.12, 0.2, 0.12, darkWood, bedX + s * (bedW / 2 - 0.02), floorY + 0.1, z));
@@ -469,8 +469,8 @@ function buildKeloHouse3D() {
         dockGlow.emissiveIntensity = (home ? 0.9 : 0.55) + Math.sin(performance.now() / 600) * 0.3;
       };
 
-      // Couch: he stands at (-7.5, -6.8), just in front of the seat, looking out the front windows
-      const cX = -7.5 - HOUSE.x, cZ = -7.8 - HOUSE.z, cW = 2.4;
+      // Couch: he stands at the couch pin (house-local 2.0, 1.9), just in front of the seat, looking out the front windows
+      const cX = 2.0, cZ = 0.9, cW = 2.4;
       const couchMat = fabricMat(0xf59e0b), cushionMat = fabricMat(0xfbbf24);
       box(cW, 0.42, 0.95, couchMat, cX, floorY + 0.33, cZ);
       box(cW, 0.75, 0.25, couchMat, cX, floorY + 0.8, cZ - 0.37);

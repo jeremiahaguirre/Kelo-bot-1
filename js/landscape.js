@@ -45,6 +45,8 @@ function offLimits(x, z, pad = 0) {
       if (typeof inParkingArea === 'function' && inParkingArea(x, z, pad)) return 'the vehicle yard';
       if (Math.hypot(x - DISPOSAL_PIT.x, z - DISPOSAL_PIT.z) < DISPOSAL_PIT.r + 1 + pad) return 'the Disposal Pit';
       if (z > 9.2) return 'the lake';
+      // His roads and paths stay clear (js/roads.js)
+      if (typeof keloRoadAt === 'function') { const road = keloRoadAt(x, z, pad); if (road) return road.name; }
       // The runway field and its taxiway are kept for the runway (only a runway job may work on them)
       if (typeof onRunwayReserve === 'function' && onRunwayReserve(x, z, pad) && !runwayJobActive) return 'the runway field';
       return null;
@@ -313,8 +315,11 @@ function removeEditMesh(id) {
     }
 
 // A chopped tree is gone from the valley (and from the obstacles he walks around)
-function removeValleyTree(treeId) {
-      const tree = valleyTrees.find(t => t.id === treeId);
+function removeValleyTree(treeId, x, z) {
+      // (by where it stood when he chopped it, if that is known: the seeded trees' order can change when
+      // the map's layout does, so an id alone may name a different tree in an older save)
+      const at = Number.isFinite(x) && Number.isFinite(z) ? valleyTrees.find(t => !t.removed && Math.hypot(t.x - x, t.z - z) < 0.4) : null;
+      const tree = at || (Number.isFinite(x) ? null : valleyTrees.find(t => t.id === treeId));
       if (!tree) return;
       scene.remove(tree.group);
       worldObstacles = worldObstacles.filter(o => o !== tree.obstacle);
@@ -679,7 +684,7 @@ window.addEventListener('DOMContentLoaded', () => {
     landscapeGroup = new THREE.Group();
     scene.add(landscapeGroup);
     state.worldEdits.forEach(e => {
-      if (e.type === 'chop') removeValleyTree(e.treeId);
+      if (e.type === 'chop') removeValleyTree(e.treeId, e.x, e.z);
       renderEdit(e);
     });
     if (state.worldEdits.some(e => e.type === 'hill')) state.worldEdits.filter(e => e.type === 'hill').forEach(hillTerrainRefresh);

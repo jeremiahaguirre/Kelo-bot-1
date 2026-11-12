@@ -31,21 +31,45 @@ function getAnalyticalGroundHeight(x, z) {
         // Past the beach the lake bed drops away: deep water a few steps out (water is at -0.18)
         if (z > 9.2) h -= Math.min(5.5, (z - 9.2) * 0.75);
       }
-      // Northern & Eastern Alpine Mountain Massif elevation (z < -12)
-      if (z < -12) {
-        const depthIntoMtn = Math.abs(z + 12);
+      // Northern & Eastern Alpine Mountain Massif elevation, from the valley's foot (valleyFootZ: z -12,
+      // and further north behind the town, where the north row stands); the col over the Workshop's pass
+      // lowers both the range and the eastern cliff (passSaddle)
+      const foot = valleyFootZ(x), sad = 1 - 0.8 * passSaddle(x, z);
+      if (z < foot) {
+        const depthIntoMtn = foot - z;
         const ridgeWave = Math.cos(x * 0.16) * 2.2 + Math.sin(x * 0.08) * 3.0;
         const mtnRise = Math.pow(depthIntoMtn, 1.32) * 0.42 + Math.max(0, ridgeWave) * (depthIntoMtn * 0.12);
-        h += mtnRise;
+        h += mtnRise * sad;
       }
       // Eastern cliff overlook rise. East of the Workshop (the land added for the concrete plant) it
       // climbs out of the meadow over a few units instead of standing up as a wall at z -6.
       if (x > 14 && z < -6) {
         const east = Math.max(0, Math.min(1, (x - 58) / 4)), t = Math.min(1, (-6 - z) / 5);
-        h += (x - 14) * 0.28 * Math.max(0.2, Math.abs(z) / 14) * (1 - east + east * t * t * (3 - 2 * t));
+        h += (x - 14) * 0.28 * Math.max(0.2, Math.abs(z) / 14) * (1 - east + east * t * t * (3 - 2 * t)) * sad;
       }
       // The valley floor never dips below the waterline; the lake bed does
       return groundAboveNatural(x, z, z > 7.5 ? h : Math.max(-0.25, h));
+    }
+
+// Map layout (2026-11): behind the town the mountain's foot is further north (z -19 instead of -12,
+// x -45 to 14, easing back by x -55 and x 22), so the town's north row stands on level ground with a
+// proper street in front of it. East of x 22 (the hangar, the Workshop, the Disposal Pit) it is unchanged.
+const VALLEY_FOOT = { z: -12, townZ: -19, x0: -45, x1: 14, ease: 9 };
+function valleyFootZ(x) {
+      const F = VALLEY_FOOT;
+      const a = Math.min(1, Math.max(0, (x - (F.x0 - F.ease)) / F.ease)), b = Math.min(1, Math.max(0, (F.x1 + F.ease - x) / F.ease));
+      const k = Math.min(a, b), s = k * k * (3 - 2 * k);
+      return F.z + (F.townZ - F.z) * s;
+    }
+// The col over the range behind the Workshop: 1 along the pass (x about 52 to 72, z -24 to -100), easing
+// to 0 over 14 units round it; the range and the cliff there are lowered to a fifth of their height
+const PASS_SADDLE = { x0: 52, x1: 72, z0: -100, z1: -24, ease: 14 };
+function passSaddle(x, z) {
+      const P = PASS_SADDLE;
+      if (z > P.z1 + P.ease) return 0;
+      const dx = Math.max(0, P.x0 - x, x - P.x1), dz = Math.max(0, P.z0 - z, z - P.z1);
+      const k = Math.max(0, 1 - Math.hypot(dx, dz) / P.ease);
+      return k * k * (3 - 2 * k);
     }
 
 // What is made of the natural ground: the runway field and the Workshop's levelled land, holes,
@@ -322,10 +346,11 @@ function buildAlpineTerrainAndMountains3D() {
           if (vy > 8.5) c.lerp(snowC, snowHoldsOn(nrm.getY(i)) * Math.min(1, (vy - 8.5) / 0.6 + 0.4));
         }
         else if (vz > 8.2) c.setHex(0xc8b48c); // Sandy beach
-        else if (Math.abs(vx + 2) < 2.0 && vz > -10 && vz < 9) c.setHex(0x8f7656); // Dirt trail
         else c.setHex(0x5d7d33).lerp(new THREE.Color(0x46662a), Math.max(0, wobble)).lerp(new THREE.Color(0x87884a), dry * 0.55); // Meadow grass, drier in patches
         // Grass thins into bare ground and scree where the slope starts to climb
         if (vy > 1.6 && vy <= 2.6) c.lerp(new THREE.Color(0x76705f), (vy - 1.6) / 1.0 * 0.7);
+        // His roads and paths (js/roads.js) are worn into the ground
+        if (vy < 2.6 && vz < 8.2) keloRoadColour(c, vx, vz);
         colors.push(c.r, c.g, c.b);
       }
       groundGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
@@ -360,6 +385,8 @@ function buildAlpineTerrainAndMountains3D() {
         // Not on a near-vertical face (the cliffs and the Workshop's cut behind town) and not on the
         // Workshop's or hangar's levelled land and its cut slopes, where a tree would hang in the air
         if (groundTooSteep(tx, tz, 1.2) || (typeof inWorkshopSite === 'function' && inWorkshopSite(tx, tz, 3))) continue;
+        // (only on the mountain itself, not on the valley floor behind the town where the north row stands)
+        if (tz > valleyFootZ(tx) - 1.5 || inTown(tx, tz)) continue;
         const ty = groundUnderTrunk(tx, tz);
         if (ty > 9.5) continue;
         let tree;
@@ -422,8 +449,8 @@ function buildHomesteadAndBuildings3D() {
       if (typeof buildWeldingStudio3D === 'function') buildWeldingStudio3D();
       else {
         const forgeGroup = new THREE.Group();
-        const fy = getAnalyticalGroundHeight(-1.2, -8.2);
-        forgeGroup.position.set(-1.2, fy, -8.2);
+        const fy = getAnalyticalGroundHeight(MAP_LAYOUT.weld.x, MAP_LAYOUT.weld.z);
+        forgeGroup.position.set(MAP_LAYOUT.weld.x, fy, MAP_LAYOUT.weld.z);
         const bench = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 1.4), new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.7 }));
         bench.position.y = 0.45;
         const argonTank = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 1.6, 12), new THREE.MeshStandardMaterial({ color: 0x0d9488, metalness: 0.6 }));
@@ -437,7 +464,7 @@ function buildHomesteadAndBuildings3D() {
         forgeGroup.add(bench, argonTank, anvil, signPost, forgeSign);
         scene.add(forgeGroup);
       }
-      worldObstacles.push({ x: -1.2, z: -8.2, r: 1.5 });
+      worldObstacles.push({ x: MAP_LAYOUT.weld.x, z: MAP_LAYOUT.weld.z, r: 1.5 });
 
       // Welding Sparks Particle System
       const sparkGeo = new THREE.BufferGeometry();
@@ -489,8 +516,8 @@ function buildHomesteadAndBuildings3D() {
       const cropBuilders = [buildPeachTree3D, buildTomatoVines3D, buildCarrotRow3D, buildBlueberryBushes3D];
       const cropLabels = ['PEACHES', 'TOMATOES', 'CARROTS', 'BLUEBERRIES'];
       for (let p = 0; p < 4; p++) {
-        const gx = -11.5 + (p % 2) * 2.4;
-        const gz = 1.6 + Math.floor(p / 2) * 1.8;
+        const gx = MAP_LAYOUT.garden.x + (p % 2) * 2.4;
+        const gz = MAP_LAYOUT.garden.z + Math.floor(p / 2) * 1.8;
         const gy = getAnalyticalGroundHeight(gx, gz);
         const box = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.45, 1.2), new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.9 }));
         box.position.set(gx, gy + 0.22, gz);
@@ -904,6 +931,7 @@ function buildNorthPatch3D(material) {
         (c, x, y, z) => {
           // the levelled yard and roads read as worn ground, the cuts as rock, the rest as the hills
           outerLandColour(c, x, y, z);
+          if (keloRoadColour(c, x, z)) return c;
           if (typeof inWorkshopSite === 'function' && inWorkshopSite(x, z) && y < 0.6) c.setHex(0x8a8070);
           else if (y > 1.2 && typeof inWorkshopSite === 'function' && inWorkshopSite(x, z, -14)) c.lerp(outerRock, 0.6);
           return c;
@@ -986,7 +1014,7 @@ function buildValleyScenery3D() {
       const clearOf = (x, z, r) => !worldObstacles.some(o => o.legacy ? o.legacy.some(c => Math.hypot(x - c.x, z - c.z) < c.r + r) : Math.hypot(x - o.x, z - o.z) < (o.placeR ?? o.r) + r)
         && !Object.values(TOWN_LOCATIONS).some(l => Math.hypot(x - l.x, z - l.z) < r + 2.2)
         && !(typeof inParkingArea === 'function' && inParkingArea(x, z, r))
-        && Math.abs(x + 2) > 3 && z < 7.5;
+        && !onKeloRoad(x, z, r) && !(typeof inTown === 'function' && inTown(x, z) && z < valleyFootZ(x) + 6) && z < 7.5;
       // Seeded, so every tree is in the same place each visit and can be chopped for good (js/landscape.js)
       const treeRng = makeRng('kelo1-valley-trees');
       let placed = 0;
@@ -1974,6 +2002,21 @@ function pathPassRoute(from, to) {
     }
 // Reused between searches (the grid is about 50k cells)
 const pathBuf = { g: null, came: null, closed: null };
+// His roads and paths cost a little less to walk or drive (js/roads.js), so routes follow them where it makes sense
+const PATH_ROAD_COST = 0.75;
+let pathRoadMask = null;
+function pathRoadCells() {
+      if (pathRoadMask) return pathRoadMask;
+      pathRoadMask = new Uint8Array(PATH_COLS * PATH_ROWS);
+      KELO_ROAD_BOXES.forEach(b => {
+        const c0 = Math.max(0, Math.floor((b.minX - PATH_MIN_X) / PATH_CELL)), c1 = Math.min(PATH_COLS - 1, Math.floor((b.maxX - PATH_MIN_X) / PATH_CELL));
+        const r0 = Math.max(0, Math.floor((b.minZ - PATH_MIN_Z) / PATH_CELL)), r1 = Math.min(PATH_ROWS - 1, Math.floor((b.maxZ - PATH_MIN_Z) / PATH_CELL));
+        for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) {
+          if (roadCentreDistance(b.r, PATH_MIN_X + (c + 0.5) * PATH_CELL, PATH_MIN_Z + (r + 0.5) * PATH_CELL) < b.r.w / 2) pathRoadMask[r * PATH_COLS + c] = 1;
+        }
+      });
+      return pathRoadMask;
+    }
 function findPath(from, to) {
       currentPathPartial = false;
       const pass = pathPassRoute(from, to);
@@ -1997,7 +2040,7 @@ function findPath(from, to) {
       const cz = r => PATH_MIN_Z + (r + 0.5) * PATH_CELL;
       const start = row(from.z) * PATH_COLS + col(from.x);
       const goal = row(to.z) * PATH_COLS + col(to.x);
-      const blocked = pathBlockedGrid(to, from);
+      const blocked = pathBlockedGrid(to, from), roadMask = pathRoadCells();
       blocked[start] = 0;
       if (!pointBlocked(to.x, to.z, to)) blocked[goal] = 0;
       if (!pathBuf.g) { pathBuf.g = new Float32Array(N); pathBuf.came = new Int32Array(N); pathBuf.closed = new Uint8Array(N); }
@@ -2048,7 +2091,7 @@ function findPath(from, to) {
             if (blocked[n] || closed[n]) continue;
             // No cutting corners between two blocked cells
             if (dr && dc && (blocked[cr * PATH_COLS + nc] || blocked[nr * PATH_COLS + cc])) continue;
-            const cost = g[cur] + (dr && dc ? 1.414 : 1) * PATH_CELL;
+            const cost = g[cur] + (dr && dc ? 1.414 : 1) * PATH_CELL * (roadMask[n] ? PATH_ROAD_COST : 1);
             if (cost < g[n]) {
               g[n] = cost;
               came[n] = cur;
@@ -2198,8 +2241,8 @@ function runKeloFrameHooks(now) {
 // Fixed camera views: target x, y, z then camera x, y, z
 const CAMERA_PRESET_VIEWS = {
   overview: [0, 0.5, -1, 0, 22, 27],
-  house: [-9.2, 1.4, -8.0, -9.2, 9.5, 0.5],
-  storehouse: [7.6, 2.0, -7.6, 7.6, 7.5, 3.5],
+  house: [MAP_LAYOUT.house.x + 0.3, 1.4, MAP_LAYOUT.house.z + 0.7, MAP_LAYOUT.house.x + 0.3, 9.5, MAP_LAYOUT.house.z + 9.2],
+  storehouse: [MAP_LAYOUT.storehouse.x, 2.0, MAP_LAYOUT.storehouse.z + 0.8, MAP_LAYOUT.storehouse.x, 7.5, MAP_LAYOUT.storehouse.z + 11.9],
   cafes: [-4, 2.5, 2.5, -4, 22, 30]
 };
 const camScratch = new THREE.Vector3();
@@ -2339,7 +2382,7 @@ function animateDiorama() {
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
           forgeArcLight.intensity = 0;
         } else if (state.currentLocKey === 'bed') {
-          keloGroup.position.set(-11.6, Math.max(groundY, 0.95), -8.8);
+          keloGroup.position.set(TOWN_LOCATIONS.bed.x, Math.max(groundY, 0.95), TOWN_LOCATIONS.bed.z);
           keloGroup.rotation.set(-Math.PI / 2, 0, 0);
           keloHead.rotation.set(0, 0, 0);
           weldingSparks.visible = false;

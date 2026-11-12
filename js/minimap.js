@@ -73,6 +73,22 @@ function minimapNorthMarks(ctx, px, pz, sx, sz, dpr, big = false) {
       ctx.restore();
     }
 
+// His roads and paths (js/roads.js): gravel roads light brown with a dark edge, footpaths paler and thinner
+function minimapRoads(ctx, px, pz, sx, dpr) {
+      if (typeof KELO_ROADS === 'undefined') return;
+      ctx.save();
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      [true, false].forEach(edge => KELO_ROADS.forEach(r => {
+        const w = Math.max(r.kind === 'path' ? 1.2 : 2, r.w * sx);
+        ctx.strokeStyle = edge ? 'rgba(68,52,32,0.55)' : r.kind === 'path' ? '#e7dcc4' : '#cdb991';
+        ctx.lineWidth = edge ? w + 1.4 * dpr : w;
+        ctx.beginPath();
+        r.pts.forEach(([x, z], i) => (i ? ctx.lineTo(px(x), pz(z)) : ctx.moveTo(px(x), pz(z))));
+        ctx.stroke();
+      }));
+      ctx.restore();
+    }
+
 // On the valley sheet: where the pass leads (up off the top of the map)
 function minimapValleyPointer(ctx, px, pz, dpr) {
       if (typeof WORKSHOP_LAND === 'undefined' || !WORKSHOP_LAND.pass) return;
@@ -94,7 +110,7 @@ function minimapBuildings() {
         const t = TOWN_BUILDINGS[k];
         b.push({ x: t.x, z: t.z, w: t.w, d: t.d, color, icon });
       });
-      b.push({ x: -1.2, z: -8.2, w: 2.4, d: 1.6, color: '#334155', icon: '🔥' });   // welding studio
+      b.push({ x: MAP_LAYOUT.weld.x, z: MAP_LAYOUT.weld.z, w: 2.4, d: 1.6, color: '#334155', icon: '🔥' });   // welding studio
       return b;
     }
 
@@ -137,6 +153,8 @@ function minimapBuildBase() {
           const gz = (hs[Math.min(ch - 1, j + 1) * cw + i] - hs[Math.max(0, j - 1) * cw + i]) * MINIMAP_RES / 2;
           const snowy = typeof snowHoldsOn === 'function' ? snowHoldsOn(1 / Math.sqrt(1 + gx * gx + gz * gz)) > 0.5 : true;
           if (z > 7.5 && h < water) c = frozen ? mix([228, 238, 247], [176, 200, 222], (water - h) / 6) : mix([120, 190, 222], [24, 70, 120], (water - h) / 5);
+          // past the range (the north sheet): plain bands as drawn in 3D, forest, then rock, snow only on the tops
+          else if (z < -ISLAND_HALF_Z && h > 2.6) c = h > 30 ? [228, 233, 240] : h > 20 ? mix([112, 118, 108], [150, 154, 150], (h - 20) / 10) : mix([62, 112, 52], [92, 108, 80], (h - 2.6) / 18);
           else if (z < 7.8 && h > snowLine && snowy) c = [238, 243, 250];
           else if (typeof groundDugAt === 'function' && groundDugAt(x, z) > 0.05) c = [122, 75, 42];
           else if (h > 8.5 && snowy && (z > -ISLAND_HALF_Z || h > 26)) c = [236, 241, 250];
@@ -203,7 +221,8 @@ function minimapDraw() {
       ctx.drawImage(minimap.base, (v.x0 - MINIMAP_X0) * MINIMAP_RES, (v.z0 - MINIMAP_Z0) * MINIMAP_RES, v.w * MINIMAP_RES, v.h * MINIMAP_RES, 0, 0, W, H);
 
       if (minimap.sheet === 'north') minimapNorthMarks(ctx, px, pz, sx, sz, dpr);
-      else minimapValleyPointer(ctx, px, pz, dpr);
+      minimapRoads(ctx, px, pz, sx, dpr);
+      if (minimap.sheet !== 'north') minimapValleyPointer(ctx, px, pz, dpr);
       // Paved yard, helipad, balloon field, dock and the Disposal Pit
       ctx.lineWidth = 1 * dpr;
       if (typeof VEHICLE_YARD !== 'undefined') {
@@ -417,6 +436,7 @@ function changesMapDrawSheet(cv) {
       ctx.fillStyle = 'rgba(15,23,42,0.18)';
       ctx.fillRect(0, 0, W, H);
       if (changesMap.sheet === 'north') minimapNorthMarks(ctx, px, pz, sx, sz, dpr, true);
+      minimapRoads(ctx, px, pz, sx, dpr);
       minimapBuildings().forEach(b => {
         ctx.fillStyle = 'rgba(226,232,240,0.55)';
         ctx.fillRect(px(b.x - b.w / 2), pz(b.z - b.d / 2), b.w * sx, b.d * sz);

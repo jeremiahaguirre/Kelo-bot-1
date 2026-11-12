@@ -34,11 +34,11 @@ const UPGRADE_EMOTES = ['wave', 'cheer', 'dance', 'think', 'stretch', 'sit', 'ce
 const UPGRADE_ANCHORS = {
   lake: { x: -22, z: 7.6, label: 'the lake shore' },
   meadow: { x: -22, z: -2, label: 'the West Meadow' },
-  house: { x: -18, z: -8.8, label: 'my house' },
-  museum: { x: -33, z: 3, label: 'the Museum' },
-  mountain: { x: -28, z: -15, label: 'the mountain foot' },
+  house: { x: MAP_LAYOUT.house.x - 2.5, z: MAP_LAYOUT.house.z + 6, label: 'my house' },
+  museum: { x: MAP_LAYOUT.museum.x - 9, z: MAP_LAYOUT.museum.z + 4, label: 'the Museum' },
+  mountain: { x: -38, z: -18, label: 'the mountain foot' },
   netnode: { x: 6.8, z: 8.4, label: 'the beach by NetNode' },
-  workshop: { x: 2, z: -16, label: 'behind the workshop' }
+  workshop: { x: MAP_LAYOUT.weld.x + 3, z: MAP_LAYOUT.weld.z - 6.5, label: 'behind the workshop' }
 };
 const UPGRADE_PLACE_KEYS = [...Object.keys(UPGRADE_ANCHORS), 'here', 'open'];
 // Where a routine may walk: the anchors, this upgrade itself, and the town's buildings

@@ -46,14 +46,36 @@ const AMBIANCE_PRESETS = [
   }
 ];
 
+// The map's layout (2026-11 redesign): where the buildings of the town's north row stand. Their own files
+// (house.js, storehouse.js, museum.js, weldstudio.js, printer.js, workbench.js, wind.js) and the pins
+// below read these; `was` keeps the old spots so old saves can be moved out of what now stands there
+// (mapLayoutMigrate, js/town.js). The north row faces Main Street (MAIN_STREET, js/roads.js) across
+// the valley floor that the mountain's foot moved back to make (valleyFootZ, js/scene.js).
+const MAP_LAYOUT = {
+  house: { x: -9.5, z: -15.2 },
+  storehouse: { x: 9.6, z: -14.9 },
+  weld: { x: -1.2, z: -14.7 },              // the welding studio's table; the 3D printer bench is beside it
+  workBench: { x: 2.3, z: -12.3 },          // where he stands at it (the top is 1.4 units behind)
+  museum: { x: -23, z: -15.5 },
+  windSock: { x: -36, z: -2.5 },
+  stove: { x: -15.6, z: -12.6 },            // his outdoor wood stove, beside the house
+  campfire: { x: -33, z: -12.5 },
+  garden: { x: -10.7, z: 1.6 },             // the first raised planter (four in a 2 x 2 grid, 2.4 x 1.8 apart)           // the fire ring, at the west end of Main Street by the Museum
+  was: {
+    house: { x: -9.5, z: -8.7 }, storehouse: { x: 7.6, z: -8.4 }, weld: { x: -1.2, z: -8.2 },
+    workBench: { x: -3.2, z: -3.0 }, museum: { x: -40, z: -5 }, windSock: { x: -19.6, z: -6.4 },
+    stove: { x: -3.4, z: -4.2 }, campfire: { x: -17.5, z: -3.0 }, garden: { x: -11.5, z: 1.6 }
+  }
+};
+
 const TOWN_LOCATIONS = {
   "storehouse": {
     "id": "storehouse",
     "name": "Storehouse",
     "building": "Kelo-1 Storehouse",
     "icon": "📦",
-    "x": 6.4,
-    "z": -4.0,
+    "x": MAP_LAYOUT.storehouse.x - 1.2,
+    "z": MAP_LAYOUT.storehouse.z + 4.4,
     "showPin": true,
     "pinColor": "from-orange-500/90 to-red-700/90"
   },
@@ -62,7 +84,7 @@ const TOWN_LOCATIONS = {
     "name": "Post Office",
     "building": "Okanagan Post Office",
     "icon": "📮",
-    "x": 9.8,
+    "x": 11.1,
     "z": 7.1,
     "showPin": true,
     "pinColor": "from-red-500/90 to-rose-600/90"
@@ -72,19 +94,18 @@ const TOWN_LOCATIONS = {
     "name": "Cozy Quilt Bed",
     "building": "Kelo-1 Cutaway Homestead",
     "icon": "🛏️",
-    "x": -11.6,
-    "z": -8.8,
+    "x": MAP_LAYOUT.house.x - 2.1,
+    "z": MAP_LAYOUT.house.z - 0.1,
     "showPin": true,
-    "pinColor": "from-emerald-500/90 to-teal-600/90",
-    "groundY": -0.17324750423431112
+    "pinColor": "from-emerald-500/90 to-teal-600/90"
   },
   "couch": {
     "id": "couch",
     "name": "Living Room Couch",
     "building": "Kelo-1 Cutaway Homestead",
     "icon": "🛋️",
-    "x": -7.5,
-    "z": -6.8,
+    "x": MAP_LAYOUT.house.x + 2.0,
+    "z": MAP_LAYOUT.house.z + 1.9,
     "showPin": false,
     "pinColor": "from-amber-500/90 to-orange-600/90"
   },
@@ -93,18 +114,17 @@ const TOWN_LOCATIONS = {
     "name": "TIG Welding Forge",
     "building": "Outdoor Welding Studio",
     "icon": "👨‍🏭",
-    "x": -1.2,
-    "z": -6.6,
+    "x": MAP_LAYOUT.weld.x,
+    "z": MAP_LAYOUT.weld.z + 1.6,
     "showPin": true,
-    "pinColor": "from-amber-500/90 to-red-600/90",
-    "groundY": -0.026114585930713738
+    "pinColor": "from-amber-500/90 to-red-600/90"
   },
   "garden": {
     "id": "garden",
     "name": "Okanagan Bio-Garden",
     "building": "Raised Cedar Planters",
     "icon": "🍑",
-    "x": -10.3,
+    "x": MAP_LAYOUT.garden.x + 1.2,
     "z": 5.0,
     "showPin": true,
     "pinColor": "from-lime-500/90 to-emerald-600/90",
@@ -180,8 +200,8 @@ const TOWN_LOCATIONS = {
     "name": "Museum",
     "building": "Kelo-1 Museum of Art & Ideas",
     "icon": "🏛️",
-    "x": -40,
-    "z": -0.4,
+    "x": MAP_LAYOUT.museum.x,
+    "z": MAP_LAYOUT.museum.z + 4.6,
     "showPin": true,
     "pinColor": "from-amber-600/90 to-stone-700/90"
   },
@@ -668,7 +688,7 @@ function runwayKeepOff(p) {
 const WORLD_EXTENT = { minX: Math.min(WORLD_MIN_X, RUNWAY_FIELD.minX), maxX: Math.max(WORLD_MAX_X, RUNWAY_FIELD.maxX), minZ: RUNWAY_FIELD.minZ, maxZ: WORLD_MAX_Z };
 // The town: the buildings and the streets between them. Kelo-1 doesn't build, plant or dig here;
 // the beach south of it (z above TOWN.maxZ) is his to use.
-const TOWN = { minX: -24.5, maxX: 19, minZ: -11.5, maxZ: 7.8 };
+const TOWN = { minX: -24.5, maxX: 19, minZ: -20.5, maxZ: 7.8 };   // (north edge behind the north row, MAP_LAYOUT)
 // The town buildings at real size (1.6 units a metre: doors about 2.1 m, storeys about 3 m). Each one is
 // modelled in its own small units and its group is scaled up by `scale`; x, z is its centre and w, d its
 // footprint in world units. Furniture inside is drawn at `furniture` (js/interiors.js), so chairs, desks and
@@ -678,7 +698,8 @@ const TOWN_FURNITURE_SCALE = 1.5;
 const TOWN_BUILDINGS = {
   cafe: { x: -19.0, z: 0.5, w: 3.8 * TOWN_BLDG_SCALE, d: 2.8 * TOWN_BLDG_SCALE, scale: TOWN_BLDG_SCALE },
   cyber: { x: -1.8, z: 1.6, w: 4.2 * TOWN_BLDG_SCALE, d: 3.0 * TOWN_BLDG_SCALE, scale: TOWN_BLDG_SCALE },
-  post_office: { x: 9.8, z: 1.2, w: 4.2 * TOWN_BLDG_SCALE, d: 3.2 * TOWN_BLDG_SCALE, scale: TOWN_BLDG_SCALE }
+  post_office: { x: 11.1, z: 1.2,   // (1.3 east of where it stood: NetNode Lane runs between it and NetNode)
+     w: 4.2 * TOWN_BLDG_SCALE, d: 3.2 * TOWN_BLDG_SCALE, scale: TOWN_BLDG_SCALE }
 };
 // Did he weld something in the last 15 minutes?
 function recentlyWelded() {

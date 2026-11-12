@@ -681,7 +681,7 @@ function exploreDescribeSpot(pt, short) {
       const ice = typeof iceThicknessCm === 'function' ? iceThicknessCm() : 0;
       if (z > 7.5 && h < water) ground = ice > 0 ? `frozen Okanagan Lake: ${ice} cm of ice over water about ${Math.max(1, Math.round(water - h))} m deep` : `Okanagan Lake, about ${Math.max(1, Math.round(water - h))} m deep here`;
       else if (z > 8.2 && h < 0.6) ground = 'the sandy beach';
-      else if (h > 2.6 || z < -12) ground = `the mountain, ${Math.round(h)} m up`;
+      else if (h > 2.6 || z < valleyFootZ(x)) ground = `the mountain, ${Math.round(h)} m up`;
       else if (x > 14 && z < -6) ground = 'the rise toward the Eastern Overlook';
       else ground = 'the valley meadow';
       if (short) return near ? `${near.l.icon || '📍'} Near ${near.l.name}` : `📍 On ${ground}`;
@@ -738,7 +738,7 @@ function explorePlaces() {
       const known = new Set(['storehouse', 'post_office', 'bed', 'couch', 'weld', 'garden', 'cafe', 'cyber', 'shoreline', 'meadow', 'mountain_peak', 'disposal_pit', 'museum', 'east_cliff']);
       Object.values(TOWN_LOCATIONS).forEach(l => { if (!known.has(l.id) && l.showPin !== false) add('His spots', l.id, l.icon || '📍', l.name, l.x, l.z, { dist: 18 }); });
       (state.digSites || []).forEach((s, i) => {
-        const mountain = s.z < -12 || getAnalyticalGroundHeight(s.x, s.z) > 2.2;
+        const mountain = s.z < valleyFootZ(s.x) || getAnalyticalGroundHeight(s.x, s.z) > 2.2;
         add('His digs', 'dig-' + i, '⛏️', `${mountain ? 'Mountain' : 'Valley'} dig (${s.depth.toFixed(1)} m deep)`, s.x, s.z, { dist: 14, pitch: 0.75 });
       });
       (state.projects || []).filter(p => Number.isFinite(p.x)).forEach(p => {

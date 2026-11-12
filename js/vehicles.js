@@ -205,6 +205,7 @@ function reparkOldVehicles() {
         // (also anything left where a town building now stands, or on the balloon field's old spot)
         const stale = water ? v.z < 10.5 && v.z > 8.5 : Math.hypot(v.x - STOREHOUSE.x, v.z - STOREHOUSE.z) < 7
           || (typeof townBuildingAt === 'function' && Boolean(townBuildingAt(v.x, v.z, 1.5)))
+          || (typeof mapLayoutCovers === 'function' && mapLayoutCovers(v.x, v.z, 1.5))
           || (type.mode === 'air' && BALLOON_OLD_SLOTS.some(([bx, bz]) => Math.hypot(v.x - bx, v.z - bz) < 0.5));
         if (!stale) return;
         const slots = parkingSlotsFor(type, v.name);

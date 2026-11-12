@@ -17,7 +17,7 @@ const WIND_LEVELS = [
 // Spring and autumn are windier, summer a little stiller
 const SEASON_WIND = { Spring: 0.07, Summer: -0.06, Autumn: 0.06, Winter: 0.02 };
 // Where the wind sock stands: at the edge of the balloon field, clear of the balloon itself
-const WIND_SOCK_SPOT = { x: -19.6, z: -6.4 };
+const WIND_SOCK_SPOT = { x: MAP_LAYOUT.windSock.x, z: MAP_LAYOUT.windSock.z };
 // The pieces a crashed balloon breaks into
 const BALLOON_PIECES = [
   { name: 'Torn balloon envelope', emoji: '🎈' },
@@ -25,7 +25,7 @@ const BALLOON_PIECES = [
   { name: 'Cracked wicker basket', emoji: '🧺' }
 ];
 const BROKEN_KITE = 'Broken kite';
-const WELD_BENCH_TOP = { x: -1.2, z: -8.2, y: 0.92 };
+const WELD_BENCH_TOP = { x: MAP_LAYOUT.weld.x, z: MAP_LAYOUT.weld.z, y: 0.92 };
 
 // For testing or a visitor's experiment: set to 'calm' / 'breeze' / 'windy' / 'gale' to force it
 let windOverride = null;

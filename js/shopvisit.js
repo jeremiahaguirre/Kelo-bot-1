@@ -631,7 +631,7 @@ function svViewSpot(t) {
         const sz = t.def.size || { w: 1, d: 1 }, rr = Math.max(sz.w, sz.d) / 2;
         const px = S.x + st.x + ex / el * back, pz = S.z + st.z + ez / el * back;
         if (ok(px, pz)) return { x: px, z: pz, clear: true };
-        for (const r of [rr + back + 0.5, rr + 0.7, rr + back + 1.4, rr + 2.4]) { const p = ring(ax, az, r, a0); if (p) return p; }
+        for (const r of [rr + back + 0.5, rr + back + 1.2, rr + Math.max(0.7, back), rr + 2.4, rr + 0.7]) { const p = ring(ax, az, r, a0); if (p) return p; }
         if (ok(S.x + st.x, S.z + st.z)) return { x: S.x + st.x, z: S.z + st.z, clear: true };
       }
       const r0 = Math.max(t.box.max.x - t.box.min.x, t.box.max.z - t.box.min.z) / 2;

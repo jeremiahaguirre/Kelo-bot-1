@@ -64,7 +64,7 @@ function mergeDream(entry) {
 
 // No cloud file? He still thought about things on his own while you were gone.
 function localCatchUp(hoursAway) {
-      const sessions = Math.min(3, Math.floor(hoursAway / 6));
+      const sessions = Math.max(0, Math.min(3, Math.floor(hoursAway / 6))); // a clock set back gives no time away
       for (let i = 0; i < sessions; i++) {
         const a = state.concepts.length ? pick(state.concepts).name : pick(FREE_SUBJECTS);
         const b = pick(FREE_SUBJECTS);
@@ -123,4 +123,7 @@ window.addEventListener('DOMContentLoaded', () => {
     state.life.lastSeenAt = Date.now();
     savePersistentBrainState();
   });
+  // ...and while he is watched (a closed or crashed tab may never send beforeunload, and then the whole
+  // visit would count as time away). The 20-second autosave writes it.
+  setInterval(() => { state.life.lastSeenAt = Date.now(); }, 60000);
 });

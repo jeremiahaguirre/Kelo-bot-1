@@ -9,7 +9,7 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
 ## In progress: skins (branch `agent/skins`, results to `qa-results-skins`)
-- Six skins (Classic + Explorer, Twirl, Kitbot, Marshmallow, Spark), state.skins, in-place equip, World tab Skins UI, mock payments behind KELO_DEV_UNLOCK. Tests: `skins` harness scenario, animation check per skin (skinanim.js), perf + contact sheet (skinperf.js), regressions reload/ui/chat/vehicle/haul. Then merge origin/main and rerun the animation check.
+- Ten skins (Classic; Explorer, Twirl, Kitbot, Marshmallow, Spark after the owner's pictures; legendary Ember, Aegis, Nebula, Clockwork), owner approved the looks. state.skins, in-place equip, World tab Skins UI, mock payments behind KELO_DEV_UNLOCK. origin/main merged (2026-11-12). Tests: `skins` scenario (passed), animation check per skin (qa/skinanim.js + skincompare.js), perf + contact sheet (qa/skinperf.js), regressions reload/ui/chat/vehicle/haul. Results go to `qa-results-skins`.
 
 ## Done and pushed to main (2026-11-04)
 - Task 1 Paintings, task 2 Accurate welding + work bench, task 3 Humanize/eye cam/fluid motion, task 4 Garden, task 6 Code anything + self-upgrades, task 10 phase 1 audit (plan in .claude/review.md).

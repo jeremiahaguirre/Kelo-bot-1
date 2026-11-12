@@ -389,11 +389,14 @@ function buildKelo1Character3D(opts = {}) {
       // a frame around the screen, the dark glass screen, and a clear visor over it
       const F = S.face;
       const shrink = (v, k, dy) => Hd.kind === 'box' ? { yc: v.yc, w: v.w * k, h: v.h * k - dy } : { yc: v.yc, hy: v.hy - dy, phi: v.phi * k };
-      keloHead.add(keloShapePanel(Hd, F, 0.004, M.cream, 0.25));
-      keloHead.add(keloShapePanel(Hd, shrink(F, 0.89, 0.03), 0.008, M.glass, 0.25));
-      const visor = keloShapePanel(Hd, shrink(F, 0.92, 0.025), Hd.kind === 'box' ? 0.016 : 0.02, M.visor, 0.25);
-      visor.renderOrder = 2;
-      keloHead.add(visor);
+      // (a skin with face: null has its eyes straight on the shell, no screen)
+      if (F) {
+        keloHead.add(keloShapePanel(Hd, F, 0.004, M.cream, 0.25));
+        keloHead.add(keloShapePanel(Hd, shrink(F, 0.89, 0.03), 0.008, M.glass, 0.25));
+        const visor = keloShapePanel(Hd, shrink(F, 0.92, 0.025), Hd.kind === 'box' ? 0.016 : 0.02, M.visor, 0.25);
+        visor.renderOrder = 2;
+        keloHead.add(visor);
+      }
 
       // Big glowing eyes: an open oval with a sparkle, and a "^" arc for when he is happy
       const E = S.eyes, er = E.r || 0.058;
@@ -425,17 +428,17 @@ function buildKelo1Character3D(opts = {}) {
       keloRightEye = makeEye(1);
       // A small smile under the eyes (flipped into a frown when he is sad)
       keloMouth = new THREE.Mesh(new THREE.TorusGeometry(0.04, 0.009, 5, 14, Math.PI), M.eye);
-      const mouthY = E.y - 0.13;
+      const mouthY = E.y - (E.mouthDy || 0.13);
       const mouthAt = Hd.kind === 'box' ? { p: new THREE.Vector3(0, mouthY, Hd.d / 2 + eyeLift), n: new THREE.Vector3(0, 0, 1) } : keloOnSurface(keloProfileR(Hd.profile, mouthY) + 0.008, mouthY, 0, HSX, HSZ, 0.011);
       keloStick(keloMouth, keloHead, mouthAt.p, mouthAt.n);
       keloMouth.rotateZ(Math.PI);  // the arc's open side up: a smile
       // Rosy cheek lights
       keloCheeks = [-1, 1].map(s => {
         const c = new THREE.Mesh(new THREE.CircleGeometry(0.04, 16), M.cheek);
-        const cy = E.y - 0.095;
+        const cy = E.y - (E.cheekDy || 0.095);
         const at = Hd.kind === 'box' ? { p: new THREE.Vector3(s * ((E.x || 0.11) + 0.06), cy, Hd.d / 2 + eyeLift + 0.001), n: new THREE.Vector3(0, 0, 1) } : keloOnSurface(keloProfileR(Hd.profile, cy) + 0.0034, cy, s * (E.phi + 0.25), HSX, HSZ, 0.012);
         keloStick(c, keloHead, at.p, at.n);
-        c.scale.set(1.35, 0.8, 1);
+        c.scale.set(1.35 * (E.cheek || 1), 0.8 * (E.cheek || 1), 1);
         return c;
       });
 
@@ -465,7 +468,7 @@ function buildKelo1Character3D(opts = {}) {
       keloHead.add(keloAntenna);
 
       // --- Arms: limbs with ball joints and small hands
-      const A = S.arm;
+      const A = S.arm, limbMat = M[S.limbMat || 'shell'] || M.shell;
       const shoulderBall = new THREE.SphereGeometry(A.shoulder, 24, 16);
       const upperArm = keloLimbGeometry(A.kind, A.upper[0], A.upper[1], KELO_UPPER_ARM - 0.03, 0.006);
       const elbowBall = new THREE.SphereGeometry(A.elbow, 14, 10);
@@ -478,13 +481,13 @@ function buildKelo1Character3D(opts = {}) {
         const shoulder = new THREE.Group();
         shoulder.position.set(s * KELO_SHOULDER.x, KELO_SHOULDER.y - KELO_HIP_Y, 0);
         shoulder.add(keloMesh(shoulderBall, M.shell));
-        shoulder.add(keloMesh(upperArm, M.shell, { pos: [0, -0.02, 0] }));
+        shoulder.add(keloMesh(upperArm, limbMat, { pos: [0, -0.02, 0] }));
         const elbow = new THREE.Group();
         elbow.position.set(0, -KELO_UPPER_ARM, 0);
         shoulder.add(elbow);
         elbow.add(keloMesh(elbowBall, M.joint));
         keloBellows(elbow, A.elbow * 0.95, 0.026, 3, 0.026, M);
-        elbow.add(keloMesh(forearm, M.shell, { pos: [0, -0.025, 0] }));
+        elbow.add(keloMesh(forearm, limbMat, { pos: [0, -0.025, 0] }));
         if (A.kind !== 'box') elbow.add(keloMesh(cuff, M.amber, { pos: [0, -KELO_FOREARM + 0.04, 0], shadow: false }));
         const hand = new THREE.Group();
         hand.position.set(0, -KELO_FOREARM, 0);
@@ -515,13 +518,13 @@ function buildKelo1Character3D(opts = {}) {
         const hip = new THREE.Group();
         hip.position.set(s * 0.12, KELO_LEG_Y, 0);
         hip.add(keloMesh(hipBall, M.joint));
-        hip.add(keloMesh(thigh, M.shell, { pos: [0, -0.02, 0] }));
+        hip.add(keloMesh(thigh, limbMat, { pos: [0, -0.02, 0] }));
         const knee = new THREE.Group();
         knee.position.set(0, -KELO_THIGH, 0);
         hip.add(knee);
         knee.add(keloMesh(kneeBall, M.joint));
         keloBellows(knee, G.knee * 0.96, 0.034, 3, 0.034, M);
-        knee.add(keloMesh(shin, M.shell, { pos: [0, -0.04, 0] }));
+        knee.add(keloMesh(shin, limbMat, { pos: [0, -0.04, 0] }));
         const ankle = new THREE.Group();
         ankle.position.set(0, -KELO_SHIN, 0);
         knee.add(ankle);

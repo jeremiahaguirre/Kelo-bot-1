@@ -130,7 +130,11 @@ function keloHandoffDown(obj, opts) {
       const high = to.y - keloHandoffFloorY() > KELO_HANDOFF.high;
       keloGroup.updateMatrixWorld(true);
       keloHandoffHandsLocal(_hoV);
-      H.down = { obj, t: 0, contact: KELO_HANDOFF.contactDown, to, high, off: obj.position.clone().sub(_hoV), q: obj.quaternion.clone(),
+      // a long thing (a shovel, an axe) left on the ground is laid down flat across in front of him
+      const lay = !opts.to && u.hoH > 2.2 * u.hoW;
+      const qEnd = obj.quaternion.clone();
+      if (lay) qEnd.setFromEuler(new THREE.Euler(Math.PI / 2, 0, Math.PI / 2, 'YXZ'));
+      H.down = { obj, t: 0, contact: KELO_HANDOFF.contactDown, to, high, off: obj.position.clone().sub(_hoV), q: obj.quaternion.clone(), qEnd, lay,
         placed: opts.placed || null, real: Boolean(opts.real), parent: opts.parent || null, clip: keloHandoffTripPose() ? null : high ? 'putHigh' : 'putDown', started: false };
       u.hoYaw = keloGroup.rotation.y;
     }
@@ -252,10 +256,12 @@ function keloHandoffDownFrame(D, dt) {
       keloHandoffHandsLocal(_hoV).add(D.off);
       // ...and arrives exactly on its spot at the contact frame
       const a = smoothstep((D.t - (D.contact - 0.32)) / 0.32);
-      _hoW.set(D.to.x, D.to.y - u.hoBottom * obj.scale.y, D.to.z);
+      // (laid flat: it rests on its side, its middle over the spot)
+      if (D.lay) _hoW.set(D.to.x, D.to.y + u.hoW * 0.5 * obj.scale.y, D.to.z).sub(_hoBox.min.set(0, (u.hoBottom + u.hoH / 2) * obj.scale.y, 0).applyQuaternion(D.qEnd));
+      else _hoW.set(D.to.x, D.to.y - u.hoBottom * obj.scale.y, D.to.z);
       keloGroup.worldToLocal(_hoW);
       obj.position.lerpVectors(_hoV, _hoW, a);
-      obj.quaternion.copy(D.q);
+      obj.quaternion.copy(D.q).slerp(D.qEnd, a);
       // hands to its sides at the spot
       keloHandoffSides(obj, D.contact, D.t, D.to, u);
       if (D.t >= D.contact) {

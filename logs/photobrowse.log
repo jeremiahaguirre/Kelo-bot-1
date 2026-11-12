@@ -1,0 +1,20 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+browse: {"pages":17,"maxPhotos":4}
+favourites: {"favs":24,"pinned":true,"newFavs":17,"thumbs":[2063,3155,3155,3155,3155],"paintable":11,"look":1,"diary":"Dear Diary, I spent a while at the NetNode cafe paging through photos (17 pages, 32 pictures). \"Cat\" from DuckDuckGo caught my eye: the shapes are simple and strong. \"cat openverse 1\" from Openverse (flickr) caught my eye: the shapes are simple and strong. \"met 2\" from The Met caught my eye: the shapes are simple and strong. \"cat aic 1\" from Art Institute of Chicago caught my eye: the shapes are simple and strong. \"cat cma 1\" from Cleveland Museum of Art caught my eye: the shapes are simple and strong. I pinned 17 to my favourites board, and the free-to-use ones I might paint someday.","board":65662,"boardScript":false}
+deepest page asked per host: {"api.openverse.org":2,"api.artic.edu":1,"openaccess-api.clevelandart.org":0,"images-api.nasa.gov":1,"www.loc.gov":1,"api.pexels.com":1,"api.unsplash.com":1,"pixabay.com":1,"api.flickr.com":1,"api.si.edu":0,"api.europeana.eu":1,"www.rijksmuseum.nl":1,"commons.wikimedia.org":0}
+PASS browsing session paged on while he was interested 17 pages
+cursor to the end: {"n":42,"seen":{"met":3,"aic":3,"cma":3,"nasa":3,"loc":3,"pexels":3,"unsplash":3,"pixabay":3,"flickr":3,"smithsonian":3,"europeana":3,"rijks":3,"commons":3,"openverse":3}}
+PASS paging reaches every source's last page, one page at a time 42 pages
+PASS the cafe screen showed photos
+PASS diary says what caught his eye
+PASS favourites board bounded at 24, pinned one kept {"favs":24,"newFavs":17}
+PASS favourite thumbnails are small max 3155 chars
+PASS board rendered and escaped
+shot photobrowse-board
+from favourite: {"r":true,"fav":"https://www.metmuseum.org/art/collection/search/10","used":"https://www.metmuseum.org/art/collection/search/10"}
+PASS paints from a favourite (its own picture)
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+after reload: {"favs":24,"pinned":true,"stored":61712}
+PASS favourites survive reload in their own small save key 61712 chars
+ALL PASSED
+page errors: none

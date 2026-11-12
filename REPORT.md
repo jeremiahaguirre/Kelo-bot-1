@@ -1,94 +1,193 @@
-# Reference-photo paintings — QA report (branch `agent/refpaint`)
+# Reference-photo paintings, photo browsing and the legal rules — QA report (branch `agent/refpaint`)
 
-Owner's ask: *"Enable Kelo on Netnode to search DuckDuckGo for live reference images rather than using pre-programmed paintings. Kelo should be able to paint directly from a single search result or creatively combine two different search results into one original painting."*
+What the owner asked for:
+1. *"Enable Kelo on Netnode to search DuckDuckGo for live reference images rather than using pre-programmed paintings. Kelo should be able to paint directly from a single search result or creatively combine two different search results into one original painting."*
+2. *"Browse unlimited photos"*, using every source, from Wikimedia Commons through DuckDuckGo and everything in between.
+3. *"Make sure he does something original enough or that the source isn't copyrighted, make sure this aspect is legal."*
+
+> **The live endpoints still need testing on a real connection.** This container's network proxy refuses every photo host: duckduckgo.com, wikimedia.org, openverse, the museums, nasa.gov, loc.gov and the keyed sites. Every adapter was built from each API's documented response shape and tested against stubs that answer in that shape (`qa/refstubs.js`). Nothing in the sources table below could be checked live from here.
 
 ![contact sheet](contact-sheet.jpg)
 
-`contact-sheet.jpg`: 9 paintings in 6 media (oil, watercolour, gouache, ink, charcoal, pastel, acrylic). Five are from one photo, two combine a subject with a setting, and two are split compositions. Each row shows the reference photo(s), his painting, and the underpainting he worked from. `refpaint-viewer.png` is the Museum viewer with the credit line and the small reference copies, taken from the in-game run.
+`contact-sheet.jpg` shows 9 paintings in 7 media: 5 from one photo, 2 combining a subject with a setting, and 2 split compositions. Each row shows:
+- the reference photo(s)
+- his painting
+- his underpainting
+- the credit line exactly as the game writes it
+- the measured similarity score
+- the list of changes he made
 
-## What changed
+`threshold-examples.jpg` shows examples just under and just over the originality threshold. `refpaint-viewer.png` is the Museum label from the in-game run, and `photobrowse-board.png` is his favourites board.
+
+## Legal approach
+Kelo-1 sells paintings to real people. The rules below are enforced in code, not only in the AI prompt, and each one is checked by the harness.
+
+1. **Licence gate.**
+   - `refLicenceOk(item)` in `js/refsources.js` sits behind every adapter.
+   - A photo can be a painting reference only if its licence is known and allows modified, commercial reuse:
+     - public domain, PDM or CC0
+     - CC BY or CC BY-SA
+     - the Pexels, Unsplash or Pixabay licences
+   - NC, ND, "all rights reserved", fair use, non-free, unknown and missing licences are refused.
+   - How each source is checked:
+     - **Commons:** `extmetadata` `LicenseShortName` / `License` / `LicenseUrl`; `NonFree` and `Restrictions` mean refuse.
+     - **Openverse:** queried with `license_type=commercial,modification`.
+     - **The Met:** `isPublicDomain === true` only.
+     - **Art Institute of Chicago:** `is_public_domain === true` only.
+     - **Cleveland Museum of Art:** `share_license_status` must be CC0.
+     - **NASA:** only items with no non-NASA photographer or credit, and no ©, "courtesy of" or third-party credit in the description.
+     - **Library of Congress:** "no known restrictions" or public domain only.
+     - **Flickr:** licence ids 4, 5, 9 and 10 only (BY, BY-SA, CC0, PDM).
+     - **Smithsonian:** CC0 media only.
+     - **Europeana:** `reusability=open`, then the rights URL must map to CC0, PDM, BY or BY-SA.
+     - **Rijksmuseum:** public-domain images only (`permitDownload`).
+     - **DuckDuckGo:** the licence is unknown, so it is **looking only**. He looks at its pictures for ideas, then finds a licence-checked photo of the same subject and paints from that. A DuckDuckGo favourite is only an idea and is never painted from.
+   - Every reference and every favourite stores the licence, author, title, source and page URL.
+2. **Risky content** (`refRiskOk`). These are refused even with a good licence:
+   - **People:** an identifiable person as the subject. The word list covers portrait, person, people, selfie, headshot, family members and similar.
+   - **Logos and brands:** logos, brands, trademarks and branded products.
+   - **Restricted files:** Commons files flagged with personality or trademark restrictions.
+   - **Characters:** famous characters and franchises.
+   - **Other people's artworks:** photos of murals, sculptures, paintings and so on, unless a museum source marks them public domain or CC0.
+   - **Requests:** a visitor's request or an AI plan that names people, brands or characters is refused before any search is made.
+3. **Originality**, measured (`refpOriginality`).
+   - Every painting makes at least 4 changes, and each one is logged on the record:
+     - his own crop, at least 1.06× zoom and off-centre
+     - his own limited palette
+     - a different light, season or time of day (golden hour, dusk, winter, morning mist or summer noon)
+     - his medium's brushwork
+   - A combined painting adds a fifth change, and always takes its subject and its setting from **different sources**.
+   - The finished painting is then compared with its reference(s):
+     - **corr:** the correlation of the 32×24 value maps, also checked against the mirrored photo, keeping the higher score
+     - **palette:** the mean distance between the two 6-colour palettes
+   - **Too close** means corr ≥ 0.90, or corr ≥ 0.80 with palette < 0.07.
+     - A painting that is too close is reworked with a tighter mirrored crop, full-strength light and fewer colours.
+     - If it is still too close, it becomes **"Study: …"**, a study, not for sale, kept in his Museum.
+   - The score, thresholds, changes and any rework are stored on the record as `originality`.
+   - **Calibration** (`threshold-examples.jpg`):
+     - Real paintings score corr 0.16–0.77.
+     - A lightly blurred copy of the photo scores 0.97–0.998.
+     - Just under the line: the field mixed 55% with the photo scores 0.891 (passes); the cat mixed 45% scores 0.737 (passes).
+     - Just over the line: the field mixed 65% scores 0.925 (too close); the cat mixed 55% scores 0.814 with palette 0.06 (too close by the second rule).
+4. **Credit.** The Museum label and the website listing show credit lines like these:
+   - *after "Title" by Author, CC BY-SA 4.0, https://… (Source)*
+   - *based on a public-domain image, "Title" by Author (Source, CC0, https://…)*
+   - A CC BY-SA reference adds: *This painting is shared under CC BY-SA 4.0*.
+   - Everything is escaped, and links are https only.
+5. **Website gate** (`refpSellable`, called from `paintingVerdict`, so it applies to every way a painting gets listed):
+   - It refuses a study.
+   - It refuses any painting made from a photo whose licence data is missing or fails the gate today. That includes earlier saves made from DuckDuckGo with no licence data.
+   - Paintings from life (no reference) can be sold as before.
+6. **Plain words for players.** `privacy.html#licences` ("Licences and credits for his paintings") is linked from the shop's footer.
+7. **Harness checks** (the `refpaint` scenario):
+   - fixture metadata for every source, with one bad and one good item each
+   - the licence words
+   - people, brands, characters and murals
+   - DuckDuckGo being looking only
+   - one painting forced too close, which must be reworked, become a study, and be refused by the website
+
+Not legal advice; the owner may want a lawyer to review before selling at scale.
+
+## Photo sources
+All searches go through one layer (`js/refsources.js`). Each source is a small adapter.
+- **Order:** sources take turns in a rotating order, so browsing feels varied. DuckDuckGo stays first where it is usable, but only for looking.
+- **Failures:** a source that fails is rested for 3 minutes, a rate limit (429) for 10 minutes, and a 403 for 30 minutes. The search carries on with the others.
+- **Keys:** keyed sources appear only after the owner adds a key in Settings, under *Photo sources (optional keys)*. Keys are stored like the AI keys: localStorage on the web, the encrypted file on Windows, the Keychain or Keystore on phones. Each key is sent only to its own host (the harness checks this), and keys are never logged or exported.
+
+| Source | Hosts (exact; all in CSP `connect-src`) | CORS for the web build | Key | Limits (from the docs, **not verified live**) | Licence data used |
+|---|---|---|---|---|---|
+| DuckDuckGo Instant Answer | api.duckduckgo.com, duckduckgo.com (`/i/` images) | API yes; `/i/` images not known | no | none published | none, so looking only |
+| DuckDuckGo image search | duckduckgo.com (`i.js` + vqd token) | **no**, so Windows (main process) and phones (CapacitorHttp) only | no | undocumented; may change or block | none, so looking only |
+| Wikimedia Commons | commons.wikimedia.org, upload.wikimedia.org | yes (`origin=*`) | no | API etiquette (serial requests) | `extmetadata` licence, artist, restrictions, non-free |
+| Openverse | api.openverse.org (thumbnails too) | yes | no (anonymous) | anonymous requests are throttled; we back off on 429 | `license`, `license_url`; query `license_type=commercial,modification` |
+| The Met | collectionapi.metmuseum.org, images.metmuseum.org | API yes; images not known | no | ~80 requests/s | `isPublicDomain` (CC0 Open Access) |
+| Art Institute of Chicago | api.artic.edu, www.artic.edu (IIIF) | yes | no | ~60 requests/min | `is_public_domain` (CC0) |
+| Cleveland Museum of Art | openaccess-api.clevelandart.org, openaccess-cdn.clevelandart.org | yes (believed) | no | none published | `share_license_status` = CC0 |
+| NASA Image Library | images-api.nasa.gov, images-assets.nasa.gov | yes | no | none published | NASA work is PD; third-party credit means refuse |
+| Library of Congress | www.loc.gov, tile.loc.gov | **unknown**: if loc.gov sends no CORS, the fetch fails and the source is rested (so it effectively drops out of the web build) | no | burst limits; back-off | `rights_advisory` ("No known restrictions") |
+| Pexels | api.pexels.com, images.pexels.com | yes | **key** | 200/hour, 20,000/month (default) | Pexels License |
+| Unsplash | api.unsplash.com, images.unsplash.com | yes | **key** | 50/hour (demo apps) | Unsplash License (the `download_location` of a photo he paints from is reported, as Unsplash asks) |
+| Pixabay | pixabay.com, cdn.pixabay.com | yes | **key** | 100 requests/minute | Pixabay Content License |
+| Flickr | api.flickr.com, live.staticflickr.com | yes | **key** | 3,600/hour | licence ids 4, 5, 9, 10 only |
+| Smithsonian Open Access | api.si.edu, ids.si.edu | believed yes | **key** (api.data.gov) | 1,000/hour | media `usage.access` = CC0 |
+| Europeana | api.europeana.eu | yes | **key** (wskey) | generous; per key | `reusability=open` + rights URL |
+| Rijksmuseum | www.rijksmuseum.nl, lh3.googleusercontent.com | believed yes | **key** | ~10,000/day | `permitDownload` (public domain). Its legacy API is being retired, so it may need a new adapter. `lh3.googleusercontent.com` is an exact but broad Google host. |
+
+Pictures are always fetched (CORS mode, no credentials, no referrer, type and size checked) and decoded as data, so `img-src` needs no new hosts.
+
+## The NetNode "browse photos" pastime (`js/photobrowse.js`)
+- **When:** about 30% of his own NetNode visits, or the *Browse photos* button in the Brain tab's "Photos he liked at NetNode" section.
+- **Topics:** his curiosities, likes, projects, recent reading, and subjects worth painting.
+- **Paging:** one page at a time, only when he gets to it (nothing preloaded), across every source in turn. It continues while he stays interested, with a runaway guard at 200 pages. Now and then a new topic grabs him.
+- **The cafe screen:** the computer shows the photos he is looking at, drawn in `interiors.js`.
+- **Diary:** a line for what caught his eye, and a web-history entry.
+- **Favourites board:**
+  - Each favourite keeps a 96×72 JPEG of about 3 KB, plus the title, author, licence, source, page URL and why he liked it.
+  - There are at most 24; when the board is full, the oldest unpinned favourite goes, and pins are kept.
+  - Favourites have their own save key, `kelo1_brain_v4_photos`.
+- **Painting from favourites:**
+  - Free-to-use favourites can become paintings, painted from the favourite's own photo.
+  - His own choice: about 35% of his reference paintings.
+  - With an AI key: the paint decision's `reference.favourite` field, and the prompt lists his free-to-use favourites.
+
+## What changed (files)
 | File | Change |
 |---|---|
-| `js/refpaint.js` (new, loaded after paintstudio.js) | Search (per-platform sources), safe query cleaning, image loading as data, the underpainting from one or two photos, the NetNode trip, diary and web history, titles, credit line and HTML, bounded thumbnail cache, the AI prompt field |
-| `js/paintrender.js` | `renderPaintingInMedium` uses `refpSceneFromReference(spec)` when `spec.refImages` is set. Each medium's brushwork is unchanged. |
-| `js/paintstudio.js` | `paintPicture(…, { reference })`: he goes to NetNode first, then paints in the yard. The record gets `subject: 'reference'` and `reference {mode, how, sources[]}`. The plan keeps `reference`. His own paintings, visitor requests ("paint me a lighthouse", "paint a fox in the desert") and the AI decision all pass a reference through. |
-| `js/agent.js` | The paint decision JSON gets a `reference` field: `{mode: single\|combine, query, queryB, how: subject-setting\|split, why}` |
-| `desktop/imagesearch.js` (new), `desktop/main.js`, `desktop/preload.js` | Electron main does the DuckDuckGo image search (vqd token, then `i.js`) over IPC (`kelo:image-search`, `kelo:image-fetch`) |
-| `js/viewer.js`, `js/shop.js`, `js/shopkeeping.js` | The "After a reference photo: …" credit shows in the Museum viewer, the website listing and `shop-data.json` (`credit`) |
-| `index.html`, `scripts/build-web.mjs` | `connect-src` adds exactly `https://duckduckgo.com`, `https://commons.wikimedia.org` and `https://upload.wikimedia.org`. `img-src` is unchanged, because pictures are fetched and decoded from blobs or data: URLs. |
-| `privacy.html` | New section listing the hosts and what is sent |
-| `js/main.js` | Web history links also allow `commons.wikimedia.org` |
+| `js/refsources.js` (new) | The search layer, the 15 adapters, `refLicenceOk`, `refRiskOk`, `refPaintable`, rotating cursor, back-off, keys |
+| `js/refpaint.js` (new) | The NetNode trip, DuckDuckGo looking only, finding licensed references, the underpainting (crop, light, palette, subject/setting cut, split seam), `refpOriginality`, credits, `refpSellable`, query safety, the AI prompt field |
+| `js/photobrowse.js` (new) | The browsing pastime, cafe screen, favourites board |
+| `js/paintrender.js` | Uses the reference underpainting when there is one |
+| `js/paintstudio.js` | Reference option, originality check, rework, study, credit in the diary, visitors' requests (with a "no" for people, brands and characters) |
+| `js/shopkeeping.js`, `js/shop.js` | Website gate; credit with links on the listing and in `shop-data.json` |
+| `js/viewer.js` | Museum label with credit, licence links, thumbnails and the similarity score |
+| `js/interiors.js`, `js/netnode.js` | Photos on the cafe screen; NetNode visits sometimes become photo browsing |
+| `js/agent.js` | `photoFavourites` state and save part; paint decision `reference` field |
+| `js/main.js`, `index.html`, `desktop/main.js`, `js/native.js` | Optional photo-source keys in Settings, stored like the AI keys; the favourites board section |
+| `desktop/imagesearch.js`, `desktop/preload.js` | DuckDuckGo image search over IPC (strict safe search; https public hosts only; redirects checked) |
+| `index.html`, `scripts/build-web.mjs` | CSP `connect-src`: each exact host above |
+| `privacy.html`, `shop.html` | Hosts list; "Licences and credits" section; link from the shop |
 
-## Which source works on which platform
-| Platform | 1st | 2nd | 3rd | Offline |
-|---|---|---|---|---|
-| Windows (Electron) | DuckDuckGo image results through the main process (`kp=1`, `p=1`) | DDG Instant Answer picture | Wikimedia Commons | his own subjects from life |
-| iOS / Android (Capacitor) | DuckDuckGo image results through the built-in `CapacitorHttp` (no new plugin) | DDG Instant Answer picture | Wikimedia Commons | same |
-| Website (GitHub Pages) | DDG Instant Answer `Image` / `RelatedTopics[].Icon` (the image results endpoint has no CORS) | Wikimedia Commons | — | same |
+## Tests
+All runs are on `agent/refpaint` **after merging the latest `origin/main`**, on Chromium without a GPU, with every photo source stubbed (`qa/refstubs.js`, fixtures in `qa/fixtures/refpaint`).
 
-The diary and web history name the source he used. When the picture came from Commons, the diary says DuckDuckGo had nothing usable.
-
-## How the photo is used
-1. **His own crop.** A saliency centroid puts the subject a little off-centre, with a random zoom of up to 1.18x.
-2. **Painter's simplification.** He keys the values at half strength toward a full range, reduces to a limited palette of 7 to 16 colours (by skill), merges small islands, keeps 22–44% of the gradients, and shifts toward warm lights and cool shadows.
-3. **Medium.** The existing medium painter works on top of this: oil bristle strokes along the forms, watercolour washes, pastel, ink, charcoal, and so on. Beginner blur and wobble still apply.
-4. **Combined, subject + setting.** He cuts out the subject of photo A with a two-colour model (centre palette vs. border palette, oval prior, hole fill). He recolours it into B's palette and B's light, places it on a third, and builds one shared palette for the whole picture.
-5. **Combined, split.** One photo on each side, or sky and land. Both are harmonised into a joint palette and joined by a 110–140 px wavering blended seam.
-
-## Records, saves and credits
-- Each painting record keeps:
-  - `mode` and `how`
-  - for each source: `query`, `source`, `host` (the page's host), `pageUrl`, `imageUrl`, `title`, `license`, `artist`
-- `paintingImages[id].refs` holds 128×96 JPEG copies of the references, about 4 KB each. Only the 40 newest paintings keep them, so the most this adds to a save is about 320 KB.
-- Old saves have no new fields and need no migration. The test strips every reference field from a save and reloads it.
-- Selling works as before. Reference paintings keep the credit in the listing and in the exported shop data.
-
-## Security
-- Search words come from `refpCleanQuery`. It removes tags, URLs, emails, long numbers, the visitor's, companion's and owner's names, and pronouns. It keeps at most 6 words and 60 characters, and refuses anything on the all-ages blocklist.
-- The test checks every stubbed request: none contained the visitor's name or email, and every DuckDuckGo call carried `kp=1`.
-- Fetched pictures are only decoded into pixels. Fetched text is reduced to plain text with `DOMParser` (Commons artist HTML, which the test tried with `<script>` and `javascript:`). Every title and URL shown goes through `escapeHtml` or `shopEscape`, and links must be https.
-- Electron main:
-  - only answers the app's own page
-  - downloads only picture URLs its own searches returned
-  - accepts https and public host names only (no IPs, no localhost or `.local`)
-  - follows redirects by hand, checking each hop
-  - accepts image MIME types only, up to 6 MB, with a 15 s timeout
-- Web: fetches only from the hosts in the CSP, in CORS mode, with no credentials and no referrer, checking type and size.
-
-## Tests (all on Chromium, without a GPU)
-- `qa/harness.js refpaint` is the new scenario. It stubs DuckDuckGo and Commons with the fixtures in `qa/fixtures/refpaint`.
-- `qa/imagesearch-test.js` unit-tests the Electron search with a fake fetch, including redirects to local addresses, non-image content and unknown URLs. **11/11 pass.**
-- Regression runs: reload, ui, chat, vehicle, haul. Results are below.
-
-### Results
 | Run | Result |
 |---|---|
-| `refpaint` (new) | **18/18 PASS**, page errors: none (`logs/refpaint.log`) |
-| `qa/imagesearch-test.js` | **11/11 PASS** |
-| reload | page errors: none; old disposal record and pit pin survive the reload |
-| ui | page errors: none |
-| chat | page errors: none |
-| vehicle | page errors: none |
-| haul | page errors: none; hauled 4 loads into the Disposal Pit |
+| `refpaint` | **46/46 PASS**, page errors: none |
+| `photobrowse` | **9/9 PASS**, page errors: none |
+| `qa/imagesearch-test.js` (desktop DuckDuckGo search) | **11/11 PASS** |
+| reload, ui, chat, vehicle, haul | all finish, page errors: none (reload: disposal record and pit pin survive; haul: 4 loads tipped) |
 
-The `refpaint` scenario checks:
-- that single, combined and split paintings get made
-- that DuckDuckGo IA is the source for "cat" and Commons is the fallback (and the diary says so)
-- that a combine uses two different results
-- that Commons HTML is stripped
-- that the website listing keeps the credit and the viewer credit is escaped
-- that no player data appears in any query, and safe search is on every DuckDuckGo query
-- that everything survives a reload (records, full pictures, 1+2+2 reference copies)
-- that an old save with every reference field stripped still loads
-- that offline he paints his own subject from life
+**`refpaint` covers:**
+- The licence gate and the risk check per source:
+  - 14 sources, each with fixture metadata containing one bad and one good item: NC, unknown, a third-party NASA credit, unevaluated LoC rights, InC Europeana, a portrait, a logo, a trademark-restricted file
+  - DuckDuckGo is looking only
+- The licence words and the risky-subject words (people, brands, characters, modern murals, a museum's public-domain art).
+- Query safety: no player data in any request, safe search on, each key sent only to its own host.
+- Single, subject+setting and split paintings, all from licence-checked sources. Combined paintings take their two photos from different sources.
+- At least 3 changes are logged and the similarity score is stored.
+- The credit line: "after …" for CC BY / CC BY-SA, CC BY-SA carrying over to the painting, and "based on a public-domain image".
+- A painting forced too close is reworked with a mirrored crop, becomes a study, and the website refuses it.
+- The website gate: an old painting from life is still sellable; an old reference painting without licence data is refused. A listing keeps its credit.
+- The escaped Museum label.
+- Reload survival; an old save with every new field stripped; offline painting from life.
 
-The "Failed to load resource 404" console lines come from the harness's blocked icon CDN and appear on main too.
+**`photobrowse` covers:**
+- A browsing session that pages on while he is interested.
+- Paging that reaches every source's last page, one page at a time (42 pages across 14 sources).
+- The photos on the cafe screen, the diary line, and the favourites board capped at 24 with the pinned favourite kept.
+- Small thumbnails (≤ 3.2 KB) and an escaped board.
+- Painting from a favourite, using its own picture.
+- Favourites surviving a reload in their own save key (about 62 KB for 24 favourites).
 
 ## Open items
-1. **The live endpoints were never reached from the test machine.** The container's proxy blocks duckduckgo.com and wikimedia.org, so everything was tested against stubs that follow the documented response shapes.
-   - Undocumented: `i.js` and the vqd token, which DuckDuckGo may change, and whether `duckduckgo.com/i/…` images send CORS headers. If they don't, the website falls through to Commons, which does.
-   - Please try once on each platform with a real connection.
-2. **The Capacitor path is untested** (no device here). It uses `Capacitor.Plugins.CapacitorHttp`, which ships with @capacitor/core 8. No config change is needed for direct calls.
-3. **Wikimedia Commons has no safe-search switch.** Results are filtered on title, categories and description with the same all-ages list. That is a filter, not a guarantee.
-4. **Hard case for subject + setting:** a thin subject on a gradient sky (the rocket) brings a patch of its own sky with it. Close-ups and objects on a background work well (cat, coffee cup).
-5. In charcoal and ink, very dark night photos come out as mid-grey paper with darks, because that is how those media already handle values.
+1. **The live endpoints are untested** (see the top of this report). Before relying on any source, try each one once with a real connection.
+   - Check CORS on the image hosts, especially `duckduckgo.com/i/`, `images.metmuseum.org` and `www.loc.gov`.
+   - Check the rate limits.
+   - Check the Rijksmuseum API, whose legacy version is being retired.
+2. **The phone path is untested.** Capacitor's built-in HTTP is used for DuckDuckGo images on phones, but I had no device to try it on.
+3. **The risk check is a word filter on the metadata, not image recognition.**
+   - A photo whose title and tags don't say "person" or "logo" can still contain one.
+   - Commons has no safe-search switch.
+   - When the metadata is thin, the filter is deliberately conservative.
+4. **Hard case for subject + setting:** a thin subject on a gradient sky (the rocket) brings a patch of its own sky with it.
+5. **Licence checks run against what each source says at search time.** The record keeps that snapshot. If a source later changes a file's licence, the website gate still trusts the snapshot.

@@ -276,7 +276,7 @@ function companionSay(text, ms = 4200) {
         if (!host) return;
         companionBubbleEl = document.createElement('div');
         companionBubbleEl.id = 'companionBubble';
-        companionBubbleEl.className = 'absolute pointer-events-none px-2.5 py-1 rounded-2xl bg-teal-50/95 text-teal-900 text-[11px] font-semibold shadow-lg border border-teal-300 max-w-[200px] text-center';
+        companionBubbleEl.className = 'absolute pointer-events-none px-2.5 py-1 rounded-2xl bg-teal-50/95 text-teal-900 text-2xs font-semibold shadow-lg border border-teal-300 max-w-[200px] text-center';
         companionBubbleEl.style.transform = 'translate(-50%, -100%)';
         companionBubbleEl.style.zIndex = '5';
         companionBubbleEl.style.transition = 'opacity 0.3s';

@@ -91,11 +91,11 @@ function garageServiceDue() {
 function garageConditionHtml() {
       const vs = garageVehicles();
       if (!vs.length) return '';
-      return `<div class="text-[10px] uppercase tracking-wide text-slate-500 mt-1">Vehicle condition</div>` + vs.map(v => {
+      return `<div class="text-2xs uppercase tracking-wide text-slate-500 mt-1">Vehicle condition</div>` + vs.map(v => {
         const s = vehicleService(v), c = vehicleCondition(v);
-        return `<div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200">
+        return `<div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-200">
           <div class="flex items-center gap-2"><span class="flex-1">🚗 ${escapeHtml(v.name)}</span><span class="${c > 60 ? 'text-emerald-300' : c > 30 ? 'text-amber-300' : 'text-red-300'} font-bold">${c}%</span></div>
-          <div class="text-[10px] text-slate-400">${Object.entries(s).map(([k, w]) => `${GARAGE_PARTS[k].label} ${Math.round(100 - w)}%`).join(' · ')}</div></div>`;
+          <div class="text-2xs text-slate-400">${Object.entries(s).map(([k, w]) => `${GARAGE_PARTS[k].label} ${Math.round(100 - w)}%`).join(' · ')}</div></div>`;
       }).join('');
     }
 

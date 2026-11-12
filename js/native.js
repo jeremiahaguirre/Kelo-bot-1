@@ -244,12 +244,12 @@
     if (!panel || document.getElementById('phoneSettings')) return;
     const box = document.createElement('section');
     box.id = 'phoneSettings';
-    box.className = 'mt-4 pt-3 border-t border-slate-800 space-y-2 text-xs text-slate-300';
+    box.className = 'ui-dialog-section text-xs text-slate-300';
     box.innerHTML = `
-      <h3 class="text-[11px] font-bold uppercase tracking-wide text-slate-400">On this phone</h3>
-      <label class="flex items-center justify-between gap-3"><span>Keep the screen on while the app is open</span><input id="phoneKeepAwake" type="checkbox" class="w-4 h-4 accent-amber-500"></label>
-      <label class="flex items-center justify-between gap-3"><span>Gentle vibration for news</span><input id="phoneHaptics" type="checkbox" class="w-4 h-4 accent-amber-500"></label>
-      <a href="https://jeremiahaguirre.github.io/Kelo-bot-1/privacy.html" target="_blank" rel="noopener noreferrer" class="inline-block text-[11px] text-sky-300 hover:underline">Privacy policy</a>`;
+      <h4 class="ui-section-title">On this phone</h4>
+      <label class="flex items-center justify-between gap-3 min-h-[44px]"><span>Keep the screen on while the app is open</span><input id="phoneKeepAwake" type="checkbox" role="switch" class="ui-toggle"></label>
+      <label class="flex items-center justify-between gap-3 min-h-[44px]"><span>Gentle vibration for news</span><input id="phoneHaptics" type="checkbox" role="switch" class="ui-toggle"></label>
+      <a href="https://jeremiahaguirre.github.io/Kelo-bot-1/privacy.html" target="_blank" rel="noopener noreferrer" class="inline-block text-2xs text-amber-300 underline underline-offset-2">Privacy policy</a>`;
     panel.appendChild(box);
     const awake = box.querySelector('#phoneKeepAwake');
     const buzz = box.querySelector('#phoneHaptics');
@@ -270,7 +270,7 @@
     fetch(link.href)
       .then(res => res.text())
       .then(data => Filesystem.writeFile({ path: name, data, directory: 'DOCUMENTS', encoding: 'utf8', recursive: true }))
-      .then(() => typeof showToast === 'function' && showToast(`💾 Saved ${name} to ${platform === 'ios' ? 'Files › On My iPhone › Kelo-1 World' : 'Documents'}`))
+      .then(() => typeof showToast === 'function' && showToast(`Saved ${name} to ${platform === 'ios' ? 'Files › On My iPhone › Kelo-1 World' : 'Documents'}`))
       .catch(err => typeof showToast === 'function' && showToast(`Could not save ${name}: ${err.message || err}`));
   }, true);
 

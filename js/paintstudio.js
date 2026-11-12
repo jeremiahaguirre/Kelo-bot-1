@@ -556,7 +556,9 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
         };
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
         state.microPose = 'normal';
-        if (state.paintPlan && state.paintPlan.medium === medium) state.paintPlan = null;
+        // Only the plan this painting was (a visitor's ask stays until their painting is done)
+        const plan = state.paintPlan;
+        if (plan && plan.medium === medium && (plan.for || null) === (visitor || null) && (!plan.subject || plan.subject === subject)) state.paintPlan = null;
         // into the Museum (it goes down to a lower gallery if the walls upstairs are full)
         if (typeof carryIntoMuseum === 'function') { try { await carryIntoMuseum('painting', record, `"${title}"`); } catch (e) {} }
         state.murals = [record, ...state.murals];

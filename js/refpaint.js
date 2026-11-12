@@ -380,6 +380,19 @@ function refpTransfer(C, pal, mean, keep = 0.4) {
 function refpSimplify(C, q, rng) {
       const { w, h } = C;
       const Cb = artBlurChannels(C, q < 0.4 ? 3 : 2);
+      // Key the values like a painter: a dark night photo or a hazy one is stretched part of the way
+      // toward a full range of darks and lights (half strength, so night stays night)
+      {
+        const L = artLum(Cb);
+        const sorted = Array.from(L).filter((v, i) => i % 11 === 0).sort((x, y) => x - y);
+        const lo = sorted[Math.floor(sorted.length * 0.02)], hi = sorted[Math.floor(sorted.length * 0.98)];
+        const span = Math.max(0.05, hi - lo);
+        for (let i = 0; i < L.length; i++) {
+          const v = L[i], target = artMix(v, 0.06 + 0.88 * artClamp01((v - lo) / span), 0.5);
+          const k2 = v > 0.01 ? target / v : 1;
+          Cb.r[i] = artClamp01(Cb.r[i] * k2); Cb.g[i] = artClamp01(Cb.g[i] * k2); Cb.b[i] = artClamp01(Cb.b[i] * k2);
+        }
+      }
       const k = Math.round(7 + q * 9);
       const pal = artPalette(Cb, k, rng);
       const flat = (src) => {
@@ -638,9 +651,11 @@ async function refpGatherAtNetNode(plan, medium, { visitor = null } = {}) {
         renderAllUI();
         if (!refs.length) return null;
         showToast(`🔎 Kelo-1 found ${refs.length === 2 ? 'two reference photos' : 'a reference photo'} (${[...new Set(refs.map(r => r.source))].join(', ')})`);
+        // "a cat", "sunflowers", "the northern lights": a noun phrase for his label and diary
+        const np = t => /^(a|an|the)\s/i.test(t) || /s$/i.test(t) && !/ss$/i.test(t) ? t : `${/^[aeiou]/i.test(t) ? 'an' : 'a'} ${t}`;
         const label = mode === 'combine'
-          ? (plan.how === 'split' ? `${plan.query} and ${plan.queryB}, a split composition from two reference photos` : `${plan.query} in ${plan.queryB}, combined from two reference photos`)
-          : `${plan.query}, after a reference photo`;
+          ? (plan.how === 'split' ? `${np(plan.query)} and ${np(plan.queryB)}, a split composition from two reference photos` : `${np(plan.query)} in ${np(plan.queryB)}, combined from two reference photos`)
+          : `${np(plan.query)}, after a reference photo`;
         return { mode, how: mode === 'combine' ? (plan.how === 'split' ? 'split' : 'subject-setting') : null, refs, label, query: plan.query, queryB: mode === 'combine' ? plan.queryB : null };
       } finally {
         state.isBrowsing = wasBrowsing;

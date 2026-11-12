@@ -312,15 +312,13 @@ function eyeCamRenderHud(show) {
       const body = hud.querySelector('[data-eyecam-body]');
       const btn = hud.querySelector('[data-eyecam-hud]');
       if (body) body.classList.toggle('hidden', !eyeCam.prefs.hud);
-      if (btn) { btn.textContent = eyeCam.prefs.hud ? 'Hide' : 'Show'; btn.setAttribute('aria-pressed', String(eyeCam.prefs.hud)); }
+      const label = eyeCam.prefs.hud ? 'Hide' : 'Show';
+      if (btn && btn.textContent !== label) { btn.textContent = label; btn.setAttribute('aria-pressed', String(eyeCam.prefs.hud)); }
       if (!eyeCam.prefs.hud) return;
-      const clean = s => (typeof stripCoords === 'function' ? stripCoords(String(s || '')) : String(s || '')).trim();
+      // Only what he looks at: what he says and thinks is in the activity card
       const look = hud.querySelector('[data-eyecam-look]');
-      const think = hud.querySelector('[data-eyecam-think]');
-      if (look) look.textContent = eyeCamLookingAt();
-      const said = clean(state.speechBubble);
-      const doing = clean(state.moodTitle);
-      if (think) think.textContent = said ? `"${said.length > 110 ? said.slice(0, 107) + '…' : said}"` : (doing || '…');
+      const seen = eyeCamLookingAt();
+      if (look && look.textContent !== seen) look.textContent = seen;
     }
 
 window.addEventListener('DOMContentLoaded', () => {

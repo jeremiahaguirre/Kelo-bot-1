@@ -18,11 +18,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* The status bar across the top (vitals, settings and menu buttons) */
-.kelo-native body > div.fixed.top-0.inset-x-0 {
-  padding-top: calc(0.5rem + var(--kelo-top));
-  padding-left: calc(0.5rem + var(--kelo-left));
-  padding-right: calc(0.5rem + var(--kelo-right));
+/* The screen over the world (css/style.css) keeps inside the safe area through these */
+:root.kelo-native {
+  --hud-st: var(--kelo-top);
+  --hud-sr: var(--kelo-right);
+  --hud-sb: var(--kelo-bottom);
+  --hud-sl: var(--kelo-left);
 }
 
 /* The slide-out menu */
@@ -30,21 +31,6 @@
   padding-top: var(--kelo-top);
   padding-bottom: var(--kelo-bottom);
   padding-right: var(--kelo-right);
-}
-
-/* What he's doing, docked at the bottom middle */
-.kelo-native #keloOverheadHUD {
-  bottom: calc(0.75rem + var(--kelo-bottom));
-}
-
-/* Camera buttons (tablets in landscape) and the arrow pad */
-.kelo-native #dioramaViewport > .absolute.top-44 {
-  top: calc(11rem + var(--kelo-top));
-  left: calc(0.75rem + var(--kelo-left));
-}
-.kelo-native #dioramaViewport > .absolute.bottom-3.right-3 {
-  bottom: calc(0.75rem + var(--kelo-bottom));
-  right: calc(0.75rem + var(--kelo-right));
 }
 
 /* Pop-up windows and the photo / shelf viewer */
@@ -55,9 +41,4 @@
   padding-bottom: calc(1rem + var(--kelo-bottom));
   padding-left: calc(1rem + var(--kelo-left));
   padding-right: calc(1rem + var(--kelo-right));
-}
-
-/* Messages that pop up */
-.kelo-native #toastContainer {
-  margin-top: var(--kelo-top);
 }

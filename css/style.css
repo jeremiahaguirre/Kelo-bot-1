@@ -24,10 +24,6 @@ body {
   transform: translate(-50%, -108%) scale(1.07);
 }
 
-#keloOverheadHUD {
-  pointer-events: auto;
-}
-
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
 ::-webkit-scrollbar-thumb { background: rgba(71, 85, 105, 0.8); border-radius: 9999px; }
@@ -45,67 +41,237 @@ body {
   color: #64748b;
 }
 
-/* With the menu open on a wide screen, keep the activity panel in the part of the world still visible */
-@media (min-width: 640px) {
-  #keloOverheadHUD { transition: left 0.3s ease; }
-  body.menu-open #keloOverheadHUD { left: calc((100% - 460px) / 2); width: min(560px, calc(100% - 460px - 1.5rem)); }
-}
-
-/* Toasts never cover the open menu: on a wide screen they sit over the world still visible, on a phone
-   (where the menu fills the screen) they rise from the bottom, above the message box */
-#toastContainer > * { max-width: min(92vw, 440px); text-align: center; }
-@media (min-width: 640px) { body.menu-open #toastContainer { left: calc((100% - 460px) / 2); } }
-@media (max-width: 639px) { body.menu-open #toastContainer { top: auto; bottom: calc(132px + env(safe-area-inset-bottom, 0px)); } }
-
 /* Brain tab sections fold open and closed */
 .brain-section > summary::-webkit-details-marker { display: none; }
 .brain-section[open] .brain-caret { transform: rotate(90deg); }
 
-/* --- Exploring the world (js/explore.js, js/minimap.js, js/tryit.js) --- */
-:root { --explore-top: 160px; --explore-above-panel: 12px; }
-#exploreBar { top: var(--explore-top); }
-#explorePreviewChip { top: calc(var(--explore-top) + 46px); }
-#explorePlaces { top: calc(var(--explore-top) + 46px); max-height: calc(100% - var(--explore-top) - 60px - var(--explore-above-panel)); }
-.explore-mode-btn { display: flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #cbd5e1; transition: background 0.15s, color 0.15s; min-height: 32px; }
-.explore-mode-btn:hover { background: rgba(51, 65, 85, 0.8); color: #fff; }
-.explore-mode-btn.explore-mode-on { background: rgba(245, 158, 11, 0.9); color: #0f172a; }
-.explore-bar-btn { display: flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; color: #e2e8f0; background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(71, 85, 105, 0.7); min-height: 34px; }
-.explore-bar-btn:hover, .explore-bar-btn[aria-expanded="true"] { background: rgba(245, 158, 11, 0.2); border-color: rgba(251, 191, 36, 0.6); color: #fde68a; }
-.explore-round { width: 34px; justify-content: center; padding: 0; font-weight: 800; }
-.explore-x { width: 26px; height: 26px; flex-shrink: 0; border-radius: 9px; background: #1e293b; color: #cbd5e1; font-size: 12px; display: flex; align-items: center; justify-content: center; }
-.explore-x:hover { background: #334155; color: #fff; }
-.explore-spot-btn { display: flex; align-items: center; gap: 6px; width: 100%; padding: 7px 9px; border-radius: 11px; background: #0f172a; border: 1px solid #334155; color: #e2e8f0; font-size: 12px; font-weight: 600; text-align: left; }
+/* --- The screen over the 3D world (index.html #hudTop and #dioramaViewport; js/hud.js) ----------
+   One set of tokens for every panel: the same glass, border, radius, shadow and control height.
+   Elements that other code shows and hides with .hidden only get a display in :not(.hidden). */
+:root {
+  --hud-gap: 12px;
+  --hud-st: env(safe-area-inset-top, 0px);
+  --hud-sr: env(safe-area-inset-right, 0px);
+  --hud-sb: env(safe-area-inset-bottom, 0px);
+  --hud-sl: env(safe-area-inset-left, 0px);
+  --hud-bg: rgba(2, 6, 23, 0.74);
+  --hud-bg-strong: rgba(2, 6, 23, 0.93);
+  --hud-line: rgba(148, 163, 184, 0.16);
+  --hud-line-strong: rgba(148, 163, 184, 0.28);
+  --hud-fill: rgba(30, 41, 59, 0.75);
+  --hud-fill-hover: rgba(51, 65, 85, 0.9);
+  --hud-muted: #94a3b8;
+  --hud-accent: #f59e0b;
+  --hud-accent-soft: rgba(245, 158, 11, 0.16);
+  --hud-accent-text: #fcd34d;
+  --hud-r: 16px;
+  --hud-r-ctl: 10px;
+  --hud-shadow: 0 10px 28px -12px rgba(0, 0, 0, 0.6);
+  --hud-ctl: 36px;
+  --hud-menu-w: 460px;
+  --hud-stick: 96px;
+  /* js/explore.js keeps these two up to date: below the status block, and just above the activity card */
+  --explore-top: 92px;
+  --explore-above-panel: 12px;
+}
+@media (max-width: 639px) { :root { --hud-gap: 8px; } }
+@media (pointer: coarse) { :root { --hud-ctl: 44px; } }
+
+.hud-panel {
+  background: var(--hud-bg);
+  border: 1px solid var(--hud-line);
+  border-radius: var(--hud-r);
+  box-shadow: var(--hud-shadow);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(1.3);
+  color: #f1f5f9;
+}
+.hud-panel-strong { background: var(--hud-bg-strong); }
+.hud-muted { color: var(--hud-muted); }
+.hud-emoji-icon { line-height: 1; }
+/* Small buttons keep a 44px touch area on touch screens */
+.hud-hit { position: relative; }
+@media (pointer: coarse) { .hud-hit::after { content: ''; position: absolute; inset: -7px; } }
+
+/* Status, top left: name and the time on one line, six small meters (tap or hover for the numbers) */
+#hudTop { padding: calc(var(--hud-gap) + var(--hud-st)) calc(var(--hud-gap) + var(--hud-sr)) 0 calc(var(--hud-gap) + var(--hud-sl)); }
+#hudStatus { position: relative; display: flex; flex-direction: column; gap: 7px; min-width: 0; width: max-content; max-width: min(400px, calc(100% - 108px)); padding: 8px 12px 9px 8px; }
+.hud-status-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.hud-avatar { flex: none; width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(135deg, #fbbf24, #f97316 55%, #f43f5e); color: #0f172a; font-size: 11px; font-weight: 800; letter-spacing: -0.02em; display: flex; align-items: center; justify-content: center; }
+.hud-name { flex: none; line-height: 1; font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
+.hud-clock { min-width: 0; line-height: 1.2; font-size: 12px; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.hud-needs-wrap { position: relative; padding-left: 4px; }
+.hud-needs { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 20px; border-radius: 6px; }
+.hud-needs:focus-visible { outline: 2px solid var(--hud-accent); outline-offset: 3px; }
+@media (pointer: coarse) { .hud-needs { min-height: 30px; } }
+.hud-meter { flex: 1 1 0; min-width: 30px; display: flex; align-items: center; gap: 4px; }
+.hud-meter-icon { flex: none; font-size: 12px; line-height: 1; color: var(--c); }
+.hud-meter-track { flex: 1; height: 4px; border-radius: 9999px; background: rgba(148, 163, 184, 0.2); overflow: hidden; }
+.hud-meter-fill { display: block; height: 100%; border-radius: inherit; background: var(--c); transition: width 0.6s ease; }
+.hud-needs-detail { display: none; position: absolute; z-index: 5; top: calc(100% + 10px); left: -8px; right: -12px; min-width: 260px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px 14px; padding: 10px 12px; border-radius: 12px; background: var(--hud-bg-strong); border: 1px solid var(--hud-line-strong); box-shadow: var(--hud-shadow); }
+.hud-needs-detail::before { content: ''; position: absolute; left: 0; right: 0; top: -11px; height: 11px; } /* keeps the hover while the pointer moves down */
+.hud-needs[aria-expanded="true"] + .hud-needs-detail { display: grid; }
+@media (hover: hover) and (pointer: fine) { .hud-needs-wrap:hover .hud-needs-detail { display: grid; } }
+@media (max-width: 639px) { .hud-needs-detail { grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; } }
+.hud-need { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 12px; white-space: nowrap; }
+.hud-need-label { color: #cbd5e1; overflow: hidden; text-overflow: ellipsis; }
+.hud-need-val { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--c); }
+
+/* Settings and the menu, top right */
+.hud-round-btn { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--hud-bg); border: 1px solid var(--hud-line); color: #e2e8f0; box-shadow: var(--hud-shadow); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); transition: background 0.15s, color 0.15s; }
+.hud-round-btn:hover { background: var(--hud-fill-hover); color: #fff; }
+.hud-round-btn-primary { background: var(--hud-accent); border-color: transparent; color: #0f172a; }
+.hud-round-btn-primary:hover { background: #fbbf24; color: #0f172a; }
+.hud-badge:not(.hidden) { position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9999px; background: #f43f5e; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px #020617; }
+
+/* Camera: one segmented control (Follow / Explore / Eyes), then Places and help */
+#exploreBar { top: var(--explore-top); left: calc(var(--hud-gap) + var(--hud-sl)); display: flex; align-items: center; gap: 4px; padding: 4px; border-radius: 14px; }
+.hud-seg { display: flex; gap: 2px; }
+.explore-mode-btn, .explore-bar-btn { display: flex; align-items: center; justify-content: center; gap: 6px; height: var(--hud-ctl); padding: 0 12px; border-radius: var(--hud-r-ctl); font-size: 12.5px; font-weight: 600; color: #cbd5e1; white-space: nowrap; transition: background 0.15s, color 0.15s; }
+.explore-mode-btn i, .explore-bar-btn i { font-size: 15px; }
+.explore-mode-btn:hover, .explore-bar-btn:hover { background: var(--hud-fill-hover); color: #fff; }
+.explore-mode-btn.explore-mode-on { background: var(--hud-accent); color: #0f172a; }
+.explore-bar-btn[aria-expanded="true"] { background: var(--hud-accent-soft); color: var(--hud-accent-text); }
+.explore-round { width: var(--hud-ctl); padding: 0; }
+.hud-divider { align-self: stretch; width: 1px; margin: 7px 2px; background: var(--hud-line-strong); }
+@media (max-width: 639px) {
+  .explore-mode-btn { padding: 0 10px; }
+  .hud-bar-label { display: none; }
+  #btnPlaces { width: var(--hud-ctl); padding: 0; }
+}
+.hud-preview-chip, #explorePlaces { top: calc(var(--explore-top) + var(--hud-ctl) + 16px); left: calc(var(--hud-gap) + var(--hud-sl)); }
+.hud-preview-chip { padding: 6px 10px; border-radius: var(--hud-r-ctl); background: rgba(8, 47, 73, 0.92); border: 1px solid rgba(56, 189, 248, 0.45); color: #e0f2fe; font-size: 12px; box-shadow: var(--hud-shadow); }
+.hud-places { width: min(340px, calc(100% - 2 * var(--hud-gap))); max-height: calc(100% - var(--explore-top) - var(--hud-ctl) - 28px - var(--explore-above-panel)); padding: 10px; }
+.hud-places-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.hud-places-title { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; }
+.hud-places-foot { display: flex; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--hud-line); }
+.explore-x { flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px; background: var(--hud-fill); color: #cbd5e1; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+.explore-x:hover { background: var(--hud-fill-hover); color: #fff; }
+.explore-spot-btn { display: flex; align-items: center; gap: 6px; width: 100%; padding: 7px 9px; border-radius: var(--hud-r-ctl); background: #0f172a; border: 1px solid #334155; color: #e2e8f0; font-size: 12px; font-weight: 600; text-align: left; }
 .explore-spot-btn:hover { background: rgba(245, 158, 11, 0.18); border-color: rgba(251, 191, 36, 0.6); }
-.explore-place { display: flex; align-items: center; gap: 6px; min-width: 0; padding: 6px 8px; border-radius: 10px; background: #0f172a; border: 1px solid #1e293b; color: #e2e8f0; font-size: 11px; text-align: left; min-height: 32px; }
-.explore-place:hover { background: rgba(245, 158, 11, 0.15); border-color: rgba(251, 191, 36, 0.5); }
-.explore-place-kelo { width: 100%; background: rgba(245, 158, 11, 0.18); border-color: rgba(251, 191, 36, 0.5); color: #fde68a; font-weight: 700; font-size: 12px; }
-.explore-place-group { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #94a3b8; padding: 6px 2px 2px; }
-.explore-mini-btn { width: 22px; height: 22px; border-radius: 7px; background: #1e293b; color: #e2e8f0; font-size: 13px; line-height: 1; display: flex; align-items: center; justify-content: center; }
-.explore-mini-btn:hover { background: #334155; }
-#exploreMinimap { width: 156px; height: 97px; } /* the island is 154 x 96 (js/minimap.js) */
-@media (min-width: 1100px) { #exploreMinimap { width: 200px; height: 125px; } }
-#exploreMinimapWrap, #btnShowMinimap { bottom: 12px; }
-@media (min-width: 640px) { body.menu-open #exploreMinimapWrap, body.menu-open #btnShowMinimap { bottom: 108px; } }
-.explore-where { padding: 7px 12px; border-radius: 14px; background: rgba(245, 158, 11, 0.92); color: #0f172a; font-size: 12px; font-weight: 800; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35); }
+.explore-place { display: flex; align-items: center; gap: 6px; min-width: 0; padding: 6px 9px; border-radius: var(--hud-r-ctl); background: rgba(15, 23, 42, 0.8); border: 1px solid var(--hud-line); color: #e2e8f0; font-size: 12px; text-align: left; min-height: 32px; }
+.explore-place:hover { background: var(--hud-accent-soft); border-color: rgba(251, 191, 36, 0.5); }
+.explore-place-kelo { width: 100%; background: var(--hud-accent-soft); border-color: rgba(251, 191, 36, 0.45); color: #fde68a; font-weight: 700; }
+.explore-place-group { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--hud-muted); padding: 8px 2px 2px; }
+@media (pointer: coarse) { .explore-place, .explore-spot-btn { min-height: 44px; } }
+
+/* What he does and says: the activity card, bottom middle */
+#keloOverheadHUD { pointer-events: auto; left: 50%; bottom: calc(var(--hud-gap) + var(--hud-sb)); transform: translateX(-50%); width: min(560px, calc(100% - 2 * var(--hud-gap) - var(--hud-sl) - var(--hud-sr))); }
+@media (min-width: 640px) { #keloOverheadHUD { width: min(560px, calc(100% - 24rem)); transition: left 0.3s ease, width 0.3s ease; } }
+.hud-activity-card { padding: 10px 14px 11px; border-color: rgba(251, 191, 36, 0.3); }
+.hud-activity-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; }
+.hud-activity-emoji { flex: none; font-size: 16px; line-height: 1; }
+.hud-activity-title { flex: 1 1 auto; max-width: 100%; min-width: 0; font-size: 13.5px; font-weight: 700; color: var(--hud-accent-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud-activity-chips { flex: 0 1 auto; display: flex; align-items: center; gap: 6px; max-width: 100%; min-width: 0; margin-left: auto; }
+.hud-chip { display: inline-flex; align-items: center; gap: 5px; height: 28px; min-width: 0; padding: 0 10px; border-radius: 9999px; font-size: 11.5px; font-weight: 600; white-space: nowrap; background: rgba(148, 163, 184, 0.12); color: #cbd5e1; }
+.hud-chip i { font-size: 13px; flex: none; }
+.hud-chip-place { max-width: 12rem; }
+.hud-chip-btn { flex: none; background: var(--hud-accent); color: #0f172a; transition: background 0.15s, color 0.15s; }
+.hud-chip-btn:hover { background: #fbbf24; }
+.hud-chip-btn[aria-pressed="true"] { background: var(--hud-accent-soft); color: var(--hud-accent-text); }
+.hud-chip-btn[aria-pressed="true"]:hover { background: rgba(245, 158, 11, 0.3); }
+.hud-activity-speech { margin-top: 5px; font-family: 'Newsreader', serif; font-style: italic; font-size: 14px; line-height: 1.35; color: #e2e8f0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+@media (max-width: 639px) { .hud-chip-place { max-width: 8.5rem; } .hud-activity-speech { font-size: 13.5px; } }
+
+/* Through his eyes: a small note above the activity card that fades after a few seconds */
+#eyeCamHud { left: 50%; bottom: var(--explore-above-panel); transform: translateX(-50%); max-width: min(440px, calc(100% - 2 * var(--hud-gap))); padding: 5px 5px 5px 12px; border-radius: 14px; border-color: rgba(45, 212, 191, 0.35); pointer-events: auto; transition: opacity 0.5s ease, left 0.3s ease; }
+#eyeCamHud:not(.hidden) { display: flex; align-items: center; gap: 8px; }
+@media (min-width: 640px) { #eyeCamHud { max-width: min(440px, calc(100% - 22rem)); } } /* clear of the map and the touch controls */
+#eyeCamHud.hud-eyes-faded:not(:hover) { opacity: 0.32; }
+.hud-eyes-tag { flex: none; display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: #5eead4; }
+.hud-eyes-body:not(.hidden) { display: block; min-width: 0; font-size: 12px; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.eyecam-btn { flex: none; height: 28px; padding: 0 10px; border-radius: 8px; background: var(--hud-fill); color: #e2e8f0; font-size: 11.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+.eyecam-btn:hover { background: rgba(45, 212, 191, 0.22); color: #fff; }
+.eyecam-x { width: 28px; padding: 0; font-size: 13px; }
+#eyeCamVignette { position: absolute; inset: 0; pointer-events: none; z-index: 5; opacity: 0; transition: opacity 0.6s; background: radial-gradient(ellipse 85% 80% at 50% 50%, transparent 62%, rgba(2, 6, 23, 0.55) 100%); }
+body.eyecam-on #eyeCamVignette { opacity: 1; }
+
+/* Minimap, bottom left (js/minimap.js draws it): folds away to a map button */
+#exploreMinimapWrap, #btnShowMinimap { left: calc(var(--hud-gap) + var(--hud-sl)); bottom: calc(var(--hud-gap) + var(--hud-sb)); }
+#exploreMinimapWrap { padding: 6px; border-radius: 14px; }
+#exploreMinimapWrap:not(.hidden) { display: block; }
+.hud-map-head { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; padding-left: 4px; }
+.hud-map-title { display: flex; align-items: center; gap: 5px; margin-right: auto; font-size: 11.5px; font-weight: 700; color: #cbd5e1; }
+.explore-mini-btn { width: 24px; height: 24px; border-radius: 7px; background: var(--hud-fill); color: #e2e8f0; font-size: 12px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+.explore-mini-btn:hover { background: var(--hud-fill-hover); }
+@media (pointer: coarse) { .explore-mini-btn { width: 30px; height: 30px; } }
+#exploreMinimap { width: 144px; height: 90px; border-radius: 9px; } /* the island is 154 x 96 */
+@media (min-width: 1600px) and (min-height: 900px) { #exploreMinimap { width: 176px; height: 110px; } }
+.hud-icon-btn { width: 44px; height: 44px; border-radius: 14px; background: var(--hud-bg); border: 1px solid var(--hud-line); color: #e2e8f0; font-size: 18px; box-shadow: var(--hud-shadow); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.hud-icon-btn:not(.hidden) { display: flex; align-items: center; justify-content: center; }
+.hud-icon-btn:hover { background: var(--hud-fill-hover); }
+
+/* Mouse and keyboard, bottom right: a keys hint, the move pad while exploring, Where is Kelo-1? */
+#explorePad { right: calc(var(--hud-gap) + var(--hud-sr)); bottom: calc(var(--hud-gap) + var(--hud-sb)); display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.explore-where { display: none; align-items: center; gap: 6px; height: var(--hud-ctl); padding: 0 14px; border-radius: 12px; background: var(--hud-accent); color: #0f172a; font-size: 12.5px; font-weight: 700; box-shadow: var(--hud-shadow); }
 .explore-where:hover { background: #fbbf24; }
-.explore-pad-btn { width: 30px; height: 30px; border-radius: 9px; background: #0f172a; border: 1px solid #334155; color: #fcd34d; font-size: 13px; display: flex; align-items: center; justify-content: center; touch-action: none; }
-.explore-pad-btn:hover { background: rgba(245, 158, 11, 0.25); }
+body.hud-kelo-away .explore-where { display: flex; }
+.hud-pad { display: none; grid-template-columns: repeat(3, 28px); gap: 4px; padding: 6px; border-radius: 14px; opacity: 0.85; transition: opacity 0.15s; }
+.hud-pad:hover { opacity: 1; }
+body[data-cam="explore"] .hud-pad { display: grid; }
+.explore-pad-btn { width: 28px; height: 28px; border-radius: 8px; background: rgba(15, 23, 42, 0.7); border: 1px solid var(--hud-line); color: var(--hud-accent-text); font-size: 13px; display: flex; align-items: center; justify-content: center; touch-action: none; }
+.explore-pad-btn:hover { background: var(--hud-accent-soft); }
 .explore-pad-btn:active { background: rgba(245, 158, 11, 0.45); }
-.explore-touch-btn { width: 48px; height: 48px; border-radius: 16px; background: rgba(2, 6, 23, 0.85); border: 1px solid rgba(71, 85, 105, 0.8); color: #fde68a; font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35); touch-action: none; backdrop-filter: blur(8px); }
-#btnShowMinimap.hidden, .explore-touch-btn.hidden { display: none; }
-.explore-touch-btn:active { background: rgba(245, 158, 11, 0.4); }
-#explorePad { display: flex; }
+.hud-keys { display: none; flex-direction: column; align-items: flex-end; gap: 4px; padding: 7px 10px; border-radius: 12px; font-size: 11px; color: var(--hud-muted); opacity: 0.85; }
+body[data-cam="follow"] .hud-keys, body[data-cam="eyes"] .hud-keys { display: flex; }
+.hud-keys > span { display: none; align-items: center; gap: 3px; white-space: nowrap; }
+body[data-cam="follow"] .hud-keys-follow, body[data-cam="eyes"] .hud-keys-eyes { display: flex; }
+.hud-keys kbd { min-width: 18px; height: 18px; padding: 0 4px; border-radius: 5px; background: rgba(148, 163, 184, 0.14); border: 1px solid rgba(148, 163, 184, 0.24); border-bottom-width: 2px; color: #e2e8f0; font: 600 10px/1 'Inter', sans-serif; display: inline-flex; align-items: center; justify-content: center; }
+.hud-keys kbd + kbd { margin-left: -1px; }
+
+/* Touch screens: a joystick (left) and turn/zoom buttons (right), both see-through */
 #exploreJoystick, #exploreTouchColumn { display: none; }
-#exploreJoystick { width: 112px; height: 112px; border-radius: 9999px; background: rgba(2, 6, 23, 0.55); border: 2px solid rgba(251, 191, 36, 0.45); touch-action: none; bottom: var(--explore-above-panel); backdrop-filter: blur(6px); }
-#exploreJoystickKnob { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 9999px; background: rgba(245, 158, 11, 0.85); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); pointer-events: none; }
-#exploreTouchColumn { bottom: var(--explore-above-panel); }
-/* Touch screens: joystick and big buttons instead of the desktop pad */
+#exploreJoystick { left: calc(var(--hud-gap) + var(--hud-sl)); bottom: var(--explore-above-panel); width: var(--hud-stick); height: var(--hud-stick); border-radius: 9999px; background: rgba(2, 6, 23, 0.45); border: 1.5px solid rgba(251, 191, 36, 0.4); touch-action: none; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); opacity: 0.75; transition: opacity 0.15s; }
+#exploreJoystick:active { opacity: 1; }
+#exploreJoystickKnob { position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 9999px; background: rgba(245, 158, 11, 0.85); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); pointer-events: none; }
+#exploreTouchColumn { right: calc(var(--hud-gap) + var(--hud-sr)); bottom: var(--explore-above-panel); flex-direction: column; align-items: flex-end; gap: 6px; }
+.hud-touch-grid { display: grid; grid-template-columns: repeat(2, 44px); gap: 6px; }
+.explore-touch-btn { width: 44px; height: 44px; border-radius: 12px; background: rgba(2, 6, 23, 0.55); border: 1px solid var(--hud-line-strong); color: #fde68a; font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; touch-action: none; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); opacity: 0.8; }
+.explore-touch-btn:active { background: rgba(245, 158, 11, 0.4); opacity: 1; }
+#exploreTouchColumn .explore-touch-where { display: none; opacity: 1; background: var(--hud-accent); color: #0f172a; border-color: transparent; }
+body.hud-kelo-away #exploreTouchColumn .explore-touch-where { display: flex; }
 @media (pointer: coarse) {
   #explorePad { display: none; }
   #exploreJoystick { display: block; }
   #exploreTouchColumn { display: flex; }
-  #exploreMinimapWrap, #btnShowMinimap { bottom: calc(var(--explore-above-panel) + 124px); }
+  /* The map sits above the joystick */
+  #exploreMinimapWrap, #btnShowMinimap { bottom: calc(var(--explore-above-panel) + var(--hud-stick) + 8px); }
 }
+/* Phones: the joystick row fills the space above the card, so the Eyes note sits under the camera control */
+@media (pointer: coarse) and (max-width: 639px) {
+  #eyeCamHud { top: calc(var(--explore-top) + var(--hud-ctl) + 16px); bottom: auto; left: calc(var(--hud-gap) + var(--hud-sl)); transform: none; max-width: calc(100% - 2 * var(--hud-gap)); }
+}
+/* Tablets: the controls have room beside the activity card, so they sit at the bottom edge */
+@media (pointer: coarse) and (min-width: 640px) {
+  #exploreJoystick, #exploreTouchColumn { bottom: calc(var(--hud-gap) + var(--hud-sb)); }
+  #exploreMinimapWrap, #btnShowMinimap { bottom: calc(var(--hud-gap) + var(--hud-sb) + var(--hud-stick) + 8px); }
+}
+
+/* Toasts sit under the camera control and never cover the open menu */
+#toastContainer > * { max-width: min(92vw, 440px); text-align: center; }
+#toastContainer { top: calc(var(--explore-top) + var(--hud-ctl) + 20px); }
+
+/* With the menu open on a wide screen: the panels shrink into the part of the world still visible */
+@media (min-width: 640px) {
+  body.menu-open #keloOverheadHUD { left: calc((100% - var(--hud-menu-w)) / 2); width: min(520px, calc(100% - var(--hud-menu-w) - 2 * var(--hud-gap))); }
+  body.menu-open #eyeCamHud { left: calc((100% - var(--hud-menu-w)) / 2); max-width: min(440px, calc(100% - var(--hud-menu-w) - 2 * var(--hud-gap))); }
+  body.menu-open #hudStatus { max-width: min(400px, calc(100vw - var(--hud-menu-w) - 2 * var(--hud-gap))); }
+  body.menu-open #explorePad, body.menu-open #exploreJoystick, body.menu-open #exploreTouchColumn { display: none; }
+  body.menu-open #toastContainer { left: calc((100% - var(--hud-menu-w)) / 2); }
+}
+@media (min-width: 640px) and (max-width: 1499px) {
+  body.menu-open #exploreMinimapWrap, body.menu-open #btnShowMinimap { display: none; }
+}
+@media (min-width: 640px) and (max-width: 1099px) {
+  body.menu-open .explore-mode-btn > span, body.menu-open .hud-bar-label { display: none; }
+  body.menu-open .explore-mode-btn, body.menu-open #btnPlaces { width: var(--hud-ctl); padding: 0; }
+}
+@media (max-width: 639px) { body.menu-open #toastContainer { top: auto; bottom: calc(132px + var(--hud-sb)); } }
+
+@media (prefers-reduced-motion: reduce) {
+  #keloOverheadHUD, #eyeCamHud, #eyeCamVignette, .hud-meter-fill, .explore-mode-btn, .explore-bar-btn, .hud-chip-btn, .hud-pad, #exploreJoystick { transition: none !important; }
+}
+
 .explore-help-card { padding: 10px; border-radius: 16px; background: #020617; border: 1px solid #1e293b; }
 .explore-help-head { font-weight: 700; color: #fde68a; margin-bottom: 4px; }
 .explore-help-card li { display: flex; gap: 8px; align-items: flex-start; color: #cbd5e1; line-height: 1.35; padding: 2px 0; }
@@ -116,15 +282,6 @@ body {
 .try-btn.try-btn-on { background: rgba(56, 189, 248, 0.25); border-color: #38bdf8; color: #e0f2fe; }
 .try-gift { display: flex; gap: 8px; align-items: flex-start; width: 100%; text-align: left; padding: 7px 9px; border-radius: 12px; background: #0f172a; border: 1px solid #1e293b; }
 .try-gift:hover { background: rgba(245, 158, 11, 0.12); border-color: rgba(251, 191, 36, 0.45); }
-
-/* Through his eyes (js/eyecam.js) */
-#eyeCamHud { top: calc(var(--explore-top) + 46px); left: 50%; transform: translateX(-50%); width: min(400px, calc(100% - 1rem)); pointer-events: auto; }
-@media (max-width: 639px) { #eyeCamHud { top: calc(var(--explore-top) + 50px); } }
-.eyecam-btn { padding: 3px 8px; border-radius: 9px; background: #0f172a; border: 1px solid #334155; color: #e2e8f0; font-size: 11px; font-weight: 600; min-height: 26px; }
-.eyecam-btn:hover { background: rgba(45, 212, 191, 0.2); border-color: rgba(45, 212, 191, 0.6); }
-#eyeCamVignette { position: absolute; inset: 0; pointer-events: none; z-index: 5; opacity: 0; transition: opacity 0.6s; background: radial-gradient(ellipse 85% 80% at 50% 50%, transparent 62%, rgba(2, 6, 23, 0.55) 100%); border-radius: 28px; }
-body.eyecam-on #eyeCamVignette { opacity: 1; }
-body.eyecam-on #explorePad .explore-pad-btn[data-hold="zoomOut"], body.eyecam-on #explorePad .explore-pad-btn[data-hold="zoomIn"] { opacity: 0.85; }
 
 /* --- The Talk tab: a live chat with Kelo-1 (js/talk.js) --- */
 #tab-talk:not(.hidden) { display: flex; flex-direction: column; height: 100%; min-height: 0; }

@@ -47,7 +47,7 @@ const WORKSHOP_LAND = {
   // garage hall and the big hangar stand at the south end of the runway field. Each has its own cut
   // slope (blend) so the pass's sides are rock cuts and the yard eases into the hills.
   eastRoad: { minX: 62.6, maxX: 68.4, minZ: -26, maxZ: -8, blend: 3 },
-  pass: { minX: 51, maxX: 73, minZ: -101, maxZ: -23.6, blend: 12, blendS: 2 },
+  pass: { minX: 51, maxX: 73, minZ: -101, maxZ: -23.6, blend: 20, blendS: 8 },
   yard: { minX: 0, maxX: 118, minZ: -173, maxZ: -100, blend: 16 },
   y: WORKSHOP_PAD_Y, blend: 3.2, blendNorth: 9, shore: 1.4
 };
@@ -115,7 +115,7 @@ function workshopLandAt(x, z, base) {
       const L = WORKSHOP_LAND;
       let k = 1;
       // (the north land and its slopes are all north of z -5: skip it for the valley's points)
-      const rects = z > -5 ? WORKSHOP_LAND_RECTS.slice(0, 3) : WORKSHOP_LAND_RECTS;
+      const rects = z > -5 ? WORKSHOP_LAND_RECTS.slice(0, 3) : WORKSHOP_LAND_RECTS;   // (the pass's mouth eases over 8 units, so z > -15.6 is never touched)
       rects.forEach(r => {
         const d = workshopRectDist(r, x, z);
         const blend = d.dzS > 0 && r.blendS ? r.blendS : r.blend || (d.dzN > 0 ? L.blendNorth : d.dzS > 0 && r === L.lane ? L.shore : L.blend);

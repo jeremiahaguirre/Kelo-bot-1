@@ -52,18 +52,18 @@ function getAnalyticalGroundHeight(x, z) {
     }
 
 // Map layout (2026-11): behind the town the mountain's foot is further north (z -19 instead of -12,
-// x -45 to 14, easing back by x -55 and x 22), so the town's north row stands on level ground with a
+// x -45 to 14, easing back by x -61 and x 26), so the town's north row stands on level ground with a
 // proper street in front of it. East of x 22 (the hangar, the Workshop, the Disposal Pit) it is unchanged.
-const VALLEY_FOOT = { z: -12, townZ: -19, x0: -45, x1: 14, ease: 9 };
+const VALLEY_FOOT = { z: -12, townZ: -19, x0: -45, x1: 14, easeW: 16, easeE: 12 };
 function valleyFootZ(x) {
       const F = VALLEY_FOOT;
-      const a = Math.min(1, Math.max(0, (x - (F.x0 - F.ease)) / F.ease)), b = Math.min(1, Math.max(0, (F.x1 + F.ease - x) / F.ease));
+      const a = Math.min(1, Math.max(0, (x - (F.x0 - F.easeW)) / F.easeW)), b = Math.min(1, Math.max(0, (F.x1 + F.easeE - x) / F.easeE));
       const k = Math.min(a, b), s = k * k * (3 - 2 * k);
       return F.z + (F.townZ - F.z) * s;
     }
 // The col over the range behind the Workshop: 1 along the pass (x about 52 to 72, z -24 to -100), easing
 // to 0 over 14 units round it; the range and the cliff there are lowered to a fifth of their height
-const PASS_SADDLE = { x0: 52, x1: 72, z0: -100, z1: -24, ease: 14 };
+const PASS_SADDLE = { x0: 52, x1: 72, z0: -100, z1: -24, ease: 22 };
 function passSaddle(x, z) {
       const P = PASS_SADDLE;
       if (z > P.z1 + P.ease) return 0;

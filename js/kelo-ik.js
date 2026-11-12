@@ -233,7 +233,7 @@ function keloApplyIK(t, dt, ctx) {
         const roll = Math.atan2(-_ikV.y, Math.hypot(_ikV.x, _ikV.z));
         if (S.planted) {
           const stray = Math.hypot(A.x - F.lx, A.z - F.lz);
-          if (!F.planted || (!lockXZ && (F.probeX === null || Math.hypot(A.x - F.probeX, A.z - F.probeZ) > 0.04)) || stray > (a.turn ? 0.9 : ph ? 0.45 : 0.25)) {
+          if (!F.planted || (!lockXZ && (F.probeX === null || Math.hypot(A.x - F.probeX, A.z - F.probeZ) > 0.04)) || stray > (a.turn ? 0.9 : ph ? 0.6 : 0.25)) {
             // touching down (or the pose moved this foot): lock it where it is, on the real ground
             if (F.planted && lockXZ) K.stats.relocks++;
             const g = probe(A.x, A.z);

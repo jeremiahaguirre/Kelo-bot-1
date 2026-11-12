@@ -206,8 +206,9 @@ function reparkOldVehicles() {
         const stale = water ? v.z < 10.5 && v.z > 8.5 : Math.hypot(v.x - STOREHOUSE.x, v.z - STOREHOUSE.z) < 7
           || (typeof townBuildingAt === 'function' && Boolean(townBuildingAt(v.x, v.z, 1.5)))
           || (typeof mapLayoutCovers === 'function' && mapLayoutCovers(v.x, v.z, 1.5))
-          // (or on the haul road, the only way over the range: road machines once parked on the plant's west strip)
-          || (!water && type.mode !== 'air' && typeof keloRoadAt === 'function' && (keloRoadAt(v.x, v.z) || {}).id === 'haul_road')
+          // (or on the haul road and the north yard's roads, the only way over the range: road machines once
+          // parked on the plant's west strip, and anything left in the yard where its roads now run)
+          || (!water && type.mode !== 'air' && typeof keloRoadAt === 'function' && Boolean((keloRoadAt(v.x, v.z) || {}).through))
           || (type.mode === 'air' && BALLOON_OLD_SLOTS.some(([bx, bz]) => Math.hypot(v.x - bx, v.z - bz) < 0.5));
         if (!stale) return;
         const slots = parkingSlotsFor(type, v.name);

@@ -80,7 +80,7 @@ function minimapRoads(ctx, px, pz, sx, dpr) {
       ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       [true, false].forEach(edge => KELO_ROADS.forEach(r => {
         const w = Math.max(r.kind === 'path' ? 1.2 : 2, r.w * sx);
-        ctx.strokeStyle = edge ? 'rgba(68,52,32,0.55)' : r.kind === 'path' ? '#e7dcc4' : '#cdb991';
+        ctx.strokeStyle = edge ? 'rgba(68,52,32,0.55)' : r.kind === 'path' ? '#e7dcc4' : r.kind === 'paved' ? '#5b5d63' : '#cdb991';
         ctx.lineWidth = edge ? w + 1.4 * dpr : w;
         ctx.beginPath();
         r.pts.forEach(([x, z], i) => (i ? ctx.lineTo(px(x), pz(z)) : ctx.moveTo(px(x), pz(z))));

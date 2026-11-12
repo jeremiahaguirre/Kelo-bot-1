@@ -777,6 +777,8 @@ const ISLAND_MIN_X = -64, ISLAND_MAX_X = 90, ISLAND_HALF_Z = 48;
 const NORTH_PATCH = { minX: -6, maxX: 124, minZ: -180, maxZ: -48, cell: 1.5 };
 const FAR_LANDS = { minX: -620, maxX: 640, minZ: -3440, maxZ: 22 };
 const OUTER_LANDS_HALF = 170;
+// How far the far lands sink where the outer lands, the north patch or the island cover them
+const FAR_LANDS_SINK = 80;
 function inRectXZ(r, x, z, pad = 0) {
       return x > r.minX + pad && x < r.maxX - pad && z > r.minZ + pad && z < r.maxZ - pad;
     }
@@ -829,6 +831,7 @@ function buildOuterLands3D() {
       geo.computeVertexNormals();
       // The same textured ground as the island (js/realism.js), so the seam doesn't show
       const outer = new THREE.Mesh(geo, terrainGroundMesh && terrainGroundMesh.material.userData.keloTerrain ? terrainGroundMesh.material : new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }));
+      outer.name = 'outerLands';
       outer.receiveShadow = true;
       scene.add(outer);
       buildNorthPatch3D(outer.material);
@@ -940,6 +943,8 @@ function buildNorthPatch3D(material) {
         }, material);
       northPatchMesh.name = 'northPatch';
       scene.add(northPatchMesh);
+      // The paved roads over the pass and through the yard (js/roads.js)
+      if (typeof buildRoadSurfaces3D === 'function') buildRoadSurfaces3D();
     }
 
 // Everything else past the island, cheap: a coarse grid whose lines crowd only where the field's
@@ -958,7 +963,10 @@ function buildFarLands3D(material) {
       const xs = lines(F.minX, F.maxX, 60, 6, [[R.minX - b - 6, R.minX + 6], [R.maxX - 6, R.maxX + b + 6], [-OUTER_LANDS_HALF, -OUTER_LANDS_HALF], [OUTER_LANDS_HALF, OUTER_LANDS_HALF]]);
       const zs = lines(F.minZ, F.maxZ, 60, 6, [[R.minZ - b - 6, R.minZ + 6], [R.maxZ - b - 6, R.maxZ + 6], [-OUTER_LANDS_HALF, -OUTER_LANDS_HALF], [-10, F.maxZ]]);
       const under = (x, z) => (Math.abs(x) < OUTER_LANDS_HALF - 3 && z > -OUTER_LANDS_HALF + 3) || inRectXZ(NORTH_PATCH, x, z, 3) || islandContains(x, z);
-      farLandsMesh = groundGridMesh(xs, zs, (x, z) => outerTerrainHeight(x, z) - (under(x, z) ? 6 : 0), outerLandColour, material);
+      // (sunk well down where a finer mesh covers it: a 60-unit cell between a sunken point in the pass or
+      // the yard and a high ridge point would otherwise slope up through the pass, the gap between the
+      // north yard's buildings and the garage hall's floor; FAR_LANDS_SINK keeps every such slope under)
+      farLandsMesh = groundGridMesh(xs, zs, (x, z) => outerTerrainHeight(x, z) - (under(x, z) ? FAR_LANDS_SINK : 0), outerLandColour, material);
       farLandsMesh.name = 'farLands';
       scene.add(farLandsMesh);
     }
@@ -1997,7 +2005,8 @@ function pathPassRoute(from, to) {
       if (typeof WORKSHOP_LAND === 'undefined' || !WORKSHOP_LAND.pass) return null;
       const valley = p => p.z > -30, north = p => p.z < -62;
       const E = WORKSHOP_LAND.eastRoad, P = WORKSHOP_LAND.pass, ex = (E.minX + E.maxX) / 2;
-      const route = [{ x: ex, z: E.maxZ + 1 }, { x: ex, z: E.minZ + 1 }, { x: ex - 2, z: -62 }, { x: (P.minX + P.maxX) / 2, z: P.minZ - 1 }];
+      // (along the Pass Road's centre line, js/roads.js)
+      const route = [{ x: ex, z: E.maxZ + 1 }, { x: ex, z: E.minZ + 1 }, { x: ex - 2, z: -44 }, { x: (P.minX + P.maxX) / 2, z: -62 }, { x: (P.minX + P.maxX) / 2, z: P.minZ - 1 }];
       if (valley(from) && north(to)) return route;
       if (north(from) && valley(to)) return route.reverse();
       return null;

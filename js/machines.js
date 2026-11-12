@@ -304,7 +304,7 @@ async function runMachineJob(key, job = {}, originLabel = 'In the Workshop') {
       if (!machineReady(key, job, { context: originLabel })) return 'not-ready';
       const plan = def.plan(job);
       if (!plan) return false;
-      workshopJobRunning = { key, at: Date.now() };
+      workshopJobRunning = { key, at: Date.now(), title: plan.title || '', product: plan.product || '' };
       state.isPracticing = true;
       try {
         state.currentLocKey = 'workshop';

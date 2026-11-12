@@ -787,6 +787,7 @@ window.addEventListener('DOMContentLoaded', () => {
     secureKeys.getKeys().then(keys => {
       apiKey = keys.gemini || '';
       claudeApiKey = keys.anthropic || '';
+      if (typeof refsSetKeys === 'function') refsSetKeys(keys);
       try {
         localStorage.removeItem('kelo1_gemini_api_key');
         localStorage.removeItem('kelo1_anthropic_api_key');
@@ -851,6 +852,8 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnOpenAIConfig')?.addEventListener('click', () => {
     document.getElementById('geminiApiKeyInput').value = apiKey;
     document.getElementById('anthropicApiKeyInput').value = claudeApiKey;
+    // optional photo-source keys (js/refsources.js)
+    document.querySelectorAll('[data-photo-key]').forEach(inp => { inp.value = typeof refsKey === 'function' ? refsKey(inp.getAttribute('data-photo-key')) : ''; });
     document.getElementById('lastAgentStructuredOutput').textContent = state.lastStructuredTick || '';
     updateKeyStatus();
     openModal('aiConfigModal');
@@ -864,14 +867,19 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnSaveAIConfig')?.addEventListener('click', () => {
     apiKey = document.getElementById('geminiApiKeyInput').value.trim();
     claudeApiKey = document.getElementById('anthropicApiKeyInput').value.trim();
+    const photoKeys = {};
+    document.querySelectorAll('[data-photo-key]').forEach(inp => { photoKeys[inp.getAttribute('data-photo-key')] = inp.value.trim(); });
+    if (typeof refsSetKeys === 'function') refsSetKeys(photoKeys);
     if (secureKeys) {
       // Desktop and phone apps: keys go to the system's secure store, never to browser storage
-      secureKeys.setKeys({ gemini: apiKey, anthropic: claudeApiKey });
+      secureKeys.setKeys({ gemini: apiKey, anthropic: claudeApiKey, ...photoKeys });
       storeKey('kelo1_gemini_api_key', '');
       storeKey('kelo1_anthropic_api_key', '');
+      Object.keys(photoKeys).forEach(k => storeKey(`kelo1_${k}_api_key`, ''));
     } else {
       storeKey('kelo1_gemini_api_key', apiKey);
       storeKey('kelo1_anthropic_api_key', claudeApiKey);
+      Object.keys(photoKeys).forEach(k => storeKey(`kelo1_${k}_api_key`, photoKeys[k]));
     }
     updateBrainButtonText();
     closeModal('aiConfigModal');
@@ -884,7 +892,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const which = btn.getAttribute('data-remove-key');
     if (which === 'gemini') { apiKey = ''; document.getElementById('geminiApiKeyInput').value = ''; storeKey('kelo1_gemini_api_key', ''); }
     else { claudeApiKey = ''; document.getElementById('anthropicApiKeyInput').value = ''; storeKey('kelo1_anthropic_api_key', ''); }
-    if (secureKeys) secureKeys.setKeys({ gemini: apiKey, anthropic: claudeApiKey });
+    if (secureKeys) secureKeys.setKeys({ gemini: apiKey, anthropic: claudeApiKey, ...(typeof refsKeys === 'object' ? refsKeys : {}) });
     updateBrainButtonText();
     updateKeyStatus();
     showToast(`🗑️ ${which === 'gemini' ? 'Gemini' : 'Claude'} key removed. ${hasLLMKey() ? '' : 'He keeps everything he learned with the AI.'}`);
@@ -910,6 +918,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const keys = await secureKeys.getKeys();
         apiKey = keys.gemini || '';
         claudeApiKey = keys.anthropic || '';
+        if (typeof refsSetKeys === 'function') refsSetKeys(keys);
       } else {
         apiKey = localStorage.getItem('kelo1_gemini_api_key') || '';
         claudeApiKey = localStorage.getItem('kelo1_anthropic_api_key') || '';

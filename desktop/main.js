@@ -99,7 +99,8 @@ ipcMain.on('kelo:memory-usage', (event) => {
   if (!fromAppPage(event)) { event.returnValue = null; return; }
   event.returnValue = { used: memoryUsage(), quota: MEMORY_QUOTA_BYTES };
 });
-const ALLOWED_KEYS = ['gemini', 'anthropic'];
+// the AI keys, and the optional photo-source keys for his reference photos (js/refsources.js)
+const ALLOWED_KEYS = ['gemini', 'anthropic', 'pexels', 'unsplash', 'pixabay', 'flickr', 'smithsonian', 'europeana', 'rijksmuseum'];
 // If the system can't encrypt (rare), keys are kept in memory for this session only, never written in plain text
 let sessionOnlyKeys = null;
 

@@ -58,15 +58,10 @@ function addHobby(raw, sparkedBy) {
       return hobby;
     }
 
-// Try a hobby as soon as he is free (he may be mid-build or mid-errand), giving up after ~3 minutes
-function practiceWhenFree(hobby, originLabel, attempt = 0) {
-      setTimeout(() => {
-        if (state.isBusy || state.isBuilding || state.isPracticing || state.isCollectingMail) {
-          if (attempt < 36) practiceWhenFree(hobby, originLabel, attempt + 1);
-          return;
-        }
-        practiceHobby(hobby, originLabel);
-      }, attempt === 0 ? 4000 : 5000);
+// Try a hobby as soon as he is free (he may be asleep, mid-build or mid-errand). It used to give up after
+// about 3 minutes, so a hobby gift that came at night was never tried
+function practiceWhenFree(hobby, originLabel) {
+      doWhenFree(() => practiceHobby(hobby, originLabel), { key: 'hobby:' + hobby.name, delayMs: 4000 });
     }
 
 // Called after he receives an item: it may spark a hobby (he then tries it out soon)

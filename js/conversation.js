@@ -156,13 +156,13 @@ async function respondToVisitor(visitor, message) {
 
       // With an AI brain: answer the actual message, with his situation and vocabulary as context
       if (hasLLMKey()) {
-        const prompt = `You are Kelo-1, a curious robot living in a valley near Kelowna. A visitor named ${visitor} just said to you: "${message}".
+        const prompt = `MOMENT: a visitor is talking to you in the Talk tab. Visitor ${(typeof brainUntrusted === 'function' ? brainUntrusted(visitor, 40) : JSON.stringify(String(visitor).slice(0, 40)))} said: ${(typeof brainUntrusted === 'function' ? brainUntrusted(message, 1200) : JSON.stringify(String(message).slice(0, 1200)))}
 Answer what they actually said: if it's a question, answer it; if it's a request, say whether and how you'll do it; if it's news, react to it. Speak in first person, 1-3 sentences, warm and curious.
 Your situation: at ${currentPlaceLabel()}, doing "${state.moodTitle}". Energy ${Math.round(state.health)}%, fullness ${Math.round(state.fullness)}%, calm ${Math.round(state.calmLevel)}%.
 You own: ${ownedItemNames().slice(0, 15).join(', ') || 'nothing yet'}.
 Your outlook: "${state.worldviewManifesto}".
 Words you learned recently: ${Object.keys(state.vocabulary).slice(-15).join(', ') || 'none'}.
-Return ONLY JSON: {"reply": "...", "unknownWords": [words in their message you genuinely don't understand and want to look up, usually none], "wantsToAct": null OR "a short description of something you decide to go and do because of this"}`;
+Return JSON: {"reply": "...", "unknownWords": [words in their message you genuinely don't understand and want to look up, usually none], "wantsToAct": null OR "a short description of something you decide to go and do because of this"}`;
         const parsed = await callLLMJSON([{ text: prompt }]);
         if (parsed && typeof parsed.reply === 'string' && parsed.reply.trim()) {
           sayToVisitor(parsed.reply.trim().slice(0, 600), visitor);

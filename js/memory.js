@@ -92,13 +92,13 @@ function proceduralCoreMemory(entries) {
 
 async function distillCoreMemory(entries) {
       if (hasLLMKey()) {
-        const prompt = `You are Kelo-1, an autonomous robot on an island near Kelowna, BC. Here are some of your recent diary entries (oldest last):
+        const prompt = `MOMENT: you are looking back over some recent diary entries (oldest last):
 
 ${entries.map((e, i) => `${i + 1}. ${String(e.text).slice(0, 400)}`).join('\n')}
 
 Your existing core memories: ${state.coreMemories.slice(0, 6).map(m => m.text).join(' | ') || 'none yet'}
 
-Distill ONE new core memory: what from these days actually mattered to you and how it changed you. Return ONLY JSON:
+Distill ONE new core memory: what from these days actually mattered to you and how it changed you. Return JSON:
 {"text": "1-2 sentences in first person", "emoji": "one emoji"}`;
         const parsed = await callLLMJSON([{ text: prompt }]);
         if (parsed && typeof parsed.text === 'string' && parsed.text.trim()) {

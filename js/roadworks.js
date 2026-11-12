@@ -692,7 +692,8 @@ async function rwPass(t, gearKey, stage, say, { from = rwSecRange(t)[0], to = rw
 async function rwWalkWith(t, gearKey, stage, say, pose = 'normal') {
       const e = rwEdit(t);
       if (!e) return false;
-      if (typeof fetchFromStorehouse === 'function') await fetchFromStorehouse(rwGearOwned(gearKey));
+      // Fetch it from his shelves (never longer than 90 s: a tool not on a shelf yet is taken from where it is)
+      if (typeof fetchFromStorehouse === 'function') await Promise.race([fetchFromStorehouse(rwGearOwned(gearKey)), new Promise(r => setTimeout(r, 90000))]);
       holdJobTool(RW_GEAR[gearKey].re, pose);
       state.speechBubble = say;
       const [f0, f1] = rwSecRange(t);

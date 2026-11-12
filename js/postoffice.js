@@ -21,11 +21,12 @@ function postMail(parcel) {
         palette: parcel.palette || null,
         time: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
       };
-      if (parcel.image) parcelImages.set(entry.id, parcel.image);
       if (state.mailbox.length >= MAX_MAILBOX) {
         showToast('📮 The post office is full. Kelo-1 needs to pick up his mail first.');
         return null;
       }
+      // (only once it is accepted: a turned-away photo's full image would otherwise stay in memory)
+      if (parcel.image) parcelImages.set(entry.id, parcel.image);
       state.mailbox.push(entry);
       // Let the AI brain (if any) design a model of the exact item while it waits at the post office
       // and look up anything that has no model yet, so it never turns up as a plain box

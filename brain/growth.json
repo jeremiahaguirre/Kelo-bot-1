@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-12T07:24:30.062Z",
-  "runs": 20,
+  "updatedAt": "2026-11-12T20:06:55.525Z",
+  "runs": 21,
   "curiosities": [
-    "African palm civet"
+    "Ailuropoda"
   ],
   "entries": [
     {
@@ -701,6 +701,43 @@
         "text": "I remember a quiet night dreaming about Animal navigation. Animal navigation is the ability of many animals to find their way accurately without maps or instruments. I keep coming back to it.",
         "emoji": "🌙"
       }
+    },
+    {
+      "id": "dream-1794514015525",
+      "at": 1794514015525,
+      "brain": "procedural",
+      "topic": "African palm civet",
+      "title": "Dreaming of American marten",
+      "text": "Dear Diary, while nobody was around I looked up \"African palm civet\" and drifted from African palm civet to American hog-nosed skunk to American marten. The American marten, also known as the American pine marten, is a species of North American mammal, a member of the family Mustelidae. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "African palm civet",
+          "url": "https://en.wikipedia.org/wiki/African_palm_civet",
+          "extract": "The African palm civet, also known as the two-spotted palm civet, is a small feliform mammal widely distributed in sub-Saharan Africa. It is listed as least concern on the IUCN Red List. It is the sole member of the superfamily Nandinioidea and the most genetically isolated carni"
+        },
+        {
+          "title": "American hog-nosed skunk",
+          "url": "https://en.wikipedia.org/wiki/American_hog-nosed_skunk",
+          "extract": "The American hog-nosed skunk is a species of hog-nosed skunk from Central and North America, and is one of the largest skunks in the world, growing to lengths of up to 2.7 feet (82 cm). Recent work has concluded the western hog-nosed skunk is the same species, and Conepatus leuco"
+        },
+        {
+          "title": "American marten",
+          "url": "https://en.wikipedia.org/wiki/American_marten",
+          "extract": "The American marten, also known as the American pine marten, is a species of North American mammal, a member of the family Mustelidae. The species is sometimes referred to as simply the pine marten. The name \"pine marten\" is derived from the common name of the related but distinc"
+        }
+      ],
+      "concept": {
+        "name": "African American Principle",
+        "emoji": "🔮",
+        "definition": "The idea that african palm civet and american marten share a hidden pattern.",
+        "builtFrom": [
+          "African palm civet",
+          "American marten"
+        ]
+      },
+      "shapeFrom": "American marten",
+      "nextCuriosity": "Ailuropoda",
+      "coreMemory": null
     }
   ]
 }

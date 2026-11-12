@@ -79,7 +79,7 @@ function makerState() {
     }
 
 const makerRegistered = new Set();
-function makerEscape(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+const makerEscape = escapeRegExp;
 
 function makerRegisterRule(key) {
       const k = makerState().makerKinds[key];
@@ -364,7 +364,9 @@ async function makerRunOrder(id) {
       o.status = 'making';
       makerJob = { product: o.name, order: o };
       let r = false;
+      // A throw from the walk or the job must not leave the order in 'making' (nothing ever picks it up again)
       try { r = await runMachineJob(o.shop, { make: o.noun, product: o.name }, o.visitor ? `Making it for ${o.visitor}` : 'Making Something I Read About'); }
+      catch (e) { console.warn('Shop order failed', e); r = false; }
       finally { makerJob = null; }
       if (r === true && o.madeAt) { o.status = 'done'; savePersistentBrainState(); return true; }
       o.status = 'waiting';

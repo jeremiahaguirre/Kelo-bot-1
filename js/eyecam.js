@@ -257,7 +257,7 @@ function eyeCamFrame(dt) {
 
       // Glide in from the previous view for the first moment
       const u = Math.min(1, (performance.now() - eyeCam.enterT) / 700);
-      const e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+      const e = exploreEase(u);
       if (u < 1 && eyeCam.from) {
         camera.position.lerpVectors(eyeCam.from.pos, pos, e);
         controls.target.lerpVectors(eyeCam.from.target, target, e);

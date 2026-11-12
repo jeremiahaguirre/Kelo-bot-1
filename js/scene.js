@@ -1,5 +1,5 @@
 // Kelo-bot-1 — js/scene.js
-// Loaded SECOND. Uses state & TOWN_LOCATIONS from js/agent.js to render the 3D Kelowna world,
+// Loaded after kelo-body.js. Uses state & TOWN_LOCATIONS from js/agent.js to render the 3D Kelowna world,
 // continuous mountain/valley altitude raycasting, 3D mining/welding tools, and Bird's-Eye flight.
 
 let scene, camera, renderer, controls, clock;
@@ -614,7 +614,10 @@ function buildSeaDragon3D() {
       }
       bodyGeo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
       bodyGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      bodyGeo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(verts.length), 3));
       bodyGeo.setIndex(index);
+      // A fixed sphere that holds every pose (the body is re-shaped each frame it is seen)
+      bodyGeo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 1.1, 0), 6.5);
       const body = new THREE.Mesh(bodyGeo, skin);
       body.castShadow = true;
       dragon.add(body);
@@ -688,7 +691,7 @@ function updateSeaDragon(t, dragon = ogopogoGroup) {
       // The lake's own dragon is only re-shaped while it can be seen (a new one is always shaped once)
       if (dragon === ogopogoGroup && !dragonOnScreen(dragon)) return;
       const { body, head, spines, tailFin } = dragon.userData;
-      const pos = body.geometry.attributes.position;
+      const pos = body.geometry.attributes.position, nrm = body.geometry.attributes.normal;
       const T = dragonTmp;
       for (let i = 0; i <= DRAGON_RINGS; i++) {
         const u = i / DRAGON_RINGS;
@@ -700,14 +703,17 @@ function updateSeaDragon(t, dragon = ogopogoGroup) {
         for (let j = 0; j <= DRAGON_SIDES; j++) {
           const ang = (j / DRAGON_SIDES) * Math.PI * 2;
           const k = (i * (DRAGON_SIDES + 1) + j) * 3;
-          pos.array[k] = p.x + (normal.x * Math.sin(ang) + side.x * Math.cos(ang)) * r;
-          pos.array[k + 1] = p.y + (normal.y * Math.sin(ang) + side.y * Math.cos(ang)) * r;
-          pos.array[k + 2] = p.z + (normal.z * Math.sin(ang) + side.z * Math.cos(ang)) * r;
+          // The ring's outward direction is the surface normal (no computeVertexNormals each frame)
+          const sa = Math.sin(ang), ca = Math.cos(ang);
+          const nx = normal.x * sa + side.x * ca, ny = normal.y * sa + side.y * ca, nz = normal.z * sa + side.z * ca;
+          pos.array[k] = p.x + nx * r;
+          pos.array[k + 1] = p.y + ny * r;
+          pos.array[k + 2] = p.z + nz * r;
+          nrm.array[k] = nx; nrm.array[k + 1] = ny; nrm.array[k + 2] = nz;
         }
       }
       pos.needsUpdate = true;
-      body.geometry.computeVertexNormals();
-      body.geometry.computeBoundingSphere();
+      nrm.needsUpdate = true;
 
       const neck = dragonSpine(1, t, T.p);
       head.position.set(neck.x + 0.25, neck.y + 0.1, neck.z);
@@ -1763,17 +1769,14 @@ function addObstacle(...list) {
       return list[0];
     }
 
-function removeObstacle(o) {
-      const n = worldObstacles.length;
-      worldObstacles = worldObstacles.filter(x => x !== o);
-      if (worldObstacles.length !== n) obstacleVersion++;
-    }
-
 // Changes whenever an obstacle is added, removed or moved, whoever did it
-function obstacleSignature() {
+function obstacleSignatureSum() {
       let sum = 0;
       for (const o of worldObstacles) sum += o.x * 3.1 + o.z * 7.3 + (o.r || 0) * 1.7 + (o.hw || 0) * 0.37;
-      return `${obstacleVersion}|${worldObstacles.length}|${sum.toFixed(3)}`;
+      return sum;
+    }
+function obstacleSignature() {
+      return `${obstacleVersion}|${worldObstacles.length}|${obstacleSignatureSum().toFixed(3)}`;
     }
 
 // How far a point is from an obstacle's edge (negative inside) and the outward direction there
@@ -1781,7 +1784,7 @@ const obstacleProbeOut = { d: 0, nx: 1, nz: 0 };
 function obstacleProbe(o, x, z) {
       const P = obstacleProbeOut;
       if (o.hw === undefined) {
-        const dx = x - o.x, dz = z - o.z, d = Math.hypot(dx, dz);
+        const dx = x - o.x, dz = z - o.z, d = Math.sqrt(dx * dx + dz * dz);
         P.d = d - o.r;
         P.nx = d > 1e-9 ? dx / d : 1;
         P.nz = d > 1e-9 ? dz / d : 0;
@@ -1850,19 +1853,22 @@ function openGroundNear(near, radius = 2, opts = {}) {
 // approach. Boxes never do: a target inside one is moved out first (walkGoalFor).
 function obstacleHoldsTarget(o, target) {
       if (o.hw !== undefined) return false;
-      return Math.hypot(target.x - o.x, target.z - o.z) < o.r + KELO_RADIUS;
+      const dx = target.x - o.x, dz = target.z - o.z, R = o.r + KELO_RADIUS;
+      return R > 0 && dx * dx + dz * dz < R * R;
     }
 
 // Where he really walks to for this target: the target itself, or (when it lies inside a building
 // box) the building's door or the edge of the box on the side he comes from
-let walkGoalCache = { key: '', goal: null };
+// (the cache is checked with numbers, not a string: it is asked several times a frame)
+let walkGoalCache = { x: NaN, z: NaN, ver: -1, n: -1, sum: NaN, goal: null };
 function walkGoalFor(target, from = state.botPos) {
-      const key = `${target.x.toFixed(2)},${target.z.toFixed(2)}|${obstacleSignature()}`;
-      if (walkGoalCache.key === key && walkGoalCache.goal) return walkGoalCache.goal;
+      const C = walkGoalCache;
+      const x = Math.round(target.x * 100), z = Math.round(target.z * 100), sum = Math.round(obstacleSignatureSum() * 1000);
+      if (C.goal && C.x === x && C.z === z && C.ver === obstacleVersion && C.n === worldObstacles.length && C.sum === sum) return C.goal;
       let goal = { x: target.x, z: target.z };
       const box = worldObstacles.find(o => o.hw !== undefined && obstacleProbe(o, target.x, target.z).d < KELO_RADIUS);
       if (box) goal = boxEdgeSpot(box, target, from || target);
-      walkGoalCache = { key, goal };
+      walkGoalCache = { x, z, ver: obstacleVersion, n: worldObstacles.length, sum, goal };
       return goal;
     }
 

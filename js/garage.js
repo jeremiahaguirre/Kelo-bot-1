@@ -21,7 +21,6 @@ function g2(def) {
     }
 
 const LIFT2 = { x: 5.85, z: -2.6 };      // the two-post lift, behind the car elevator (the truck backs on)
-const LIFT2_CAR = { x: 5.85, z: -2.0 };  // where the vehicle sits on it (nose south, toward the elevator)
 g2({ key: 'lift2', name: 'Two-post lift', short: 'two-post lift', at: { x: LIFT2.x, z: LIFT2.z, ry: 0 }, size: { w: 4.3, h: 3.6, d: 0.6 }, skill: 'Using a two-post lift', model: () => twoPostLiftModel(3.8, 1.6), stand: { x: 3.9, z: -1.2 } });
 g2({ key: 'lift4', name: 'Four-post lift', short: 'four-post lift', at: { x: -2.0, z: 2.0, ry: 0 }, size: { w: 3.8, h: 2.9, d: 7.0 }, skill: 'Using a four-post lift', model: () => fourPostLiftModel(6.8, 2.1), stand: { x: -0.1, z: 5.9 } });
 g2({ key: 'tirechanger', name: 'Tire changer', short: 'tire changer', at: { x: 0.9, z: 4.55, ry: Math.PI }, size: { w: 1.0, h: 1.8, d: 0.8 }, skill: 'Changing tires', model: tireChangerModel, stand: { x: 0.9, z: 3.45 } });
@@ -115,19 +114,24 @@ async function liftTo(ctx, h, ms = 2500) {
       });
     }
 
+// Which service a job is: its own, else the one its words name, else an oil change (readiness and the plan agree)
+function garageServiceFor(job) {
+      return job.service && GARAGE_SERVICES[job.service] ? job.service : Object.keys(GARAGE_SERVICES).find(k => GARAGE_SERVICES[k].words.test(job.make || job.service || '')) || 'oil';
+    }
+
 // --- The garage job ----------------------------------------------------------------------------------
 registerWorkshopMachine({
   key: 'garage', name: 'Garage lift bay', short: 'garage', kind: 'garage', floor: 2, learnAs: 'garage', emoji: '🔧', skill: 'Servicing vehicles',
   teaches: ['lift2', 'lift4', 'tirechanger', 'balancer', 'brakelathe', 'hoist', 'press', 'partswasher', 'migtig', 'compressor', 'airtools'],
   wiki: ['Automobile repair shop', 'Vehicle lift', 'Tire changer'],
   learned: 'In a garage the vehicle goes up on a lift at its jacking points. Wheels come off with an impact wrench from the air compressor; tires are swapped on a tire changer and balanced with weights; brake pads are replaced and rotors turned on a brake lathe; oil drains from the sump and a new filter goes on; an engine comes out with a hoist after everything is disconnected.',
-  needsFor: job => (GARAGE_SERVICES[job.service] || GARAGE_SERVICES.oil).needs,
+  needsFor: job => GARAGE_SERVICES[garageServiceFor(job)].needs,
   words: [/garage|lift|oil change|tire|tyre|brake|engine pull|service (the|my)|truck|mechanic/i],
   products: [], noSolo: false,
   plan(job) {
     const v = job.vehicle || garageVehicles()[0];
     if (!v) { state.speechBubble = 'I don\'t have a vehicle to work on yet.'; return null; }
-    const service = job.service && GARAGE_SERVICES[job.service] ? job.service : Object.keys(GARAGE_SERVICES).find(k => GARAGE_SERVICES[k].words.test(job.make || '')) || 'oil';
+    const service = garageServiceFor(job);
     job.vehicle = v;
     job.service = service;
     // Too big for door 1 and the car elevator (the mixer truck), or asked for there, or the pickup with

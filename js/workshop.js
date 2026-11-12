@@ -155,6 +155,9 @@ async function runWeldJob(creation, destLabel) {
         console.warn('Workshop job failed:', err);
         clearBenchWorkpiece();
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
+        // Dropped for good: off the pending list too, or every reload would run it (and fail) again
+        state.pendingBuilds = (state.pendingBuilds || []).filter(j => j.creation !== creation);
+        savePersistentBrainState();
         return true; // a failed job is dropped, not retried
       } finally {
         state.isBuilding = false;

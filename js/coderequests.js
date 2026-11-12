@@ -481,9 +481,6 @@ function codeRequestsGroupHtml() {
       }).join('')}</div>`;
     }
 
-// Clicks are handled once for the whole page, so cards can be redrawn freely
-function bindCodeRequestButtons() {}
-
 function rerenderCodeGroups() {
       const el = document.getElementById('codeRequestsGroup');
       if (!el) return;

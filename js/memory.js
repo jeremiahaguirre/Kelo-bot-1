@@ -26,7 +26,22 @@ function loadMemoryArchive() {
       } catch (e) {}
     }
 
+// Writing the archive means writing all of it (up to MAX_ARCHIVED_DIARY entries: ~10 ms on the website,
+// hundreds of ms for a big desktop archive), so new overflow is gathered and written at most every
+// ARCHIVE_SAVE_MS, and straight away when the page is hidden or closed.
+const ARCHIVE_SAVE_MS = 30000;
+let archiveSaveTimer = 0;
+function saveMemoryArchiveSoon() {
+      if (!archiveSaveTimer) archiveSaveTimer = setTimeout(saveMemoryArchive, ARCHIVE_SAVE_MS);
+    }
+function flushMemoryArchive() {
+      if (archiveSaveTimer) saveMemoryArchive();
+    }
+
 function saveMemoryArchive() {
+      if (archiveSaveTimer) { clearTimeout(archiveSaveTimer); archiveSaveTimer = 0; }
+      // (a backup being restored: the page reloads next and must not write the old archive over it)
+      if (typeof brainSavesBlocked !== 'undefined' && brainSavesBlocked) return;
       if (memoryArchive.diary.length > MAX_ARCHIVED_DIARY) memoryArchive.diary.length = MAX_ARCHIVED_DIARY;
       if (memoryArchive.opinions.length > MAX_ARCHIVED_OPINIONS) memoryArchive.opinions.length = MAX_ARCHIVED_OPINIONS;
       // If storage is full, let go of the very oldest archived entries until it fits
@@ -51,7 +66,7 @@ function archiveOverflow(diaryOverflow, opinionOverflow) {
       if (diaryOverflow.length === 0 && opinionOverflow.length === 0) return;
       memoryArchive.diary.unshift(...diaryOverflow);
       memoryArchive.opinions.unshift(...opinionOverflow);
-      saveMemoryArchive();
+      saveMemoryArchiveSoon();
     }
 
 function totalDiaryCount() {
@@ -239,3 +254,6 @@ window.addEventListener('DOMContentLoaded', () => {
     renderMemoryUI();
   }, 0);
 });
+
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushMemoryArchive(); });
+window.addEventListener('pagehide', flushMemoryArchive);

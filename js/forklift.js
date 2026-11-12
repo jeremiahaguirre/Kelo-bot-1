@@ -267,6 +267,7 @@ async function forkliftToCharger(v, label = 'Charging the forklift') {
     }
 
 // Take a pallet off the racking and set it down where it's needed (the assembly bay by default)
+const forkliftPlacedPallets = [];
 async function forkliftMovePallet(what = null, to = null, originLabel = 'Moving a Pallet') {
       const v = theForklift();
       if (!v || forkliftBusy || state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
@@ -309,6 +310,9 @@ async function forkliftMovePallet(what = null, to = null, originLabel = 'Moving 
           pallet.position.copy(wp);
           pallet.scale.setScalar(FORKLIFT_SCALE);
           scene.add(pallet);
+          // Only the last few pallets stay on the floor (the same 6 the save keeps); older ones are taken away
+          forkliftPlacedPallets.unshift(pallet);
+          while (forkliftPlacedPallets.length > 6) { const old = forkliftPlacedPallets.pop(); if (old.parent) old.parent.remove(old); }
           (state.workshop.pallets = state.workshop.pallets || []).unshift({ what, x: wp.x, z: wp.z, at: Date.now() });
           if (state.workshop.pallets.length > 6) state.workshop.pallets.length = 6;
         }
@@ -355,9 +359,12 @@ window.addEventListener('DOMContentLoaded', () => {
 async function forkliftDeliverUpstairs(floor = 3, what = 'glass batch') {
       const v = theForklift();
       if (!v || forkliftBusy || typeof goIntoWorkshop !== 'function') return false;
+      if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
       if (typeof readyToOperate === 'function' && !readyToOperate(v.name, v)) return 'learning';
       if (forkliftCharge(v) < 25) { await forkliftToCharger(v, 'The forklift needs charging first'); return 'charging'; }
       forkliftBusy = true;
+      // Busy for the whole trip, like forkliftMovePallet, so his life tick doesn't send him off mid-tour
+      state.isPracticing = true;
       try {
         v.plugged = false;
         const m = vehicleMeshes[v.id];
@@ -379,5 +386,6 @@ async function forkliftDeliverUpstairs(floor = 3, what = 'glass batch') {
         return Boolean(r);
       } finally {
         forkliftBusy = false;
+        state.isPracticing = false;
       }
     }

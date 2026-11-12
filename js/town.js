@@ -51,7 +51,7 @@ function townBuildingAt(x, z, pad = 0) {
 // The town was rebuilt at real size: a memory saved with him standing where a bigger building now
 // stands (or inside one mid-visit) puts him back out at that building's door
 function townMoveOutOfBuildings() {
-      const keys = ['storehouse', ...Object.keys(typeof TOWN_BUILDINGS === 'object' ? TOWN_BUILDINGS : {})];
+      const keys = ['storehouse', 'museum', ...Object.keys(typeof TOWN_BUILDINGS === 'object' ? TOWN_BUILDINGS : {})];
       const p = state.botPos;
       if (!p || state.riding) return false;
       const o = worldObstacles.find(b => keys.includes(b.building) && b.hw !== undefined && b.door

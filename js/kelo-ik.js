@@ -100,7 +100,7 @@ function keloIkProbeFoot(x, z, yaw, refY, sink) {
         // half on a step: stand level on the higher one
         P.y = Math.max(yh, yt); P.pitch = 0;
       } else {
-        P.y = (yh + yt) / 2 + Math.abs(diff) * 0.2;
+        P.y = (yh + yt) / 2 + Math.abs(diff) * 0.12;
         P.pitch = Math.atan2(diff, KELO_IK.toe - KELO_IK.heel) * 0.65;
       }
       P.roll = 0;
@@ -233,7 +233,7 @@ function keloApplyIK(t, dt, ctx) {
         const roll = Math.atan2(-_ikV.y, Math.hypot(_ikV.x, _ikV.z));
         if (S.planted) {
           const stray = Math.hypot(A.x - F.lx, A.z - F.lz);
-          if (!F.planted || (!lockXZ && (F.probeX === null || Math.hypot(A.x - F.probeX, A.z - F.probeZ) > 0.04)) || stray > (ph ? 0.45 : 0.25)) {
+          if (!F.planted || (!lockXZ && (F.probeX === null || Math.hypot(A.x - F.probeX, A.z - F.probeZ) > 0.04)) || stray > (a.turn ? 0.9 : ph ? 0.45 : 0.25)) {
             // touching down (or the pose moved this foot): lock it where it is, on the real ground
             if (F.planted && lockXZ) K.stats.relocks++;
             const g = probe(A.x, A.z);
@@ -297,7 +297,13 @@ function keloApplyIK(t, dt, ctx) {
         // blend from the animated ankle to the IK target
         const T = _ikT[side].lerp(_ikV.copy(_ikW[side]).setY(_ikW[side].y - K.drop), 1 - K.legW);
         const n = toLocal(T, _ikS);
-        if (n.distanceTo(hip.position) > (KELO_THIGH + KELO_SHIN) * 0.9995) K.stats.short++;
+        if (n.distanceTo(hip.position) > (KELO_THIGH + KELO_SHIN) * 0.9995) {
+          K.stats.short++;
+          // Out of reach (the end of a stance up a steep slope): the heel comes up rather than the
+          // planted foot sliding over the ground
+          const hp = hip.position, R = (KELO_THIGH + KELO_SHIN) * 0.999, horiz = Math.hypot(n.x - hp.x, n.z - hp.z);
+          if (F.planted && horiz < R) n.y = Math.max(n.y, hp.y - Math.sqrt(R * R - horiz * horiz));
+        }
         // knee forward, turned with the leg's own twist
         _ikPole.set(Math.sin(hip.rotation.y), 0, Math.cos(hip.rotation.y));
         _ikQa.copy(hip.quaternion);

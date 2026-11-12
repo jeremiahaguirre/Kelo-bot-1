@@ -80,7 +80,8 @@ function svGeo() {
       // (the north halls' lifts, benches, cabinets and carts: their own world obstacles)
       if (areas.hall) { rects[1].push(areas.hall, areas.hangar2); worldObstacles.filter(o => o.north && o.r && o.hw === undefined).forEach(o => circles[1].push({ x: o.x, z: o.z, r: o.r })); }
       const starts = {
-        ...(areas.hall ? { hall: { floor: 1, x: GARAGE_HALL.x, z: GARAGE_HALL.z + GARAGE_HALL.d / 2 - 2, yaw: 0 }, hangar2: { floor: 1, x: NORTH_HANGAR.x, z: NORTH_HANGAR.z - NORTH_HANGAR.d / 2 + 3, yaw: Math.PI } } : {}),
+        // (just inside the hall's drive-through door looking up its bays; the big hangar from its back wall toward the door)
+        ...(areas.hall ? { hall: { floor: 1, x: garageHallBays()[0].x, z: GARAGE_HALL.z + GARAGE_HALL.d / 2 - 1.5, yaw: Math.PI }, hangar2: { floor: 1, x: NORTH_HANGAR.x, z: NORTH_HANGAR.z + NORTH_HANGAR.d / 2 - 2, yaw: Math.PI } } : {}),
         hangar: { floor: 1, x: H.x + 5.5, z: H.z + 0.5, yaw: -Math.PI / 2 },
         wing: { floor: 1, ...P(-6.0, WS_WING.aisleZ, Math.PI / 2) },
         f1: { floor: 1, ...P(WS_DOORS.person.x, 6.4, Math.PI) },

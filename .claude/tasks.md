@@ -8,6 +8,9 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
+## North yard fixes (owner's annotated screenshot, 2026-11-12): branch agent/northyard, waiting for merge
+- Arrow 1 (drive through the range), arrow 2 (land inside the buildings), arrow 3 (road between the hall and the hangar): fixed (far lands sunk under the finer meshes; paved Pass Road, Yard Street, Hangar Lane, North Apron). Report: qa-results-northyard/REPORT.md.
+
 ## Done and pushed to main (2026-11-04)
 - Task 1 Paintings, task 2 Accurate welding + work bench, task 3 Humanize/eye cam/fluid motion, task 4 Garden, task 6 Code anything + self-upgrades, task 10 phase 1 audit (plan in .claude/review.md).
 - Task 11 Talk tab (pushed).

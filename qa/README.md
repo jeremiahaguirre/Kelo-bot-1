@@ -11,3 +11,5 @@ Playwright test scripts used to check the game. Run from this folder with the ga
 - vendor/: local copies of three.js r128, OrbitControls and the Tailwind browser build the tests serve
 
 Run tests one at a time; the cloud machines render without a GPU and are slow.
+- design.js: design-pass checks. `TAG=before|after VW=.. VH=.. [MENU=1] node design.js shots` (2x screenshots of the HUD, every menu tab, settings, a toast, loading/empty states) and `node design.js contrast` (WCAG contrast of every visible text/icon against its real background in day/night/snow, scrolling each menu tab). It serves the site's Tailwind 3.4.17 compiled from the checkout: run `vendor/tw3/build.sh <repo> vendor/tw3/<tag>.css` first (needs `npm i tailwindcss@3.4.17` in vendor/tw3), and local Phosphor/fonts from vendor/pkgs (`npm pack @phosphor-icons/web@2.1.1 @fontsource/inter @fontsource/newsreader @fontsource/jetbrains-mono`, unpacked there).
+- results/design/: the design pass report, before/after screenshots and contrast reports.

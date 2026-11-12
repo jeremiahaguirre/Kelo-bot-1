@@ -1,0 +1,38 @@
+{
+ "size": "390x844",
+ "scenes": {
+  "day": [
+   {
+    "view": "menu-world",
+    "el": "button.ui-btn.w-full",
+    "text": "Back to his real calendar",
+    "ratio": 4.48,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   }
+  ],
+  "night": [
+   {
+    "view": "menu-world",
+    "el": "button.ui-btn.w-full",
+    "text": "Back to his real calendar",
+    "ratio": 4.48,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   }
+  ],
+  "snow": [
+   {
+    "view": "menu-world",
+    "el": "button.ui-btn.w-full",
+    "text": "Back to his real calendar",
+    "ratio": 4.48,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   }
+  ]
+ }
+}

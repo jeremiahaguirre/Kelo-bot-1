@@ -1,0 +1,956 @@
+{
+ "size": "1280x800",
+ "scenes": {
+  "day": [
+   {
+    "view": "menu-talk",
+    "el": "p#changedLatelyText.text-[10px].text-slate-500.truncate",
+    "text": "While you were away I dreamt 19 times, a",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-talk",
+    "el": "span#talkHint.talk-hint",
+    "text": "Enter to send · Shift+Enter for a new li",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-talk",
+    "el": "span#talkCount.font-mono.tabular-nums",
+    "text": "0 / 500",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-requests",
+    "el": "span#portalMessageCount.text-[10px].font-mono.text-slate-500",
+    "text": "0 / 500",
+    "ratio": 3.61,
+    "need": 4.5,
+    "grad": true,
+    "overWorld": false
+   },
+   {
+    "view": "menu-requests",
+    "el": "p.text-[11px].text-slate-500.italic",
+    "text": "Nothing yet. Gifts, deliveries and photo",
+    "ratio": 4.24,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-requests",
+    "el": "p.col-span-full.text-[11px].text-slate-500",
+    "text": "No photos yet.",
+    "ratio": 4.24,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-requests",
+    "el": "p.text-[10px].text-slate-500",
+    "text": "He sells 3D print files and his original",
+    "ratio": 3.27,
+    "need": 4.5,
+    "grad": true,
+    "overWorld": false
+   },
+   {
+    "view": "menu-diary",
+    "el": "input#diaryArchiveSearch.",
+    "text": "Search his diary",
+    "ratio": 4.24,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-diary",
+    "el": "span.journal-vitals",
+    "text": "⚡ 80% • 🥕 70% • ✨ 90% • 🌊 60%",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-diary",
+    "el": "p.journal-end",
+    "text": "The first page of his diary",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-diary",
+    "el": "p.text-[11px].text-slate-500.leading-snug",
+    "text": "His memories are saved automatically. A ",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "input#brainSearch.",
+    "text": "Search his brain",
+    "ratio": 4.24,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🖨️ 3D printers",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🧽 Post-processing",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🛠️ CNC",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🔌 Electronics (floor 2)",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🚗 Garage (floor 2)",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🔥 Glass studio (floor 3)",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🪵 Woodshop (floor 3)",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500.font-normal",
+    "text": "· not researched yet (he reads up at Net",
+    "ratio": 3.75,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500",
+    "text": "11/12/2026",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500",
+    "text": "11/10/2026",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500",
+    "text": "11/8/2026",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500",
+    "text": "11/6/2026",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500",
+    "text": "11/4/2026",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].font-mono.text-slate-500",
+    "text": "Built from: Abundance (ecology) + Chemos",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].font-mono.text-slate-500",
+    "text": "Built from: Bioluminescence + Bioindicat",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].font-mono.text-slate-500",
+    "text": "Dreamt about: Chemosynthesis",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].font-mono.text-slate-500",
+    "text": "Dreamt about: Shavkat Mirziyoyev",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[11px].text-slate-500.italic",
+    "text": "No big builds yet. He can build anything",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "p.brain-empty",
+    "text": "No skills practised yet. Give him someth",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[11px].text-slate-500.italic",
+    "text": "No vehicles yet. He has to ask for each ",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "p.text-[11px].text-slate-500.italic",
+    "text": "No hobbies yet. Some gifts (spray paint,",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-world",
+    "el": "button.w-full.px-3.py-1.5",
+    "text": "📅 Back to his real calendar",
+    "ratio": 3.75,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-world",
+    "el": "span.normal-case.font-normal.text-slate-500",
+    "text": "(real parcels at his Post Office)",
+    "ratio": 4.24,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   }
+  ],
+  "night": [
+   {
+    "view": "menu-talk",
+    "el": "p#changedLatelyText.text-[10px].text-slate-500.truncate",
+    "text": "While you were away I dreamt 19 times, a",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-talk",
+    "el": "span#talkHint.talk-hint",
+    "text": "Enter to send · Shift+Enter for a new li",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-talk",
+    "el": "span#talkCount.font-mono.tabular-nums",
+    "text": "0 / 500",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-requests",
+    "el": "span#portalMessageCount.text-[10px].font-mono.text-slate-500",
+    "text": "0 / 500",
+    "ratio": 3.61,
+    "need": 4.5,
+    "grad": true,
+    "overWorld": false
+   },
+   {
+    "view": "menu-requests",
+    "el": "p.text-[11px].text-slate-500.italic",
+    "text": "Nothing yet. Gifts, deliveries and photo",
+    "ratio": 4.24,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-requests",
+    "el": "p.col-span-full.text-[11px].text-slate-500",
+    "text": "No photos yet.",
+    "ratio": 4.24,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-requests",
+    "el": "p.text-[10px].text-slate-500",
+    "text": "He sells 3D print files and his original",
+    "ratio": 3.27,
+    "need": 4.5,
+    "grad": true,
+    "overWorld": false
+   },
+   {
+    "view": "menu-diary",
+    "el": "input#diaryArchiveSearch.",
+    "text": "Search his diary",
+    "ratio": 4.24,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-diary",
+    "el": "span.journal-vitals",
+    "text": "⚡ 80% • 🥕 70% • ✨ 90% • 🌊 60%",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-diary",
+    "el": "p.journal-end",
+    "text": "The first page of his diary",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-diary",
+    "el": "p.text-[11px].text-slate-500.leading-snug",
+    "text": "His memories are saved automatically. A ",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "input#brainSearch.",
+    "text": "Search his brain",
+    "ratio": 4.24,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🖨️ 3D printers",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🧽 Post-processing",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🛠️ CNC",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🔌 Electronics (floor 2)",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🚗 Garage (floor 2)",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🔥 Glass studio (floor 3)",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🪵 Woodshop (floor 3)",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500.font-normal",
+    "text": "· not researched yet (he reads up at Net",
+    "ratio": 3.75,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500",
+    "text": "11/12/2026",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500",
+    "text": "11/10/2026",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500",
+    "text": "11/8/2026",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500",
+    "text": "11/6/2026",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500",
+    "text": "11/4/2026",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].font-mono.text-slate-500",
+    "text": "Built from: Abundance (ecology) + Chemos",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].font-mono.text-slate-500",
+    "text": "Built from: Bioluminescence + Bioindicat",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].font-mono.text-slate-500",
+    "text": "Dreamt about: Chemosynthesis",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].font-mono.text-slate-500",
+    "text": "Dreamt about: Shavkat Mirziyoyev",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[11px].text-slate-500.italic",
+    "text": "No big builds yet. He can build anything",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "p.brain-empty",
+    "text": "No skills practised yet. Give him someth",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[11px].text-slate-500.italic",
+    "text": "No vehicles yet. He has to ask for each ",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "p.text-[11px].text-slate-500.italic",
+    "text": "No hobbies yet. Some gifts (spray paint,",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-world",
+    "el": "button.w-full.px-3.py-1.5",
+    "text": "📅 Back to his real calendar",
+    "ratio": 3.75,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-world",
+    "el": "span.normal-case.font-normal.text-slate-500",
+    "text": "(real parcels at his Post Office)",
+    "ratio": 4.24,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   }
+  ],
+  "snow": [
+   {
+    "view": "menu-talk",
+    "el": "p#changedLatelyText.text-[10px].text-slate-500.truncate",
+    "text": "While you were away I dreamt 19 times, a",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-talk",
+    "el": "span#talkHint.talk-hint",
+    "text": "Enter to send · Shift+Enter for a new li",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-talk",
+    "el": "span#talkCount.font-mono.tabular-nums",
+    "text": "0 / 500",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-requests",
+    "el": "span#portalMessageCount.text-[10px].font-mono.text-slate-500",
+    "text": "0 / 500",
+    "ratio": 3.61,
+    "need": 4.5,
+    "grad": true,
+    "overWorld": false
+   },
+   {
+    "view": "menu-requests",
+    "el": "p.text-[11px].text-slate-500.italic",
+    "text": "Nothing yet. Gifts, deliveries and photo",
+    "ratio": 4.24,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-requests",
+    "el": "p.col-span-full.text-[11px].text-slate-500",
+    "text": "No photos yet.",
+    "ratio": 4.24,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-requests",
+    "el": "p.text-[10px].text-slate-500",
+    "text": "He sells 3D print files and his original",
+    "ratio": 3.27,
+    "need": 4.5,
+    "grad": true,
+    "overWorld": false
+   },
+   {
+    "view": "menu-diary",
+    "el": "input#diaryArchiveSearch.",
+    "text": "Search his diary",
+    "ratio": 4.24,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-diary",
+    "el": "span.journal-vitals",
+    "text": "⚡ 80% • 🥕 70% • ✨ 90% • 🌊 60%",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-diary",
+    "el": "p.journal-end",
+    "text": "The first page of his diary",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-diary",
+    "el": "p.text-[11px].text-slate-500.leading-snug",
+    "text": "His memories are saved automatically. A ",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "input#brainSearch.",
+    "text": "Search his brain",
+    "ratio": 4.24,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🖨️ 3D printers",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🧽 Post-processing",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🛠️ CNC",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🔌 Electronics (floor 2)",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🚗 Garage (floor 2)",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🔥 Glass studio (floor 3)",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].uppercase.tracking-wide",
+    "text": "🪵 Woodshop (floor 3)",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500.font-normal",
+    "text": "· not researched yet (he reads up at Net",
+    "ratio": 3.75,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500",
+    "text": "11/12/2026",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500",
+    "text": "11/10/2026",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500",
+    "text": "11/8/2026",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500",
+    "text": "11/6/2026",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "span.text-slate-500",
+    "text": "11/4/2026",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].font-mono.text-slate-500",
+    "text": "Built from: Abundance (ecology) + Chemos",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].font-mono.text-slate-500",
+    "text": "Built from: Bioluminescence + Bioindicat",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].font-mono.text-slate-500",
+    "text": "Dreamt about: Chemosynthesis",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[10px].font-mono.text-slate-500",
+    "text": "Dreamt about: Shavkat Mirziyoyev",
+    "ratio": 3.78,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[11px].text-slate-500.italic",
+    "text": "No big builds yet. He can build anything",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "p.brain-empty",
+    "text": "No skills practised yet. Give him someth",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "div.text-[11px].text-slate-500.italic",
+    "text": "No vehicles yet. He has to ask for each ",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-brain",
+    "el": "p.text-[11px].text-slate-500.italic",
+    "text": "No hobbies yet. Some gifts (spray paint,",
+    "ratio": 4.05,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-world",
+    "el": "button.w-full.px-3.py-1.5",
+    "text": "📅 Back to his real calendar",
+    "ratio": 3.75,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   },
+   {
+    "view": "menu-world",
+    "el": "span.normal-case.font-normal.text-slate-500",
+    "text": "(real parcels at his Post Office)",
+    "ratio": 4.24,
+    "need": 4.5,
+    "grad": false,
+    "overWorld": false
+   }
+  ]
+ }
+}

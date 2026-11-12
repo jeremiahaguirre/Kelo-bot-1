@@ -117,17 +117,17 @@ function renderShop(listings, contact, updatedAt) {
           <div class="p-4 space-y-2 flex-1 flex flex-col">
             <div class="flex items-start justify-between gap-2">
               <h2 class="text-sm font-bold text-white leading-snug">${shopEscape(l.name)}</h2>
-              <span class="text-sm font-mono font-bold text-emerald-300 shrink-0">${shopEscape(priceText(l.price))}</span>
+              <span class="text-sm tabular-nums font-bold text-emerald-300 shrink-0">${shopEscape(priceText(l.price))}</span>
             </div>
             ${l.description ? `<p class="font-serif italic text-slate-300 text-sm leading-relaxed flex-1">"${shopEscape(l.description)}"<span class="not-italic text-slate-500 text-xs"> — Kelo-1</span></p>` : '<div class="flex-1"></div>'}
             ${art ? `<div class="text-2xs text-rose-200 space-y-0.5">
               ${l.medium ? `<div>🎨 ${shopEscape(l.medium)}${l.size ? ` · ${shopEscape(l.size.replace('x', '×'))}` : ''}</div>` : ''}
               ${l.subject ? `<div class="text-slate-300">Subject: ${shopEscape(l.subject)}</div>` : ''}
               <div class="font-semibold">Original, one of a kind · signed</div>
-            </div>` : (l.details ? `<div class="text-2xs font-mono text-sky-300">🖨️ ${shopEscape(l.details)}</div>` : '')}
-            ${l.listedAt ? `<div class="text-2xs font-mono text-slate-500">Listed ${shopEscape(l.listedAt.toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' }))}</div>` : ''}
+            </div>` : (l.details ? `<div class="text-2xs tabular-nums text-sky-300">🖨️ ${shopEscape(l.details)}</div>` : '')}
+            ${l.listedAt ? `<div class="text-2xs tabular-nums text-slate-500">Listed ${shopEscape(l.listedAt.toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' }))}</div>` : ''}
             ${href
-              ? `<a href="${shopEscape(href)}" ${external ? 'target="_blank" rel="noopener noreferrer"' : ''} class="block text-center px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-sm transition">✉️ Contact to buy</a>`
+              ? `<a href="${shopEscape(href)}" ${external ? 'target="_blank" rel="noopener noreferrer"' : ''} class="block text-center px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition">✉️ Contact to buy</a>`
               : '<div class="text-center px-4 py-2.5 rounded-2xl bg-slate-800 text-slate-400 text-xs font-semibold">Not taking orders yet</div>'}
           </div>
         </article>`;

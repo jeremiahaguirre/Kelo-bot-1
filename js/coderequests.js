@@ -398,7 +398,7 @@ async function copyCodeRequestSpec(id) {
 // Open letters say whether they are "Ready to switch on" (the feature is built) or "Need new code".
 function codeRequestCardHtml(req) {
       const match = typeof wishCardStatus === 'function' ? wishCardStatus(req) : { status: 'needs-code', feature: null };
-      const pill = (cls, text) => `<span class="text-2xs font-mono px-2 py-0.5 rounded-full shrink-0 ${cls}">${text}</span>`;
+      const pill = (cls, text) => `<span class="text-2xs tabular-nums px-2 py-0.5 rounded-full shrink-0 ${cls}">${text}</span>`;
       let status;
       if (req.fulfilled) {
         status = req.declined ? pill('bg-slate-700/60 text-slate-300', 'Not now')
@@ -425,11 +425,11 @@ function codeRequestCardHtml(req) {
             <pre data-code-spec="${id}" class="hidden whitespace-pre-wrap text-2xs leading-snug font-mono text-slate-300 bg-slate-950 border border-slate-800 rounded-lg p-2 max-h-64 overflow-auto">${escapeHtml(codeRequestSpec(req))}</pre>`;
       const buttons = req.fulfilled ? '' : match.status === 'needs-code' ? `
             <div class="flex gap-1.5 pt-1">
-              ${req.willCode ? '' : `<button data-code-req-id="${id}" data-code-done="1" class="code-request-btn flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-300 to-orange-400 hover:from-amber-200 hover:to-orange-300 text-slate-950 font-bold text-xs transition">🛠️ I'll code it</button>`}
+              ${req.willCode ? '' : `<button data-code-req-id="${id}" data-code-done="1" class="code-request-btn flex-1 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition">🛠️ I'll code it</button>`}
               <button data-code-req-id="${id}" data-code-done="0" class="code-request-btn ${req.willCode ? 'flex-1 ' : ''}px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-xs transition">Not now</button>
             </div>` : `
             <div class="flex gap-1.5 pt-1">
-              <button data-code-req-id="${id}" data-code-done="1" class="code-request-btn flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-violet-400 to-fuchsia-500 hover:from-violet-300 hover:to-fuchsia-400 text-slate-950 font-bold text-xs transition">✓ Done — switch it on</button>
+              <button data-code-req-id="${id}" data-code-done="1" class="code-request-btn flex-1 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition">✓ Done — switch it on</button>
               <button data-code-req-id="${id}" data-code-done="0" class="code-request-btn px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-xs transition">Not now</button>
             </div>`;
       return `
@@ -441,8 +441,8 @@ function codeRequestCardHtml(req) {
             </span>
             ${status}
           </div>
-          <div class="text-2xs font-mono text-violet-200 bg-violet-950/50 border border-violet-500/30 px-2.5 py-1.5 rounded-lg">feature: ${escapeHtml(req.codeFeature)}</div>
-          ${src ? `<div class="text-2xs font-mono text-slate-400">${src.emoji} ${escapeHtml(src.label)}</div>` : ''}
+          <div class="text-2xs tabular-nums text-violet-200 bg-violet-950/50 border border-violet-500/30 px-2.5 py-1.5 rounded-lg">feature: ${escapeHtml(req.codeFeature)}</div>
+          ${src ? `<div class="text-2xs tabular-nums text-slate-400">${src.emoji} ${escapeHtml(src.label)}</div>` : ''}
           <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
           ${note}${specRow}${buttons}
         </div>`;
@@ -474,7 +474,7 @@ function codeRequestsGroupHtml() {
           <details class="code-group rounded-2xl bg-violet-950/20 border border-violet-500/25 px-2.5 py-2" data-code-group="${g.id}" ${g.closed ? '' : 'open'}>
             <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-violet-200">
               <span>💻 ${g.title}</span>
-              <span class="text-2xs font-mono px-2 py-0.5 rounded-full bg-violet-500/20">${g.list.length}</span>
+              <span class="text-2xs tabular-nums px-2 py-0.5 rounded-full bg-violet-500/20">${g.list.length}</span>
             </summary>
             <div class="pt-2 space-y-2.5">
               ${g.list.slice(0, shown).map(codeRequestCardHtml).join('')}

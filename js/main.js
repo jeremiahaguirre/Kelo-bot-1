@@ -225,59 +225,46 @@ function renderRequestsTab() {
       const grouped = typeof codeRequestsGroupHtml === 'function';
       list.innerHTML = state.requestsToUser.filter(req => !(grouped && req.category === 'code')).map(req => req.category === 'code' && typeof codeRequestCardHtml === 'function' ? codeRequestCardHtml(req)
         : req.category === 'bomlist' && typeof bomListCardHtml === 'function' ? bomListCardHtml(req) : `
-        <div class="p-4 rounded-2xl border ${req.fulfilled ? 'bg-slate-950/60 border-emerald-500/30' : (req.isToolRequest ? 'bg-slate-950 border-amber-500/50 shadow-lg' : 'bg-slate-950 border-rose-500/40 shadow-lg')} space-y-2.5">
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-bold text-white flex items-center gap-1.5">
-              <span class="text-lg">${escapeHtml(req.icon)}</span>
+        <div class="ui-card ${req.fulfilled ? 'ui-card-done' : ''}">
+          <div class="ui-section-head">
+            <h4 class="ui-section-title min-w-0">
+              <span class="text-base leading-none" aria-hidden="true">${escapeHtml(req.icon)}</span>
               <span>${escapeHtml(req.title)}</span>
-            </span>
-            <span class="text-2xs font-mono px-2 py-0.5 rounded-full shrink-0 ${req.fulfilled ? 'bg-emerald-500/20 text-emerald-300' : (req.isToolRequest ? 'bg-amber-500/25 text-amber-300 border border-amber-400/40' : 'bg-rose-500/20 text-rose-300')}">
-              ${req.declined ? '✗ You said no' : (req.fulfilled ? (req.isToolRequest ? '📮 Sent to the post office' : '✓ Answered') : escapeHtml(req.urgency))}
+            </h4>
+            <span class="ui-section-meta ${req.declined ? 'text-rose-300' : req.fulfilled ? 'text-emerald-300' : ''}">
+              ${req.declined ? 'You said no' : (req.fulfilled ? (req.isToolRequest ? 'Sent to the post office' : 'Answered') : escapeHtml(req.urgency))}
             </span>
           </div>
-          ${req.requestedGear ? `<div class="text-2xs font-mono text-amber-300 bg-amber-950/30 border border-amber-500/30 px-2.5 py-1 rounded-lg">Wants: ${escapeHtml(req.requestedGear)}</div>` : ''}
-          <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
+          ${req.requestedGear && req.fulfilled ? `<div class="text-2xs text-slate-300">Wants: ${escapeHtml(req.requestedGear)}</div>` : ''}
+          <p class="text-sm text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
           ${!req.fulfilled ? (req.isToolRequest ? `
-            <div class="space-y-2 pt-1">
-              <input id="custom-ans-${escapeHtml(req.id)}" type="text" maxlength="140" placeholder="Optional note (or your reason for saying no)"
-                class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400" />
+            <div class="space-y-2">
+              <label for="custom-ans-${escapeHtml(req.id)}" class="sr-only">Note to go with it</label>
+              <input id="custom-ans-${escapeHtml(req.id)}" type="text" maxlength="140" placeholder="Optional note (or your reason for saying no)" class="ui-input" />
               <div class="flex gap-1.5">
-                <button data-req-id="${escapeHtml(req.id)}" class="deliver-request-btn flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs transition">
-                  📦 Send ${escapeHtml(req.requestedGear)}
-                </button>
-                <button data-req-id="${escapeHtml(req.id)}" class="decline-request-btn px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-rose-500/20 border border-slate-700 hover:border-rose-400/50 text-slate-300 hover:text-rose-200 font-semibold text-xs transition">
-                  ✗ Say No
-                </button>
+                <button data-req-id="${escapeHtml(req.id)}" class="deliver-request-btn ui-btn ui-btn-primary flex-1">Send ${escapeHtml(req.requestedGear)}</button>
+                <button data-req-id="${escapeHtml(req.id)}" class="decline-request-btn ui-btn">Say no</button>
               </div>
             </div>
           ` : `
-            <div class="space-y-2 pt-1">
-              <div class="text-2xs font-mono uppercase text-slate-400">Share a perspective or write your own answer:</div>
+            <div class="space-y-2">
+              <div class="text-2xs text-slate-400">Pick an answer or write your own:</div>
               <div class="flex flex-col gap-1.5">
                 ${(req.presets || []).map(preset => `
-                  <button data-req-id="${escapeHtml(req.id)}" data-answer="${escapeHtml(preset)}" class="preset-answer-btn text-left text-2xs px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-amber-500/25 text-slate-200 hover:text-amber-200 border border-slate-800 hover:border-amber-500/40 transition">
-                    💬 "${escapeHtml(preset)}"
-                  </button>
+                  <button data-req-id="${escapeHtml(req.id)}" data-answer="${escapeHtml(preset)}" class="preset-answer-btn ui-row text-left hover:bg-slate-700/60 transition">"${escapeHtml(preset)}"</button>
                 `).join('')}
               </div>
-              <div class="flex gap-1.5 pt-1">
-                <input id="custom-ans-${escapeHtml(req.id)}" type="text" maxlength="140" placeholder="Or type your own honest answer to Kelo-1..."
-                  class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400" />
-                <button data-req-id="${escapeHtml(req.id)}" class="custom-answer-btn px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold text-xs shrink-0 transition">
-                  Answer
-                </button>
+              <div class="flex gap-1.5">
+                <label for="custom-ans-${escapeHtml(req.id)}" class="sr-only">Your own answer</label>
+                <input id="custom-ans-${escapeHtml(req.id)}" type="text" maxlength="140" placeholder="Or type your own honest answer to Kelo-1..." class="ui-input flex-1" />
+                <button data-req-id="${escapeHtml(req.id)}" class="custom-answer-btn ui-btn ui-btn-primary shrink-0">Answer</button>
               </div>
             </div>
           `) : (req.declined ? `
-            <div class="p-2.5 rounded-xl bg-rose-950/25 border border-rose-500/30 text-2xs text-rose-200 space-y-1">
-              <div class="font-mono text-2xs text-rose-300">You said no${req.userAnswer && req.userAnswer !== 'No' ? ':' : '.'}</div>
-              ${req.userAnswer && req.userAnswer !== 'No' ? `<div class="italic">"${escapeHtml(req.userAnswer)}"</div>` : ''}
-            </div>
+            ${req.userAnswer && req.userAnswer !== 'No' ? `<div class="text-2xs text-slate-300">Your reason: "${escapeHtml(req.userAnswer)}"</div>` : ''}
           ` : `
-            <div class="p-2.5 rounded-xl bg-emerald-950/25 border border-emerald-500/30 text-2xs text-emerald-200 space-y-1">
-              <div class="font-mono text-2xs text-emerald-400">${req.isToolRequest ? `You sent ${escapeHtml(req.requestedGear)} to the post office` : 'Your perspective, shared with Kelo-1:'}</div>
-              ${req.userAnswer && req.userAnswer !== req.requestedGear ? `<div class="italic">"${escapeHtml(req.userAnswer)}"</div>` : ''}
-            </div>
+            <div class="text-2xs text-slate-300">${req.isToolRequest ? `You sent ${escapeHtml(req.requestedGear)} to the post office.` : 'You answered:'}
+              ${req.userAnswer && req.userAnswer !== req.requestedGear ? ` "${escapeHtml(req.userAnswer)}"` : ''}</div>
           `)}
         </div>
       `).join('') + (grouped ? codeRequestsGroupHtml() : '');
@@ -386,16 +373,16 @@ function renderGitHubTab() {
       perfSetHtml(reposList, state.githubRepos.map((r, idx) => `
         <div data-repo-idx="${idx}" class="repo-card cursor-pointer p-3.5 rounded-2xl bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-purple-500/50 transition space-y-1.5">
           <div class="flex items-center justify-between">
-            <span class="font-mono text-xs font-bold text-purple-300 flex items-center gap-1.5">
+            <span class="tabular-nums text-xs font-bold text-purple-300 flex items-center gap-1.5">
               <i class="ph-bold ph-book-bookmark"></i> ${escapeHtml(r.name)}
             </span>
-            <div class="flex items-center gap-2 text-2xs font-mono text-slate-400">
+            <div class="flex items-center gap-2 text-2xs tabular-nums text-slate-400">
               <span class="px-1.5 py-0.5 rounded bg-slate-800 text-sky-300">${escapeHtml(r.lang)}</span>
               <span class="text-amber-300">★ ${escapeHtml(r.stars)}</span>
             </div>
           </div>
           <p class="text-xs text-slate-300">${escapeHtml(r.desc)}</p>
-          <div class="text-2xs font-mono text-emerald-400 truncate">
+          <div class="text-2xs tabular-nums text-emerald-400 truncate">
             Latest commit (${escapeHtml(r.updated)}): "${escapeHtml(r.commitMsg)}"
           </div>
         </div>
@@ -431,10 +418,10 @@ function renderWebTastesTab() {
           <div data-concept-idx="${idx}" class="concept-card cursor-pointer p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-yellow-500/25 hover:border-yellow-400/60 transition space-y-1">
             <div class="flex items-center justify-between gap-2">
               <span class="text-xs font-bold text-yellow-200 flex items-center gap-1.5"><span>${escapeHtml(c.emoji)}</span> <span>${escapeHtml(c.name)}</span></span>
-              <span class="text-2xs font-mono text-slate-400 shrink-0">used ${escapeHtml(c.uses || 0)}×</span>
+              <span class="text-2xs tabular-nums text-slate-400 shrink-0">used ${escapeHtml(c.uses || 0)}×</span>
             </div>
             <p class="text-2xs text-slate-300 font-serif italic">"${escapeHtml(c.definition)}"</p>
-            <div class="text-2xs font-mono text-slate-500 truncate">${c.parents && c.parents.length ? `Built from: ${escapeHtml(c.parents.join(' + '))}` : escapeHtml(c.origin || '')}</div>
+            <div class="text-2xs tabular-nums text-slate-500 truncate">${c.parents && c.parents.length ? `Built from: ${escapeHtml(c.parents.join(' + '))}` : escapeHtml(c.origin || '')}</div>
           </div>
         `).join(''));
         conceptsEl.querySelectorAll('.concept-card').forEach(card => {
@@ -456,8 +443,8 @@ function renderWebTastesTab() {
           : state.shapeLibrary.map((sh, idx) => `
           <div data-shape-idx="${idx}" class="shape-card cursor-pointer p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-cyan-500/25 hover:border-cyan-400/60 transition space-y-0.5">
             <div class="text-xs font-bold text-cyan-200 flex items-center gap-1.5"><span>${escapeHtml(sh.emoji)}</span> <span class="truncate">${escapeHtml(sh.name)}</span></div>
-            <div class="text-2xs font-mono text-slate-400">${sh.parts.length} parts • welded ${escapeHtml((sh.uses || 0) + 1)}×</div>
-            <div class="text-2xs font-mono text-slate-500 truncate">${escapeHtml(sh.origin)}</div>
+            <div class="text-2xs tabular-nums text-slate-400">${sh.parts.length} parts • welded ${escapeHtml((sh.uses || 0) + 1)}×</div>
+            <div class="text-2xs tabular-nums text-slate-500 truncate">${escapeHtml(sh.origin)}</div>
           </div>
         `).join(''));
         shapesEl.querySelectorAll('.shape-card').forEach(card => {
@@ -476,10 +463,10 @@ function renderWebTastesTab() {
           <div class="p-3 rounded-xl bg-slate-900/90 border border-purple-500/25 space-y-1">
             <div class="flex items-center justify-between gap-2">
               <span class="text-xs font-bold text-white">${escapeHtml(op.topic)}</span>
-              <span class="text-2xs font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 shrink-0">${escapeHtml(op.stance)}</span>
+              <span class="text-2xs tabular-nums px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 shrink-0">${escapeHtml(op.stance)}</span>
             </div>
             <p class="text-2xs text-slate-300 font-serif italic leading-relaxed">"${escapeHtml(op.reasoning)}"</p>
-            <div class="text-2xs font-mono text-slate-500">${escapeHtml(op.confidence)}</div>
+            <div class="text-2xs tabular-nums text-slate-500">${escapeHtml(op.confidence)}</div>
           </div>
         `).join(''));
       }
@@ -519,11 +506,11 @@ function renderWebTastesTab() {
               <div class="font-bold text-amber-300 flex items-center gap-1.5">
                 <i class="ph-fill ph-user-focus"></i>
                 <span>${escapeHtml(v.name)}</span>
-                <span class="text-2xs font-mono text-slate-400">(${escapeHtml(v.visits)} ${v.visits === 1 ? 'interaction' : 'interactions'})</span>
+                <span class="text-2xs tabular-nums text-slate-400">(${escapeHtml(v.visits)} ${v.visits === 1 ? 'interaction' : 'interactions'})</span>
               </div>
               <p class="text-2xs text-slate-300 italic">"${escapeHtml(v.impression)}"</p>
             </div>
-            <span class="text-2xs font-mono text-slate-500 shrink-0">${escapeHtml(v.lastSeen)}</span>
+            <span class="text-2xs tabular-nums text-slate-500 shrink-0">${escapeHtml(v.lastSeen)}</span>
           </div>
         `).join(''));
       }
@@ -562,12 +549,12 @@ function renderWebTastesTab() {
       };
       perfSetHtml(document.getElementById('webHistoryList'), state.webHistory.map(w => `
         <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
-          <div class="flex justify-between gap-2 font-mono text-2xs text-sky-300">
+          <div class="flex justify-between gap-2 tabular-nums text-2xs text-sky-300">
             <span class="truncate">🔎 "${escapeHtml(w.query)}"</span>
             <span class="text-slate-400 shrink-0">${escapeHtml(w.time)}</span>
           </div>
           ${Array.isArray(w.hops) && w.hops.length ? `
-            <div class="flex flex-wrap items-center gap-1 text-2xs font-mono">
+            <div class="flex flex-wrap items-center gap-1 text-2xs tabular-nums">
               ${w.hops.map(h => safeWikiUrl(h.url)
                 ? `<a href="${escapeHtml(safeWikiUrl(h.url))}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(h.extract || '')}" class="px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-200 hover:underline">${escapeHtml(h.title)}</a>`
                 : `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">${escapeHtml(h.title)}</span>`).join('<span class="text-slate-500">→</span>')}
@@ -583,12 +570,23 @@ function updateCameraButtonsUI() {
       });
     }
 
+// A short accent outline on whatever was just sent, saved or copied
+function uiFlash(el) {
+      if (!el || !el.classList) return;
+      el.classList.remove('ui-flash');
+      void el.offsetWidth;
+      el.classList.add('ui-flash');
+      setTimeout(() => el.classList.remove('ui-flash'), 950);
+    }
+
 function showToast(msg) {
       const container = document.getElementById('toastContainer');
       const el = document.createElement('div');
       el.className = 'ui-toast';
       el.setAttribute('role', 'status');
-      el.innerHTML = `<span>${escapeHtml(msg)}</span>`;
+      // A leading emoji is decoration in a toast; the words carry the news
+      const words = String(msg).replace(/^(?:\p{Extended_Pictographic}|[\uFE0F\u200D\u20E3])+\s*/u, '');
+      el.innerHTML = `<span>${escapeHtml(words)}</span>`;
       container.appendChild(el);
       setTimeout(() => {
         el.classList.add('ui-toast-out');
@@ -933,7 +931,8 @@ window.addEventListener('DOMContentLoaded', () => {
       .join('\n\n');
     try {
       await navigator.clipboard.writeText(text);
-      showToast(`📖 Copied ${state.diaryEntries.length} diary entries.`);
+      showToast(`Copied ${state.diaryEntries.length} diary entries.`);
+      uiFlash(document.getElementById('btnExportDiary'));
     } catch (e) {
       showToast('Clipboard access was blocked by the browser.');
     }

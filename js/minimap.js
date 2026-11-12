@@ -396,7 +396,7 @@ function renderChangesMapPanel() {
       legend.innerHTML = CHANGE_KINDS.map(k => {
         const n = all.filter(c => c.kind === k.key).length, off = changesMap.hidden.has(k.key);
         return `<button type="button" data-change-kind="${k.key}" aria-pressed="${!off}" class="px-2 py-1 rounded-lg text-2xs border flex items-center gap-1.5 transition ${off ? 'border-slate-800 text-slate-500' : 'border-slate-700 bg-slate-900 text-slate-200'}${n ? '' : ' opacity-50'}">
-          <span class="inline-block w-2.5 h-2.5 rounded-sm border border-slate-950" style="background:${k.color}"></span>${escapeHtml(k.emoji)} ${escapeHtml(k.label)} <span class="font-mono text-slate-400">${n}</span></button>`;
+          <span class="inline-block w-2.5 h-2.5 rounded-sm border border-slate-950" style="background:${k.color}"></span>${escapeHtml(k.emoji)} ${escapeHtml(k.label)} <span class="tabular-nums text-slate-400">${n}</span></button>`;
       }).join('');
       const shown = all.filter(c => !changesMap.hidden.has(c.kind));
       listEl.innerHTML = shown.length ? shown.slice(0, 40).map((c, i) => {

@@ -132,7 +132,7 @@ function renderViewer() {
       const nav = `
         <div class="shrink-0 flex items-center justify-center gap-3 p-3 border-t border-slate-800 bg-slate-950">
           <button data-viewer="prev" class="w-12 h-12 rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xl font-bold" aria-label="Previous" ${pages < 2 ? 'disabled style="opacity:.35"' : ''}>◀</button>
-          <span class="min-w-[7rem] text-center text-xs font-mono text-slate-300">${pages ? `${viewerState.page + 1} / ${pages}` : ''}</span>
+          <span class="min-w-[7rem] text-center text-xs tabular-nums text-slate-300">${pages ? `${viewerState.page + 1} / ${pages}` : ''}</span>
           <button data-viewer="next" class="w-12 h-12 rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xl font-bold" aria-label="Next" ${pages < 2 ? 'disabled style="opacity:.35"' : ''}>▶</button>
           <button data-viewer="exit" class="ml-4 px-4 h-12 rounded-lg bg-red-700 hover:bg-red-600 border-2 border-red-300 text-white font-bold tracking-widest text-sm flex items-center gap-2 shadow-lg" aria-label="Exit to the world"><span class="text-lg">🚪</span> EXIT</button>
         </div>`;
@@ -144,8 +144,8 @@ function renderViewer() {
             <img src="${escapeHtml(paintingImageUrl(m))}" alt="${escapeHtml(m.title)}" class="max-w-full max-h-[62vh] object-contain shadow-2xl ${['oil', 'acrylic'].includes(m.medium) ? 'border-[10px] border-amber-600' : 'border-[18px] border-stone-50 outline outline-[6px] outline-stone-800'}">
             <div class="text-center space-y-1 max-w-xl">
               <div class="text-base font-serif italic text-amber-100">"${escapeHtml(m.title)}"</div>
-              <div class="text-2xs font-mono text-slate-300">${escapeHtml(m.on || m.medium)} · ${escapeHtml(m.size || '')} · ${escapeHtml(m.subjectLabel || '')}</div>
-              <div class="text-2xs font-mono text-slate-500">Kelo-1, ${escapeHtml(m.season || '')} · skill ${escapeHtml(m.skill)}/100${m.keep ? ' · he is keeping this one' : ''}${m.for ? ` · painted for ${escapeHtml(m.for)}` : ''}</div>
+              <div class="text-2xs tabular-nums text-slate-300">${escapeHtml(m.on || m.medium)} · ${escapeHtml(m.size || '')} · ${escapeHtml(m.subjectLabel || '')}</div>
+              <div class="text-2xs tabular-nums text-slate-500">Kelo-1, ${escapeHtml(m.season || '')} · skill ${escapeHtml(m.skill)}/100${m.keep ? ' · he is keeping this one' : ''}${m.for ? ` · painted for ${escapeHtml(m.for)}` : ''}</div>
             </div>
           </div>
           <div class="shrink-0 flex items-center justify-center gap-3 p-3 border-t border-slate-800 bg-slate-950">
@@ -164,7 +164,7 @@ function renderViewer() {
             ${ph ? `<img src="${escapeHtml(ph.thumb)}" alt="${escapeHtml(ph.caption || 'Photo')}" class="max-w-full max-h-[65vh] rounded-2xl border border-slate-700 object-contain shadow-2xl">
             <div class="text-center space-y-1 max-w-xl">
               <div class="text-sm text-slate-100">${escapeHtml(ph.caption || '')}</div>
-              <div class="text-2xs font-mono text-slate-400">from ${escapeHtml(ph.from || '')}${ph.time ? ` • ${escapeHtml(ph.time)}` : ''}</div>
+              <div class="text-2xs tabular-nums text-slate-400">from ${escapeHtml(ph.from || '')}${ph.time ? ` • ${escapeHtml(ph.time)}` : ''}</div>
               ${ph.reaction ? `<p class="text-xs text-amber-200 italic font-serif">Kelo-1: "${escapeHtml(ph.reaction)}"</p>` : ''}
             </div>` : '<p class="text-slate-400">No photos yet.</p>'}
           </div>${nav}`;
@@ -191,7 +191,7 @@ function renderViewer() {
         el.innerHTML = `
           <div class="shrink-0 px-4 py-3 flex items-center justify-between gap-2">
             <div class="text-sm font-bold text-white">${which === 'museum' ? '🏛️ Museum of Art & Ideas' : '📦 Storehouse'}</div>
-            <div class="text-2xs font-mono text-slate-400">${items.length} ${which === 'museum' ? 'pieces' : 'items'}${items.length ? ` • ${escapeHtml(floorLabel)}` : ''}</div>
+            <div class="text-2xs tabular-nums text-slate-400">${items.length} ${which === 'museum' ? 'pieces' : 'items'}${items.length ? ` • ${escapeHtml(floorLabel)}` : ''}</div>
           </div>
           <div class="flex-1 min-h-0 overflow-auto p-3 flex justify-center">
             <div class="w-full max-w-3xl rounded-2xl p-2 space-y-1" style="background:${which === 'museum' ? 'linear-gradient(#f5f1e8,#d6d0c4)' : 'linear-gradient(#6b3a1f,#4a2810)'}">

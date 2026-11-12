@@ -430,7 +430,7 @@ function askForLists(p) {
 
 function bomListCardHtml(req) {
       const p = buildProjectById(req.listProject);
-      if (!p) return `<div class="p-3 rounded-2xl border border-slate-800 text-xs text-slate-400">${escapeHtml(req.title)} (that build is gone)</div>`;
+      if (!p) return `<div class="ui-card ui-card-done text-xs text-slate-400">${escapeHtml(req.title)} (that build is gone)</div>`;
       const lines = bomListLines(p.bom, req.listSub);
       const sub = p.bom.subs.find(s => s.key === req.listSub);
       const id = escapeHtml(req.id);
@@ -438,32 +438,32 @@ function bomListCardHtml(req) {
       const rows = lines.map(l => {
         const sent = (l.sent || 0) >= l.qty, got = l.got >= l.qty;
         // A part he makes in one of his own shops: not something to send
-        if (l.make) return `<div class="flex items-start gap-2 px-2 py-1 rounded-lg ${got ? 'bg-emerald-500/10' : 'bg-violet-500/10'}">
-          <span class="mt-0.5 text-2xs">🛠️</span>
-          <span class="flex-1 text-2xs text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="font-mono font-bold text-amber-300">× ${escapeHtml(bomFmtQty(l.qty))}</span> <span class="block text-2xs text-violet-300 italic">I'll make this on the ${escapeHtml(l.makeOn || l.make)}</span></span>
-          <span class="text-2xs font-mono shrink-0 ${got ? 'text-emerald-300' : 'text-violet-300'}">${got ? '✓ made' : l.making ? 'making' : 'my shop'}</span>
+        if (l.make) return `<div class="flex items-start gap-2 px-2 py-1.5 rounded-lg">
+          <i class="ph-bold ph-wrench mt-0.5 text-slate-400" data-hud-emoji="🛠️" aria-hidden="true"></i>
+          <span class="flex-1 text-2xs text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="tabular-nums font-semibold text-white">× ${escapeHtml(bomFmtQty(l.qty))}</span> <span class="block text-2xs text-slate-400">I'll make this on the ${escapeHtml(l.makeOn || l.make)}</span></span>
+          <span class="text-2xs tabular-nums shrink-0 ${got ? 'text-emerald-300' : 'text-slate-400'}">${got ? 'Made' : l.making ? 'Making' : 'My shop'}</span>
         </div>`;
-        return `<label class="flex items-start gap-2 px-2 py-1 rounded-lg ${got ? 'bg-emerald-500/10' : sent ? 'bg-sky-500/10' : 'hover:bg-slate-800/60'} cursor-pointer">
+        return `<label class="flex items-start gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-800/60 cursor-pointer">
           <input type="checkbox" class="bom-line-cb mt-0.5 accent-amber-400" data-req-id="${id}" data-line-id="${escapeHtml(l.id)}" ${sent || got ? 'disabled' : 'checked'} />
-          <span class="flex-1 text-2xs text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="font-mono font-bold text-amber-300">× ${escapeHtml(bomFmtQty(l.qty))}${l.unit ? ' ' + escapeHtml(l.unit) : ''}</span>${kindTag[l.kind] ? ` <span class="text-3xs uppercase text-slate-500">${kindTag[l.kind]}</span>` : ''}${l.forShop ? ` <span class="text-3xs text-violet-300">for my ${escapeHtml(typeof makerShopName === 'function' ? makerShopName(l.forShop) : l.forShop)}</span>` : ''}</span>
-          <span class="text-2xs font-mono shrink-0 ${got ? 'text-emerald-300' : sent ? 'text-sky-300' : 'text-slate-500'}">${got ? '✓ here' : sent ? '📮 sent' : `${bomFmtQty(Math.min(l.got, l.qty))}/${bomFmtQty(l.qty)}`}</span>
+          <span class="flex-1 text-2xs text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="tabular-nums font-semibold text-white">× ${escapeHtml(bomFmtQty(l.qty))}${l.unit ? ' ' + escapeHtml(l.unit) : ''}</span>${kindTag[l.kind] ? ` <span class="text-2xs text-slate-400">${kindTag[l.kind]}</span>` : ''}${l.forShop ? ` <span class="text-2xs text-slate-400">for my ${escapeHtml(typeof makerShopName === 'function' ? makerShopName(l.forShop) : l.forShop)}</span>` : ''}</span>
+          <span class="text-2xs tabular-nums shrink-0 ${got ? 'text-emerald-300' : sent ? 'text-sky-300' : 'text-slate-400'}">${got ? 'Here' : sent ? 'Sent' : `${bomFmtQty(Math.min(l.got, l.qty))}/${bomFmtQty(l.qty)}`}</span>
         </label>`;
       }).join('');
       const left = lines.filter(l => !l.make && (l.sent || 0) < l.qty && l.got < l.qty).length;
-      return `<div class="p-4 rounded-2xl border ${req.fulfilled ? 'bg-slate-950/60 border-emerald-500/30' : 'bg-slate-950 border-amber-500/50 shadow-lg'} space-y-2.5" data-bom-card="${id}">
-        <div class="flex items-center justify-between gap-2">
-          <span class="text-xs font-bold text-white flex items-center gap-1.5"><span class="text-lg">${escapeHtml(req.icon)}</span><span>${escapeHtml(req.title)}</span></span>
-          <span class="text-2xs font-mono px-2 py-0.5 rounded-full shrink-0 ${req.fulfilled ? 'bg-emerald-500/20 text-emerald-300' : req.declined ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/25 text-amber-300 border border-amber-400/40'}">${req.declined ? '✗ Not now' : req.fulfilled ? '📮 All sent' : `${lines.filter(l => !l.make).length - left}/${lines.filter(l => !l.make).length} sent`}</span>
+      return `<div class="ui-card ${req.fulfilled ? 'ui-card-done' : ''}" data-bom-card="${id}">
+        <div class="ui-section-head">
+          <h4 class="ui-section-title min-w-0"><span class="text-base leading-none" aria-hidden="true">${escapeHtml(req.icon)}</span><span>${escapeHtml(req.title)}</span></h4>
+          <span class="ui-section-meta ${req.fulfilled ? 'text-emerald-300' : req.declined ? 'text-rose-300' : ''}">${req.declined ? 'Not now' : req.fulfilled ? 'All sent' : `${lines.filter(l => !l.make).length - left}/${lines.filter(l => !l.make).length} sent`}</span>
         </div>
-        <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
-        ${sub ? `<div class="text-2xs font-mono text-slate-400">${lines.length} lines · ${escapeHtml(bomFmtQty(bomFastenerCount(sub)))} fasteners · ${bomSubReceived(sub)}/${lines.length} received</div>` : ''}
-        <div class="max-h-72 overflow-y-auto space-y-0.5 rounded-xl bg-slate-900/70 border border-slate-800 p-1">${rows}</div>
+        <p class="text-sm text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
+        ${sub ? `<div class="ui-section-meta">${lines.length} lines · ${escapeHtml(bomFmtQty(bomFastenerCount(sub)))} fasteners · ${bomSubReceived(sub)}/${lines.length} received</div>` : ''}
+        <div class="max-h-72 overflow-y-auto space-y-0.5 rounded-xl bg-slate-950/60 p-1">${rows}</div>
         <div class="flex flex-wrap gap-1.5">
-          ${!req.fulfilled && !req.declined ? `<button data-req-id="${id}" class="bom-send-sel flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-bold text-xs">📦 Send checked</button>
-          <button data-req-id="${id}" class="bom-send-all flex-1 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs">📦 Send all (${left})</button>` : ''}
-          <button data-req-id="${id}" class="bom-copy-text px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 text-xs">📋 Copy as text</button>
-          <button data-req-id="${id}" class="bom-copy-md px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 text-xs">⬇ Copy as Markdown</button>
-          ${!req.fulfilled && !req.declined ? `<button data-req-id="${id}" class="bom-decline px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-400 text-xs">✗ Not now</button>` : ''}
+          ${!req.fulfilled && !req.declined ? `<button data-req-id="${id}" class="bom-send-sel ui-btn ui-btn-primary flex-1">Send checked</button>
+          <button data-req-id="${id}" class="bom-send-all ui-btn flex-1">Send all <span class="tabular-nums">(${left})</span></button>` : ''}
+          <button data-req-id="${id}" class="bom-copy-text ui-btn ui-btn-sm">Copy as text</button>
+          <button data-req-id="${id}" class="bom-copy-md ui-btn ui-btn-sm">Copy as Markdown</button>
+          ${!req.fulfilled && !req.declined ? `<button data-req-id="${id}" class="bom-decline ui-btn ui-btn-sm ui-btn-quiet">Not now</button>` : ''}
         </div>
       </div>`;
     }
@@ -496,7 +496,8 @@ function bindBomListButtons(list) {
         const req = reqOf(btn), p = req && buildProjectById(req.listProject);
         if (!p) return;
         copyToClipboard(btn.classList.contains('bom-copy-md') ? bomListMarkdown(p.bom, req.listSub) : bomListText(p.bom, req.listSub));
-        showToast(btn.classList.contains('bom-copy-md') ? '⬇ Copied the list as Markdown' : '📋 Copied the list as text');
+        showToast(btn.classList.contains('bom-copy-md') ? 'Copied the list as Markdown' : 'Copied the list as text');
+        if (typeof uiFlash === 'function') uiFlash(btn);
       }; });
       list.querySelectorAll('.bom-decline').forEach(btn => { btn.onclick = () => {
         const req = reqOf(btn);
@@ -1363,8 +1364,8 @@ function renderBuildProjectsList() {
           return `<div class="flex items-center gap-2 text-2xs">
             <span class="w-4">${s.built ? '✅' : bomSubComplete(s) ? '📦' : '○'}</span>
             <span class="flex-1 text-slate-300">${escapeHtml(s.name)}</span>
-            <span class="font-mono text-slate-400">${bomSubReceived(s)}/${s.lines.length} parts</span>
-            <span class="font-mono text-slate-500">${escapeHtml(bomFmtQty(bomFastenersLeft(s)))}/${escapeHtml(bomFmtQty(bomFastenerCount(s)))} fst</span>
+            <span class="tabular-nums text-slate-400">${bomSubReceived(s)}/${s.lines.length} parts</span>
+            <span class="tabular-nums text-slate-500">${escapeHtml(bomFmtQty(bomFastenersLeft(s)))}/${escapeHtml(bomFmtQty(bomFastenerCount(s)))} fst</span>
             <span class="w-12 h-1.5 rounded bg-slate-700 overflow-hidden"><span class="block h-full bg-amber-400" style="width:${Math.round(f * 100)}%"></span></span>
           </div>`;
         }).join('');
@@ -1372,7 +1373,7 @@ function renderBuildProjectsList() {
         return `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-200 space-y-1.5" data-build-project="${escapeHtml(p.id)}">
           <div class="flex items-center gap-2"><span class="font-semibold flex-1">${escapeHtml(b.emoji)} ${escapeHtml(b.name)}</span><span class="text-2xs text-slate-400">${escapeHtml(statusText[p.status] || p.status)}</span></div>
           <div class="text-2xs text-slate-400">${pct}% built · ${rec}% of parts received · ${tools}/${b.tools.length} tools${b.vehicle === 'plane' ? ` · pilot: ${pilotTrained() ? 'trained' : 'not yet'}` : ''}</div>
-          <div class="w-full h-2 rounded bg-slate-800 overflow-hidden"><span class="block h-full bg-gradient-to-r from-amber-400 to-emerald-400" style="width:${pct}%"></span></div>
+          <div class="w-full h-2 rounded bg-slate-800 overflow-hidden"><span class="block h-full bg-amber-500" style="width:${pct}%"></span></div>
           <div class="space-y-0.5">${subs}</div>${tests}
         </div>`;
       }).join('') : '<div class="text-2xs text-slate-500 italic">No big builds yet. He can build anything with the right parts.</div>';

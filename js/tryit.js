@@ -153,7 +153,7 @@ function tryRenderPanel() {
       root.innerHTML = `
         <div class="flex items-center justify-between gap-2">
           <div class="text-xs font-bold text-slate-200">🧪 Try it</div>
-          <span class="text-2xs font-mono px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-200 border border-sky-500/30">preview only · not saved</span>
+          <span class="text-2xs tabular-nums px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-200 border border-sky-500/30">preview only · not saved</span>
         </div>
         <p class="text-2xs text-slate-400">See his world's features now instead of waiting for them. Previews last until you reload or press "Back to his real calendar". His real season is ${escapeHtml(realSeason.toLowerCase())}.</p>
         <div class="space-y-1">

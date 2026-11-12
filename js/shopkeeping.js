@@ -531,7 +531,7 @@ function renderShopPanel() {
         <div class="flex items-center justify-between gap-2 flex-wrap">
           <div class="min-w-0">
             <div class="text-xs font-bold text-emerald-200 flex items-center gap-1.5">🛒 Kelo-1's Shop</div>
-            <div class="text-2xs font-mono text-slate-400">${shop.listings.length} for sale · ${shop.sold.length} sold · earned <span class="text-emerald-300 font-bold">${escapeHtml(formatCAD(shop.earnings))}</span></div>
+            <div class="text-2xs tabular-nums text-slate-400">${shop.listings.length} for sale · ${shop.sold.length} sold · earned <span class="text-emerald-300 font-bold">${escapeHtml(formatCAD(shop.earnings))}</span></div>
           </div>
           <div class="flex gap-1.5">
             <button id="btnOpenHisShop" class="px-2.5 py-1 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 text-2xs font-semibold transition">🛒 His shop</button>
@@ -543,7 +543,7 @@ function renderShopPanel() {
           <div class="flex gap-2 items-center p-1.5 rounded-xl bg-slate-950/70 border border-slate-800">
             ${/^data:image\//.test(l.image || '') ? `<img src="${escapeHtml(l.image)}" alt="" class="w-12 h-12 rounded-lg object-cover shrink-0 bg-amber-100">` : '<div class="w-12 h-12 rounded-lg bg-slate-800 shrink-0"></div>'}
             <div class="min-w-0 flex-1">
-              <div class="text-2xs font-semibold text-white truncate">${escapeHtml(l.name)} <span class="text-emerald-300 font-mono">${escapeHtml(formatCAD(l.price))}</span></div>
+              <div class="text-2xs font-semibold text-white truncate">${escapeHtml(l.name)} <span class="text-emerald-300 tabular-nums">${escapeHtml(formatCAD(l.price))}</span></div>
               <div class="text-2xs text-slate-400 line-clamp-2">${escapeHtml(l.description)}</div>
             </div>
             <div class="flex flex-col gap-1 shrink-0">

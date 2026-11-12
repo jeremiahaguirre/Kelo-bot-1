@@ -92,7 +92,7 @@ function renderMailbox() {
             ${m.thumbs && m.thumbs[0] ? `<img src="${escapeHtml(m.thumbs[0])}" alt="" class="w-8 h-8 rounded-lg object-cover shrink-0">` : `<span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">${escapeHtml(m.emoji)}</span>`}
             <div class="min-w-0 flex-1">
               <div class="font-semibold text-red-100 truncate">${escapeHtml(m.kind === 'message' ? 'Letter' : (m.name || m.kind))}</div>
-              <div class="text-2xs font-mono text-slate-400 truncate">from ${escapeHtml(m.from)} • ${escapeHtml(m.time)}${m.note ? ` • "${escapeHtml(m.note.slice(0, 60))}"` : ''}</div>
+              <div class="text-2xs tabular-nums text-slate-400 truncate">from ${escapeHtml(m.from)} • ${escapeHtml(m.time)}${m.note ? ` • "${escapeHtml(m.note.slice(0, 60))}"` : ''}</div>
             </div>
           </div>`).join(''));
     }
@@ -123,7 +123,7 @@ function renderPortal() {
         const PILLS_STEP = 60;
         const shown = typeof perfListLimit === 'function' ? perfListLimit('toolInventoryPills', PILLS_STEP) : owned.length;
         const html = owned.slice(0, shown).map(o => `
-          <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-2xs font-mono flex items-center gap-1">
+          <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-2xs tabular-nums flex items-center gap-1">
             <span>${escapeHtml(o.emoji)}</span> ${escapeHtml(o.name)}${o.left ? ` <span class="text-emerald-300">(${escapeHtml(o.left)})</span>` : ''}${floorOf.get(o.name) > 0 ? ` <span class="text-slate-400">· B${floorOf.get(o.name)}</span>` : ''}
           </span>`).join('') + (typeof perfMoreButton === 'function' ? perfMoreButton('toolInventoryPills', shown, owned.length, PILLS_STEP) : '');
         if (typeof perfSetHtml === 'function') perfSetHtml(pills, html); else pills.innerHTML = html;
@@ -138,10 +138,10 @@ function renderPortal() {
           : state.giftLog.map(g => `
           <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-xs space-y-0.5">
             <div class="flex items-center justify-between gap-2">
-              <span class="font-bold text-rose-200 truncate">${escapeHtml(g.emoji)} ${escapeHtml(g.name)} <span class="font-mono text-2xs text-slate-400">(${escapeHtml(g.type === 'request' ? 'requested ' : '')}${escapeHtml(g.category)})</span></span>
-              <span class="text-2xs font-mono text-slate-500 shrink-0">${escapeHtml(g.time)}</span>
+              <span class="font-bold text-rose-200 truncate">${escapeHtml(g.emoji)} ${escapeHtml(g.name)} <span class="tabular-nums text-2xs text-slate-400">(${escapeHtml(g.type === 'request' ? 'requested ' : '')}${escapeHtml(g.category)})</span></span>
+              <span class="text-2xs tabular-nums text-slate-500 shrink-0">${escapeHtml(g.time)}</span>
             </div>
-            <div class="text-2xs font-mono text-slate-400">from ${escapeHtml(g.from)}${g.note ? ` • "${escapeHtml(g.note)}"` : ''}</div>
+            <div class="text-2xs tabular-nums text-slate-400">from ${escapeHtml(g.from)}${g.note ? ` • "${escapeHtml(g.note)}"` : ''}</div>
             ${g.reaction ? `<p class="text-2xs text-slate-300 font-serif italic">Kelo-1: "${escapeHtml(g.reaction)}"</p>` : '<p class="text-2xs text-slate-500 italic">Thinking about it...</p>'}
           </div>`).join(''));
       }
@@ -216,6 +216,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!postMail({ kind: 'message', from: portalVisitorName(), note: text })) return;
     msgInput.value = '';
     msgCount.textContent = '0 / 500';
+    if (typeof uiFlash === 'function') uiFlash(e.submitter || e.target.querySelector('[type="submit"]'));
   });
 
   // Tools, toys, or anything else
@@ -226,7 +227,7 @@ window.addEventListener('DOMContentLoaded', () => {
   let chosenEmoji = null;
   if (catalog) {
     catalog.innerHTML = GIFT_CATALOG.map((g, i) => `
-      <button type="button" data-gift-idx="${i}" class="gift-chip px-2 py-1 rounded-xl bg-slate-950 hover:bg-amber-500/20 border border-slate-800 hover:border-amber-400/40 text-2xs text-slate-200 transition">${escapeHtml(g.emoji)} ${escapeHtml(g.name)}</button>
+      <button type="button" data-gift-idx="${i}" class="gift-chip ui-chip" aria-pressed="false">${escapeHtml(g.emoji)} ${escapeHtml(g.name)}</button>
     `).join('');
     catalog.querySelectorAll('.gift-chip').forEach(chip => {
       chip.addEventListener('click', () => {
@@ -234,7 +235,7 @@ window.addEventListener('DOMContentLoaded', () => {
         giftName.value = g.name;
         giftKind.value = g.kind;
         chosenEmoji = g.emoji;
-        catalog.querySelectorAll('.gift-chip').forEach(c => c.classList.toggle('border-amber-400', c === chip));
+        catalog.querySelectorAll('.gift-chip').forEach(c => c.setAttribute('aria-pressed', String(c === chip)));
       });
     });
   }
@@ -255,7 +256,8 @@ window.addEventListener('DOMContentLoaded', () => {
     giftNote.value = '';
     giftKind.value = '';
     chosenEmoji = null;
-    catalog?.querySelectorAll('.gift-chip').forEach(c => c.classList.remove('border-amber-400'));
+    catalog?.querySelectorAll('.gift-chip').forEach(c => c.setAttribute('aria-pressed', 'false'));
+    if (typeof uiFlash === 'function') uiFlash(e.submitter);
   });
 
   // Photos
@@ -296,6 +298,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const caption = captionEl.value;
     captionEl.value = '';
     mailPendingPhotos(caption);
+    if (typeof uiFlash === 'function') uiFlash(e.submitter);
   });
 
   document.getElementById('btnRingPostOfficeBell')?.addEventListener('click', () => ringPostOfficeBell());

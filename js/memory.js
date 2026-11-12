@@ -188,7 +188,7 @@ function renderMemoryUI() {
           ? `<p class="text-2xs text-slate-500 italic">No core memories yet. He forms one after every ${ENTRIES_PER_CORE_MEMORY} diary entries.</p>`
           : state.coreMemories.slice(0, shown).map(m => `
           <div class="p-2.5 rounded-xl bg-slate-900/90 border border-pink-500/25 text-xs space-y-0.5">
-            <div class="flex items-center justify-between gap-2 text-2xs font-mono text-pink-300">
+            <div class="flex items-center justify-between gap-2 text-2xs tabular-nums text-pink-300">
               <span>${escapeHtml(m.emoji)} Day ${escapeHtml(m.day || '?')}</span>
               <span class="text-slate-500">${escapeHtml(new Date(m.at).toLocaleDateString())}</span>
             </div>

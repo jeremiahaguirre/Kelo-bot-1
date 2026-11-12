@@ -1125,7 +1125,7 @@ function applyPlantDecision(decision) {
 // --- The Brain tab ---------------------------------------------------------------------------------
 function plantBar(label, v, cap, unit, color = 'bg-sky-500') {
       const f = Math.max(0, Math.min(1, v / cap));
-      return `<div class="flex items-center gap-1.5"><span class="w-24 shrink-0 text-slate-400">${escapeHtml(label)}</span><span class="flex-1 h-1.5 rounded-full bg-slate-800 overflow-hidden"><span class="block h-full ${color}" style="width:${Math.round(f * 100)}%"></span></span><span class="w-16 text-right font-mono text-slate-300">${unit === 'L' ? fmtL(v) : unit === '%' ? Math.round(v) + '%' : fmtT(v)}</span></div>`;
+      return `<div class="flex items-center gap-1.5"><span class="w-24 shrink-0 text-slate-400">${escapeHtml(label)}</span><span class="flex-1 h-1.5 rounded-full bg-slate-800 overflow-hidden"><span class="block h-full ${color}" style="width:${Math.round(f * 100)}%"></span></span><span class="w-16 text-right tabular-nums text-slate-300">${unit === 'L' ? fmtL(v) : unit === '%' ? Math.round(v) + '%' : fmtT(v)}</span></div>`;
     }
 
 function renderPlantsPanel() {

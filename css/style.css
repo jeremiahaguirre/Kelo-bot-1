@@ -175,6 +175,7 @@ button.ui-chip:hover { border-color: var(--hud-accent-line); color: var(--hud-te
 /* Cards and rows: one surface step up, grouped by spacing (no lines or boxes inside them) */
 .ui-card { display: grid; gap: var(--hud-s-3); padding: var(--hud-s-4); border-radius: var(--hud-r); background: var(--hud-surface-2); }
 .ui-card-inset { background: var(--hud-surface-0); }
+.ui-card-done { background: rgb(var(--hud-n-800) / 0.45); }
 .ui-row { display: flex; align-items: center; gap: var(--hud-s-3); min-height: 40px; padding: var(--hud-s-2) var(--hud-s-3); border-radius: var(--hud-r-md); background: rgb(var(--hud-n-950) / 0.45); font-size: var(--hud-fs-xs); color: var(--hud-text); }
 .ui-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--hud-s-2); }
 .ui-section-title { display: flex; align-items: center; gap: var(--hud-s-2); margin: 0; font-size: var(--hud-fs-sm); font-weight: var(--hud-fw-bold); color: var(--hud-text); line-height: 1.3; }

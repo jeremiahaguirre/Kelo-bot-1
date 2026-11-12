@@ -1080,7 +1080,7 @@ function renderWorldUpgradesList() {
         <div data-upgrade-card="${id}" class="p-2.5 rounded-xl border ${on ? 'bg-violet-950/30 border-violet-500/30' : 'bg-slate-950/60 border-slate-800'} space-y-1.5">
           <div class="flex items-center justify-between gap-2">
             <span class="text-xs font-bold ${on ? 'text-violet-100' : 'text-slate-400'} truncate">${escapeHtml(u.name)}</span>
-            <span class="text-2xs font-mono px-2 py-0.5 rounded-full shrink-0 ${u.broken ? 'bg-rose-500/20 text-rose-200' : on ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-700/60 text-slate-300'}">${u.broken ? 'failed checks' : on ? 'on' : 'off'} · v${u.version}</span>
+            <span class="text-2xs tabular-nums px-2 py-0.5 rounded-full shrink-0 ${u.broken ? 'bg-rose-500/20 text-rose-200' : on ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-700/60 text-slate-300'}">${u.broken ? 'failed checks' : on ? 'on' : 'off'} · v${u.version}</span>
           </div>
           <div class="text-2xs text-slate-400">${escapeHtml(u.kind)} · coded by his ${u.by === 'ai' ? 'AI brain' : 'built-in brain'}${u.code && u.code.routine ? ` · routine "${escapeHtml(u.code.routine.name)}"` : ''}</div>
           ${u.about ? `<p class="text-2xs text-slate-300 italic">${escapeHtml(u.about)}</p>` : ''}

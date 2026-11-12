@@ -1536,7 +1536,7 @@ function createPOILabelsDOM() {
         const el = document.createElement('div');
         el.className = 'poi-label';
         el.innerHTML = `
-          <div class="px-2.5 py-1 rounded-full bg-gradient-to-r ${loc.pinColor} text-white text-2xs font-bold shadow-lg border border-white/25 flex items-center gap-1 whitespace-nowrap">
+          <div class="px-2.5 py-1 rounded-full bg-slate-950/85 text-white text-2xs font-semibold shadow flex items-center gap-1 whitespace-nowrap">
             <span>${escapeHtml(loc.icon)}</span>
             <span>${escapeHtml(loc.name)}</span>
           </div>

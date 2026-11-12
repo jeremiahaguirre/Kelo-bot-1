@@ -411,6 +411,7 @@ function renderGitHubTab() {
           const modal = document.getElementById('codeViewerModal');
           modal.classList.remove('hidden');
           modal.classList.add('flex');
+          document.getElementById('btnCloseCodeModal')?.focus({ preventScroll: true });
         };
       });
     }
@@ -837,13 +838,23 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   // Modals: open/close helpers, close on backdrop click or Escape
+  // Focus moves into an open dialog (and back after), so Escape and Tab act on it, not on a panel behind it
+  const modalReturnFocus = {};
   const openModal = (id) => {
     const m = document.getElementById(id);
-    if (m) { m.classList.remove('hidden'); m.classList.add('flex'); }
+    if (!m) return;
+    if (m.classList.contains('hidden')) modalReturnFocus[id] = document.activeElement;
+    m.classList.remove('hidden'); m.classList.add('flex');
+    const first = m.querySelector('button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (first) first.focus({ preventScroll: true });
   };
   const closeModal = (id) => {
     const m = document.getElementById(id);
-    if (m) { m.classList.add('hidden'); m.classList.remove('flex'); }
+    if (!m || m.classList.contains('hidden')) return;
+    m.classList.add('hidden'); m.classList.remove('flex');
+    const back = modalReturnFocus[id];
+    modalReturnFocus[id] = null;
+    if (back && back.isConnected && typeof back.focus === 'function' && back.offsetParent !== null) back.focus({ preventScroll: true });
   };
   ['codeViewerModal', 'aiConfigModal'].forEach(id => {
     document.getElementById(id)?.addEventListener('click', (e) => {

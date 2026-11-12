@@ -300,7 +300,7 @@ let workshopJobRunning = null;
 async function runMachineJob(key, job = {}, originLabel = 'In the Workshop') {
       const def = WORKSHOP_MACHINES[key];
       if (!def || !def.plan) return false;
-      if (workshopJobRunning || state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || state.isCollectingMail) return false;
+      if (workshopJobRunning || state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
       if (typeof buildWorkshop3D === 'function') buildWorkshop3D();
       if (!machineReady(key, job, { context: originLabel })) return 'not-ready';
       const plan = def.plan(job);

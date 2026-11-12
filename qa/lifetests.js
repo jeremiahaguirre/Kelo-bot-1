@@ -118,11 +118,17 @@ const TESTS = {
       state.isCollectingMail = false;
       window.groundworkReady = () => true; window.readyToOperate = () => true;
       state.toolInventory.push('A sturdy shovel', 'A load of gravel');
-      state.botPos = { x: -34, z: 0 }; state.targetPos = { ...state.botPos };
-      const r = await buildRoad(-34, 0, -20, 0, 'QA road', 'QA');
+      // a clear start west of town, aimed east into it
+      let sx = null, sz = null;
+      for (let z = -10; z <= 7 && sx === null; z += 0.5) for (let x = -30; x >= -40; x -= 0.5) {
+        if (!offLimits(x, z, 0.5) && !offLimits(x + 2, z, 0.5) && !offLimits(x + 4, z, 0.5)) { sx = x; sz = z; break; }
+      }
+      state.botPos = { x: sx, z: sz }; state.targetPos = { ...state.botPos };
+      const r = await buildRoad(sx, sz, sx + 16, sz, 'QA road', 'QA');
       const road = state.worldEdits.filter(e => e.type === 'road').pop();
       state.isCollectingMail = true;
-      return r !== false && road && road.toX <= TOWN.minX && !inTown(road.toX, road.toZ);
+      const ok = r !== false && road && road.toX <= TOWN.minX && !inTown(road.toX, road.toZ);
+      return ok || { ok, info: JSON.stringify({ r, road, speech: state.speechBubble }) };
     });
   },
   // Gardening plants real seeds outside town and uses them
@@ -137,7 +143,8 @@ const TESTS = {
       const r = await practiceHobby(hobby, 'QA');
       const plant = state.worldEdits.filter(e => e.type === 'plant' || e.type === 'tree' || /plant|seed/.test(e.type)).pop();
       state.isCollectingMail = true;
-      return r === true && plant && !inTown(plant.x, plant.z) && state.plantings.length === plantingsBefore && hobby.practiced === 1;
+      const ok = r === true && plant && !inTown(plant.x, plant.z) && state.plantings.length === plantingsBefore && hobby.practiced === 1;
+      return ok || { ok, info: JSON.stringify({ r, plant, speech: state.speechBubble, types: state.worldEdits.map(e => e.type), practiced: hobby.practiced }) };
     });
   },
   // Using fertilizer with nothing hungry doesn't waste it
@@ -178,7 +185,7 @@ const TESTS = {
   for (const [name, fn] of Object.entries(TESTS)) {
     if (only.length && !only.includes(name)) continue;
     let ok = false;
-    try { ok = await fn(page); } catch (e) { console.log(name, 'threw', e.message.slice(0, 300)); }
+    try { ok = await fn(page); if (ok && typeof ok === 'object') { console.log(name, 'info', ok.info); ok = ok.ok; } } catch (e) { console.log(name, 'threw', e.message.slice(0, 300)); }
     console.log(ok ? 'PASS' : 'FAIL', name);
     if (!ok) fails++;
     await page.evaluate(() => { state.isCollectingMail = true; renderer.render = () => {}; }).catch(() => {});

@@ -1339,6 +1339,151 @@ if (typeof parseUseRequest === 'function' && typeof answerUseRequest === 'functi
   };
 }
 
+// --- 12. Big builds: machine-made lines, and plans read from the article when there is no key ----------
+// Lines of any big-build BOM (template, AI or article) that one of his shops can make whole are marked
+// "I'll make this on the <machine>" and made there; those shops' missing supplies go on the list too.
+// Raw stock (sheets, studs, tube by the foot), bought components and fasteners are never marked.
+const MAKER_STOCK_LINE = /\b(sheets?|tub(e|ing)|studs?|planks?|lumber|joists?|rafters?|plates?, \d|rod stock|bar stock|wire|cable|rope|fabric|dacron|cloth|\d+\s*(ft|feet|in\.?|mm|m)\b|\bft\b|cu yd|gal|rolls?|spools?|packs?|bags?|kits?|set of|bolts?|nuts?|screws?|nails?|rivets?|washers?|batter(y|ies)|motor|engine|propeller blank|tires?|wheels?|bearings?|chain|cylinder|gauge|instrument|magneto|carburet|radio|strings?|pickups?|tuners?)\b/i;
+function makerShopForLine(line) {
+      if (!line || line.kind !== 'p' || line.make) return null;
+      const n = String(line.name || '');
+      const concrete = /\b(ready-?mix|concrete)\b/i.test(n) && /\b(footings?|piers?|slab|pad|foundation)\b/i.test(n);
+      if (!concrete && (MAKER_STOCK_LINE.test(n) || MAKER_BOUGHT.some(([, re]) => re.test(n)))) return null;
+      const mats = makerMaterialsIn(n);
+      if (!mats.length) return null;
+      for (const m of mats) {
+        const cap = MAKER_CAPS.find(c => c.mat.includes(m) && makerFormOk(c, n) && makerFits(c, n) && makerShopExists(c.key));
+        if (cap) return { cap, material: m };
+      }
+      return null;
+    }
+
+function makerMarkBomLines(bom) {
+      if (!bom || !Array.isArray(bom.subs)) return 0;
+      let marked = 0;
+      const shops = new Set();
+      bom.subs.forEach(sub => sub.lines.forEach(l => {
+        const hit = makerShopForLine(l);
+        if (!hit) return;
+        l.make = hit.cap.key;
+        l.makeOn = makerShopName(hit.cap.key);
+        l.product = makerProductName(hit.cap, l.name.toLowerCase().replace(/\s*\(.*\)$/, ''), hit.material);
+        shops.add(hit.cap.key);
+        marked += 1;
+      }));
+      // Each marking shop's missing supplies go on the list, in the first sub-assembly that uses that shop
+      shops.forEach(k => {
+        const sub = bom.subs.find(x => x.lines.some(l => l.make === k));
+        (makerShopMissing(k, {}) || []).forEach((m, i) => {
+          if (bom.subs.some(x => x.lines.some(l => l.name === m.ask))) return;
+          sub.lines.push({ id: `${sub.key}-s${k}${i}`, name: m.ask, qty: 1, unit: '', kind: m.kind, step: null, got: 0, sent: 0, used: 0, stepAt: -1,
+            supply: m.supply || null, supplyAsk: m.supply ? null : m.ask, forShop: k });
+        });
+      });
+      return marked;
+    }
+
+// Part families: what a kind of big thing is made of, written as real sub-assemblies with quantities.
+// The family is picked from the thing's name and its article; the frame material from what the article says.
+const MAKER_FAMILIES = [
+  { key: 'structure', re: /\b(shed|gazebo|pergola|playhouse|greenhouse|cabin|hut|shelter|outbuilding|barn|kiosk|pavilion|deck|footbridge|treehouse|chicken coop|coop|sauna|bus shelter)\b/i, site: 'spot', emoji: '🏠', r: 3.4,
+    subs: w => [
+      { key: 'foundation', name: 'Foundation', lines: [['Ready-mix concrete for 6 pier footings (0.3 m³)', 1, 'load', 'p'], ['8 in. cardboard concrete tube forms, 4 ft', 6, '', 'p'], ['Galvanised post bases', 6, '', 'p'], ['1/2 in. anchor bolts with washers', 6, '', 'f']],
+        steps: [['fit', 'shovel', 'Digging the footing holes below the frost line'], ['fit', 'shovel', 'Pouring the concrete footings'], ['inspect', 'level', 'Checking the footings are level and square']] },
+      { key: 'frame', name: 'Frame', lines: [[w ? 'Pressure-treated 4 × 4 posts, 8 ft' : 'Steel 2 in. square tube, 20 ft', 6, '', 'p'], [w ? '2 × 6 beams and joists, 10 ft' : 'Steel 2 × 2 in. angle, 20 ft', 10, '', 'p'], ['Galvanised framing connectors', 24, '', 'p'], [w ? '3 in. structural screws' : '3/8 in. bolts with nuts', 200, '', 'f']],
+        steps: [['cut', 'saw', 'Cutting the posts and beams'], ['fit', 'drill', 'Standing the posts and fixing the beams'], ['inspect', 'level', 'Plumb and square']] },
+      { key: 'roof', name: 'Roof', lines: [['2 × 4 rafters, 8 ft', 12, '', 'p'], ['Corrugated metal roof panels, 8 ft', 6, '', 'p'], ['Roofing screws with washers', 150, '', 'f']],
+        steps: [['cut', 'saw', 'Cutting the rafters'], ['fit', 'drill', 'Fixing rafters and roof panels']] },
+      { key: 'walls', name: 'Walls and finish', lines: [['Cedar siding boards, 8 ft', 40, '', 'p'], ['Exterior wood stain', 2, 'gal', 'c'], ['2 in. siding nails', 600, '', 'f']],
+        steps: [['fit', 'hammer', 'Nailing on the siding'], ['paint', 'brush', 'Staining the outside'], ['inspect', null, 'A last look round']] }
+    ], tools: [['shovel', 'A post-hole shovel', 'the footing holes'], ['saw', 'A circular saw', 'cutting lumber'], ['drill', 'A cordless drill', 'screws and bolts'], ['level', 'A 4 ft level', 'plumb and level'], ['hammer', 'A framing hammer', 'nails'], ['brush', 'A paint brush', 'stain']],
+    skills: ['Framing', 'Pouring concrete footings'] },
+  { key: 'wheeled', re: /\b(cart|wagon|trailer|go-?kart|kart|soapbox|scooter|wheelbarrow|rickshaw|buggy|dolly|handcart|pedal car)\b/i, site: 'bench', emoji: '🛞', r: 1.5,
+    subs: w => [
+      { key: 'frame', name: 'Frame', lines: [[w ? 'Hardwood 2 × 4, 8 ft' : 'Mild steel 1 in. square tube, 20 ft', 2, '', 'p'], [w ? 'Steel corner brackets' : 'Steel gusset plates', 8, '', 'p'], [w ? '#10 x 2 in. wood screws' : 'ER70S-6 MIG wire', w ? 40 : 1, w ? '' : 'spool', w ? 'f' : 'c']],
+        steps: [['cut', 'saw', 'Cutting the frame members'], [w ? 'fit' : 'weld', w ? 'drill' : null, w ? 'Screwing the frame together' : 'Welding the frame square'], ['inspect', null, 'Checking it sits flat and square']] },
+      { key: 'wheels', name: 'Wheels and axles', lines: [['10 in. pneumatic wheels with bearings', 4, '', 'p'], ['5/8 in. steel axle rod, 3 ft', 2, '', 'p'], ['Axle bearing blocks', 4, '', 'p'], ['Cotter pins and washers', 8, '', 'f']],
+        steps: [['drill', 'drill', 'Drilling the axle mounts'], ['fit', 'wrench', 'Mounting the axles and wheels'], ['inspect', null, 'Spinning every wheel']] },
+      { key: 'deck', name: 'Deck and handle', lines: [['3/4 in. exterior plywood 4 × 4', 1, 'sheet', 'p'], ['Steel pull handle', 1, '', 'p'], ['1/4 in. carriage bolts with nuts', 12, '', 'f'], ['Exterior paint', 1, 'qt', 'c']],
+        steps: [['cut', 'saw', 'Cutting the deck'], ['bolt', 'wrench', 'Bolting on the deck and handle'], ['paint', 'brush', 'Painting it']] }
+    ], tools: [['saw', 'A circular saw', 'cutting'], ['drill', 'A cordless drill', 'holes'], ['wrench', 'A socket set', 'bolts'], ['brush', 'A paint brush', 'paint']], skills: ['Fabrication', 'Assembly'] },
+  { key: 'boat', re: /\b(raft|boat|canoe|kayak|dinghy|paddle ?board|punt|pontoon|skiff|rowboat|coracle)\b/i, site: 'beach', emoji: '🛶', r: 3,
+    subs: w => [
+      { key: 'hull', name: 'Hull', lines: [['1/4 in. marine plywood 4 × 8', 4, 'sheets', 'p'], ['Marine epoxy kit', 1, 'gal', 'c'], ['6 oz fibreglass tape, 50 yd', 1, 'roll', 'c'], ['Copper stitching wire', 1, 'roll', 'c']],
+        steps: [['cut', 'saw', 'Cutting the hull panels'], ['fit', null, 'Stitching the panels together'], ['glue', null, 'Taping and epoxying the seams'], ['sand', null, 'Fairing and sanding']] },
+      { key: 'fittings', name: 'Seats and fittings', lines: [['Cedar seat boards', 2, '', 'p'], ['Oarlocks or paddle cleats', 2, '', 'p'], ['Stainless screws', 40, '', 'f'], ['Marine varnish', 1, 'qt', 'c']],
+        steps: [['fit', 'drill', 'Fitting the seats'], ['paint', 'brush', 'Varnishing'], ['inspect', null, 'Checking every seam']] }
+    ], tools: [['saw', 'A jigsaw', 'the hull panels'], ['drill', 'A cordless drill', 'stitch holes'], ['brush', 'A varnish brush', 'varnish']], skills: ['Stitch-and-glue boatbuilding'] },
+  { key: 'flying', re: /\b(kite|glider|drone|quadcopter|model (air)?plane|hang glider|ornithopter|blimp)\b/i, site: 'bench', emoji: '🪁', r: 1.2,
+    subs: w => [
+      { key: 'frame', name: 'Frame', lines: [['Carbon fibre tube 8 mm, 1 m', 4, '', 'p'], ['Nylon tube connectors', 8, '', 'p'], ['Epoxy adhesive', 1, 'tube', 'c']],
+        steps: [['cut', null, 'Cutting the spars'], ['glue', null, 'Gluing the joints']] },
+      { key: 'skin', name: 'Covering and controls', lines: [['Ripstop nylon fabric', 2, 'yd', 'p'], ['Braided line', 1, 'spool', 'p'], ['Small hardware kit', 1, '', 'f']],
+        steps: [['cover', null, 'Covering the frame'], ['fit', null, 'Rigging the lines'], ['inspect', null, 'A test in the wind']] }
+    ], tools: [['scissors', 'Sharp scissors', 'the fabric']], skills: ['Light structures'] },
+  { key: 'device', re: /\b(robot|clock|radio|telescope|machine|device|instrument|amplifier|computer|console|camera|weather station|lamp|projector|synth\w*)\b/i, site: 'bench', emoji: '🤖', r: 1,
+    subs: w => [
+      { key: 'body', name: 'Body', lines: [['Aluminium enclosure panels', 4, '', 'p'], ['Aluminium mounting brackets', 6, '', 'p'], ['M3 screws and standoffs', 40, '', 'f']],
+        steps: [['drill', 'drill', 'Drilling the enclosure'], ['fit', 'driver', 'Mounting the brackets']] },
+      { key: 'electronics', name: 'Electronics', lines: [['Microcontroller board', 1, '', 'p'], ['Power supply 12 V', 1, '', 'p'], ['Hook-up wire kit', 1, '', 'c'], ['Solder', 1, 'spool', 'c']],
+        steps: [['solder', 'iron', 'Soldering the wiring'], ['wire', 'driver', 'Wiring it up'], ['inspect', null, 'Powering it up']] }
+    ], tools: [['drill', 'A cordless drill', 'holes'], ['driver', 'A screwdriver set', 'screws'], ['iron', 'A soldering iron', 'wiring']], skills: ['Electronics', 'Assembly'] },
+  { key: 'thing', re: /./, site: 'bench', emoji: '🛠️', r: 1.5,
+    subs: w => [
+      { key: 'body', name: 'Main body', lines: [[w ? 'Hardwood boards, 1 × 8 in., 8 ft' : 'Steel 1 in. square tube, 20 ft', 3, '', 'p'], [w ? 'Wooden mounting blocks' : 'Steel mounting brackets', 6, '', 'p'], [w ? '#8 wood screws' : '1/4 in. bolts with nuts', 60, '', 'f']],
+        steps: [['cut', 'saw', 'Cutting the parts to size'], ['fit', 'drill', 'Putting the body together'], ['inspect', null, 'Checking it is solid']] },
+      { key: 'finish', name: 'Fittings and finish', lines: [['Handles and fittings', 2, '', 'p'], ['Exterior finish', 1, 'qt', 'c']],
+        steps: [['fit', 'drill', 'Fitting the hardware'], ['paint', 'brush', 'Finishing it']] }
+    ], tools: [['saw', 'A saw', 'cutting'], ['drill', 'A cordless drill', 'holes and screws'], ['brush', 'A brush', 'the finish']], skills: ['Assembly'] }
+];
+
+// A bill of materials worked out from what he read (no AI, no template): the family's sub-assemblies,
+// plus any components the article names, made on his shops where they can be.
+function bomFromReading(target, readings = []) {
+      if (typeof normalizeBom !== 'function') return null;
+      const want = String(target || '').trim().toLowerCase();
+      if (!want) return null;
+      const text = readings.map(r => `${r.title}. ${r.extract || ''}`).join(' ');
+      const fam = MAKER_FAMILIES.find(f => f.re.test(want)) || MAKER_FAMILIES.find(f => f.key !== 'thing' && f.re.test(text.slice(0, 400))) || MAKER_FAMILIES[MAKER_FAMILIES.length - 1];
+      const mats = makerMaterialsIn(text);
+      const wood = !mats.length || mats.indexOf('wood') >= 0 && (mats.indexOf('steel') < 0 || mats.indexOf('wood') < mats.indexOf('steel'));
+      const subs = fam.subs(wood).map(s => ({ key: s.key, name: s.name, lines: s.lines.map(([name, qty, unit, kind]) => ({ name, qty, unit, kind })), steps: s.steps.map(([verb, tool, say]) => ({ verb, tool, say })) }));
+      // Components the article names that the family doesn't already have
+      const seen = new Set(subs.flatMap(s => s.lines.map(l => l.name.toLowerCase())));
+      const extra = [];
+      text.split(/[.;]/).forEach(sentence => {
+        const re = new RegExp(MAKER_COMPONENTS.source, 'gi');
+        let m;
+        while ((m = re.exec(sentence)) && extra.length < 4) {
+          const comp = m[1].toLowerCase();
+          if ([...seen].some(n => n.includes(comp))) continue;
+          const near = makerMaterialsIn(sentence.slice(Math.max(0, m.index - 30), m.index + comp.length + 45));
+          const mat = near[0] || (wood ? 'wood' : 'steel');
+          extra.push({ name: `${mat === 'wood' ? 'Wooden' : mat[0].toUpperCase() + mat.slice(1)} ${comp} for the ${want}`.slice(0, 70), qty: 1, unit: '', kind: 'p' });
+          seen.add(comp);
+        }
+      });
+      MAKER_BOUGHT.filter(([, re]) => re.test(text)).slice(0, 3).forEach(([name, , qty, unit]) => { if (!seen.has(name)) extra.push({ name, qty, unit, kind: 'p' }); });
+      if (extra.length) subs.push({ key: 'parts', name: 'Parts from the article', lines: extra, steps: [{ verb: 'fit', tool: 'drill', say: 'Fitting the parts the article describes' }, { verb: 'inspect', tool: null, say: 'Checking them against the article' }] });
+      const name = want.replace(/^\w/, c => c.toUpperCase());
+      return normalizeBom({
+        name, item: `A home-built ${want}`, emoji: fam.emoji, site: fam.site, r: fam.r, itemKind: fam.key === 'structure' ? null : 'thing',
+        summary: `a ${want} worked out from ${readings.length ? readings.map(r => r.title).join(', ') : 'what I know'}: ${subs.map(s => s.name.toLowerCase()).join(', ')}${wood ? ', mostly wood' : ', mostly steel'}`,
+        wiki: readings.map(r => r.title).slice(0, 3), subs,
+        tools: fam.tools.map(([key, nm, why]) => ({ key, name: nm, why })), skills: fam.skills.slice(),
+        tests: [{ key: 'use', name: `Using the ${want}`, how: 'It does its job, sturdy and safe' }],
+        fromReading: true
+      });
+    }
+
+// "Build me a table": when one of his shops can make the whole thing, it is a shop job, not a big build
+function makerWholeShopForAsk(target) {
+      const t = String(target || '').toLowerCase();
+      if (!t || (typeof bomTemplateFor === 'function' && bomTemplateFor(t))) return null;
+      const mats = makerMaterialsIn(t);
+      return MAKER_CAPS.find(c => makerShopCanWhole(c, t) && (!mats.length || mats.some(m => c.mat.includes(m)))) || null;
+    }
+
 // --- 11. The tick ------------------------------------------------------------------------------------------------
 function shopMakerChance() {
       const s = makerState();

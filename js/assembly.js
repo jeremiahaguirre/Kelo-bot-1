@@ -320,7 +320,9 @@ async function researchBuild(target, why = '', originLabel = 'Decided to Build S
       }
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
       const tplKey = bomTemplateFor(want);
-      if (!tplKey && !(typeof hasLLMKey === 'function' && hasLLMKey())) {
+      // No template and no AI key: he still reads about it at NetNode and works out a parts list from
+      // what he reads (bomFromReading, js/shopmaker.js); only something far too big is refused
+      if (!tplKey && !(typeof hasLLMKey === 'function' && hasLLMKey()) && typeof bomFromReading !== 'function') {
         state.speechBubble = `I couldn't find proper plans for ${aName(want)} on my own. I know how to build ${Object.values(BOM_TEMPLATES).map(t => t.name.toLowerCase()).join(', ')}.`;
         renderAllUI();
         return 'no-plans';
@@ -349,10 +351,16 @@ async function researchBuild(target, why = '', originLabel = 'Decided to Build S
         state.moodTitle = 'Writing the bill of materials';
         state.speechBubble = 'Now the bill of materials: every tube, rivet and bolt, counted.';
         renderAllUI();
+        if (!tplKey && !readings.length && typeof lookUpAnywhere === 'function') {
+          try { const a = await lookUpAnywhere(want); if (a && a.extract) readings.push({ title: a.title || want, url: a.url || '', extract: a.extract }); } catch (e) {}
+        }
         let bom = await bomFromAI(want, why, readings);
         const fromAI = Boolean(bom);
         if (!bom && tplKey) bom = bomFromTemplate(tplKey);
+        if (!bom && typeof bomFromReading === 'function') bom = bomFromReading(want, readings);
         if (!bom) { state.speechBubble = `I couldn't work out a trustworthy parts list for ${aName(want)}.`; renderAllUI(); return 'no-plans'; }
+        // Parts one of his shops can make are marked "I'll make this on the <machine>" (js/shopmaker.js)
+        if (typeof makerMarkBomLines === 'function') makerMarkBomLines(bom);
         const p = { id: 'build-' + Date.now().toString(36), target: want, why: String(why || '').slice(0, 200), status: 'gathering', startedAt: Date.now(), fromAI, bom,
           readings: readings.map(r => r.title), tests: {}, parcels: 0, site: null };
         if (!state.buildProjects) state.buildProjects = [];
@@ -732,6 +740,12 @@ function weightAndBalance(bom) {
 async function runBuildTests(id, originLabel = 'Inspecting the Build') {
       const p = buildProjectById(id);
       if (!p || p.status !== 'testing' || assemblyJobRunning) return false;
+      // A foundation that is still curing holds up everything that goes on it
+      const curing = foundationCuring(p, sub);
+      if (curing) {
+        p.waitingOn = `the concrete cures (${concretePourAge(curing).toFixed(1)} of ${CONCRETE_CURE_DAYS} days)`;
+        return 'curing';
+      }
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || state.isCollectingMail) return false;
       assemblyJobRunning = true;
       state.isPracticing = true;
@@ -1415,6 +1429,8 @@ function parseBuildRequest(message) {
       const b = m.match(/\b(?:build|make|construct)\b(?:\s+(?:me|us|yourself))?\s+(?:an?|the|your own|a real)?\s*([a-z][a-z -]{2,40})/i);
       if (b) {
         const target = b[1].replace(/\b(from scratch|please|for me|yourself|today|now)\b.*$/i, '').trim();
+        // A thing one of his shops makes whole ("build me a table") is a shop job, not a big build
+        if (typeof makerWholeShopForAsk === 'function' && makerWholeShopForAsk(target)) return null;
         if (bomTemplateFor(target) || (typeof hasLLMKey === 'function' && hasLLMKey() && /\b(plane|kart|car|boat|canoe|kayak|shed|house|drone|guitar|bike|bicycle|cabin|trailer|robot|telescope|furniture|table)\b/i.test(target))) return { target };
       }
       return null;

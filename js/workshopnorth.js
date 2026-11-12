@@ -718,6 +718,12 @@ if (typeof workshopAssemblyBay === 'function') {
   };
 }
 
+// The Workshop viewer (js/shopvisit.js): the two halls are areas you can walk round
+if (typeof SV_AREAS !== 'undefined') {
+  SV_AREAS.push({ key: 'hall', icon: '🔧', name: 'Garage hall (north yard)', short: 'Hall', floor: 1, note: 'drive-through, service pit, heavy lift, wash bay' },
+    { key: 'hangar2', icon: '🛩️', name: 'Big hangar (north yard)', short: 'Hangar 2', floor: 1, note: 'build bays 3 and 4, parking, crane' });
+}
+
 // The minimap and Map tab (north sheet): the two buildings
 if (typeof minimapBuildings === 'function') {
   const wnOrigBuildings = minimapBuildings;

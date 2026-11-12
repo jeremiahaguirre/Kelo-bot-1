@@ -50,6 +50,9 @@ function svGeo() {
         wing: L(b.x0 + 0.2, b.x1 - 0.2, b.z0 + 0.2, b.z1 - 0.2),
         hangar: { x0: H.x - H.w / 2 + 0.3, x1: H.x + H.w / 2 - 0.3, z0: H.z - H.d / 2 + 0.3, z1: H.z + H.d / 2 - 0.3 }
       };
+      // The north yard's garage hall and big hangar (js/workshopnorth.js), each its own walkable floor
+      const inner = B => ({ x0: B.x - B.w / 2 + 0.3, x1: B.x + B.w / 2 - 0.3, z0: B.z - B.d / 2 + 0.3, z1: B.z + B.d / 2 - 0.3 });
+      if (typeof GARAGE_HALL !== 'undefined') { areas.hall = inner(GARAGE_HALL); areas.hangar2 = inner(NORTH_HANGAR); }
       const rects = {
         1: [areas.shop, areas.wing, areas.hangar,
           L(sd.x - sd.w / 2 + 0.15, sd.x + sd.w / 2 - 0.15, b.z1 - 0.9, -iz + 0.9),                       // door 4, shop to wing
@@ -74,7 +77,10 @@ function svGeo() {
       const obst = f => (typeof wsObstacles === 'function' ? wsObstacles(f) : workshopMachinesOn(f).flatMap(d => machineCircles(d)))
         .filter(c => f === 1 || c.r < 1.4);
       const circles = { 1: obst(1).concat(svStationCircles()).map(toW), 2: obst(2).map(toW), 3: obst(3).map(toW) };
+      // (the north halls' lifts, benches, cabinets and carts: their own world obstacles)
+      if (areas.hall) { rects[1].push(areas.hall, areas.hangar2); worldObstacles.filter(o => o.north && o.r && o.hw === undefined).forEach(o => circles[1].push({ x: o.x, z: o.z, r: o.r })); }
       const starts = {
+        ...(areas.hall ? { hall: { floor: 1, x: GARAGE_HALL.x, z: GARAGE_HALL.z + GARAGE_HALL.d / 2 - 2, yaw: 0 }, hangar2: { floor: 1, x: NORTH_HANGAR.x, z: NORTH_HANGAR.z - NORTH_HANGAR.d / 2 + 3, yaw: Math.PI } } : {}),
         hangar: { floor: 1, x: H.x + 5.5, z: H.z + 0.5, yaw: -Math.PI / 2 },
         wing: { floor: 1, ...P(-6.0, WS_WING.aisleZ, Math.PI / 2) },
         f1: { floor: 1, ...P(WS_DOORS.person.x, 6.4, Math.PI) },
@@ -179,11 +185,13 @@ function svAreaAt(x, z, y) {
       const floor = svFloorOfY(y);
       let key = null;
       if (floor === 1 && svIn(g.areas.hangar, x, z)) key = 'hangar';
+      else if (floor === 1 && g.areas.hall && svIn(g.areas.hall, x, z)) key = 'hall';
+      else if (floor === 1 && g.areas.hangar2 && svIn(g.areas.hangar2, x, z)) key = 'hangar2';
       else if (floor === 1 && svIn(g.areas.wing, x, z)) key = 'wing';
       else if (svIn(g.areas.shop, x, z)) key = 'f' + floor;
       if (!key) return null;
       const a = SV_AREAS.find(ar => ar.key === key);
-      let label = a.key === 'hangar' || a.key === 'wing' ? a.name : a.short;
+      let label = a.key[0] !== 'f' ? a.name : a.short;
       if (key[0] === 'f') {
         // name the corner by the nearest machine's kind (Floor 2: Garage)
         let best = null, bd = 16;
@@ -725,7 +733,7 @@ function svRoofs() {
       if (shopVisit.roofs) return shopVisit.roofs;
       const decks = new Set([...(wsDeckMeshes || []), ...(wsDeck3Meshes || [])]);
       const hangar = typeof wsHangar !== 'undefined' ? wsHangar : null;
-      shopVisit.roofs = (typeof cutawayRoofMeshes !== 'undefined' ? cutawayRoofMeshes : []).filter(m => !decks.has(m) && (svUnder(m, wsGroup) || (hangar && svUnder(m, hangar))));
+      shopVisit.roofs = (typeof cutawayRoofMeshes !== 'undefined' ? cutawayRoofMeshes : []).filter(m => !decks.has(m) && (svUnder(m, wsGroup) || (hangar && svUnder(m, hangar)) || (typeof wnBuilt !== 'undefined' && [wnBuilt.hall, wnBuilt.hangar].some(b => b && svUnder(m, b)))));
       return shopVisit.roofs;
     }
 

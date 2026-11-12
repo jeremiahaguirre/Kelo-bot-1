@@ -307,6 +307,18 @@ async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
       if (!hobby || state.isBusy || state.isBuilding || state.isPracticing) return false;
       // Painting is done for real now, in a real medium with its own supplies (js/paintstudio.js)
       if (hobby.style === 'easel' && typeof paintFromHobby === 'function') return paintFromHobby(hobby, originLabel);
+      // Stargazing is done with the real telescope, which knows day from night (js/knowhow.js)
+      if (typeof hobbyPurpose === 'function' && hobbyPurpose(hobby) === 'stargaze' && typeof stargaze === 'function') return stargaze(originLabel);
+      // Gardening plants real seeds that really grow (js/landscape.js), west of town and outside it, and uses them up there
+      if (hobby.style === 'plant' && typeof plantSeeds === 'function') {
+        const r = await plantSeeds(-26.5 - Math.random() * 3.5, 3 + Math.random() * 3, `My ${String(hobby.name).toLowerCase()} hobby.`, originLabel);
+        if (r === true) {
+          hobby.practiced += 1;
+          hobby.skill = Math.min(100, hobby.skill + 6 + Math.floor(Math.random() * 6));
+          hobby.lastPracticed = Date.now();
+        }
+        return r;
+      }
       // No kite, or (once he knows) no wind for it (js/wind.js)
       if (hobby.style === 'kite' && typeof kiteWontFlyToday === 'function' && kiteWontFlyToday(hobby)) return false;
       // The right gear for it (paint for murals, seeds for planting...), or he says so and asks (js/itemuse.js)

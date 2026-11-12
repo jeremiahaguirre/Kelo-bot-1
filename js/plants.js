@@ -1145,7 +1145,7 @@ function renderPlantsPanel() {
         plantBar('Lake water', bp.stock.water, 8000, 'L', 'bg-sky-500'),
         plantBar('Mixer wear', bp.wear.mixer, 100, '%', bp.wear.mixer >= 80 ? 'bg-red-500' : 'bg-emerald-500'),
         plantBar('Silo filters', bp.wear.filter, 100, '%', bp.wear.filter >= 80 ? 'bg-red-500' : 'bg-emerald-500')
-      ]) + `<div class="text-slate-400">${bp.batches} batch${bp.batches === 1 ? '' : 'es'} made${bp.wasted ? `, ${bp.wasted} wasted` : ''}.${bp.lastTicket ? ` Last ticket: ${escapeHtml(bp.lastTicket.mix)}, ${bp.lastTicket.cement} kg cement, w/c ${bp.lastTicket.wc}, slump ${bp.lastTicket.slump} mm, ~${bp.lastTicket.strength} MPa.` : ''}</div>`
+      ]) + `<div class="text-slate-400">${escapeHtml(bp.batches)} batch${bp.batches === 1 ? '' : 'es'} made${bp.wasted ? `, ${escapeHtml(bp.wasted)} wasted` : ''}.${bp.lastTicket ? ` Last ticket: ${escapeHtml(bp.lastTicket.mix)}, ${escapeHtml(bp.lastTicket.cement)} kg cement, w/c ${escapeHtml(bp.lastTicket.wc)}, slump ${escapeHtml(bp.lastTicket.slump)} mm, ~${escapeHtml(bp.lastTicket.strength)} MPa.` : ''}</div>`
         + (rmLoad ? `<div class="text-amber-300">🚚 2 m³ in the mixer truck: pour within ${mins(CONCRETE_WORKABLE_MS - (Date.now() - rmLoad.madeAt))} min.</div>` : '');
       const aBody = bars([
         plantBar('Crushed stone', ap.stock.coarse, plantFeed('coarse').cap, 't', 'bg-stone-400'),
@@ -1154,7 +1154,7 @@ function renderPlantsPanel() {
         plantBar('Burner diesel', ap.stock.fuel, plantFeed('fuel').cap, 'L', 'bg-rose-400'),
         plantBar('Baghouse bags', ap.wear.bags, 100, '%', ap.wear.bags >= 80 ? 'bg-red-500' : 'bg-emerald-500'),
         plantBar('Burner', ap.wear.burner, 100, '%', ap.wear.burner >= 80 ? 'bg-red-500' : 'bg-emerald-500')
-      ]) + `<div class="text-slate-400">${plantHasGas() ? 'Burner on natural gas. ' : ''}Bitumen tank ${bitumenTankTemp()} °C. ${ap.batches} batch${ap.batches === 1 ? '' : 'es'} made${ap.wasted ? `, ${ap.wasted} went cold and were wasted` : ''}.</div>`
+      ]) + `<div class="text-slate-400">${plantHasGas() ? 'Burner on natural gas. ' : ''}Bitumen tank ${bitumenTankTemp()} °C. ${escapeHtml(ap.batches)} batch${ap.batches === 1 ? '' : 'es'} made${ap.wasted ? `, ${escapeHtml(ap.wasted)} went cold and were wasted` : ''}.</div>`
         + (hmLoad ? `<div class="text-amber-300">🔥 5 t of hot mix in the dump truck, about ${hotMixTemp(hmLoad)} °C: lay it within ${mins(HMA_WORKABLE_MS - (Date.now() - hmLoad.madeAt))} min.</div>` : '');
       const pours = (state.concretePours || []).slice(-6).reverse().map(p => `<div>🧱 ${escapeHtml(concretePourLabel(p.id))}</div>`).join('');
       const log = [...bp.log.map(l => ({ ...l, k: '🏗️' })), ...ap.log.map(l => ({ ...l, k: '🛢️' }))].sort((a, b) => b.at - a.at).slice(0, 5)

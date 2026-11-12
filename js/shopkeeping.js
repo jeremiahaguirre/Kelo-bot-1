@@ -548,7 +548,7 @@ function renderShopPanel() {
             </div>
             <div class="flex flex-col gap-1 shrink-0">
               ${l.kind === 'painting' ? '<span class="text-2xs text-slate-300 text-center">Original</span>' : `<button data-listing-id="${escapeHtml(l.id)}" class="listing-stl-btn ui-btn ui-btn-sm" title="Download the STL file to send to a buyer">STL</button>`}
-              <button data-listing-id="${escapeHtml(l.id)}" class="listing-sold-btn ui-btn ui-btn-sm ui-btn-primary">Sold${l.sales ? ` (${l.sales})` : ''}</button>
+              <button data-listing-id="${escapeHtml(l.id)}" class="listing-sold-btn ui-btn ui-btn-sm ui-btn-primary">Sold${l.sales ? ` (${escapeHtml(l.sales)})` : ''}</button>
               <button data-listing-id="${escapeHtml(l.id)}" class="listing-down-btn ui-btn ui-btn-sm ui-btn-quiet">Take down</button>
             </div>
           </div>`).join('')}</div>` : `<p class="text-2xs text-slate-400">${shop.builtAt ? 'Nothing for sale right now.' : 'He hasn\'t built his shop yet. Once he has printed something fun or useful, or painted something good, he may put it up for sale.'}</p>`}

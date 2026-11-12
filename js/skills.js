@@ -243,14 +243,14 @@ function renderSkillsList() {
         const ago = skillAgo(s.lastAt);
         return `
         <div class="brain-card brain-skill">
-          <div class="brain-skill-lv" aria-hidden="true"><small>Lv</small>${s.level}</div>
+          <div class="brain-skill-lv" aria-hidden="true"><small>Lv</small>${escapeHtml(s.level)}</div>
           <div class="min-w-0 flex-1 space-y-1">
             <div class="flex items-baseline justify-between gap-2">
               <span class="brain-card-title truncate">${escapeHtml(String(s.label || '').replace(/^./, ch => ch.toUpperCase()))}</span>
-              <span class="brain-card-meta shrink-0">${s.level >= 10 ? 'Mastered' : `${pct}% to Lv ${s.level + 1}`}</span>
+              <span class="brain-card-meta shrink-0">${s.level >= 10 ? 'Mastered' : `${pct}% to Lv ${escapeHtml(Number(s.level) + 1)}`}</span>
             </div>
-            <div class="brain-bar" role="progressbar" aria-label="${escapeHtml(s.label)}: level ${s.level}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>
-            <div class="brain-card-meta">${s.sessions || 0} ${s.sessions === 1 ? 'session' : 'sessions'}${ago ? ` · last ${ago}` : ''}</div>
+            <div class="brain-bar" role="progressbar" aria-label="${escapeHtml(s.label)}: level ${escapeHtml(s.level)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>
+            <div class="brain-card-meta">${escapeHtml(s.sessions || 0)} ${s.sessions === 1 ? 'session' : 'sessions'}${ago ? ` · last ${ago}` : ''}</div>
           </div>
         </div>`;
       }).join('') : '<p class="brain-empty">No skills practised yet. Give him something to learn!</p>');

@@ -566,7 +566,7 @@ function renderWorkshopBrain() {
           }).join(' · ');
           const status = !known ? '<span class="text-slate-400">not learned yet</span>' : !d.plan ? '<span class="text-sky-300">learned</span>' : missing.length ? `<span class="text-amber-300">needs ${missing.length} thing${missing.length > 1 ? 's' : ''}</span>` : '<span class="text-emerald-300 font-bold">ready</span>';
           return `<div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-200">
-            <div class="flex items-center gap-2"><span class="flex-1">${d.emoji || '⚙️'} ${escapeHtml(d.name)}</span>${known ? `<span class="text-amber-300 font-bold">Lv ${lvl}</span>` : ''} ${status}</div>
+            <div class="flex items-center gap-2"><span class="flex-1">${d.emoji || '⚙️'} ${escapeHtml(d.name)}</span>${known ? `<span class="text-amber-300 font-bold">Lv ${escapeHtml(lvl)}</span>` : ''} ${status}</div>
             ${known ? `<div class="text-2xs mt-0.5 leading-snug">${supplies}</div>` : ''}
           </div>`;
         }).join('');

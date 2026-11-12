@@ -681,10 +681,17 @@ async function unboxInHands(itemModel) {
       wrapper.remove(box);
     }
 
-// "A crucible, borax flux & a graphite mold" -> three separate things side by side
+// "A crucible, borax flux & a graphite mold" -> three separate things side by side. Kept whole: kits and
+// sets ("Parts kit: Rear axle and brake", "Socket and wrench set"), anything in brackets ("TIG welder
+// (AC/DC, 200 A)"), sizes ("Hex drivers 1.5, 2, 2.5 mm") and names where a piece has no model of its own
+// ("Climbing rope and carabiners" is one coil of rope with its carabiners).
 function splitItemList(name) {
-      const parts = String(name || '').split(/\s*(?:,|&|\+|\band\b)\s*/i).map(p => p.trim()).filter(p => p.length > 2);
-      return parts.length > 1 && parts.length <= 5 ? parts : null;
+      const lower = String(name || '').toLowerCase();
+      if (/^(an? )?(parts kit|tools for|set of|kit of|pair of|box of|bundle of|bag of|survey kit)\b|\b(set|kit)$|^[^:]+:/.test(lower.replace(/\([^)]*\)/g, '').trim())) return null;
+      const parts = lower.replace(/\([^)]*\)/g, ' ').split(/\s*(?:,|&|\+|\band\b)\s*/i).map(p => p.trim()).filter(p => p.length > 2);
+      if (parts.length < 2 || parts.length > 5 || parts.some(p => !/[a-z]{3}/.test(p))) return null;
+      const modelled = p => ITEM_MODEL_RULES.some(([re]) => re.test(p)) || Boolean(typeof realModelEntry === 'function' && realModelEntry(p));
+      return parts.every(modelled) ? parts : null;
     }
 
 // A model for any named item, with its name on a small label above it

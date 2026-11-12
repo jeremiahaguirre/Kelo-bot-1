@@ -957,6 +957,11 @@ function imShinglesModel() {
 
 function imPipesModel(lower) {
       const K = imKit(), spots = [];
+      if (/culvert/.test(lower)) {
+        const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 1.6, 28, 1, true), K.mat(0x1f2937, { roughness: 0.6, side: THREE.DoubleSide })); pipe.position.y = 0.24; pipe.rotation.z = Math.PI / 2; pipe.castShadow = true;
+        const ribs = K.many(new THREE.TorusGeometry(0.245, 0.012, 6, 28).rotateY(Math.PI / 2), 0x111827, Array.from({ length: 16 }, (_, i) => [-0.75 + i * 0.1, 0.24, 0]), { roughness: 0.6 });
+        return K.done(pipe, ribs);
+      }
       const col = /copper/.test(lower) ? 0xb87333 : /pvc|abs|plastic|white/.test(lower) ? (/abs|black/.test(lower) ? 0x1f2937 : 0xf1f5f9) : /galvan/.test(lower) ? 0xa8b0b8 : /black iron|black pipe/.test(lower) ? 0x27272a : 0x8f98a3;
       const metal = !/pvc|abs|plastic/.test(lower);
       const r = /copper/.test(lower) ? 0.011 : /pvc|abs/.test(lower) ? 0.024 : 0.017;
@@ -2005,7 +2010,7 @@ function imComponentModel(lower) {
 function imFuelContainerModel(lower) {
       const K = imKit();
       if (/drum|barrel|200 ?l|55.?gal/.test(lower)) {
-        const col = /jet|kerosene/.test(lower) ? 0x1d4ed8 : /diesel/.test(lower) ? 0xfacc15 : /admixture|chemical/.test(lower) ? 0x2563eb : /solvent|washer/.test(lower) ? 0xdc2626 : 0x15803d;
+        const col = /bitumen|asphalt|tar\b/.test(lower) ? 0x111827 : /jet|kerosene/.test(lower) ? 0x1d4ed8 : /diesel/.test(lower) ? 0xfacc15 : /admixture|chemical/.test(lower) ? 0x2563eb : /solvent|washer/.test(lower) ? 0xdc2626 : 0x15803d;
         const drum = K.cyl(0.29, 0.29, 0.88, col, 0, 0.44, 0, { roughness: 0.4, metalness: 0.4 }, 28);
         const ribs = [0.29, 0.59].map(y => K.torus(0.292, 0.008, col, 0, y, 0, { metalness: 0.4 })); ribs.forEach(r => (r.rotation.x = Math.PI / 2));
         const lid = K.cyl(0.27, 0.27, 0.004, col, 0, 0.881, 0);
@@ -2224,12 +2229,20 @@ function imCrateModel(lower) {
 const IM_RULES = [
   // things he makes or gets delivered by the line
   [/^roadwork kit|^runway kit|parts crate|^crate of/, l => imCrateModel(l)],
-  [/runway (edge )?light|taxiway light|edge light|windsock|runway designation sign|taxiway sign|lighted .*sign/, l => imAirfieldModel(l)],
+  [/binder-jetted|-printed\b|-sintered|-machined|-milled|-routed/, l => (typeof madePartModel === 'function' ? realSize(madePartModel(l)) : imCartonModel(0.1, 0.06, 0.08, 0xd6b38a, 0xf8fafc))],
+  [/smelting furnace|melting furnace|\bkiln\b|\bforge\b(?!d)/, l => imFurnaceModel(l)],
+  [/rock splitter|plug and feathers|feathers and wedges/, () => imBase('jackhammer', 0.9)],
+  [/screed|bull float|darby|concrete float|hand float|concrete edger|groover/, l => imConcreteToolModel(l)],
+  [/push sticks?|push block/, () => imPushBlockModel()],
+  [/socket (and wrench )?set|wrench set|spanner set|hex (drivers|keys)|allen (keys|wrenches)|screwdriver set|ratchet set/, l => imHandToolSetModel('socket set')],
+  [/service kit|repair kit|tune.?up kit|rebuild kit|maintenance kit/, () => imHardwareBagModel('consumables kit')],
+  [/culvert/, l => imPipesModel(l)],
+  [/runway (edge |threshold )?light|threshold (and end )?light|end light|taxiway light|edge light|windsock|runway designation sign|taxiway sign|lighted .*sign/, l => imAirfieldModel(l)],
   [/(\d+(\.\d+)?\s*t\b.*\bload\b|\bload of\b).*(gravel|stone|aggregate|crusher dust|sand|topsoil|fill|rock)|^(an? )?load of (crushed )?gravel/, l => imBulkPileModel(l)],
-  [/(drum|barrel) of|jerry ?can|gas can|fuel can|can of (gasoline|diesel|gas|fuel|kerosene)|propane tank|propane bottle|\b(200|205) ?l\b|55.?gal|gasoline|unleaded|\bdiesel\b|kerosene|jet fuel|\bfuel\b(?! (pump|hose|filter|shutoff|sight|system|valve|gauge|line|tank cap))/, l => imFuelContainerModel(l)],
+  [/(drum|barrel) of|jerry ?can|gas can|fuel can|can of (gasoline|diesel|gas|fuel|kerosene)|propane tank|propane bottle|tanker of|bitumen|\b(200|205) ?l\b|55.?gal|gasoline|unleaded|\bdiesel\b|kerosene|jet fuel|\bfuel\b(?! (pump|hose|filter|shutoff|sight|system|valve|gauge|line|tank cap))/, l => imFuelContainerModel(l)],
   [/\btyres?\b|\btires?\b(?! chains)|caster wheels?|main wheels|tailwheel|wheels? with|on rims/, l => imTyreModel(l)],
   [/altimeter|tachometer|airspeed indicator|slip indicator|\b(temperature|pressure|fuel|oil|egt|sight|vacuum|tire|tyre|air) gauges?\b/, l => imGaugeModel(l)],
-  [/sprocket|roller chain|\bchain\b(?!saw| guard)|bearings?|brake disc|brake pads?|spark plugs?|oil filter|fuel filter|gascolator|filter cartridges?|\bsprings?\b|magnets?\b|\baxles?\b|steering shaft|torque tube|radiator|exhaust|muffler|kingpin|spindles|machined|\bhubs?\b|pulleys?/, l => imMechPartModel(l)],
+  [/sprocket|roller chain|\bchain\b(?!saw| guard)|bearings?|brake disc|brake pads?|spark plugs?|oil filter|fuel filter|gascolator|filter cartridges?|\bsprings?\b|magnets?\b|\baxles?\b|steering shaft|torque tube|radiator|exhaust|muffler|kingpin|spindles|machined|\bhubs?\b|pulleys?|mixer paddles|paddles and liners/, l => imMechPartModel(l)],
   [/garden hose|water hose|\bhose\b(?!.*(clamp|fitting))|brake line|fuel line/, l => imHoseModel(l)],
   [/spray ?paint|aerosol|brake cleaner|fixative|wd-?40|spray (can|primer|lubricant)/, l => imAerosolModel(l)],
   [/\b(5 ?gal(lon)?|pail|bucket) of\b/, l => imPaintCanModel(l + ' pail')],
@@ -2311,7 +2324,7 @@ const IM_RULES = [
   [/\b(bolts?|nuts|nylock|washers|cotter pins|rivets|sleeves|thimbles|turnbuckles|set screws|standoffs|heim joints|zip ties|grommets|ring terminals|crimp|clevis pins|shackles)\b/, l => (/zip ties/.test(l) ? imHardwareBagModel('nylon pins') : imHardwareBagModel(l))],
   [/hinges?\b|joist hangers?|hurricane ties|padeyes?|pad eyes?|\bbrackets?\b|angle brackets|corner braces|wing-attach fittings|hinge fittings|strap buttons|neck plate/, l => imBracketModel(l)],
   [/plywood|\bmdf\b|\bosb\b|drywall sheet|gypsum board|sheetrock|cement board|backer board|acrylic sheet|sheet of (clear )?acrylic|plexiglass|polycarbonate|perspex|sheet metal|(steel|aluminium|aluminum|galvani[sz]ed|metal) (sheet|plate)|sheet of .*(steel|plate)|steel plate|floor pan|firewall|spoilboard|fixture plate|stencil|corrugated .*roofing|window glass|glass pane|sheathing \d|okoume/, l => imSheetGoodsModel(l)],
-  [/\b(2x4|2x6|2x8|2 ?× ?4|1x\d|4x4|6x6)\b|lumber|joists?\b|\bstuds\b|decking|\bposts\b|\bplanks?\b|\bboards\b(?!.*circuit)|timber|blank \d|body blank|neck blank/, l => imLumberModel(l)],
+  [/\b(2x4|2x6|2x8|2 ?× ?4|1x\d|4x4|6x6)\b|lumber|joists?\b|\bstuds\b|decking|\bposts\b|\bplanks?\b|\bboards\b(?!.*circuit)|timber|blank \d|body blank|neck blank|stakes\b|\blath\b/, l => imLumberModel(l)],
   [/(cans?|tins?|gallons?|quarts?|pails?|buckets?) of (\w+ )?(paint|primer|stain|varnish|polyurethane|sealer|lacquer)|\b(exterior|interior|house|wall|latex|chalk|enamel|marine) (paint|primer)|\bprimer\b|polyurethane|spar varnish|\bvarnish\b|wood stain|\bstain\b|topcoat|grain filler|fabric cement|\bpaint\b(?!.*(brush|set|marker|spray|tube|pan|box|roller|tray|gun|stick))/, l => imPaintCanModel(l)],
   [/\btape\b(?! measure)/, l => imTapeRollModel(l)],
   [/bricks?\b|cinder blocks?|concrete blocks?|\bpavers?\b|\bcmu\b/, l => imBricksModel(l)],
@@ -2540,4 +2553,35 @@ function imBase(word, metres) {
       const sized = imTrueSize(word, m);
       IM_TRUE_METRES.shift();
       return sized;
+    }
+
+function imFurnaceModel(lower) {
+      const K = imKit();
+      const body = K.cyl(0.2, 0.2, 0.36, 0x52525b, 0, 0.18, 0, IM.iron, 24);
+      const lid = K.cyl(0.2, 0.2, 0.06, 0x3f3f46, 0, 0.39, 0, IM.iron, 24);
+      const vent = K.cyl(0.04, 0.04, 0.02, 0x111827, 0, 0.43, 0, IM.iron);
+      const glow = K.cyl(0.035, 0.035, 0.002, 0xf97316, 0, 0.441, 0, { emissive: 0xea580c, emissiveIntensity: 0.8 });
+      const burner = K.cyl(0.025, 0.025, 0.2, 0x9ca3af, 0.25, 0.14, 0, IM.steel); burner.rotation.z = Math.PI / 2;
+      const handle = K.rod([-0.22, 0.4, -0.05], [-0.22, 0.4, 0.05], 0.01, 0x111827);
+      return K.done(body, lid, vent, glow, burner, handle);
+    }
+
+function imConcreteToolModel(lower) {
+      const K = imKit();
+      if (/bull float|darby/.test(lower)) {
+        const plate = K.box(0.9, 0.02, 0.2, 0x9ca3af, 0, 0.01, 0, IM.alu);
+        const pole = K.rod([0, 0.02, 0], [0.1, 0.05, 1.3], 0.016, 0x9ca3af, IM.alu);
+        return K.done(plate, pole);
+      }
+      if (/screed/.test(lower)) return K.done(K.box(2.4, 0.1, 0.03, 0xb6bcc4, 0, 0.05, 0, IM.alu), ...[-0.4, 0.4].map(x => K.box(0.15, 0.05, 0.03, 0x111827, x, 0.12, 0, IM.rubber)));
+      return K.done(K.box(0.25, 0.006, 0.08, 0x9ca3af, 0, 0.003, 0, IM.steel), K.box(0.12, 0.03, 0.03, 0xc8955a, 0, 0.03, 0, IM.wood));
+    }
+
+function imPushBlockModel() {
+      const K = imKit();
+      const block = K.box(0.25, 0.04, 0.08, 0xf97316, 0, 0.02, -0.05, IM.plastic);
+      const grip = K.torus(0.06, 0.012, 0xf97316, 0, 0.04, -0.05, IM.plastic, Math.PI);
+      const stick = K.slab([[0, 0], [0.3, 0], [0.32, -0.02], [0.3, 0.03], [0.05, 0.05], [0, 0.03]], 0.015, 0xf59e0b, IM.plastic);
+      stick.rotation.x = -Math.PI / 2; stick.position.set(-0.15, 0.0075, 0.08);
+      return K.done(block, grip, stick);
     }

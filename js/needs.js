@@ -244,8 +244,9 @@ function foggyDecision() {
 function renderNeedsUI() {
       const v = document.getElementById('hudWaterVal');
       const b = document.getElementById('hudWaterBar');
-      if (v) v.textContent = `${Math.round(state.hydration)}%`;
-      if (b) b.style.width = `${Math.round(state.hydration)}%`;
+      const pct = `${Math.round(state.hydration)}%`;
+      if (v && v.textContent !== pct) v.textContent = pct;
+      if (b && b.style.width !== pct) b.style.width = pct;
     }
 
 window.addEventListener('DOMContentLoaded', () => {

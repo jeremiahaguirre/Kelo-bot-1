@@ -31,158 +31,144 @@
         <!-- Dynamic 3D POI Pins Container -->
         <div id="poiLabelsContainer" class="absolute inset-0 pointer-events-none"></div>
 
-        <!-- What Kelo-1 is doing and saying: docked at the bottom middle -->
-        <div id="keloOverheadHUD" class="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 w-[min(560px,calc(100%-1.5rem))] sm:w-[min(560px,calc(100%-24rem))] cursor-pointer" title="Click to say hi">
-          <div class="px-4 py-2.5 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-amber-400/40 shadow-2xl space-y-1">
-            <div class="flex items-center justify-between gap-2 min-w-0">
-              <div class="flex items-center gap-2 text-sm font-bold text-amber-300 min-w-0">
-                <span id="bubbleMoodEmoji" class="text-base">🌅</span>
-                <span id="bubbleMoodTitle" class="truncate">First Day Awake</span>
-              </div>
-              <div class="flex items-center gap-1.5 shrink-0">
-                <span id="bubbleAutonomyTag" class="hidden sm:inline text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200">Just Woke Up</span>
-                <button id="btnFocusKelo" class="px-3 py-2 min-h-[40px] sm:min-h-0 sm:px-2 sm:py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-mono text-[10px]" title="Follow Kelo-1 with the camera">Follow</button>
-              </div>
+        <!-- What Kelo-1 is doing and saying, where he is: the one place for it, docked at the bottom middle -->
+        <div id="keloOverheadHUD" class="absolute z-20 cursor-pointer" title="Click to say hi">
+          <div class="hud-panel hud-activity-card">
+            <div class="hud-activity-head">
+              <span id="bubbleMoodEmoji" class="hud-activity-emoji" aria-hidden="true">🌅</span>
+              <span id="bubbleMoodTitle" class="hud-activity-title">First Day Awake</span>
+              <span class="hud-activity-chips">
+                <span class="hud-chip hud-chip-place" title="Where he is"><i class="ph-fill ph-map-pin" data-hud-emoji="📍" aria-hidden="true"></i><span id="bubbleAutonomyTag" class="truncate">Okanagan Valley</span></span>
+                <button type="button" id="btnFocusKelo" class="hud-chip hud-chip-btn hud-hit" title="Follow Kelo-1 with the camera (K)"><i class="ph-bold ph-crosshair-simple" data-hud-emoji="🎯" aria-hidden="true"></i><span>Follow</span></button>
+              </span>
             </div>
-            <p id="bubbleSpeech" class="text-xs text-slate-100 leading-snug font-serif italic line-clamp-2">"Hello? I just woke up. Everything here is new to me."</p>
+            <p id="bubbleSpeech" class="hud-activity-speech">"Hello? I just woke up. Everything here is new to me."</p>
             <p id="liveActivityText" class="hidden"></p>
           </div>
         </div>
 
-        <!-- Exploring the world (js/explore.js): Follow Kelo-1 or Explore freely, Places, help -->
-        <div id="exploreBar" class="absolute left-2 sm:left-3 z-20 flex items-center gap-1 p-1 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-slate-800/90 shadow-xl">
-          <div class="flex rounded-xl bg-slate-900/90 p-0.5" role="group" aria-label="Camera">
-            <button type="button" data-explore-mode="follow" class="explore-mode-btn" aria-pressed="true" title="The camera stays with Kelo-1 (K)"><span aria-hidden="true">🎯</span><span>Follow<span class="hidden sm:inline"> Kelo-1</span></span></button>
-            <button type="button" data-explore-mode="explore" class="explore-mode-btn" aria-pressed="false" title="Move the camera yourself"><span aria-hidden="true">🧭</span><span>Explore</span></button>
-            <button type="button" data-explore-mode="eyes" class="explore-mode-btn" aria-pressed="false" title="See through his eyes (V)"><span aria-hidden="true">👀</span><span>Eyes</span></button>
+        <!-- The camera (js/explore.js): Follow Kelo-1, Explore freely or see through his Eyes; Places and help -->
+        <div id="exploreBar" class="absolute z-20 hud-panel hud-camera" role="toolbar" aria-label="Camera">
+          <div class="hud-seg" role="group" aria-label="Camera mode">
+            <button type="button" data-explore-mode="follow" class="explore-mode-btn" aria-pressed="true" title="The camera stays with Kelo-1 (K)"><i class="ph-bold ph-crosshair-simple" data-hud-emoji="🎯" aria-hidden="true"></i><span>Follow</span></button>
+            <button type="button" data-explore-mode="explore" class="explore-mode-btn" aria-pressed="false" title="Move the camera yourself (W A S D)"><i class="ph-bold ph-compass" data-hud-emoji="🧭" aria-hidden="true"></i><span>Explore</span></button>
+            <button type="button" data-explore-mode="eyes" class="explore-mode-btn" aria-pressed="false" title="See through his eyes (V)"><i class="ph-bold ph-eye" data-hud-emoji="👀" aria-hidden="true"></i><span>Eyes</span></button>
           </div>
-          <button type="button" id="btnPlaces" class="explore-bar-btn" aria-expanded="false" aria-controls="explorePlaces" title="Jump to a place"><span aria-hidden="true">📍</span><span>Places</span></button>
-          <button type="button" data-explore-help class="explore-bar-btn explore-round" aria-label="How to explore" title="How to explore (?)">?</button>
+          <span class="hud-divider" aria-hidden="true"></span>
+          <button type="button" id="btnPlaces" class="explore-bar-btn" aria-expanded="false" aria-controls="explorePlaces" aria-label="Places" title="Jump to a place"><i class="ph-bold ph-map-pin" data-hud-emoji="📍" aria-hidden="true"></i><span class="hud-bar-label">Places</span></button>
+          <button type="button" data-explore-help class="explore-bar-btn explore-round" aria-label="How to explore" title="How to explore (?)"><i class="ph-bold ph-question" data-hud-emoji="?" aria-hidden="true"></i></button>
         </div>
-        <div id="explorePreviewChip" class="hidden absolute left-2 sm:left-3 z-20 px-2.5 py-1 rounded-xl bg-sky-950/90 border border-sky-500/50 text-[11px] text-sky-100 shadow-lg"></div>
+        <div id="explorePreviewChip" class="hidden absolute z-20 hud-preview-chip"></div>
 
         <!-- Places: a quick-jump list -->
-        <div id="explorePlaces" class="hidden absolute left-2 sm:left-3 z-30 w-[min(360px,calc(100%-1rem))] rounded-2xl bg-slate-950/95 backdrop-blur-md border border-slate-700 shadow-2xl p-2.5 overflow-y-auto" role="dialog" aria-label="Places">
-          <div class="flex items-center justify-between mb-1.5">
-            <div class="text-xs font-bold text-slate-100">📍 Fly to a place</div>
-            <button type="button" id="btnClosePlaces" class="explore-x" aria-label="Close places">✕</button>
+        <div id="explorePlaces" class="hidden absolute z-30 hud-panel hud-panel-strong hud-places overflow-y-auto" role="dialog" aria-label="Places">
+          <div class="hud-places-head">
+            <div class="hud-places-title"><i class="ph-bold ph-map-pin" data-hud-emoji="📍" aria-hidden="true"></i>Fly to a place</div>
+            <button type="button" id="btnClosePlaces" class="explore-x hud-hit" aria-label="Close places"><i class="ph-bold ph-x" data-hud-emoji="✕" aria-hidden="true"></i></button>
           </div>
           <div id="explorePlacesList" class="space-y-1"></div>
-          <div class="mt-2 pt-2 border-t border-slate-800 flex flex-wrap items-center gap-2 text-[11px] text-slate-300">
-            <button id="btnToggleRoof" type="button" class="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-mono border border-slate-700/80 transition"><span>Roofs: Cutaway</span></button>
+          <div class="hud-places-foot">
+            <button id="btnToggleRoof" type="button" class="explore-place"><span>Roofs: Cutaway</span></button>
           </div>
         </div>
 
-        <!-- Through his eyes (js/eyecam.js): a soft visor edge and what he sees and thinks -->
+        <!-- Through his eyes (js/eyecam.js): a soft visor edge, and a small note of what he looks at
+             (what he thinks is in the activity card). It fades after a few seconds (js/hud.js). -->
         <div id="eyeCamVignette" aria-hidden="true"></div>
-        <div id="eyeCamHud" class="hidden absolute z-20 rounded-2xl bg-slate-950/80 backdrop-blur-md border border-teal-400/40 shadow-xl px-3 py-2" role="status" aria-live="polite">
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-[11px] font-bold text-teal-200">👀 Through Kelo-1's eyes</span>
-            <span class="flex items-center gap-1">
-              <button type="button" data-eyecam-hud class="eyecam-btn" aria-pressed="true" title="Show or hide what he sees and thinks">Hide</button>
-              <button type="button" data-eyecam-exit class="eyecam-btn" title="Back to following him (V)">✕</button>
-            </span>
-          </div>
-          <div data-eyecam-body class="mt-1 space-y-0.5 text-[11px] leading-snug">
-            <div class="text-slate-200"><span class="text-slate-400">Looking at</span> <span data-eyecam-look></span></div>
-            <div class="text-slate-300 italic line-clamp-2"><span class="not-italic text-slate-400">Thinking</span> <span data-eyecam-think></span></div>
-            <div class="text-[10px] text-slate-500 hidden sm:block">Drag or use the arrow keys to look around · scroll to zoom</div>
-            <div class="text-[10px] text-slate-500 sm:hidden">Drag to look around · pinch to zoom</div>
-          </div>
+        <div id="eyeCamHud" class="hidden absolute z-20 hud-panel" role="status">
+          <span class="hud-eyes-tag"><i class="ph-bold ph-eye" data-hud-emoji="👀" aria-hidden="true"></i><span>Eyes</span></span>
+          <span data-eyecam-body class="hud-eyes-body"><span class="hud-muted">Looking at</span> <span data-eyecam-look aria-live="polite"></span></span>
+          <button type="button" data-eyecam-hud class="eyecam-btn hud-hit" aria-pressed="true" title="Show or hide what he looks at">Hide</button>
+          <button type="button" data-eyecam-exit class="eyecam-btn eyecam-x hud-hit" aria-label="Back to following him (V)" title="Back to following him (V)"><i class="ph-bold ph-x" data-hud-emoji="✕" aria-hidden="true"></i></button>
         </div>
 
         <!-- Click menu for a spot on the ground -->
         <div id="exploreSpotMenu" class="hidden fixed z-40 w-52 rounded-2xl bg-slate-950/95 backdrop-blur-md border border-amber-400/40 shadow-2xl p-2.5" role="menu"></div>
 
-        <!-- Minimap (js/minimap.js) -->
-        <div id="exploreMinimapWrap" class="hidden absolute left-3 z-20 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-slate-800/90 shadow-xl p-1.5">
-          <div class="flex items-center justify-between gap-1 mb-1 px-0.5">
-            <span class="text-[10px] font-bold text-slate-300">🗺️ Map <span class="font-normal text-slate-500">· click to fly</span></span>
-            <div class="flex items-center gap-1">
-              <button type="button" data-minimap-zoom="-1" class="explore-mini-btn" aria-label="Zoom the map out">−</button>
-              <button type="button" data-minimap-zoom="1" class="explore-mini-btn" aria-label="Zoom the map in">+</button>
-              <button type="button" id="btnHideMinimap" class="explore-mini-btn" aria-label="Hide the map">✕</button>
-            </div>
+        <!-- Minimap (js/minimap.js draws it; this is only its frame): folds away to a button -->
+        <div id="exploreMinimapWrap" class="hidden absolute z-20 hud-panel">
+          <div class="hud-map-head">
+            <span class="hud-map-title"><i class="ph-bold ph-map-trifold" data-hud-emoji="🗺️" aria-hidden="true"></i>Map</span>
+            <button type="button" data-minimap-zoom="-1" class="explore-mini-btn hud-hit" aria-label="Zoom the map out" title="Zoom out"><i class="ph-bold ph-minus" data-hud-emoji="−" aria-hidden="true"></i></button>
+            <button type="button" data-minimap-zoom="1" class="explore-mini-btn hud-hit" aria-label="Zoom the map in" title="Zoom in"><i class="ph-bold ph-plus" data-hud-emoji="+" aria-hidden="true"></i></button>
+            <button type="button" id="btnHideMinimap" class="explore-mini-btn hud-hit" aria-label="Fold the map away" title="Fold the map away"><i class="ph-bold ph-caret-down" data-hud-emoji="⌄" aria-hidden="true"></i></button>
           </div>
-          <canvas id="exploreMinimap" class="block rounded-xl cursor-crosshair" aria-label="Map of the island"></canvas>
+          <canvas id="exploreMinimap" class="block cursor-crosshair" aria-label="Map of the island" title="Click to fly there"></canvas>
         </div>
-        <button type="button" id="btnShowMinimap" class="hidden absolute left-3 z-20 explore-touch-btn" aria-label="Show the map" title="Show the map">🗺️</button>
+        <button type="button" id="btnShowMinimap" class="hidden absolute z-20 hud-icon-btn" aria-label="Show the map" title="Show the map"><i class="ph-bold ph-map-trifold" data-hud-emoji="🗺️" aria-hidden="true"></i></button>
 
-        <!-- Desktop: move, turn and zoom buttons, and Where is Kelo-1? -->
-        <div id="explorePad" class="absolute bottom-3 right-3 z-20 flex-col items-end gap-1.5">
-          <button type="button" data-where-kelo class="explore-where">🤖 Where is Kelo-1?</button>
-          <div class="grid grid-cols-3 gap-1 p-1.5 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-slate-800/90">
-            <button type="button" data-hold="turnLeft" class="explore-pad-btn" title="Turn left (Q)" aria-label="Turn left">⟲</button>
-            <button type="button" data-hold="up" class="explore-pad-btn" title="Move forward (W / Up)" aria-label="Move forward">▲</button>
-            <button type="button" data-hold="turnRight" class="explore-pad-btn" title="Turn right (E)" aria-label="Turn right">⟳</button>
-            <button type="button" data-hold="left" class="explore-pad-btn" title="Move left (A / Left)" aria-label="Move left">◀</button>
-            <button type="button" data-hold="down" class="explore-pad-btn" title="Move back (S / Down)" aria-label="Move back">▼</button>
-            <button type="button" data-hold="right" class="explore-pad-btn" title="Move right (D / Right)" aria-label="Move right">▶</button>
-            <button type="button" data-hold="zoomOut" class="explore-pad-btn" title="Zoom out (−)" aria-label="Zoom out">−</button>
-            <button type="button" data-hold="tiltUp" class="explore-pad-btn text-[10px]" title="Look from higher up (R)" aria-label="Look from higher up">⤒</button>
-            <button type="button" data-hold="zoomIn" class="explore-pad-btn" title="Zoom in (+)" aria-label="Zoom in">+</button>
+        <!-- Mouse and keyboard: a keys hint, the move pad while exploring, and Where is Kelo-1? when he is out of view -->
+        <div id="explorePad" class="absolute z-20">
+          <button type="button" data-where-kelo class="explore-where"><i class="ph-bold ph-robot" data-hud-emoji="🤖" aria-hidden="true"></i><span>Where is Kelo-1?</span></button>
+          <div class="hud-panel hud-pad">
+            <button type="button" data-hold="turnLeft" class="explore-pad-btn" title="Turn left (Q)" aria-label="Turn left"><i class="ph-bold ph-arrow-counter-clockwise" data-hud-emoji="⟲" aria-hidden="true"></i></button>
+            <button type="button" data-hold="up" class="explore-pad-btn" title="Move forward (W / Up)" aria-label="Move forward"><i class="ph-fill ph-caret-up" data-hud-emoji="▲" aria-hidden="true"></i></button>
+            <button type="button" data-hold="turnRight" class="explore-pad-btn" title="Turn right (E)" aria-label="Turn right"><i class="ph-bold ph-arrow-clockwise" data-hud-emoji="⟳" aria-hidden="true"></i></button>
+            <button type="button" data-hold="left" class="explore-pad-btn" title="Move left (A / Left)" aria-label="Move left"><i class="ph-fill ph-caret-left" data-hud-emoji="◀" aria-hidden="true"></i></button>
+            <button type="button" data-hold="down" class="explore-pad-btn" title="Move back (S / Down)" aria-label="Move back"><i class="ph-fill ph-caret-down" data-hud-emoji="▼" aria-hidden="true"></i></button>
+            <button type="button" data-hold="right" class="explore-pad-btn" title="Move right (D / Right)" aria-label="Move right"><i class="ph-fill ph-caret-right" data-hud-emoji="▶" aria-hidden="true"></i></button>
+            <button type="button" data-hold="zoomOut" class="explore-pad-btn" title="Zoom out (−)" aria-label="Zoom out"><i class="ph-bold ph-minus" data-hud-emoji="−" aria-hidden="true"></i></button>
+            <button type="button" data-hold="tiltUp" class="explore-pad-btn" title="Look from higher up (R)" aria-label="Look from higher up"><i class="ph-bold ph-arrow-line-up" data-hud-emoji="⤒" aria-hidden="true"></i></button>
+            <button type="button" data-hold="zoomIn" class="explore-pad-btn" title="Zoom in (+)" aria-label="Zoom in"><i class="ph-bold ph-plus" data-hud-emoji="+" aria-hidden="true"></i></button>
+          </div>
+          <div id="hudKeysHint" class="hud-panel hud-keys" aria-hidden="true">
+            <span class="hud-keys-follow"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> explore</span>
+            <span class="hud-keys-follow"><kbd>V</kbd> eyes <kbd>?</kbd> help</span>
+            <span class="hud-keys-eyes">Drag or <kbd>←</kbd><kbd>→</kbd> look</span>
+            <span class="hud-keys-eyes">Scroll zoom <kbd>V</kbd> leave</span>
           </div>
         </div>
 
-        <!-- Touch screens: a joystick to move, and big zoom/turn buttons -->
-        <div id="exploreJoystick" class="absolute left-3 z-20" aria-label="Move joystick" role="application">
+        <!-- Touch screens: a joystick to move, and turn/zoom buttons (Where is Kelo-1? above them when he is out of view) -->
+        <div id="exploreJoystick" class="absolute z-20" aria-label="Move joystick" role="application">
           <div id="exploreJoystickKnob"></div>
         </div>
-        <div id="exploreTouchColumn" class="absolute right-2 z-20 flex-col gap-2">
-          <button type="button" data-where-kelo class="explore-touch-btn" aria-label="Where is Kelo-1?" title="Where is Kelo-1?">🤖</button>
-          <button type="button" data-hold="zoomIn" class="explore-touch-btn" aria-label="Zoom in">+</button>
-          <button type="button" data-hold="zoomOut" class="explore-touch-btn" aria-label="Zoom out">−</button>
-          <button type="button" data-hold="turnLeft" class="explore-touch-btn" aria-label="Turn left">⟲</button>
-          <button type="button" data-hold="turnRight" class="explore-touch-btn" aria-label="Turn right">⟳</button>
+        <div id="exploreTouchColumn" class="absolute z-20">
+          <button type="button" data-where-kelo class="explore-touch-btn explore-touch-where" aria-label="Where is Kelo-1?" title="Where is Kelo-1?"><i class="ph-bold ph-robot" data-hud-emoji="🤖" aria-hidden="true"></i></button>
+          <div class="hud-touch-grid">
+            <button type="button" data-hold="zoomIn" class="explore-touch-btn" aria-label="Zoom in"><i class="ph-bold ph-plus" data-hud-emoji="+" aria-hidden="true"></i></button>
+            <button type="button" data-hold="zoomOut" class="explore-touch-btn" aria-label="Zoom out"><i class="ph-bold ph-minus" data-hud-emoji="−" aria-hidden="true"></i></button>
+            <button type="button" data-hold="turnLeft" class="explore-touch-btn" aria-label="Turn left"><i class="ph-bold ph-arrow-counter-clockwise" data-hud-emoji="⟲" aria-hidden="true"></i></button>
+            <button type="button" data-hold="turnRight" class="explore-touch-btn" aria-label="Turn right"><i class="ph-bold ph-arrow-clockwise" data-hud-emoji="⟳" aria-hidden="true"></i></button>
+          </div>
         </div>
 
 </div>
 
-  <!-- FLOATING STATUS BAR (top) -->
-  <div class="fixed top-0 inset-x-0 z-30 p-2 sm:p-3 flex items-start justify-between gap-2 pointer-events-none">
-    <div class="pointer-events-auto max-w-[calc(100%-7rem)] sm:max-w-2xl px-3 py-2 rounded-2xl bg-slate-950/75 backdrop-blur-md border border-slate-800/80 shadow-xl space-y-1.5">
-      <div class="flex items-center gap-2 min-w-0">
-        <div class="w-8 h-8 shrink-0 rounded-xl bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 flex items-center justify-center text-slate-950 font-black text-sm">K1</div>
-        <h1 class="font-extrabold text-sm tracking-tight text-white shrink-0">Kelo-1 World</h1>
-        <span id="headerEmotionBadge" class="min-w-0 truncate max-w-[9rem] sm:max-w-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold hidden sm:flex items-center gap-1"><span>🌅</span> <span>First Day Awake</span></span>
-            <span id="rhythmStateBadge" class="hidden lg:inline-block text-[11px] font-mono text-slate-400">Looking around for the first time...</span>
+  <!-- STATUS (top left): who, when, and how he feels; settings and the menu (top right) -->
+  <div id="hudTop" class="fixed top-0 inset-x-0 z-30 flex items-start justify-between gap-2 pointer-events-none">
+    <div id="hudStatus" class="hud-panel pointer-events-auto">
+      <div class="hud-status-row">
+        <div class="hud-avatar" aria-hidden="true">K1</div>
+        <h1 class="hud-name">Kelo-1</h1>
+        <p id="worldClockText" class="hud-clock"></p>
       </div>
-      <p id="worldClockText" class="text-[10px] sm:text-[11px] font-mono text-sky-200"></p>
-      <p id="headerObsessionText" class="hidden sm:block text-xs text-slate-400 italic truncate max-w-md sm:max-w-xl">"Where am I? What is all of this?"</p>
-      <div class="grid grid-cols-3 sm:grid-cols-6 gap-x-3 gap-y-1.5 sm:gap-1.5 bg-slate-900/90 border border-slate-800 px-2 sm:px-3 py-1.5 rounded-2xl text-[9px] sm:text-[10px] font-mono">
-          <div class="min-w-0 sm:w-14">
-            <div class="flex justify-between text-emerald-300"><span>⚡NRG</span><span id="hudHealthVal">94%</span></div>
-            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudHealthBar" class="h-full bg-emerald-400" style="width: 94%;"></div></div>
-          </div>
-          <div class="min-w-0 sm:w-14">
-            <div class="flex justify-between text-amber-300"><span>🥕FUL</span><span id="hudFullnessVal">86%</span></div>
-            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudFullnessBar" class="h-full bg-amber-400" style="width: 86%;"></div></div>
-          </div>
-          <div class="min-w-0 sm:w-14">
-            <div class="flex justify-between text-cyan-300"><span>💧H2O</span><span id="hudWaterVal">80%</span></div>
-            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudWaterBar" class="h-full bg-cyan-400" style="width: 80%;"></div></div>
-          </div>
-          <div class="min-w-0 sm:w-14">
-            <div class="flex justify-between text-rose-300"><span>💛JOY</span><span id="hudHappyVal">96%</span></div>
-            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudHappyBar" class="h-full bg-rose-400" style="width: 96%;"></div></div>
-          </div>
-          <div class="min-w-0 sm:w-14">
-            <div class="flex justify-between text-sky-300"><span>✨WND</span><span id="hudWonderVal">95%</span></div>
-            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudWonderBar" class="h-full bg-sky-400" style="width: 95%;"></div></div>
-          </div>
-          <div class="min-w-0 sm:w-14">
-            <div class="flex justify-between text-indigo-300"><span>🌊CLM</span><span id="hudCalmVal">90%</span></div>
-            <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-0.5"><div id="hudCalmBar" class="h-full bg-indigo-400" style="width: 90%;"></div></div>
-          </div>
+      <div class="hud-needs-wrap">
+        <button type="button" id="hudNeedsBtn" class="hud-needs hud-hit" aria-expanded="false" aria-controls="hudNeedsDetail" aria-label="How Kelo-1 feels" title="How Kelo-1 feels">
+          <span class="hud-meter" style="--c:#34d399" title="Energy"><i class="ph-fill ph-lightning hud-meter-icon" data-hud-emoji="⚡" aria-hidden="true"></i><span class="hud-meter-track"><span id="hudHealthBar" class="hud-meter-fill" style="width: 80%;"></span></span></span>
+          <span class="hud-meter" style="--c:#fbbf24" title="Fullness"><i class="ph-fill ph-carrot hud-meter-icon" data-hud-emoji="🥕" aria-hidden="true"></i><span class="hud-meter-track"><span id="hudFullnessBar" class="hud-meter-fill" style="width: 80%;"></span></span></span>
+          <span class="hud-meter" style="--c:#22d3ee" title="Water"><i class="ph-fill ph-drop hud-meter-icon" data-hud-emoji="💧" aria-hidden="true"></i><span class="hud-meter-track"><span id="hudWaterBar" class="hud-meter-fill" style="width: 80%;"></span></span></span>
+          <span class="hud-meter" style="--c:#fb7185" title="Joy"><i class="ph-fill ph-heart hud-meter-icon" data-hud-emoji="💛" aria-hidden="true"></i><span class="hud-meter-track"><span id="hudHappyBar" class="hud-meter-fill" style="width: 80%;"></span></span></span>
+          <span class="hud-meter" style="--c:#38bdf8" title="Wonder"><i class="ph-fill ph-sparkle hud-meter-icon" data-hud-emoji="✨" aria-hidden="true"></i><span class="hud-meter-track"><span id="hudWonderBar" class="hud-meter-fill" style="width: 80%;"></span></span></span>
+          <span class="hud-meter" style="--c:#a5b4fc" title="Calm"><i class="ph-fill ph-waves hud-meter-icon" data-hud-emoji="🌊" aria-hidden="true"></i><span class="hud-meter-track"><span id="hudCalmBar" class="hud-meter-fill" style="width: 80%;"></span></span></span>
+        </button>
+        <div id="hudNeedsDetail" class="hud-needs-detail" role="group" aria-label="How Kelo-1 feels">
+        <div class="hud-need" style="--c:#34d399"><i class="ph-fill ph-lightning hud-meter-icon" data-hud-emoji="⚡" aria-hidden="true"></i><span class="hud-need-label">Energy</span><span id="hudHealthVal" class="hud-need-val">80%</span></div>
+        <div class="hud-need" style="--c:#fbbf24"><i class="ph-fill ph-carrot hud-meter-icon" data-hud-emoji="🥕" aria-hidden="true"></i><span class="hud-need-label">Fullness</span><span id="hudFullnessVal" class="hud-need-val">80%</span></div>
+        <div class="hud-need" style="--c:#22d3ee"><i class="ph-fill ph-drop hud-meter-icon" data-hud-emoji="💧" aria-hidden="true"></i><span class="hud-need-label">Water</span><span id="hudWaterVal" class="hud-need-val">80%</span></div>
+        <div class="hud-need" style="--c:#fb7185"><i class="ph-fill ph-heart hud-meter-icon" data-hud-emoji="💛" aria-hidden="true"></i><span class="hud-need-label">Joy</span><span id="hudHappyVal" class="hud-need-val">80%</span></div>
+        <div class="hud-need" style="--c:#38bdf8"><i class="ph-fill ph-sparkle hud-meter-icon" data-hud-emoji="✨" aria-hidden="true"></i><span class="hud-need-label">Wonder</span><span id="hudWonderVal" class="hud-need-val">80%</span></div>
+        <div class="hud-need" style="--c:#a5b4fc"><i class="ph-fill ph-waves hud-meter-icon" data-hud-emoji="🌊" aria-hidden="true"></i><span class="hud-need-label">Calm</span><span id="hudCalmVal" class="hud-need-val">80%</span></div>
         </div>
+      </div>
     </div>
     <div class="pointer-events-auto flex items-center gap-2">
-      <button id="btnOpenSettings" class="w-11 h-11 rounded-2xl bg-slate-950/75 backdrop-blur-md border border-slate-800/80 text-slate-200 hover:text-white hover:bg-slate-800 flex items-center justify-center shadow-xl transition" aria-label="Settings and API keys" title="Settings and API keys">
+      <button id="btnOpenSettings" class="hud-round-btn" aria-label="Settings and API keys" title="Settings and API keys">
         <i class="ph-bold ph-gear-six text-xl"></i>
       </button>
-      <button id="btnToggleMenu" class="relative w-11 h-11 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center justify-center shadow-xl transition" aria-label="Open menu" aria-controls="sideMenu" aria-expanded="false" title="Interact with Kelo-1">
+      <button id="btnToggleMenu" class="hud-round-btn hud-round-btn-primary relative" aria-label="Open menu" aria-controls="sideMenu" aria-expanded="false" title="Interact with Kelo-1">
         <i class="ph-bold ph-list text-xl"></i>
-        <span id="menuMailBadge" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center"></span>
+        <span id="menuMailBadge" class="hidden hud-badge"></span>
       </button>
     </div>
   </div>
@@ -849,7 +835,7 @@
     </div>
   </div>
 
-  <div id="toastContainer" class="fixed top-24 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
+  <div id="toastContainer" class="fixed left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
 
   <!-- Connected Modular Scripts for GitHub Pages (jeremiahaguirre/Kelo-bot-1) -->
   <script src="./js/agent.js"></script>
@@ -939,6 +925,7 @@
   <script src="./js/tryit.js"></script>
   <script src="./js/plants.js"></script>
   <script src="./js/plantmodels.js"></script>
+  <script src="./js/hud.js"></script>
   <script src="./js/menuui.js"></script>
 </body>
 </html>

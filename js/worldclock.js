@@ -84,7 +84,14 @@ function renderClockUI() {
       const el = document.getElementById('worldClockText');
       if (!el) return;
       const w = worldNow();
-      el.textContent = `📅 Day ${w.day} • ${SEASON_EMOJI[w.season]} ${w.season} (${w.dayOfYear}/365) • 🕒 ${clockLabel(w.hour)}${w.isNight ? ' 🌙' : ''}${typeof windStatusText === 'function' ? ` • ${windStatusText()}` : ''}${typeof weatherStatusText === 'function' && weatherStatusText() ? ` • ${weatherStatusText()}` : ''}`;
+      const wind = typeof windStatusText === 'function' ? windStatusText() : '';
+      const weather = typeof weatherStatusText === 'function' ? weatherStatusText() : '';
+      // One short line in the status block (rain or ice wins over the wind); the whole of it on hover
+      const sky = weather ? weather.replace(/\s*\(.*\)$/, '') : wind.replace(/ from the .*$/, '');
+      const line = `Day ${w.day} · ${SEASON_EMOJI[w.season]} ${w.season} · ${clockLabel(w.hour)}${w.isNight ? ' 🌙' : ''}${sky ? ` · ${sky}` : ''}`;
+      const full = `Day ${w.day} · ${w.season} (day ${w.dayOfYear} of 365) · ${clockLabel(w.hour)}${wind ? ` · ${wind}` : ''}${weather ? ` · ${weather}` : ''}`;
+      if (el.textContent !== line) el.textContent = line;
+      if (el.title !== full) el.title = full;
     }
 
 window.addEventListener('DOMContentLoaded', () => {

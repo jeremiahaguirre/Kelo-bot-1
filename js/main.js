@@ -1,24 +1,20 @@
 // Kelo-bot-1 — js/main.js
 // Loaded THIRD. Connects all UI tabs, keyboard/mouse/upload listeners, and boots the 3D world.
 
+// Write text only when it changed (no layout work, no screen-reader repeats)
+function hudSetText(el, text) {
+      if (el && el.textContent !== text) el.textContent = text;
+    }
+
 function renderAllUI() {
-      // Pino's World 5 Inner States: Fullness, Energy, Wonder, Joy, Calm
-      document.getElementById('hudHealthVal').textContent = `${Math.round(state.health)}%`;
-      document.getElementById('hudHealthBar').style.width = `${Math.round(state.health)}%`;
-      document.getElementById('hudFullnessVal').textContent = `${Math.round(state.fullness)}%`;
-      document.getElementById('hudFullnessBar').style.width = `${Math.round(state.fullness)}%`;
-      document.getElementById('hudHappyVal').textContent = `${Math.round(state.happiness)}%`;
-      document.getElementById('hudHappyBar').style.width = `${Math.round(state.happiness)}%`;
-
-      const wonderValEl = document.getElementById('hudWonderVal');
-      const wonderBarEl = document.getElementById('hudWonderBar');
-      if (wonderValEl) wonderValEl.textContent = `${Math.round(state.wonderLevel)}%`;
-      if (wonderBarEl) wonderBarEl.style.width = `${Math.round(state.wonderLevel)}%`;
-
-      const calmValEl = document.getElementById('hudCalmVal');
-      const calmBarEl = document.getElementById('hudCalmBar');
-      if (calmValEl) calmValEl.textContent = `${Math.round(state.calmLevel)}%`;
-      if (calmBarEl) calmBarEl.style.width = `${Math.round(state.calmLevel)}%`;
+      // How he feels: six small meters in the status block (numbers in its pop-up)
+      [['Health', state.health], ['Fullness', state.fullness], ['Happy', state.happiness],
+        ['Wonder', state.wonderLevel], ['Calm', state.calmLevel]].forEach(([k, v]) => {
+        const pct = `${Math.round(Number(v) || 0)}%`;
+        hudSetText(document.getElementById(`hud${k}Val`), pct);
+        const bar = document.getElementById(`hud${k}Bar`);
+        if (bar && bar.style.width !== pct) bar.style.width = pct;
+      });
 
       document.getElementById('hudWeldBadge').textContent = `${state.opinions.length} Core Opinions`;
       document.getElementById('hudGithubBadge').textContent = `${state.githubRepos.length} Repos • ${state.githubCommits} Commits`;
@@ -27,17 +23,13 @@ function renderAllUI() {
       const changedEl = document.getElementById('changedLatelyText');
       if (changedEl) changedEl.textContent = stripCoords(state.changedLatelySummary);
 
-      // Header & Overhead 3D Bubble
-      document.getElementById('headerEmotionBadge').innerHTML = `<span>${escapeHtml(state.moodEmoji)}</span> <span>${escapeHtml(state.moodTitle)}</span>`;
-      document.getElementById('headerObsessionText').textContent = stripCoords(state.currentObsession);
-      const activePlaceLabel = currentPlaceLabel();
-      document.getElementById('liveActivityText').textContent = stripCoords(`${activePlaceLabel}: ${state.moodTitle} (${state.autonomyTag})`);
-
-      document.getElementById('bubbleMoodEmoji').textContent = state.moodEmoji;
-      document.getElementById('bubbleMoodTitle').textContent = stripCoords(state.moodTitle);
-      // Where he is right now (the reason he came is in the title and speech)
-      document.getElementById('bubbleAutonomyTag').textContent = `📍 ${stripCoords(activePlaceLabel)}`.slice(0, 40);
-      document.getElementById('bubbleSpeech').textContent = `"${stripCoords(state.speechBubble)}"`;
+      // The activity card (bottom middle) is the one place for what he does, says and where he is
+      const activePlaceLabel = stripCoords(currentPlaceLabel());
+      hudSetText(document.getElementById('liveActivityText'), stripCoords(`${activePlaceLabel}: ${state.moodTitle} (${state.autonomyTag})`));
+      hudSetText(document.getElementById('bubbleMoodEmoji'), state.moodEmoji);
+      hudSetText(document.getElementById('bubbleMoodTitle'), stripCoords(state.moodTitle));
+      hudSetText(document.getElementById('bubbleAutonomyTag'), activePlaceLabel.slice(0, 40));
+      hudSetText(document.getElementById('bubbleSpeech'), `"${stripCoords(state.speechBubble)}"`);
 
       const ripe = state.gardenPlots.filter(p => p.growth >= 80).length;
       document.getElementById('gardenRipeBadge').textContent = `${ripe}/${state.gardenPlots.length}`;
@@ -744,6 +736,14 @@ window.addEventListener('DOMContentLoaded', () => {
       'upload-simple': '⬆️', 'download-simple': '⬇️', 'sun-horizon': '🌅', 'sliders-horizontal': '🎚️', 'notebook': '📓', 'lightning': '⚡', 'images': '🖼️',
       'image-square': '🖼️', 'gift': '🎁', 'envelope-simple': '✉️', 'drop': '💧', 'cpu': '🖥️', 'copy': '📋', 'clock-counter-clockwise': '🕘',
       'chat-circle-dots': '💬', 'brain': '🧠', 'archive': '🗄️', 'crosshair': '⌖', 'plus': '+', 'minus': '−' };
+    // The screen over the world: each icon names its own emoji
+    document.querySelectorAll('i[data-hud-emoji]').forEach(i => {
+      const span = document.createElement('span');
+      span.className = 'hud-emoji-icon';
+      span.setAttribute('aria-hidden', 'true');
+      span.textContent = i.getAttribute('data-hud-emoji');
+      i.replaceWith(span);
+    });
     document.querySelectorAll('button i[class*="ph-"]').forEach(i => {
       const btn = i.closest('button');
       if (!btn || btn.innerText.trim()) return; // it has (visible) words; the icon is only decoration

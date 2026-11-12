@@ -112,7 +112,13 @@ Distill ONE new core memory: what from these days actually mattered to you and h
 async function maybeDistillCoreMemory() {
       if (distilling) return;
       const total = totalDiaryCount();
-      if (total - (state.life.lastDistilledAt || 0) < ENTRIES_PER_CORE_MEMORY) return;
+      // New entries are counted by time, not by the diary's total: the archive has a cap, so once it is
+      // full the total stops growing and no core memory would ever form again
+      stampDiaryEntries();
+      const since = state.life.lastDistilledTime;
+      const fresh = Number.isFinite(since) ? state.diaryEntries.filter(e => e && e.at > since).length
+        : total - (state.life.lastDistilledAt || 0); // saves from before lastDistilledTime
+      if (fresh < ENTRIES_PER_CORE_MEMORY) return;
       distilling = true;
       try {
         const recent = state.diaryEntries.slice(0, ENTRIES_PER_CORE_MEMORY).filter(e => e && e.text);
@@ -121,6 +127,7 @@ async function maybeDistillCoreMemory() {
         state.coreMemories.unshift({ ...memory, at: Date.now(), day: daysAlive() });
         if (state.coreMemories.length > MAX_CORE_MEMORIES) state.coreMemories.length = MAX_CORE_MEMORIES;
         state.life.lastDistilledAt = total;
+        state.life.lastDistilledTime = Date.now();
         savePersistentBrainState();
         renderAllUI();
         showToast(`${memory.emoji} Kelo-1 formed a core memory`);

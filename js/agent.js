@@ -379,7 +379,12 @@ const state = {
   "soundMuted": false,
   "shop": { "listings": [], "sold": [], "earnings": 0, "builtAt": null },
   "workshop": { "known": {}, "made": [], "jobs": 0, "programs": {}, "log": [], "asked": {}, "gadgetUses": 0 },
-  "printer": { "setUp": false, "skill": 0, "prints": 0, "fails": 0, "spools": [], "loadedSpoolId": null, "lessons": {}, "history": [], "designs": {}, "welcomeSent": false }
+  "printer": { "setUp": false, "skill": 0, "prints": 0, "fails": 0, "spools": [], "loadedSpoolId": null, "lessons": {}, "history": [], "designs": {}, "welcomeSent": false },
+  // Things he makes from ideas he reads about (js/shopmaker.js). They must be listed here, or a reload drops them
+  "makerKinds": {},
+  "makerThings": {},
+  "makerOrders": [],
+  "makerUses": {}
 };
 
 // Where Kelo-1's memory lives: browser storage on the website (about 5 MB), files on disk in the

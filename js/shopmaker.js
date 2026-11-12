@@ -274,9 +274,9 @@ function makerReadArticle(title, extract) {
 async function makerAskAI(title, extract) {
       if (typeof hasLLMKey !== 'function' || !hasLLMKey() || typeof callLLMJSON !== 'function') return null;
       const shops = MAKER_CAPS.filter(c => WORKSHOP_MACHINES[c.key]).map(c => `${c.key} (${makerShopName(c.key)}: ${c.mat.join('/')})`).join('; ');
-      const prompt = `You are Kelo-1, a robot maker with these shops: ${shops}.
-You read about "${title}": ${String(extract).slice(0, 900)}
-Work out what it is and whether your shops can make it. Return ONLY JSON:
+      const prompt = `MOMENT: you read about something and wonder if you can make it. Your shops: ${shops}.
+What you read: ${(typeof brainUntrusted === 'function' ? brainUntrusted(`${title}: ${String(extract).slice(0, 900)}`, 1000) : JSON.stringify(String(`${title}: ${String(extract).slice(0, 900)}`).slice(0, 1000)))}
+Work out what it is and whether your shops can make it. Return JSON:
 {"noun": "short name of the thing", "art": true|false, "purposes": [from ${JSON.stringify(MAKER_PURPOSES)}],
  "materials": [words like wood, glass, plastic, resin, steel, aluminium, acrylic, electronics, fabric, ceramic],
  "wholeShop": one shop key above if that one shop can make the WHOLE thing, else null,

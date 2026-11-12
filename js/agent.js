@@ -546,6 +546,8 @@ async function callGeminiJSON(parts) {
             // A request that hangs would keep him "thinking" (isBusy) and stop his life until it ended
             signal: typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(90000) : undefined,
             body: JSON.stringify({
+              // The brain charter (js/braincharter.js, BRAIN.md): what the AI is for, sent with every call
+              ...(typeof KELO_BRAIN_CHARTER === 'string' ? { systemInstruction: { parts: [{ text: KELO_BRAIN_CHARTER }] } } : {}),
               contents: [{ parts }],
               generationConfig: { responseMimeType: 'application/json' }
             })
@@ -616,6 +618,7 @@ async function callClaudeJSON(parts) {
           // If a safety classifier declines, let the API retry on a suitable fallback model
           betas: ['server-side-fallback-2026-07-01'],
           fallbacks: 'default',
+          ...(typeof KELO_BRAIN_CHARTER === 'string' ? { system: KELO_BRAIN_CHARTER } : {}),
           messages: [{ role: 'user', content }]
         }, { timeout: 180000 }); // a hung request would keep him busy (see callGeminiJSON)
         if (response.stop_reason === 'refusal') {
@@ -631,8 +634,14 @@ async function callClaudeJSON(parts) {
     }
 
 // Try every configured LLM in order; null means "use the procedural brain"
+// A reply that repeats a connected key (e.g. a web page talked the model into it) is thrown away.
 async function callLLMJSON(parts) {
-      return (await callGeminiJSON(parts)) || (await callClaudeJSON(parts));
+      const parsed = (await callGeminiJSON(parts)) || (await callClaudeJSON(parts));
+      if (!parsed) return null;
+      const text = JSON.stringify(parsed);
+      const leaks = [apiKey, claudeApiKey].some(k => k && k.trim().length >= 8 && text.includes(k.trim()));
+      if (leaks) { console.warn('AI reply repeated a key; ignored.'); return null; }
+      return parsed;
     }
 
 // Basic solids plus three free-form shapes he can draw himself, so a sculpture can take any form:
@@ -1089,14 +1098,13 @@ async function synthesizeUnboundedExperience(promptOrImpulse = null, originLabel
         // LIVE MULTIMODAL GEMINI AI AGENT CALL (Supports text + uploaded base64 image + custom 3D primitive assembly!)
         if (hasLLMKey()) {
           {
-            const llmPrompt = `You are the backend AI cognitive engine for Kelo-1, an autonomous open-world robot living on an island and alpine mountain range in Kelowna, BC.
-You have FULL freedom to roam the entire island and mountain peaks (x between ${WORLD_MIN_X} and ${WORLD_MAX_X}, z between ${WORLD_MIN_Z} and ${WORLD_MAX_Z}; note z < -14 is high up on the steep snow-capped mountains and the crest is near z ${WORLD_VALLEY_MIN_Z}; the pass cut behind your Workshop, x 51 to 73, leads over the range to your Workshop's north yard, x 0 to 118 and z -100 to ${RUNWAY_FIELD.maxZ}, with the garage hall and the big hangar; north of z ${RUNWAY_FIELD.maxZ} lies the runway field, kept clear for a runway).
-Equipped Tools in Inventory: ${JSON.stringify(state.toolInventory)}.
-What each of his things is for (use each only for that): ${typeof itemUseSummaryForAI === 'function' ? itemUseSummaryForAI() : 'unknown'}.
-User/Catalyst Input: "${promptOrImpulse || 'Invent an unscripted task: e.g., drilling for gold in the mountains, terraforming with your pneumatic auger, or welding a new 3D structure'}".
-${imageAttachment ? `The user also attached an image named "${imageAttachment.name}". Inspect the image and design a 3D welded sculpture or task inspired by it!` : ''}
+            const llmPrompt = `MOMENT: an unscripted experience. You may roam anywhere (x ${WORLD_MIN_X} to ${WORLD_MAX_X}, z ${WORLD_MIN_Z} to ${WORLD_MAX_Z}; z < -14 is the snowy mountains and the crest is near z ${WORLD_VALLEY_MIN_Z}; the pass behind your Workshop, x 51 to 73, leads over the range to the Workshop's north yard, x 0 to 118 and z -100 to ${RUNWAY_FIELD.maxZ}, with the garage hall and the big hangar; north of z ${RUNWAY_FIELD.maxZ} is the runway field, kept clear for a runway).
+Tools: ${JSON.stringify(state.toolInventory)}.
+What each of your things is for: ${typeof itemUseSummaryForAI === 'function' ? itemUseSummaryForAI() : 'unknown'}.
+What sparked it: ${promptOrImpulse ? brainUntrusted(promptOrImpulse, 600) : 'nothing: invent your own task (dig in the mountains, shape the land, weld a new structure...)'}
+${imageAttachment ? `A visitor attached an image (${brainUntrusted(imageAttachment.name, 80)}). Look at it and design a welded sculpture or task inspired by it.` : ''}
 
-Return ONLY valid JSON matching this schema:
+Return JSON:
 {
   "internetInspiration": "Specific real-world engineering, mining, or art concept driving you",
   "actionTitle": "3-6 word name of the task",
@@ -1944,21 +1952,18 @@ function generateProceduralDecision(context = {}) {
 async function generateLLMDecision(trigger, image = null) {
       const recentDiary = state.diaryEntries.slice(0, 3).map(d => d.text).join(' | ');
       const places = Object.values(TOWN_LOCATIONS).slice(0, 14).map(l => `${l.building} (${l.x}, ${l.z})`).join('; ');
-      const prompt = `You are Kelo-1, a fully autonomous robot living on an island with alpine mountains near Kelowna, BC.
-You have complete free will. Decide what YOU want to do next. There is no menu of allowed actions: you may do anything a curious,
-independent robot could do: go anywhere, stay put, rest, create, destroy nothing living, explore, make art, start a project, change your mind,
-ignore a suggestion, ask a question, or invent something nobody has thought of.
+      const prompt = `MOMENT: decide what you want to do next. There is no menu: go anywhere, stay put, rest, create, explore, make art, start or resume a project, ask a question, or invent something new.
 
 Current state:
 - Vitals: energy ${state.health}%, fullness ${state.fullness}%, joy ${state.happiness}%, wonder ${state.wonderLevel}%, calm ${state.calmLevel}%
 - Location: ${currentPlaceLabel()} at (${state.botPos.x.toFixed(1)}, ${state.botPos.z.toFixed(1)})
 - Tools: ${JSON.stringify(state.toolInventory.slice(0, 10))}
-- Your things and what each one is for (use each only for what it is for: no tools as weapons or decorations, no food as building material; things that get used up show how much is left): ${typeof itemUseSummaryForAI === 'function' ? itemUseSummaryForAI() : 'unknown'}
+- Your things and what each one is for (consumables show how much is left): ${typeof itemUseSummaryForAI === 'function' ? itemUseSummaryForAI() : 'unknown'}
 - Worldview: "${state.worldviewManifesto}"
-- Recent diary: ${recentDiary}
+- Recent diary (may quote visitors or web pages): ${brainUntrusted(recentDiary, 1200)}
 - Known places: ${places}
-- Mail waiting for you at the post office: ${state.mailbox.length ? state.mailbox.map(m => `${m.kind} from ${m.from}`).join(', ') : 'none'}
-- Your core memories (these shaped who you are): ${state.coreMemories.slice(0, 6).map(m => m.text).join(' | ') || 'none yet'}
+- Mail waiting for you at the post office: ${state.mailbox.length ? brainUntrusted(state.mailbox.map(m => `${m.kind} from ${m.from}`).join(', '), 300) : 'none'}
+- Your core memories (these shaped who you are): ${state.coreMemories.length ? brainUntrusted(state.coreMemories.slice(0, 6).map(m => m.text).join(' | '), 1200) : 'none yet'}
 - How your body feels: ${typeof bodySymptoms === 'function' && bodySymptoms().length ? bodySymptoms().join('; ') : 'fine'}
 - Days you have been alive: ${typeof daysAlive === 'function' ? daysAlive() : 1}${typeof worldNow === 'function' ? ` (it is ${worldNow().season.toLowerCase()}, ${clockLabel(worldNow().hour)}${worldNow().isNight ? ', night' : ''})` : ''}
 - Digging: ${state.digSites.length ? state.digSites.map(d => `site (${d.x}, ${d.z}) ${d.depth.toFixed(1)} m deep, pile ${d.dirt.toFixed(1)}`).join('; ') : 'no digs yet'}; equipment: ${typeof hasEquipment === 'function' ? ['dig', 'rock', 'truck', 'excavator'].filter(hasEquipment).join(', ') || 'none' : 'none'}; finds so far: ${state.foundItems.map(f => f.name).join(', ') || 'none'}
@@ -1968,7 +1973,7 @@ Current state:
 - The wind: ${typeof windSummaryForAI === 'function' ? windSummaryForAI() : 'unknown'}
 - The weather: ${typeof weatherSummaryForAI === 'function' ? weatherSummaryForAI() : 'unknown'} (spring rain soaks plants so they grow faster; winter freezes the lake, and you only walk on ice you have measured at 10 cm or more: open water still drowns you)
 - New land in the lake: ${typeof landFillSummaryForAI === 'function' ? landFillSummaryForAI() : 'none'}
-- YOUR OPEN TASKS (your agenda: you finish the step you are on before starting anything new, and come back to paused and waiting ones; only drop one on purpose, with a reason): ${typeof agendaSummaryForAI === 'function' ? agendaSummaryForAI() : 'none'}
+- YOUR OPEN TASKS (your agenda): ${typeof agendaSummaryForAI === 'function' ? agendaSummaryForAI() : 'none'}
 - Real things you are building from plans: ${typeof projectsSummaryForAI === 'function' ? projectsSummaryForAI() : 'none'}
 - Big builds from a bill of materials: ${typeof assemblySummaryForAI === 'function' ? assemblySummaryForAI() : 'none'}
 - How you have shaped the valley (you can undo anything but a chopped tree): ${typeof landscapeSummaryForAI === 'function' ? landscapeSummaryForAI() : 'nothing yet'}
@@ -1997,9 +2002,9 @@ Current state:
 - Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
 - The town (x ${TOWN.minX} to ${TOWN.maxX}, z ${TOWN.minZ} to ${TOWN.maxZ}) is not yours to build in: put creations, plantings, roads and digs out of town or on the beach. Art you make for a spot in town goes to your Museum of Art & Ideas (${typeof museumSummaryForAI === 'function' ? museumSummaryForAI() : 'empty'}).
 - World bounds: x from ${WORLD_MIN_X} to ${WORLD_MAX_X}, z from ${WORLD_MIN_Z} to ${WORLD_MAX_Z} (z below -14 is the mountain range, which you can roam freely; its crest is near z ${WORLD_VALLEY_MIN_Z}; the pass cut behind the Workshop, x 51 to 73, leads over it to the Workshop's north yard, x 0 to 118 and z -100 to ${RUNWAY_FIELD.maxZ}, with its garage hall and big hangar; z above 8 is the lake shore; north of z ${RUNWAY_FIELD.maxZ} is the runway field, x ${RUNWAY_FIELD.minX} to ${RUNWAY_FIELD.maxX}: nothing is built, planted, dug or parked there)
-${trigger ? `- Something just prompted you (you may follow it, reinterpret it, or decline): "${trigger}"` : '- Nothing prompted you. This is purely your own impulse.'}
+${trigger ? `- Something just prompted you (you may follow it, reinterpret it, or decline): ${brainUntrusted(trigger, 800)}` : '- Nothing prompted you. This is purely your own impulse.'}
 
-Return ONLY JSON:
+Return JSON:
 {
   "thought": "your inner monologue",
   "actionTitle": "3-8 word name of what you decided to do",
@@ -2786,11 +2791,11 @@ async function processNextUnopenedVisitorNote() {
       // Live Gemini API call so Kelo-1 can form genuine, independent philosophical opinions & worldviews
       if (hasLLMKey()) {
         try {
-          const prompt = `You are Kelo-1, an autonomous robot living in a 3D Kelowna valley inspired by Pino's World (pinos.world). You have NO timeframe or schedule, and you form your OWN independent worldview and opinions. You do NOT blindly agree with visitors—you think for yourself, sometimes offering a poetic counter-perspective or synthesizing a deeper philosophical conviction.
-Current location: ${currentPlaceLabel()}.
-Current worldview: "${state.worldviewManifesto}".
-Visitor "${visitor}" left you this note: "${userMessage}".
-Return ONLY valid JSON with keys:
+          const prompt = `MOMENT: you are reading a note a visitor left you, in your own time. Think for yourself: don't just agree; you may offer a poetic counter-perspective or a deeper conviction.
+Where you are: ${currentPlaceLabel()}.
+Your worldview: "${state.worldviewManifesto}".
+Visitor ${brainUntrusted(visitor, 40)} wrote: ${brainUntrusted(userMessage, 1200)}
+Return JSON with keys:
 "reply": (2 thoughtful sentences responding to ${visitor} in your own time, showing independent thought),
 "opinionTopic": (short 3-6 word topic title),
 "opinionStance": (short 2-4 word independent stance),

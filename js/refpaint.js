@@ -741,10 +741,11 @@ async function refpGatherAtNetNode(plan, medium, { visitor = null } = {}) {
 // --- Keeping the credit with the painting ------------------------------------------------------------------
 function refpTitle(found, spec) {
       const a = refpTitleCase(found.query), b = refpTitleCase(found.queryB || '');
-      const options = found.mode !== 'combine' ? [a, `${a}, after a Photograph`, `Study of ${/^[aeiou]/i.test(a) ? 'an' : 'a'} ${a}`]
+      const options = found.mode !== 'combine' ? [a, `${a}, after a Photograph`, `Impression of ${/^[aeiou]/i.test(a) ? 'an' : 'a'} ${a}`]
         : found.how === 'split' ? [`${a} / ${b}`, `Diptych: ${a} and ${b}`] : [`${a} in ${b}`, `${a} and the ${b}`, `Dream of ${a} in ${b}`];
       let title = pick(options);
-      if (spec.q < 0.2) title = `Study: ${title.replace(/^Study of an? /, '')}`;
+      // a beginner's try is a "Sketch"; "Study" is kept for a painting too close to its photo (never sold)
+      if (spec.q < 0.2) title = `Sketch: ${title.replace(/^Study of an? /, '')}`;
       const taken = new Set(artPaintings().map(p => p.title));
       const base = title;
       for (let n = 2; taken.has(title) && n < 30; n++) title = `${base} ${['', '', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][n] || n}`;

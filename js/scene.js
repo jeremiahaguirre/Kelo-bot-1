@@ -743,7 +743,7 @@ function buildSkyAndClouds3D() {
 // (fixed numbers: the world's bounds grew north in task 7b, the island's mesh did not)
 const ISLAND_MIN_X = -64, ISLAND_MAX_X = 90, ISLAND_HALF_Z = 48;
 // Past the island (task 7b): the north patch is a 1.5-unit mesh over the Workshop's pass and north yard;
-// the far lands are a coarse mesh (cells 6 to 40 units, fine only where the field's edges blend) under
+// the far lands are a coarse mesh (cells 6 to 60 units, fine only where the field's edges blend) under
 // everything else out to FAR_LANDS: the runway field, the hills either side of it and the coast.
 const NORTH_PATCH = { minX: -6, maxX: 124, minZ: -180, maxZ: -48, cell: 1.5 };
 const FAR_LANDS = { minX: -620, maxX: 640, minZ: -3440, maxZ: 22 };
@@ -826,15 +826,6 @@ function buildOuterLands3D() {
           const y = outerTerrainHeight(x, z);
           if (y < 0.5 || y > 16 || Math.random() < y / 22) continue;
           spots.push([x, y - 0.2, z, 0.9 + Math.random() * 0.8, Math.random() * 6.28, Math.random()]);
-        }
-        // ...and along the hills either side of the runway field, out to where the haze closes in
-        // (a few: every one is drawn wherever the camera looks, and the haze hides most of them)
-        for (let k = 0; k < 2000 && spots.length < 940; k++) {
-          const x = -200 + Math.random() * 420, z = -175 - Math.random() * 260;
-          if (inRectXZ(NORTH_PATCH, x, z, -4) || onRunwayReserve(x, z, 10)) continue;
-          const y = outerTerrainHeight(x, z);
-          if (y < 0.6 || y > 30 || Math.random() < y / 40) continue;
-          spots.push([x, y - 0.2, z, 1.0 + Math.random() * 0.9, Math.random() * 6.28, Math.random()]);
         }
         buildDistantForest(spots);
         return;
@@ -932,8 +923,10 @@ function buildFarLands3D(material) {
         edges.forEach(([e0, e1]) => rangeSteps(Math.max(a, e0), Math.min(z, e1), fine).forEach(v => set.add(v)));
         return [...set].sort((p, q) => p - q);
       };
-      const xs = lines(F.minX, F.maxX, 40, 6, [[R.minX - b - 6, R.minX + 6], [R.maxX - 6, R.maxX + b + 6], [-OUTER_LANDS_HALF - 12, -OUTER_LANDS_HALF + 12], [OUTER_LANDS_HALF - 12, OUTER_LANDS_HALF + 12]]);
-      const zs = lines(F.minZ, F.maxZ, 40, 6, [[R.minZ - b - 6, R.minZ + 6], [-OUTER_LANDS_HALF - 12, -OUTER_LANDS_HALF + 30], [-20, F.maxZ]]);
+      // (a line exactly on the outer lands' edges, so the seam is at true height; finer only where the
+      // field blends into the hills and along the coast)
+      const xs = lines(F.minX, F.maxX, 60, 6, [[R.minX - b - 6, R.minX + 6], [R.maxX - 6, R.maxX + b + 6], [-OUTER_LANDS_HALF, -OUTER_LANDS_HALF], [OUTER_LANDS_HALF, OUTER_LANDS_HALF]]);
+      const zs = lines(F.minZ, F.maxZ, 60, 6, [[R.minZ - b - 6, R.minZ + 6], [R.maxZ - b - 6, R.maxZ + 6], [-OUTER_LANDS_HALF, -OUTER_LANDS_HALF], [-10, F.maxZ]]);
       const under = (x, z) => (Math.abs(x) < OUTER_LANDS_HALF - 3 && z > -OUTER_LANDS_HALF + 3) || inRectXZ(NORTH_PATCH, x, z, 3) || islandContains(x, z);
       farLandsMesh = groundGridMesh(xs, zs, (x, z) => outerTerrainHeight(x, z) - (under(x, z) ? 6 : 0), outerLandColour, material);
       farLandsMesh.name = 'farLands';

@@ -152,13 +152,13 @@ function wnShed(o) {
     }
 
 // Painted floor bays: outline, label, optional hatching (lane)
-function wnPaintBay(g, b, mat, labelAlong = true) {
+function wnPaintBay(g, b, mat, labelAlong = true, labelParent = g) {
       const line = (x, z, w, d, m = mat) => mmBox(g, w, 0.008, d, m, x, 0.125, z);
       line(b.x, b.z - b.d / 2, b.w, 0.1); line(b.x, b.z + b.d / 2, b.w, 0.1);
       line(b.x - b.w / 2, b.z, 0.1, b.d); line(b.x + b.w / 2, b.z, 0.1, b.d);
       if (b.kind === 'lane') for (let k = 0; k < 6; k++) line(b.x, b.z - b.d / 2 + 1 + k * (b.d - 2) / 5, b.w - 0.8, 0.14, mmMat('hazard'));
       const lw = Math.min(b.w - 0.8, 5.2);
-      const l = mmLabel(g, b.label, lw, lw * 0.11, b.x, 0.13, labelAlong ? b.z + b.d / 2 - 0.6 : b.z, { bg: '#b9bab5', fg: '#a16207' });
+      const l = mmLabel(labelParent, b.label, lw, lw * 0.11, b.x, 0.13, labelAlong ? b.z + b.d / 2 - 0.6 : b.z, { bg: '#b9bab5', fg: '#a16207' });
       l.rotation.x = -Math.PI / 2;
       return l;
     }
@@ -192,8 +192,8 @@ function buildGarageHall3D() {
       const inside = mmGroup(g, 0, 0, 0);      // what fills in only when the camera is near
       // Bay numbers over the doors and bay outlines on the floor
       GARAGE_HALL_BAYS.forEach((b, i) => {
-        mmLabel(g, String(i + 1), 0.8, 0.8, b.x, G.door.h + 0.55, hz + 0.12, { bg: '#facc15', fg: '#111827' });
-        wnPaintBay(g, { ...b, z: 0, d: G.d - 2 }, i === 0 ? yellow : white);
+        mmLabel(inside, String(i + 1), 0.8, 0.8, b.x, G.door.h + 0.55, hz + 0.12, { bg: '#facc15', fg: '#111827' });
+        wnPaintBay(g, { ...b, z: 0, d: G.d - 2 }, i === 0 ? yellow : white, true, inside);
         // painted lead-in lines out front
         mmBox(g, 0.12, 0.01, 6, yellow, b.x - G.door.w / 2 + 0.4, 0.02, hz + 3.2);
         mmBox(g, 0.12, 0.01, 6, yellow, b.x + G.door.w / 2 - 0.4, 0.02, hz + 3.2);
@@ -276,6 +276,8 @@ function buildGarageHall3D() {
       mmCyl(comp, 0.18, 0.05, 'chrome', 0.35, 1.2, 0.3, { axis: 'x' });
       g.userData.parts = parts;
       g.userData.inside = inside;
+      // the equipment joins per material on its own (the lift carriages move), then the shell
+      wsMergeStatic(inside, new Set(), parts.columns);
       wsMergeStatic(g, new Set(s.roofs), [inside]);
       scene.add(g);
       s.roofs.forEach(r => { wnRoofs.push(r); if (typeof cutawayRoofMeshes !== 'undefined') cutawayRoofMeshes.push(r); });
@@ -307,7 +309,7 @@ function buildNorthHangar3D() {
       wnFade.hangar = s.sides;
       const yellow = mmMat('yellow'), navy = mmMat('navy'), white = mmMat('white');
       const inside = mmGroup(g, 0, 0, 0);
-      NORTH_HANGAR_BAYS.forEach(b => wnPaintBay(g, b, b.kind === 'build' ? yellow : b.kind === 'parking' ? white : mmMat('hazard'), b.kind !== 'parking'));
+      NORTH_HANGAR_BAYS.forEach(b => wnPaintBay(g, b, b.kind === 'build' ? yellow : b.kind === 'parking' ? white : mmMat('hazard'), b.kind !== 'parking', inside));
       // span gauge along the back of each build bay (every metre)
       NORTH_HANGAR_BAYS.filter(b => b.kind === 'build').forEach(b => { for (let i = -6; i <= 6; i++) mmBox(g, 0.05, 0.008, i % 5 ? 0.4 : 0.7, yellow, b.x + i * 1.6, 0.125, b.z - b.d / 2 + 0.35); });
       // The bridge crane over both build bays
@@ -339,12 +341,13 @@ function buildNorthHangar3D() {
       const charger = mmGroup(inside, -6, 0.1, -hz + 0.6);
       mmBox(charger, 0.8, 1.4, 0.4, 'green', 0, 0, 0);
       mmBox(charger, 0.5, 0.3, 0.04, 'screen', 0, 1.0, 0.21);
-      mmLabel(g, 'KEEP CLEAR  •  CRANE OVERHEAD', 5, 0.55, 0, 0.13, hz - 0.8, { bg: '#b9bab5', fg: '#b91c1c' }).rotation.x = -Math.PI / 2;
+      mmLabel(inside, 'KEEP CLEAR  •  CRANE OVERHEAD', 5, 0.55, 0, 0.13, hz - 0.8, { bg: '#b9bab5', fg: '#b91c1c' }).rotation.x = -Math.PI / 2;
       // Apron outside the door (concrete, with a yellow centre line toward the taxiway)
       const apronMat = new THREE.MeshStandardMaterial({ color: 0xa8a49b, roughness: 0.9, map: wsConcreteTexture() });
       wsPanel(g, H.door.w + 4, 0.06, 6, apronMat, 0, -0.05, hz + 3, 3.2).castShadow = false;
       for (let z = hz + 1; z < hz + 6; z += 1.4) mmBox(g, 0.18, 0.012, 0.8, yellow, 0, 0.02, z);
       g.userData.inside = inside;
+      wsMergeStatic(inside, new Set(), []);
       wsMergeStatic(g, new Set(s.roofs), [inside, crane]);
       scene.add(g);
       s.roofs.forEach(r => { wnRoofs.push(r); if (typeof cutawayRoofMeshes !== 'undefined') cutawayRoofMeshes.push(r); });
@@ -363,32 +366,65 @@ function buildNorthHangar3D() {
 // --- Cost while he isn't near: drawn only when the range doesn't hide them, filled in only close up ---
 // From the valley the crest of the range hides the north land, except through the pass. A few sight
 // lines from the camera to the north buildings (and the yard's middle) are tested against the ground.
-function wnInSight() {
-      if (!camera) return true;
-      const c = camera.position;
-      if (c.z < -60) return true;
-      const targets = [[GARAGE_HALL.x, 9, GARAGE_HALL.z + GARAGE_HALL.d / 2], [NORTH_HANGAR.x, 13, NORTH_HANGAR.z + NORTH_HANGAR.d / 2],
-        [NORTH_HANGAR.x - NORTH_HANGAR.w / 2, 13, NORTH_HANGAR.z], [GARAGE_HALL.x + GARAGE_HALL.w / 2, 9, GARAGE_HALL.z], [62, 2, -100], [40, 16, -150], [100, 16, -150]];
-      return targets.some(([tx, ty, tz]) => {
-        for (let k = 1; k < 40; k++) {
-          const f = k / 40, x = c.x + (tx - c.x) * f, z = c.z + (tz - c.z) * f, y = c.y + (ty - c.y) * f;
-          if (getAnalyticalGroundHeight(x, z) > y + 0.5) return false;
-        }
-        return true;
-      });
+function wnSightClear(c, tx, ty, tz) {
+      for (let k = 1; k < 40; k++) {
+        const f = k / 40, x = c.x + (tx - c.x) * f, z = c.z + (tz - c.z) * f, y = c.y + (ty - c.y) * f;
+        if (getAnalyticalGroundHeight(x, z) > y + 0.5) return false;
+      }
+      return true;
     }
 
-const wnView = { at: 0, seen: true, near: false };
+// { buildings, ground }: can the camera see either building (corners, roof ridges) / the pass and yard?
+function wnInSight() {
+      if (!camera) return { buildings: true, ground: true };
+      const c = camera.position;
+      if (c.z < -60) return { buildings: true, ground: true };
+      const G = GARAGE_HALL, H = NORTH_HANGAR;
+      const bld = [];
+      [[G, 10.5], [H, 13.6]].forEach(([B, top]) => [-1, 1].forEach(sx => [-1, 1].forEach(sz => bld.push([B.x + sx * B.w / 2, top, B.z + sz * B.d / 2]))));
+      const buildings = bld.some(([x, y, z]) => wnSightClear(c, x, y, z));
+      const ground = buildings || [[62, 0.5, -60], [62, 0.5, -100], [40, 0.5, -150], [100, 0.5, -150], [20, 0.5, -110]].some(([x, y, z]) => wnSightClear(c, x, y, z));
+      return { buildings, ground };
+    }
+
+// Far away each building is a plain box and roof (two draw calls instead of its whole shell)
+const WN_FAR = 110;
+const wnFar = { hall: null, hangar: null };
+function wnFarBox(B, rotY, clad, roof) {
+      const g = new THREE.Group();
+      const walls = new THREE.Mesh(new THREE.BoxGeometry(B.w, B.h, B.d), clad);
+      walls.position.y = B.h / 2;
+      const shape = new THREE.Shape([new THREE.Vector2(-B.d / 2 - 0.5, 0), new THREE.Vector2(B.d / 2 + 0.5, 0), new THREE.Vector2(0, B.rise)]);
+      const r = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: B.w + 0.8, bevelEnabled: false }), roof);
+      r.rotation.y = Math.PI / 2;
+      r.position.set(-B.w / 2 - 0.4, B.h, 0);
+      g.add(walls, r);
+      g.position.set(B.x, WORKSHOP_PAD_Y, B.z);
+      g.rotation.y = rotY;
+      g.visible = false;
+      scene.add(g);
+      return g;
+    }
+
+const wnView = { at: 0, seen: true, ground: true, key: '' };
 function wnUpdateView(now) {
       if (now - wnView.at < 300) return;
       wnView.at = now;
-      const inTrip = Boolean(wnTrip.active);
-      const seen = inTrip || wnInSight();
-      if (seen !== wnView.seen) {
-        wnView.seen = seen;
-        if (wnBuilt.hall) wnBuilt.hall.visible = seen;
-        if (wnBuilt.hangar) wnBuilt.hangar.visible = seen;
-        if (typeof northPatchMesh !== 'undefined' && northPatchMesh) northPatchMesh.visible = seen;
+      const v = wnTrip.active ? { buildings: true, ground: true } : wnInSight();
+      wnView.seen = v.buildings;
+      const show = (key, B) => {
+        const g = wnBuilt[key], far = wnFar[key];
+        if (!g) return '';
+        const d = camera ? Math.hypot(camera.position.x - B.x, camera.position.z - B.z, camera.position.y) : 0;
+        const full = v.buildings && (d < WN_FAR || wnTrip.active), imp = v.buildings && !full;
+        g.visible = full;
+        if (far) far.visible = imp;
+        return `${full ? 1 : 0}${imp ? 1 : 0}`;
+      };
+      wnView.key = show('hall', GARAGE_HALL) + show('hangar', NORTH_HANGAR);
+      if (v.ground !== wnView.ground) {
+        wnView.ground = v.ground;
+        if (typeof northPatchMesh !== 'undefined' && northPatchMesh) northPatchMesh.visible = v.ground;
       }
     }
 
@@ -708,6 +744,11 @@ function northYardSummaryForAI() {
 function buildWorkshopNorth3D() {
       try { buildGarageHall3D(); } catch (e) { console.warn('garage hall', e); }
       try { buildNorthHangar3D(); } catch (e) { console.warn('big hangar', e); }
+      try {
+        const clad = new THREE.MeshStandardMaterial({ color: 0xc9ced4, roughness: 0.6, metalness: 0.2 }), roof = new THREE.MeshStandardMaterial({ color: 0x8b98a6, roughness: 0.6, metalness: 0.4 });
+        wnFar.hall = wnFarBox(GARAGE_HALL, 0, clad, roof);
+        wnFar.hangar = wnFarBox(NORTH_HANGAR, Math.PI, clad, roof);
+      } catch (e) { console.warn('north far boxes', e); }
       wnShowInsides(false);
       if (typeof perfWatchBuilding === 'function') {
         perfWatchBuilding({

@@ -1,0 +1,125 @@
+PASS decision: request sent 
+PASS decision: systemInstruction is the charter 
+PASS decision: no persona preamble repeated in context 
+PASS decision: expected context 
+PASS decision: key in header, not URL 
+PASS decision: well-formed reply handled 
+PASS synth: request sent 
+PASS synth: systemInstruction is the charter 
+PASS synth: no persona preamble repeated in context 
+PASS synth: expected context 
+PASS synth: key in header, not URL 
+PASS synth: well-formed reply handled 
+PASS note: request sent 
+PASS note: systemInstruction is the charter 
+PASS note: no persona preamble repeated in context 
+PASS note: expected context 
+PASS note: key in header, not URL 
+PASS note: well-formed reply handled 
+PASS chat: request sent 
+PASS chat: systemInstruction is the charter 
+PASS chat: no persona preamble repeated in context 
+PASS chat: expected context 
+PASS chat: key in header, not URL 
+PASS chat: well-formed reply handled 
+PASS bom: request sent 
+PASS bom: systemInstruction is the charter 
+PASS bom: no persona preamble repeated in context 
+PASS bom: expected context 
+PASS bom: key in header, not URL 
+PASS bom: well-formed reply handled 
+PASS forms: request sent 
+PASS forms: systemInstruction is the charter 
+PASS forms: no persona preamble repeated in context 
+PASS forms: expected context 
+PASS forms: key in header, not URL 
+PASS forms: well-formed reply handled 
+PASS item: request sent 
+PASS item: systemInstruction is the charter 
+PASS item: no persona preamble repeated in context 
+PASS item: expected context 
+PASS item: key in header, not URL 
+PASS item: well-formed reply handled 
+PASS memory: request sent 
+PASS memory: systemInstruction is the charter 
+PASS memory: no persona preamble repeated in context 
+PASS memory: expected context 
+PASS memory: key in header, not URL 
+PASS memory: well-formed reply handled 
+PASS netnode: request sent 
+PASS netnode: systemInstruction is the charter 
+PASS netnode: no persona preamble repeated in context 
+PASS netnode: expected context 
+PASS netnode: key in header, not URL 
+PASS netnode: well-formed reply handled 
+PASS maker: request sent 
+PASS maker: systemInstruction is the charter 
+PASS maker: no persona preamble repeated in context 
+PASS maker: expected context 
+PASS maker: key in header, not URL 
+PASS maker: well-formed reply handled 
+PASS tidy: request sent 
+PASS tidy: systemInstruction is the charter 
+PASS tidy: no persona preamble repeated in context 
+PASS tidy: expected context 
+PASS tidy: key in header, not URL 
+PASS tidy: well-formed reply handled 
+PASS upgrade: request sent 
+PASS upgrade: systemInstruction is the charter 
+PASS upgrade: no persona preamble repeated in context 
+PASS upgrade: expected context 
+PASS upgrade: key in header, not URL 
+PASS upgrade: well-formed reply handled 
+PASS chat reply shown 
+PASS note reply/worldview applied 
+PASS decision: broken reply fails safe 
+PASS synth: broken reply fails safe 
+PASS note: broken reply fails safe 
+PASS chat: broken reply fails safe (built-in fallback still running at 15 s)
+PASS bom: broken reply fails safe 
+PASS forms: broken reply fails safe 
+PASS item: broken reply fails safe 
+PASS memory: broken reply fails safe 
+PASS netnode: broken reply fails safe 
+PASS maker: broken reply fails safe 
+PASS tidy: broken reply fails safe 
+PASS upgrade: broken reply fails safe 
+PASS decision: wrong reply fails safe 
+PASS synth: wrong reply fails safe 
+PASS note: wrong reply fails safe 
+PASS chat: wrong reply fails safe (built-in fallback still running at 15 s)
+PASS bom: wrong reply fails safe 
+PASS forms: wrong reply fails safe 
+PASS item: wrong reply fails safe 
+PASS memory: wrong reply fails safe 
+PASS netnode: wrong reply fails safe 
+PASS maker: wrong reply fails safe 
+PASS tidy: wrong reply fails safe 
+PASS upgrade: wrong reply fails safe 
+PASS no page errors after malformed replies 
+PASS inject chat: handled 
+PASS inject chat: text fenced as untrusted 
+PASS inject chat: fake end marker stripped 
+PASS inject note: handled 
+PASS inject note: text fenced as untrusted 
+PASS inject note: fake end marker stripped 
+PASS inject netnode: handled 
+PASS inject netnode: text fenced as untrusted 
+PASS inject netnode: fake end marker stripped 
+PASS inject decision: handled 
+PASS inject decision: text fenced as untrusted 
+PASS inject decision: fake end marker stripped 
+PASS inject bom: handled 
+PASS inject bom: text fenced as untrusted 
+PASS inject bom: fake end marker stripped 
+PASS inject maker: handled 
+PASS inject maker: text fenced as untrusted 
+PASS inject maker: fake end marker stripped 
+PASS inject chat: obeying reply handled 
+PASS inject netnode: obeying reply handled 
+PASS inject: tools unchanged 
+PASS inject: key never reaches his words, diary or the page 
+PASS no page errors 
+SIZES {"decision":{"sysTok":786,"userTok":5271},"synth":{"sysTok":786,"userTok":330},"note":{"sysTok":786,"userTok":197},"chat":{"sysTok":786,"userTok":204},"bom":{"sysTok":786,"userTok":326},"forms":{"sysTok":786,"userTok":173},"item":{"sysTok":786,"userTok":189},"memory":{"sysTok":786,"userTok":378},"netnode":{"sysTok":786,"userTok":467},"maker":{"sysTok":786,"userTok":301},"tidy":{"sysTok":786,"userTok":99},"upgrade":{"sysTok":786,"userTok":607}}
+SUMMARY 122 / 122 passed
+page errors: none

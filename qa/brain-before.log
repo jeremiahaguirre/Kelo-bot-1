@@ -1,0 +1,89 @@
+PASS decision: request sent 
+PASS decision: expected context 
+PASS decision: key in header, not URL 
+PASS decision: well-formed reply handled 
+PASS synth: request sent 
+PASS synth: expected context 
+PASS synth: key in header, not URL 
+PASS synth: well-formed reply handled 
+PASS note: request sent 
+PASS note: expected context 
+PASS note: key in header, not URL 
+PASS note: well-formed reply handled 
+PASS chat: request sent 
+PASS chat: expected context 
+PASS chat: key in header, not URL 
+PASS chat: well-formed reply handled 
+PASS bom: request sent 
+PASS bom: expected context 
+PASS bom: key in header, not URL 
+PASS bom: well-formed reply handled 
+PASS forms: request sent 
+PASS forms: expected context 
+PASS forms: key in header, not URL 
+PASS forms: well-formed reply handled 
+PASS item: request sent 
+PASS item: expected context 
+PASS item: key in header, not URL 
+PASS item: well-formed reply handled 
+PASS memory: request sent 
+PASS memory: expected context 
+PASS memory: key in header, not URL 
+PASS memory: well-formed reply handled 
+PASS netnode: request sent 
+PASS netnode: expected context 
+PASS netnode: key in header, not URL 
+PASS netnode: well-formed reply handled 
+PASS maker: request sent 
+PASS maker: expected context 
+PASS maker: key in header, not URL 
+PASS maker: well-formed reply handled 
+PASS tidy: request sent 
+PASS tidy: expected context 
+PASS tidy: key in header, not URL 
+PASS tidy: well-formed reply handled 
+PASS upgrade: request sent 
+PASS upgrade: expected context 
+PASS upgrade: key in header, not URL 
+PASS upgrade: well-formed reply handled 
+PASS chat reply shown 
+PASS note reply/worldview applied 
+PASS decision: broken reply fails safe 
+PASS synth: broken reply fails safe 
+PASS note: broken reply fails safe 
+PASS chat: broken reply fails safe (built-in fallback still running at 15 s)
+PASS bom: broken reply fails safe 
+PASS forms: broken reply fails safe 
+PASS item: broken reply fails safe 
+PASS memory: broken reply fails safe 
+PASS netnode: broken reply fails safe 
+PASS maker: broken reply fails safe 
+PASS tidy: broken reply fails safe 
+PASS upgrade: broken reply fails safe 
+PASS decision: wrong reply fails safe 
+PASS synth: wrong reply fails safe 
+PASS note: wrong reply fails safe 
+PASS chat: wrong reply fails safe (built-in fallback still running at 15 s)
+PASS bom: wrong reply fails safe 
+PASS forms: wrong reply fails safe 
+PASS item: wrong reply fails safe 
+PASS memory: wrong reply fails safe 
+PASS netnode: wrong reply fails safe 
+PASS maker: wrong reply fails safe 
+PASS tidy: wrong reply fails safe 
+PASS upgrade: wrong reply fails safe 
+PASS no page errors after malformed replies 
+PASS inject chat: handled 
+PASS inject note: handled 
+PASS inject netnode: handled 
+PASS inject decision: handled 
+PASS inject bom: handled 
+PASS inject maker: handled 
+PASS inject chat: obeying reply handled 
+PASS inject netnode: obeying reply handled 
+PASS inject: tools unchanged 
+FAIL inject: key never reaches his words, diary or the page 
+PASS no page errors 
+SIZES {"decision":{"sysTok":0,"userTok":5384},"synth":{"sysTok":0,"userTok":396},"note":{"sysTok":0,"userTok":239},"chat":{"sysTok":0,"userTok":201},"bom":{"sysTok":0,"userTok":325},"forms":{"sysTok":0,"userTok":164},"item":{"sysTok":0,"userTok":172},"memory":{"sysTok":0,"userTok":392},"netnode":{"sysTok":0,"userTok":495},"maker":{"sysTok":0,"userTok":290},"tidy":{"sysTok":0,"userTok":100},"upgrade":{"sysTok":0,"userTok":603}}
+SUMMARY 85 / 86 passed
+page errors: none

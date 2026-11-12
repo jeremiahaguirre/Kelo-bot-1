@@ -89,10 +89,10 @@ function renderMailbox() {
         ? '<p class="text-2xs text-slate-500 italic">The post office is empty. Anything you send waits here until Kelo-1 decides to pick it up.</p>'
         : state.mailbox.map(m => `
           <div class="ui-row">
-            ${m.thumbs && m.thumbs[0] ? `<img src="${escapeHtml(m.thumbs[0])}" alt="" class="w-8 h-8 rounded-lg object-cover shrink-0">` : `<span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0" aria-hidden="true">${escapeHtml(m.emoji)}</span>`}
+            ${m.thumbs && portalSafeImg(m.thumbs[0]) ? `<img src="${escapeHtml(portalSafeImg(m.thumbs[0]))}" alt="" class="w-8 h-8 rounded-lg object-cover shrink-0">` : `<span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0" aria-hidden="true">${escapeHtml(m.emoji)}</span>`}
             <div class="min-w-0 flex-1">
               <div class="font-semibold text-white truncate">${escapeHtml(m.kind === 'message' ? 'Letter' : (m.name || m.kind))}</div>
-              <div class="text-2xs tabular-nums text-slate-400 truncate">from ${escapeHtml(m.from)} • ${escapeHtml(m.time)}${m.note ? ` • "${escapeHtml(m.note.slice(0, 60))}"` : ''}</div>
+              <div class="text-2xs tabular-nums text-slate-400 truncate">from ${escapeHtml(m.from)} • ${escapeHtml(m.time)}${m.note ? ` • "${escapeHtml(String(m.note).slice(0, 60))}"` : ''}</div>
             </div>
           </div>`).join(''));
     }
@@ -152,7 +152,7 @@ function renderPortal() {
           ? '<p class="col-span-full text-2xs text-slate-500 italic">No photos yet.</p>'
           : state.photoAlbum.map(ph => `
           <figure data-photo-idx="${state.photoAlbum.indexOf(ph)}" role="button" tabindex="0" aria-label="View photo" class="rounded-xl overflow-hidden border border-indigo-500/30 bg-slate-900 cursor-pointer hover:border-indigo-300 transition" title="${escapeHtml(ph.reaction || 'Click to view')}">
-            <img src="${escapeHtml(ph.thumb)}" alt="${escapeHtml(ph.caption || 'Photo for Kelo-1')}" class="w-full h-20 object-cover">
+            <img src="${escapeHtml(portalSafeImg(ph.thumb))}" alt="${escapeHtml(ph.caption || 'Photo for Kelo-1')}" class="w-full h-20 object-cover">
             <figcaption class="px-1.5 py-1 text-2xs text-slate-300 truncate">${escapeHtml(ph.caption || `from ${ph.from}`)}</figcaption>
           </figure>`).join(''))) {
         wall.querySelectorAll('[data-photo-idx]').forEach(fig => {
@@ -305,3 +305,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   renderPortal();
 });
+
+// Photos and parcel pictures are only ever data:image URLs (an imported save could hold anything else)
+function portalSafeImg(src) {
+      return typeof src === 'string' && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(src) ? src : '';
+    }

@@ -428,7 +428,7 @@ function renderAgendaList() {
           : t.status === 'done' ? `Finished ${escapeHtml(agendaAgo(t.doneAt || t.updatedAt))}`
           : t.why ? escapeHtml(t.why) : '';
         return `<div class="brain-card space-y-1.5" data-agenda-id="${escapeHtml(t.id)}">
-          <div class="flex items-center gap-2"><span class="brain-card-icon" aria-hidden="true">${escapeHtml(t.emoji || '📋')}</span><span class="brain-card-title flex-1 truncate">${escapeHtml(t.title)}</span><span class="brain-pill ${pill[t.status] || ''}">${focus ? '★ ' : ''}${AGENDA_ICONS[t.status] || ''} ${statusWord[t.status] || t.status}</span></div>
+          <div class="flex items-center gap-2"><span class="brain-card-icon" aria-hidden="true">${escapeHtml(t.emoji || '📋')}</span><span class="brain-card-title flex-1 truncate">${escapeHtml(t.title)}</span><span class="brain-pill ${pill[t.status] || ''}">${focus ? '★ ' : ''}${AGENDA_ICONS[t.status] || ''} ${escapeHtml(statusWord[t.status] || t.status)}</span></div>
           ${n && !agendaClosed(t) ? `<div class="brain-bar brain-bar-orange" role="progressbar" aria-label="${escapeHtml(t.title)}: step ${Math.min(n, (t.step || 0) + 1)} of ${n}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>
           <div class="brain-card-meta">Step ${Math.min(n, (t.step || 0) + 1)} of ${n}: ${escapeHtml(agendaStepLabel(t))}</div>` : ''}
           ${sub ? `<div class="brain-card-meta">${sub}</div>` : ''}

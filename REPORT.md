@@ -142,7 +142,7 @@ All exit 0 with "page errors: none":
 - ws.js sla (1941 s), haas (836 s), pcb (2550 s), garage (1765 s; tires and oil jobs done, wear reset), forklift (1131 s)
 - visit.js, the Workshop viewer, desktop + phone (1115 s)
 - ws.js glassonce (job done; furnaceGas, glassBatch, colourFrit 1× each), woodonce (1× each), garagebrakes
-- audit.js all: 18 PASS
+- audit.js all: 18 PASS (`frames` was added afterwards and run on its own: PASS)
 - uitest.js both: desktop 127 controls, phone 128 controls pressed, 0 problems (no off-screen or overlapping HUD
   controls, no horizontal scroll, every dialog closes on Escape, Graphics and Draw-distance settings persist across a
   reload, typing in the chat box holds no camera key). The first run found the Settings/Escape layering bug (#11),

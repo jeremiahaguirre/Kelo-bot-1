@@ -25,6 +25,10 @@ He may change the world freely. He can never move or change the buildings, and h
 - Record: `murals[].subject = 'reference'`, `murals[].reference = {mode: single|combined, how, sources:[{query, source, host, pageUrl, imageUrl, title, license, artist}]}`; tiny reference copies in `paintingImages[id].refs` (newest 40 paintings keep them). Old saves: no fields, nothing to migrate.
 - AI: the paint decision has a `reference` field (`refpPromptHint()`); no key: `refpChooseProcedural()` (70% of his own paintings online). Visitors: "paint me a lighthouse" -> `refpPlanFromRequest`.
 - Credits: Museum viewer (`refpCreditHtml`), website listing `painting.credit` / export `credit` (`refpCreditLine`).
+- **Sources and legal rules** (`js/refsources.js`, before refpaint.js): `REFS_SOURCES` adapters (ddg looking only, commons, openverse, met, aic, cma, nasa, loc; keyed pexels, unsplash, pixabay, flickr, smithsonian, europeana, rijks). `refLicenceOk` (pd/pdm/cc0/by/by-sa/pexels/unsplash/pixabay only), `refRiskOk` (people, brands, characters, artworks), `refsCursor` (rotating, paged, back-off). Keys: `refsSetKeys` from Settings (stored like the AI keys; desktop/native ALLOWED_KEYS extended).
+- **Originality**: `refpOriginality(canvas, refs)` corr of 32x24 value maps + palette distance; `REFP_ORIGINALITY` {maxCorr 0.9, nearCorr 0.8, minPalette 0.07}; too close -> rework (`spec.refStrength = 2`) -> `study: true` (title "Study:", never sold). Beginner tries are "Sketch:". `murals[].originality` keeps score, transforms, thresholds.
+- **Website gate**: `refpSellable` inside `paintingVerdict` (studies and unlicensed reference paintings refused; life paintings unchanged).
+- **Photo browsing** (`js/photobrowse.js`): `photoBrowse(topic)`, `phobScreenState` drawn on the cafe screen by `interiorDrawScreen`, `state.photoFavourites` (max 24, pins kept) in save part `kelo1_brain_v4_photos`; board `#photoFavouritesBoard` in the Brain tab.
 
 ## Recently shipped (on `main`, pushed)
 - **Design pass, polish only** (branch `agent/design`; DESIGN.md has the full token table and component patterns).

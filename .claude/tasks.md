@@ -208,3 +208,13 @@ Each step merges, passes the regression tests and is pushed before the next star
 - "He can build anything", he can ask for lists of things, and code upgrades to his world.
 - The shop sells only 3D print files plus his original paintings (once task 1 is merged).
 - The 4 logo-bearing glTF models (car, sunglasses, candle holder, camera) are still waiting on the owner's decision.
+
+## Owner gaps from the cleanup audit (branch `agent/gaps`, results on `qa-results-gaps`, 2026-11-12)
+Six owner requests the audit (REPORT.md on `qa-results-audit-cleanup`, section 3) found unfinished. Status:
+1. Routable shops: MAKER_CAPS now covers the weld studio, batch plant, SLS, MJF, DMLS, PolyJet, binder jet, DED, EBM, LOM, waterjet (finishing only), wire EDM and the garage, with real size limits (`maxCm`, `makerSizeCm`). The AI's wholeShop answer is checked (`makerShopCanWhole`). "Make me a steel X" goes to the Welding Studio. Old `workshopCanMake`/`workshopMakePart` removed.
+2. Big builds without a key: `bomFromReading` (part families) instead of "no-plans"; `makerMarkBomLines` marks machine lines on every big-build BOM; "build me a table" goes to the woodshop path.
+3. Food: "make me a sandwich" goes to the stove (`answerFoodAsk`, `state.foodOrders`); ingredients through the Post Office; the result is a real food item.
+4. Foundations: footing/slab subs pour ready-mix (batched on his plant via a make-line) at the site and wait for the 7-day cure.
+5. Supplies: upgrades order materials (`state.upgradePlans`, `upgradeMaterialsFor`) before they are built; welds need steel stock (`WELD_STOCK`).
+6. Visitor paintings: painted once (`paintPlanRun(id)`).
+See handoff.md and REPORT.md on `qa-results-gaps` for what is left.

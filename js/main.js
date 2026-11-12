@@ -636,7 +636,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
   window.addEventListener('keydown', (e) => {
     const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
-    if (tag === 'input' || tag === 'textarea') return;
+    // Not while typing or choosing in a list, nor for shortcuts like Ctrl+S (their keyup may never reach us)
+    if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (typeof arrowKeyState !== 'undefined' && e.code in arrowKeyState) {
       if (document.getElementById('keloViewer')) return; // the arrows page through the viewer instead
       arrowKeyState[e.code] = true;
@@ -644,11 +646,13 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Capture phase: js/explore.js stops these keys' keyup from going further, which left a pan key held for good
   window.addEventListener('keyup', (e) => {
     if (typeof arrowKeyState !== 'undefined' && e.code in arrowKeyState) {
       arrowKeyState[e.code] = false;
     }
-  });
+  }, true);
+  window.addEventListener('blur', () => { if (typeof arrowKeyState !== 'undefined') Object.keys(arrowKeyState).forEach(k => { arrowKeyState[k] = false; }); });
 
   const mapDirToCode = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' };
   document.querySelectorAll('.pan-key-btn').forEach(btn => {

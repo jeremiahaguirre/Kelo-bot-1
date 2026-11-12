@@ -142,7 +142,7 @@ He may change the world freely. He can never move or change the buildings, and h
   - `mergeStaticMeshes(root, skip)` / `mergeStaticMeshesSoon` (perf.js) join a building's static parts into one mesh per material. It skips anything with userData, anything the root's userData points at, and listed parts. Used for the house, the yard lines and the hangar; give parts you move later userData or pass them in `skip`.
   - Small shadow casters (radius < 0.3) cast only within 14 units of the camera target (`updateSmallCasters`, realism.js).
   - `setLineEnds(line, a, b)` (perf.js) moves a 2-point line without leaking a GPU buffer. Don't call `setFromPoints` every frame.
-  - `doWhenFree(fn, { key, maxWaitMs, delayMs })` is a queue: oldest first, one at a time when `keloIsFree()`, kept up to 45 min, de-duplicated by key or code. Pass a key when the arguments matter.
+  - `doWhenFree(fn, { key, maxWaitMs, delayMs })` is a queue: oldest first, one at a time when `keloIsFree()`, kept up to 45 min, de-duplicated by key only. Every call site passes a key that includes its arguments (`dig:x,z`, `use:item:for`, `sell:item`...); a fixed key (`putaway`, `eat`, `drink`, `repair-balloon`, `fly-plane`, `wade-lake`, `printer-setup`, `research-ice`...) is an intended merge. A call without a key is never merged (agent/openfixes).
   - `newRequestId(kind)` and `hasOpenRequest(test)` (agent.js) for every request in the inbox.
   - One frame-rate watcher (`trackFrameRate`, realism.js): Graphics steps down first, then Performance Auto goes to Low (`perfAutoStepDown`).
   - `trimBrainState` caps `vocabulary` (800), `itemLookups` and `itemPurposes` (600 each), always keeping entries about owned things.
@@ -307,6 +307,13 @@ He may change the world freely. He can never move or change the buildings, and h
   - hidden needs (food, water, sleep) with discovery and stumbling (`js/needs.js`)
   - drivable vehicles, wading, boating and dirt hauling (`js/vehicles.js`)
   - 3D outer lands with a camera-following sky dome (`js/scene.js`)
+
+## Storehouse copies and saved letters (agent/openfixes)
+- `state.storeCopies = [{ id, name, slot, out }]` (js/storehouse.js): one record per copy on the shelves, `slot` counting across floors (`shelfSlots.length` per floor). `syncStoreCopies()` reconciles the records with his lists (any code may add, use up or rename things directly): a copy that is gone loses its record (an `out` one first, else the highest slot), a new one gets the slot just freed (renames keep their place) or the lowest empty one. `storedItems()` returns the copies on the shelves (not `out`) in slot order, each with `id` and `slot`; use `it.slot`, never the array index, for where it sits.
+- `fetchFromStorehouse` marks the copy it takes `out` (its slot shows empty upstairs, in the basement room and in the 12-a-page viewer) and queues `putAwayItems` (key `putaway`); the life tick also puts things back (`storehouseHasPutAway()`). `putAwayItems` walks out copies back to their own slots and new things (`state.unstoredItems`, one name per copy) to the lowest empty slots.
+- Older saves (no `storeCopies`) are laid out exactly as the old shelves showed them (`storeMigrateCopies`), then any copy the old name-based hiding wrongly hid gets a free slot.
+- `state.unopenedNotesQueue` is saved (max 20) and a letter stays in it until read; `state.readNoteIds` (last 100) stops a letter being queued or read twice (`queueVisitorNote`, `processNextUnopenedVisitorNote`, agent.js).
+- Settings Save calls `switchToAIThinking()` only when the AI key set changed (`aiKeySetApplied`, main.js).
 
 ## Architecture decisions
 - **No build step.** The page uses plain global-script JS loaded in order from `index.html`:

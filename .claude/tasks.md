@@ -206,6 +206,8 @@ Each step merges, passes the regression tests and is pushed before the next star
 
 - **Security audit (2026-11-12) merged.** Open items for the owner (details on branch qa-results-audit-security, REPORT.md): R1 stop importing the Anthropic SDK from jsdelivr at run time (call the API with fetch or vendor the SDK; then pin jsdelivr in script-src; also makes Claude work in the phone apps); R2 Subresource Integrity on the four CDN scripts; R3 Electron fuses and no devtools menu in release builds (needs a Windows build); R5 type-check nested save numbers on load (after the bug audits merge); R7 Android allowBackup (owner's choice). Run `npm ci && npm start` once before the next Windows build (Electron 44.11.2).
 
+- **Open audit fixes (owner approved 2026-11-12), branch `agent/openfixes`, results on `qa-results-openfixes`:** 1 when-free keys, 2 Storehouse per-copy slots, 3 a shelf thing taken out shows an empty slot until he puts it back, 4 saved letter queue, 5 Settings Save. Done on the branch; tests in REPORT.md. Merge into `main` after review.
+
 ## Owner notes to keep in mind
 - Owner (2026-11-04): helpers may add as much land as needed for machines, workshops and plants (natural shoreline, walkable, clear of town, one shared land constant/helper). Kelo-1 must never end up standing in water.
 - Commits are authored as jeremiahaguirre <46036250+jeremiahaguirre@users.noreply.github.com>, with no AI attribution. Never commit API keys. Don't push tags or releases.

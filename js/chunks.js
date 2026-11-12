@@ -82,7 +82,7 @@ function chunkIsDynamic(o) {
         typeof wildlifeGroup !== 'undefined' && wildlifeGroup, typeof carriedObject !== 'undefined' && carriedObject,
         typeof skyMesh !== 'undefined' && skyMesh, typeof skyDome !== 'undefined' && skyDome,
         typeof companionBot !== 'undefined' && companionBot && companionBot.group,
-        typeof petAnimal !== 'undefined' && petAnimal && petAnimal.group
+        typeof companionPet !== 'undefined' && companionPet && companionPet.group
       ];
       if (named.includes(o)) return true;
       if (typeof vehicleMeshes !== 'undefined' && Object.values(vehicleMeshes).includes(o)) return true;

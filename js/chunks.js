@@ -28,7 +28,10 @@ const CHUNK_SHADOW_MARGIN = 10;  // the shadow box is from last frame; a little 
 const CHUNK_PROXY_NEAR = 24;     // closer than this the real meshes are drawn
 const CHUNK_QUIET_MS = 4000;     // a chunk must be unchanged this long before it is merged
 const CHUNK_BUSY_MS = 15000;     // a mesh that changed is left out of merges this long
-const CHUNK_CHECK_PER_FRAME = 320;
+// Meshes looked at per second (a full pass over ~1500 meshes takes about 0.15 s), so the cost doesn't
+// grow with the screen's refresh rate; at least CHUNK_CHECK_MIN and at most CHUNK_CHECK_MAX a frame
+const CHUNK_CHECK_PER_SEC = 9600, CHUNK_CHECK_MIN = 64, CHUNK_CHECK_MAX = 320;
+let chunkCheckLast = 0;
 const chunkMap = new Map();      // "cx,cz" -> chunk
 const chunkEntries = [];         // registered roots
 const chunkSeen = new WeakSet(); // objects already looked at (registered, a container, global or dynamic)
@@ -82,7 +85,7 @@ function chunkIsDynamic(o) {
         typeof wildlifeGroup !== 'undefined' && wildlifeGroup, typeof carriedObject !== 'undefined' && carriedObject,
         typeof skyMesh !== 'undefined' && skyMesh, typeof skyDome !== 'undefined' && skyDome,
         typeof companionBot !== 'undefined' && companionBot && companionBot.group,
-        typeof petAnimal !== 'undefined' && petAnimal && petAnimal.group
+        typeof companionPet !== 'undefined' && companionPet && companionPet.group, typeof companionPet !== 'undefined' && companionPet && companionPet.ball
       ];
       if (named.includes(o)) return true;
       if (typeof vehicleMeshes !== 'undefined' && Object.values(vehicleMeshes).includes(o)) return true;
@@ -182,7 +185,10 @@ function chunkMeshSig(o) {
 // its real meshes again at once. New meshes in a registered object are tagged.
 function chunkCheck(now) {
       let n = 0;
-      for (let k = 0; k < chunkEntries.length && n < CHUNK_CHECK_PER_FRAME; k++) {
+      const gap = chunkCheckLast ? Math.max(0, now - chunkCheckLast) : 1000 / 30;
+      chunkCheckLast = now;
+      const budget = Math.max(CHUNK_CHECK_MIN, Math.min(CHUNK_CHECK_MAX, Math.round(CHUNK_CHECK_PER_SEC * gap / 1000)));
+      for (let k = 0; k < chunkEntries.length && n < budget; k++) {
         if (chunkCheckAt >= chunkEntries.length) chunkCheckAt = 0;
         const e = chunkEntries[chunkCheckAt++];
         const o = e.obj, c = e.chunk;
@@ -200,7 +206,9 @@ function chunkCheck(now) {
           const L = m.layers, s = chunkMeshSig(m), inProxy = c.proxy && L.gen === c.gen;
           if (inProxy) merged++;
           if (s !== L.sig) {
-            if (L.sig === L.sig) { L.busyAt = now; moved = true; if (inProxy) stale = true; }
+            // (a leafy top swaying in the wind, wind.js: kept out of merges, but its few tenths of a unit
+            // don't need the box measured again; CHUNK_MARGIN covers them)
+            if (L.sig === L.sig) { L.busyAt = now; if (!m.userData.windBase) moved = true; if (inProxy) stale = true; }
             L.sig = s;
           }
         });

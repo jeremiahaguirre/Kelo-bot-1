@@ -475,6 +475,13 @@ async function servicePlant(kind, key, originLabel = 'Servicing the Plant') {
       const spare = PLANT_SPARES[key];
       const part = hasItem(spare.re);
       if (!part) return false;
+      // He is busy while he walks over and fits it, so nothing else starts and takes him away mid-job
+      const wasPractising = state.isPracticing;
+      state.isPracticing = true;
+      try { return await servicePlantNow(kind, key, spare, part, originLabel); } finally { state.isPracticing = wasPractising; }
+    }
+
+async function servicePlantNow(kind, key, spare, part, originLabel) {
       const spot = kind === 'batch' ? (key === 'filter' ? plantSpot('batch', 'silo') : plantSpot('batch', 'mixer')) : (key === 'bags' ? plantSpot('asphalt', 'baghouse') : plantSpot('asphalt', 'burner'));
       state.currentLocKey = 'aggregate_plant';
       state.customPlaceName = null;
@@ -785,7 +792,7 @@ function concretePathSpotOk(x, z, toX, toZ, w = 1.2) {
       const len = Math.hypot(toX - x, toZ - z);
       for (let d = 0; d <= len; d += 0.6) {
         const px = x + (toX - x) * d / len, pz = z + (toZ - z) * d / len;
-        if (offLimits(px, pz, w / 2) || !plantDryAt(px, pz + w / 2) || px < WORLD_MIN_X + 2 || px > WORLD_MAX_X - 2 || pz < WORLD_MIN_Z + 2) return false;
+        if (offLimits(px, pz, w / 2) || !plantDryAt(px, pz + w / 2) || px < WORLD_MIN_X + 2 || px > WORLD_MAX_X - 2 || pz < WORLD_VALLEY_MIN_Z + 2) return false;
         if ((state.concretePours || []).some(p => segDist(px, pz, p) < (p.w || 1.2) / 2 + w / 2 + 0.3)) return false;
         if ((state.worldEdits || []).some(e => e.type === 'road' && segDist(px, pz, e) < 1.6)) return false;
       }

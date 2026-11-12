@@ -44,7 +44,6 @@ function agendaGet(refOrId) {
 function agendaClosed(t) { return !t || t.status === 'done' || t.status === 'abandoned'; }
 function agendaOpenTasks() { return agendaState().tasks.filter(t => !agendaClosed(t)); }
 function agendaFocus() { const a = agendaState(); const t = a.focusId && a.tasks.find(x => x.id === a.focusId); return t && !agendaClosed(t) ? t : null; }
-function agendaInProgress() { return agendaOpenTasks().filter(t => t.status === 'active' || t.status === 'paused'); }
 
 function agendaStepLabel(t) {
       if (!t || !Array.isArray(t.steps) || !t.steps.length) return '';
@@ -225,6 +224,9 @@ function agendaItemsAtPostOffice(sources) {
     }
 
 function agendaWaitSatisfied(t) {
+      // A "not before" time is kept even when the kind's own check says the step could go now: a step that
+      // was blocked would otherwise be retried (and logged as waiting, then ready) every few seconds
+      if (t.waitingFor && Number.isFinite(t.waitingFor.until) && Date.now() < t.waitingFor.until) return false;
       const kind = AGENDA_KINDS[t.kind];
       if (kind && typeof kind.check === 'function') {
         try {

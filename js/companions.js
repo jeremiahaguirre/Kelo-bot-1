@@ -555,15 +555,10 @@ async function playFetch(originLabel = 'Playing Fetch') {
           p.ball.visible = true;
           // The arc through the air
           const flight = 1100;
-          const t0 = performance.now();
-          await new Promise(res => {
-            const fly = () => {
-              const k = Math.min(1, (performance.now() - t0) / flight);
-              const gy = getAnalyticalGroundHeight(land.x, land.z) + 0.09;
-              p.ball.position.set(from.x + (land.x - from.x) * k, from.y + (gy - from.y) * k + Math.sin(k * Math.PI) * 2.4, from.z + (land.z - from.z) * k);
-              if (k >= 1) res(); else requestAnimationFrame(fly);
-            };
-            fly();
+          // (keloTween keeps going in a hidden tab, where animation frames stop and he would stay "busy")
+          await keloTween(flight, k => {
+            const gy = getAnalyticalGroundHeight(land.x, land.z) + 0.09;
+            p.ball.position.set(from.x + (land.x - from.x) * k, from.y + (gy - from.y) * k + Math.sin(k * Math.PI) * 2.4, from.z + (land.z - from.z) * k);
           });
           const chases = !cat || Math.random() < 0.7;
           if (!chases) {

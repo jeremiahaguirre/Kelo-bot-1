@@ -10,26 +10,26 @@ const REAL_MODELS = [
   { re: /chess/, file: 'chess-set.glb', metres: 0.5 },
   { re: /avocado/, file: 'avocado.glb', metres: 0.11 },
   { re: /olives?\b/, file: 'olive-dish.glb', metres: 0.3 },
-  { re: /^(?!.*(food|bones|tank|rod|net|hook)).*(barramundi|salmon|\bfish\b|trout|\bcod\b)/, file: 'fish.glb', metres: 0.65, turn: Math.PI / 2 },
+  { re: /^(?!.*(food|bones|tank|rod|net|hook|fishing|tackle|guide)).*(barramundi|salmon|\bfish\b|trout|\bcod\b|\bbass\b|perch|burbot|walleye|kokanee|\bpike\b|\bchar\b|whitefish|sturgeon)/, file: 'fish.glb', metres: 0.65, turn: Math.PI / 2 },
   { re: /teacup|tea ?cup|cup of tea|\bmug of tea\b/, file: 'teacup.glb', metres: 0.15 },
   { re: /water ?bottle|canteen/, file: 'water-bottle.glb', metres: 0.26 },
   { re: /boom ?box|\bradio\b|stereo|ghetto blaster|cassette player/, file: 'boombox.glb', metres: 0.5, turn: Math.PI },
-  { re: /\bcamera\b/, file: 'antique-camera.glb', metres: 1.6 },
-  { re: /toy car|model car|matchbox car|race car toy/, file: 'toy-car.glb', metres: 0.2 },
-  { re: /^(?!.*\b(toy|model|cable|street|tram|rail|dump|keys?|battery|wash|seat|charger|wax|jack)\b).*\b(car|automobile|sedan)\b/, file: 'car.glb', metres: 4.5 },
+  { re: /^(?!.*(digital|dslr|\bslr\b|mirrorless|camcorder|action|gopro|security|web ?cam|phone|compact|point.and|\bfpv\b|film|roll|bag|strap|tripod|lens)).*\bcamera\b/, file: 'antique-camera.glb', metres: 1.6 },
+  { re: /toy car|model car\b|matchbox car|race car toy|remote.control car|\brc car\b/, file: 'toy-car.glb', metres: 0.2 },
+  { re: /^(?!.*\b(toy|model|cable|street|tram|rail|dump|keys?|battery|wash|seat|charger|wax|jack|remote|rc)\b).*\b(car|automobile|sedan)\b/, file: 'car.glb', metres: 4.5 },
   { re: /sunglasses|shades\b/, file: 'sunglasses.glb', metres: 0.145 },
   { re: /armchair|arm chair|wingback/, file: 'armchair.glb', metres: 0.83 },
   { re: /^(?!.*\b(arm|high|deck|lawn|camp)).*\bchairs?\b/, file: 'chair.glb', metres: 0.83 },
   { re: /leather (sofa|couch)|wooden (sofa|couch)/, file: 'leather-sofa.glb', metres: 2.2 },
   { re: /\bsofa\b|\bcouch\b|loveseat|settee/, file: 'velvet-sofa.glb', metres: 2.1 },
-  { re: /\bpouf\b|ottoman|footstool|beanbag/, file: 'pouf.glb', metres: 0.55 },
-  { re: /stained.?glass|tiffany lamp/, file: 'stained-glass-lamp.glb', metres: 0.6 },
+  { re: /^(?!.*(wood|walnut|oak|maple|pine|cherry|handmade|step)).*(\bpouf\b|ottoman|footstool|beanbag)/, file: 'pouf.glb', metres: 0.55 },
+  { re: /stained.?glass (lamp|light)|tiffany lamp/, file: 'stained-glass-lamp.glb', metres: 0.6 },
   { re: /barn lamp|pendant lamp|hanging lamp|ceiling lamp/, file: 'barn-lamp.glb', metres: 0.36 },
-  { re: /desk lamp|table lamp|reading lamp|floor lamp|\blamp\b(?!.*(post|head))/, file: 'table-lamp.glb', metres: 0.5 },
+  { re: /desk lamp|table lamp|reading lamp|floor lamp|\blamp\b(?!.*(post|head|socket|holder|shade|cord|kit))/, file: 'table-lamp.glb', metres: 0.5 },
   { re: /lamp ?post|street ?lamp|street ?light|lantern post/, file: 'street-lantern.glb', metres: 2.6 },
   { re: /fridge|refrigerator|freezer|cooler cabinet/, file: 'fridge.glb', metres: 2.0 },
   { re: /house ?plant|potted plant|pot plant|plant pot|\bfern\b|indoor plant/, file: 'house-plant.glb', metres: 0.75 },
-  { re: /^(?!.*(seed|bulb|press)).*(\bvase\b|bouquet|\bflowers?\b)/, file: 'vase-of-flowers.glb', metres: 0.35 },
+  { re: /^(?!.*(seed|bulb|press|\bpot\b|planter|\bbed\b|hand-?blown|glass vase|printed|shards|turned|blank)).*(\bvase\b|bouquet|\bflowers?\b)/, file: 'vase-of-flowers.glb', metres: 0.35 },
   { re: /candle/, file: 'candle-holder.glb', metres: 0.32 },
   { re: /traffic cone|safety cone|\bpylons?\b/, file: 'traffic-cone.glb', metres: 0.7 },
   { re: /^(?!.*(snow|horse)).*(sneakers?|running shoes?|trainers\b|\bshoes?\b)/, file: 'sneaker.glb', metres: 0.3 },
@@ -43,6 +43,7 @@ let realModelLoader = null;
 // Which real model, if any, is this item?
 function realModelEntry(lower) {
       if (typeof vehicleTypeFor === 'function' && vehicleTypeFor(lower)) return null; // vehicles keep their seats and moving parts
+      if (/^(parts kit|tools for)\b/.test(lower)) return null; // a crate, whatever is in it
       return REAL_MODELS.find(e => e.re.test(lower)) || null;
     }
 

@@ -13,7 +13,9 @@ let currentActivityKey = null;               // the activity running now (a walk
 
 function activityCoolingDown(key) {
       const until = state.activityCooldowns && state.activityCooldowns[key];
-      return Boolean(until && Date.now() < until);
+      // No cooldown is longer than half an hour: one ending later than an hour from now was saved under a
+      // clock that has since been set back, and would block the activity until the clock caught up
+      return Boolean(until && Date.now() < until && until - Date.now() < 60 * 60 * 1000);
     }
 
 // May he try this kind of activity now?

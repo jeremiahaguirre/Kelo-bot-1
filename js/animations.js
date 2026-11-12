@@ -1,6 +1,6 @@
 // Kelo-1's body language: smooth blending between poses, a weighted walk cycle, breathing and
 // glancing around while he stands, actions with a wind-up and follow-through, and emotes.
-// Loaded right after scene.js.
+// Loaded after house.js.
 //
 // How it fits together: every frame scene.js calls beginKeloPose(), which puts his joints back at
 // rest. It then writes the pose it wants for whatever he is doing (vehicles.js does too while he

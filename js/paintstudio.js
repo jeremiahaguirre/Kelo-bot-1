@@ -98,11 +98,11 @@ const PAINT_MEDIA_WORDS = [
 const PAINT_SUBJECTS = {
   lake: { label: 'the Okanagan lake at sunset', words: /\blake|sunset|okanagan|shore|beach|water\b/i, time: 'sunset', spot: { x: 2.5, z: 7.0, face: 0 }, place: 'the lakeshore' },
   night: { label: 'the night sky over the lake', words: /night|stars?\b|moon|milky way/i, time: 'night', spot: { x: 3.5, z: 7.0, face: 0 }, place: 'the lakeshore at night' },
-  mountains: { label: 'the mountains', words: /mountains?|peaks?\b|alps|summits?/i, time: 'day', spot: { x: -20, z: -11, face: Math.PI }, place: 'the foot of the mountains' },
-  house: { label: 'my house', words: /house|home\b|cabin|cottage/i, time: 'golden', spot: { x: -8.5, z: -1.6, face: Math.PI }, place: 'the yard in front of my house' },
+  mountains: { label: 'the mountains', words: /mountains?|peaks?\b|alps|summits?/i, time: 'day', spot: { x: -38, z: -17, face: Math.PI }, place: 'the foot of the mountains' },
+  house: { label: 'my house', words: /house|home\b|cabin|cottage/i, time: 'golden', spot: { x: MAP_LAYOUT.house.x + 1, z: MAP_LAYOUT.house.z + 7.1, face: Math.PI }, place: 'the yard in front of my house' },
   wildlife: { label: 'deer and birds in the meadow', words: /deer|birds?\b|animals?|wildlife|meadow/i, time: 'day', spot: { x: -14, z: -1.5, face: -Math.PI / 2 }, place: 'the West Meadow' },
-  stilllife: { label: 'a still life of my things', words: /still ?life|fruit|bowl|things you (own|have)|your (stuff|things)/i, time: 'day', spot: { x: -13, z: -3.2, face: Math.PI / 2 }, place: 'my yard' },
-  friend: { label: 'a portrait of my robot friend', words: /portrait|friend|robot|yourself|self.?portrait/i, time: 'day', spot: { x: -12.5, z: -2.2, face: -Math.PI / 2 }, place: 'my yard' }
+  stilllife: { label: 'a still life of my things', words: /still ?life|fruit|bowl|things you (own|have)|your (stuff|things)/i, time: 'day', spot: { x: MAP_LAYOUT.house.x - 3.5, z: MAP_LAYOUT.house.z + 5.5, face: Math.PI / 2 }, place: 'my yard' },
+  friend: { label: 'a portrait of my robot friend', words: /portrait|friend|robot|yourself|self.?portrait/i, time: 'day', spot: { x: MAP_LAYOUT.house.x - 3, z: MAP_LAYOUT.house.z + 6.5, face: -Math.PI / 2 }, place: 'my yard' }
 };
 const PAINT_XP = 8;            // experience per painting
 const PAINT_SELL_LEVEL = 2;    // his first clumsy attempts (below this level) are never sold
@@ -219,7 +219,7 @@ function paintReady(medium, context = 'Painting', { quiet = false } = {}) {
         if (!quiet) {
           state.speechBubble = `I've never painted in ${m.title.replace(/ (painting|drawing)$/, '')}. I'll read up on how it's done at NetNode first.`;
           renderAllUI();
-          doWhenFree(() => researchMedium(medium));
+          doWhenFree(() => researchMedium(medium), { key: 'research-medium:' + medium });
         }
         return false;
       }
@@ -556,7 +556,9 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
         };
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
         state.microPose = 'normal';
-        if (state.paintPlan && state.paintPlan.medium === medium) state.paintPlan = null;
+        // Only the plan this painting was (a visitor's ask stays until their painting is done)
+        const plan = state.paintPlan;
+        if (plan && plan.medium === medium && (plan.for || null) === (visitor || null) && (!plan.subject || plan.subject === subject)) state.paintPlan = null;
         // into the Museum (it goes down to a lower gallery if the walls upstairs are full)
         if (typeof carryIntoMuseum === 'function') { try { await carryIntoMuseum('painting', record, `"${title}"`); } catch (e) {} }
         state.murals = [record, ...state.murals];
@@ -690,7 +692,7 @@ function paintDecision(p) {
       const text = typeof p === 'string' ? p : `${p.medium || ''} ${p.subject || ''}`;
       const medium = (typeof p === 'object' && PAINT_MEDIA[p.medium]) ? p.medium : paintMediumOf(text) || pickPaintMedium();
       const subject = (typeof p === 'object' && PAINT_SUBJECTS[p.subject]) ? p.subject : paintSubjectOf(text);
-      doWhenFree(() => paintPicture(medium, subject, { originLabel: 'Decided to Paint' }));
+      doWhenFree(() => paintPicture(medium, subject, { originLabel: 'Decided to Paint' }), { key: `paint:${medium}:${subject}` });
     }
 
 function paintingSummaryForAI() {

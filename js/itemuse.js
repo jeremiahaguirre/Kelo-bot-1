@@ -620,6 +620,8 @@ async function useItemFor(name, purposeText = '', why = '', originLabel = 'Took 
         case 'dig': case 'break rock': if (typeof digAt === 'function') { const s = state.digSites[0] || chooseDigSpot(); return digAt(s.x, s.z, originLabel); } break;
         case 'fuel': if (typeof refuelWith === 'function') { const done = await refuelWith(item, originLabel); if (!done) { state.speechBubble = `My tanks are full. I'll keep the ${plain} for when they're not.`; renderAllUI(); } return done; } break;
         case 'print': if (typeof printOnMyOwn === 'function') return printOnMyOwn(); break;
+        // Fertilizer is used up by really feeding plants (js/plantcare.js), not in the catch-all below
+        case 'fertilize': if (typeof feedPlants === 'function') return feedPlants(null, why, originLabel); break;
         case 'stargaze': if (/telescope/i.test(item) && typeof stargaze === 'function') return stargaze(originLabel); break;
         case 'fire': return warmUpByFire(originLabel);
         case 'ride': if (typeof goBoating === 'function' && vehicleTypeFor(item) && vehicleTypeFor(item).kind === 'boat') return goBoating(originLabel); break;
@@ -662,7 +664,7 @@ function vetDecisionItemUse(decision) {
         const core = plainItem(name).toLowerCase().replace(/^(a |an )?(pair|set|box|bag|jar|pack|can|bunch|basket|packet|load|tin|roll|spool) of /, '');
         const words = core.split(/\s+/).filter(Boolean);
         const tail = words.slice(-2).join(' ');
-        const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const esc = escapeRegExp;
         const nameRe = `(?:${esc(core)}|${esc(tail)}|${esc(words[words.length - 1] || core)})`;
         const asA = new RegExp(`(?:use|using|uses|with)\\s+(?:the |my |a |an |some )?${nameRe}\\s+as\\s+(?:an? |my |the )?([a-z -]{2,30})`, 'i').exec(text);
         const withIt = new RegExp(`^(.{2,80}?)\\s+(?:with|using)\\s+(?:the |my |a |an |some )?${nameRe}\\b`, 'i').exec(decision.actionTitle || '');

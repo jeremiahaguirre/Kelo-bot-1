@@ -270,15 +270,6 @@ async function buildProject(id, originLabel = 'Building Something Real') {
         if (logStack) scene.remove(logStack);
         scene.remove(wip);
         wip = null;
-        // The materials are used up: one of each (one stack of logs for each lot of lumber they stood in
-        // for), plus a squeeze of glue if he has some (js/itemuse.js)
-        alloc.forEach(a => {
-          if (!a.item) return;
-          if (!a.fromLogs && typeof useUpItem === 'function') useUpItem(a.item, 1, { why: `on the ${plan.name.toLowerCase()}` });
-          else if (typeof forgetItem === 'function') forgetItem(a.item);
-        });
-        const glue = typeof itemKindOf === 'function' ? ownedItemNames().find(n => itemKindOf(n).kind === 'glue') : null;
-        if (glue) useUpItem(glue, 1, { why: `on the ${plan.name.toLowerCase()}` });
         // Carry it out and set it down
         const spot = buildSpot(plan);
         if (typeof setCarriedObject === 'function') setCarriedObject(finishBuildModel(lifeSize(realSize(plan.build()), 1.4), plan, { fromLogs }));
@@ -292,6 +283,15 @@ async function buildProject(id, originLabel = 'Building Something Real') {
         if (typeof setCarriedObject === 'function') setCarriedObject(null, 0, { to: { x: spot.x, y: getIslandGroundHeight(spot.x, spot.z), z: spot.z }, real: true });
         if (typeof keloHandoffSettled === 'function') await keloHandoffSettled();
         Object.assign(p, { status: 'built', builtAt: Date.now(), x: spot.x, z: spot.z, rotY: Math.round(randRange(-0.6, 0.6) * 100) / 100 });
+        // The materials are used up once it is set down (a reload on the way out keeps them): one of each (one stack of logs for each lot of lumber they stood in
+        // for), plus a squeeze of glue if he has some (js/itemuse.js)
+        alloc.forEach(a => {
+          if (!a.item) return;
+          if (!a.fromLogs && typeof useUpItem === 'function') useUpItem(a.item, 1, { why: `on the ${plan.name.toLowerCase()}` });
+          else if (typeof forgetItem === 'function') forgetItem(a.item);
+        });
+        const glue = typeof itemKindOf === 'function' ? ownedItemNames().find(n => itemKindOf(n).kind === 'glue') : null;
+        if (glue) useUpItem(glue, 1, { why: `on the ${plan.name.toLowerCase()}` });
         if (spot.treeId) p.treeId = spot.treeId;
         if (fromLogs) p.fromLogs = true;
         // A kayak rack faces the water
@@ -345,7 +345,7 @@ function pickNewProject() {
 function maybeProjectFromReading(text) {
       if (activeProject()) return;
       const plan = BUILD_PLANS.find(p => (p.reads || new RegExp(p.name.split(' ').slice(-1)[0], 'i')).test(String(text || '')));
-      if (plan && Math.random() < 0.5) doWhenFree(() => startProject(plan.key, 'Read About It Online'));
+      if (plan && Math.random() < 0.5) doWhenFree(() => startProject(plan.key, 'Read About It Online'), { key: 'project:' + plan.key });
     }
 
 function projectsSummaryForAI() {

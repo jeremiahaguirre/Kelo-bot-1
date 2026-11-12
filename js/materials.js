@@ -235,6 +235,7 @@ function applyMaterialLook(model, itemName) {
       model.traverse(o => {
         if (!o.isMesh || !o.material || !o.material.isMeshStandardMaterial || o.material.map || (o.userData && (o.userData.isLabel || o.userData.realModel))) return;
         const mat = o.material;
+        if (mat.userData.keepLook) return; // modelled with its own finish (js/itemmodels.js)
         const key = guessPartMaterial(mat, named, explicit);
         if (!key) return;
         const m = MATERIALS[key];
@@ -372,7 +373,7 @@ function forceToolOnRock(toolName) {
         result.text = `I leaned my whole weight on the ${plainItemName(toolName)} against the bedrock. ${result.text}`;
         if (result.outcome === 'bends') {
           result.text += ' Metal bends instead of breaking, so I can straighten it at the welding bench.';
-          doWhenFree(() => straightenAtBench(result.newName));
+          doWhenFree(() => straightenAtBench(result.newName), { key: 'straighten:' + result.newName });
         }
       }
       return result;

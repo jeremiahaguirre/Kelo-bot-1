@@ -96,7 +96,7 @@ function practiceWaypoint(v, kind, level, i) {
       for (let n = 0; n < 30; n++) {
         const a = Math.random() * Math.PI * 2;
         const x = v.x + Math.cos(a) * reach, z = v.z + Math.sin(a) * reach;
-        if (x < WORLD_MIN_X + 3 || x > WORLD_MAX_X - 3 || z < WORLD_MIN_Z + 3) continue;
+        if (x < WORLD_MIN_X + 3 || x > WORLD_MAX_X - 3 || z < WORLD_VALLEY_MIN_Z + 3) continue;
         if (kind === 'boat') { if (z > 11 && z < WORLD_MAX_Z + 30) return { x, z: Math.max(12, z) }; continue; }
         if (z > 8.6) continue; // land and air practice stays over land
         if (kind !== 'air' && kind !== 'balloon' && typeof inTown === 'function' && inTown(x, z)) continue;
@@ -171,7 +171,7 @@ function practiseNamed(text) {
       const t = String(text || '').toLowerCase();
       const c = skillCandidates().find(x => (x.vehicle && (t.includes(x.vehicle.name.toLowerCase().replace(/^(an?|the)\s+/, '')) || SKILL_WORDS.some(w => w.kind === x.kind && w.re.test(t))))
         || (x.hobby && t.includes(String(x.hobby.name).toLowerCase())) || (x.telescope && /telescope|star/.test(t)));
-      if (c) doWhenFree(() => practiseSkill(c));
+      if (c) doWhenFree(() => practiseSkill(c), { key: `skill:${c.kind}:${(c.vehicle && c.vehicle.name) || (c.hobby && c.hobby.name) || ''}` });
       return Boolean(c);
     }
 

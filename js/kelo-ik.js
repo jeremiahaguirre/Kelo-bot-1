@@ -151,7 +151,6 @@ const _ikQh = new THREE.Quaternion(), _ikQk = new THREE.Quaternion(), _ikQf = ne
   _ikA = { L: new THREE.Vector3(), R: new THREE.Vector3() }, _ikW = { L: new THREE.Vector3(), R: new THREE.Vector3() },
   _ikT = { L: new THREE.Vector3(), R: new THREE.Vector3() }, _ikPole = new THREE.Vector3(), _ikMb = new THREE.Matrix4(),
   _ikMi = new THREE.Matrix4(), _ikS = new THREE.Vector3(), _ikFootQ = { L: new THREE.Quaternion(), R: new THREE.Quaternion() };
-const _ikX1 = new THREE.Vector3(1, 0, 0), _ikZ1 = new THREE.Vector3(0, 0, 1);
 
 // The animated ankle, in keloGroup's space (hips hang straight off keloGroup), and the foot's turn
 function keloIkAnkle(hip, knee, foot, out, qFoot) {

@@ -205,6 +205,9 @@ function reparkOldVehicles() {
         // (also anything left where a town building now stands, or on the balloon field's old spot)
         const stale = water ? v.z < 10.5 && v.z > 8.5 : Math.hypot(v.x - STOREHOUSE.x, v.z - STOREHOUSE.z) < 7
           || (typeof townBuildingAt === 'function' && Boolean(townBuildingAt(v.x, v.z, 1.5)))
+          || (typeof mapLayoutCovers === 'function' && mapLayoutCovers(v.x, v.z, 1.5))
+          // (or on the haul road, the only way over the range: road machines once parked on the plant's west strip)
+          || (!water && type.mode !== 'air' && typeof keloRoadAt === 'function' && (keloRoadAt(v.x, v.z) || {}).id === 'haul_road')
           || (type.mode === 'air' && BALLOON_OLD_SLOTS.some(([bx, bz]) => Math.hypot(v.x - bx, v.z - bz) < 0.5));
         if (!stale) return;
         const slots = parkingSlotsFor(type, v.name);
@@ -449,7 +452,9 @@ function vehicleDestination(v, type, target) {
         // would otherwise send it 10 units off the pad, and it would never come home)
         const pad = [...AIR_SLOTS, ...BALLOON_SLOTS].find(([x, z]) => Math.hypot(dest.x - x, dest.z - z) < 1.5);
         if (pad) return { x: pad[0], z: pad[1] };
-        return openGroundNear(dest, /balloon/i.test(v.name) ? 2.2 : 3.0) || dest;
+        // (none near: the nearest open ground back in the valley; never the runway field or the north yard)
+        const r = /balloon/i.test(v.name) ? 2.2 : 3.0;
+        return openGroundNear(dest, r) || openGroundNear({ x: dest.x, z: Math.max(dest.z, WORLD_VALLEY_MIN_Z + 4) }, r) || dest;
       }
       if (type.mode === 'water') {
         const from = { x: state.botPos.x, z: state.botPos.z };
@@ -470,6 +475,8 @@ function vehicleDestination(v, type, target) {
 // Walk to a vehicle, climb in, drive to a target, and park there
 async function driveVehicle(v, target, label) {
       const type = vehicleTypeFor(v.name);
+      // Nothing parks on the runway field or its taxiway (js/agent.js)
+      if (typeof runwayKeepOff === 'function') target = runwayKeepOff(target);
       state.targetPos = boardingSpot(v);
       state.moodTitle = `Walking to the ${v.name.replace(/^(an?|the)\s+/i, '')}`;
       renderAllUI();

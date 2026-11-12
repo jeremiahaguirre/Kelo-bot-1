@@ -78,7 +78,7 @@ function groundworkReady(key, context = 'Shaping the valley', { quiet = false } 
         if (!quiet) {
           state.speechBubble = `I don't really know the right way to go about ${job.title}. I'll research it at NetNode before I start.`;
           renderAllUI();
-          doWhenFree(() => researchJob(key));
+          doWhenFree(() => researchJob(key), { key: 'research-job:' + key });
         }
         return false;
       }
@@ -281,7 +281,7 @@ ITEM_MODEL_RULES.unshift(
     g.add(rod([-0.2, 0.9, -0.65], [0.2, 0.9, -0.65], 0.028, 0x111827));
     return g;
   }],
-  [/asphalt rake|lute|\brake\b/, lower => {
+  [/asphalt rake|\blute\b|\brake\b/, lower => {
     const g = group();
     const asphalt = /asphalt|lute/.test(lower);
     g.add(rod([0, 0.08, 0], [0, 1.45, 0], 0.018, asphalt ? 0x9ca3af : 0xb08050, asphalt ? { metalness: 0.7 } : {}));
@@ -315,7 +315,7 @@ ITEM_MODEL_RULES.unshift(
     g.add(blade, handle);
     return g;
   }],
-  [/asphalt|blacktop|tarmac/, () => {
+  [/^(?!.*(shingle|roof|drum|emulsion|tanker)).*(asphalt|blacktop|tarmac)/, () => {
     const g = group();
     const heap = mesh(new THREE.SphereGeometry(0.32, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), 0x1f1f22, { roughness: 0.95 });
     heap.scale.set(1, 0.6, 1);

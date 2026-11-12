@@ -9,7 +9,7 @@
 // It also wraps the interruptions (eating, drinking, sleeping, a visitor's letter or chat) so the task
 // he was on is paused and resumed afterwards, and builds tasks from what older saves were in the middle of.
 
-function agendaReSource(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+const agendaReSource = escapeRegExp;
 function agendaPlainAsk(s) { return String(s || '').replace(/^(an?|some|the)\s+/i, '').toLowerCase(); }
 
 // --- Interruptions -----------------------------------------------------------------------------------

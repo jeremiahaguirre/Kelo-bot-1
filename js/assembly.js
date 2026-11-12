@@ -24,7 +24,7 @@
 const ASSEMBLY_SITES = {
   airfield: { x: -27, z: 9.5, rotY: -Math.PI / 2, name: 'his airfield build site' },
   beach: { x: -8.5, z: 8.3, rotY: 0, name: 'his boat-building spot on the beach' },
-  benchFallback: { x: 1.9, z: -7.4, rotY: 0, y: 0, top: 0.92, standX: 1.9, standZ: -6.2, name: 'the bench by the welding studio' }
+  benchFallback: { x: MAP_LAYOUT.workBench.x, z: MAP_LAYOUT.workBench.z - 1.2, rotY: 0, y: 0, top: 0.92, standX: MAP_LAYOUT.workBench.x, standZ: MAP_LAYOUT.workBench.z, name: 'the bench by the welding studio' }
 };
 // The airfield stands on new land along the shore west of town (the owner's permission): three
 // finished patches of fill, made with the same code as the land he makes from dug dirt
@@ -181,17 +181,23 @@ function workshopBayFor(p) {
       if (!big) return null;
       const fp = buildFootprint(p.bom);
       if (!fp) return null;
-      let n = p.bom.vehicle === 'plane' ? 1 : 2;
-      if (n === 2 && typeof workshopFits === 'function') {
-        try { const f = workshopFits({ x: fp.length, y: fp.height, z: fp.width }); if (!f.bays || !f.bays.build2) n = 1; } catch (e) {}
-      }
+      // The airplane keeps build bay 1 (its flights start at that hangar's door onto the helipad). Anything
+      // else takes build bay 2 if it fits, else the big hangar's bays 3 and 4 over the pass (task 7b,
+      // js/workshopnorth.js), else bay 1; a bay another unfinished build already holds is skipped.
+      let fits = null;
+      if (typeof workshopFits === 'function') { try { fits = workshopFits({ x: fp.length, y: fp.height, z: fp.width }); } catch (e) { fits = null; } }
+      const taken = n => (state.buildProjects || []).some(q => q !== p && q.site && q.site.inWorkshop && q.site.bay === n && q.status !== 'finished' && q.status !== 'complete');
+      const ok = n => !fits || !fits.bays || (n === 1 ? fits.bays.build1 !== false : n === 2 ? fits.bays.build2 : fits.bays['build' + n] !== false && fits.northHangarDoor !== false);
+      let n = 1;
+      if (p.bom.vehicle !== 'plane') n = [2, 3, 4, 1].find(k => ok(k) && !taken(k)) || (ok(2) ? 2 : 1);
       let bay = null;
       try { bay = workshopAssemblyBay(n); } catch (e) { bay = null; }
       if (!bay || !Number.isFinite(bay.x) || !Number.isFinite(bay.z)) return null;
-      const rotY = -Math.PI / 2; // model +x (its nose) toward the door
+      // model +x (its nose) toward the door: south in the first hangar, north in the big one
+      const north = Boolean(bay.north), rotY = north ? Math.PI / 2 : -Math.PI / 2;
       const over = Math.max(0, fp.length - (bay.d || fp.length)) / 2;
-      return { x: bay.x, z: bay.z - fp.centerX + over, rotY, floorY: Number.isFinite(bay.y) ? bay.y : null, bay: n, door: bay.door || null, outside: bay.outside || null,
-        name: n === 1 ? 'build bay 1 in his hangar' : 'build bay 2 in his hangar', inWorkshop: true };
+      return { x: bay.x, z: north ? bay.z + fp.centerX - over : bay.z - fp.centerX + over, rotY, floorY: Number.isFinite(bay.y) ? bay.y : null, bay: n, bayKey: bay.key, door: bay.door || null, outside: bay.outside || null,
+        name: n <= 2 ? `build bay ${n} in his hangar` : `build bay ${n} in his big hangar`, inWorkshop: true };
     }
 
 function siteFor(p) {
@@ -471,7 +477,6 @@ function bomListCardHtml(req) {
     }
 
 function copyToClipboard(text) {
-      window.__lastBomCopy = text;
       const fallback = () => {
         try {
           const ta = document.createElement('textarea');

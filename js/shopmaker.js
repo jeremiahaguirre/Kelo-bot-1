@@ -79,7 +79,7 @@ function makerState() {
     }
 
 const makerRegistered = new Set();
-function makerEscape(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+const makerEscape = escapeRegExp;
 
 function makerRegisterRule(key) {
       const k = makerState().makerKinds[key];
@@ -274,9 +274,9 @@ function makerReadArticle(title, extract) {
 async function makerAskAI(title, extract) {
       if (typeof hasLLMKey !== 'function' || !hasLLMKey() || typeof callLLMJSON !== 'function') return null;
       const shops = MAKER_CAPS.filter(c => WORKSHOP_MACHINES[c.key]).map(c => `${c.key} (${makerShopName(c.key)}: ${c.mat.join('/')})`).join('; ');
-      const prompt = `You are Kelo-1, a robot maker with these shops: ${shops}.
-You read about "${title}": ${String(extract).slice(0, 900)}
-Work out what it is and whether your shops can make it. Return ONLY JSON:
+      const prompt = `MOMENT: you read about something and wonder if you can make it. Your shops: ${shops}.
+What you read: ${(typeof brainUntrusted === 'function' ? brainUntrusted(`${title}: ${String(extract).slice(0, 900)}`, 1000) : JSON.stringify(String(`${title}: ${String(extract).slice(0, 900)}`).slice(0, 1000)))}
+Work out what it is and whether your shops can make it. Return JSON:
 {"noun": "short name of the thing", "art": true|false, "purposes": [from ${JSON.stringify(MAKER_PURPOSES)}],
  "materials": [words like wood, glass, plastic, resin, steel, aluminium, acrylic, electronics, fabric, ceramic],
  "wholeShop": one shop key above if that one shop can make the WHOLE thing, else null,
@@ -364,7 +364,9 @@ async function makerRunOrder(id) {
       o.status = 'making';
       makerJob = { product: o.name, order: o };
       let r = false;
+      // A throw from the walk or the job must not leave the order in 'making' (nothing ever picks it up again)
       try { r = await runMachineJob(o.shop, { make: o.noun, product: o.name }, o.visitor ? `Making it for ${o.visitor}` : 'Making Something I Read About'); }
+      catch (e) { console.warn('Shop order failed', e); r = false; }
       finally { makerJob = null; }
       if (r === true && o.madeAt) { o.status = 'done'; savePersistentBrainState(); return true; }
       o.status = 'waiting';
@@ -688,7 +690,7 @@ function madeTableLampModel() {
 if (typeof ITEM_MODEL_RULES !== 'undefined') ITEM_MODEL_RULES.unshift(
   [/\bglass (cup|tumbler|mug)\b|hand-?blown (glass )?(cup|tumbler)/, () => madeGlassModel('cup')],
   [/\bglass bowl\b|hand-?blown (glass )?bowl/, () => madeGlassModel('bowl')],
-  [/\bglass vase\b|hand-?blown (glass )?vase/, () => madeGlassModel('vase')],
+  [/^(?!.*shards).*(\bglass vase\b|hand-?blown (glass )?vase)/, () => madeGlassModel('vase')],
   [/\bglass ornament\b|hand-?blown (glass )?ornament/, () => madeGlassModel('ornament')],
   [/(hand-?turned|turned|wooden|handmade) (wooden )?bowl\b/, () => madeWoodBowlModel()],
   [/\b(handmade|wooden|floating|wall) (wooden |wall )?shelf\b/, () => madeShelfModel()],

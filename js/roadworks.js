@@ -934,6 +934,9 @@ async function rwRunTask(t) {
         // A runway is worked a section at a time: the step is done when the last section is
         if (J.runway && RWY_SECTIONED.has(key) && (J.sec || 0) + 1 < RWY_SECTIONS) { J.sec = (J.sec || 0) + 1; savePersistentBrainState(); return true; }
         J.sec = 0;
+        // The field's own progress stage (agent/runway: field -> cleared -> graded -> base -> paved -> marked -> lit)
+        const rwyStage = { clear: 'cleared', grade: 'graded', compactbase: 'base', roll: 'paved', stripe: 'marked', lights: 'lit' }[key];
+        if (J.runway && rwyStage && typeof RUNWAY_FIELD !== 'undefined' && RUNWAY_FIELD) RUNWAY_FIELD.stage = rwyStage;
         const label = rwStepName(t);
         if (t.step >= rwStepList(t).length - 1) { rwFinish(t); return true; }
         agendaStep(t.id, t.step + 1, `Done: ${label.toLowerCase()}. Next: ${rwStepName(t, t.step + 1).toLowerCase()}.`);

@@ -88,10 +88,10 @@ function renderMailbox() {
       perfSetHtml(list, state.mailbox.length === 0
         ? '<p class="text-2xs text-slate-500 italic">The post office is empty. Anything you send waits here until Kelo-1 decides to pick it up.</p>'
         : state.mailbox.map(m => `
-          <div class="flex items-center gap-2 p-2 rounded-xl bg-slate-900/80 border border-red-500/25 text-xs">
-            ${m.thumbs && m.thumbs[0] ? `<img src="${escapeHtml(m.thumbs[0])}" alt="" class="w-8 h-8 rounded-lg object-cover shrink-0">` : `<span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">${escapeHtml(m.emoji)}</span>`}
+          <div class="ui-row">
+            ${m.thumbs && m.thumbs[0] ? `<img src="${escapeHtml(m.thumbs[0])}" alt="" class="w-8 h-8 rounded-lg object-cover shrink-0">` : `<span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0" aria-hidden="true">${escapeHtml(m.emoji)}</span>`}
             <div class="min-w-0 flex-1">
-              <div class="font-semibold text-red-100 truncate">${escapeHtml(m.kind === 'message' ? 'Letter' : (m.name || m.kind))}</div>
+              <div class="font-semibold text-white truncate">${escapeHtml(m.kind === 'message' ? 'Letter' : (m.name || m.kind))}</div>
               <div class="text-2xs tabular-nums text-slate-400 truncate">from ${escapeHtml(m.from)} • ${escapeHtml(m.time)}${m.note ? ` • "${escapeHtml(m.note.slice(0, 60))}"` : ''}</div>
             </div>
           </div>`).join(''));
@@ -123,7 +123,7 @@ function renderPortal() {
         const PILLS_STEP = 60;
         const shown = typeof perfListLimit === 'function' ? perfListLimit('toolInventoryPills', PILLS_STEP) : owned.length;
         const html = owned.slice(0, shown).map(o => `
-          <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-200 text-2xs tabular-nums flex items-center gap-1">
+          <span class="ui-chip">
             <span>${escapeHtml(o.emoji)}</span> ${escapeHtml(o.name)}${o.left ? ` <span class="text-emerald-300">(${escapeHtml(o.left)})</span>` : ''}${floorOf.get(o.name) > 0 ? ` <span class="text-slate-400">· B${floorOf.get(o.name)}</span>` : ''}
           </span>`).join('') + (typeof perfMoreButton === 'function' ? perfMoreButton('toolInventoryPills', shown, owned.length, PILLS_STEP) : '');
         if (typeof perfSetHtml === 'function') perfSetHtml(pills, html); else pills.innerHTML = html;
@@ -136,13 +136,13 @@ function renderPortal() {
         perfSetHtml(log, state.giftLog.length === 0
           ? '<p class="text-2xs text-slate-500 italic">Nothing yet. Gifts, deliveries and photos you send show up here with his reaction.</p>'
           : state.giftLog.map(g => `
-          <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-xs space-y-0.5">
+          <div class="ui-row block space-y-0.5">
             <div class="flex items-center justify-between gap-2">
-              <span class="font-bold text-rose-200 truncate">${escapeHtml(g.emoji)} ${escapeHtml(g.name)} <span class="tabular-nums text-2xs text-slate-400">(${escapeHtml(g.type === 'request' ? 'requested ' : '')}${escapeHtml(g.category)})</span></span>
-              <span class="text-2xs tabular-nums text-slate-500 shrink-0">${escapeHtml(g.time)}</span>
+              <span class="font-semibold text-white truncate">${escapeHtml(g.emoji)} ${escapeHtml(g.name)} <span class="tabular-nums text-2xs text-slate-400">(${escapeHtml(g.type === 'request' ? 'requested ' : '')}${escapeHtml(g.category)})</span></span>
+              <span class="text-2xs tabular-nums text-slate-400 shrink-0">${escapeHtml(g.time)}</span>
             </div>
             <div class="text-2xs tabular-nums text-slate-400">from ${escapeHtml(g.from)}${g.note ? ` • "${escapeHtml(g.note)}"` : ''}</div>
-            ${g.reaction ? `<p class="text-2xs text-slate-300 font-serif italic">Kelo-1: "${escapeHtml(g.reaction)}"</p>` : '<p class="text-2xs text-slate-500 italic">Thinking about it...</p>'}
+            ${g.reaction ? `<p class="text-2xs text-slate-300 font-serif italic">Kelo-1: "${escapeHtml(g.reaction)}"</p>` : '<p class="ui-loading text-2xs"><span class="ui-spinner" aria-hidden="true"></span>He is still thinking about it…</p>'}
           </div>`).join(''));
       }
 

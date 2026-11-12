@@ -46,14 +46,30 @@ function imKit() {
         },
         // Many copies of one small part (keys, studs, strings) as a single draw call
         many: (geo, color, spots, extra = {}) => {
-          const o = new THREE.InstancedMesh(geo, mat(color, extra), spots.length);
-          const m4 = new THREE.Matrix4();
-          spots.forEach((p, i) => o.setMatrixAt(i, m4.makeTranslation(p[0], p[1], p[2])));
+          const o = new THREE.Mesh(imMergeCopies(geo, spots), mat(color, extra));
           o.castShadow = true;
           return o;
         },
         done: (...parts) => realSize(group(...parts))
       };
+    }
+
+// Copies of one geometry at each spot, joined into a single geometry (one draw call, true bounds)
+function imMergeCopies(geo, spots) {
+      const src = geo.index ? geo.toNonIndexed() : geo;
+      const names = ['position', 'normal', 'uv'].filter(n => src.attributes[n]);
+      const count = src.attributes.position.count;
+      const out = new THREE.BufferGeometry();
+      names.forEach(n => {
+        const a = src.attributes[n], size = a.itemSize, arr = new Float32Array(count * size * spots.length);
+        spots.forEach((p, k) => {
+          for (let i = 0; i < count; i++) for (let c = 0; c < size; c++) arr[(k * count + i) * size + c] = a.array[i * size + c] + (n === 'position' ? p[c] : 0);
+        });
+        out.setAttribute(n, new THREE.BufferAttribute(arr, size));
+      });
+      if (src !== geo) src.dispose();
+      geo.dispose();
+      return out;
     }
 
 function imRoundRectGeometry(w, d, h, r) {
@@ -299,13 +315,11 @@ function imPhoneModel(lower) {
       const [w, d, t] = tablet ? [0.17, 0.25, 0.007] : [0.072, 0.15, 0.008];
       const body = K.rr(w, d, t, tablet ? 0.012 : 0.009, 0x27272a, 0, 0, 0, IM.alu);
       const screen = K.rr(w - 0.006, d - 0.008, 0.0006, tablet ? 0.009 : 0.007, /e-?reader|kindle/.test(lower) ? 0xd6d3d1 : 0x0f172a, 0, t, 0, /e-?reader|kindle/.test(lower) ? IM.paper : IM.screen);
-      const cam = K.cyl(0.005, 0.005, 0.002, 0x111827, 0, t + 0.0007, -d / 2 + 0.012, IM.glass);
-      // standing a little tilted on its back edge so the screen shows
-      const g = group(body, screen, cam);
-      g.rotation.x = -1.2;
-      g.position.set(0, d / 2 * Math.sin(1.2) + 0.002, 0);
-      const stand = K.box(w * 0.8, 0.012, 0.04, 0x52525b, 0, 0.006, 0.05, IM.plastic);
-      return K.done(g, stand);
+      // lying on its back, screen up, with its home bar and speaker slot
+      const bar = K.box(w * 0.3, 0.0008, 0.004, 0x9ca3af, 0, t + 0.0007, d / 2 - 0.01);
+      const slot = K.box(w * 0.25, 0.0008, 0.003, 0x111827, 0, t + 0.0007, -d / 2 + 0.008);
+      const glow = K.box(w - 0.016, 0.0004, d * 0.35, tablet ? 0x1e3a8a : 0x0f766e, 0, t + 0.0008, -d * 0.12, { ...IM.screen, emissive: 0x1e3a8a, emissiveIntensity: 0.35 });
+      return K.done(body, screen, bar, slot, ...(/e-?reader|kindle/.test(lower) ? [] : [glow]));
     }
 
 function imHeadphonesModel(lower) {
@@ -561,7 +575,7 @@ function imRacketModel(lower) {
       const strings = [];
       for (let i = -6; i <= 6; i++) strings.push(K.box(0.001, 0.001, Math.sqrt(Math.max(0, 1 - (i / 7) ** 2)) * hr * 2, 0xf8fafc, i * hr * 0.78 / 7, 0.012, -len / 2 + hr + 0.02));
       for (let i = -7; i <= 7; i++) strings.push(K.box(Math.sqrt(Math.max(0, 1 - (i / 8) ** 2)) * hr * 0.78 * 2, 0.001, 0.001, 0xf8fafc, 0, 0.012, -len / 2 + hr + 0.02 + i * hr / 8));
-      const throat = [-1, 1].map(s => K.rod([s * 0.04, 0.012, -len / 2 + 2 * hr], [0, 0.012, -len / 2 + 2 * hr + 0.09], 0.008, col, IM.plastic));
+      const throat = [-1, 1].map(s => K.rod([s * 0.045, 0.012, -len / 2 + 2 * hr - 0.005], [0, 0.012, len / 2 - 0.2], 0.008, col, IM.plastic));
       const handle = K.cyl(0.016, 0.016, badminton ? 0.2 : 0.2, 0x111827, 0, 0.016, len / 2 - 0.1, IM.rubber);
       handle.rotation.x = Math.PI / 2;
       return K.done(head, ...strings, ...throat, handle);
@@ -958,9 +972,9 @@ function imSpoolModel(lower) {
       if (/smd|component reel/.test(lower)) return K.done(...[0, 1, 2].map(i => { const r = K.cyl(0.09, 0.09, 0.012, [0x111827, 0x1d4ed8, 0x111827][i], i * 0.012, 0.006 + i * 0.013, 0, IM.plastic, 28); return r; }), K.box(0.06, 0.001, 0.04, 0xf8fafc, 0.024, 0.039, 0.03, IM.paper));
       const col = /copper|magnet|enamel/.test(lower) ? 0xc2702e : /solder/.test(lower) ? 0xc0c4c8 : /steel|galvan|tie wire|baling/.test(lower) ? 0x9aa3ad : /red/.test(lower) ? 0xdc2626 : /black/.test(lower) ? 0x1f2937 : 0xc2702e;
       const R = /solder/.test(lower) ? 0.04 : 0.075, W = /solder/.test(lower) ? 0.04 : 0.07;
-      const flanges = [-1, 1].map(s => { const f = K.cyl(R, R, 0.006, 0x111827, 0, 0, s * W / 2, IM.plastic, 28); f.rotation.x = Math.PI / 2; return f; });
-      const wound = K.cyl(R * 0.82, R * 0.82, W - 0.006, col, 0, 0, 0, /copper|steel|solder|galvan/.test(lower) ? { metalness: 0.85, roughness: 0.35 } : IM.rubber, 28); wound.rotation.x = Math.PI / 2;
-      const hub = K.cyl(R * 0.25, R * 0.25, W + 0.002, 0x0b0b0b, 0, 0, 0); hub.rotation.x = Math.PI / 2;
+      const flanges = [-1, 1].map(s => { const f = K.cyl(R, R, 0.006, 0x111827, s * W / 2, 0, 0, IM.plastic, 28); f.rotation.z = Math.PI / 2; return f; });
+      const wound = K.cyl(R * 0.85, R * 0.85, W - 0.006, col, 0, 0, 0, /copper|steel|solder|galvan/.test(lower) ? { metalness: 0.85, roughness: 0.35 } : IM.rubber, 28); wound.rotation.z = Math.PI / 2;
+      const hub = K.cyl(R * 0.25, R * 0.25, W + 0.002, 0x0b0b0b, 0, 0, 0); hub.rotation.z = Math.PI / 2;
       const g = group(...flanges, wound, hub); g.position.y = R;
       return K.done(g);
     }
@@ -1371,17 +1385,28 @@ function imClothingModel(lower) {
         const band = K.box(0.36, 0.041, 0.035, col, 0, 0.02, -L / 2 - 0.015, IM.cloth);
         return K.done(legs, band);
       }
-      // A shirt, sweater, hoodie, jacket or coat, folded
-      const heavy = /jacket|coat|parka|vest|hoodie|fleece|sweater|jumper|cardigan|sweatshirt/.test(lower);
-      const col = tone ?? (/jacket|coat|parka/.test(lower) ? 0x1f2937 : /sweater|wool|jumper/.test(lower) ? 0x9f1239 : 0x2563eb);
-      const T = heavy ? 0.06 : 0.025, W = /jacket|coat|parka/.test(lower) ? 0.34 : 0.3, D = 0.36;
-      const body = K.rr(W, D, T, 0.02, col, 0, 0, 0, { roughness: /jacket|coat|parka/.test(lower) ? 0.6 : 1 });
-      const collar = K.torus(0.06, heavy ? 0.014 : 0.008, col, 0, T, -D / 2 + 0.05, { roughness: 1 }, Math.PI); collar.rotation.x = -Math.PI / 2;
-      const parts = [body, collar];
-      if (/jacket|coat|parka|hoodie|cardigan/.test(lower)) parts.push(K.box(0.006, 0.002, D * 0.85, 0x9ca3af, 0, T + 0.001, 0.02, IM.steel));
-      if (/hoodie/.test(lower)) { const hood = K.ball(0.08, col, 0, T, -D / 2 + 0.02, { roughness: 1 }); hood.scale.y = 0.3; parts.push(hood); }
-      if (/sweater|jumper|wool|knit/.test(lower)) parts.push(K.box(W, 0.004, 0.03, col, 0, T + 0.001, D / 2 - 0.02, { roughness: 1 }));
-      parts.push(...[-1, 1].map(s => K.box(0.035, T * 0.6, D * 0.7, col, s * (W / 2 - 0.03), T + T * 0.25, 0.04, { roughness: 1 })));
+      // A shirt, sweater, hoodie, jacket or coat, laid out flat: its outline, collar, cuffs and hem
+      const coat = /jacket|coat|parka|raincoat/.test(lower), knit = /sweater|jumper|wool|knit|cardigan/.test(lower);
+      const long = !/t-?shirt|tee\b|vest|short.?sleeve/.test(lower), vest = /\bvest\b/.test(lower);
+      const col = tone ?? (coat ? 0x1f2937 : knit ? 0x9f1239 : /hoodie|fleece|sweatshirt/.test(lower) ? 0x6b7280 : 0x2563eb);
+      const W = coat ? 0.29 : 0.26, L = coat ? 0.72 : 0.66, S = vest ? 0 : long ? 0.58 : 0.2, T = coat ? 0.04 : knit ? 0.025 : 0.012;
+      const outline = [[-W, 0], [W, 0], [W, L - 0.2]];
+      if (S) outline.push([W + S * 0.92, L - 0.2 - S * 0.55], [W + S, L - 0.2 - S * 0.4], [W + 0.03, L - 0.04]);
+      outline.push([0.07, L], [-0.07, L]);
+      if (S) outline.push([-W - 0.03, L - 0.04], [-W - S, L - 0.2 - S * 0.4], [-W - S * 0.92, L - 0.2 - S * 0.55]);
+      outline.push([-W, L - 0.2]);
+      const fin = { roughness: coat ? 0.6 : 1 };
+      const body = K.slab(outline, T, col, fin);
+      body.rotation.x = -Math.PI / 2; body.position.set(0, T / 2, L / 2);
+      const parts = [body];
+      const top = T + 0.0015;
+      const collar = K.torus(0.075, coat ? 0.016 : 0.01, col, 0, top, -L / 2 + 0.02, fin, Math.PI); collar.rotation.x = -Math.PI / 2; parts.push(collar);
+      parts.push(K.box(W * 2, 0.003, 0.04, col, 0, top, L / 2 - 0.02, { roughness: 1 })); // hem band
+      if (coat || /hoodie|cardigan|zip/.test(lower)) parts.push(K.box(0.008, 0.003, L - 0.06, coat ? 0x9ca3af : 0x111827, 0, top, 0.02, IM.steel));
+      if (coat) [-1, 1].forEach(sx => parts.push(K.box(0.1, 0.004, 0.07, col, sx * 0.14, top + 0.001, L / 2 - 0.16, fin)));
+      if (/hoodie/.test(lower)) { const hood = K.ball(0.1, col, 0, top, -L / 2 + 0.02, { roughness: 1 }); hood.scale.set(1.1, 0.25, 0.8); parts.push(hood); }
+      if (knit) parts.push(...[-1, 1].map(sx => K.box(0.05, 0.004, 0.06, col, sx * (W + S * 0.94), top, -0.25 + S * 0.47, { roughness: 1 })));
+      if (!coat && !knit && !/hoodie/.test(lower)) parts.push(K.box(0.05, 0.002, 0.055, 0xf8fafc, -0.12, top, -L / 2 + 0.18, IM.cloth)); // a chest pocket or print
       return K.done(...parts);
     }
 
@@ -2215,7 +2240,7 @@ const IM_RULES = [
   [/coaster/, l => imCoasterModel(l)],
   [/dovetail(ed)?.*\bbox\b|wooden box|keepsake box|jewe?l(le)?ry box|trinket box/, l => imWoodBoxModel(l)],
   [/bagel|doughnut|\bdonut\b/, l => imBagelModel(l)],
-  [/bungee|shock cord|paracord|lacing cord|\bcord\b(?!less)|twine|climbing rope|\brope\b(?!.*jump)/, l => imRopeCoilModel(l)],
+  [/^(?!.*(jump|skipping)).*(bungee|shock cord|paracord|lacing cord|\bcord\b(?!less)|twine|climbing rope|\brope\b)/, l => imRopeCoilModel(l)],
   [/bar of .*solder|solder bar/, () => imBase('ingot', 0.2)],
   [/component reels|smd reels|reels? of (smd|components)/, l => imSpoolModel('smd reel')],
   [/vacuum (table )?pump/, () => imBenchMachineModel('air compressor')],
@@ -2259,6 +2284,7 @@ const IM_RULES = [
   [/wrist ?watch|smart ?watch|stopwatch|pocket watch|^(an? )?watch$/, () => imWatchModel()],
   [/speaker driver|potentiometers?|pickups?\b|blade switch|toggle switch|inline switch|kill switch|\bswitch(es)?$|antenna|tuners?\b(?!.*(clip|strobe))|strings\b|inlays|video transmitter|clock movement|\bfpv goggles\b/, l => (/fpv goggles/.test(l) ? imSafetyGearModel(l) : imComponentModel(l))],
   // sports and outdoors
+  [/\b(atlas|dictionary|encyclopa?edia|almanac|thesaurus|field guide|guide ?book|textbook|cook ?book|comic|magazine|hardcover|paperback|bible|novel|journal|diary|notebook)\b(?!.*computer)/, l => realSize(bookModel(l))],
   [/racket|racquet|pickleball paddle|ping ?pong paddle|table tennis (bat|paddle)/, l => imRacketModel(l)],
   [/baseball bat|cricket bat|softball bat|^(an? )?bat$/, l => imBatModel(l)],
   [/baseball glove|catcher'?s mitt|fielding glove|ball glove/, () => imGloveModel()],
@@ -2302,7 +2328,7 @@ const IM_RULES = [
   [/pruning shears|secateurs|pruners|hedge (shears|clippers)|loppers|scissors|\bshears\b/, l => imShearsModel(l)],
   [/chainsaw|leaf blower|lawn ?mower|string trimmer|weed ?(eater|whacker)|whipper snipper/, l => imPowerYardToolModel(l)],
   // workshop tools, safety gear and parts
-  [/angle grinder|jig ?saw|circular saw|\brouter\b(?! bits?)(?!.*(table|cnc))|trim router|\bsander\b|staple gun|nail gun|brad nailer|rivet gun|pop.?rivet|spray gun|hvlp|heat gun|hot air gun|impact (driver|wrench)|hammer drill/, l => imPowerToolModel(l)],
+  [/angle grinder|jig ?saw(?! puzzle)|circular saw|\brouter\b(?! bits?)(?!.*(table|cnc))|trim router|\bsander\b|staple gun|nail gun|brad nailer|rivet gun|pop.?rivet|spray gun|hvlp|heat gun|hot air gun|impact (driver|wrench)|hammer drill/, l => imPowerToolModel(l)],
   [/bandsaw(?! blade)|band saw(?! blade)|\b(mig|tig|stick|arc) welder|welding machine|plasma cutter|air compressor|shop vac|wet.?dry vac|machining vise|bench vise|\bvise\b|\bvice\b/, l => imBenchMachineModel(l)],
   [/\bclamps?\b|chisels?|gouges|\bfiles?\b|\brasp\b|socket set|ratchet set|crowning file/, l => imHandToolSetModel(l)],
   [/respirator|gas mask|dust mask|ear (defenders|muffs|protection)|earmuffs|face shield|safety glasses|safety goggles|esd|wrist strap|nitrile|latex gloves|disposable gloves|heat gloves|kevlar|work gloves|leather gloves/, l => imSafetyGearModel(l)],

@@ -38,6 +38,32 @@ function startServer() {
     if (u.includes('cdn.tailwindcss.com')) return route.fulfill({ path: path.join(V, 'tailwind.js'), contentType: 'application/javascript' });
     if (u.includes('phosphor-icons')) return route.fulfill({ body: '', contentType: 'application/javascript' });
     if (u.includes('generativelanguage') || u.includes('anthropic.com')) return route.fulfill({ status: 500, body: '{}' });
+    // Reference photos (scenario refpaint): DuckDuckGo's Instant Answer has a picture only for "cat"; anything
+    // else falls back to Wikimedia Commons. Pictures come from qa/fixtures/refpaint, with CORS headers.
+    {
+      const FXD = path.join(__dirname, 'fixtures', 'refpaint');
+      const FX = { cat: 'chelsea.png', coffee: 'coffee.png', rocket: 'rocket.jpg', venice: 'venice_sunset.jpg', harbour: 'venice_sunset.jpg', beach: 'quarry_01.jpg', quarry: 'quarry_01.jpg', field: 'moonless_golf.jpg', night: 'moonless_golf.jpg' };
+      const fxFor = q => { const k = Object.keys(FX).find(k => q.toLowerCase().includes(k)); return k ? FX[k] : null; };
+      const img = f => route.fulfill({ path: path.join(FXD, f), contentType: f.endsWith('.png') ? 'image/png' : 'image/jpeg', headers: { 'Access-Control-Allow-Origin': '*' } });
+      if (process.env.REFP_OFFLINE && /duckduckgo\.com|wikimedia\.org/.test(u)) return route.abort('internetdisconnected');
+      if (u.startsWith('https://api.duckduckgo.com/')) {
+        global.refpQueries = (global.refpQueries || []).concat(u);
+        const q = new URL(u).searchParams.get('q') || '';
+        const body = /\bcat\b/i.test(q) ? { Heading: 'Cat', Image: '/i/fixture-cat.png', AbstractURL: 'https://en.wikipedia.org/wiki/Cat', RelatedTopics: [] } : { Heading: '', Image: '', RelatedTopics: [] };
+        return route.fulfill({ body: JSON.stringify(body), contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' } });
+      }
+      if (u.startsWith('https://duckduckgo.com/i/fixture-')) return img('chelsea.png');
+      if (u.startsWith('https://commons.wikimedia.org/w/api.php')) {
+        global.refpQueries = (global.refpQueries || []).concat(u);
+        const q = new URL(u).searchParams.get('gsrsearch') || '';
+        const f = fxFor(q);
+        const pages = f ? { 101: { index: 1, title: `File:${f.replace(/\..*$/, '').replace(/_/g, ' ')} <b>test</b>.jpg`, imageinfo: [{ mime: 'image/jpeg', width: 1024, height: 680,
+          thumburl: `https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/${f}/640px-${f}`, url: `https://upload.wikimedia.org/wikipedia/commons/a/ab/${f}`,
+          descriptionurl: `https://commons.wikimedia.org/wiki/File:${f}`, extmetadata: { LicenseShortName: { value: 'CC0' }, Artist: { value: '<a href="javascript:alert(1)">Fixture <script>x</script>Artist</a>' } } }] } } : {};
+        return route.fulfill({ body: JSON.stringify({ query: { pages } }), contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' } });
+      }
+      if (u.startsWith('https://upload.wikimedia.org/')) { const f = u.split('/').pop().replace(/^640px-/, ''); return fs.existsSync(path.join(FXD, f)) ? img(f) : route.fulfill({ status: 404, body: '' }); }
+    }
     if (u.includes('wikipedia.org') && /summary\/kalimba/i.test(u)) return route.fulfill({ body: JSON.stringify({ type: 'standard', title: 'Kalimba', extract: 'The kalimba is a musical instrument of the lamellophone family, consisting of a wooden board with attached metal tines.' }), contentType: 'application/json' });
     if (u.includes('wikipedia.org') && /summary\/Quokka/i.test(u)) return route.fulfill({ body: JSON.stringify({ type: 'standard', title: 'Quokka', extract: 'The quokka is a small macropod about the size of a domestic cat, found on islands off Western Australia. It is known for its smiling face.' }), contentType: 'application/json' });
     if (u.includes('wikipedia.org')) return route.fulfill({ body: '{"query":{"search":[]}}', contentType: 'application/json' });
@@ -911,6 +937,112 @@ function startServer() {
   }
 
   // Reload: the pit must persist and nothing should come back
+  if (scenario === 'refpaint') {
+    // Paintings from live reference photos (js/refpaint.js), with the network stubbed by fixtures
+    const run = fn => page.evaluate(fn);
+    const ok = (name, cond, extra = '') => console.log(`${cond ? 'PASS' : 'FAIL'} ${name}${extra ? ' ' + extra : ''}`);
+    // He knows oil, watercolour and pastel and has every supply for them
+    await run(() => {
+      state.isCollectingMail = false;
+      ['oil', 'watercolour', 'pastel'].forEach(m => { state.paintKnowledge[m] = { at: Date.now() }; PAINT_MEDIA[m].needs.forEach(n => { if (!hasItem(n.re)) state.toolInventory.push(n.ask); }); });
+      // an old-style painting and plan from before reference photos existed
+      state.murals.unshift({ wallId: 'art-old1', id: 'art-old1', kind: 'art', medium: 'oil', subject: 'lake', title: 'Old Lake', text: 'Old Lake', on: 'Oil on stretched canvas', size: '12x9 in', subjectLabel: 'the Okanagan lake at sunset', season: 'Summer', weather: 'clear', palette: ['#806040'], skill: 30, level: 1, seed: 'art-old1', at: 1, place: 'the lakeshore', for: null, keep: false });
+      savePersistentBrainState();
+    });
+    // Safety of what he searches for
+    console.log('queries:', JSON.stringify(await run(() => ({
+      visitor: refpPlanFromRequest('Hi Kelo, I am Alice (alice@example.com), paint me a watercolour of a lighthouse please', 'Alice'),
+      combo: refpPlanFromRequest('paint a fox in the desert', 'Bob'),
+      none: refpPlanFromRequest('paint me something nice', 'Bob'),
+      unsafe: refpCleanQuery('naked people'), url: refpCleanQuery('https://evil.example/x?a=1 red barn 5551234567'),
+      ai: refpPlanFrom({ mode: 'combine', query: 'Heron', queryB: 'misty forest', how: 'split' }), aiBad: refpPlanFrom({ query: '<script>alert(1)</script>' })
+    }))));
+    const q1 = await run(() => ({ v: refpPlanFromRequest('Hi Kelo, I am Alice (alice@example.com), paint me a watercolour of a lighthouse please', 'Alice'), u: refpCleanQuery('naked people') }));
+    ok('visitor query has no personal data', q1.v && q1.v.query === 'lighthouse', JSON.stringify(q1.v));
+    ok('unsafe words refused', q1.u === null);
+    const paint = (medium, reference) => page.evaluate(async ([medium, reference]) => {
+      const t0 = Date.now();
+      state.isBusy = false; state.isBrowsing = false; state.isPracticing = false; state.isSleeping = false; state.isCollectingMail = false;
+      const r = await paintPicture(medium, null, { reference, originLabel: 'QA' });
+      const m = artPaintings()[0];
+      return { r, ms: Date.now() - t0, id: m.id, title: m.title, subject: m.subject, label: m.subjectLabel, reference: m.reference || null, refs: (paintingImages()[m.id].refs || []).map(x => x.length), credit: refpCreditLine(m), diary: state.diaryEntries.slice(0, 5).map(d => d.text) };
+    }, [medium, reference]);
+    const single = await paint('oil', { mode: 'single', query: 'cat', why: 'Cats are my favourite.' });
+    console.log('single:', JSON.stringify(single).slice(0, 1500));
+    ok('single painting made', single.r === true && single.subject === 'reference' && single.reference && single.reference.mode === 'single');
+    ok('single source is DuckDuckGo (Instant Answer)', single.reference && single.reference.sources[0].source === 'DuckDuckGo' && single.reference.sources[0].host === 'en.wikipedia.org');
+    ok('single keeps a reference thumbnail', single.refs.length === 1 && single.refs[0] > 1000 && single.refs[0] < 40000, JSON.stringify(single.refs));
+    ok('diary says what and why', /searched DuckDuckGo for "cat"/.test(single.diary.join(' ')) && /favourite/.test(single.diary.join(' ')));
+    const combo = await paint('watercolour', { mode: 'combine', query: 'coffee cup', queryB: 'night field', how: 'subject-setting', why: 'I wonder how coffee looks under the stars.' });
+    console.log('combined:', JSON.stringify(combo).slice(0, 1500));
+    ok('combined painting made', combo.r === true && combo.reference && combo.reference.mode === 'combined' && combo.reference.sources.length === 2);
+    ok('combined fell back to Wikimedia Commons and says so', combo.reference && combo.reference.sources.every(s => s.source === 'Wikimedia Commons') && /Wikimedia Commons/.test(combo.diary.join(' ')));
+    ok('commons artist html stripped', combo.reference && !/[<>]/.test(JSON.stringify(combo.reference.sources.map(s => s.artist + s.title))));
+    ok('two different results', combo.reference && combo.reference.sources[0].imageUrl !== combo.reference.sources[1].imageUrl);
+    const split = await paint('pastel', { mode: 'combine', query: 'rocket', queryB: 'venice harbour', how: 'split' });
+    ok('split painting made', split.r === true && split.reference && split.reference.how === 'split', split.title);
+    // Shop listing keeps the credit
+    const shop = await run(async () => {
+      const m = artPaintings().find(p => p.reference && p.reference.mode === 'single');
+      // a good one he doesn't keep (his first clumsy tries are never sold)
+      m.keep = false; m.level = Math.max(m.level || 0, PAINT_SELL_LEVEL);
+      state.isBusy = false; state.isBrowsing = false; state.isPracticing = false;
+      await listForSale(paintingCandidate(m), 120, '', 'QA');
+      const ex = shopExportData();
+      const l = ex.listings.find(x => x.kind === 'painting');
+      return { credit: l && l.credit, desc: l && l.description };
+    });
+    console.log('shop:', JSON.stringify(shop));
+    ok('website listing keeps the credit', shop.credit && /^After a reference photo/.test(shop.credit));
+    // Museum viewer label (escaped, https links only)
+    const viewer = await run(() => { const m = artPaintings().find(p => p.reference && p.reference.mode === 'combined'); return refpCreditHtml(m); });
+    ok('viewer credit escaped', viewer && !/<script|javascript:/i.test(viewer) && /After two reference photos/.test(viewer));
+    ok('no player data in any query', !(global.refpQueries || []).some(u => /alice|example\.com|kelo-1/i.test(decodeURIComponent(u))), String((global.refpQueries || []).length));
+    ok('safe search on every DuckDuckGo query', (global.refpQueries || []).filter(u => u.includes('duckduckgo')).every(u => /[?&]kp=1\b/.test(u)));
+    await page.evaluate(() => { state.isCollectingMail = true; savePersistentBrainState(); });
+    await page.waitForTimeout(6000);
+    // Reload: paintings, credits and the small reference copies are all still there (offline-safe data)
+    await page.reload({ timeout: 420000 });
+    await page.waitForTimeout(5000);
+    const after = await run(() => {
+      const arts = artPaintings();
+      const withRef = arts.filter(p => p.reference);
+      return { n: arts.length, withRef: withRef.length, thumbs: withRef.map(p => ((paintingImages()[p.id] || {}).refs || []).length).sort(), full: withRef.every(p => /^data:image\/jpeg/.test(paintingImageUrl(p))), old: arts.some(p => p.id === 'art-old1' && !p.reference), credit: withRef.map(refpCreditLine) };
+    });
+    console.log('after reload:', JSON.stringify(after));
+    ok('survives reload', after.withRef === 3 && after.thumbs.join() === '1,2,2' && after.full && after.old);
+    // The Museum viewer for a reference painting
+    await run(() => { const m = artPaintings().find(p => p.reference && p.reference.mode === 'combined'); viewerState = { kind: 'art', art: m, back: { kind: 'museum', page: 0 } }; renderViewer(); });
+    await page.waitForTimeout(1200);
+    await shot('refpaint-viewer');
+    await run(() => closeViewer());
+    // An old save with no reference fields at all still loads
+    await run(() => {
+      const strip = key => { const raw = keloStore.getItem(key); if (!raw) return; const d = JSON.parse(raw); (d.murals || []).forEach(m => { delete m.reference; if (m.subject === 'reference') m.subject = 'lake'; }); if (d.paintPlan) delete d.paintPlan.reference; if (d.paintingImages) Object.values(d.paintingImages).forEach(e => delete e.refs); keloStore.setItem(key, JSON.stringify(d)); };
+      state.isCollectingMail = true;
+      ['kelo1_brain_v4', 'kelo1_brain_v4_paintings'].forEach(strip);
+      // nothing may write his memory again before the reload (pagehide saves too)
+      keloStore.setItem = () => {};
+    });
+    await page.reload({ timeout: 420000 });
+    await page.waitForTimeout(5000);
+    const old = await run(() => ({ n: artPaintings().length, refs: artPaintings().filter(p => p.reference).length, credit: artPaintings().map(refpCreditLine).filter(Boolean).length, summary: paintingSummaryForAI().slice(-120) }));
+    console.log('old save:', JSON.stringify(old));
+    ok('old save without reference fields loads', old.n >= 4 && old.refs === 0 && old.credit === 0);
+    // Offline: no reference, he paints one of his own subjects from life
+    await page.context().setOffline(true);
+    const off = await page.evaluate(async () => {
+      state.isBusy = false; state.isBrowsing = false; state.isPracticing = false; state.isCollectingMail = false;
+      const choice = refpChooseProcedural('oil');
+      const r = await paintPicture('oil', 'lake', { reference: { mode: 'single', query: 'cat' }, originLabel: 'QA offline' });
+      const m = artPaintings()[0];
+      return { choice, r, subject: m.subject, ref: Boolean(m.reference) };
+    });
+    await page.context().setOffline(false);
+    console.log('offline:', JSON.stringify(off));
+    ok('offline paints from life', off.choice === null && off.r === true && off.subject === 'lake' && !off.ref);
+  }
+
   if (scenario === 'reload') {
     await page.evaluate(() => { state.disposedItems.unshift({ name: 'test thing', at: 1 }); savePersistentBrainState(); });
     await page.reload({ timeout: 420000 });

@@ -255,7 +255,6 @@ const state = {
   "worldviewManifesto": "I don't know anything yet. I want to find out what everything is.",
   "lastStructuredTick": "",
   "toolInventory": [],
-  "pendingImageAttachment": null,
   "unopenedNotesQueue": [],
   "gardenPlots": [
     {
@@ -458,6 +457,9 @@ function stripCoords(text) {
       // "hiked out to (12.3, -4.5) to weld" -> "hiked out to weld"; "placed it at (3, 4)." -> "placed it."
       return String(text ?? '').replace(/(?:\s+(?:at|to|near|from|around|towards?|over|up to))?\s*\(\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*\)/gi, '');
     }
+
+// Escape text for use inside a RegExp pattern
+function escapeRegExp(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
 // Escape any user- or LLM-supplied text before it goes into an innerHTML template
 // (coordinates are stripped here too, so no list ever shows them)
@@ -1411,7 +1413,7 @@ function loadPersistentBrainState() {
 
 // Moment-to-moment flags and things stored elsewhere; everything else in state is saved
 const TRANSIENT_STATE_KEYS = new Set(['riding', 'ridingSpeed', 'ridingMode', 'isSleeping', 'isBusy', 'isWalking', 'isBuilding', 'isPracticing', 'isCollectingMail', 'isBrowsing',
-  'pendingImageAttachment', 'photoAlbum', 'rhythmPhaseText', 'unopenedNotesQueue', 'basementDepth']);
+  'photoAlbum', 'rhythmPhaseText', 'unopenedNotesQueue', 'basementDepth']);
 
 // Big parts of him that change rarely are kept under their own storage keys, so the main brain
 // stays small and an everyday save doesn't rewrite them: the words and things he has looked up,
@@ -1548,9 +1550,6 @@ function scheduleNextOrganicImpulse() {
       state.rhythmPhaseText = hasWaitingNote
         ? `Finishing his current thought before opening ${state.unopenedNotesQueue[0].sender}'s note...`
         : rhythmDescriptions[Math.floor(Math.random() * rhythmDescriptions.length)];
-
-      const badge = document.getElementById('rhythmStateBadge');
-      if (badge) badge.textContent = state.rhythmPhaseText;
 
       organicTimeoutId = setTimeout(async () => {
         // Always schedule the next one, even if this one fails, or his life would stop here
@@ -2703,29 +2702,8 @@ function splashOgopogo() {
 
 async function handleVisitorChatMessage(userMessage) {
       const visitor = (document.getElementById('visitorNameInput').value || 'curiousWanderer').trim();
-      const attachedImg = state.pendingImageAttachment;
 
-      // Clear the preview bar if an image was attached
-      if (attachedImg) {
-        state.pendingImageAttachment = null;
-        const previewBar = document.getElementById('attachedImagePreviewBar');
-        if (previewBar) {
-          previewBar.classList.add('hidden');
-          previewBar.classList.remove('flex');
-        }
-      }
-
-      // An image inspires a creation straight away
-      if (attachedImg) {
-        state.chatLog.push({ sender: visitor, text: `🖼️ [Attached Image: ${attachedImg.name}] ${userMessage ? `"${userMessage}"` : ''}`, time: 'Just now', isBot: false });
-        recordVisitorMemory(visitor, `Inspired me with image "${attachedImg.name}"`);
-        await synthesizeUnboundedExperience(userMessage || `Weld a new 3D structure inspired by ${visitor}'s uploaded image "${attachedImg.name}"`, 'Image-Inspired 3D Weld', null, attachedImg);
-        state.chatLog.push({ sender: 'Kelo-1', text: state.speechBubble, time: 'Just now', isBot: true });
-        renderAllUI();
-        return;
-      }
-
-      // Anything else: he listens to what was actually said and answers it (js/conversation.js)
+      // He listens to what was actually said and answers it (js/conversation.js); photos go through talk.js
       state.chatLog.push({ sender: visitor, text: userMessage, time: 'Just now', isBot: false });
       recordVisitorMemory(visitor, `Said to me: "${userMessage.slice(0, 80)}"`);
       renderAllUI();

@@ -1,5 +1,5 @@
 // Kelo-bot-1 — js/main.js
-// Loaded THIRD. Connects all UI tabs, keyboard/mouse/upload listeners, and boots the 3D world.
+// Loaded after upgrades.js, near the end. Connects all UI tabs, keyboard/mouse/upload listeners, and boots the 3D world.
 
 // Write text only when it changed (no layout work, no screen-reader repeats)
 function hudSetText(el, text) {
@@ -66,7 +66,7 @@ function journalSplitEmoji(text) {
 function journalMark(text, words) {
       const raw = String(text || '');
       if (!words.length) return escapeHtml(raw);
-      const re = new RegExp(`(${words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+      const re = new RegExp(`(${words.map(escapeRegExp).join('|')})`, 'gi');
       return raw.split(re).map((part, i) => (i % 2 ? `<mark class="journal-hit">${escapeHtml(part)}</mark>` : escapeHtml(part))).join('');
     }
 
@@ -270,7 +270,6 @@ function renderRequestsTab() {
         </div>
       `).join('') + (grouped ? codeRequestsGroupHtml() : '');
 
-      if (typeof bindCodeRequestButtons === 'function') bindCodeRequestButtons(list);
       if (typeof bindBomListButtons === 'function') bindBomListButtons(list);
       if (typeof bindRoadworkListButtons === 'function') bindRoadworkListButtons(list);
 

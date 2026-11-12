@@ -159,10 +159,10 @@ body {
 #keloOverheadHUD { pointer-events: auto; left: 50%; bottom: calc(var(--hud-gap) + var(--hud-sb)); transform: translateX(-50%); width: min(560px, calc(100% - 2 * var(--hud-gap) - var(--hud-sl) - var(--hud-sr))); }
 @media (min-width: 640px) { #keloOverheadHUD { width: min(560px, calc(100% - 24rem)); transition: left 0.3s ease, width 0.3s ease; } }
 .hud-activity-card { padding: 10px 14px 11px; border-color: rgba(251, 191, 36, 0.3); }
-.hud-activity-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.hud-activity-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; }
 .hud-activity-emoji { flex: none; font-size: 16px; line-height: 1; }
-.hud-activity-title { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; color: var(--hud-accent-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hud-activity-chips { flex: none; display: flex; align-items: center; gap: 6px; max-width: 58%; min-width: 0; }
+.hud-activity-title { flex: 1 1 auto; max-width: 100%; min-width: 0; font-size: 13.5px; font-weight: 700; color: var(--hud-accent-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud-activity-chips { flex: 0 1 auto; display: flex; align-items: center; gap: 6px; max-width: 100%; min-width: 0; margin-left: auto; }
 .hud-chip { display: inline-flex; align-items: center; gap: 5px; height: 28px; min-width: 0; padding: 0 10px; border-radius: 9999px; font-size: 11.5px; font-weight: 600; white-space: nowrap; background: rgba(148, 163, 184, 0.12); color: #cbd5e1; }
 .hud-chip i { font-size: 13px; flex: none; }
 .hud-chip-place { max-width: 12rem; }
@@ -176,6 +176,7 @@ body {
 /* Through his eyes: a small note above the activity card that fades after a few seconds */
 #eyeCamHud { left: 50%; bottom: var(--explore-above-panel); transform: translateX(-50%); max-width: min(440px, calc(100% - 2 * var(--hud-gap))); padding: 5px 5px 5px 12px; border-radius: 14px; border-color: rgba(45, 212, 191, 0.35); pointer-events: auto; transition: opacity 0.5s ease, left 0.3s ease; }
 #eyeCamHud:not(.hidden) { display: flex; align-items: center; gap: 8px; }
+@media (min-width: 640px) { #eyeCamHud { max-width: min(440px, calc(100% - 22rem)); } } /* clear of the map and the touch controls */
 #eyeCamHud.hud-eyes-faded:not(:hover) { opacity: 0.32; }
 .hud-eyes-tag { flex: none; display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: #5eead4; }
 .hud-eyes-body:not(.hidden) { display: block; min-width: 0; font-size: 12px; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -235,13 +236,15 @@ body.hud-kelo-away #exploreTouchColumn .explore-touch-where { display: flex; }
   #exploreTouchColumn { display: flex; }
   /* The map sits above the joystick */
   #exploreMinimapWrap, #btnShowMinimap { bottom: calc(var(--explore-above-panel) + var(--hud-stick) + 8px); }
-  #eyeCamHud { bottom: calc(var(--explore-above-panel) + var(--hud-stick) + 8px); }
+}
+/* Phones: the joystick row fills the space above the card, so the Eyes note sits under the camera control */
+@media (pointer: coarse) and (max-width: 639px) {
+  #eyeCamHud { top: calc(var(--explore-top) + var(--hud-ctl) + 16px); bottom: auto; left: calc(var(--hud-gap) + var(--hud-sl)); transform: none; max-width: calc(100% - 2 * var(--hud-gap)); }
 }
 /* Tablets: the controls have room beside the activity card, so they sit at the bottom edge */
 @media (pointer: coarse) and (min-width: 640px) {
   #exploreJoystick, #exploreTouchColumn { bottom: calc(var(--hud-gap) + var(--hud-sb)); }
   #exploreMinimapWrap, #btnShowMinimap { bottom: calc(var(--hud-gap) + var(--hud-sb) + var(--hud-stick) + 8px); }
-  #eyeCamHud { bottom: var(--explore-above-panel); }
 }
 
 /* Toasts sit under the camera control and never cover the open menu */

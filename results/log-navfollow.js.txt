@@ -1,0 +1,3 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+{"frames":1309,"maxJerkWhileWalkingAndStops":5.009,"maxJerkInclJump":5.009,"meanJerk":0.0111}
+page errors: none

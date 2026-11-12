@@ -1,0 +1,7 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+depths: [[8.5,"-0.10"],[9.5,"0.25"],[10.5,"1.13"],[11.5,"2.00"],[13,"3.32"],[16,"5.95"]]
+shot water-wading-under
+in the water at z 11.20 body y -2.22
+drowning triggered at z 12.68
+after: {"z":"10.03","knows":true,"asked":true,"diary":"😨 I can't breathe underwater"}
+page errors: none

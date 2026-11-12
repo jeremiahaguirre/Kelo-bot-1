@@ -1,0 +1,5 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+hauled 4
+{"dirtDisposed":0,"load":0,"speech":"Splash! The dirt sinks under the water. That patch is 29% filled: about 3 more truckloads before it breaks the surface."}
+shot haul-after
+page errors: none

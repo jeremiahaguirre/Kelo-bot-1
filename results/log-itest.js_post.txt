@@ -1,0 +1,6 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+shot post-mailbox
+shot post-table
+after {"visit":null,"trip":false,"busy":false,"browsing":false,"practicing":true,"mail":false,"bot":[9.79,7.12],"title":"Heading off to practise Tricks"} { left: 2, onTable: 2 }
+shot post-table-after
+page errors: none

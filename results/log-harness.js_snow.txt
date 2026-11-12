@@ -1,0 +1,13 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+shot snow-winter-valley
+stuck: true {
+  sink: 0.45,
+  speech: "I'll dig my way back out. Snow is soft, so my feet push straight through it. I need something wider to stand on."
+}
+shot snow-stuck
+researched: true
+requests: A snowmobile | A pair of cross-country skis | A pair of snowshoes | A sturdy shovel
+with snowshoes: { factor: 0.8, sink: 0 }
+shot snow-snowshoes
+shot snow-spring-valley
+page errors: none

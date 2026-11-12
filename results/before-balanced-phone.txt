@@ -1,0 +1,7 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+balanced/phone town {"calls":1386,"tris":281772,"js":10.9,"frame":628.6,"p95":851.9,"frames":7,"chunks":null}
+balanced/phone meadow {"calls":716,"tris":222820,"js":8.4,"frame":617.4,"p95":624.6,"frames":7,"chunks":null}
+balanced/phone mountain {"calls":685,"tris":215310,"js":6,"frame":487.2,"p95":507.2,"frames":9,"chunks":null}
+balanced/phone high {"calls":1987,"tris":304128,"js":12,"frame":808.6,"p95":833.9,"frames":5,"chunks":null}
+RESULT {"gfx":"balanced","phone":true,"out":{"town":{"calls":1386,"tris":281772,"js":10.9,"frame":628.6,"p95":851.9,"frames":7,"chunks":null},"meadow":{"calls":716,"tris":222820,"js":8.4,"frame":617.4,"p95":624.6,"frames":7,"chunks":null},"mountain":{"calls":685,"tris":215310,"js":6,"frame":487.2,"p95":507.2,"frames":9,"chunks":null},"high":{"calls":1987,"tris":304128,"js":12,"frame":808.6,"p95":833.9,"frames":5,"chunks":null}}}
+page errors: none

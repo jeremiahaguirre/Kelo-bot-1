@@ -1,0 +1,6 @@
+ 30 fps  wall: furthest past 24.791 (top speed 33.7 u/s = 1.12 a frame, ended at x 84.84, crossed the wall line at z 25.81 (the wall runs z 10 to 80)) TUNNELLED | building: closest 0.893 (stopped at x 15.78) ok | shards: lowest 0.0000 above floor ok | landing: lowest -0.029 above ground, stopped true at s 203.5/203.5, lowest at [202.77718056865567,33.595,1.8062563493480552,"rollout"] ok | page errors: none
+ 60 fps  wall: furthest past -0.645 (top speed 33.7 u/s = 0.56 a frame, ended at x 59.14, never crossed the wall line) ok | building: closest 0.723 (stopped at x 15.61) ok | shards: lowest 0.0000 above floor ok | landing: lowest -0.029 above ground, stopped true at s 203.5/203.5, lowest at [202.72947374476632,33.595,1.8539631732373976,"rollout"] ok | page errors: none
+144 fps  wall: furthest past -0.641 (top speed 33.7 u/s = 0.23 a frame, ended at x 59.35, never crossed the wall line) ok | building: closest 0.624 (stopped at x 15.51) ok | shards: lowest 0.0000 above floor ok | landing: lowest -0.030 above ground, stopped true at s 203.5/203.5, lowest at [202.7390037401757,33.595,1.8444331778280314,"rollout"] ok | page errors: none
+shards end positions 30 vs 144 fps: max difference 5.31e-2
+plane stop 30 vs 144 fps: 0.00e+0 units apart
+TUNNEL TEST: FAIL

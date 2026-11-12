@@ -1,0 +1,12 @@
+fast town     calls on 1352 / off 1765  tris on 296478 / off 288672  on vs off: 3.847% of pixels (>40: 0.7%), off vs off 3.658% (>40: 0.93%)  merged chunks 4, parts 368
+fast meadow   calls on 680 / off 681  tris on 221047 / off 221779  on vs off: 2.205% of pixels (>40: 0.127%), off vs off 1.797% (>40: 0.126%)  merged chunks 1, parts 98
+fast mountain calls on 529 / off 540  tris on 200188 / off 197564  on vs off: 0% of pixels (>40: 0%), off vs off 0% (>40: 0%)  merged chunks 2, parts 128
+fast high     calls on 1559 / off 2192  tris on 328644 / off 323136  on vs off: 0.319% of pixels (>40: 0.015%), off vs off 0.394% (>40: 0.02%)  merged chunks 5, parts 479
+CHUNK A/B: PASS
+page errors: none
+balanced town     calls on 1468 / off 1781  tris on 315012 / off 273542  on vs off: 3.18% of pixels (>40: 1.11%), off vs off 3.566% (>40: 1.213%)  merged chunks 4, parts 367
+balanced meadow   calls on 680 / off 682  tris on 221671 / off 222415  on vs off: 0.978% of pixels (>40: 0.059%), off vs off 0.808% (>40: 0.061%)  merged chunks 1, parts 97
+balanced mountain calls on 468 / off 482  tris on 196302 / off 191718  on vs off: 0% of pixels (>40: 0%), off vs off 0% (>40: 0%)  merged chunks 2, parts 127
+balanced high     calls on 1607 / off 2298  tris on 329630 / off 329354  on vs off: 0.453% of pixels (>40: 0.052%), off vs off 0.385% (>40: 0.035%)  merged chunks 5, parts 482
+CHUNK A/B: PASS
+page errors: none

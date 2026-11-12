@@ -1,0 +1,8 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+forklift {"v":["An electric workshop forklift","forklift",48,-15.549999999999999,60],"terrain":"indoor floors and paved yards only: the Workshop, the hangar and their aprons","cap":true}
+shot forklift-rack
+never saw carrying
+shot forklift-pallet
+shot forklift-charging
+charging [true,24]
+page errors: none

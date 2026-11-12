@@ -1,0 +1,11 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+balanced/phone town {"calls":1088,"tris":283288,"js":11.6,"frame":1174.7,"p95":1519.5,"frames":5,"chunks":{"chunks":10,"shown":4,"shadow":8,"proxies":2,"mergedParts":240,"entries":130,"meshes":1460,"ms":0.3}}
+shot after-phone-balanced-town.png
+balanced/phone meadow {"calls":691,"tris":222388,"js":9.7,"frame":1128.5,"p95":1167.2,"frames":5,"chunks":{"chunks":10,"shown":5,"shadow":8,"proxies":1,"mergedParts":63,"entries":130,"meshes":1460,"ms":0.3}}
+shot after-phone-balanced-meadow.png
+balanced/phone mountain {"calls":671,"tris":213075,"js":8,"frame":925.6,"p95":933.6,"frames":5,"chunks":{"chunks":10,"shown":4,"shadow":8,"proxies":0,"mergedParts":0,"entries":130,"meshes":1460,"ms":0.4}}
+shot after-phone-balanced-mountain.png
+balanced/phone high {"calls":1600,"tris":309126,"js":16.6,"frame":1458.5,"p95":1601.3,"frames":5,"chunks":{"chunks":10,"shown":6,"shadow":10,"proxies":3,"mergedParts":327,"entries":130,"meshes":1460,"ms":4.3}}
+shot after-phone-balanced-high.png
+RESULT {"gfx":"balanced","phone":true,"out":{"town":{"calls":1088,"tris":283288,"js":11.6,"frame":1174.7,"p95":1519.5,"frames":5,"chunks":{"chunks":10,"shown":4,"shadow":8,"proxies":2,"mergedParts":240,"entries":130,"meshes":1460,"ms":0.3}},"meadow":{"calls":691,"tris":222388,"js":9.7,"frame":1128.5,"p95":1167.2,"frames":5,"chunks":{"chunks":10,"shown":5,"shadow":8,"proxies":1,"mergedParts":63,"entries":130,"meshes":1460,"ms":0.3}},"mountain":{"calls":671,"tris":213075,"js":8,"frame":925.6,"p95":933.6,"frames":5,"chunks":{"chunks":10,"shown":4,"shadow":8,"proxies":0,"mergedParts":0,"entries":130,"meshes":1460,"ms":0.4}},"high":{"calls":1600,"tris":309126,"js":16.6,"frame":1458.5,"p95":1601.3,"frames":5,"chunks":{"chunks":10,"shown":6,"shadow":10,"proxies":3,"mergedParts":327,"entries":130,"meshes":1460,"ms":4.3}}}}
+page errors: none

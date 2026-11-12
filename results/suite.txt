@@ -1,0 +1,21 @@
+harness.js reload | exit 0 | 38s | page errors: none
+harness.js chat | exit 0 | 147s | page errors: none
+harness.js ui | exit 0 | 98s | page errors: none
+harness.js water | exit 0 | 55s | page errors: none
+harness.js gear | exit 0 | 129s | page errors: none
+harness.js haul | exit 0 | 289s | page errors: none
+harness.js vehicle | exit 0 | 163s | page errors: none
+harness.js snow | exit 0 | 165s | page errors: none
+harness.js basement | exit 0 | 188s | page errors: none
+harness.js landfill | exit 0 | 170s | page errors: none
+harness.js planitems | exit 0 | 223s | page errors: none
+ws.js sla | exit 0 | 194s | page errors: none
+ws.js garage | exit 0 | 2348s | page errors: none
+ws.js forklift | exit 0 | 1133s | page errors: none
+ws.js floor3 | exit 0 | 2661s | page errors: none  (rerun alone: the first run hit the 2400 s suite timeout mid-job on the slow machine)
+itest.js netnode | exit 0 | 194s | page errors: none
+itest.js cafe | exit 0 | 142s | page errors: none
+itest.js post | exit 0 | 148s | page errors: none
+navtest.js | exit 0 | 22s | page errors: none
+navfollow.js | exit 0 | 24s | page errors: none
+SUITE DONE

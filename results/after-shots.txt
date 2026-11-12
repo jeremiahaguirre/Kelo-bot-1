@@ -1,0 +1,13 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+balanced town {"calls":1779,"tris":315986,"js":17.4,"frame":3118.2,"p95":3245.6,"frames":5,"chunks":{"chunks":10,"shown":6,"shadow":8,"proxies":2,"mergedParts":240,"entries":130,"meshes":1460,"ms":0.4}}
+shot after-balanced-town.png
+balanced meadow {"calls":1345,"tris":261637,"js":14.2,"frame":3711.2,"p95":3764,"frames":5,"chunks":{"chunks":10,"shown":7,"shadow":8,"proxies":3,"mergedParts":205,"entries":130,"meshes":1460,"ms":0.4}}
+shot after-balanced-meadow.png
+balanced mountain {"calls":754,"tris":222205,"js":11.2,"frame":2800.9,"p95":2860.4,"frames":5,"chunks":{"chunks":10,"shown":6,"shadow":8,"proxies":2,"mergedParts":52,"entries":130,"meshes":1460,"ms":0.4}}
+shot after-balanced-mountain.png
+balanced high {"calls":1803,"tris":341282,"js":18.9,"frame":3475,"p95":3549.2,"frames":5,"chunks":{"chunks":10,"shown":10,"shadow":10,"proxies":7,"mergedParts":548,"entries":130,"meshes":1460,"ms":0.5}}
+shot after-balanced-high.png
+balanced workshop {"calls":1219,"tris":270322,"js":15.9,"frame":2382.5,"p95":2446,"frames":5}
+shot after-balanced-workshop.png
+RESULT {"gfx":"balanced","phone":false,"out":{"town":{"calls":1779,"tris":315986,"js":17.4,"frame":3118.2,"p95":3245.6,"frames":5,"chunks":{"chunks":10,"shown":6,"shadow":8,"proxies":2,"mergedParts":240,"entries":130,"meshes":1460,"ms":0.4}},"meadow":{"calls":1345,"tris":261637,"js":14.2,"frame":3711.2,"p95":3764,"frames":5,"chunks":{"chunks":10,"shown":7,"shadow":8,"proxies":3,"mergedParts":205,"entries":130,"meshes":1460,"ms":0.4}},"mountain":{"calls":754,"tris":222205,"js":11.2,"frame":2800.9,"p95":2860.4,"frames":5,"chunks":{"chunks":10,"shown":6,"shadow":8,"proxies":2,"mergedParts":52,"entries":130,"meshes":1460,"ms":0.4}},"high":{"calls":1803,"tris":341282,"js":18.9,"frame":3475,"p95":3549.2,"frames":5,"chunks":{"chunks":10,"shown":10,"shadow":10,"proxies":7,"mergedParts":548,"entries":130,"meshes":1460,"ms":0.5}},"workshop":{"calls":1219,"tris":270322,"js":15.9,"frame":2382.5,"p95":2446,"frames":5}}}
+page errors: none

@@ -1,0 +1,8 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+fast town {"calls":1775,"tris":292724,"js":13.8,"frame":1235.5,"p95":1272.3,"frames":5,"chunks":null}
+fast meadow {"calls":1462,"tris":259604,"js":10.3,"frame":1405.3,"p95":1429,"frames":5,"chunks":null}
+fast mountain {"calls":694,"tris":211700,"js":9.2,"frame":897.7,"p95":913.3,"frames":5,"chunks":null}
+fast high {"calls":2362,"tris":330087,"js":16.9,"frame":1356.3,"p95":1380.6,"frames":5,"chunks":null}
+fast workshop {"calls":1277,"tris":315328,"js":13.7,"frame":2013.9,"p95":2071.3,"frames":5}
+RESULT {"gfx":"fast","phone":false,"out":{"town":{"calls":1775,"tris":292724,"js":13.8,"frame":1235.5,"p95":1272.3,"frames":5,"chunks":null},"meadow":{"calls":1462,"tris":259604,"js":10.3,"frame":1405.3,"p95":1429,"frames":5,"chunks":null},"mountain":{"calls":694,"tris":211700,"js":9.2,"frame":897.7,"p95":913.3,"frames":5,"chunks":null},"high":{"calls":2362,"tris":330087,"js":16.9,"frame":1356.3,"p95":1380.6,"frames":5,"chunks":null},"workshop":{"calls":1277,"tris":315328,"js":13.7,"frame":2013.9,"p95":2071.3,"frames":5}}}
+page errors: none

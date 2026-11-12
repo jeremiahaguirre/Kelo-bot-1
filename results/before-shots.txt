@@ -1,0 +1,13 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+balanced town {"calls":1909,"tris":312655,"js":12.5,"frame":3114.7,"p95":3135.9,"frames":5,"chunks":null}
+shot before-balanced-town.png
+balanced meadow {"calls":1465,"tris":261747,"js":12.6,"frame":3723.2,"p95":3760.9,"frames":5,"chunks":null}
+shot before-balanced-meadow.png
+balanced mountain {"calls":768,"tris":220651,"js":8.1,"frame":2753.5,"p95":2842.1,"frames":5,"chunks":null}
+shot before-balanced-mountain.png
+balanced high {"calls":2541,"tris":339127,"js":16,"frame":3421.5,"p95":3482.4,"frames":5,"chunks":null}
+shot before-balanced-high.png
+balanced workshop {"calls":1223,"tris":270322,"js":11,"frame":2355.7,"p95":2395.8,"frames":5}
+shot before-balanced-workshop.png
+RESULT {"gfx":"balanced","phone":false,"out":{"town":{"calls":1909,"tris":312655,"js":12.5,"frame":3114.7,"p95":3135.9,"frames":5,"chunks":null},"meadow":{"calls":1465,"tris":261747,"js":12.6,"frame":3723.2,"p95":3760.9,"frames":5,"chunks":null},"mountain":{"calls":768,"tris":220651,"js":8.1,"frame":2753.5,"p95":2842.1,"frames":5,"chunks":null},"high":{"calls":2541,"tris":339127,"js":16,"frame":3421.5,"p95":3482.4,"frames":5,"chunks":null},"workshop":{"calls":1223,"tris":270322,"js":11,"frame":2355.7,"p95":2395.8,"frames":5}}}
+page errors: none

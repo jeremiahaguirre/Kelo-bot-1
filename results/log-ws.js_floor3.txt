@@ -1,0 +1,28 @@
+0s console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+87s shot elevator-floor3
+89s landing 3 ["Car elevator: at the floor 3 landing",3,"12.88"]
+129s shot elevator-floor2
+132s landing 2 ["Car elevator: at the floor 2 landing",2,"5.28"]
+169s shot elevator-floor1
+172s landing 1 ["Car elevator: at the floor 1 landing",1,"0.00"]
+188s tour done tour:[] [59.35,4.6,{"x":57,"z":2.3999999999999995}]
+317s shot glass-gather
+319s shot at ["Gathering molten glass from the crucible","Dip the blowpipe, turn, turn, lift: a honey-bright gather."]
+992s shot glass-blow
+994s shot at ["Blowing the first bubble","A puff, thumb over the end... it swells."]
+1059s shot glass-gloryhole
+1062s shot at ["Reheating in the glory hole","Back in the glory hole before it gets too stiff."]
+1177s shot glass-anneal
+1179s shot at ["Annealing: 900 °F, slow cool","It goes in the annealer and cools a few degrees a minute, so it won't crack."]
+1291s job result true
+1293s glass {"made":{"name":"A hand-blown glass vase","from":"glass studio","at":1794482591673},"kind":"vase","supplies":{"a 50 lb bag of clear glass cullet":{"cur":2,"per":4},"a jar of coloured glass frit and colour rod":{"cur":5,"per":6},"a month of furnace gas on the gas meter":{"cur":2,"per":4}}}
+1488s shot wood-tablesaw
+1490s shot at ["Ripping to width on the table saw","Push stick in hand, riving knife on, blade guard down."]
+1678s job result true
+2590s never saw Turning the bowl title: Taking the car elevator to floor 1
+2615s shot wood-lathe
+2618s shot at ["Taking the car elevator to floor 1","For the Wood lathe (turned bowls) I still need cherry bowl blank. I asked for it."]
+2629s job result not-ready
+2632s wood [{"name":"A handmade maple side table","from":"woodshop","at":1794482978449},{"name":"A hand-blown glass vase","from":"glass studio","at":1794482591673}]
+2661s shot floor3-overview
+2661s page errors: none

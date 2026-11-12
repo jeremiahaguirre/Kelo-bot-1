@@ -1,0 +1,4 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+vehicle disposed true {"vehicles":["Dump truck"],"tools":["Dump truck","A sturdy shovel"],"meshes":1}
+shot vehicle-after
+page errors: none

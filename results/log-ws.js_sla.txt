@@ -1,0 +1,11 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+before {"s":{"a 1 l bottle of grey photopolymer resin":{"cur":4,"per":4},"a 4 l jug of 99% isopropyl alcohol (ipa)":{"cur":6,"per":6},"a box of nitrile gloves":{"cur":10,"per":10}},"missing":[]}
+shot sla-print
+shot at ["Printing a resin jewellery master layer","Nitrile gloves on. Shake the resin well, fill the tank to the line."]
+shot sla-wash
+shot at ["Washing the print in IPA","Ten minutes swishing in isopropyl alcohol to get the sticky resin off."]
+shot sla-cure
+shot at ["UV curing it on the turntable","Then UV light and a little heat, so it is fully hard."]
+job result true
+after {"s":{"a 1 l bottle of grey photopolymer resin":{"cur":3,"per":4},"a 4 l jug of 99% isopropyl alcohol (ipa)":{"cur":5,"per":6},"a box of nitrile gloves":{"cur":9,"per":10},"an sla-printed resin jewellery master":{"cur":1,"per":1}},"made":[{"name":"An SLA-printed resin jewellery master","from":"SLA printer","at":1794466889668}],"skills":["ws-wash","ws-cure","ws-sla"],"bel":[{"name":"An SLA-printed resin jewellery master","category":"made","emoji":"🖨️","from":"his Workshop (SLA printer)"},{"name":"A box of nitrile gloves","category":"thing","emoji":"🎁","from":"test"}],"kind":{"kind":"made part","label":"a part he made in his Workshop, for builds and repairs","re":{},"uses":["build","fix","display"],"per":1,"unit":"build"}}
+page errors: none

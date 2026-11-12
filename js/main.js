@@ -889,6 +889,9 @@ window.addEventListener('DOMContentLoaded', () => {
       storeKey('kelo1_anthropic_api_key', claudeApiKey);
     }
     updateBrainButtonText();
+    // A shop contact that isn't valid wasn't saved (js/shopkeeping.js says so): keep the dialog open to fix it
+    const contact = document.getElementById('shopContactInput');
+    if (contact && typeof normalizeShopContact === 'function' && normalizeShopContact(contact.value) === null) { contact.focus(); return; }
     closeModal('aiConfigModal');
     showToast(hasLLMKey() ? '🧠 AI keys saved on this device. He starts thinking with the AI now.' : '🧠 Using the built-in procedural brain.');
     if (hasLLMKey()) switchToAIThinking();

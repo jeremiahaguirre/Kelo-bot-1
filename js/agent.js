@@ -2372,7 +2372,11 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will', conte
       if (!state.life.bornAt) state.life.bornAt = Date.now();
       // Wait if he is mid-thought or mid-build, so gifts and photos are never silently dropped
       for (let i = 0; i < 360 && (state.isBusy || state.isBuilding || state.isPracticing); i++) await new Promise(r => setTimeout(r, 250));
-      if (state.isBusy || state.isBuilding || state.isPracticing) return;
+      if (state.isBusy || state.isBuilding || state.isPracticing) {
+        // Still busy after a long job: something that happened to him (a gift, an answer) waits its turn
+        if (trigger) doWhenFree(() => decideNextAction(trigger, originLabel, context), { key: `decide:${originLabel}:${String(trigger).slice(0, 160)}` });
+        return;
+      }
       state.isBusy = true;
       try {
         let decision = null;

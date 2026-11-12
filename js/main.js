@@ -187,13 +187,13 @@ function renderDiaryTab() {
       });
       if (lastDay) html += '</div></section>';
       if (!all.length) {
-        html = `<div class="menu-empty"><div class="menu-empty-icon" aria-hidden="true">📓</div><p class="menu-empty-title">His diary is still blank</p><p>He writes in it after things happen. Come back once he has been out and about.</p></div>`;
+        html = `<div class="menu-empty"><i class="ph-bold ph-notebook menu-empty-icon" data-hud-emoji="📓" aria-hidden="true"></i><p class="menu-empty-title">His diary is still blank</p><p>He writes in it after things happen. Come back once he has been out and about.</p></div>`;
       } else if (!shown.length && filtering) {
-        html = `<div class="menu-empty"><div class="menu-empty-icon" aria-hidden="true">🔍</div><p class="menu-empty-title">Nothing matches</p><p>Try fewer words or a wider time range.</p><button type="button" class="menu-btn mt-2" data-journal-clear>Clear search</button></div>`;
+        html = `<div class="menu-empty"><i class="ph-bold ph-magnifying-glass menu-empty-icon" data-hud-emoji="🔍" aria-hidden="true"></i><p class="menu-empty-title">Nothing matches</p><p>Try fewer words or a wider time range.</p><button type="button" class="menu-btn mt-2" data-journal-clear>Clear search</button></div>`;
       }
       perfSetHtml(listEl, html);
       const left = rest.length - shown.length;
-      perfSetHtml(more, left > 0 ? `<button type="button" class="menu-btn w-full justify-center" data-journal-more>Load older entries <span class="text-slate-500">(${left.toLocaleString()} more)</span></button>` : (shown.length > 6 && !filtering ? '<p class="journal-end">The first page of his diary</p>' : ''));
+      perfSetHtml(more, left > 0 ? `<button type="button" class="menu-btn w-full justify-center" data-journal-more>Load older entries <span class="text-slate-400 tabular-nums">(${left.toLocaleString()} more)</span></button>` : (shown.length > 6 && !filtering ? '<p class="journal-end">The first page of his diary</p>' : ''));
     }
 
 function renderRequestsTab() {
@@ -1018,6 +1018,21 @@ window.addEventListener('DOMContentLoaded', () => {
       showToast('Kelo-1 is busy finishing something first.');
       return;
     }
+    const btn = document.getElementById('btnBrowseWebNow');
     browseInternet(null, 'Visitor Sent Him Online');
+    // While he walks over and reads, the button says so (and can't be pressed twice)
+    if (btn && state.isBrowsing) {
+      const label = btn.textContent;
+      btn.disabled = true;
+      btn.setAttribute('aria-busy', 'true');
+      btn.innerHTML = '<span class="ui-loading text-2xs"><span class="ui-spinner" aria-hidden="true"></span>Browsing…</span>';
+      const done = setInterval(() => {
+        if (state.isBrowsing) return;
+        clearInterval(done);
+        btn.disabled = false;
+        btn.removeAttribute('aria-busy');
+        btn.textContent = label;
+      }, 1000);
+    }
   });
 });

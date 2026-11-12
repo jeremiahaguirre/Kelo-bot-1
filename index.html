@@ -217,7 +217,7 @@
             <input id="visitorNameInput" type="text" maxlength="40" placeholder="Your name" class="talk-field flex-1" autocomplete="nickname">
             <button type="submit" class="talk-btn-primary">Save</button>
           </div>
-          <p class="text-2xs text-slate-500">Saved on this device only.</p>
+          <p class="ui-note">Saved on this device only.</p>
         </form>
 
         <div class="talk-thread-wrap">
@@ -235,8 +235,8 @@
           <!-- Send a gift, tool or toy (opened from the + menu); it goes to the post office -->
           <form id="talkGiftSheet" class="talk-sheet hidden" aria-labelledby="talkGiftTitle" autocomplete="off">
             <div class="flex items-center justify-between gap-2">
-              <h3 id="talkGiftTitle" class="text-xs font-bold text-amber-200">🎁 Send Kelo-1 a gift, tool or toy</h3>
-              <button type="button" id="talkGiftClose" class="talk-icon-btn" aria-label="Close">✕</button>
+              <h3 id="talkGiftTitle" class="ui-section-title">Send Kelo-1 a gift, tool or toy</h3>
+              <button type="button" id="talkGiftClose" class="talk-icon-btn" aria-label="Close"><i class="ph-bold ph-x" data-hud-emoji="✕" aria-hidden="true"></i></button>
             </div>
             <div id="talkGiftCatalog" class="flex flex-wrap gap-1.5" role="group" aria-label="Ideas"></div>
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-1.5">
@@ -245,12 +245,12 @@
               <label class="sr-only" for="talkGiftKind">Kind of thing</label>
               <select id="talkGiftKind" class="talk-field sm:col-span-5">
                 <option value="">Kind: let him guess</option>
-                <option value="tool">🛠️ Tool</option>
-                <option value="toy">🪀 Toy</option>
-                <option value="food">🍒 Food</option>
-                <option value="material">🧱 Material</option>
-                <option value="vehicle">🛶 Vehicle</option>
-                <option value="thing">🎁 Something else</option>
+                <option value="tool">Tool</option>
+                <option value="toy">Toy</option>
+                <option value="food">Food</option>
+                <option value="material">Material</option>
+                <option value="vehicle">Vehicle</option>
+                <option value="thing">Something else</option>
               </select>
             </div>
             <div class="flex gap-1.5">
@@ -258,7 +258,7 @@
               <input id="talkGiftNote" type="text" maxlength="200" placeholder="Add a note (optional)" class="talk-field flex-1">
               <button type="submit" class="talk-btn-primary shrink-0">Send gift</button>
             </div>
-            <p class="text-2xs text-slate-500">It waits at the post office until he picks it up.</p>
+            <p class="ui-note">It waits at the post office until he picks it up.</p>
           </form>
 
           <div id="talkAttachPreview" class="talk-attach hidden">
@@ -267,7 +267,7 @@
               <div id="talkAttachName" class="text-2xs font-semibold text-slate-200 truncate">photo.jpg</div>
               <div class="text-2xs text-slate-400">He'll make something inspired by it</div>
             </div>
-            <button type="button" id="talkAttachRemove" class="talk-icon-btn" aria-label="Remove the photo">✕</button>
+            <button type="button" id="talkAttachRemove" class="talk-icon-btn" aria-label="Remove the photo"><i class="ph-bold ph-x" data-hud-emoji="✕" aria-hidden="true"></i></button>
           </div>
 
           <form id="chatForm" class="talk-form" autocomplete="off">
@@ -276,8 +276,8 @@
                 <svg aria-hidden="true" viewBox="0 0 20 20" width="18" height="18"><path d="M10 4v12M4 10h12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
               </button>
               <div id="talkPlusMenu" class="talk-menu hidden" role="menu" aria-label="Add to your message">
-                <button type="button" role="menuitem" data-talk-plus="photo" class="talk-menu-item"><span aria-hidden="true">📷</span><span><b>Attach a photo</b><small>He makes something inspired by it</small></span></button>
-                <button type="button" role="menuitem" data-talk-plus="gift" class="talk-menu-item"><span aria-hidden="true">🎁</span><span><b>Send a gift, tool or toy</b><small>It goes to the post office</small></span></button>
+                <button type="button" role="menuitem" data-talk-plus="photo" class="talk-menu-item"><i class="ph-bold ph-camera" data-hud-emoji="📷" aria-hidden="true"></i><span><b>Attach a photo</b><small>He makes something inspired by it</small></span></button>
+                <button type="button" role="menuitem" data-talk-plus="gift" class="talk-menu-item"><i class="ph-bold ph-gift" data-hud-emoji="🎁" aria-hidden="true"></i><span><b>Send a gift, tool or toy</b><small>It goes to the post office</small></span></button>
               </div>
               <input id="imageUploadInput" type="file" accept="image/*" class="hidden" tabindex="-1" aria-hidden="true">
             </div>

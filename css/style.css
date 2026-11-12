@@ -546,7 +546,7 @@ body.hud-kelo-away #exploreTouchColumn .explore-touch-where { display: flex; }
 .talk-icon-btn:hover { background: var(--hud-surface-2); color: var(--hud-text); }
 .talk-menu { position: absolute; left: 0; bottom: 48px; z-index: 10; width: 260px; padding: 6px; border-radius: var(--hud-r); background: var(--hud-surface-1); border: 1px solid var(--hud-line-strong); box-shadow: var(--hud-shadow-pop); }
 .talk-menu-item { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 8px 10px; border-radius: var(--hud-r-ctl); text-align: left; font-size: var(--hud-fs-xs); color: var(--hud-text); }
-.talk-menu-item > span:first-child { font-size: var(--hud-fs-lg); line-height: 1.2; }
+.talk-menu-item > i { font-size: 17px; line-height: 1.2; color: var(--hud-muted); }
 .talk-menu-item b { display: block; font-weight: var(--hud-fw-semibold); }
 .talk-menu-item small { display: block; font-size: var(--hud-fs-3xs); color: var(--hud-muted); }
 .talk-menu-item:hover, .talk-menu-item:focus-visible { background: var(--hud-surface-2); outline: none; }

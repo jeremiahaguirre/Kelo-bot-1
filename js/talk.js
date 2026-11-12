@@ -280,11 +280,11 @@ function talkSafeImg(src) {
     }
 
 function talkEventHtml(m) {
-      const [icon, word] = TALK_STATUS[m.status] || TALK_STATUS.stopped;
+      const word = (TALK_STATUS[m.status] || TALK_STATUS.stopped)[1];
       if (m.kind === 'lookup') {
         const doing = m.status === 'doing';
         return `<div class="talk-event talk-lookup">
-            <span aria-hidden="true">📘</span>
+            <i class="ph-bold ph-book-open-text text-sky-300" data-hud-emoji="📘" aria-hidden="true"></i>
             <div class="min-w-0 flex-1">
               <div class="talk-event-title">${doing ? `Looking up ‘${escapeHtml(m.word)}’ at NetNode…` : m.found ? `Looked up ‘${escapeHtml(m.word)}’` : `Couldn’t find ‘${escapeHtml(m.word)}’`}</div>
               ${m.found ? `<div class="talk-event-note">${escapeHtml(m.found)}</div>` : ''}
@@ -293,7 +293,7 @@ function talkEventHtml(m) {
           </div>`;
       }
       return `<div class="talk-event">
-          <span class="talk-status talk-status-${escapeHtml(m.status)}">${m.status === 'doing' ? '<span class="talk-pulse" aria-hidden="true"></span>' : `<span aria-hidden="true">${icon}</span>`}${word}</span>
+          <span class="talk-status talk-status-${escapeHtml(m.status)}">${m.status === 'doing' ? '<span class="talk-pulse" aria-hidden="true"></span>' : ''}${word}</span>
           <div class="min-w-0 flex-1">
             <div class="talk-event-title">${escapeHtml(m.text)}</div>
             ${m.note ? `<div class="talk-event-note">${escapeHtml(m.note)}</div>` : ''}

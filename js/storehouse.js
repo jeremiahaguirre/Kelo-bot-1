@@ -560,6 +560,13 @@ async function putAwayItems() {
 // Called from inside another activity, so it doesn't change the activity flags itself.
 // That copy is out (its slot shows empty) until he puts it back once he is free again.
 async function fetchFromStorehouse(matchName) {
+      const matches = n => (matchName instanceof RegExp ? matchName.test(n) : n.toLowerCase() === String(matchName).toLowerCase());
+      // He still has one out from last time (not put back yet): he uses that, not a second copy
+      const already = storeCopiesOut().find(c => matches(c.name));
+      if (already) {
+        if (typeof setCarriedObject === 'function' && (typeof carriedObject === 'undefined' || !carriedObject)) setCarriedObject(buildItemModel3D(already.name, { label: false }));
+        return { name: already.name, kind: storeCopyKinds.get(already.name.toLowerCase()) || 'thing', id: already.id, slot: already.slot };
+      }
       const list = storedItems();
       const item = list.find(i => (matchName instanceof RegExp ? matchName.test(i.name) : i.name.toLowerCase() === String(matchName).toLowerCase()));
       if (!item) return null;

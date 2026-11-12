@@ -442,6 +442,20 @@ async function buildRoad(fromX, fromZ, toX, toZ, why = '', originLabel = 'Shapin
       if (len < 2) return false;
       // Long roads are built a stretch at a time
       if (len > 18) { toX = fromX + (toX - fromX) * 18 / len; toZ = fromZ + (toZ - fromZ) * 18 / len; }
+      // The whole line must stay out of town, buildings and the lake: it stops short of the first spot that isn't
+      const segLen = Math.min(len, 18);
+      let clear = segLen, blockedBy = null;
+      for (let d = 0.5; d <= segLen; d += 0.5) {
+        const b = offLimits(fromX + (toX - fromX) * d / segLen, fromZ + (toZ - fromZ) * d / segLen);
+        if (b) { clear = d - 0.5; blockedBy = b; break; }
+      }
+      if (blockedBy && clear >= 2) { toX = fromX + (toX - fromX) * clear / segLen; toZ = fromZ + (toZ - fromZ) * clear / segLen; }
+      else if (blockedBy && !offLimits(fromX, fromZ)) {
+        state.speechBubble = blockedBy === 'town' ? "That road would run into town. Town isn't mine to build in, so I'll lay it somewhere else."
+          : `That road would run into ${blockedBy}. I'll lay it somewhere else.`;
+        renderAllUI();
+        return false;
+      }
       if (!startJob(fromX, fromZ)) return false;
       try {
         if (typeof fetchFromStorehouse === 'function') await fetchFromStorehouse(shovel);

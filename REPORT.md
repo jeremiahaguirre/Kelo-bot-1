@@ -6,6 +6,7 @@
 - a229e8e Panel, buttons and filter match the menu redesign, grab handle on the phone sheet
 - 00cb331 See overhead machines (fume hood) and the elevator shaft on your floor from their viewing spots
 - 3faf20d Handoff: Workshop visit after the machine remodel
+- 0349999 Try the farther rings before the close one (phone re-run: 4 targets clear, fails: none, page errors: none)
 
 ## What changed
 - `svViewSpot(t)` finds the viewing spot: first a step back from where he stands to work the machine, then rings round it at growing distances. A spot counts only if a line-of-sight check (`svSeesFrom`) hits that machine first. `svGoToTarget` uses the spot and pitches the view toward the machine's height.
@@ -27,5 +28,5 @@
 - Phone 390x844: each area, the list, after exit, and bottom-sheet cards for pnp and lift2.
 
 ## Left
-- On a tall phone screen the viewing spot is sometimes close to big machines (the pick-and-place was seen from 1.25 units), so you see part of the machine. The spot is clear, and you can step back.
+- On a tall phone screen the viewing spot is sometimes close to big machines (the pick-and-place is seen from 1.25 units: its first-choice spot, a step back from his work spot, is free and clear, but its row's aisle has no room further back), so you see part of the machine. The spot is clear, and you can step back.
 - New halls from agent/runway need their walkable rectangle and an SV_AREAS entry once that branch lands.

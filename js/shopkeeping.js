@@ -114,6 +114,11 @@ function paintingFor(name) {
 // Would he sell it? Not his first clumsy attempts, and never one he chose to keep
 function paintingVerdict(p) {
       if (!p) return { ok: false, why: "I don't have a painting by that name." };
+      // From a reference photo: only with a licence that allows it, never a study (js/refpaint.js)
+      if (p.study || p.reference || p.subject === 'reference') {
+        const v = typeof refpSellable === 'function' ? refpSellable(p) : { ok: false, why: `"${p.title}" was painted from a photo, and I can't check its licence right now.` };
+        if (!v.ok) return v;
+      }
       if (p.keep) return { ok: false, why: `"${p.title}" is one I'm keeping. It means too much to me to sell.` };
       if ((p.level || 0) < PAINT_SELL_LEVEL) return { ok: false, why: `"${p.title}" is one of my first clumsy tries. I'll sell paintings once I'm good enough that they're worth it.` };
       return { ok: true };

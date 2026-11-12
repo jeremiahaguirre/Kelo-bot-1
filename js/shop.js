@@ -75,10 +75,20 @@ function cleanListing(l) {
         price: Number.isFinite(price) && price > 0 ? Math.round(price * 100) / 100 : null,
         image: /^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(String(l.image || '')) ? l.image : '',
         // "After a reference photo: ..." for a painting made from photos he found (plain text, escaped when shown)
-        credit: art ? String((pd && pd.credit) || (typeof l.credit === 'string' ? l.credit : '') || '').slice(0, 300) : '',
+        credit: art ? String((pd && pd.credit) || (typeof l.credit === 'string' ? l.credit : '') || '').slice(0, 600) : '',
         details: typeof l.details === 'string' ? l.details.slice(0, 120) : (l.file && typeof l.file.details === 'string' ? l.file.details.slice(0, 120) : (pd && typeof pd.details === 'string' ? pd.details.slice(0, 120) : '')),
         listedAt: l.listedAt && !Number.isNaN(Date.parse(l.listedAt)) ? new Date(l.listedAt) : null
       };
+    }
+
+// The reference-photo credit: plain text, escaped, with its https addresses turned into links
+function shopCreditHtml(text) {
+      return String(text || '').split(/(https:\/\/[^\s,;()]+)/).map((part, i) => {
+        if (i % 2 === 0) return shopEscape(part);
+        let ok = false;
+        try { ok = new URL(part).protocol === 'https:'; } catch (e) {}
+        return ok ? `<a href="${shopEscape(part)}" target="_blank" rel="noopener noreferrer" class="underline">${shopEscape(part.replace(/^https:\/\//, '').slice(0, 48))}</a>` : shopEscape(part);
+      }).join('');
     }
 
 function priceText(p) {
@@ -133,7 +143,7 @@ function renderShop(listings, contact, updatedAt) {
             ${art ? `<div class="text-2xs text-slate-300 space-y-0.5">
               ${l.medium ? `<div>${shopEscape(l.medium)}${l.size ? ` · ${shopEscape(l.size.replace('x', '×'))}` : ''}</div>` : ''}
               ${l.subject ? `<div class="text-slate-300">Subject: ${shopEscape(l.subject)}</div>` : ''}
-              ${l.credit ? `<div class="text-slate-400 italic">${shopEscape(l.credit)}</div>` : ''}
+              ${l.credit ? `<div class="text-slate-400">${shopCreditHtml(l.credit)}</div>` : ''}
               <div>One of a kind, signed</div>
             </div>` : (l.details ? `<div class="text-2xs tabular-nums text-slate-300">${shopEscape(l.details)}</div>` : '')}
             ${l.listedAt ? `<div class="text-2xs tabular-nums text-slate-400">Listed ${shopEscape(l.listedAt.toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' }))}</div>` : ''}

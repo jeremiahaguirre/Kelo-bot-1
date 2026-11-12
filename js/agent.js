@@ -1392,6 +1392,8 @@ function loadPersistentBrainState() {
           });
         }
         if (Array.isArray(saved.unstoredItems)) state.unstoredItems = saved.unstoredItems.filter(n => typeof n === 'string');
+        // (a save from before the shelf records: they are laid out from his loaded things, as the shelves showed them)
+        if (!Array.isArray(saved.storeCopies)) state.storeCopies = null;
         if (typeof cleanStoreCopies === 'function') cleanStoreCopies();
         cleanNotesQueue();
         if (Array.isArray(saved.digSites)) state.digSites = saved.digSites.filter(d => d && Number.isFinite(d.x) && Number.isFinite(d.z) && Number.isFinite(d.depth));

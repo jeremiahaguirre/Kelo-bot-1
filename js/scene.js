@@ -1610,10 +1610,13 @@ function removeObstacle(o) {
     }
 
 // Changes whenever an obstacle is added, removed or moved, whoever did it
-function obstacleSignature() {
+function obstacleSignatureSum() {
       let sum = 0;
       for (const o of worldObstacles) sum += o.x * 3.1 + o.z * 7.3 + (o.r || 0) * 1.7 + (o.hw || 0) * 0.37;
-      return `${obstacleVersion}|${worldObstacles.length}|${sum.toFixed(3)}`;
+      return sum;
+    }
+function obstacleSignature() {
+      return `${obstacleVersion}|${worldObstacles.length}|${obstacleSignatureSum().toFixed(3)}`;
     }
 
 // How far a point is from an obstacle's edge (negative inside) and the outward direction there
@@ -1621,7 +1624,7 @@ const obstacleProbeOut = { d: 0, nx: 1, nz: 0 };
 function obstacleProbe(o, x, z) {
       const P = obstacleProbeOut;
       if (o.hw === undefined) {
-        const dx = x - o.x, dz = z - o.z, d = Math.hypot(dx, dz);
+        const dx = x - o.x, dz = z - o.z, d = Math.sqrt(dx * dx + dz * dz);
         P.d = d - o.r;
         P.nx = d > 1e-9 ? dx / d : 1;
         P.nz = d > 1e-9 ? dz / d : 0;
@@ -1690,19 +1693,22 @@ function openGroundNear(near, radius = 2, opts = {}) {
 // approach. Boxes never do: a target inside one is moved out first (walkGoalFor).
 function obstacleHoldsTarget(o, target) {
       if (o.hw !== undefined) return false;
-      return Math.hypot(target.x - o.x, target.z - o.z) < o.r + KELO_RADIUS;
+      const dx = target.x - o.x, dz = target.z - o.z, R = o.r + KELO_RADIUS;
+      return R > 0 && dx * dx + dz * dz < R * R;
     }
 
 // Where he really walks to for this target: the target itself, or (when it lies inside a building
 // box) the building's door or the edge of the box on the side he comes from
-let walkGoalCache = { key: '', goal: null };
+// (the cache is checked with numbers, not a string: it is asked several times a frame)
+let walkGoalCache = { x: NaN, z: NaN, ver: -1, n: -1, sum: NaN, goal: null };
 function walkGoalFor(target, from = state.botPos) {
-      const key = `${target.x.toFixed(2)},${target.z.toFixed(2)}|${obstacleSignature()}`;
-      if (walkGoalCache.key === key && walkGoalCache.goal) return walkGoalCache.goal;
+      const C = walkGoalCache;
+      const x = Math.round(target.x * 100), z = Math.round(target.z * 100), sum = Math.round(obstacleSignatureSum() * 1000);
+      if (C.goal && C.x === x && C.z === z && C.ver === obstacleVersion && C.n === worldObstacles.length && C.sum === sum) return C.goal;
       let goal = { x: target.x, z: target.z };
       const box = worldObstacles.find(o => o.hw !== undefined && obstacleProbe(o, target.x, target.z).d < KELO_RADIUS);
       if (box) goal = boxEdgeSpot(box, target, from || target);
-      walkGoalCache = { key, goal };
+      walkGoalCache = { x, z, ver: obstacleVersion, n: worldObstacles.length, sum, goal };
       return goal;
     }
 

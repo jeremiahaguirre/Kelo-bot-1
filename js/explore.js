@@ -74,9 +74,11 @@ function exploreCopy(s) {
       return { target: s.target.clone(), yaw: s.yaw, pitch: s.pitch, dist: s.dist };
     }
 
-function exploreOffset(s) {
+// (pass `out` in per-frame code, so nothing is allocated)
+const exploreOffsetTmp = new THREE.Vector3();
+function exploreOffset(s, out = new THREE.Vector3()) {
       const cp = Math.cos(s.pitch);
-      return new THREE.Vector3(Math.sin(s.yaw) * cp, Math.sin(s.pitch), Math.cos(s.yaw) * cp).multiplyScalar(s.dist);
+      return out.set(Math.sin(s.yaw) * cp, Math.sin(s.pitch), Math.cos(s.yaw) * cp).multiplyScalar(s.dist);
     }
 
 // Read where the camera is now (after another mode or a test moved it)
@@ -108,7 +110,7 @@ function exploreGoalCamera() {
       exploreScratchCam.near = camera.near;
       exploreScratchCam.far = camera.far;
       exploreScratchCam.updateProjectionMatrix();
-      exploreScratchCam.position.copy(g.target).add(exploreOffset(g));
+      exploreScratchCam.position.copy(g.target).add(exploreOffset(g, exploreOffsetTmp));
       exploreScratchCam.lookAt(g.target);
       exploreScratchCam.updateMatrixWorld();
       return exploreScratchCam;
@@ -141,13 +143,13 @@ function exploreTerrainPoint(clientX, clientY) {
       return explorePlanePoint(clientX, clientY, camera, controls.target.y);
     }
 
-function exploreKeloSpot() {
+function exploreKeloSpot(out = new THREE.Vector3()) {
       const p = keloGroup ? keloGroup.position : new THREE.Vector3(state.botPos.x, 0, state.botPos.z);
       // Follow the ground under him (not the bob of each step, or the drop when he sits or lies down),
       // unless he is clearly somewhere else: up on a bed, a ladder, a vehicle or down a basement
       const ground = Number.isFinite(state.botAltitudeY) ? state.botAltitudeY : p.y;
       const y = !state.riding && Math.abs(p.y - ground) < 1.2 ? ground : p.y;
-      return new THREE.Vector3(p.x, y + 1.6, p.z);
+      return out.set(p.x, y + 1.6, p.z);
     }
 
 // --- Taking over the camera ----------------------------------------------------------------------
@@ -248,7 +250,7 @@ function exploreCameraUpdate() {
 
       if (exploreCam.fly) {
         const f = exploreCam.fly;
-        if (f.follow) f.to.target.copy(exploreKeloSpot());
+        if (f.follow) exploreKeloSpot(f.to.target);
         const u = exploreClamp((now - f.t0) / f.ms, 0, 1), e = exploreEase(u);
         cur.target.lerpVectors(f.from.target, f.to.target, e);
         cur.yaw = f.from.yaw + (f.to.yaw - f.from.yaw) * e;
@@ -263,7 +265,7 @@ function exploreCameraUpdate() {
         }
       } else {
         exploreApplyHeldInput(dt);
-        if (state.cameraMode === 'follow') goal.target.copy(exploreKeloSpot());
+        if (state.cameraMode === 'follow') exploreKeloSpot(goal.target);
         else goal.target.y = exploreGroundAt(goal.target.x, goal.target.z) + 0.4;
         exploreClampState(goal);
         // Ease what is shown toward the goal: quick while dragging, gentler otherwise
@@ -308,7 +310,7 @@ function exploreCameraUpdate() {
       const v = exploreCopy(c);
       const blds = exploreNearBuildings(v.target, v.dist);
       const needFor = (withBuildings) => {
-        const off = exploreOffset(v);
+        const off = exploreOffset(v, exploreOffsetTmp);
         let need = -1;
         // The lens itself must clear the ground at once; the rest of the line (and roofs) eases in
         for (const t of (withBuildings ? EXPLORE_GROUND_SAMPLES : [1])) {
@@ -341,7 +343,7 @@ function exploreCameraUpdate() {
       const shown = { target: c.target, yaw: c.yaw, pitch: Math.min(1.5, c.pitch + adj.lift + adj.bld), dist: c.dist };
 
       controls.target.copy(shown.target);
-      camera.position.copy(shown.target).add(exploreOffset(shown));
+      camera.position.copy(shown.target).add(exploreOffset(shown, exploreOffsetTmp));
       exploreCam.driving = true;
 
       // Optional: drift back to Kelo-1 after a while with nobody touching anything

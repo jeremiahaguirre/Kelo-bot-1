@@ -21,7 +21,8 @@ function tidyTown() {
       let spot = 0;
       state.projects.forEach(p => {
         if (p.status === 'built' && inTown(p.x, p.z)) {
-          p.x = TOWN.minX - 5 - (spot % 3) * 3;
+          // (out past the Museum, the far west of the valley)
+          p.x = (typeof MUSEUM !== 'undefined' ? MUSEUM.x - MUSEUM.w / 2 : TOWN.minX) - 4 - (spot % 3) * 3;
           p.z = -6 + Math.floor(spot / 3) * 3.5;
           spot++;
           moved.push(`the ${(typeof planFor === 'function' && planFor(p.key)?.name.toLowerCase()) || 'build'} out west`);
@@ -39,3 +40,29 @@ function tidyTown() {
       }
       return moved.length;
     }
+
+// The town building (its walls' box, with pad round it) that holds x, z, or null
+function townBuildingAt(x, z, pad = 0) {
+      if (typeof worldObstacles === 'undefined') return null;
+      return worldObstacles.find(o => o.building && o.hw !== undefined && !o.interior
+        && Math.abs(x - o.x) < o.hw + pad && Math.abs(z - o.z) < o.hd + pad) || null;
+    }
+
+// The town was rebuilt at real size: a memory saved with him standing where a bigger building now
+// stands (or inside one mid-visit) puts him back out at that building's door
+function townMoveOutOfBuildings() {
+      const keys = ['storehouse', ...Object.keys(typeof TOWN_BUILDINGS === 'object' ? TOWN_BUILDINGS : {})];
+      const p = state.botPos;
+      if (!p || state.riding) return false;
+      const o = worldObstacles.find(b => keys.includes(b.building) && b.hw !== undefined && b.door
+        && Math.abs(p.x - b.x) < b.hw + 0.3 && Math.abs(p.z - b.z) < b.hd + 0.3);
+      if (!o) return false;
+      state.botPos = { x: o.door.x, z: o.door.z };
+      state.targetPos = { x: o.door.x, z: o.door.z };
+      return true;
+    }
+
+window.addEventListener('DOMContentLoaded', () => {
+  // (after scene.js has built the town)
+  setTimeout(() => { try { townMoveOutOfBuildings(); } catch (e) { console.warn('town: move out', e); } }, 0);
+});

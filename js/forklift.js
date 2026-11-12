@@ -20,52 +20,101 @@ const PALLET_RACK = (() => {
   const S = WORKSHOP_SITE, r = WS_WING.spots.rack;
   return { x: S.x + r.x, z: S.z + r.z, w: r.w };
 })();
+// The model is drawn in metres; at 1.6 units a metre (lifeSize) a real counterbalance truck is this
+// much bigger than its model: the overhead guard about 2.15 m high, so Kelo-1 sits under it.
+const FORKLIFT_SCALE = 1.5;
+const FORKLIFT_RACK_Y = 2.4;      // the racking's upper beam (world units, about 1.5 m)
+const FORKLIFT_PICK_H = 1.35;     // carriage height (model units) that puts the forks into that level's pallets
 const PALLET_GOODS = ['glass batch', 'maple lumber', 'aluminium sheet stock', 'a truck engine', 'machine parts'];
 
 // --- The model -------------------------------------------------------------------------------------
 function forkliftModel() {
       const b = group();
-      const yellow = 0xf4b400, dark = 0x1f2937, grey = 0x6b7280;
-      // Chassis and the heavy counterweight at the back (+x is forward, toward the forks)
-      b.add(at(mesh(new THREE.BoxGeometry(1.9, 0.6, 1.25), yellow), 0, 0.55, 0));
-      b.add(at(mesh(new THREE.BoxGeometry(0.55, 0.85, 1.25), dark), -0.95, 0.7, 0));
-      // Battery compartment under the seat, with its plug
-      b.add(at(mesh(new THREE.BoxGeometry(0.9, 0.35, 0.9), grey), -0.2, 1.0, 0));
-      b.add(at(mesh(new THREE.BoxGeometry(0.12, 0.1, 0.18), 0xef4444), -0.75, 0.9, 0.55));
-      // Seat, steering column and wheel
-      b.add(at(mesh(new THREE.BoxGeometry(0.45, 0.12, 0.5), dark), -0.3, 1.25, 0));
-      b.add(at(mesh(new THREE.BoxGeometry(0.1, 0.5, 0.5), dark), -0.52, 1.5, 0));
-      b.add(at(mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.55, 8), dark), 0.25, 1.45, 0));
-      const wheelRing = mesh(new THREE.TorusGeometry(0.16, 0.025, 6, 16), dark);
+      // Chassis with rounded corners, the cast counterweight at the back with its tow pin and lamps
+      // (+x is forward, toward the forks)
+      mmRBox(b, 1.9, 0.55, 1.25, 'yellow', 0, 0.28, 0, { r: 0.08 });
+      mmRBox(b, 0.55, 0.85, 1.25, 'anthracite', -0.95, 0.28, 0, { r: 0.12 });
+      mmBox(b, 0.05, 0.08, 0.5, 'black', -1.22, 0.45, 0);
+      mmCyl(b, 0.04, 0.12, 'steel', -1.25, 0.5, 0);
+      [-0.45, 0.45].forEach(z => { mmBox(b, 0.03, 0.08, 0.14, mmMat('lampRed'), -1.225, 0.95, z); mmBox(b, 0.04, 0.1, 0.12, mmMat('lampAmber'), 0.96, 0.75, z * 1.15); });
+      mmBox(b, 1.7, 0.03, 1.27, 'black', 0, 0.82, 0);
+      // Step and grab handle on each side, the floor plate and pedals
+      [-1, 1].forEach(s => { mmBox(b, 0.4, 0.04, 0.12, 'castIron', 0.2, 0.3, s * 0.66); mmBox(b, 0.3, 0.02, 0.11, 'black', 0.2, 0.34, s * 0.66); });
+      mmBox(b, 0.5, 0.02, 0.9, 'castIron', 0.3, 0.83, 0);
+      [-0.15, 0.15].forEach(z => mmBox(b, 0.1, 0.03, 0.08, 'black', 0.5, 0.86, z, { rz: 0.4 }));
+      // Battery hood under the seat, with its plug on the side
+      mmRBox(b, 0.9, 0.35, 0.95, 'anthracite', -0.2, 0.83, 0, { r: 0.05 });
+      mmBox(b, 0.12, 0.1, 0.18, 'red', -0.75, 0.85, 0.6);
+      // Suspension seat with its backrest and hip restraints, the steering column, wheel and spinner knob
+      mmRBox(b, 0.45, 0.12, 0.5, 'plasticDark', -0.3, 1.19, 0, { r: 0.05 });
+      mmRBox(b, 0.12, 0.5, 0.5, 'plasticDark', -0.52, 1.25, 0, { r: 0.05 });
+      [-1, 1].forEach(s => mmRBox(b, 0.3, 0.12, 0.05, 'plasticDark', -0.35, 1.28, s * 0.24, { r: 0.02 }));
+      mmRBox(b, 0.18, 0.4, 0.5, 'anthracite', 0.4, 0.83, 0, { r: 0.04 });
+      mmRBox(b, 0.2, 0.12, 0.35, 'plasticDark', 0.42, 1.23, 0, { r: 0.03 });
+      mmBox(b, 0.08, 0.03, 0.12, mmHmiMat(), 0.44, 1.3, 0.0, { rz: 0.5 });
+      mmCyl(b, 0.03, 0.55, 'plasticDark', 0.25, 1.45, 0, { rz: -0.5 });
+      const wheelRing = mesh(new THREE.TorusGeometry(0.16, 0.025, 6, 16), 0x16181b);
+      wheelRing.material = mmMat('rubber');
       wheelRing.rotation.z = Math.PI / 2 - 0.5;
       b.add(at(wheelRing, 0.2, 1.72, 0));
-      // Overhead guard: four posts and a grid roof
-      [[0.45, -0.55], [0.45, 0.55], [-0.75, -0.55], [-0.75, 0.55]].forEach(([x, z]) => b.add(at(mesh(new THREE.BoxGeometry(0.07, 1.45, 0.07), dark), x, 1.55, z)));
-      for (let i = 0; i < 5; i++) b.add(at(mesh(new THREE.BoxGeometry(1.25, 0.04, 0.05), dark), -0.15, 2.28, -0.5 + i * 0.25));
+      mmCyl(b, 0.02, 0.06, 'plasticDark', 0.16, 1.82, 0.12, { rz: -0.5 });
+      // Hydraulic levers
+      for (let i = 0; i < 3; i++) { mmCyl(b, 0.008, 0.15, 'steel', 0.5, 1.33, 0.3 + i * 0.05, { rz: -0.3 }); mmSphere(b, 0.02, 'plasticDark', 0.48, 1.4, 0.3 + i * 0.05); }
+      // Overhead guard: four tube posts and a slatted roof with work lights
+      [[0.45, -0.55], [0.45, 0.55], [-0.75, -0.55], [-0.75, 0.55]].forEach(([x, z]) => mmCyl(b, 0.04, 1.45, 'black', x, 1.55, z, { rz: x > 0 ? -0.08 : 0 }));
+      mmRBox(b, 1.35, 0.06, 1.2, 'black', -0.15, 2.22, 0, { r: 0.03 });
+      for (let i = 0; i < 5; i++) mmBox(b, 1.2, 0.02, 0.05, 'blackAnod', -0.15, 2.29, -0.5 + i * 0.25);
+      [-0.4, 0.4].forEach(z => mmBox(b, 0.04, 0.08, 0.12, mmMat('lampAmber'), 0.53, 2.2, z));
       // Warning beacon on the guard
       const beacon = mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.12, 12), 0xf59e0b, { emissive: 0xf59e0b, emissiveIntensity: 0.2 });
       b.add(at(beacon, -0.6, 2.38, 0));
-      // Wheels
+      mmCyl(b, 0.075, 0.02, 'black', -0.6, 2.31, 0);
+      // Wheels: solid tyres on steel rims (the drive tyres at the front, the steer tyres at the back)
       [[0.55, 0.32], [-0.75, 0.26]].forEach(([x, r]) => [-0.6, 0.6].forEach(z => {
-        const w = mesh(new THREE.CylinderGeometry(r, r, 0.22, 16), 0x111111);
+        const w = mesh(new THREE.CylinderGeometry(r, r, 0.22, 20), 0x111111);
+        w.material = mmMat('tire');
         w.rotation.x = Math.PI / 2;
+        w.userData.wheelRadius = r;
+        w.userData.wheelAxis = 'y'; // its own axle is the cylinder's y (js/vehicles.js spins it)
+        mmCyl(w, r * 0.62, 0.23, 'grey', 0, 0, 0);
+        mmCyl(w, r * 0.25, 0.24, 'steel', 0, 0, 0);
         b.add(at(w, x, r, z));
       }));
-      // The mast (tilts at its foot) with the carriage and forks that ride up it
+      [-1, 1].forEach(s => mmRBox(b, 0.75, 0.06, 0.24, 'anthracite', 0.55, 0.62, s * 0.6, { r: 0.03 }));
+      // The mast (tilts at its foot): two channels, the cross members, the lift cylinder and chains;
+      // the carriage with its backrest grille and forks rides up it
       const mast = group();
       mast.position.set(1.05, 0.35, 0);
-      [-0.38, 0.38].forEach(z => mast.add(at(mesh(new THREE.BoxGeometry(0.08, 2.4, 0.1), grey, { metalness: 0.6 }), 0, 1.2, z)));
-      mast.add(at(mesh(new THREE.BoxGeometry(0.06, 0.06, 0.86), grey), 0, 2.38, 0));
-      mast.add(at(mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.6, 8), 0xcbd5e1, { metalness: 0.9 }), -0.06, 0.9, 0));
+      [-0.38, 0.38].forEach(z => {
+        mast.add(at(mesh(new THREE.BoxGeometry(0.08, 2.4, 0.1), 0x6b7280, { metalness: 0.6 }), 0, 1.2, z));
+        mmBox(mast, 0.06, 2.3, 0.04, 'castIron', 0.02, 0.05, z - Math.sign(z) * 0.07);
+        mmBox(mast, 0.01, 2.0, 0.03, 'steel', 0.03, 0.3, z * 0.55);
+      });
+      mast.children.forEach(c => { if (c.material && !c.material.userData.shared) c.material = mmMat('castIron'); });
+      [0.05, 1.2, 2.38].forEach(y => mmBox(mast, 0.06, 0.06, 0.86, 'castIron', 0, y, 0));
+      mmCyl(mast, 0.05, 1.6, 'chrome', -0.06, 0.9, 0);
+      mmCyl(mast, 0.07, 0.9, 'castIron', -0.06, 0.45, 0);
+      mmCable(mast, [[-0.03, 1.8, 0.12], [0.0, 1.0, 0.18], [0.02, 0.4, 0.15]], 0.012, 'rubber');
       const carriage = group();
-      carriage.add(at(mesh(new THREE.BoxGeometry(0.06, 0.55, 0.9), dark), 0.07, 0.3, 0));
-      [-0.25, 0.25].forEach(z => carriage.add(at(mesh(new THREE.BoxGeometry(1.1, 0.05, 0.12), dark), 0.6, 0.03, z)));
+      mmBox(carriage, 0.06, 0.55, 0.9, 'anthracite', 0.07, 0.03, 0);
+      for (let i = 0; i < 6; i++) mmBox(carriage, 0.03, 0.5, 0.03, 'black', 0.08, 0.58, -0.36 + i * 0.144);
+      mmBox(carriage, 0.03, 0.03, 0.9, 'black', 0.08, 1.08, 0);
+      [-0.25, 0.25].forEach(z => {
+        mmBox(carriage, 1.1, 0.05, 0.12, 'castIron', 0.6, 0.005, z);
+        mmBox(carriage, 0.05, 0.4, 0.12, 'castIron', 0.1, 0.03, z);
+        mmBox(carriage, 0.05, 0.02, 0.13, 'stripe', 1.12, 0.02, z);
+      });
       const load = group();
       load.position.set(0.6, 0.06, 0);
       carriage.add(load);
       mast.add(carriage);
       b.add(mast);
-      return miniature(b, { seat: { x: -0.3, y: 1.31 - (typeof KELO_SIT_OFFSET === 'number' ? KELO_SIT_OFFSET : 0.3), z: 0 }, mast, carriage, load, beacon });
+      b.traverse(o => { if (o.isMesh) o.castShadow = true; });
+      b.scale.setScalar(FORKLIFT_SCALE);
+      const F = FORKLIFT_SCALE;
+      const fl = miniature(b, { seat: { x: -0.3 * F, y: 1.31 * F - (typeof KELO_SIT_OFFSET === 'number' ? KELO_SIT_OFFSET : 0.3), z: 0 }, mast, carriage, load, beacon });
+      if (typeof machineMergeStatic === 'function') machineMergeStatic(fl);
+      return fl;
     }
 
 // A pallet with its load on it (in metres-ish units, like the forklift)
@@ -84,7 +133,7 @@ function palletModel(what) {
 
 // --- It's a vehicle ------------------------------------------------------------------------------------
 if (typeof VEHICLE_TYPES !== 'undefined' && !VEHICLE_TYPES.some(t => t.kind === 'forklift')) {
-  VEHICLE_TYPES.unshift({ kind: 'forklift', re: FORKLIFT_RE, mode: 'land', speed: 0.9, scale: 2.6, seatY: 0.9 });
+  VEHICLE_TYPES.unshift({ kind: 'forklift', re: FORKLIFT_RE, mode: 'land', speed: 0.9, scale: FORKLIFT_SCALE, seatY: 1.67 });
 }
 if (typeof VEHICLE_KIND_WORDS !== 'undefined') VEHICLE_KIND_WORDS.forklift = 'forklift';
 if (typeof VEHICLE_TERRAIN !== 'undefined') VEHICLE_TERRAIN.forklift = { max: 0.12, text: 'indoor floors and paved yards only: the Workshop, the hangar and their aprons' };
@@ -131,27 +180,34 @@ function buildForkliftCharger3D() {
       // (it stands against a west wall, facing east, when its parking box is east of it)
       if (C.flip) g.rotation.y = Math.PI;
       const sgn = C.flip ? -1 : 1;
-      mmBox(g, 0.25, 0.8, 0.55, 'navy', 0, 1.0, 0);
+      // Wall-mounted charger cabinet: rounded case, cooling louvres, the charge bar, status lamps, the
+      // mains conduit up the wall and the charging lead coiled on its hook
+      mmRBox(g, 0.25, 0.8, 0.55, 'lightGrey', 0, 1.0, 0, { r: 0.03 });
+      mmRBox(g, 0.03, 0.6, 0.3, 'anthracite', -0.13, 1.1, 0.08, { r: 0.008 });
       const bar = mmBox(g, 0.02, 0.5, 0.08, mmGlow('window'), -0.13, 1.15, 0.15);
       bar.material.emissive.setHex(0x22c55e);
-      mmLabel(g, 'CHARGER  48 V', 0.5, 0.1, -0.13, 1.7, 0, { bg: '#1e3a5f', fg: '#fff', ry: -Math.PI / 2 });
-      const cable = mmRod(g, [-0.13, 1.0, -0.1], [-0.4, 0.3, -0.1], 0.02, 'black');
-      const plug = mmBox(g, 0.12, 0.1, 0.16, 'red', -0.42, 0.25, -0.1);
+      mmVents(g, 0.18, 0.2, -0.126, 1.25, -0.15, { ry: -Math.PI / 2, n: 5 });
+      [['lampGreen', -0.15], ['lampAmber', -0.08]].forEach(([m, z]) => mmCyl(g, 0.014, 0.02, m, -0.13, 1.7, z, { axis: 'x' }));
+      mmBox(g, 0.05, 1.6, 0.05, 'steel', 0.08, 1.8, -0.2);
+      mmCyl(g, 0.012, 0.4, 'steel', -0.2, 0.85, -0.1, { axis: 'x' });
+      const cable = mmCable(g, [[-0.13, 1.0, -0.1], [-0.3, 0.7, -0.05], [-0.25, 0.85, -0.12], [-0.4, 0.4, -0.1], [-0.42, 0.32, -0.1]], 0.02, 'rubber');
+      const plug = mmRBox(g, 0.12, 0.1, 0.16, 'red', -0.42, 0.25, -0.1, { r: 0.02 });
       // Parking box on the floor
       const P = { x: sgn * (C.park.x - C.x), z: sgn * (C.park.z - C.z) };
-      [[0, -1.0, 2.6, 0.08], [0, 1.0, 2.6, 0.08], [-1.3, 0, 0.08, 2.0], [1.3, 0, 0.08, 2.0]].forEach(([dx, dz, w, d]) => mmBox(g, w, 0.01, d, 'stripe', P.x + dx, 0.006, P.z + dz));
+      [[0, -1.25, 4.0, 0.08], [0, 1.25, 4.0, 0.08], [-2.0, 0, 0.08, 2.5], [2.0, 0, 0.08, 2.5]].forEach(([dx, dz, w, d]) => mmBox(g, w, 0.01, d, 'stripe', P.x + dx, 0.006, P.z + dz));
       mmLabel(g, 'FORKLIFT CHARGING', 1.6, 0.3, P.x, 0.02, P.z + 0.6, { bg: '#b9bab5', fg: '#1d4ed8' }).rotation.x = -Math.PI / 2;
       g.userData = { bar, cable, plug };
       // Pallet racking along the hangar's back wall, two levels of pallets
       const r = PALLET_RACK;
       const rack = mmGroup(g, sgn * (r.x - C.x), 0, sgn * (r.z - C.z));
       rack.rotation.y = C.flip ? Math.PI : 0;
-      [0.15, 1.6].forEach(yy => mmBox(rack, r.w, 0.12, 1.1, 'orange', 0, yy, 0));
+      [0.15, FORKLIFT_RACK_Y].forEach(yy => mmBox(rack, r.w, 0.12, 1.1, 'orange', 0, yy, 0));
       const bays = Math.max(1, Math.floor(r.w / 2.0));
-      for (let i = 0; i <= bays; i++) mmBox(rack, 0.1, 3.4, 1.1, 'blue', -r.w / 2 + i * r.w / bays, 0, 0);
-      PALLET_GOODS.forEach((what, i) => { if (i < bays) { const p = palletModel(what); p.scale.setScalar(1.3); p.position.set(-r.w / 2 + r.w / bays * (i + 0.5), 1.72, 0); rack.add(p); } });
-      mmLabel(rack, 'PALLET RACKING', 1.4, 0.25, 0, 3.0, 0.56, { bg: '#ea580c', fg: '#fff' });
+      for (let i = 0; i <= bays; i++) mmBox(rack, 0.1, 3.9, 1.1, 'blue', -r.w / 2 + i * r.w / bays, 0, 0);
+      PALLET_GOODS.forEach((what, i) => { if (i < bays) { const p = palletModel(what); p.scale.setScalar(FORKLIFT_SCALE); p.position.set(-r.w / 2 + r.w / bays * (i + 0.5), FORKLIFT_RACK_Y + 0.06, 0); rack.add(p); } });
+      mmLabel(rack, 'PALLET RACKING', 1.4, 0.25, 0, 3.6, 0.56, { bg: '#ea580c', fg: '#fff' });
       g.userData.rack = rack;
+      if (typeof machineMergeStatic === 'function') machineMergeStatic(g);
       scene.add(g);
       worldObstacles.push({ x: r.x - r.w / 4, z: r.z, r: 0.9, workshop: true }, { x: r.x + r.w / 4, z: r.z, r: 0.9, workshop: true }, { x: C.x, z: C.z, r: 0.4, workshop: true });
       setInterval(forkliftChargeTick, 5000);
@@ -234,11 +290,12 @@ async function forkliftMovePallet(what = null, to = null, originLabel = 'Moving 
         if (m) { m.rotation.y = Math.PI / 2; } // forks toward the rack
         state.moodTitle = `Lifting the pallet of ${what} off the racking`.slice(0, 80);
         renderAllUI();
-        await forkliftAnim(2500, k => forkliftMast(v, k * 1.65, 0));
+        const H = FORKLIFT_PICK_H;
+        await forkliftAnim(2500, k => forkliftMast(v, k * H, 0));
         const pallet = palletModel(what);
         if (m && m.userData.load) { m.userData.load.add(pallet); }
-        await forkliftAnim(1200, k => forkliftMast(v, 1.65 + k * 0.05, k * 0.08));
-        await forkliftAnim(2200, k => forkliftMast(v, 1.7 - k * 1.55, 0.08));
+        await forkliftAnim(1200, k => forkliftMast(v, H + k * 0.05, k * 0.08));
+        await forkliftAnim(2200, k => forkliftMast(v, H + 0.05 - k * (H - 0.1), 0.08));
         state.moodTitle = `Carrying the pallet of ${what} on the forklift`.slice(0, 80);
         renderAllUI();
         await driveVehicle(v, to, `Carrying a pallet of ${what}`);
@@ -250,7 +307,7 @@ async function forkliftMovePallet(what = null, to = null, originLabel = 'Moving 
           const wp = pallet.getWorldPosition(new THREE.Vector3());
           pallet.parent.remove(pallet);
           pallet.position.copy(wp);
-          pallet.scale.setScalar(1.3);
+          pallet.scale.setScalar(FORKLIFT_SCALE);
           scene.add(pallet);
           (state.workshop.pallets = state.workshop.pallets || []).unshift({ what, x: wp.x, z: wp.z, at: Date.now() });
           if (state.workshop.pallets.length > 6) state.workshop.pallets.length = 6;

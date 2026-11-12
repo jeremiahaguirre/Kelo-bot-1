@@ -156,6 +156,14 @@ function updateWindLook(t, dt) {
       da = Math.atan2(Math.sin(da), Math.cos(da));
       windShown.angle += da * Math.min(1, dt * 0.4);
       const s = windShown.s, dx = Math.cos(windShown.angle), dz = Math.sin(windShown.angle);
+      // The firs sway on the GPU (js/realism.js foliageSwayShader)
+      if (typeof FOLIAGE_WIND !== 'undefined') {
+        FOLIAGE_WIND.keloWindTime.value = t;
+        FOLIAGE_WIND.keloWindDir.value.set(dx, dz);
+        FOLIAGE_WIND.keloWindLean.value = s * s * 0.22;
+        FOLIAGE_WIND.keloWindRock.value = 0.025 + s * 0.09;
+        FOLIAGE_WIND.keloWindSpeed.value = 1.1 + s * 2.6;
+      }
       // Trees: the leafy tops lean downwind and rock, more as the wind picks up
       if (typeof valleyTrees !== 'undefined') {
         const lean = s * s * 0.32, rock = 0.02 + s * 0.12, speed = 1.2 + s * 3.5;
@@ -395,7 +403,7 @@ function windKiteProps(kite, line) {
           const ky = getAnalyticalGroundHeight(kx, kz) + 0.25 + hop;
           kite.position.set(kx, ky, kz);
           kite.rotation.set(-1.2 + hop * 0.6, 0, Math.sin(t * 5) * 0.3);
-          line.geometry.setFromPoints([hand(), new THREE.Vector3(kx, ky, kz)]);
+          setLineEnds(line, hand(), { x: kx, y: ky, z: kz });
         };
       }
       const strong = { breeze: 0, windy: 1, gale: 2 }[w.key];
@@ -414,7 +422,7 @@ function windKiteProps(kite, line) {
           const kx = f.x + w.dx * k * 14, kz = f.z + w.dz * k * 14;
           kite.position.set(kx, Math.max(getAnalyticalGroundHeight(kx, kz) + 0.2, f.y + Math.sin(k * Math.PI) * 2 - k * k * f.y), kz);
           kite.rotation.set(t * 6, t * 4, t * 5);
-          line.geometry.setFromPoints([hand(), new THREE.Vector3(state.botPos.x + 0.3, state.botAltitudeY + 0.2, state.botPos.z)]);
+          setLineEnds(line, hand(), { x: state.botPos.x + 0.3, y: state.botAltitudeY + 0.2, z: state.botPos.z });
           return;
         }
         const jerk = strong === 2 ? Math.sin(t * 7.3) * 1.2 + Math.sin(t * 11.1) * 0.6 : 0;
@@ -424,7 +432,7 @@ function windKiteProps(kite, line) {
         const ky = state.botAltitudeY + up + Math.sin(t * 1.3 + strong) * (0.5 + strong * 0.5) + jerk * 0.4;
         kite.position.set(kx, ky, kz);
         kite.rotation.set(0, Math.atan2(w.dx, w.dz), Math.sin(t * (1.7 + strong * 2)) * (0.3 + strong * 0.25));
-        line.geometry.setFromPoints([hand(), new THREE.Vector3(kx, ky, kz)]);
+        setLineEnds(line, hand(), { x: kx, y: ky, z: kz });
       };
     }
 
@@ -503,6 +511,7 @@ function safeToFly(v) {
 // and the balloon comes down hard in pieces
 async function crashInWind(v, target) {
       const w = windNow();
+      let crashAt = null;
       const type = vehicleTypeFor(v.name);
       const plain = v.name.replace(/^(an?|the)\s+/i, '');
       try {
@@ -513,14 +522,13 @@ async function crashInWind(v, target) {
         // Blown downwind of where he meant to go, but kept over land (not the lake, not the high peaks)
         const blow = w.key === 'gale' ? 22 : 15;
         const mid = { x: (state.botPos.x + target.x) / 2, z: (state.botPos.z + target.z) / 2 };
-        let bx = Math.max(WORLD_MIN_X + 6, Math.min(WORLD_MAX_X - 6, mid.x + w.dx * blow));
-        let bz = Math.max(-11, Math.min(6, mid.z + w.dz * blow));
-        if (typeof offLimits === 'function' && offLimits(bx, bz, 2)) {
-          // Not on top of a building or the pit: a little further on
-          for (let k = 1; k < 8 && offLimits(bx, bz, 2); k++) { bx += w.dx * 3 * (k % 2 ? 1 : -1) + 3; bz = Math.max(-11, Math.min(6, bz - 1.5)); }
-        }
+        const bx = Math.max(WORLD_MIN_X + 6, Math.min(WORLD_MAX_X - 6, mid.x + w.dx * blow));
+        const bz = Math.max(-11, Math.min(6, mid.z + w.dz * blow));
+        // It comes down on open, dry ground with room for every piece: never on a building, its
+        // grounds, the town, the yard, the pit or the water (the nearest such spot downwind)
+        const spot = balloonCrashSpot({ x: bx, z: bz }) || { x: bx, z: bz };
         state.ridingSpeed = type.speed * 1.7;
-        state.targetPos = { x: bx, z: bz };
+        state.targetPos = { x: spot.x, z: spot.z };
         const shout = setTimeout(() => {
           state.moodEmoji = '😨';
           state.moodTitle = `Blown off course in the ${plain}!`;
@@ -528,7 +536,10 @@ async function crashInWind(v, target) {
           renderAllUI();
         }, 2500);
         await waitForArrival(60000);
+        if (Math.hypot(state.botPos.x - spot.x, state.botPos.z - spot.z) > 1) await waitForArrival(60000);
         clearTimeout(shout);
+        // However far it really got, the heap lands on open ground
+        crashAt = Math.hypot(state.botPos.x - spot.x, state.botPos.z - spot.z) < 1 ? spot : (balloonCrashSpot(state.botPos) || spot);
         // Down it comes: it drops fast and tips over as it hits the ground
         state.speechBubble = "I'm going down! Hold on!";
         renderAllUI();
@@ -550,12 +561,33 @@ async function crashInWind(v, target) {
         state.ridingSpeed = 1;
         state.ridingMode = null;
       }
-      wreckBalloon(v, w);
+      wreckBalloon(v, w, crashAt);
+    }
+
+// Where a wrecked balloon's pieces can lie (they spread about 3.2 units round the basket)
+const BALLOON_WRECK_RADIUS = 3.4;
+function balloonCrashSpot(near) {
+      return typeof openGroundNear === 'function' ? openGroundNear(near, BALLOON_WRECK_RADIUS, { offLimits: true, pad: 1 }) : null;
+    }
+
+// An old save's wreck lying inside a building or on something solid moves to the nearest open spot
+function relocateBlockedWreck() {
+      const wreck = state.balloonWreck;
+      if (!wreck || wreck.gathered || typeof openGroundAt !== 'function') return false;
+      if (openGroundAt(wreck.x, wreck.z, BALLOON_WRECK_RADIUS, { offLimits: true, pad: 1 })) return false;
+      const spot = balloonCrashSpot(wreck);
+      if (!spot) return false;
+      wreck.x = spot.x;
+      wreck.z = spot.z;
+      renderWreckPile3D();
+      if (typeof savePersistentBrainState === 'function') savePersistentBrainState();
+      return true;
     }
 
 // The balloon is gone: in its place, a heap of pieces he owns and has to deal with
-function wreckBalloon(v, w = windNow()) {
-      const x = Math.round(state.botPos.x * 10) / 10, z = Math.round(state.botPos.z * 10) / 10;
+function wreckBalloon(v, w = windNow(), at = null) {
+      const spot = at || balloonCrashSpot(state.botPos) || state.botPos;
+      const x = Math.round(spot.x * 10) / 10, z = Math.round(spot.z * 10) / 10;
       const plain = v.name.replace(/^(an?|the)\s+/i, '');
       // Off the list of vehicles and out of everything he owns (or vehicles.js would park it again)
       state.vehicles = state.vehicles.filter(o => o.id !== v.id);
@@ -624,7 +656,8 @@ async function flyBalloon(originLabel = 'Up in the Balloon') {
         await new Promise(r => setTimeout(r, 1500));
         await driveVehicle(v, home, `Flying the ${plain} home to the balloon field`);
         if (!state.vehicles.includes(v)) return true;
-        Object.assign(v, { x: home.x, z: home.z, rotY: 0 });
+        // Back on its pad (it set down there, or right beside it if something was in the way)
+        if (Math.hypot(v.x - home.x, v.z - home.z) < 1.5) Object.assign(v, { x: home.x, z: home.z, rotY: 0 });
         renderVehicles3D();
         state.happiness = Math.min(100, state.happiness + 10);
         state.wonderLevel = Math.min(100, state.wonderLevel + 6);
@@ -760,15 +793,19 @@ window.addEventListener('DOMContentLoaded', () => {
   // After main.js has loaded his state and built the scene
   setTimeout(() => {
     buildWindSock3D();
+    // (a wreck saved inside the Workshop or another building moves out once everything is built)
+    relocateBlockedWreck();
     renderWreckPile3D();
+    setTimeout(() => { try { relocateBlockedWreck(); } catch (e) { console.warn('wreck', e); } }, 3000);
     const w = windNow();
     windShown = { s: w.strength, angle: w.angle };
     let last = performance.now();
-    (function frame(now) {
-      const dt = Math.min(0.1, (now - last) / 1000);
+    const frame = now => {
+      const dt = Math.max(0, Math.min(0.1, (now - last) / 1000));
       last = now;
       updateWindLook(now / 1000, dt);
-      requestAnimationFrame(frame);
-    })(last);
+    };
+    if (typeof keloEveryFrame === 'function') keloEveryFrame(frame);
+    else (function loop(now) { frame(now); requestAnimationFrame(loop); })(last);
   }, 400);
 });

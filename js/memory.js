@@ -195,8 +195,6 @@ function renderMemoryUI() {
             <p class="text-[11px] text-slate-200 font-serif italic">"${escapeHtml(m.text)}"</p>
           </div>`).join('') + perfMoreButton('coreMemoriesContainer', shown, state.coreMemories.length, 20));
       }
-      const archiveCount = document.getElementById('diaryArchiveCount');
-      if (archiveCount) archiveCount.textContent = `${memoryArchive.diary.length} older entries archived`;
       const usageEl = document.getElementById('memoryUsageText');
       const usage = keloStore.usage();
       if (usageEl) {
@@ -208,22 +206,13 @@ function renderMemoryUI() {
       }
     }
 
+// Searching the diary (the Diary tab shows the recent entries and the archive as one journal)
 function renderArchiveSearch(query) {
-      const results = document.getElementById('diaryArchiveResults');
-      if (!results) return;
-      const q = String(query || '').trim().toLowerCase();
-      const all = [...state.diaryEntries, ...memoryArchive.diary];
-      const matches = (q ? all.filter(d => `${d.text} ${d.mood} ${d.location}`.toLowerCase().includes(q)) : memoryArchive.diary).slice(0, 30);
-      results.innerHTML = matches.length === 0
-        ? `<p class="text-[11px] text-slate-500 italic">${q ? 'No entries match.' : 'Nothing archived yet. Older entries move here as his diary grows.'}</p>`
-        : matches.map(d => `
-          <article class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs space-y-0.5">
-            <div class="flex items-center justify-between gap-2 text-[10px] font-mono">
-              <span class="text-amber-300 truncate">${escapeHtml(d.mood)}</span>
-              <span class="text-slate-500 shrink-0">${d.at ? escapeHtml(new Date(d.at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })) : escapeHtml(d.time)}</span>
-            </div>
-            <p class="text-[11px] text-slate-300 font-serif italic">"${escapeHtml(d.text)}"</p>
-          </article>`).join('');
+      if (typeof journalView === 'undefined') return;
+      journalView.query = String(query || '');
+      journalView.shown = JOURNAL_PAGE;
+      journalView.dirty = true;
+      renderDiaryTab();
     }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -234,11 +223,12 @@ window.addEventListener('DOMContentLoaded', () => {
     importInput.value = '';
     importBrain(file);
   });
+  // Typing in the diary search waits for a short pause, so a long archive doesn't slow the typing
   const search = document.getElementById('diaryArchiveSearch');
-  search?.addEventListener('input', () => renderArchiveSearch(search.value));
+  let searchTimer = 0;
+  search?.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => renderArchiveSearch(search.value), 160); });
   // Render after main.js has loaded his saved state
   setTimeout(() => {
-    renderArchiveSearch('');
     renderMemoryUI();
   }, 0);
 });

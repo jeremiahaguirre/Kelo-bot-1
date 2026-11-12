@@ -57,16 +57,47 @@ function groundDugAt(x, z) {
         + (typeof pitDepressionAt === 'function' ? pitDepressionAt(x, z) : 0);
     }
 
+// Height of the drawn ground mesh at (x, z), read straight from its grid (the same two triangles
+// per cell that a raycast would hit), or null off the mesh. Raycasting all ~70k triangles cost
+// several milliseconds a call; this is a handful of array reads.
+let terrainGrid = null;
+function terrainMeshHeightAt(x, z) {
+      const mesh = terrainGroundMesh;
+      if (!mesh) return null;
+      const geo = mesh.geometry, a = geo.attributes.position.array;
+      if (!terrainGrid || terrainGrid.geo !== geo) {
+        const cols = geo.parameters.widthSegments + 1, rows = geo.parameters.heightSegments + 1;
+        // Cell size from the whole span: one float32 cell's difference drifts across 250 cells
+        terrainGrid = { geo, cols, rows, x0: a[0], z0: a[2], dx: (a[(cols - 1) * 3] - a[0]) / (cols - 1), dz: (a[(rows - 1) * cols * 3 + 2] - a[2]) / (rows - 1) };
+      }
+      const g = terrainGrid;
+      const fx = (x - mesh.position.x - g.x0) / g.dx, fz = (z - mesh.position.z - g.z0) / g.dz;
+      if (!(fx >= 0 && fz >= 0 && fx <= g.cols - 1 && fz <= g.rows - 1)) return null;
+      const ix = Math.min(g.cols - 2, Math.floor(fx)), iz = Math.min(g.rows - 2, Math.floor(fz));
+      const u = fx - ix, v = fz - iz;
+      // PlaneGeometry splits each cell along the a(ix,iz)..c(ix+1,iz+1) square's b-d diagonal
+      const ya = a[(ix + g.cols * iz) * 3 + 1], yb = a[(ix + g.cols * (iz + 1)) * 3 + 1];
+      const yc = a[(ix + 1 + g.cols * (iz + 1)) * 3 + 1], yd = a[(ix + 1 + g.cols * iz) * 3 + 1];
+      const y = u + v <= 1 ? ya + (yd - ya) * u + (yb - ya) * v : yc + (yb - yc) * (1 - u) + (yd - yc) * (1 - v);
+      return y + mesh.position.y;
+    }
+
+const groundRayFrom = new THREE.Vector3(), groundRayDown = new THREE.Vector3(0, -1, 0);
 function getIslandGroundHeight(x, z) {
-      const analyticalY = getAnalyticalGroundHeight(x, z);
-      if (terrainSwapGroup && terrainSwapGroup.children.length > 0) {
-        downRaycaster.set(new THREE.Vector3(x, 65, z), new THREE.Vector3(0, -1, 0));
-        const hits = downRaycaster.intersectObjects(terrainSwapGroup.children, true);
-        if (hits.length > 0) {
-          return Math.max(analyticalY, hits[0].point.y);
+      let y = getAnalyticalGroundHeight(x, z);
+      // Stand on whatever is drawn if it is higher: the ground mesh (a dig not yet re-shaped)...
+      const meshY = terrainMeshHeightAt(x, z);
+      if (meshY !== null && meshY > y) y = meshY;
+      // ...or the few other things lying on the ground (the house's floor boards, js/house.js)
+      if (terrainSwapGroup && terrainSwapGroup.children.length > 1) {
+        downRaycaster.set(groundRayFrom.set(x, 65, z), groundRayDown);
+        for (const c of terrainSwapGroup.children) {
+          if (c === terrainGroundMesh) continue;
+          const hit = downRaycaster.intersectObject(c, true)[0];
+          if (hit && hit.point.y > y) y = hit.point.y;
         }
       }
-      return analyticalY;
+      return y;
     }
 
 function initDiorama3D() {
@@ -78,7 +109,7 @@ function initDiorama3D() {
       scene.background = new THREE.Color(AMBIANCE_PRESETS[0].bg);
       scene.fog = new THREE.FogExp2(AMBIANCE_PRESETS[0].fog, AMBIANCE_PRESETS[0].fogDensity);
 
-      camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 900);
+      camera = new THREE.PerspectiveCamera(45, w / h, 0.25, 900); // (near 0.25: the camera never comes closer than 4 units, and 2.5x the depth precision of 0.1 keeps close trims from flickering)
       camera.position.set(0, 18, 24);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -89,6 +120,7 @@ function initDiorama3D() {
       // Real colours, filmic tone mapping, physical light and the Graphics level (js/realism.js)
       if (typeof setupRealisticRenderer === 'function') setupRealisticRenderer();
       container.appendChild(renderer.domElement);
+      fadeInWorldWhenReady(renderer.domElement);
 
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
@@ -217,6 +249,21 @@ function initDiorama3D() {
       animateDiorama();
     }
 
+// The 3D view fades in once its first frames are drawn and the ground textures are in (at most a
+// few seconds), instead of popping in half-built over the dark page
+function fadeInWorldWhenReady(canvas) {
+      canvas.style.opacity = '0';
+      canvas.style.transition = 'opacity 0.9s ease-out';
+      const start = performance.now();
+      const check = () => {
+        const frames = renderer && renderer.info ? renderer.info.render.frame : 0;
+        const tex = typeof TERRAIN_TEXTURES === 'undefined' || Object.values(TERRAIN_TEXTURES).every(x => !x || x.image);
+        if ((frames >= 3 && tex) || performance.now() - start > 6000) canvas.style.opacity = '1';
+        else requestAnimationFrame(check);
+      };
+      requestAnimationFrame(check);
+    }
+
 function buildAlpineTerrainAndMountains3D() {
       terrainSwapGroup = new THREE.Group();
       scene.add(terrainSwapGroup);
@@ -230,19 +277,28 @@ function buildAlpineTerrainAndMountains3D() {
       const pos = groundGeo.attributes.position;
       const colors = [];
 
+      for (let i = 0; i < pos.count; i++) pos.setY(i, getAnalyticalGroundHeight(pos.getX(i), pos.getZ(i)));
+      groundGeo.computeVertexNormals();
+      const nrm = groundGeo.attributes.normal;
+      const rockA = new THREE.Color(), rockB = new THREE.Color(0x5e5b55), snowC = new THREE.Color(0xeef1f5);
       for (let i = 0; i < pos.count; i++) {
         const vx = pos.getX(i);
         const vz = pos.getZ(i);
-        const vy = getAnalyticalGroundHeight(vx, vz);
-        pos.setY(i, vy);
+        const vy = pos.getY(i);
 
         // Natural colours by altitude, with gentle variation so the ground doesn't look flat
         // (js/realism.js reads these colours to pick the grass, rock, sand, dirt or snow texture)
         const c = new THREE.Color();
         const wobble = Math.sin(vx * 0.9) * Math.cos(vz * 0.7) * 0.5 + Math.sin(vx * 0.23 + vz * 0.31) * 0.5;
         const dry = Math.max(0, Math.sin(vx * 0.13 - vz * 0.21) * Math.cos(vz * 0.09 + vx * 0.05));
-        if (vy > 8.5) c.setHex(0xeef1f5); // Snow cap
-        else if (vy > 2.6) c.setHex(0x7a766d).lerp(new THREE.Color(0x5e5b55), Math.max(0, wobble)); // Rocky ridge
+        if (vy > 2.6) {
+          // Rocky ridge; snow only settles on the gentler high ground, never on the cliff faces
+          rockA.setHex(0x7a766d).lerp(rockB, Math.max(0, wobble));
+          c.copy(rockA);
+          // Sheer faces a shade darker than the ledges, so the cliffs have some depth
+          c.lerp(rockB, (1 - snowHoldsOn(nrm.getY(i) + 0.12)) * 0.45);
+          if (vy > 8.5) c.lerp(snowC, snowHoldsOn(nrm.getY(i)) * Math.min(1, (vy - 8.5) / 0.6 + 0.4));
+        }
         else if (vz > 8.2) c.setHex(0xc8b48c); // Sandy beach
         else if (Math.abs(vx + 2) < 2.0 && vz > -10 && vz < 9) c.setHex(0x8f7656); // Dirt trail
         else c.setHex(0x5d7d33).lerp(new THREE.Color(0x46662a), Math.max(0, wobble)).lerp(new THREE.Color(0x87884a), dry * 0.55); // Meadow grass, drier in patches
@@ -251,7 +307,6 @@ function buildAlpineTerrainAndMountains3D() {
         colors.push(c.r, c.g, c.b);
       }
       groundGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-      groundGeo.computeVertexNormals();
 
       const groundMesh = terrainGroundMesh = new THREE.Mesh(
         groundGeo,
@@ -280,7 +335,10 @@ function buildAlpineTerrainAndMountains3D() {
         const tz = -11 - Math.random() * 24;
         if (Math.hypot(tx - (-15.5), tz - (-26.5)) < 4.0) continue; // Keep gold vein clear
         if (typeof DISPOSAL_PIT !== 'undefined' && Math.hypot(tx - DISPOSAL_PIT.x, tz - DISPOSAL_PIT.z) < DISPOSAL_PIT.r + 1.5) continue; // Keep the pit clear
-        const ty = getAnalyticalGroundHeight(tx, tz);
+        // Not on a near-vertical face (the cliffs and the Workshop's cut behind town) and not on the
+        // Workshop's or hangar's levelled land and its cut slopes, where a tree would hang in the air
+        if (groundTooSteep(tx, tz, 1.2) || (typeof inWorkshopSite === 'function' && inWorkshopSite(tx, tz, 3))) continue;
+        const ty = groundUnderTrunk(tx, tz);
         if (ty > 9.5) continue;
         let tree;
         if (typeof buildNaturalFir === 'function') {
@@ -468,12 +526,12 @@ const DRAGON_RINGS = 72;
 const DRAGON_SIDES = 12;
 
 // Where the body runs at a point along its length (0 = tail tip, 1 = neck), rising in coils
-function dragonSpine(u, t) {
+function dragonSpine(u, t, out = new THREE.Vector3()) {
       const x = (u - 0.5) * DRAGON_LENGTH;
       const wave = Math.sin(u * Math.PI * 3.2 - t * 1.6);
       // The neck lifts high out of the water; the coils break the surface in arches
       const neckLift = Math.pow(Math.max(0, u - 0.82) / 0.18, 1.6) * 2.2;
-      return new THREE.Vector3(x, wave * 0.75 + neckLift, Math.sin(u * Math.PI * 2 + t * 0.7) * 0.35);
+      return out.set(x, wave * 0.75 + neckLift, Math.sin(u * Math.PI * 2 + t * 0.7) * 0.35);
     }
 
 // Thickest in the middle, tapering to a thin tail and a slimmer neck
@@ -557,17 +615,36 @@ function buildSeaDragon3D() {
     }
 
 // Re-shape the body each frame so it swims in rolling coils
+// Scratch vectors: the body is re-shaped every frame it is seen, so nothing is allocated per frame
+const DRAGON_UP = new THREE.Vector3(0, 1, 0);
+const dragonTmp = { p: new THREE.Vector3(), a: new THREE.Vector3(), b: new THREE.Vector3(), side: new THREE.Vector3(), normal: new THREE.Vector3() };
+const dragonView = { frustum: new THREE.Frustum(), m: new THREE.Matrix4(), sphere: new THREE.Sphere() };
+
+// Is the swimming dragon anywhere the camera can see? (It is off-screen most of the time.)
+function dragonOnScreen(dragon) {
+      if (!dragon.visible || typeof camera === 'undefined' || !camera) return dragon.visible;
+      const v = dragonView;
+      v.m.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+      v.frustum.setFromProjectionMatrix(v.m);
+      dragon.getWorldPosition(v.sphere.center);
+      v.sphere.center.y += 1;
+      v.sphere.radius = DRAGON_LENGTH * 0.6 + 2;
+      return v.frustum.intersectsSphere(v.sphere) && camera.position.distanceTo(v.sphere.center) < 220;
+    }
+
 function updateSeaDragon(t, dragon = ogopogoGroup) {
       if (!dragon || !dragon.userData.body) return;
+      // The lake's own dragon is only re-shaped while it can be seen (a new one is always shaped once)
+      if (dragon === ogopogoGroup && !dragonOnScreen(dragon)) return;
       const { body, head, spines, tailFin } = dragon.userData;
       const pos = body.geometry.attributes.position;
-      const up = new THREE.Vector3(0, 1, 0);
+      const T = dragonTmp;
       for (let i = 0; i <= DRAGON_RINGS; i++) {
         const u = i / DRAGON_RINGS;
-        const p = dragonSpine(u, t);
-        const tangent = dragonSpine(Math.min(1, u + 0.01), t).sub(dragonSpine(Math.max(0, u - 0.01), t)).normalize();
-        const side = new THREE.Vector3().crossVectors(tangent, up).normalize();
-        const normal = new THREE.Vector3().crossVectors(side, tangent).normalize();
+        const p = dragonSpine(u, t, T.p);
+        const tangent = dragonSpine(Math.min(1, u + 0.01), t, T.a).sub(dragonSpine(Math.max(0, u - 0.01), t, T.b)).normalize();
+        const side = T.side.crossVectors(tangent, DRAGON_UP).normalize();
+        const normal = T.normal.crossVectors(side, tangent).normalize();
         const r = dragonRadius(u);
         for (let j = 0; j <= DRAGON_SIDES; j++) {
           const ang = (j / DRAGON_SIDES) * Math.PI * 2;
@@ -581,16 +658,16 @@ function updateSeaDragon(t, dragon = ogopogoGroup) {
       body.geometry.computeVertexNormals();
       body.geometry.computeBoundingSphere();
 
-      const neck = dragonSpine(1, t);
+      const neck = dragonSpine(1, t, T.p);
       head.position.set(neck.x + 0.25, neck.y + 0.1, neck.z);
       head.rotation.z = Math.sin(t * 0.9) * 0.12 - 0.1;
       head.rotation.y = Math.sin(t * 0.6) * 0.25;
       spines.forEach(s => {
-        const p = dragonSpine(s.userData.u, t);
+        const p = dragonSpine(s.userData.u, t, T.p);
         s.position.set(p.x, p.y + dragonRadius(s.userData.u) + 0.1, p.z);
         s.rotation.z = 0.35;
       });
-      const tail = dragonSpine(0, t);
+      const tail = dragonSpine(0, t, T.p);
       tailFin.position.set(tail.x, tail.y, tail.z);
       tailFin.rotation.z = Math.sin(t * 1.6) * 0.3;
     }
@@ -754,11 +831,31 @@ function roundCartoonTree(trunkMat, leafColor) {
       return tree;
     }
 
+// Is the ground here steeper than `limit` (rise over run)? Trees and rocks never stand on a cliff face.
+// How much snow stays on ground with this normal (its up component): all of it on gentle ground,
+// none on cliff faces steeper than about 47 degrees, which show bare rock even in winter
+function snowHoldsOn(ny) {
+      const t = Math.max(0, Math.min(1, (ny - 0.68) / 0.14));
+      return t * t * (3 - 2 * t);
+    }
+
+function groundTooSteep(x, z, limit = 0.85, e = 0.8) {
+      const h = getAnalyticalGroundHeight;
+      return Math.max(Math.abs(h(x + e, z) - h(x - e, z)), Math.abs(h(x, z + e) - h(x, z - e))) / (2 * e) > limit;
+    }
+
+// The lowest ground under a trunk, so it never hangs over the downhill side of a slope
+function groundUnderTrunk(x, z, r = 0.3) {
+      const h = getAnalyticalGroundHeight;
+      return Math.min(h(x, z), h(x + r, z), h(x - r, z), h(x, z + r), h(x, z - r));
+    }
+
 // Deciduous trees, flowers and boulders around the valley (kept off paths and buildings)
 function buildValleyScenery3D() {
       const leafColors = [0x4cc93b, 0x7ad94a, 0x36b37e, 0xf2a93b];
       const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8a5a2b, roughness: 0.9 });
-      const clearOf = (x, z, r) => !worldObstacles.some(o => Math.hypot(x - o.x, z - o.z) < o.r + r)
+      // (boxes use the circle their building had before (placeR / legacy), so every seeded tree keeps its spot and id)
+      const clearOf = (x, z, r) => !worldObstacles.some(o => o.legacy ? o.legacy.some(c => Math.hypot(x - c.x, z - c.z) < c.r + r) : Math.hypot(x - o.x, z - o.z) < (o.placeR ?? o.r) + r)
         && !Object.values(TOWN_LOCATIONS).some(l => Math.hypot(x - l.x, z - l.z) < r + 2.2)
         && !(typeof inParkingArea === 'function' && inParkingArea(x, z, r))
         && Math.abs(x + 2) > 3 && z < 7.5;
@@ -769,7 +866,7 @@ function buildValleyScenery3D() {
         const x = Math.round((treeRng() - 0.5) * 64 * 10) / 10;
         const z = Math.round((-11 + treeRng() * 18) * 10) / 10;
         if (!clearOf(x, z, 1.4) || Math.hypot(x + 9.5, z + 7.8) < 5) continue;
-        const gy = getAnalyticalGroundHeight(x, z);
+        const gy = groundUnderTrunk(x, z);
         // Its shape has its own seed, so the placement sequence (and every tree's id) stays the same
         const tree = typeof buildNaturalLeafyTree === 'function' ? buildNaturalLeafyTree(makeRng('kelo1-tree-shape-' + placed), placed) : roundCartoonTree(trunkMat, leafColors[placed % leafColors.length]);
         tree.position.set(x, gy, z);
@@ -789,7 +886,7 @@ function buildValleyScenery3D() {
         const z = Math.round((-11 + outerRng() * 18) * 10) / 10;
         if (!clearOf(x, z, 1.4)) continue;
         const tree = typeof buildNaturalLeafyTree === 'function' ? buildNaturalLeafyTree(makeRng('kelo1-outer-tree-shape-' + outer), outer + 3) : roundCartoonTree(trunkMat, leafColors[outer % leafColors.length]);
-        tree.position.set(x, getAnalyticalGroundHeight(x, z), z);
+        tree.position.set(x, groundUnderTrunk(x, z), z);
         tree.rotation.y = outerRng() * Math.PI;
         scene.add(tree);
         const obstacle = { x, z, r: 0.75 };
@@ -819,7 +916,7 @@ function buildValleyScenery3D() {
       for (let i = 0; i < 14; i++) {
         const x = (Math.random() - 0.5) * 60;
         const z = -10 + Math.random() * 17;
-        if (!clearOf(x, z, 1.0)) continue;
+        if (!clearOf(x, z, 1.0) || groundTooSteep(x, z)) continue;
         const rockGeo = new THREE.DodecahedronGeometry(0.4 + Math.random() * 0.4, 1);
         const rock = new THREE.Mesh(typeof roughenGeometry === 'function' ? roughenGeometry(rockGeo, 0.18, i + 3) : rockGeo, rockMat);
         rock.scale.y = 0.6;
@@ -932,10 +1029,12 @@ function buildBlueberryBushes3D() {
 
 // --- Buildings ------------------------------------------------------------------
 function buildCafe3D() {
-      const cx = -1.5, cz = 3.5;
+      // Modelled in its own small units and scaled to real size (TOWN_BUILDINGS, js/agent.js)
+      const B = TOWN_BUILDINGS.cafe, cx = B.x, cz = B.z, S = B.scale;
       const gy = getAnalyticalGroundHeight(cx, cz);
       const cafe = new THREE.Group();
       cafe.position.set(cx, gy, cz);
+      cafe.scale.setScalar(S);
       const walls = new THREE.Mesh(new THREE.BoxGeometry(3.8, 2.4, 2.8), new THREE.MeshStandardMaterial({ color: 0xeadcc2, roughness: 0.8 }));
       walls.position.y = 1.2;
       walls.castShadow = true;
@@ -965,40 +1064,70 @@ function buildCafe3D() {
       coffee.position.set(-1.1, 3.24, 0);
       const handle = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.05, 8, 16), cup.material);
       handle.position.set(-0.6, 2.95, 0);
-      // Patio table with an umbrella
+      // Patio table with an umbrella: furniture size (TOWN_FURNITURE_SCALE), not the building's
+      const patio = new THREE.Group();
+      patio.position.set(-1.3, 0, 2.1);
+      patio.scale.setScalar(TOWN_FURNITURE_SCALE / S);
       const table = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.06, 16), new THREE.MeshStandardMaterial({ color: 0xf8fafc }));
-      table.position.set(-1.3, 0.75, 2.5);
+      table.position.set(0, 0.75, 0);
       const tableLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.75, 6), new THREE.MeshStandardMaterial({ color: 0x334155 }));
-      tableLeg.position.set(-1.3, 0.37, 2.5);
+      tableLeg.position.set(0, 0.37, 0);
       const umbrella = new THREE.Mesh(new THREE.ConeGeometry(0.85, 0.35, 8), new THREE.MeshStandardMaterial({ color: 0xea580c }));
-      umbrella.position.set(-1.3, 1.85, 2.5);
+      umbrella.position.set(0, 1.85, 0);
       const umbrellaPole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.1, 6), tableLeg.material);
-      umbrellaPole.position.set(-1.3, 1.3, 2.5);
-      cafe.add(walls, roof, awning, door, shopWindow, sign, cup, coffee, handle, table, tableLeg, umbrella, umbrellaPole);
+      umbrellaPole.position.set(0, 1.3, 0);
+      patio.add(table, tableLeg, umbrella, umbrellaPole);
+      cafe.add(walls, roof, awning, door, shopWindow, sign, cup, coffee, handle, patio);
+      // Details at the house's level (js/materials.js kit): base, corner boards, framed shop window and
+      // side windows, a door casing with a handle and step, eaves with gutters, lamps and a planter
+      if (typeof bldKit === 'function') {
+        const K = bldKit();
+        bldBase(cafe, 3.8, 2.8, 2.4);
+        const front = bldFace(cafe, 'front', 3.8, 2.8);
+        front.userData.interiorPart = 'front'; // hidden while he is inside (js/interiors.js)
+        bldWindow(front, -0.7, 1.05, 1.6, 0.9, { noGlass: true, frame: K.darkTrim });
+        bldDoor(front, 0.9, 0.8, 1.4, { frame: K.darkTrim });
+        bldLamp(front, 1.55, 1.75);
+        bldPlanter(front, -0.7, 1.5);
+        ['left', 'right'].forEach(side => { const f = bldFace(cafe, side, 3.8, 2.8); bldWindow(f, 0, 1.3, 0.9, 0.75); bldLamp(f, 0.95, 1.9); });
+        const back = bldFace(cafe, 'back', 3.8, 2.8);
+        bldWindow(back, 0.8, 1.35, 0.7, 0.6);
+        bldEaves(cafe, 3.8, 2.8, 2.52, { overhang: 0.15, fascia: K.darkTrim, fasciaH: 0.28 });
+        bldFinish(cafe, [sign]);
+      }
+      // Hollow walls with a room inside, the front and the roof come off while he is in there (js/interiors.js)
+      if (typeof interiorSetup === 'function') interiorSetup('cafe', cafe, { body: walls, front: [awning, door, shopWindow, sign], roof: [roof, cup, coffee, handle] });
       // Stucco walls, a steel roof and a wooden door (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(cafe, [[walls.material, 'plaster', 2], [roof.material, 'metalroof', 2], [door.material, 'paintedwood']]);
       scene.add(cafe);
-      worldObstacles.push({ x: cx, z: cz, r: 2.3 }, { x: cx - 1.3, z: cz + 2.5, r: 0.6 });
+      // Solid walls (3.8 x 2.8 model units); he stands at the counter door out front. The patio table is a circle.
+      addObstacle(obstacleBox(cx, cz, 1.95 * S, 1.45 * S, { placeR: 2.3 * S, building: 'cafe', door: { x: TOWN_LOCATIONS.cafe.x, z: TOWN_LOCATIONS.cafe.z } }), { x: cx - 1.3 * S, z: cz + 2.1 * S, r: 0.6 * TOWN_FURNITURE_SCALE });
     }
 
 function buildNetNode3D() {
-      const cx = 6.8, cz = 2.2;
+      const B = TOWN_BUILDINGS.cyber, cx = B.x, cz = B.z, S = B.scale;
       const gy = getAnalyticalGroundHeight(cx, cz);
       const net = new THREE.Group();
       net.position.set(cx, gy, cz);
+      net.scale.setScalar(S);
       const body = new THREE.Mesh(new THREE.BoxGeometry(4.2, 2.5, 3.0), new THREE.MeshStandardMaterial({ color: 0x6b717c, metalness: 0.4, roughness: 0.4 }));
       body.position.y = 1.25;
       body.castShadow = true;
       body.receiveShadow = true;
       // Glowing glass front with screens behind it
-      const glass = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.3, 0.05), new THREE.MeshStandardMaterial({ color: 0x8fb8c2, roughness: 0.05, metalness: 0.2, emissive: 0x0891b2, emissiveIntensity: 0.18, transparent: true, opacity: 0.85 }));
-      glass.position.set(0, 1.25, 1.52);
+      // (the storefront runs from the step up, so its glass door is a full-height door)
+      const glass = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.5, 0.05), new THREE.MeshStandardMaterial({ color: 0x8fb8c2, roughness: 0.05, metalness: 0.2, emissive: 0x0891b2, emissiveIntensity: 0.18, transparent: true, opacity: 0.85 }));
+      glass.position.set(0, 0.87, 1.52);
       const screenMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee });
-      [-1.1, 0, 1.1].forEach(x => {
+      const frontScreens = [-1.1, 0, 1.1].map(x => {
         const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.4), screenMat);
         screen.position.set(x, 1.15, 1.56);
         net.add(screen);
+        return screen;
       });
+      const netRoof = new THREE.Group(); // rooftop kit: hidden with the roof while he is inside
+      netRoof.userData.interiorPart = 'roof';
+      net.add(netRoof);
       const sign = makeSignMesh('NETNODE CYBER CAFE', { bg: '#0f172a', fg: '#22d3ee', width: 3.2, height: 0.42 });
       sign.position.set(0, 2.25, 1.53);
       // Satellite dish and antenna on the roof
@@ -1010,18 +1139,42 @@ function buildNetNode3D() {
       const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), new THREE.MeshBasicMaterial({ color: 0xf43f5e }));
       beacon.position.set(-1.4, 3.92, -0.6);
       net.add(body, glass, sign, dish, antenna, beacon);
+      if (typeof bldKit === 'function') {
+        const K = bldKit();
+        bldBase(net, 4.2, 3.0, 2.5, { corners: false, footMat: K.concrete });
+        // A dark aluminium storefront: frame, mullions and a door with pull handles in the glass
+        const front = bldFace(net, 'front', 4.2, 3.0);
+        front.userData.interiorPart = 'front';
+        bldWindow(front, 0, 0.87, 3.4, 1.5, { noGlass: true, frame: K.darkMetal, mullions: false, sill: false });
+        [-0.85, 0.85].forEach(x => bldBox(front, 0.05, 1.5, 0.06, K.darkMetal, x, 0.87, 0.05));
+        [1.32, 1.48].forEach(x => bldBox(front, 0.03, 0.42, 0.05, K.gutter, x, 0.85, 0.1));
+        bldBox(front, 4.0, 0.12, 0.3, K.concrete, 0, 0.06, 0.15);
+        [-1.9, 1.9].forEach(x => bldLamp(front, x, 1.95));
+        ['left', 'right', 'back'].forEach(side => { const f = bldFace(net, side, 4.2, 3.0); bldWindow(f, 0, 1.45, side === 'back' ? 1.4 : 1.0, 0.5, { frame: K.darkMetal, sill: false }); });
+        // Parapet coping round the flat roof and a rooftop air unit
+        bldEaves(net, 4.2, 3.0, 2.54, { overhang: 0.04, fascia: K.darkMetal, fasciaH: 0.1, gutters: false });
+        bldBox(netRoof, 0.9, 0.5, 0.7, K.gutter, -0.2, 2.75, -0.7);
+        bldBox(netRoof, 0.6, 0.04, 0.6, K.darkMetal, -0.2, 3.01, -0.7);
+        const downspout = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.4, 8), K.darkMetal);
+        downspout.position.set(-2.12, 1.2, -1.4);
+        net.add(downspout);
+        bldFinish(net, [sign]);
+      }
+      if (typeof interiorSetup === 'function') interiorSetup('cyber', net, { body, front: [glass, sign, ...frontScreens], roof: [dish, antenna, beacon] });
       // Modern metal wall panels (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(net, [[body.material, 'cladding', 2.5]]);
       scene.add(net);
-      worldObstacles.push({ x: cx, z: cz, r: 2.5 });
+      // Its walls (4.2 x 3.0 model units): he walks up to the glass front, never through a corner
+      addObstacle(obstacleBox(cx, cz, 2.12 * S, 1.52 * S, { placeR: 2.5 * S, building: 'cyber', door: { x: TOWN_LOCATIONS.cyber.x, z: TOWN_LOCATIONS.cyber.z } }));
     }
 
 // The Okanagan Post Office, where mail for Kelo-1 waits and his letters go out
 function buildPostOffice3D() {
-      const cx = 12.5, cz = -3.0;
+      const B = TOWN_BUILDINGS.post_office, cx = B.x, cz = B.z, S = B.scale;
       const gy = getAnalyticalGroundHeight(cx, cz);
       const po = new THREE.Group();
       po.position.set(cx, gy, cz);
+      po.scale.setScalar(S);
 
       const brick = new THREE.MeshStandardMaterial({ color: 0x9a4a38, roughness: 0.85 });
       const trim = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.6 });
@@ -1042,10 +1195,11 @@ function buildPostOffice3D() {
       door.position.set(0, 0.75, 1.62);
       const step = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.14, 0.6), trim);
       step.position.set(0, 0.07, 1.85);
-      [-1.35, 1.35].forEach(wx => {
+      const frontWins = [-1.35, 1.35].map(wx => {
         const win = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.7, 0.06), new THREE.MeshStandardMaterial({ color: 0xbfdbfe, emissive: 0x1e3a8a, emissiveIntensity: 0.2 }));
         win.position.set(wx, 1.5, 1.62);
         po.add(win);
+        return win;
       });
       const sign = makeSignMesh('POST OFFICE', { bg: '#f8fafc', fg: '#b91c1c', width: 2.6, height: 0.45 });
       sign.position.set(0, 2.25, 1.63);
@@ -1067,12 +1221,30 @@ function buildPostOffice3D() {
       boxLeg.position.y = 0.2;
       mailbox.add(boxBody, boxTop, boxLeg);
       mailbox.position.set(-1.9, 0, 2.1);
+      mailbox.scale.setScalar(TOWN_FURNITURE_SCALE / S); // a real street mailbox, not one blown up with the walls
 
       po.add(body, roof, cornice, door, step, sign, pole, flag, mailbox);
+      if (typeof bldKit === 'function') {
+        const K = bldKit();
+        bldBase(po, 4.2, 3.2, 2.6, { footMat: K.stone, footH: 0.3, cornerMat: trim });
+        const front = bldFace(po, 'front', 4.2, 3.2);
+        front.userData.interiorPart = 'front';
+        [-1.35, 1.35].forEach(x => bldWindow(front, x, 1.5, 0.8, 0.7, { noGlass: true, frame: trim, sillMat: K.stone }));
+        bldDoor(front, 0, 0.9, 1.5, { frame: trim, step: false, doorDepth: 0.08 });
+        bldWindow(front, 0, 1.78, 0.8, 0.22, { frame: trim, sill: false, mullions: false }); // transom
+        [-0.75, 0.75].forEach(x => bldLamp(front, x, 1.95));
+        ['left', 'right'].forEach(side => { const f = bldFace(po, side, 4.2, 3.2); [-0.7, 0.7].forEach(x => bldWindow(f, x, 1.45, 0.7, 0.8, { frame: trim, sillMat: K.stone })); });
+        const back = bldFace(po, 'back', 4.2, 3.2);
+        bldWindow(back, 0, 1.45, 0.8, 0.8, { frame: trim, sillMat: K.stone });
+        bldEaves(po, 4.2, 3.2, 2.5, { overhang: 0.1, fascia: trim, fasciaH: 0.1, downspouts: true });
+        bldFinish(po, [sign, flag, mailbox]);
+      }
+      if (typeof interiorSetup === 'function') interiorSetup('post_office', po, { body, front: [door, sign, ...frontWins], roof: [roof, cornice] });
       // Real brick, slate shingles and painted trim (js/materials.js)
       if (typeof dressBuilding === 'function') dressBuilding(po, [[brick, 'brick', 1.2], [slate, 'shingles', 1.4], [trim, 'paintedwood']]);
       scene.add(po);
-      worldObstacles.push({ x: cx, z: cz, r: 2.5 }, { x: cx - 1.9, z: cz + 2.1, r: 0.4 });
+      // Brick walls (4.2 x 3.2 model units); the red street mailbox out front is a circle
+      addObstacle(obstacleBox(cx, cz, 2.12 * S, 1.62 * S, { placeR: 2.5 * S, building: 'post_office', door: { x: TOWN_LOCATIONS.post_office.x, z: TOWN_LOCATIONS.post_office.z } }), { x: cx - 1.9 * S, z: cz + 2.1 * S, r: 0.4 * TOWN_FURNITURE_SCALE });
     }
 
 // Kelo-1's body and rig are built by buildKelo1Character3D() in js/kelo-body.js
@@ -1381,16 +1553,193 @@ function createPOILabelsDOM() {
     }
 
 // --- Walking around obstacles ----------------------------------------------------
+// worldObstacles holds two shapes:
+//   circles {x, z, r}                          trees, posts, small things
+//   boxes   {x, z, hw, hd, rot?, door?, r}     building footprints and wall segments: a solid
+//           rectangle hw across its own x and hd along its own z (half sizes), turned by rot about y
+//           like a THREE rotation.y. `door` {x, z} is the spot outside where he stands when he walks
+//           "to" the building. A box also carries r (its bounding circle), so code that only knows
+//           circles stays on the safe side. Make boxes with obstacleBox() / obstacleWall().
+// He never walks into a box: a walk target inside one is moved to its door, or to its edge on the
+// side he comes from (walkGoalFor). Interior trips (js/basements.js, the Workshop) walk on their own.
 const KELO_RADIUS = 0.55;
+let obstacleVersion = 0;
 
-// Obstacles that contain the target (e.g. he is walking up to a building) don't block the approach
+function obstacleBox(x, z, hw, hd, extra = {}) {
+      return { x, z, hw, hd, rot: 0, r: Math.hypot(hw, hd), ...extra };
+    }
+
+// A straight, axis-aligned wall from (ax, az) to (bx, bz), `t` thick, left open over each gap
+// [from, to] (distances along the wall from a): a list of boxes
+function obstacleWall(ax, az, bx, bz, t = 0.5, gaps = [], extra = {}) {
+      const len = Math.hypot(bx - ax, bz - az);
+      if (len < 1e-6) return [];
+      const ux = (bx - ax) / len, uz = (bz - az) / len;
+      const cuts = gaps.map(([g0, g1]) => [Math.max(0, Math.min(g0, g1)), Math.min(len, Math.max(g0, g1))]).filter(([g0, g1]) => g1 > g0).sort((p, q) => p[0] - q[0]);
+      const out = [];
+      let at = 0;
+      const piece = (s0, s1) => {
+        if (s1 - s0 < 0.05) return;
+        const m = (s0 + s1) / 2, cx = ax + ux * m, cz = az + uz * m;
+        const alongX = Math.abs(ux) >= Math.abs(uz);
+        out.push(obstacleBox(cx, cz, alongX ? (s1 - s0) / 2 + t / 2 : t / 2, alongX ? t / 2 : (s1 - s0) / 2 + t / 2, extra));
+      };
+      cuts.forEach(([g0, g1]) => { piece(at, g0); at = Math.max(at, g1); });
+      piece(at, len);
+      return out;
+    }
+
+// Adding or removing obstacles through these bumps the version, so paths are planned again at once
+// (direct pushes and filters are noticed too: see obstacleSignature)
+function addObstacle(...list) {
+      list.flat().forEach(o => { if (o) worldObstacles.push(o); });
+      obstacleVersion++;
+      return list[0];
+    }
+
+function removeObstacle(o) {
+      const n = worldObstacles.length;
+      worldObstacles = worldObstacles.filter(x => x !== o);
+      if (worldObstacles.length !== n) obstacleVersion++;
+    }
+
+// Changes whenever an obstacle is added, removed or moved, whoever did it
+function obstacleSignature() {
+      let sum = 0;
+      for (const o of worldObstacles) sum += o.x * 3.1 + o.z * 7.3 + (o.r || 0) * 1.7 + (o.hw || 0) * 0.37;
+      return `${obstacleVersion}|${worldObstacles.length}|${sum.toFixed(3)}`;
+    }
+
+// How far a point is from an obstacle's edge (negative inside) and the outward direction there
+const obstacleProbeOut = { d: 0, nx: 1, nz: 0 };
+function obstacleProbe(o, x, z) {
+      const P = obstacleProbeOut;
+      if (o.hw === undefined) {
+        const dx = x - o.x, dz = z - o.z, d = Math.hypot(dx, dz);
+        P.d = d - o.r;
+        P.nx = d > 1e-9 ? dx / d : 1;
+        P.nz = d > 1e-9 ? dz / d : 0;
+        return P;
+      }
+      const c = o.rot ? Math.cos(o.rot) : 1, s = o.rot ? Math.sin(o.rot) : 0;
+      const wx = x - o.x, wz = z - o.z;
+      const lx = wx * c - wz * s, lz = wx * s + wz * c;
+      const qx = Math.abs(lx) - o.hw, qz = Math.abs(lz) - o.hd;
+      let nlx, nlz;
+      if (qx > 0 || qz > 0) {
+        const ox = Math.max(qx, 0), oz = Math.max(qz, 0), l = Math.hypot(ox, oz);
+        P.d = l;
+        nlx = ox / l * (lx < 0 ? -1 : 1);
+        nlz = oz / l * (lz < 0 ? -1 : 1);
+      } else if (qx > qz) { P.d = qx; nlx = lx < 0 ? -1 : 1; nlz = 0; }
+      else { P.d = qz; nlx = 0; nlz = lz < 0 ? -1 : 1; }
+      P.nx = nlx * c + nlz * s;
+      P.nz = -nlx * s + nlz * c;
+      return P;
+    }
+
+// Is (x, z) at least `pad` clear of every obstacle (boxes and circles alike)?
+function obstacleClearAt(x, z, pad = 0) {
+      for (const o of worldObstacles) if (obstacleProbe(o, x, z).d < pad) return false;
+      return true;
+    }
+
+// Is a round patch `radius` across this spot open, dry, gentle ground with nothing solid on it?
+// opts.offLimits also keeps it off buildings' grounds, the town, the yard and the pit (landscape.js).
+function openGroundAt(x, z, radius = 2, opts = {}) {
+      if (x < WORLD_MIN_X + 2 || x > WORLD_MAX_X - 2 || z < WORLD_MIN_Z + 2 || z > WORLD_MAX_Z + 2 || !islandContains(x, z, 2)) return false;
+      const h = getAnalyticalGroundHeight;
+      for (const k of [0, 0.5, 1]) {
+        const n = k ? 10 : 1;
+        for (let i = 0; i < n; i++) {
+          const a = i / n * Math.PI * 2, px = x + Math.cos(a) * radius * k, pz = z + Math.sin(a) * radius * k;
+          if (h(px, pz) < WATER_LEVEL + 0.08) return false;
+        }
+      }
+      if (groundTooSteep(x, z, opts.slope || 0.6, Math.max(0.8, radius * 0.6))) return false;
+      if (!obstacleClearAt(x, z, radius)) return false;
+      if (opts.offLimits && typeof offLimits === 'function' && offLimits(x, z, opts.pad || 0)) return false;
+      if (typeof inWorkshopSite === 'function' && inWorkshopSite(x, z, opts.offLimits ? radius : 0)) return false;
+      return true;
+    }
+
+// The open spot nearest to `near` (rings outward); `near` itself if it is already open
+function openGroundNear(near, radius = 2, opts = {}) {
+      if (openGroundAt(near.x, near.z, radius, opts)) return { x: near.x, z: near.z };
+      for (let r = 1; r <= 60; r += 1) {
+        const n = Math.max(8, Math.round(r * 2 * Math.PI / 1.5));
+        let best = null, bestD = Infinity;
+        for (let i = 0; i < n; i++) {
+          const a = i / n * Math.PI * 2, x = near.x + Math.cos(a) * r, z = near.z + Math.sin(a) * r;
+          if (!openGroundAt(x, z, radius, opts)) continue;
+          const d = opts.toward ? Math.hypot(x - opts.toward.x, z - opts.toward.z) : 0;
+          if (d < bestD) { bestD = d; best = { x: Math.round(x * 10) / 10, z: Math.round(z * 10) / 10 }; }
+        }
+        if (best && openGroundAt(best.x, best.z, radius, opts)) return best;
+      }
+      return null;
+    }
+
+// Circles that contain the target (a tree he is chopping, a post he walks up to) don't block the
+// approach. Boxes never do: a target inside one is moved out first (walkGoalFor).
 function obstacleHoldsTarget(o, target) {
+      if (o.hw !== undefined) return false;
       return Math.hypot(target.x - o.x, target.z - o.z) < o.r + KELO_RADIUS;
+    }
+
+// Where he really walks to for this target: the target itself, or (when it lies inside a building
+// box) the building's door or the edge of the box on the side he comes from
+let walkGoalCache = { key: '', goal: null };
+function walkGoalFor(target, from = state.botPos) {
+      const key = `${target.x.toFixed(2)},${target.z.toFixed(2)}|${obstacleSignature()}`;
+      if (walkGoalCache.key === key && walkGoalCache.goal) return walkGoalCache.goal;
+      let goal = { x: target.x, z: target.z };
+      const box = worldObstacles.find(o => o.hw !== undefined && obstacleProbe(o, target.x, target.z).d < KELO_RADIUS);
+      if (box) goal = boxEdgeSpot(box, target, from || target);
+      walkGoalCache = { key, goal };
+      return goal;
+    }
+
+function boxEdgeSpot(o, target, from) {
+      const free = p => !pointBlocked(p.x, p.z, p);
+      if (o.door && free(o.door)) return { x: o.door.x, z: o.door.z };
+      // Out along the line from the target back toward where he is
+      const pad = KELO_RADIUS + 0.12;
+      let dx = from.x - target.x, dz = from.z - target.z;
+      if (Math.hypot(dx, dz) < 0.05) { const P = obstacleProbe(o, target.x, target.z); dx = P.nx; dz = P.nz; }
+      const l = Math.hypot(dx, dz) || 1;
+      dx /= l; dz /= l;
+      let edge = null;
+      for (let s = 0; s < 60; s += 0.1) {
+        const x = target.x + dx * s, z = target.z + dz * s;
+        if (obstacleProbe(o, x, z).d >= pad) { edge = { x, z }; break; }
+      }
+      if (!edge) edge = { x: target.x + dx * 60, z: target.z + dz * 60 };
+      if (free(edge)) return edge;
+      // Something else stands there: the nearest free spot around it
+      for (let rad = 0.3; rad <= 8; rad += 0.3) {
+        let best = null, bestD = Infinity;
+        for (let k = 0; k < 24; k++) {
+          const a = k / 24 * Math.PI * 2, p = { x: edge.x + Math.cos(a) * rad, z: edge.z + Math.sin(a) * rad };
+          if (!free(p)) continue;
+          const d = Math.hypot(p.x - target.x, p.z - target.z);
+          if (d < bestD) { bestD = d; best = p; }
+        }
+        if (best) return best;
+      }
+      return edge;
     }
 
 // He has arrived when he is next to the target, or as close as a solid object allows
 function arrivalRadius(target) {
       let r = 0.16;
+      // A target inside a building counts as reached once he stands at its door or edge (walkGoalFor),
+      // and not before, whichever side of the building he happens to be on
+      const goal = walkGoalFor(target);
+      if (Math.hypot(goal.x - target.x, goal.z - target.z) > 0.01) {
+        const p = state.botPos;
+        return Math.hypot(p.x - goal.x, p.z - goal.z) < 0.3 ? Math.hypot(p.x - target.x, p.z - target.z) + 0.05 : 0.16;
+      }
       for (const o of worldObstacles) {
         if (obstacleHoldsTarget(o, target)) {
           r = Math.max(r, o.r + KELO_RADIUS + 0.1 - Math.hypot(target.x - o.x, target.z - o.z));
@@ -1406,11 +1755,13 @@ const PATH_COLS = Math.ceil((PATH_MAX_X - PATH_MIN_X) / PATH_CELL);
 const PATH_ROWS = Math.ceil((PATH_MAX_Z - PATH_MIN_Z) / PATH_CELL);
 let currentPath = [];
 let currentPathKey = '';
+let currentPathPartial = false;
+let pathLastPos = null;           // where he was when the path was last followed   // no way all the way there: the path ends as close as he can get
 
 function pointBlocked(x, z, target) {
       for (const o of worldObstacles) {
         if (obstacleHoldsTarget(o, target)) continue;
-        if (Math.hypot(x - o.x, z - o.z) < o.r + KELO_RADIUS) return true;
+        if (obstacleProbe(o, x, z).d < KELO_RADIUS) return true;
       }
       return false;
     }
@@ -1424,60 +1775,129 @@ function segmentClear(ax, az, bx, bz, target) {
       return true;
     }
 
+// Which grid cells he can't stand in (each obstacle marks only the cells under it). Cells keep a
+// little extra room (PATH_MARGIN), so a path never squeezes through a gap he only just fits.
+// Near the start, something he is already brushing against only blocks cells deeper into it,
+// so he can always step away from it. 0.18: the narrowest gap a path takes is 2 x (0.55 + 0.18) =
+// 1.46 units (0.9 m), so he never threads the 0.89 m alley between the NetNode and the Post Office.
+const PATH_MARGIN = 0.18;
+function pathBlockedGrid(to, from = null) {
+      const blocked = new Uint8Array(PATH_COLS * PATH_ROWS);
+      const R = KELO_RADIUS + PATH_MARGIN;
+      const touching = new Map();
+      if (from) for (const o of worldObstacles) { if (!obstacleHoldsTarget(o, to)) { const d = obstacleProbe(o, from.x, from.z).d; if (d < R) touching.set(o, d); } }
+      for (const o of worldObstacles) {
+        if (obstacleHoldsTarget(o, to) || touching.has(o)) continue;
+        const reach = (o.r || 0) + R + PATH_CELL;
+        const c0 = Math.max(0, Math.floor((o.x - reach - PATH_MIN_X) / PATH_CELL)), c1 = Math.min(PATH_COLS - 1, Math.floor((o.x + reach - PATH_MIN_X) / PATH_CELL));
+        const r0 = Math.max(0, Math.floor((o.z - reach - PATH_MIN_Z) / PATH_CELL)), r1 = Math.min(PATH_ROWS - 1, Math.floor((o.z + reach - PATH_MIN_Z) / PATH_CELL));
+        for (let r = r0; r <= r1; r++) {
+          const z = PATH_MIN_Z + (r + 0.5) * PATH_CELL;
+          for (let c = c0; c <= c1; c++) {
+            const i = r * PATH_COLS + c;
+            if (!blocked[i] && obstacleProbe(o, PATH_MIN_X + (c + 0.5) * PATH_CELL, z).d < R) blocked[i] = 1;
+          }
+        }
+      }
+      touching.forEach((d0, o) => {
+        const reach = (o.r || 0) + R + PATH_CELL;
+        const c0 = Math.max(0, Math.floor((o.x - reach - PATH_MIN_X) / PATH_CELL)), c1 = Math.min(PATH_COLS - 1, Math.floor((o.x + reach - PATH_MIN_X) / PATH_CELL));
+        const r0 = Math.max(0, Math.floor((o.z - reach - PATH_MIN_Z) / PATH_CELL)), r1 = Math.min(PATH_ROWS - 1, Math.floor((o.z + reach - PATH_MIN_Z) / PATH_CELL));
+        for (let r = r0; r <= r1; r++) {
+          const z = PATH_MIN_Z + (r + 0.5) * PATH_CELL;
+          for (let c = c0; c <= c1; c++) {
+            const i = r * PATH_COLS + c, x = PATH_MIN_X + (c + 0.5) * PATH_CELL;
+            if (blocked[i]) continue;
+            const d = obstacleProbe(o, x, z).d;
+            // Within 2.5 units of him only what is deeper in than he is now; further away the usual room
+            const near = Math.hypot(x - from.x, z - from.z) < 2.5;
+            if (d < (near ? Math.min(R, d0 - 0.05) : R)) blocked[i] = 1;
+          }
+        }
+      });
+      return blocked;
+    }
+
+// A* with a binary heap over the whole grid. If the goal can't be reached, the path leads to the
+// reachable cell nearest to it (currentPathPartial tells the walker).
 function findPath(from, to) {
+      currentPathPartial = false;
       if (segmentClear(from.x, from.z, to.x, to.z, to)) return [{ x: to.x, z: to.z }];
+      const N = PATH_COLS * PATH_ROWS;
       const col = x => Math.max(0, Math.min(PATH_COLS - 1, Math.floor((x - PATH_MIN_X) / PATH_CELL)));
       const row = z => Math.max(0, Math.min(PATH_ROWS - 1, Math.floor((z - PATH_MIN_Z) / PATH_CELL)));
       const cx = c => PATH_MIN_X + (c + 0.5) * PATH_CELL;
       const cz = r => PATH_MIN_Z + (r + 0.5) * PATH_CELL;
       const start = row(from.z) * PATH_COLS + col(from.x);
       const goal = row(to.z) * PATH_COLS + col(to.x);
-      const blocked = new Uint8Array(PATH_COLS * PATH_ROWS);
-      for (let r = 0; r < PATH_ROWS; r++) {
-        for (let c = 0; c < PATH_COLS; c++) {
-          if (pointBlocked(cx(c), cz(r), to)) blocked[r * PATH_COLS + c] = 1;
-        }
-      }
+      const blocked = pathBlockedGrid(to, from);
       blocked[start] = 0;
-      blocked[goal] = 0;
-      const g = new Float32Array(PATH_COLS * PATH_ROWS).fill(Infinity);
-      const came = new Int32Array(PATH_COLS * PATH_ROWS).fill(-1);
-      const open = [start];
-      const inOpen = new Uint8Array(PATH_COLS * PATH_ROWS);
+      if (!pointBlocked(to.x, to.z, to)) blocked[goal] = 0;
+      const g = new Float32Array(N).fill(Infinity);
+      const came = new Int32Array(N).fill(-1);
+      const closed = new Uint8Array(N);
+      const h = i => Math.hypot(cx(i % PATH_COLS) - to.x, cz((i / PATH_COLS) | 0) - to.z);
+      // Binary heap of [f, cell]
+      const heapF = [], heapI = [];
+      const push = (f, i) => {
+        let k = heapF.length;
+        heapF.push(f); heapI.push(i);
+        while (k > 0) { const p = (k - 1) >> 1; if (heapF[p] <= f) break; heapF[k] = heapF[p]; heapI[k] = heapI[p]; k = p; }
+        heapF[k] = f; heapI[k] = i;
+      };
+      const pop = () => {
+        const top = heapI[0], lastF = heapF.pop(), lastI = heapI.pop();
+        const n = heapF.length;
+        if (n) {
+          let k = 0;
+          for (;;) {
+            const a = 2 * k + 1, b = a + 1;
+            let m = k, mf = lastF;
+            if (a < n && heapF[a] < mf) { m = a; mf = heapF[a]; }
+            if (b < n && heapF[b] < mf) { m = b; mf = heapF[b]; }
+            if (m === k) break;
+            heapF[k] = heapF[m]; heapI[k] = heapI[m]; k = m;
+          }
+          heapF[k] = lastF; heapI[k] = lastI;
+        }
+        return top;
+      };
       g[start] = 0;
-      inOpen[start] = 1;
-      const h = i => Math.hypot(cx(i % PATH_COLS) - to.x, cz(Math.floor(i / PATH_COLS)) - to.z);
-      let found = false;
-      for (let iter = 0; open.length > 0 && iter < 20000; iter++) {
-        let bi = 0;
-        for (let k = 1; k < open.length; k++) if (g[open[k]] + h(open[k]) < g[open[bi]] + h(open[bi])) bi = k;
-        const cur = open.splice(bi, 1)[0];
-        inOpen[cur] = 0;
+      push(h(start), start);
+      let found = false, best = start, bestH = h(start);
+      for (let iter = 0; heapF.length && iter < N * 4; iter++) {
+        const cur = pop();
+        if (closed[cur]) continue;
+        closed[cur] = 1;
+        const hc = h(cur);
+        if (hc < bestH) { bestH = hc; best = cur; }
         if (cur === goal) { found = true; break; }
-        const cc = cur % PATH_COLS, cr = Math.floor(cur / PATH_COLS);
+        const cc = cur % PATH_COLS, cr = (cur / PATH_COLS) | 0;
         for (let dr = -1; dr <= 1; dr++) {
           for (let dc = -1; dc <= 1; dc++) {
             if (!dr && !dc) continue;
             const nc = cc + dc, nr = cr + dr;
             if (nc < 0 || nr < 0 || nc >= PATH_COLS || nr >= PATH_ROWS) continue;
             const n = nr * PATH_COLS + nc;
-            if (blocked[n]) continue;
+            if (blocked[n] || closed[n]) continue;
             // No cutting corners between two blocked cells
             if (dr && dc && (blocked[cr * PATH_COLS + nc] || blocked[nr * PATH_COLS + cc])) continue;
             const cost = g[cur] + (dr && dc ? 1.414 : 1) * PATH_CELL;
             if (cost < g[n]) {
               g[n] = cost;
               came[n] = cur;
-              if (!inOpen[n]) { open.push(n); inOpen[n] = 1; }
+              push(cost + h(n), n);
             }
           }
         }
       }
-      if (!found) return [{ x: to.x, z: to.z }];
+      const end = found ? goal : best;
+      if (!found) currentPathPartial = true;
+      if (end === start) return [found ? { x: to.x, z: to.z } : { x: from.x, z: from.z }];
       const cells = [];
-      for (let c = goal; c !== -1 && c !== start; c = came[c]) cells.push({ x: cx(c % PATH_COLS), z: cz(Math.floor(c / PATH_COLS)) });
+      for (let c = end; c !== -1 && c !== start; c = came[c]) cells.push({ x: cx(c % PATH_COLS), z: cz((c / PATH_COLS) | 0) });
       cells.reverse();
-      cells[cells.length - 1] = { x: to.x, z: to.z };
+      if (found) cells[cells.length - 1] = { x: to.x, z: to.z };
       // Smooth the path: skip waypoints he can walk straight past
       const smooth = [];
       let anchor = { x: from.x, z: from.z };
@@ -1490,20 +1910,85 @@ function findPath(from, to) {
       return smooth;
     }
 
+// Stuck watch: little progress toward the waypoint for a while means the path is planned again;
+// after that a sidestep; after that he stops as close as he got and lets the activity go
+const WALK_STUCK_SECS = 2.5, WALK_STUCK_PROGRESS = 0.3;
+const walkStuck = { key: '', wp: null, bestD: Infinity, secs: 0, fails: 0 };
+
+function walkGiveUp(why) {
+      const p = state.botPos;
+      state.walkBlocked = { x: Math.round(state.targetPos.x * 10) / 10, z: Math.round(state.targetPos.z * 10) / 10, at: Date.now(), why };
+      state.targetPos = { x: p.x, z: p.z };
+      currentPath = [];
+      currentPathKey = '';
+      walkStuck.fails = 0;
+      walkStuck.key = '';
+      // Whatever sent him there is blocked for a while instead of being tried again and again
+      if (typeof currentActivityKey !== 'undefined' && currentActivityKey && typeof coolDownActivity === 'function') {
+        coolDownActivity(currentActivityKey, typeof QUICK_COOLDOWN_MS === 'number' ? QUICK_COOLDOWN_MS : 4 * 60 * 1000);
+      }
+      if (!state.riding && !state.isSleeping) {
+        state.speechBubble = "I can't find a way through there, so I'll stop here.";
+        if (typeof renderAllUI === 'function') renderAllUI();
+      }
+    }
+
+function walkWatch(px, pz, dt, goalKey) {
+      const S = walkStuck;
+      if (S.key !== goalKey) { S.key = goalKey; S.fails = 0; S.wp = null; }
+      const wp = currentPath[0];
+      if (!wp) return;
+      if (!S.wp || S.wp.x !== wp.x || S.wp.z !== wp.z) { S.wp = { x: wp.x, z: wp.z }; S.bestD = Infinity; S.secs = 0; }
+      const d = Math.hypot(wp.x - px, wp.z - pz);
+      if (!Number.isFinite(S.bestD)) S.bestD = d;
+      if (d < S.bestD - WALK_STUCK_PROGRESS) { S.bestD = d; S.secs = 0; return; }
+      S.secs += Math.min(0.25, Math.max(0, dt || 0));
+      if (S.secs < WALK_STUCK_SECS) return;
+      S.fails += 1;
+      S.secs = 0;
+      S.bestD = d;
+      if (S.fails === 1) {
+        const partial = currentPathPartial;
+        currentPath = findPath({ x: px, z: pz }, currentPath[currentPath.length - 1] || wp);
+        currentPathPartial = partial || currentPathPartial;
+      } else if (S.fails === 2) {
+        // A sidestep to whichever side is free, then on along the path
+        const dx = wp.x - px, dz = wp.z - pz, l = Math.hypot(dx, dz) || 1;
+        for (const side of [1, -1]) {
+          const sx = px - dz / l * 1.2 * side, sz = pz + dx / l * 1.2 * side;
+          if (!pointBlocked(sx, sz, { x: 999, z: 999 }) && segmentClear(px, pz, sx, sz, { x: 999, z: 999 })) { currentPath.unshift({ x: sx, z: sz }); break; }
+        }
+      } else walkGiveUp('stuck');
+    }
+
 // Direction toward the next waypoint, recomputing the path when the target or the world changes
-function nextPathDirection(px, pz, target) {
+function nextPathDirection(px, pz, target, dt = 0) {
       // Boats and aircraft go straight; there is nothing to walk around out there
       if (state.riding && (state.ridingMode === 'water' || state.ridingMode === 'air')) {
         const dx = target.x - px, dz = target.z - pz, len = Math.hypot(dx, dz) || 1;
         return [dx / len, dz / len];
       }
-      const key = `${target.x.toFixed(2)},${target.z.toFixed(2)},${worldObstacles.length}`;
-      if (key !== currentPathKey) {
-        currentPath = findPath({ x: px, z: pz }, target);
+      const goal = walkGoalFor(target, { x: px, z: pz });
+      const key = `${goal.x.toFixed(2)},${goal.z.toFixed(2)},${obstacleSignature()}`;
+      // ...and when he was put somewhere else since the last step (a scripted move, a vehicle ride)
+      const moved = !pathLastPos || Math.hypot(px - pathLastPos.x, pz - pathLastPos.z) > 1.5;
+      pathLastPos = { x: px, z: pz };
+      if (key !== currentPathKey || moved) {
+        currentPath = findPath({ x: px, z: pz }, goal);
         currentPathKey = key;
+        Object.assign(walkStuck, { key: '', wp: null, fails: 0, secs: 0 });
       }
       while (currentPath.length > 1 && Math.hypot(currentPath[0].x - px, currentPath[0].z - pz) < 0.45) currentPath.shift();
-      const wp = currentPath[0] || target;
+      // Near a corner of the path and the one after it is in plain view: on to that one (at speed he
+      // swings wide of a corner and would otherwise loop back to touch it)
+      while (currentPath.length > 1 && Math.hypot(currentPath[0].x - px, currentPath[0].z - pz) < 2.2 && segmentClear(px, pz, currentPath[1].x, currentPath[1].z, goal)) currentPath.shift();
+      // The way is shut: he got as close as he can
+      if (currentPathPartial && currentPath.length <= 1) {
+        const end = currentPath[0];
+        if (!end || Math.hypot(end.x - px, end.z - pz) < 0.35) { walkGiveUp('no-path'); return [0, 0]; }
+      }
+      walkWatch(px, pz, dt, `${goal.x.toFixed(2)},${goal.z.toFixed(2)}`);
+      const wp = currentPath[0] || goal;
       const dx = wp.x - px, dz = wp.z - pz;
       const len = Math.hypot(dx, dz) || 1;
       return [dx / len, dz / len];
@@ -1511,22 +1996,63 @@ function nextPathDirection(px, pz, target) {
 
 // Hard guarantee: never end a step inside something solid
 function pushOutOfObstacles(pos, target) {
-      for (const o of worldObstacles) {
-        if (obstacleHoldsTarget(o, target)) {
-          // Still keep him out of the building's footprint itself
-          const minD = o.r * 0.75;
-          const d = Math.hypot(pos.x - o.x, pos.z - o.z);
-          if (d < minD && d > 0) { pos.x = o.x + ((pos.x - o.x) / d) * minD; pos.z = o.z + ((pos.z - o.z) / d) * minD; }
-          continue;
-        }
-        const minD = o.r + KELO_RADIUS;
-        const d = Math.hypot(pos.x - o.x, pos.z - o.z);
-        if (d < minD) {
-          const nx = d > 0 ? (pos.x - o.x) / d : 1, nz = d > 0 ? (pos.z - o.z) / d : 0;
-          pos.x = o.x + nx * minD;
-          pos.z = o.z + nz * minD;
+      for (let pass = 0; pass < 2; pass++) {
+        for (const o of worldObstacles) {
+          if (obstacleHoldsTarget(o, target)) {
+            // Still keep him out of the thing itself
+            const minD = o.r * 0.75;
+            const d = Math.hypot(pos.x - o.x, pos.z - o.z);
+            if (d < minD && d > 0) { pos.x = o.x + ((pos.x - o.x) / d) * minD; pos.z = o.z + ((pos.z - o.z) / d) * minD; }
+            continue;
+          }
+          const P = obstacleProbe(o, pos.x, pos.z);
+          if (P.d < KELO_RADIUS) {
+            const k = KELO_RADIUS - P.d + 1e-4;
+            pos.x += P.nx * k;
+            pos.z += P.nz * k;
+          }
         }
       }
+    }
+
+// Per-frame updates from other files (wind, weather, snow, plant care, perf checks...). They run in
+// order inside this one loop just before the frame is drawn, instead of each on its own
+// requestAnimationFrame after it (which drew them a frame late). A hook that throws is reported once.
+const keloFrameHooks = [];
+function keloEveryFrame(fn) {
+      if (typeof fn === 'function') keloFrameHooks.push({ fn, failed: false });
+    }
+
+function runKeloFrameHooks(now) {
+      for (const h of keloFrameHooks) {
+        try { h.fn(now); } catch (e) { if (!h.failed) { h.failed = true; console.warn('A per-frame update failed:', e); } }
+      }
+    }
+
+// Fixed camera views: target x, y, z then camera x, y, z
+const CAMERA_PRESET_VIEWS = {
+  overview: [0, 0.5, -1, 0, 22, 27],
+  house: [-9.2, 1.4, -8.0, -9.2, 9.5, 0.5],
+  storehouse: [7.6, 2.0, -7.6, 7.6, 7.5, 3.5],
+  cafes: [-4, 2.5, 2.5, -4, 22, 30]
+};
+const camScratch = new THREE.Vector3();
+const panScratch = { forward: new THREE.Vector3(), right: new THREE.Vector3(), move: new THREE.Vector3(), up: new THREE.Vector3(0, 1, 0) };
+// A per-frame easing amount tuned at 60 fps, turned into the same easing over `dt` seconds
+function camEase(perFrame, dt) {
+      return 1 - Math.pow(1 - perFrame, Math.max(0, Math.min(0.25, dt || 1 / 60)) * 60);
+    }
+
+const keloToolWordsCache = { a: null, b: null, c: null, mining: false, welding: false };
+function keloToolWords() {
+      const w = keloToolWordsCache, a = state.moodTitle, b = state.speechBubble, c = state.customPlaceName || '';
+      if (a !== w.a || b !== w.b || c !== w.c) {
+        w.a = a; w.b = b; w.c = c;
+        const text = `${a} ${b} ${c}`.toLowerCase();
+        w.mining = /drill|gold|\bmine\b|\bmining|\bdig|auger|\bores?\b|quarry|excavat|mycelium/i.test(text);
+        w.welding = /weld|forge|titanium|track|rail|sculpt|arch|spire/i.test(text);
+      }
+      return w;
     }
 
 function animateDiorama() {
@@ -1550,14 +2076,14 @@ function animateDiorama() {
         }
         const panSpeed = 0.52;
         // Pan relative to camera horizontal heading so arrow keys always feel natural
-        const forward = new THREE.Vector3();
+        const forward = panScratch.forward;
         camera.getWorldDirection(forward);
         forward.y = 0;
         if (forward.lengthSq() < 0.001) forward.set(0, 0, -1);
         forward.normalize();
-        const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+        const right = panScratch.right.crossVectors(forward, panScratch.up).normalize();
 
-        const moveDelta = new THREE.Vector3();
+        const moveDelta = panScratch.move.set(0, 0, 0);
         if (panUp) moveDelta.addScaledVector(forward, panSpeed);
         if (panDown) moveDelta.addScaledVector(forward, -panSpeed);
         if (panRight) moveDelta.addScaledVector(right, panSpeed);
@@ -1581,9 +2107,10 @@ function animateDiorama() {
       const dt = beginKeloPose(t);
 
       // Determine which 3D hand tool Kelo-1 is actively holding
-      const textContext = `${state.moodTitle} ${state.speechBubble} ${state.customPlaceName || ''}`.toLowerCase();
-      const isMiningOrDrilling = state.microPose === 'digging' || state.currentLocKey === 'mountain_peak' || /drill|gold|\bmine\b|\bmining|\bdig|auger|\bores?\b|quarry|excavat|mycelium/i.test(textContext);
-      const isWeldingOrBuilding = state.currentLocKey === 'weld' || Boolean(state.proceduralMotion?.sparkBurst) || /weld|forge|titanium|track|rail|sculpt|arch|spire/i.test(textContext);
+      // (the text tests run only when the words change, not every frame)
+      const toolWords = keloToolWords();
+      const isMiningOrDrilling = state.microPose === 'digging' || state.currentLocKey === 'mountain_peak' || toolWords.mining;
+      const isWeldingOrBuilding = state.currentLocKey === 'weld' || Boolean(state.proceduralMotion?.sparkBurst) || toolWords.welding;
 
       if (keloDrillToolGroup && keloWeldTorchGroup) {
         // A carried tool (shovel, jackhammer...) replaces the built-in drill arm
@@ -1818,7 +2345,7 @@ function animateDiorama() {
       // Animals, his friend and pet, the campfire, swimming: things his human switched on (js/wishfeatures.js)
       if (typeof updateWishFeatures === 'function') updateWishFeatures(t);
       if (typeof checkForGlints === 'function') checkForGlints();
-      updateClouds(1 / 60);
+      updateClouds(dt); // real seconds, so they drift at the same speed at any frame rate
       if (skyDome) skyDome.position.copy(camera.position);
 
       // 2. Scale Garden Crops smoothly based on ripeness
@@ -1868,27 +2395,21 @@ function animateDiorama() {
       } else if (typeof basementCameraUpdate === 'function' && basementCameraUpdate()) {
         // moved there
       } else if (state.cameraMode === 'follow') {
-        controls.target.lerp(new THREE.Vector3(keloGroup.position.x, keloGroup.position.y + 1.6, keloGroup.position.z), 0.08);
+        controls.target.lerp(camScratch.set(keloGroup.position.x, keloGroup.position.y + 1.6, keloGroup.position.z), camEase(0.08, dt));
       } else if (state.cameraMode === 'bird') {
         // Keep target clamped to terrain elevation while allowing free Arrow-Key / WASD exploration
         const targetGroundY = getIslandGroundHeight(controls.target.x, controls.target.z);
-        controls.target.y = THREE.MathUtils.lerp(controls.target.y, targetGroundY + 1.0, 0.1);
-      } else if (state.cameraMode === 'overview') {
-        controls.target.lerp(new THREE.Vector3(0, 0.5, -1), 0.08);
-        camera.position.lerp(new THREE.Vector3(0, 22, 27), 0.05);
-      } else if (state.cameraMode === 'house') {
-        controls.target.lerp(new THREE.Vector3(-9.2, 1.4, -8.0), 0.08);
-        camera.position.lerp(new THREE.Vector3(-9.2, 9.5, 0.5), 0.05);
-      } else if (state.cameraMode === 'storehouse') {
-        controls.target.lerp(new THREE.Vector3(5.5, 1.2, -6.8), 0.08);
-        camera.position.lerp(new THREE.Vector3(5.5, 4.2, 0.8), 0.05);
-      } else if (state.cameraMode === 'cafes') {
-        controls.target.lerp(new THREE.Vector3(0, 1.5, 3.2), 0.08);
-        camera.position.lerp(new THREE.Vector3(0, 11.5, 15.5), 0.05);
+        controls.target.y = THREE.MathUtils.lerp(controls.target.y, targetGroundY + 1.0, camEase(0.1, dt));
+      } else if (CAMERA_PRESET_VIEWS[state.cameraMode]) {
+        // The fixed views ease in at the same pace at any frame rate
+        const [tx, ty, tz, px, py, pz] = CAMERA_PRESET_VIEWS[state.cameraMode];
+        controls.target.lerp(camScratch.set(tx, ty, tz), camEase(0.08, dt));
+        camera.position.lerp(camScratch.set(px, py, pz), camEase(0.05, dt));
       }
 
       controls.update();
       // Sky, haze, shadows and water follow the camera; then draw (with post-processing on High)
+      runKeloFrameHooks(performance.now());
       if (typeof updateRealism === 'function') updateRealism(t, dt);
       if (typeof renderWorld === 'function') renderWorld();
       else renderer.render(scene, camera);
@@ -1897,36 +2418,51 @@ function animateDiorama() {
       projectLabelsToScreen();
     }
 
+// Pins are projected every frame: scratch vectors, the viewport size read once per resize, and
+// style properties written only when they change
+const labelScratch = new THREE.Vector3(), labelGroundScratch = new THREE.Vector3();
+const labelView = { el: null, w: 0, h: 0, at: -1 };
 function projectLabelsToScreen() {
-      const viewport = document.getElementById('dioramaViewport');
+      if (!labelView.el) {
+        labelView.el = document.getElementById('dioramaViewport');
+        window.addEventListener('resize', () => { labelView.at = -1; });
+      }
+      const viewport = labelView.el;
       if (!viewport || !keloGroup) return;
-      const w = viewport.clientWidth;
-      const h = viewport.clientHeight;
-
-      // Project Kelo-1 Overhead Bubble
-      // (What he's doing is shown in the docked panel at the bottom; nothing to project here)
+      if (labelView.at < 0 || ++labelView.at > 120) { labelView.w = viewport.clientWidth; labelView.h = viewport.clientHeight; labelView.at = 1; }
+      const w = labelView.w;
+      const h = labelView.h;
 
       // Project Building & Mountain Pins (anchored above exact terrain elevation!)
       // Names only appear when the cursor is near the place (or it was just tapped)
       const pointerLive = hoverPointer.active && (hoverPointer.touchUntil === 0 || Date.now() < hoverPointer.touchUntil);
-      Object.values(TOWN_LOCATIONS).forEach(loc => {
+      for (const id in TOWN_LOCATIONS) {
+        const loc = TOWN_LOCATIONS[id];
         const el = poiDomElements[loc.id];
-        if (!el) return;
+        if (!el) continue;
         const pinBaseY = (typeof loc.groundY === 'number') ? loc.groundY : getIslandGroundHeight(loc.x, loc.z);
-        const v = new THREE.Vector3(loc.x, pinBaseY + 3.6, loc.z);
-        v.project(camera);
-        const ground = new THREE.Vector3(loc.x, pinBaseY + 1.0, loc.z).project(camera);
+        const v = labelScratch.set(loc.x, pinBaseY + 3.6, loc.z).project(camera);
+        const ground = labelGroundScratch.set(loc.x, pinBaseY + 1.0, loc.z).project(camera);
         const lx = (v.x * 0.5 + 0.5) * w, ly = (-(v.y * 0.5) + 0.5) * h;
         const gx = (ground.x * 0.5 + 0.5) * w, gy = (-(ground.y * 0.5) + 0.5) * h;
         const near = pointerLive && v.z <= 1 && (
           Math.hypot(hoverPointer.x - gx, hoverPointer.y - gy) < 70 ||
           Math.hypot(hoverPointer.x - lx, hoverPointer.y - ly) < 45 ||
           (Math.abs(hoverPointer.x - gx) < 40 && hoverPointer.y > ly && hoverPointer.y < gy));
-        el.style.opacity = near ? '1' : '0';
-        el.style.pointerEvents = near ? 'auto' : 'none';
-        if (v.z <= 1) {
-          el.style.left = `${lx}px`;
-          el.style.top = `${ly}px`;
+        const was = el._keloPin || (el._keloPin = { near: null, x: NaN, y: NaN });
+        if (was.near !== near) {
+          was.near = near;
+          el.style.opacity = near ? '1' : '0';
+          el.style.pointerEvents = near ? 'auto' : 'none';
         }
-      });
+        // Hidden pins don't need to follow the camera until they show again
+        if (v.z <= 1 && (near || el.style.opacity !== '0')) {
+          const rx = Math.round(lx), ry = Math.round(ly);
+          if (rx !== was.x || ry !== was.y) {
+            was.x = rx; was.y = ry;
+            el.style.left = `${rx}px`;
+            el.style.top = `${ry}px`;
+          }
+        }
+      }
     }

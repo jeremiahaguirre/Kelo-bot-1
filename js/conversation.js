@@ -168,7 +168,7 @@ Return ONLY JSON: {"reply": "...", "unknownWords": [words in their message you g
           sayToVisitor(parsed.reply.trim().slice(0, 600), visitor);
           const toLearn = (Array.isArray(parsed.unknownWords) ? parsed.unknownWords : []).filter(w => typeof w === 'string' && !state.vocabulary[w.toLowerCase()]).map(w => w.toLowerCase().slice(0, 40));
           if (toLearn.length) await explainAfterLookingUp(toLearn, visitor, message);
-          if (typeof parsed.wantsToAct === 'string' && parsed.wantsToAct.trim()) doWhenFree(() => decideNextAction(`${visitor} said: "${message}". You decided: ${parsed.wantsToAct.slice(0, 200)}`, `Talking with ${visitor}`));
+          if (typeof parsed.wantsToAct === 'string' && parsed.wantsToAct.trim()) doWhenFree(() => decideNextAction(`${visitor} said: "${message}". You decided: ${parsed.wantsToAct.slice(0, 200)}`, `Talking with ${visitor}`), { key: `talk:${visitor}:${message}` });
           savePersistentBrainState();
           return;
         }

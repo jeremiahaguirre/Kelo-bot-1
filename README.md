@@ -173,6 +173,7 @@ Kelo-bot-1/
 │   ├── tryit.js         # The World tab's Try it panel: preview seasons, night and wind, send sample gifts
 │   ├── plants.js        # His concrete and asphalt plant beside the workshop: research, materials, mix designs, batches, hot mix that cools, concrete pours that cure, wear and service
 │   ├── plantmodels.js   # The plant in 3D: batch plant, asphalt plant, mixer truck, concrete pours, hover labels, built only when the camera is near
+│   ├── menuui.js        # The menu's Diary and Brain tabs: diary filters and paging, the Brain dashboard, search and section counts (loaded last)
 │   ├── shop.js          # The shop website itself (shop.html)
 │   └── vendor/          # The other three.js r128 add-ons (Sky, RGBELoader, bloom post-processing), kept in the repo
 ├── assets/
@@ -199,3 +200,7 @@ Kelo-bot-1/
 2. In your GitHub repo, go to **Settings → Pages**.
 3. Under **Build and deployment**, set **Source** to **Deploy from a branch**, select `main` and `/ (root)`, and click **Save**.
 4. Within a minute or two, Kelo-1 will be live at `https://jeremiahaguirre.github.io/Kelo-bot-1/`.
+
+## Credits
+
+Kelo-1's walk, run and turns are based on motion capture from the CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu; created with funding from NSF EIA-0196217). See [CREDITS.md](CREDITS.md).

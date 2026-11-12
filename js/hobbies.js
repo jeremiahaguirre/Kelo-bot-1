@@ -230,7 +230,7 @@ function startPracticeProps(hobby) {
           const ky = state.botAltitudeY + 7 + Math.sin(t * 1.3) * 0.8;
           kite.position.set(kx, ky, kz);
           kite.rotation.z = Math.sin(t * 1.7) * 0.4;
-          line.geometry.setFromPoints([new THREE.Vector3(state.botPos.x, state.botAltitudeY + 1.4, state.botPos.z), new THREE.Vector3(kx, ky, kz)]);
+          setLineEnds(line, { x: state.botPos.x, y: state.botAltitudeY + 1.4, z: state.botPos.z }, { x: kx, y: ky, z: kz });
         };
         // How it really flies depends on the wind (js/wind.js)
         if (typeof windKiteProps === 'function') hobbyPropUpdate = windKiteProps(kite, line);

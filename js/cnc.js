@@ -199,28 +199,28 @@ const ROUTER_LEFT_X = -2.15, ROUTER_RIGHT_X = 2.6;
 routerDef({
   key: 'avid4896', name: 'Avid CNC PRO4896', short: 'Avid PRO4896', at: { x: ROUTER_LEFT_X, z: -4.3, ry: 0 }, size: { w: 2.5, h: 1.5, d: 1.6 }, color: 0x22272e,
   stand: { x: -0.45, z: -4.3 }, skill: 'Running the Avid PRO4896', prefix: 'Avid-routed', signs: true,
-  model: () => cncRouterModel({ name: 'avid4896', w: 2.5, d: 1.6, frame: 'black', gantryMat: 'dark', accent: 'red', logo: 'AVID CNC  PRO4896', logoBg: '#0f1115', logoFg: '#ef4444' }),
+  model: () => cncRouterModel({ name: 'avid4896', w: 2.5, d: 1.6, frame: 'black', gantryMat: 'dark', accent: 'steel' }),
   wiki: ['CNC router', 'Computer-aided manufacturing'], words: [/avid|pro ?4896|4896/i],
   products: ['An Avid-routed plywood sign', 'An Avid-routed plywood go-kart seat back'], makes: [/sign|seat back|plaque/]
 });
 routerDef({
   key: 'avid60120', name: 'Avid CNC PRO60120', short: 'Avid PRO60120', at: { x: ROUTER_RIGHT_X, z: -4.3, ry: Math.PI }, size: { w: 2.9, h: 1.5, d: 1.85 }, color: 0x22272e,
   stand: { x: 0.75, z: -4.3 }, skill: 'Running the Avid PRO60120', prefix: 'Avid-routed',
-  model: () => cncRouterModel({ name: 'avid60120', w: 2.9, d: 1.85, frame: 'black', gantryMat: 'dark', accent: 'red', logo: 'AVID CNC  PRO60120', logoBg: '#0f1115', logoFg: '#ef4444' }),
+  model: () => cncRouterModel({ name: 'avid60120', w: 2.9, d: 1.85, frame: 'black', gantryMat: 'dark', accent: 'steel' }),
   wiki: ['CNC router'], words: [/60120|avid pro ?60|big avid/i],
   products: ['An Avid-routed plywood workbench top', 'An Avid-routed plywood kayak rack'], makes: [/workbench|kayak|table top/]
 });
 routerDef({
   key: 'altmill', name: 'Sienci AltMill 4x8', short: 'AltMill', at: { x: ROUTER_LEFT_X, z: -1.9, ry: 0 }, size: { w: 2.5, h: 1.5, d: 1.6 }, color: 0x2fb04a,
   stand: { x: -0.45, z: -1.9 }, skill: 'Running the AltMill', prefix: 'AltMill-routed', stock: 'mdf',
-  model: () => cncRouterModel({ name: 'altmill', w: 2.5, d: 1.6, frame: 'dark', gantryMat: 'black', accent: 'sienci', logo: 'SIENCI ALTMILL 4x8', logoBg: '#0f1115', logoFg: '#4ade80' }),
+  model: () => cncRouterModel({ name: 'altmill', w: 2.5, d: 1.6, frame: 'alu', gantryMat: 'blackAnod', accent: 'anthracite' }),
   wiki: ['CNC router'], words: [/altmill|sienci/i],
   products: ['An AltMill-routed MDF cabinet door', 'An AltMill-routed MDF speaker baffle'], makes: [/cabinet door|baffle|door/]
 });
 routerDef({
   key: 'shopsaber', name: 'ShopSaber IS 510', short: 'ShopSaber', at: { x: ROUTER_RIGHT_X, z: -1.9, ry: Math.PI }, size: { w: 2.7, h: 1.6, d: 1.7 }, color: 0x334155,
   stand: { x: 0.75, z: -1.9 }, skill: 'Running the ShopSaber', prefix: 'ShopSaber-routed', vacuum: true,
-  model: () => cncRouterModel({ name: 'shopsaber', w: 2.7, d: 1.7, frame: 'grey', gantryMat: 'dark', accent: 'orange', heavy: true, vacuum: true, logo: 'SHOPSABER  IS 510', logoBg: '#111827', logoFg: '#fb923c' }),
+  model: () => cncRouterModel({ name: 'shopsaber', w: 2.7, d: 1.7, frame: 'anthracite', gantryMat: 'lightGrey', accent: 'steel', heavy: true, vacuum: true }),
   wiki: ['CNC router', 'Vacuum table'], words: [/shopsaber|shop saber|is ?510/i],
   learned: 'The ShopSaber IS 510 is a heavy welded-steel router for full 5x10 sheets. A vacuum table holds the sheet flat through a spoilboard, a compression bit leaves clean top and bottom edges, and the dust collector clears the chips.',
   products: ['A ShopSaber-routed plywood shelving set', 'A ShopSaber-routed plywood go-kart floor pan'], makes: [/shel(f|ving)|floor pan/]
@@ -228,7 +228,7 @@ routerDef({
 routerDef({
   key: 'laguna', name: 'Laguna SmartShop', short: 'Laguna SmartShop', at: { x: ROUTER_LEFT_X, z: 0.45, ry: 0 }, size: { w: 2.6, h: 1.6, d: 1.7 }, color: 0xeef0f2,
   stand: { x: -0.45, z: 0.45 }, skill: 'Running the Laguna SmartShop', prefix: 'Laguna-routed', vacuum: true,
-  model: () => cncRouterModel({ name: 'laguna', w: 2.6, d: 1.7, frame: 'white', gantryMat: 'grey', accent: 'orange', heavy: true, atc: true, vacuum: true, logo: 'LAGUNA SmartShop', logoBg: '#f8fafc', logoFg: '#ea580c' }),
+  model: () => cncRouterModel({ name: 'laguna', w: 2.6, d: 1.7, frame: 'lightGrey', gantryMat: 'anthracite', accent: 'steel', heavy: true, atc: true, vacuum: true }),
   wiki: ['CNC router', 'Automatic tool changer'], words: [/laguna|smartshop|smart shop/i],
   learned: 'The Laguna SmartShop is an industrial router for cabinets and signs: an automatic tool changer swaps bits between operations, a vacuum table holds the sheets, and a dust collector keeps the shop clean.',
   products: ['A Laguna-routed plywood cabinet carcass', 'A Laguna-routed plywood shop sign'], makes: [/cabinet|carcass|shop sign/]

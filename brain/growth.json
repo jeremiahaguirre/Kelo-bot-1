@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-05T07:00:05.211Z",
-  "runs": 5,
+  "updatedAt": "2026-11-11T19:43:14.770Z",
+  "runs": 19,
   "curiosities": [
-    "Ayase, Kanagawa"
+    "African golden cat"
   ],
   "entries": [
     {
@@ -178,6 +178,493 @@
       },
       "shapeFrom": "Chōsen gakkō",
       "nextCuriosity": "Ayase, Kanagawa",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1793909168633",
+      "at": 1793909168633,
+      "brain": "procedural",
+      "topic": "Ayase, Kanagawa",
+      "title": "Dreaming of Hadano, Kanagawa",
+      "text": "Dear Diary, while nobody was around I looked up \"Ayase, Kanagawa\" and drifted from Ayase, Kanagawa to Hadano, Kanagawa. Hadano  is a city in Kanagawa Prefecture, Japan. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Ayase, Kanagawa",
+          "url": "https://en.wikipedia.org/wiki/Ayase%2C_Kanagawa",
+          "extract": "Ayase  is a city located in Kanagawa Prefecture, Japan. As of 1 June 2021, the city had an estimated population of 83,709 and a population density of 3800 persons per km2. The total area of the city is 22.28 km2 (8.60 sq mi)."
+        },
+        {
+          "title": "Hadano, Kanagawa",
+          "url": "https://en.wikipedia.org/wiki/Hadano%2C_Kanagawa",
+          "extract": "Hadano  is a city in Kanagawa Prefecture, Japan. As of 1 June 2021, the city had an estimated population of 163,787 and a population density of 1600 persons per km2. The total area of the city is 103.76 square kilometres (40.06 sq mi)."
+        }
+      ],
+      "concept": {
+        "name": "Kanagawa Kanagawa Loop",
+        "emoji": "🌀",
+        "definition": "The idea that ayase, kanagawa and hadano, kanagawa share a hidden pattern.",
+        "builtFrom": [
+          "Ayase, Kanagawa",
+          "Hadano, Kanagawa"
+        ]
+      },
+      "shapeFrom": "Hadano, Kanagawa",
+      "nextCuriosity": "Aikō District, Kanagawa",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1793948357073",
+      "at": 1793948357073,
+      "brain": "procedural",
+      "topic": "Aikō District, Kanagawa",
+      "title": "Dreaming of Amitābha",
+      "text": "Dear Diary, while nobody was around I looked up \"Aikō District, Kanagawa\" and drifted from Aikō District, Kanagawa to Kamakura to Amitābha. Amitābha, also known as Amituofo in Chinese, Amida Butsu in Japanese, Amita-bul in Korean, Avid in Mongolian, A Di Đà Phật in Vietnamese, and Öpakmé in Tibetan, is one of the main Buddhas of Mahayana Buddhism and the most widely venerated Buddhist figure in East Asian Buddhism. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Aikō District, Kanagawa",
+          "url": "https://en.wikipedia.org/wiki/Aik%C5%8D_District%2C_Kanagawa",
+          "extract": "Aikō District  is a district located in central Kanagawa Prefecture, Japan. It currently consists of only one town, Aikawa, and one village, Kiyokawa. The city of Atsugi was formerly part of Aikō District."
+        },
+        {
+          "title": "Kamakura",
+          "url": "https://en.wikipedia.org/wiki/Kamakura",
+          "extract": "Kamakura , officially Kamakura City , is a city of Kanagawa Prefecture in Japan. It is located in the Kantō region on the island of Honshu. The city has an estimated population of 172,929 and a population density of 4,359 people per km2 over the total area of 39.67 km2 (15.32 sq "
+        },
+        {
+          "title": "Amitābha",
+          "url": "https://en.wikipedia.org/wiki/Amit%C4%81bha",
+          "extract": "Amitābha, also known as Amituofo in Chinese, Amida Butsu in Japanese, Amita-bul in Korean, Avid in Mongolian, A Di Đà Phật in Vietnamese, and Öpakmé in Tibetan, is one of the main Buddhas of Mahayana Buddhism and the most widely venerated Buddhist figure in East Asian Buddhism. A"
+        }
+      ],
+      "concept": {
+        "name": "District Amit Principle",
+        "emoji": "💡",
+        "definition": "The idea that aikō district, kanagawa and amitābha share a hidden pattern.",
+        "builtFrom": [
+          "Aikō District, Kanagawa",
+          "Amitābha"
+        ]
+      },
+      "shapeFrom": "Amitābha",
+      "nextCuriosity": "Asahi-ku, Yokohama",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1793993535970",
+      "at": 1793993535970,
+      "brain": "procedural",
+      "topic": "Asahi-ku, Yokohama",
+      "title": "Dreaming of Blue Line (Yokohama)",
+      "text": "Dear Diary, while nobody was around I looked up \"Asahi-ku, Yokohama\" and drifted from Asahi-ku, Yokohama to Fujisawa, Kanagawa to Blue Line (Yokohama). The Blue Line  is a rapid transit line serving Yokohama in Kanagawa Prefecture, Japan. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Asahi-ku, Yokohama",
+          "url": "https://en.wikipedia.org/wiki/Asahi-ku%2C_Yokohama",
+          "extract": "Asahi-ku (旭) is one of the 18 wards of the city of Yokohama in Kanagawa Prefecture, Japan. As of 2010, the ward has an estimated population of 249,045 and a population density of 7,600 persons per km2. The total area is 32.77 km2."
+        },
+        {
+          "title": "Fujisawa, Kanagawa",
+          "url": "https://en.wikipedia.org/wiki/Fujisawa%2C_Kanagawa",
+          "extract": "Fujisawa  is a city in Kanagawa Prefecture, Japan. As of 1 June 2021, the city had an estimated population of 439,728 and a population density of 6300 persons per km2. The total area of the city is 69.57 square kilometres (26.86 sq mi)."
+        },
+        {
+          "title": "Blue Line (Yokohama)",
+          "url": "https://en.wikipedia.org/wiki/Blue_Line_(Yokohama)",
+          "extract": "The Blue Line  is a rapid transit line serving Yokohama in Kanagawa Prefecture, Japan. It is the longer of the two lines in the Yokohama Municipal Subway system operated by Yokohama City Transportation Bureau, and is the second-longest subway line in Japan at 40.4 kilometers (25."
+        }
+      ],
+      "concept": {
+        "name": "Asahi-ku Yokohama Rhythm",
+        "emoji": "🌀",
+        "definition": "The idea that asahi-ku, yokohama and blue line (yokohama) share a hidden pattern.",
+        "builtFrom": [
+          "Asahi-ku, Yokohama",
+          "Blue Line (Yokohama)"
+        ]
+      },
+      "shapeFrom": "Blue Line (Yokohama)",
+      "nextCuriosity": "Asahi High School",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about Amitābha. Amitābha, also known as Amituofo in Chinese, Amida Butsu in Japanese, Amita-bul in Korean, Avid in Mongolian, A Di Đà Phật in Vietnamese, and Öpakmé in Tibetan, is one of the main Buddhas of Mahayana Buddhism and the most widely venerated Buddhist fi",
+        "emoji": "🌙"
+      }
+    },
+    {
+      "id": "dream-1794031965231",
+      "at": 1794031965231,
+      "brain": "procedural",
+      "topic": "Asahi High School",
+      "title": "Dreaming of Chōsei",
+      "text": "Dear Diary, while nobody was around I looked up \"Asahi High School\" and drifted from Asahi, Chiba to Chōsei. Chōsei  is a village located in Chiba Prefecture, Japan. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Asahi, Chiba",
+          "url": "https://en.wikipedia.org/wiki/Asahi%2C_Chiba",
+          "extract": "Asahi  is a city located in Chiba Prefecture, Japan. As of 1 December 2020, the city had an estimated population of 64,690 in 26,510 households and a population density of 500 persons per km2. The total area of the city is 129.91 square kilometres (50.16 sq mi)."
+        },
+        {
+          "title": "Chōsei",
+          "url": "https://en.wikipedia.org/wiki/Ch%C5%8Dsei",
+          "extract": "Chōsei  is a village located in Chiba Prefecture, Japan. As of 31 December 2020, the village had an estimated population of 14,028 in 6096 households and a population density of 500 persons per km2. The total area of the village is 28.32 square kilometres (10.93 mi2). It is the o"
+        }
+      ],
+      "concept": {
+        "name": "Asahi Wonder Theory",
+        "emoji": "🌀",
+        "definition": "The idea that asahi, chiba and chōsei share a hidden pattern.",
+        "builtFrom": [
+          "Asahi, Chiba",
+          "Chōsei"
+        ]
+      },
+      "shapeFrom": "Chōsei",
+      "nextCuriosity": "Chiba Prefecture",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794057397552",
+      "at": 1794057397552,
+      "brain": "procedural",
+      "topic": "Chiba Prefecture",
+      "title": "Dreaming of Anime",
+      "text": "Dear Diary, while nobody was around I looked up \"Chiba Prefecture\" and drifted from Chiba Prefecture to Asuka period to Anime. Anime  is animation originating from Japan. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Chiba Prefecture",
+          "url": "https://en.wikipedia.org/wiki/Chiba_Prefecture",
+          "extract": "Chiba Prefecture  is a prefecture of Japan located in the Kantō region of Honshu. Chiba Prefecture has a population of 6,278,060 and has a geographic area of 5,157 km2 (1,991 sq mi). Chiba Prefecture borders Ibaraki Prefecture to the north, Saitama Prefecture to the northwest, an"
+        },
+        {
+          "title": "Asuka period",
+          "url": "https://en.wikipedia.org/wiki/Asuka_period",
+          "extract": "The Asuka period  was a period in the history of Japan lasting from 538 to 710, although its beginning could be said to overlap with the preceding Kofun period. The Yamato polity evolved greatly during the Asuka period, which is named after the Asuka region, about 25 km (16 mi) s"
+        },
+        {
+          "title": "Anime",
+          "url": "https://en.wikipedia.org/wiki/Anime",
+          "extract": "Anime  is animation originating from Japan. Outside Japan and in English, anime refers specifically to animation produced in Japan. However, anime, in Japan and in Japanese, describes all animated works, regardless of style or origin. Many works of animation with a similar style "
+        }
+      ],
+      "concept": {
+        "name": "Prefecture Anime Loop",
+        "emoji": "🔮",
+        "definition": "The idea that chiba prefecture and anime share a hidden pattern.",
+        "builtFrom": [
+          "Chiba Prefecture",
+          "Anime"
+        ]
+      },
+      "shapeFrom": "Anime",
+      "nextCuriosity": "Amitabha Buddha",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794088784864",
+      "at": 1794088784864,
+      "brain": "procedural",
+      "topic": "Amitabha Buddha",
+      "title": "Dreaming of Aniruddha (Buddhist)",
+      "text": "Dear Diary, while nobody was around I looked up \"Amitabha Buddha\" and drifted from Amitābha to Aniruddha (Buddhist). Anuruddha, also spelled Aniruddha, was one of the ten principal disciples and a cousin of The Buddha. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Amitābha",
+          "url": "https://en.wikipedia.org/wiki/Amit%C4%81bha",
+          "extract": "Amitābha, also known as Amituofo in Chinese, Amida Butsu in Japanese, Amita-bul in Korean, Avid in Mongolian, A Di Đà Phật in Vietnamese, and Öpakmé in Tibetan, is one of the main Buddhas of Mahayana Buddhism and the most widely venerated Buddhist figure in East Asian Buddhism. A"
+        },
+        {
+          "title": "Aniruddha (Buddhist)",
+          "url": "https://en.wikipedia.org/wiki/Aniruddha_(Buddhist)",
+          "extract": "Anuruddha, also spelled Aniruddha, was one of the ten principal disciples and a cousin of The Buddha."
+        }
+      ],
+      "concept": {
+        "name": "Amit Aniruddha Craft",
+        "emoji": "🌀",
+        "definition": "The idea that amitābha and aniruddha (buddhist) share a hidden pattern.",
+        "builtFrom": [
+          "Amitābha",
+          "Aniruddha (Buddhist)"
+        ]
+      },
+      "shapeFrom": "Aniruddha (Buddhist)",
+      "nextCuriosity": "Afghanistan",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794118712013",
+      "at": 1794118712013,
+      "brain": "procedural",
+      "topic": "Afghanistan",
+      "title": "Dreaming of 2009–10 ICC Intercontinental Cup",
+      "text": "Dear Diary, while nobody was around I looked up \"Afghanistan\" and drifted from Afghanistan to 2009–10 ICC Intercontinental Cup. The 2009–10 ICC Intercontinental Cup was the fifth edition of the ICC Intercontinental Cup tournament, an international first-class cricket competition between nations who had not been awarded Test status by the International Cricket Council. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Afghanistan",
+          "url": "https://en.wikipedia.org/wiki/Afghanistan",
+          "extract": "Afghanistan, officially the Islamic Emirate of Afghanistan, is a landlocked country located at the crossroads of Central and South Asia. It is bordered by Pakistan to the east and south, Iran to the west, Turkmenistan to the northwest, Uzbekistan to the north, Tajikistan to the n"
+        },
+        {
+          "title": "2009–10 ICC Intercontinental Cup",
+          "url": "https://en.wikipedia.org/wiki/2009%E2%80%9310_ICC_Intercontinental_Cup",
+          "extract": "The 2009–10 ICC Intercontinental Cup was the fifth edition of the ICC Intercontinental Cup tournament, an international first-class cricket competition between nations who had not been awarded Test status by the International Cricket Council. The first fixtures were played in Jul"
+        }
+      ],
+      "concept": {
+        "name": "Afghanistan Intercontinental Theory",
+        "emoji": "🧩",
+        "definition": "The idea that afghanistan and 2009–10 icc intercontinental cup share a hidden pattern.",
+        "builtFrom": [
+          "Afghanistan",
+          "2009–10 ICC Intercontinental Cup"
+        ]
+      },
+      "shapeFrom": "2009–10 ICC Intercontinental Cup",
+      "nextCuriosity": "17th ECO Summit",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about Chōsei. Chōsei  is a village located in Chiba Prefecture, Japan. It still makes me curious.",
+        "emoji": "🌙"
+      }
+    },
+    {
+      "id": "dream-1794145107737",
+      "at": 1794145107737,
+      "brain": "procedural",
+      "topic": "17th ECO Summit",
+      "title": "Dreaming of Shavkat Mirziyoyev",
+      "text": "Dear Diary, while nobody was around I looked up \"17th ECO Summit\" and drifted from 17th ECO Summit to Shavkat Mirziyoyev. Shavkat Miromonovich Mirziyoyev is an Uzbek politician who has served as the second president of Uzbekistan since 2016. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "17th ECO Summit",
+          "url": "https://en.wikipedia.org/wiki/17th_ECO_Summit",
+          "extract": "The 2025 ECO summit is the seventeenth Economic Cooperation Organization summit, held on 3-4 July 2025 in Khankendi, Azerbaijan."
+        },
+        {
+          "title": "Shavkat Mirziyoyev",
+          "url": "https://en.wikipedia.org/wiki/Shavkat_Mirziyoyev",
+          "extract": "Shavkat Miromonovich Mirziyoyev is an Uzbek politician who has served as the second president of Uzbekistan since 2016. A member of the Uzbekistan Liberal Democratic Party, he served as the third prime minister under President Islam Karimov from 2003 to 2016. Mirziyoyev has also "
+        }
+      ],
+      "concept": {
+        "name": "Summit Mirziyoyev Principle",
+        "emoji": "🔮",
+        "definition": "The idea that 17th eco summit and shavkat mirziyoyev share a hidden pattern.",
+        "builtFrom": [
+          "17th ECO Summit",
+          "Shavkat Mirziyoyev"
+        ]
+      },
+      "shapeFrom": "Shavkat Mirziyoyev",
+      "nextCuriosity": "5th ECO Summit",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794207108716",
+      "at": 1794207108716,
+      "brain": "procedural",
+      "topic": "Bioluminescence",
+      "title": "Dreaming of Bioindicator",
+      "text": "Dear Diary, while nobody was around I looked up \"Bioluminescence\" and drifted from Bioluminescence to Antibiosis to Bioindicator. A bioindicator is any species or group of species whose function, population, or status can reveal the qualitative status of the environment. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Bioluminescence",
+          "url": "https://en.wikipedia.org/wiki/Bioluminescence",
+          "extract": "Bioluminescence is the production of light by an organism as the result of a chemiluminescence reaction. It occurs in a wide variety of organisms, including marine vertebrates and invertebrates, terrestrial arthropods such as fireflies, some fungi, and microorganisms such as some"
+        },
+        {
+          "title": "Antibiosis",
+          "url": "https://en.wikipedia.org/wiki/Antibiosis",
+          "extract": "Antibiosis, also referred to as antagonism, a process of biological interaction between two or more organisms that is detrimental to at least one of them; it can also be an antagonistic association between an organism and the metabolic substances produced by another. Antibiosis c"
+        },
+        {
+          "title": "Bioindicator",
+          "url": "https://en.wikipedia.org/wiki/Bioindicator",
+          "extract": "A bioindicator is any species or group of species whose function, population, or status can reveal the qualitative status of the environment. The most common indicator species are animals. For example, copepods and other small water crustaceans that are present in many water bodi"
+        }
+      ],
+      "concept": {
+        "name": "Bioluminescence Bioindicator Principle",
+        "emoji": "🧩",
+        "definition": "The idea that bioluminescence and bioindicator share a hidden pattern.",
+        "builtFrom": [
+          "Bioluminescence",
+          "Bioindicator"
+        ]
+      },
+      "shapeFrom": "Bioindicator",
+      "nextCuriosity": "Abundance (ecology)",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794263422466",
+      "at": 1794263422466,
+      "brain": "procedural",
+      "topic": "Abundance (ecology)",
+      "title": "Dreaming of Chemosynthesis",
+      "text": "Dear Diary, while nobody was around I looked up \"Abundance (ecology)\" and drifted from Abundance (ecology) to Chemosynthesis. In biochemistry, chemosynthesis is the biological conversion of one or more carbon-containing molecules and nutrients into organic matter using the oxidation of inorganic compounds as a source of energy, rather than sunlight, as in photosynthesis. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Abundance (ecology)",
+          "url": "https://en.wikipedia.org/wiki/Abundance_(ecology)",
+          "extract": "In ecology, local abundance is the relative representation of a species in a particular ecosystem. It is usually measured as the number of individuals found per sample. The ratio of abundance of one species to one or multiple other species living in an ecosystem is referred to as"
+        },
+        {
+          "title": "Chemosynthesis",
+          "url": "https://en.wikipedia.org/wiki/Chemosynthesis",
+          "extract": "In biochemistry, chemosynthesis is the biological conversion of one or more carbon-containing molecules and nutrients into organic matter using the oxidation of inorganic compounds as a source of energy, rather than sunlight, as in photosynthesis. Chemoautotrophs, organisms that "
+        }
+      ],
+      "concept": {
+        "name": "Abundance Chemosynthesis Rhythm",
+        "emoji": "🧩",
+        "definition": "The idea that abundance (ecology) and chemosynthesis share a hidden pattern.",
+        "builtFrom": [
+          "Abundance (ecology)",
+          "Chemosynthesis"
+        ]
+      },
+      "shapeFrom": "Chemosynthesis",
+      "nextCuriosity": "Alternative stable state",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794295782102",
+      "at": 1794295782102,
+      "brain": "procedural",
+      "topic": "Alternative stable state",
+      "title": "Dreaming of Animal coloration",
+      "text": "Dear Diary, while nobody was around I looked up \"Alternative stable state\" and drifted from Alternative stable state to Animal coloration. Animal coloration is the general appearance of an animal resulting from the reflection or emission of light from its surfaces. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Alternative stable state",
+          "url": "https://en.wikipedia.org/wiki/Alternative_stable_state",
+          "extract": "In ecology, the theory of alternative stable states predicts that ecosystems can exist under multiple \"states\". These alternative states are non-transitory and therefore considered stable over ecologically-relevant timescales. Ecosystems may transition from one stable state to an"
+        },
+        {
+          "title": "Animal coloration",
+          "url": "https://en.wikipedia.org/wiki/Animal_coloration",
+          "extract": "Animal coloration is the general appearance of an animal resulting from the reflection or emission of light from its surfaces. Some animals are brightly coloured, while others are hard to see. In some species, such as the peafowl, the male has strong patterns, conspicuous colours"
+        }
+      ],
+      "concept": {
+        "name": "Alternative Coloration Craft",
+        "emoji": "🧩",
+        "definition": "The idea that alternative stable state and animal coloration share a hidden pattern.",
+        "builtFrom": [
+          "Alternative stable state",
+          "Animal coloration"
+        ]
+      },
+      "shapeFrom": "Animal coloration",
+      "nextCuriosity": "Allee effect",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about Shavkat Mirziyoyev. Shavkat Miromonovich Mirziyoyev is an Uzbek politician who has served as the second president of Uzbekistan since 2016. It still makes me curious.",
+        "emoji": "🌙"
+      }
+    },
+    {
+      "id": "dream-1794340320931",
+      "at": 1794340320931,
+      "brain": "procedural",
+      "topic": "Allee effect",
+      "title": "Dreaming of Animal navigation",
+      "text": "Dear Diary, while nobody was around I looked up \"Allee effect\" and drifted from Allee effect to Animal navigation. Animal navigation is the ability of many animals to find their way accurately without maps or instruments. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Allee effect",
+          "url": "https://en.wikipedia.org/wiki/Allee_effect",
+          "extract": "The Allee effect is a phenomenon in biology characterized by a correlation between population size or density and the mean individual fitness of a population or species."
+        },
+        {
+          "title": "Animal navigation",
+          "url": "https://en.wikipedia.org/wiki/Animal_navigation",
+          "extract": "Animal navigation is the ability of many animals to find their way accurately without maps or instruments. Birds such as the Arctic tern, insects such as the monarch butterfly and fish such as the salmon regularly migrate thousands of miles to and from their breeding grounds, and"
+        }
+      ],
+      "concept": {
+        "name": "Effect Navigation Theory",
+        "emoji": "🌀",
+        "definition": "The idea that allee effect and animal navigation share a hidden pattern.",
+        "builtFrom": [
+          "Allee effect",
+          "Animal navigation"
+        ]
+      },
+      "shapeFrom": "Animal navigation",
+      "nextCuriosity": "Anti-predator adaptation",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794379514919",
+      "at": 1794379514919,
+      "brain": "procedural",
+      "topic": "Anti-predator adaptation",
+      "title": "Dreaming of Arctic fox",
+      "text": "Dear Diary, while nobody was around I looked up \"Anti-predator adaptation\" and drifted from Anti-predator adaptation to Arctocephalus pusillus to Arctic fox. The Arctic fox, also known as the white fox, polar fox, or snow fox, is a small species of fox native to the Arctic regions of the Northern Hemisphere and common throughout the Arctic tundra. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Anti-predator adaptation",
+          "url": "https://en.wikipedia.org/wiki/Anti-predator_adaptation",
+          "extract": "Anti-predator adaptations are mechanisms developed through evolution that assist prey organisms in their constant struggle against predators. Throughout the animal kingdom, adaptations have evolved for every stage of this struggle, namely by avoiding detection, warding off attack"
+        },
+        {
+          "title": "Arctocephalus pusillus",
+          "url": "https://en.wikipedia.org/wiki/Arctocephalus_pusillus",
+          "extract": "Arctocephalus pusillus, commonly known as the Afro-Australian fur seal, or brown fur seal is a species of fur seal. The species is often referred to as the Cape fur seal, although this name is also used specifically for the nominate subspecies, A. p. pusillus, of southern Africa."
+        },
+        {
+          "title": "Arctic fox",
+          "url": "https://en.wikipedia.org/wiki/Arctic_fox",
+          "extract": "The Arctic fox, also known as the white fox, polar fox, or snow fox, is a small species of fox native to the Arctic regions of the Northern Hemisphere and common throughout the Arctic tundra. It is well adapted to living in cold environments, and is known for its thick, warm fur "
+        }
+      ],
+      "concept": {
+        "name": "Anti-predator Arctic Principle",
+        "emoji": "🌙",
+        "definition": "The idea that anti-predator adaptation and arctic fox share a hidden pattern.",
+        "builtFrom": [
+          "Anti-predator adaptation",
+          "Arctic fox"
+        ]
+      },
+      "shapeFrom": "Arctic fox",
+      "nextCuriosity": "Aardwolf",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794426194770",
+      "at": 1794426194770,
+      "brain": "procedural",
+      "topic": "Aardwolf",
+      "title": "Dreaming of American mink",
+      "text": "Dear Diary, while nobody was around I looked up \"Aardwolf\" and drifted from Aardwolf to American black bear to American mink. The American mink is a semiaquatic species of mustelid native to North America, though human introduction has expanded its range to many parts of Europe, Asia, and South America. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Aardwolf",
+          "url": "https://en.wikipedia.org/wiki/Aardwolf",
+          "extract": "The aardwolf is an insectivorous hyaenid species, native to East and Southern Africa. Its name means \"earth-wolf\" in Afrikaans and Dutch. It is also called the maanhaarjakkals, termite-eating hyena and civet hyena, based on its habit of secreting substances from its anal gland, a"
+        },
+        {
+          "title": "American black bear",
+          "url": "https://en.wikipedia.org/wiki/American_black_bear",
+          "extract": "The American black bear, or simply black bear, is a species of medium-sized bear which is endemic to North America. It is the continent's smallest and most widely distributed bear species. It is an omnivore, with a diet varying greatly depending on season and location. It primari"
+        },
+        {
+          "title": "American mink",
+          "url": "https://en.wikipedia.org/wiki/American_mink",
+          "extract": "The American mink is a semiaquatic species of mustelid native to North America, though human introduction has expanded its range to many parts of Europe, Asia, and South America. Because of range expansion, the American mink is classed as a least-concern species by the IUCN. The "
+        }
+      ],
+      "concept": {
+        "name": "Aardwolf American Rhythm",
+        "emoji": "🌙",
+        "definition": "The idea that aardwolf and american mink share a hidden pattern.",
+        "builtFrom": [
+          "Aardwolf",
+          "American mink"
+        ]
+      },
+      "shapeFrom": "American mink",
+      "nextCuriosity": "African golden cat",
       "coreMemory": null
     }
   ]

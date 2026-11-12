@@ -61,7 +61,10 @@ function activeProject() {
 // stands in for any lumber that is still missing (he rips the logs into rough boards).
 function allocateMaterials(plan) {
       // Only things meant for building count (no food or toys: js/itemuse.js); logs can stand in for lumber
-      const pool = ownedItemNames().filter(n => FIREWOOD_RE.test(n) || typeof usableFor !== 'function' || usableFor(n, 'build'));
+      // Anything the plan itself asks for counts too (a coil of rope is for climbing and tying, but the
+      // treehouse plan needs exactly that), as long as it is the same kind of thing as what was asked for
+      const asked = n => typeof itemKindOf === 'function' && plan.materials.some(m => m.re.test(n) && itemKindOf(n) && itemKindOf(m.ask) && itemKindOf(n).kind === itemKindOf(m.ask).kind);
+      const pool = ownedItemNames().filter(n => FIREWOOD_RE.test(n) || typeof usableFor !== 'function' || usableFor(n, 'build') || asked(n));
       const take = re => {
         const i = pool.findIndex(n => re.test(n) && !FIREWOOD_RE.test(n));
         return i >= 0 ? pool.splice(i, 1)[0] : null;
@@ -358,20 +361,28 @@ function projectsSummaryForAI() {
       return parts.join('; ');
     }
 
+// His real builds: the one he is gathering for first, with a bar and what he is still waiting for
 function renderProjectsList() {
       const el = document.getElementById('projectsListContainer');
       if (!el) return;
       const owned = ownedItemNames();
-      el.innerHTML = state.projects.slice(0, 8).map(p => {
+      const list = state.projects.slice(0, 8).sort((a, b) => (a.status === 'built') - (b.status === 'built'));
+      perfSetHtml(el, list.map(p => {
         const plan = planFor(p.key);
         if (!plan) return '';
-        const checks = p.status === 'built' ? '' : [...allocateMaterials(plan).map(a => [a.fromLogs ? `${a.m.ask} (from his logs)` : a.m.ask, Boolean(a.item)]), ...plan.tools.map(t => [BUILD_TOOLS[t].ask, owned.some(n => BUILD_TOOLS[t].re.test(n))])]
-          .map(([label, have]) => `<span class="px-1.5 py-0.5 rounded-md ${have ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-800 text-slate-400'}">${have ? '✓' : '○'} ${escapeHtml(label)}</span>`).join(' ');
-        return `<div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200 space-y-1">
-          <div class="font-semibold">${escapeHtml(plan.emoji)} ${escapeHtml(plan.name)} <span class="text-slate-500 font-normal">${p.status === 'built' ? `· built${p.fromLogs ? ' from his own logs' : ''}` : '· gathering materials'}</span></div>
-          ${checks ? `<div class="flex flex-wrap gap-1">${checks}</div>` : ''}
+        if (p.status === 'built') {
+          return `<div class="brain-card brain-row"><span class="brain-card-icon" aria-hidden="true">${escapeHtml(plan.emoji)}</span><span class="brain-card-title flex-1 truncate">${escapeHtml(plan.name)}</span><span class="brain-pill brain-pill-done">Built${p.fromLogs ? ' from his logs' : ''}</span></div>`;
+        }
+        const needs = [...allocateMaterials(plan).map(a => [a.fromLogs ? `${a.m.ask} (from his logs)` : a.m.ask, Boolean(a.item)]), ...plan.tools.map(t => [BUILD_TOOLS[t].ask, owned.some(n => BUILD_TOOLS[t].re.test(n))])];
+        const have = needs.filter(n => n[1]).length, pct = needs.length ? Math.round(have / needs.length * 100) : 100;
+        const waiting = needs.filter(n => !n[1]).map(n => n[0]);
+        return `<div class="brain-card space-y-1.5">
+          <div class="flex items-center gap-2"><span class="brain-card-icon" aria-hidden="true">${escapeHtml(plan.emoji)}</span><span class="brain-card-title flex-1 truncate">${escapeHtml(plan.name)}</span><span class="brain-pill">${have} of ${needs.length} ready</span></div>
+          <div class="brain-bar brain-bar-orange" role="progressbar" aria-label="${escapeHtml(plan.name)}: ${have} of ${needs.length} things ready" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>
+          <div class="brain-card-meta">${waiting.length ? `Waiting for ${waiting.length} ${waiting.length === 1 ? 'thing' : 'things'} (○ below)` : 'Has everything; building as soon as he is free'}</div>
+          <div class="flex flex-wrap gap-1">${needs.map(([label, ok]) => `<span class="brain-chip ${ok ? 'brain-chip-ok' : ''}">${ok ? '✓' : '○'} ${escapeHtml(label)}</span>`).join('')}</div>
         </div>`;
-      }).join('');
+      }).join(''));
     }
 
 // Real materials for a finished build: the parts tagged with a finish get it, the rest are worked out
@@ -663,6 +674,34 @@ function firewoodModel() {
       return realSize(g);
     }
 
+// A project still waiting for things is not forgotten: every 20 minutes he checks what is missing, asks
+// again for anything that has no open request (a request can be answered, trimmed or lost), and now and
+// then says out loud what he is waiting for so it stays on his mind and in his diary.
+function projectNudge(p, plan) {
+      const now = Date.now();
+      if (now - (p.nudgedAt || p.startedAt || 0) < 20 * 60 * 1000) return;
+      p.nudgedAt = now;
+      const miss = missingFor(plan);
+      const wants = [...miss.materials.map(m => m.ask), ...miss.tools.map(t => BUILD_TOOLS[t].ask)];
+      if (!wants.length) return;
+      const before = state.requestsToUser.length;
+      requestMissing(plan);
+      const asked = state.requestsToUser.length > before;
+      if (!asked && now - (p.remindedAt || 0) < 2 * 60 * 60 * 1000) return;
+      p.remindedAt = now;
+      const list = wants.map(w => w.replace(/^(an?|some|the)\s+/i, '').toLowerCase()).slice(0, 4).join(', ');
+      if (!(state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping)) {
+        state.speechBubble = `I haven't forgotten my ${plan.name.toLowerCase()}. I'm still waiting for ${list}.`;
+        renderAllUI();
+      }
+      state.diaryEntries.unshift({
+        time: 'Still Planning', location: currentPlaceLabel(), mood: `${plan.emoji} Waiting to build a ${plan.name.toLowerCase()}`,
+        vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
+        text: `Dear Diary, my ${plan.name.toLowerCase()} is still on my mind. I'm waiting for ${list}.${asked ? ' I asked for it again in case my letter got lost.' : ''}`
+      });
+      savePersistentBrainState();
+    }
+
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     state.projects.filter(p => p.status === 'built').forEach(placeProjectMesh);
@@ -672,6 +711,7 @@ window.addEventListener('DOMContentLoaded', () => {
       renderProjectsList();
       const p = activeProject();
       const plan = p && planFor(p.key);
+      if (plan) projectNudge(p, plan);
       // doWhenFree gives up after about 3 minutes, so an older entry is queued again
       if (plan && Date.now() - (buildsQueued.get(p.id) || 0) > 240000) {
         const miss = missingFor(plan);

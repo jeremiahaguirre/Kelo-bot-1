@@ -846,7 +846,7 @@ function normalizeBom(b) {
         templateKey: BOM_TEMPLATES[b.templateKey] ? b.templateKey : null,
         name: bomClip(b.name, 48) || 'Something new', item: bomClip(b.item || b.name, 60), emoji: bomClip(b.emoji, 4) || '🛠️',
         site: ['airfield', 'bench', 'beach', 'spot', 'tree'].includes(b.site) ? b.site : 'airfield',
-        vehicle: ['plane', 'kart', 'boat'].includes(b.vehicle) ? b.vehicle : null, itemKind: ['tool', 'toy'].includes(b.itemKind) ? b.itemKind : null,
+        vehicle: ['plane', 'kart', 'boat'].includes(b.vehicle) ? b.vehicle : null, itemKind: ['tool', 'toy', 'thing'].includes(b.itemKind) ? b.itemKind : null,
         r: Number(b.r) || null, summary: bomClip(b.summary, 400), wiki: (Array.isArray(b.wiki) ? b.wiki : []).slice(0, 3).map(w => bomClip(w, 60)),
         subs, tools, skills: (Array.isArray(b.skills) ? b.skills : []).slice(0, L.skills).map(s => bomClip(s, 60)).filter(Boolean),
         tests: (Array.isArray(b.tests) ? b.tests : []).slice(0, L.tests).map((t, i) => ({ key: bomClip(t && t.key, 12) || 'test' + i, name: bomClip(t && t.name, 48) || 'Final check', how: bomClip(t && t.how, 160) })),
@@ -936,7 +936,7 @@ function bomListTitle(bom, subKey) {
 function bomListText(bom, subKey) {
       const lines = bomListLines(bom, subKey);
       const sub = bom.subs.find(s => s.key === subKey);
-      const out = [`${bomListTitle(bom, subKey)} (parts list from Kelo-1)`, ...lines.map(l => `[${l.got >= l.qty ? 'x' : ' '}] ${bomLineLabel(l)}`)];
+      const out = [`${bomListTitle(bom, subKey)} (parts list from Kelo-1)`, ...lines.map(l => `[${l.got >= l.qty ? 'x' : ' '}] ${bomLineLabel(l)}${l.make ? ` (I'll make this on the ${l.makeOn || l.make})` : l.forShop ? ' (supplies for my shop)' : ''}`)];
       if (sub) out.push(`Fasteners in this sub-assembly: ${bomFmtQty(bomFastenerCount(sub))}`);
       return out.join('\n');
     }
@@ -946,6 +946,6 @@ function bomListMarkdown(bom, subKey) {
       const sub = bom.subs.find(s => s.key === subKey);
       const kindName = { p: 'part', f: 'fastener', c: 'consumable', tool: 'tool' };
       return [`### ${bomListTitle(bom, subKey)}`, '', '| Got | Item | Qty | Unit | Kind |', '|:-:|---|--:|---|---|',
-        ...lines.map(l => `| ${l.got >= l.qty ? '[x]' : '[ ]'} | ${l.name.replace(/\|/g, '/')} | ${bomFmtQty(l.qty)} | ${l.unit || 'pcs'} | ${kindName[l.kind] || 'part'} |`),
+        ...lines.map(l => `| ${l.got >= l.qty ? '[x]' : '[ ]'} | ${l.name.replace(/\|/g, '/')}${l.make ? ` (I'll make this on the ${l.makeOn || l.make})` : ''} | ${bomFmtQty(l.qty)} | ${l.unit || 'pcs'} | ${l.make ? 'shop-made' : kindName[l.kind] || 'part'} |`),
         ...(sub ? ['', `**Fasteners:** ${bomFmtQty(bomFastenerCount(sub))}`] : [])].join('\n');
     }

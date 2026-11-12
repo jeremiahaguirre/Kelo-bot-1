@@ -51,6 +51,12 @@ body {
   body.menu-open #keloOverheadHUD { left: calc((100% - 460px) / 2); width: min(560px, calc(100% - 460px - 1.5rem)); }
 }
 
+/* Toasts never cover the open menu: on a wide screen they sit over the world still visible, on a phone
+   (where the menu fills the screen) they rise from the bottom, above the message box */
+#toastContainer > * { max-width: min(92vw, 440px); text-align: center; }
+@media (min-width: 640px) { body.menu-open #toastContainer { left: calc((100% - 460px) / 2); } }
+@media (max-width: 639px) { body.menu-open #toastContainer { top: auto; bottom: calc(132px + env(safe-area-inset-bottom, 0px)); } }
+
 /* Brain tab sections fold open and closed */
 .brain-section > summary::-webkit-details-marker { display: none; }
 .brain-section[open] .brain-caret { transform: rotate(90deg); }
@@ -158,7 +164,7 @@ body.eyecam-on #explorePad .explore-pad-btn[data-hold="zoomOut"], body.eyecam-on
 .talk-col { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; max-width: min(82%, 34rem); }
 .talk-row-you .talk-col { align-items: flex-end; }
 .talk-meta { font-size: 10px; color: #94a3b8; margin: 0 4px; }
-.talk-bubble { padding: 8px 12px; border-radius: 18px; font-size: 13px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; max-width: 100%; }
+.talk-bubble { padding: 8px 12px; border-radius: 16px; font-size: 13px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; max-width: 100%; }
 .talk-row-kelo .talk-bubble { background: #1e293b; color: #f1f5f9; border: 1px solid rgba(51, 65, 85, 0.8); border-top-left-radius: 6px; }
 .talk-row-you .talk-bubble { background: #f59e0b; color: #0f172a; border-top-right-radius: 6px; }
 .talk-img { display: block; width: 180px; max-width: 100%; border-radius: 14px; border: 1px solid rgba(251, 191, 36, 0.4); }
@@ -318,3 +324,122 @@ body.shopvisit-on #btnShowMinimap, body.shopvisit-on [data-where-kelo], body.sho
   /* a pinned card is a bottom sheet that scrolls inside */
   #svCard.sv-card-pinned { left: 0; right: 0; bottom: 0; width: auto; max-height: 45vh; border-radius: 18px 18px 0 0; z-index: 32; padding-bottom: calc(12px + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
 }
+/* --- The menu (Diary, Brain and the shared parts of every tab: js/main.js, js/menuui.js) --- */
+#sideMenu {
+  --m-card: rgba(2, 6, 23, 0.55); --m-card-2: rgba(15, 23, 42, 0.9); --m-line: rgba(51, 65, 85, 0.55); --m-line-2: rgba(71, 85, 105, 0.7);
+  --m-text: #e2e8f0; --m-dim: #94a3b8; --m-faint: #64748b; --m-amber: #fbbf24; --m-teal: #2dd4bf;
+}
+#menuScroll { overscroll-behavior: contain; scrollbar-gutter: stable; scroll-padding-top: 76px; }
+.menu-tabs .inspector-tab-btn { min-height: 52px; }
+.menu-tabs .inspector-tab-btn[aria-selected="true"]::after { content: ''; position: absolute; left: 30%; right: 30%; bottom: 3px; height: 2px; border-radius: 2px; background: var(--m-amber); }
+.tab-pane:not(.hidden) { animation: menuPaneIn 0.18s ease-out; }
+@keyframes menuPaneIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+#sideMenu :is(button, a, input, select, textarea, summary, label[role="button"], [tabindex]):focus-visible { outline: 2px solid var(--m-amber); outline-offset: 2px; border-radius: 10px; }
+#sideMenu .brain-section > summary:focus-visible { outline-offset: -2px; border-radius: 14px; }
+@media (pointer: coarse) {
+  #sideMenu :is(button, select, summary, label[role="button"]):not(.talk-chip):not(.inspector-tab-btn):not(p *):not(span *) { min-height: 44px; }
+  #sideMenu input:is([type="text"], [type="search"], [type="date"], [type="number"]) { min-height: 44px; font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #sideMenu, #sideMenu *, #sideMenu *::before, #sideMenu *::after { animation: none !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Toolbars that stay at the top of a long tab (search, filters) */
+.menu-toolbar { position: sticky; top: 0; z-index: 5; padding: 10px 16px 8px; background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--m-line); }
+.menu-toolbar-note { margin-top: 6px; font-size: 11px; color: var(--m-dim); font-variant-numeric: tabular-nums; }
+.menu-search { position: relative; display: flex; align-items: center; }
+.menu-search > svg { position: absolute; left: 11px; color: var(--m-faint); pointer-events: none; }
+.menu-search input { width: 100%; min-height: 38px; padding: 0 12px 0 32px; border-radius: 12px; background: #020617; border: 1px solid var(--m-line-2); color: #fff; font-size: 13px; }
+.menu-search input::placeholder { color: var(--m-faint); }
+.menu-search input:focus { outline: none; border-color: var(--m-amber); box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15); }
+.menu-select { min-height: 38px; padding: 0 8px; border-radius: 12px; background: #020617; border: 1px solid var(--m-line-2); color: var(--m-text); font-size: 12px; color-scheme: dark; }
+.menu-select:focus { outline: none; border-color: var(--m-amber); }
+.menu-icon-btn { flex-shrink: 0; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; background: #1e293b; border: 1px solid var(--m-line-2); color: #cbd5e1; font-size: 15px; transition: background 0.15s, color 0.15s; }
+.menu-icon-btn:hover { background: #334155; color: #fff; }
+@media (pointer: coarse) { .menu-icon-btn { width: 44px; height: 44px; } .menu-search input, .menu-select { min-height: 44px; } }
+.menu-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border-radius: 12px; background: #1e293b; border: 1px solid var(--m-line-2); color: var(--m-text); font-size: 12px; font-weight: 600; transition: background 0.15s, border-color 0.15s; }
+.menu-btn:hover { background: #334155; }
+.menu-btn-teal { background: rgba(20, 184, 166, 0.16); border-color: rgba(45, 212, 191, 0.45); color: #99f6e4; }
+.menu-btn-teal:hover { background: rgba(20, 184, 166, 0.28); }
+.menu-card { padding: 14px; border-radius: 16px; background: var(--m-card); border: 1px solid var(--m-line); }
+.menu-card-title { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--m-amber); }
+.menu-empty { padding: 28px 16px; text-align: center; border-radius: 16px; border: 1px dashed var(--m-line-2); color: var(--m-dim); font-size: 12px; line-height: 1.5; }
+.menu-empty-icon { font-size: 28px; margin-bottom: 6px; }
+.menu-empty-title { color: var(--m-text); font-weight: 700; font-size: 13px; }
+
+/* The Diary: a journal */
+.journal-kicker { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--m-amber); }
+.journal-when { font-size: 11px; color: var(--m-dim); font-variant-numeric: tabular-nums; }
+.journal-vitals { font-size: 10px; color: var(--m-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.journal-body { font-family: 'Newsreader', Georgia, serif; font-size: 15px; line-height: 1.6; color: #e7e5e4; overflow-wrap: anywhere; }
+.journal-body-lg { font-size: 17px; line-height: 1.55; color: #fafaf9; }
+.journal-featured { position: relative; padding: 16px 16px 18px; border-radius: 20px; background: linear-gradient(160deg, rgba(245, 158, 11, 0.16), rgba(249, 115, 22, 0.05) 60%, rgba(2, 6, 23, 0.3)); border: 1px solid rgba(245, 158, 11, 0.3); display: grid; gap: 8px; }
+.journal-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.journal-tag { display: inline-flex; align-items: center; gap: 3px; max-width: 100%; padding: 2px 8px; border-radius: 999px; background: rgba(30, 41, 59, 0.85); border: 1px solid var(--m-line); color: #cbd5e1; font-size: 11px; line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.journal-tag-mood { background: rgba(245, 158, 11, 0.14); border-color: rgba(245, 158, 11, 0.35); color: #fde68a; }
+.journal-tag-place { color: #7dd3fc; }
+.journal-tag-wish { color: #c4b5fd; }
+.journal-tag-emoji { padding: 0 6px; font-size: 14px; background: transparent; border-color: transparent; }
+.journal-feed { display: grid; gap: 18px; }
+.journal-day-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; font-weight: 700; color: var(--m-text); }
+.journal-day-head::after { content: ''; flex: 1; height: 1px; background: var(--m-line); }
+.journal-day-list { display: grid; gap: 2px; }
+.journal-entry { position: relative; display: flex; gap: 12px; padding: 10px 4px 12px; content-visibility: auto; contain-intrinsic-size: auto 150px; }
+.journal-entry + .journal-entry { border-top: 1px solid rgba(51, 65, 85, 0.35); }
+.journal-dot { flex-shrink: 0; width: 34px; height: 34px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 17px; background: rgba(30, 41, 59, 0.9); border: 1px solid var(--m-line); }
+.journal-hit { background: rgba(251, 191, 36, 0.3); color: #fff; border-radius: 3px; padding: 0 1px; }
+.journal-more { min-height: 1px; }
+.journal-end { text-align: center; font-size: 11px; color: var(--m-faint); font-style: italic; padding: 4px 0; }
+
+/* The Brain: a dashboard */
+.brain-summary { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.brain-summary:empty { display: none; }
+.brain-hero { display: flex; gap: 12px; align-items: center; padding: 14px; border-radius: 20px; background: linear-gradient(150deg, rgba(20, 184, 166, 0.14), rgba(2, 6, 23, 0.4)); border: 1px solid rgba(45, 212, 191, 0.28); }
+.brain-hero-mood { flex-shrink: 0; width: 46px; height: 46px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; background: rgba(2, 6, 23, 0.6); border: 1px solid var(--m-line); }
+.brain-hero-title { font-size: 15px; font-weight: 800; color: #fff; line-height: 1.3; }
+.brain-hero-goal { margin-top: 2px; font-size: 12px; color: #cbd5e1; line-height: 1.4; }
+.brain-focus { display: flex; gap: 10px; align-items: center; width: 100%; padding: 12px; border-radius: 16px; background: var(--m-card-2); border: 1px solid rgba(249, 115, 22, 0.3); transition: border-color 0.15s; }
+.brain-focus:hover { border-color: rgba(251, 146, 60, 0.6); }
+.brain-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.brain-stat { display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 0; padding: 10px 4px; border-radius: 14px; background: var(--m-card); border: 1px solid var(--m-line); transition: border-color 0.15s, background 0.15s; }
+.brain-stat:hover { border-color: var(--m-line-2); background: var(--m-card-2); }
+.brain-stat-icon { font-size: 15px; line-height: 1.2; }
+.brain-stat-num { font-size: 16px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; }
+.brain-stat-label { max-width: 100%; font-size: 10px; color: var(--m-dim); text-align: center; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.brain-outlook { padding: 12px 14px; border-radius: 16px; background: rgba(88, 28, 135, 0.18); border: 1px solid rgba(168, 85, 247, 0.28); display: grid; gap: 4px; }
+.brain-outlook .journal-body { font-size: 14px; font-style: italic; }
+.brain-section { border-radius: 16px; background: var(--m-card); border: 1px solid var(--m-line); transition: border-color 0.15s; }
+.brain-section[open] { border-color: var(--m-line-2); }
+.brain-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 46px; padding: 8px 12px; cursor: pointer; user-select: none; list-style: none; font-size: 13px; font-weight: 700; border-radius: 16px; }
+.brain-head::-webkit-details-marker { display: none; }
+.brain-head:hover { background: rgba(30, 41, 59, 0.5); }
+.brain-title { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.brain-title > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brain-caret { color: var(--m-faint); transition: transform 0.18s; }
+.brain-count { flex-shrink: 0; margin-left: auto; min-width: 24px; padding: 1px 8px; border-radius: 999px; background: rgba(30, 41, 59, 0.95); border: 1px solid var(--m-line); color: #cbd5e1; font-size: 11px; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; }
+.brain-head-btn { flex-shrink: 0; padding: 2px 10px; border-radius: 999px; background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); color: #7dd3fc; font-size: 11px; font-weight: 600; }
+.brain-head-btn:hover { background: rgba(14, 165, 233, 0.28); }
+.brain-body { padding: 2px 12px 12px; display: grid; gap: 8px; }
+.brain-section-empty:not([open]) .brain-head { opacity: 0.6; }
+.brain-section-empty .brain-count { opacity: 0.6; }
+.brain-searching .brain-miss { display: none !important; }
+.brain-card { padding: 10px 12px; border-radius: 14px; background: var(--m-card-2); border: 1px solid var(--m-line); font-size: 12px; color: var(--m-text); }
+.brain-row { display: flex; align-items: center; gap: 8px; }
+.brain-card-title { font-size: 13px; font-weight: 700; color: #f1f5f9; }
+.brain-card-meta { font-size: 11px; color: var(--m-dim); }
+.brain-card-icon { flex-shrink: 0; width: 30px; height: 30px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; background: rgba(2, 6, 23, 0.7); border: 1px solid var(--m-line); }
+.brain-skill { display: flex; align-items: center; gap: 10px; }
+.brain-skill-lv { flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; line-height: 1; color: #fde68a; background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.35); }
+.brain-skill-lv small { font-size: 9px; font-weight: 600; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.05em; }
+.brain-bar { position: relative; height: 6px; border-radius: 999px; background: rgba(51, 65, 85, 0.8); overflow: hidden; }
+.brain-bar > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #f59e0b, #fbbf24); transition: width 0.4s ease; }
+.brain-bar-orange > span { background: linear-gradient(90deg, #f97316, #fbbf24); }
+.brain-pill { flex-shrink: 0; padding: 1px 8px; border-radius: 999px; background: rgba(30, 41, 59, 0.95); border: 1px solid var(--m-line); color: #cbd5e1; font-size: 11px; }
+.brain-pill-done { background: rgba(16, 185, 129, 0.14); border-color: rgba(52, 211, 153, 0.35); color: #6ee7b7; }
+.brain-chip { padding: 1px 7px; border-radius: 8px; background: rgba(30, 41, 59, 0.9); color: var(--m-dim); font-size: 11px; }
+.brain-chip-ok { background: rgba(16, 185, 129, 0.14); color: #6ee7b7; }
+.brain-empty { font-size: 12px; font-style: italic; color: var(--m-faint); }
+/* The many existing cards in the Brain tab read a little larger and calmer */
+#brainSections .brain-body :is(.text-\[11px\]) { font-size: 12px; }
+#brainSections .brain-body :is(.text-\[10px\]) { font-size: 11px; }
+#brainSections .brain-body .font-serif { font-size: 13px; line-height: 1.5; }

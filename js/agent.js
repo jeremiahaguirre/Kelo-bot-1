@@ -52,8 +52,8 @@ const TOWN_LOCATIONS = {
     "name": "Storehouse",
     "building": "Kelo-1 Storehouse",
     "icon": "📦",
-    "x": 5.5,
-    "z": -3.9,
+    "x": 6.4,
+    "z": -4.0,
     "showPin": true,
     "pinColor": "from-orange-500/90 to-red-700/90"
   },
@@ -62,8 +62,8 @@ const TOWN_LOCATIONS = {
     "name": "Post Office",
     "building": "Okanagan Post Office",
     "icon": "📮",
-    "x": 12.5,
-    "z": 0.2,
+    "x": 9.8,
+    "z": 7.1,
     "showPin": true,
     "pinColor": "from-red-500/90 to-rose-600/90"
   },
@@ -115,8 +115,8 @@ const TOWN_LOCATIONS = {
     "name": "Bean & Byte Cafe",
     "building": "Bean & Byte Espresso Bar",
     "icon": "☕",
-    "x": 0.0,
-    "z": 5.6,
+    "x": -16.84,
+    "z": 5.5,
     "showPin": true,
     "pinColor": "from-orange-500/90 to-rose-600/90",
     "groundY": -0.04820776730775833
@@ -126,8 +126,8 @@ const TOWN_LOCATIONS = {
     "name": "NetNode Cyber Cafe",
     "building": "NetNode Internet & GitHub Hub",
     "icon": "💻",
-    "x": 6.8,
-    "z": 4.4,
+    "x": 1.32,
+    "z": 6.4,
     "showPin": true,
     "pinColor": "from-purple-500/90 to-indigo-600/90",
     "groundY": 0.21131333621589513
@@ -148,8 +148,8 @@ const TOWN_LOCATIONS = {
     "name": "West Wildflower Meadow",
     "building": "West Island Meadow",
     "icon": "🌼",
-    "x": -16,
-    "z": -1.5,
+    "x": -28.5,
+    "z": -5.0,
     "showPin": true,
     "pinColor": "from-yellow-500/90 to-amber-600/90",
     "groundY": -0.25
@@ -330,6 +330,7 @@ const state = {
   "batchPlant": {},
   "asphaltPlant": {},
   "concretePours": [],
+  "placesNoticed": {},
   "basementDepth": 0,
   "projects": [],
   "buildProjects": [],
@@ -456,7 +457,22 @@ function clampNumber(value, min, max, fallback) {
       return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
     }
 
+// Lookups grow by one entry per new word or thing he meets. Past `max`, the oldest are forgotten
+// (he can look them up again); anything about something he owns is always kept.
+function trimLookupMap(map, max, keep) {
+      if (!map || typeof map !== 'object') return map;
+      const keys = Object.keys(map);
+      if (keys.length <= max) return map;
+      keys.sort((a, b) => ((map[b] && map[b].at) || 0) - ((map[a] && map[a].at) || 0));
+      const out = {};
+      keys.forEach((k, i) => { if (i < max || keep.has(k)) out[k] = map[k]; });
+      return out;
+    }
+
+const LOOKUP_LIMITS = { vocabulary: 800, itemLookups: 600, itemPurposes: 600 };
 function trimBrainState() {
+      const owned = new Set(ownedItemNames().map(n => String(n).toLowerCase()));
+      Object.entries(LOOKUP_LIMITS).forEach(([k, max]) => { state[k] = trimLookupMap(state[k], max, owned); });
       if (state.visitorMemories.length > 50) state.visitorMemories.length = 50;
       if (state.webHistory.length > 12) state.webHistory.length = 12;
       if (state.giftLog.length > 30) state.giftLog.length = 30;
@@ -604,7 +620,18 @@ const MAX_SCULPTURE_PARTS = 24;
 const WORLD_MIN_X = -60, WORLD_MAX_X = 86, WORLD_MIN_Z = -44, WORLD_MAX_Z = 10;
 // The town: the buildings and the streets between them. Kelo-1 doesn't build, plant or dig here;
 // the beach south of it (z above TOWN.maxZ) is his to use.
-const TOWN = { minX: -16, maxX: 19, minZ: -11.5, maxZ: 7.6 };
+const TOWN = { minX: -24.5, maxX: 19, minZ: -11.5, maxZ: 7.8 };
+// The town buildings at real size (1.6 units a metre: doors about 2.1 m, storeys about 3 m). Each one is
+// modelled in its own small units and its group is scaled up by `scale`; x, z is its centre and w, d its
+// footprint in world units. Furniture inside is drawn at `furniture` (js/interiors.js), so chairs, desks and
+// counters are sized for Kelo-1 rather than blown up with the walls.
+const TOWN_BLDG_SCALE = 2.4;
+const TOWN_FURNITURE_SCALE = 1.5;
+const TOWN_BUILDINGS = {
+  cafe: { x: -19.0, z: 0.5, w: 3.8 * TOWN_BLDG_SCALE, d: 2.8 * TOWN_BLDG_SCALE, scale: TOWN_BLDG_SCALE },
+  cyber: { x: -1.8, z: 1.6, w: 4.2 * TOWN_BLDG_SCALE, d: 3.0 * TOWN_BLDG_SCALE, scale: TOWN_BLDG_SCALE },
+  post_office: { x: 9.8, z: 1.2, w: 4.2 * TOWN_BLDG_SCALE, d: 3.2 * TOWN_BLDG_SCALE, scale: TOWN_BLDG_SCALE }
+};
 // Did he weld something in the last 15 minutes?
 function recentlyWelded() {
       return Boolean(state.lastWeldAt) && Date.now() - state.lastWeldAt < 15 * 60 * 1000;
@@ -1048,11 +1075,11 @@ Return ONLY valid JSON matching this schema:
 
         // If Kelo-1 requested new gear on this tick, add it to his Supply Broker Requisitions inbox!
         if (synth.gearRequested && synth.gearRequested !== 'None') {
-          const alreadyAsked = state.requestsToUser.some(r => r.requestedGear === synth.gearRequested)
+          const alreadyAsked = hasOpenRequest(r => r.requestedGear === synth.gearRequested)
             || (typeof vehicleRequestCheck === 'function' && vehicleRequestCheck(synth.gearRequested).blocked);
           if (!alreadyAsked) {
             state.requestsToUser.unshift({
-              id: 'req-gear-' + Date.now(),
+              id: newRequestId('gear'),
               category: 'Supply Broker Tool Demand',
               icon: '🛠️',
               urgency: 'Gear Requested',
@@ -1862,16 +1889,18 @@ Current state:
 - Things you know how to use: ${typeof knowHowSummaryForAI === 'function' ? knowHowSummaryForAI() : 'nothing yet'}
 - Your most recent decisions: ${typeof recentDecisionsForAI === 'function' ? recentDecisionsForAI() : 'none yet'}. Choose something genuinely DIFFERENT this time: don't repeat or rephrase any of them, and don't retry something you are still waiting on (tools, materials, fuel or a delivery). Do something else meanwhile.
 - Welding: ${recentlyWelded() ? 'you welded a piece within the last 15 minutes, so do something different this time ("build" should be null)' : 'welding is one of many things you do; most of your decisions should not include a "build"'}. Pieces stand outdoors (never in town); only overflow goes to your Museum.
+- Your welding setup (gas, wire, hoses): ${typeof weldingSummaryForAI === 'function' ? weldingSummaryForAI() : 'unknown'}
 - Your real skills (practise with the things you asked for and were given; this matters more than welding): ${typeof skillsSummaryForAI === 'function' ? skillsSummaryForAI() : 'none yet'}
 - Groundwork you've researched (roads, asphalt paving, moving earth, planting): ${typeof groundworkSummaryForAI === 'function' ? groundworkSummaryForAI() : 'nothing yet'}
-- Your concrete and asphalt plant (beside the big workshop): ${typeof plantSummaryForAI === 'function' ? plantSummaryForAI() : 'none'}
+- Your concrete and asphalt plant (right beside the Workshop, to its east): ${typeof plantSummaryForAI === 'function' ? plantSummaryForAI() : 'none'}
 - In your Storehouse: ${typeof storehouseSummaryForAI === 'function' ? storehouseSummaryForAI() : 'empty'}
 - Tidying up: ${typeof tidySummaryForAI === 'function' ? tidySummaryForAI() : 'nothing to tidy'}
 - Thrown into your Disposal Pit (gone forever): ${typeof disposalSummaryForAI === 'function' ? disposalSummaryForAI() : 'nothing yet'}
 - Your shop website, where real people can buy your things: ${typeof shopSummaryForAI === 'function' ? shopSummaryForAI() : 'none'}
 - Your sense of taste: ${typeof tastesSummaryForAI === 'function' ? tastesSummaryForAI() : 'unknown'}
 - Your 3D printer: ${typeof printerSummaryForAI === 'function' ? printerSummaryForAI() : 'none'}
-- Your Workshop: ${typeof workshopStatusLine === 'function' ? workshopStatusLine() : 'not built yet'}
+- Your Workshop: ${typeof workshopSummaryForAI === 'function' ? workshopSummaryForAI() + ' | ' : ''}${typeof workshopStatusLine === 'function' ? workshopStatusLine() : 'not built yet'}
+- Things you make from what you read (whole-shop orders, kinds you learned): ${typeof makerSummaryForAI === 'function' ? makerSummaryForAI() : 'none'}
 - Things your human switched on in your world: ${typeof wishFeaturesSummaryForAI === 'function' ? wishFeaturesSummaryForAI() : 'nothing extra yet'}
 - Upgrades you coded yourself: ${typeof upgradesSummaryForAI === 'function' ? upgradesSummaryForAI() : 'none yet'}
 - Painting for real, in real media (oil, acrylic, watercolour, gouache, pastel, ink, charcoal): each needs its own supplies, and you research a new medium at NetNode first, then ask for what's missing. Your media: ${typeof paintingSummaryForAI === 'function' ? paintingSummaryForAI() : 'none'}
@@ -2037,9 +2066,9 @@ function applyDecision(decision, originLabel) {
       }
 
       const q = decision.askQuestion;
-      if (q && typeof q === 'object' && str(q.question, 300)) {
+      if (q && typeof q === 'object' && str(q.question, 300) && !hasOpenRequest(r => r.question === str(q.question, 300))) {
         state.requestsToUser.unshift({
-          id: 'req-free-' + Date.now(),
+          id: newRequestId('free'),
           category: 'Open Question',
           icon: emoji,
           urgency: 'Wondering',
@@ -2166,23 +2195,60 @@ function applyDecision(decision, originLabel) {
     }
 
 // Run an activity as soon as Kelo-1 is free (mid-build, mid-errand...), giving up after ~3 minutes
-function doWhenFree(fn, attempt = 0) {
-      setTimeout(() => {
-        if (state.isBusy || state.isBuilding || state.isPracticing || state.isCollectingMail) {
-          if (attempt < 36) doWhenFree(fn, attempt + 1);
-          return;
-        }
-        fn();
-      }, attempt === 0 ? 3000 : 5000);
+// Things he means to do once he is free, oldest first, one at a time. (They used to retry on their own
+// and were silently dropped after about 3 minutes, so anything asked during a night's sleep or a long
+// build was lost.) Each waits up to `maxWaitMs` (45 minutes unless the caller says otherwise). The same
+// job asked again while it is waiting is kept once: jobs match by `key`, or else by their code, so
+// callers whose arguments matter (a visitor's ask) pass a key. Jobs are functions, so the queue lasts
+// for this visit to the page; anything he really wants survives a reload in his saved state anyway.
+const freeQueue = [];
+let freeQueueTimer = null, freeQueueDropped = 0;
+function keloIsFree() {
+      return !(state.isBusy || state.isBuilding || state.isPracticing || state.isCollectingMail || state.isSleeping);
+    }
+
+function doWhenFree(fn, opts = {}) {
+      if (typeof fn !== 'function') return false;
+      const key = opts.key ? String(opts.key) : 'code:' + fn.toString();
+      if (freeQueue.some(j => j.key === key)) return false;
+      const now = Date.now();
+      freeQueue.push({ fn, key, notBefore: now + (opts.delayMs ?? 3000), expires: now + (opts.maxWaitMs || 45 * 60000) });
+      if (!freeQueueTimer) freeQueueTimer = setInterval(runFreeQueue, 2500);
+      return true;
+    }
+
+function runFreeQueue() {
+      const now = Date.now();
+      for (let i = freeQueue.length - 1; i >= 0; i--) if (freeQueue[i].expires < now) { freeQueue.splice(i, 1); freeQueueDropped++; }
+      if (!freeQueue.length) { clearInterval(freeQueueTimer); freeQueueTimer = null; return; }
+      if (!keloIsFree()) return;
+      const i = freeQueue.findIndex(j => j.notBefore <= now);
+      if (i < 0) return;
+      const job = freeQueue.splice(i, 1)[0];
+      try {
+        const r = job.fn();
+        if (r && typeof r.catch === 'function') r.catch(e => console.warn('A job he waited to do failed:', e));
+      } catch (e) { console.warn('A job he waited to do failed:', e); }
+    }
+
+// A request id that never repeats, even for two requests made in the same millisecond
+let requestIdCount = 0;
+function newRequestId(kind) {
+      return `req-${kind}-${Date.now().toString(36)}-${(++requestIdCount).toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`;
+    }
+
+// Is he already waiting on an answer to this? (Answered or declined ones may be asked again later.)
+function hasOpenRequest(test) {
+      return state.requestsToUser.some(r => !r.fulfilled && test(r));
     }
 
 // Add something Kelo-1 wants to the requests inbox
 function addItemRequest(item, category, why, context) {
-      if (!item || state.requestsToUser.some(r => !r.fulfilled && r.requestedGear === item)) return;
+      if (!item || hasOpenRequest(r => r.requestedGear === item)) return;
       // One of each kind of vehicle until he has a friend to share with (js/trips.js)
       if (typeof vehicleRequestCheck === 'function') { const cap = vehicleRequestCheck(item, why); if (cap.blocked) return; why = cap.why; }
       state.requestsToUser.unshift({
-        id: 'req-item-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        id: newRequestId('item'),
         category,
         icon: CATEGORY_ICONS[category] || '🎁',
         urgency: `Wants: ${category}`,
@@ -2359,6 +2425,8 @@ function runAutonomousLifeTick() {
       if (typeof printOnMyOwn === 'function' && canTryKey('print') && Math.random() < printChance()) { tryKey('print', () => printOnMyOwn()); return; }
       // His Workshop: learn a machine, ask for what it needs, make something, service a vehicle (js/machines.js)
       if (typeof workshopOnMyOwn === 'function' && canTryKey('workshop') && Math.random() < workshopChance()) { tryKey('workshop', () => workshopOnMyOwn()); return; }
+      // Making real things from ideas he reads about, and using what he made (js/shopmaker.js)
+      if (typeof shopMakerOnMyOwn === 'function' && canTryKey('shopmaker') && Math.random() < shopMakerChance()) { tryKey('shopmaker', () => shopMakerOnMyOwn()); return; }
       if (typeof useGadgetOnMyOwn === 'function' && canTryKey('gadget') && Math.random() < gadgetChance()) { tryKey('gadget', () => useGadgetOnMyOwn()); return; }
       // Now and then he sets up his easel and paints (or learns a new medium) (js/paintstudio.js)
       if (typeof paintOnMyOwn === 'function' && canTryKey('paint') && Math.random() < paintChance()) { tryKey('paint', () => paintOnMyOwn()); return; }

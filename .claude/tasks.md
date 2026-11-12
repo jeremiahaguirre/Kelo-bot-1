@@ -15,8 +15,33 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - Task 7 Workshop (pushed 2026-11-05): floors 1 to 3, hangar, north wing, forklift and three-stop elevator. The bigger garage hall and two full-size build bays move to 7b.
 - Task 8 Concrete and asphalt plant (pushed 2026-11-05): on `KELO_ADDED_LAND` beside the workshop. Smooth paved road (fixed in landscape.js roadMesh), pale cured concrete.
 - Task 5 Build anything (pushed 2026-11-05): BOMs down to the screw, list cards, builds in hangar bays 1 and 2, and the plane flies after training. Name clashes fixed at merge (buildSiteToWorld, buildGuitarModel).
-- **In progress (agent/plant-east):** the owner wants the plant to the RIGHT (east, +x) of the workshop. That means growing the map east (WORLD_MAX_X) and adding land through `KELO_ADDED_LAND`, moving `AGGREGATE_PLANT_SITE` there, and freeing the old site south of the workshop.
-- **In progress (me):** the full play-through QA (task 12), all the remaining harness scenarios.
+- Plant moved EAST of the workshop (pushed 2026-11-05): WORLD_MAX_X is now 86, `AGGREGATE_PLANT_SITE` x 62.5 to 81.5, and the old site is meadow.
+- Task 12 play-through QA done: all 34 harness scenarios clean (landscape test updated for research-first).
+- **Owner's order (2026-11-05):**
+  1. Task 13 audit phase 2 (`.claude/review.md`) NOW.
+  2. Then a full run-through of the game: Kelo-1, his tools, environment, machines and vehicles all work as intended. Fix what's found.
+  3. Then 7b (runway field, map growth, bigger garage) and the quality upgrade.
+  4. The workshop viewer (`agent/shopview`, paused WIP) is LAST.
+- Pushed 2026-11-05:
+  - Audit phase 2 (perf: JS 5.83 to 0.94 ms per frame).
+  - Movement fixes: box obstacles, robust A*, stuck watch, balloon on open ground, plane circuit over max(ground, water), no digging in buildings, no floating trees.
+  - Treehouse rope fix.
+- **Run-through DONE and pushed (2026-11-09):** js/shopmaker.js adds the 6 owner build and supply rules, fixes the helicopter pad, glass containers, woodshop safety, and the notice back-off. Open: the weld studio and the concrete plant are not routable shops; "make me a sandwich" goes to shops, not food; the stool sits in the meadow, not at the fire ring. Then merge it, then **the quality upgrade (owner: before 7b)**, then 7b runway and map, then the shopview viewer last.
+- **Part of the quality upgrade (owner, 2026-11-09, second pass): town building interiors he really uses.**
+  - **NetNode Cyber Cafe:** he walks in through the door and sits at a computer while he searches or researches (all NetNode trips).
+  - **Bean & Byte Cafe:** he goes in, sits down, orders, and eats or drinks there.
+  - **Post Office:** he goes in and opens his own mailbox. Parcels and items still also show for the owner on the table outside, as now.
+  - **Rules:** real interiors (counter, tables, chairs, computers, PO boxes), the existing door positions, cutaway or roof-hide when the camera is inside, box obstacles and A*-friendly interior walk paths, phone OK, no regressions.
+- **Run-through spec (owner, 2026-11-05)** of Kelo-1, tools, environment, machines and vehicles. Fix what's found. Specific checks:
+  - Every shop machine asks for its real supplies, waits, and uses them up.
+  - Products land in his inventory as real items he can use for their real purpose.
+  - When a build needs a part a machine can make, he makes it in the shop instead of asking.
+  - Visitor asks are routed to the right machine or declined.
+  - **Owner:** builds and machine jobs must NOT be limited to hard-coded lists. He also takes ideas from the real internet (his NetNode research, with or without an AI key, e.g. Wikipedia and the existing web search): reads about a real thing, works out which machine and materials it needs from what the article says and what his machines can do, then asks for supplies and builds it. Hard-coded plans stay as the fallback and the examples.
+  - **Owner:** an internet-sourced build still goes through the parts-list flow (js/bom.js): he writes a real bill of materials (sub-assemblies, exact quantities and specs, fasteners, consumables, tools and machine time) and sends it to the owner as list cards in the Post tab (send all, send some, copy). He builds only with what arrives. Machine-made parts on the list are marked "I'll make this on the <machine>", and those machines' supplies go on the list too.
+  - **Owner:** if the WHOLE thing can be made on one of his machines (a CNC router, mill or 3D printer job, e.g. a printed phone stand or a routed sign), there is no parts list to send. He only orders that machine's missing supplies (filament, resin, sheet stock, bar stock, bits, powder, gas, coolant and so on) through the Post Office like any other request, waits for them to arrive, then makes it. Supplies are always ordered and delivered through the Post Office, never assumed. The same goes for ANY of his shops and tools that can make the whole thing or a part: CNC, 3D printers, the electronics line, the glass studio, the woodshop, the garage, welding, the plant, etc. He uses the right one, orders only its missing supplies, and lists only what no shop of his can make.
+  - **Owner:** things he builds or prints in the Workshop are real, usable items. A stool is something he sits on; a shelf holds things; a cup holds drinks, and so on. Anything practical goes to his **Storehouse** (with the item-use rules for what it is for), and he takes it out to use it. Only art or abstract pieces go to the **Museum**. **Not hard-coded:** what a thing is for, and how he uses it, also come from what he reads about it on the real internet (NetNode/Wikipedia). For a thing he learned about online, work out its kind and purposes (sit, store, hold drinks, play, ride, etc.) from the article, and register it with the item-use rules, so new kinds of things work without anyone adding them to a list.
+- Kelo-1 notices the new Workshop and plant once (`state.placesNoticed`, plants.js), and the AI prompt now describes the workshop layout.
 - **This week's plan is done.** Next, after the weekly reset: 7b runway field, map growth and bigger garage, then QA, audit phase 2, and the quality upgrade.
 - Task 8 plant: built on agent/plant; sent back to keep Kelo-1 out of the lake beside it, then merge.
 
@@ -164,13 +189,18 @@ Each step merges, passes the regression tests and is pushed before the next star
     - phone and desktop layouts
     Fix what is found.
 13. **Task 10 phase 2:** apply the `.claude/review.md` plan across the merged code, re-profile and fix new bugs.
-14. **Quality upgrade, no new features** (owner, 2026-11-04; after 12 and 13): raise every existing aspect to the polish level of a modern commercial farming and vehicle simulator (the owner's reference: Farming Simulator 25/26). Use it as a quality bar only: no copying its assets, models, UI or look.
+14. **DONE and pushed (2026-11-09): quality passes 1-3, town interiors (NetNode computer, cafe order and eat, Post Office mailbox), all Workshop machines, the menu (Diary journal, Brain dashboard). Small leftovers: grass tufts on the hangar floor; small foot slide when he stops mid-stride; no rain ripples on the lake; Workshop draw calls rose about 7% (watch on phones). IN PROGRESS: the four leftovers (agent/leftovers) and the town at real size (owner chose: grow town buildings, interiors and the forklift to real size at 1.6 units/m; Kelo-1 unchanged; agent/townscale). NEXT: 1b/7b runway field, then the shopview viewer last.** Quality upgrade, no new features (owner, 2026-11-04; after 12 and 13): raise every existing aspect to the polish level of a modern commercial farming and vehicle simulator (the owner's reference: Farming Simulator 25/26). Use it as a quality bar only: no copying its assets, models, UI or look.
     - Rendering: lighting, shadows, terrain texturing and blending, vegetation, water, sky and weather, post-processing.
     - Models: vehicles, machines, buildings, Kelo-1 and items, with detail, proper materials and scale.
     - Animation: vehicles and machines with suspension, wheels, hydraulics and moving parts, plus Kelo-1's motion.
     - Camera feel, audio polish, UI/HUD clarity and consistency, transitions, loading.
     - Steady frame rate on desktop and phone, with quality presets.
     - Polish and fix only what already exists. Add nothing new.
+    - Owner, 2026-11-09:
+      - Include the items he owns (Storehouse, in hand, at the Post Office), with real-looking models and materials.
+      - Bring every other town building up to the detail level of his house: cafe, NetNode, post office, storehouse, museum, and the rest. Keep the footprints, doors and basements unchanged.
+      - The Workshop machines on all floors look like the real machines, with footprints, stand spots and job animations unchanged.
+      - The menu UI and UX, especially the Brain and Diary tabs (owner, 2026-11-09): a journal-style Diary and an at-a-glance Brain dashboard, plus a consistency pass on every tab, on desktop and phone.
 
 ## Owner notes to keep in mind
 - Owner (2026-11-04): helpers may add as much land as needed for machines, workshops and plants (natural shoreline, walkable, clear of town, one shared land constant/helper). Kelo-1 must never end up standing in water.

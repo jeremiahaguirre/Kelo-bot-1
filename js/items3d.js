@@ -708,6 +708,7 @@ function buildItemModel3D(name, { kind = 'gift', thumb = null, label = true } = 
         }
         // Wood grain, brushed metal, see-through glass... (js/materials.js)
         if (typeof applyMaterialLook === 'function') applyMaterialLook(model, name);
+        if (typeof polishItemSurfaces === 'function') polishItemSurfaces(model, name);
       }
       if (label && name) {
         const text = String(name).replace(/^(an?|the|some)\s+/i, '').slice(0, 22).toUpperCase();
@@ -746,15 +747,20 @@ Make it look like the actual object (proportions, colours, distinctive features)
 
 // --- Post office pickup counter: deliveries wait here as their real models ------------------
 let parcelDisplayGroup = null;
+// The pick-up table out front of the Post Office, east of its door (x, z its centre; the sign faces the lake)
+const PICKUP_TABLE = { x: 16.0, z: 6.0, rotY: 0, scale: 1.6 };
 let parcelDisplayKey = null;
 
 function renderPostOfficeParcels3D() {
       if (!scene) return;
       if (!parcelDisplayGroup) {
-        const cx = 16.2, cz = 0.4;
+        // A real table height (about 0.8 m)
+        const T = PICKUP_TABLE, cx = T.x, cz = T.z;
         const gy = getAnalyticalGroundHeight(cx, cz);
         const counter = new THREE.Group();
         counter.position.set(cx, gy, cz);
+        counter.rotation.y = T.rotY;
+        counter.scale.setScalar(T.scale);
         const top = mesh(new THREE.BoxGeometry(2.6, 0.1, 1.0), 0xf8fafc);
         top.position.y = 0.8;
         const base = mesh(new THREE.BoxGeometry(2.5, 0.75, 0.9), 0xb91c1c);
@@ -763,9 +769,11 @@ function renderPostOfficeParcels3D() {
         sign.position.set(0, 0.45, 0.46);
         counter.add(top, base, sign);
         scene.add(counter);
-        worldObstacles.push({ x: cx, z: cz, r: 1.4 });
+        if (typeof obstacleBox === 'function') worldObstacles.push(obstacleBox(cx, cz, 1.35 * T.scale, 0.55 * T.scale, { part: 'pickup table' }));
+        else worldObstacles.push({ x: cx, z: cz, r: 1.4 * T.scale });
         parcelDisplayGroup = new THREE.Group();
-        parcelDisplayGroup.position.set(cx, gy + 0.85, cz);
+        parcelDisplayGroup.position.set(cx, gy + 0.85 * T.scale, cz);
+        parcelDisplayGroup.rotation.y = T.rotY;
         scene.add(parcelDisplayGroup);
       }
       // Only rebuild when the mail actually changed
@@ -778,7 +786,7 @@ function renderPostOfficeParcels3D() {
       }
       state.mailbox.slice(0, 6).forEach((m, i) => {
         const model = buildItemModel3D(m.kind === 'message' ? 'Letter' : m.name, { kind: m.kind, thumb: m.thumbs && m.thumbs[0] });
-        model.position.set(-0.9 + (i % 3) * 0.9, 0, i < 3 ? 0.15 : -0.3);
+        model.position.set((-0.9 + (i % 3) * 0.9) * PICKUP_TABLE.scale, 0, (i < 3 ? 0.15 : -0.3) * PICKUP_TABLE.scale);
         lifeSize(model, 0.8);
         parcelDisplayGroup.add(model);
       });

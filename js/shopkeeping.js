@@ -149,10 +149,6 @@ function listedCount(kind, ref) {
       return ensureShop().listings.filter(l => l.kind === kind && l.ref === ref).length;
     }
 
-function isVehicleName(name) {
-      return typeof vehicleTypeFor === 'function' && Boolean(vehicleTypeFor(name));
-    }
-
 // The print files he could list: designs he printed well, that people would want, not listed yet
 function sellableCandidates() {
       const p = typeof printerState === 'function' ? printerState() : null;

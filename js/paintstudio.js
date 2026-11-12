@@ -681,7 +681,7 @@ function answerPaintRequest(ask, visitor) {
       }
       state.paintPlan = { medium, subject, for: visitor, overrides: ask.overrides || {}, at: Date.now() };
       savePersistentBrainState();
-      doWhenFree(() => paintPicture(medium, subject, { visitor, overrides: ask.overrides || {}, originLabel: `Painting for ${visitor}` }));
+      doWhenFree(() => paintPicture(medium, subject, { visitor, overrides: ask.overrides || {}, originLabel: `Painting for ${visitor}` }), { key: `paint:${visitor}:${medium}:${subject}`, maxWaitMs: 3 * 3600000 });
     }
 
 // --- The AI's "paint" decision ------------------------------------------------------------------

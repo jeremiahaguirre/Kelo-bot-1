@@ -1878,7 +1878,10 @@ function arrivalRadius(target) {
 
 // --- Pathfinding: A* over a coarse grid, so he routes around buildings instead of getting stuck
 const PATH_CELL = 0.75;
-const PATH_MIN_X = WORLD_MIN_X - 2, PATH_MAX_X = WORLD_MAX_X + 2, PATH_MIN_Z = WORLD_MIN_Z - 2, PATH_MAX_Z = WORLD_MAX_Z + 4;
+// (the grid's cells stay where they were before the world grew north: its south-west corner is still
+// on the old -46 line's lattice, so every path in the valley is planned exactly as before)
+const PATH_MIN_X = WORLD_MIN_X - 2, PATH_MAX_X = WORLD_MAX_X + 2, PATH_MAX_Z = WORLD_MAX_Z + 4;
+const PATH_MIN_Z = -46 - 0.75 * Math.ceil((-46 - (WORLD_MIN_Z - 2)) / 0.75);
 const PATH_COLS = Math.ceil((PATH_MAX_X - PATH_MIN_X) / PATH_CELL);
 const PATH_ROWS = Math.ceil((PATH_MAX_Z - PATH_MIN_Z) / PATH_CELL);
 let currentPath = [];

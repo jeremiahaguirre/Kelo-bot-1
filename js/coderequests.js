@@ -398,52 +398,49 @@ async function copyCodeRequestSpec(id) {
 // Open letters say whether they are "Ready to switch on" (the feature is built) or "Need new code".
 function codeRequestCardHtml(req) {
       const match = typeof wishCardStatus === 'function' ? wishCardStatus(req) : { status: 'needs-code', feature: null };
-      const pill = (cls, text) => `<span class="text-2xs tabular-nums px-2 py-0.5 rounded-full shrink-0 ${cls}">${text}</span>`;
+      const pill = (cls, text) => `<span class="ui-section-meta ${cls}">${text}</span>`;
       let status;
       if (req.fulfilled) {
-        status = req.declined ? pill('bg-slate-700/60 text-slate-300', 'Not now')
-          : req.notBuilt ? pill('bg-amber-500/20 text-amber-200 border border-amber-400/40', '⚠ Not in his world yet')
-          : pill('bg-emerald-500/20 text-emerald-300', `✓ Switched on${match.feature ? ' ' + match.feature.emoji : ''}`);
+        status = req.declined ? pill('', 'Not now')
+          : req.notBuilt ? pill('text-orange-300', 'Not in his world yet')
+          : pill('text-emerald-300', 'Switched on');
       } else if (match.status === 'needs-code') {
-        status = pill('bg-amber-500/20 text-amber-200 border border-amber-400/40', req.willCode ? '🛠️ On your to-do list' : '🛠️ Needs new code');
+        status = pill('text-orange-300', req.willCode ? 'On your to-do list' : 'Needs new code');
       } else {
-        status = pill('bg-emerald-500/20 text-emerald-200 border border-emerald-400/40', '⚡ Ready to switch on');
+        status = pill('text-emerald-300', 'Ready to switch on');
       }
       const src = CODE_WISH_SOURCES[req.codeSource] || null;
       const note = req.fulfilled
-        ? (req.notBuilt ? '<p class="text-2xs text-amber-200/90">You answered "coded in", but nothing in this version of his world matches it yet, so it still needs new code.</p>' : '')
+        ? (req.notBuilt ? '<p class="text-2xs text-slate-300">You answered "coded in", but nothing in this version of his world matches it yet, so it still needs new code.</p>' : '')
         : match.status === 'needs-code'
-          ? `<p class="text-2xs text-amber-200/90">${req.willCode ? 'You said you\'d code this. It stays here (and in the copied wishlist) until it\'s built.' : 'Nothing in this version of his world can do this yet. It needs new code.'}</p>`
-          : `<p class="text-2xs text-emerald-200/90">Already built: ${escapeHtml(match.feature.label)}. Answering "Done" switches it on for good.</p>`;
+          ? `<p class="text-2xs text-slate-300">${req.willCode ? 'You said you\'d code this. It stays here (and in the copied wishlist) until it\'s built.' : 'Nothing in this version of his world can do this yet. It needs new code.'}</p>`
+          : `<p class="text-2xs text-slate-300">Already built: ${escapeHtml(match.feature.label)}. Answering "Done" switches it on for good.</p>`;
       const id = escapeHtml(req.id);
       const specRow = `
             <div class="flex gap-1.5 flex-wrap">
-              <button type="button" data-code-copy="${id}" class="px-2.5 py-1 rounded-lg bg-violet-500/15 hover:bg-violet-500/30 text-violet-200 text-2xs font-semibold transition" title="Copy a spec (user story, acceptance criteria, where it goes) for a developer or an AI coding assistant">📋 Copy as spec</button>
-              <a href="${escapeHtml(codeRequestIssueUrl(req))}" target="_blank" rel="noopener noreferrer" data-code-issue="${id}" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-2xs font-semibold transition" title="Opens a prefilled new issue on GitHub in your browser (nothing is sent until you submit it there)">🐙 Open as GitHub issue</a>
-              <button type="button" data-code-spec-toggle="${id}" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-2xs font-semibold transition">View spec</button>
+              <button type="button" data-code-copy="${id}" class="ui-btn ui-btn-sm" title="Copy a spec (user story, acceptance criteria, where it goes) for a developer or an AI coding assistant">Copy as spec</button>
+              <a href="${escapeHtml(codeRequestIssueUrl(req))}" target="_blank" rel="noopener noreferrer" data-code-issue="${id}" class="ui-btn ui-btn-sm" title="Opens a prefilled new issue on GitHub in your browser (nothing is sent until you submit it there)">🐙 Open as GitHub issue</a>
+              <button type="button" data-code-spec-toggle="${id}" class="ui-btn ui-btn-sm ui-btn-quiet">View spec</button>
             </div>
-            <pre data-code-spec="${id}" class="hidden whitespace-pre-wrap text-2xs leading-snug font-mono text-slate-300 bg-slate-950 border border-slate-800 rounded-lg p-2 max-h-64 overflow-auto">${escapeHtml(codeRequestSpec(req))}</pre>`;
+            <pre data-code-spec="${id}" class="hidden whitespace-pre-wrap text-2xs leading-snug font-mono text-slate-300 bg-slate-950 rounded-lg p-2 max-h-64 overflow-auto">${escapeHtml(codeRequestSpec(req))}</pre>`;
       const buttons = req.fulfilled ? '' : match.status === 'needs-code' ? `
             <div class="flex gap-1.5 pt-1">
-              ${req.willCode ? '' : `<button data-code-req-id="${id}" data-code-done="1" class="code-request-btn flex-1 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition">🛠️ I'll code it</button>`}
-              <button data-code-req-id="${id}" data-code-done="0" class="code-request-btn ${req.willCode ? 'flex-1 ' : ''}px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-xs transition">Not now</button>
+              ${req.willCode ? '' : `<button data-code-req-id="${id}" data-code-done="1" class="code-request-btn ui-btn ui-btn-primary flex-1">I'll code it</button>`}
+              <button data-code-req-id="${id}" data-code-done="0" class="code-request-btn ui-btn ${req.willCode ? 'flex-1' : ''}">Not now</button>
             </div>` : `
             <div class="flex gap-1.5 pt-1">
-              <button data-code-req-id="${id}" data-code-done="1" class="code-request-btn flex-1 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition">✓ Done — switch it on</button>
-              <button data-code-req-id="${id}" data-code-done="0" class="code-request-btn px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-xs transition">Not now</button>
+              <button data-code-req-id="${id}" data-code-done="1" class="code-request-btn ui-btn ui-btn-primary flex-1">Done, switch it on</button>
+              <button data-code-req-id="${id}" data-code-done="0" class="code-request-btn ui-btn">Not now</button>
             </div>`;
       return `
-        <div data-code-card="${id}" data-code-status="${req.fulfilled ? (req.declined ? 'declined' : req.notBuilt ? 'not-built' : 'on') : match.status}" class="p-4 rounded-2xl border ${req.fulfilled ? 'bg-slate-950/60 border-violet-500/20' : 'bg-gradient-to-br from-violet-950/60 to-slate-950 border-violet-400/50 shadow-lg'} space-y-2.5">
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-bold text-white flex items-center gap-1.5 min-w-0">
-              <span class="text-lg">💻</span>
-              <span class="truncate">A letter for whoever codes his world</span>
-            </span>
+        <div data-code-card="${id}" data-code-status="${req.fulfilled ? (req.declined ? 'declined' : req.notBuilt ? 'not-built' : 'on') : match.status}" class="ui-card ${req.fulfilled ? 'ui-card-done' : ''}">
+          <div class="ui-section-head">
+            <h4 class="ui-section-title min-w-0"><i class="ph-bold ph-code" data-hud-emoji="💻" aria-hidden="true"></i><span>A letter for whoever codes his world</span></h4>
             ${status}
           </div>
-          <div class="text-2xs tabular-nums text-violet-200 bg-violet-950/50 border border-violet-500/30 px-2.5 py-1.5 rounded-lg">feature: ${escapeHtml(req.codeFeature)}</div>
+          <div class="text-2xs text-slate-300">Feature: <code class="font-mono text-slate-200">${escapeHtml(req.codeFeature)}</code></div>
           ${src ? `<div class="text-2xs tabular-nums text-slate-400">${src.emoji} ${escapeHtml(src.label)}</div>` : ''}
-          <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
+          <p class="text-sm text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
           ${note}${specRow}${buttons}
         </div>`;
     }
@@ -457,10 +454,10 @@ function codeRequestGroups() {
       const all = state.requestsToUser.filter(r => r.category === 'code');
       const st = r => (typeof wishCardStatus === 'function' ? wishCardStatus(r).status : 'needs-code');
       return [
-        { id: 'ready', title: '⚡ Ready to switch on', list: all.filter(r => !r.fulfilled && st(r) !== 'needs-code') },
-        { id: 'new', title: '🛠️ Need new code', list: all.filter(r => !r.fulfilled && st(r) === 'needs-code' && !r.willCode) },
-        { id: 'todo', title: '📝 On your to-do list', list: all.filter(r => !r.fulfilled && st(r) === 'needs-code' && r.willCode) },
-        { id: 'done', title: '📁 Answered', list: all.filter(r => r.fulfilled), closed: true }
+        { id: 'ready', title: 'Code letters ready to switch on', list: all.filter(r => !r.fulfilled && st(r) !== 'needs-code') },
+        { id: 'new', title: 'Code letters that need new code', list: all.filter(r => !r.fulfilled && st(r) === 'needs-code' && !r.willCode) },
+        { id: 'todo', title: 'Code letters on your to-do list', list: all.filter(r => !r.fulfilled && st(r) === 'needs-code' && r.willCode) },
+        { id: 'done', title: 'Answered code letters', list: all.filter(r => r.fulfilled), closed: true }
       ].filter(g => g.list.length);
     }
 
@@ -471,14 +468,14 @@ function codeRequestsGroupHtml() {
         const shown = codeGroupShown[g.id] || CODE_GROUP_STEP;
         const more = g.list.length - shown;
         return `
-          <details class="code-group rounded-2xl bg-violet-950/20 border border-violet-500/25 px-2.5 py-2" data-code-group="${g.id}" ${g.closed ? '' : 'open'}>
-            <summary class="flex items-center justify-between gap-2 cursor-pointer select-none list-none text-xs font-bold text-violet-200">
-              <span>💻 ${g.title}</span>
-              <span class="text-2xs tabular-nums px-2 py-0.5 rounded-full bg-violet-500/20">${g.list.length}</span>
+          <details class="code-group brain-section" data-code-group="${g.id}" ${g.closed ? '' : 'open'}>
+            <summary class="brain-head">
+              <span class="brain-title"><span>${g.title}</span></span>
+              <span class="brain-count">${g.list.length}</span>
             </summary>
-            <div class="pt-2 space-y-2.5">
+            <div class="brain-body">
               ${g.list.slice(0, shown).map(codeRequestCardHtml).join('')}
-              ${more > 0 ? `<button type="button" data-code-more="${g.id}" class="w-full px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-2xs font-semibold">Show more (${more} more)</button>` : ''}
+              ${more > 0 ? `<button type="button" data-code-more="${g.id}" class="ui-btn w-full">Show ${more} more</button>` : ''}
             </div>
           </details>`;
       }).join('')}</div>`;

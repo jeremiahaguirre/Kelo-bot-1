@@ -147,17 +147,17 @@ const MAKER_CAPS = [
     name: noun => `A LOM-built paper ${noun}`, small: true },
   { key: 'avid4896', mat: ['wood', 'plywood'], maxCm: 240, forms: /sign|plaque|panel|puzzle|template|letters|cutout|shelf|board|coaster/i, name: noun => `An Avid-routed plywood ${noun}` },
   { key: 'laser', mat: ['acrylic'], maxCm: 60, forms: /sign|panel|stand|box|ornament|coaster|cover|plaque/i, name: noun => `A laser-cut acrylic ${noun}` },
+  // The garage: its MIG/TIG welder and plasma table do vehicle fabrication (hitches, racks, bumpers)
+  { key: 'garage', run: 'migtig', mat: ['steel'], maxCm: 400, forms: /trailer hitch|hitch|exhaust|roll ?(bar|cage)|bumper|skid plate|tow bar|bull bar|roof rack|kart frame|go-?kart chassis|ladder rack|truck rack|trailer/i,
+    name: noun => `A garage-fabricated steel ${noun}` },
   // The Welding Studio: steel sections and plate, cut, fitted and welded on a 4 x 8 ft table
   { key: 'weldstudio', mat: ['steel', 'stainless', 'aluminium', 'metal'], maxCm: 300, outside: true,
-    forms: /bench|table|chair|stool|frame|rack|gate|grill|bbq|barbecue|fire pit|cart|stand|shel(f|ves)|planter|sculpture|railing|hook|bracket|box|bed frame|arch|trellis|wheelbarrow|mailbox|bike rack|coat rack|candle holder|workbench|sawhorse|ladder|trailer|frame|cage|basket|lantern|wind ?vane|weather ?vane|bird feeder|log rack|tool rack|anvil stand|tripod|easel/i,
+    forms: /bench|table|chair|stool|frame|rack|gate|grill|bbq|barbecue|fire pit|cart|stand|shel(f|ves)|planter|sculpture|railing|hook|bracket|box|bed frame|arch|trellis|wheelbarrow|mailbox|bike rack|coat rack|candle holder|workbench|sawhorse|ladder|frame|cage|basket|lantern|wind ?vane|weather ?vane|bird feeder|log rack|tool rack|anvil stand|tripod|easel/i,
     name: (noun, m) => `A welded ${m === 'aluminium' ? 'aluminium' : m === 'stainless' ? 'stainless steel' : 'steel'} ${noun}` },
   // The batch plant's ready-mix, cast in a form in the plant yard (it cures before it is moved)
   { key: 'batchplant', mat: ['concrete'], maxCm: 250, outside: true,
     forms: /bench|planter|stepping stones?|bird ?bath|paver|block|slab|post base|countertop|garden edging|bollard|pad|footing|pier|fire ring|\bpot\b|trough|statue base|steps?|bowl|sphere|table/i,
     name: noun => `A cast concrete ${noun}` },
-  // The garage: its MIG/TIG welder and plasma table do vehicle fabrication (hitches, racks, bumpers)
-  { key: 'garage', run: 'migtig', mat: ['steel'], maxCm: 400, forms: /trailer hitch|hitch|exhaust|roll ?(bar|cage)|bumper|skid plate|tow bar|bull bar|roof rack|kart frame|go-?kart chassis|ladder rack|truck rack|trailer/i,
-    name: noun => `A garage-fabricated steel ${noun}` },
   { key: 'haasvs1', mat: ['aluminium', 'steel'], maxCm: 50, forms: /bracket|plate|hub|knob|mount|bottle opener|block|part|spindle|pedal/i, name: (noun, m) => `A Haas-machined ${m === 'steel' ? 'steel' : 'aluminium'} ${noun}` },
   { key: 'plasma', mat: ['steel'], maxCm: 120, forms: /gusset|bracket|sign|silhouette|plate|wall art|stencil|coaster|tag|cutout|plaque/i, name: noun => `A plasma-cut steel ${noun}` },
   // Sodick wire EDM: 400 x 300 x 250 mm travel, cuts any conductive plate to a profile

@@ -256,6 +256,7 @@ const state = {
   "lastStructuredTick": "",
   "toolInventory": [],
   "unopenedNotesQueue": [],
+  "readNoteIds": [],
   "gardenPlots": [
     {
       "name": "Okanagan Peaches",
@@ -1392,6 +1393,7 @@ function loadPersistentBrainState() {
         }
         if (Array.isArray(saved.unstoredItems)) state.unstoredItems = saved.unstoredItems.filter(n => typeof n === 'string');
         if (typeof cleanStoreCopies === 'function') cleanStoreCopies();
+        cleanNotesQueue();
         if (Array.isArray(saved.digSites)) state.digSites = saved.digSites.filter(d => d && Number.isFinite(d.x) && Number.isFinite(d.z) && Number.isFinite(d.depth));
         if (Array.isArray(saved.foundItems)) state.foundItems = saved.foundItems.filter(f => f && typeof f.id === 'string');
         if (Array.isArray(saved.coreMemories)) state.coreMemories = saved.coreMemories.filter(m => m && typeof m.text === 'string');
@@ -1418,7 +1420,7 @@ function loadPersistentBrainState() {
 
 // Moment-to-moment flags and things stored elsewhere; everything else in state is saved
 const TRANSIENT_STATE_KEYS = new Set(['riding', 'ridingSpeed', 'ridingMode', 'isSleeping', 'isBusy', 'isWalking', 'isBuilding', 'isPracticing', 'isCollectingMail', 'isBrowsing',
-  'photoAlbum', 'rhythmPhaseText', 'unopenedNotesQueue', 'basementDepth']);
+  'photoAlbum', 'rhythmPhaseText', 'basementDepth']);
 
 // Big parts of him that change rarely are kept under their own storage keys, so the main brain
 // stays small and an everyday save doesn't rewrite them: the words and things he has looked up,
@@ -2723,9 +2725,62 @@ async function handleVisitorChatMessage(userMessage) {
       renderAllUI();
     }
 
+// Letters he has opened but not read yet are saved (state.unopenedNotesQueue), so a reload doesn't lose
+// one. A letter stays in the queue until he has finished reading it, then its id goes on a short list of
+// read ones (state.readNoteIds), so neither a reload nor the same letter opened twice has him read it again.
+const NOTES_QUEUE_MAX = 20, READ_NOTE_IDS_MAX = 100;
+const notesBeingRead = new Set();
+
+function visitorNoteId(note) {
+      if (note && typeof note.id === 'string' && note.id) return note.id.slice(0, 80);
+      return `note:${String(note && note.sender || '').slice(0, 40)}|${String(note && note.timestamp || '').slice(0, 40)}|${String(note && note.text || '').slice(0, 60)}`;
+    }
+
+// Queue a letter to read; false if it is already waiting or already read
+function queueVisitorNote(note) {
+      if (!note || typeof note.text !== 'string') return false;
+      const id = visitorNoteId(note);
+      if (!Array.isArray(state.readNoteIds)) state.readNoteIds = [];
+      if (state.readNoteIds.includes(id) || state.unopenedNotesQueue.some(n => visitorNoteId(n) === id)) return false;
+      state.unopenedNotesQueue.push({ id, sender: String(note.sender || 'Someone').slice(0, 60), text: note.text.slice(0, 4000), timestamp: note.timestamp || '' });
+      // Bounded: if letters pile up past the limit, the oldest unread one is dropped
+      while (state.unopenedNotesQueue.length > NOTES_QUEUE_MAX) {
+        const i = state.unopenedNotesQueue.findIndex(n => !notesBeingRead.has(n));
+        if (i < 0) break;
+        state.unopenedNotesQueue.splice(i, 1);
+      }
+      savePersistentBrainState();
+      return true;
+    }
+
+// Older or damaged saves: well-formed letters only, none already read, none twice
+function cleanNotesQueue() {
+      state.readNoteIds = Array.isArray(state.readNoteIds) ? state.readNoteIds.filter(i => typeof i === 'string').slice(-READ_NOTE_IDS_MAX) : [];
+      const seen = new Set(state.readNoteIds);
+      state.unopenedNotesQueue = (Array.isArray(state.unopenedNotesQueue) ? state.unopenedNotesQueue : [])
+        .filter(n => n && typeof n.text === 'string' && typeof n.sender === 'string')
+        .filter(n => { const id = visitorNoteId(n); if (seen.has(id)) return false; seen.add(id); n.id = id; return true; })
+        .slice(-NOTES_QUEUE_MAX);
+    }
+
 async function processNextUnopenedVisitorNote() {
-      if (state.unopenedNotesQueue.length === 0) return;
-      const note = state.unopenedNotesQueue.shift();
+      const note = state.unopenedNotesQueue.find(n => !notesBeingRead.has(n));
+      if (!note) return;
+      notesBeingRead.add(note);
+      try {
+        await readVisitorNote(note);
+      } finally {
+        notesBeingRead.delete(note);
+        const i = state.unopenedNotesQueue.indexOf(note);
+        if (i >= 0) state.unopenedNotesQueue.splice(i, 1);
+        if (!Array.isArray(state.readNoteIds)) state.readNoteIds = [];
+        state.readNoteIds.push(visitorNoteId(note));
+        if (state.readNoteIds.length > READ_NOTE_IDS_MAX) state.readNoteIds.splice(0, state.readNoteIds.length - READ_NOTE_IDS_MAX);
+        savePersistentBrainState();
+      }
+    }
+
+async function readVisitorNote(note) {
       const visitor = note.sender;
       const userMessage = note.text;
 

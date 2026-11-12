@@ -20,6 +20,9 @@ const hoverPointer = { x: 0, y: 0, active: false, touchUntil: 0 };
 const downRaycaster = new THREE.Raycaster();
 
 function getAnalyticalGroundHeight(x, z) {
+      // North of the island's own mesh (the back of the mountains, the Workshop's north yard and the
+      // runway field) the ground is the backdrop lands' shape, so walking matches what is drawn there
+      if (z < -ISLAND_HALF_Z) return groundAboveNatural(x, z, outerNaturalHeight(x, z));
       let h = Math.sin(x * 0.11) * Math.cos(z * 0.11) * 0.32;
       // Gently slope down toward Okanagan Lake shoreline in the south (z > 7)
       if (z > 7.5) {
@@ -41,7 +44,14 @@ function getAnalyticalGroundHeight(x, z) {
         h += (x - 14) * 0.28 * Math.max(0.2, Math.abs(z) / 14) * (1 - east + east * t * t * (3 - 2 * t));
       }
       // The valley floor never dips below the waterline; the lake bed does
-      const natural = z > 7.5 ? h : Math.max(-0.25, h);
+      return groundAboveNatural(x, z, z > 7.5 ? h : Math.max(-0.25, h));
+    }
+
+// What is made of the natural ground: the runway field and the Workshop's levelled land, holes,
+// hills, piles and new land
+function groundAboveNatural(x, z, natural) {
+      // The runway field (RUNWAY_FIELD, js/agent.js) lies level, the hills blending down to it
+      if (z < RUNWAY_FIELD.maxZ + RUNWAY_FIELD.blend) natural = runwayFieldLandAt(x, z, natural);
       // The Workshop stands on levelled ground (js/workshopbuilding.js)
       const base = typeof workshopPadAt === 'function' ? workshopPadAt(x, z, natural) : natural;
       // Holes Kelo-1 has dug (js/mining.js) and the Disposal Pit (js/disposal.js) lower the ground;
@@ -50,6 +60,19 @@ function getAnalyticalGroundHeight(x, z) {
         + (typeof dirtPileRaiseAt === 'function' ? dirtPileRaiseAt(x, z) : 0);
       // Dirt he has dumped into the lake builds up on the bed below it, and new land meets the old shore (js/landfill.js)
       return typeof landFillRaiseAt === 'function' && z > 4 ? ground + landFillRaiseAt(x, z, ground) : ground;
+    }
+
+// The runway field's ground: a plain, gently rolling grass field at RUNWAY_FIELD.y (the swell fades
+// out toward the Workshop's apron so the two meet flush); round it the hills blend back in
+function runwayFieldLandAt(x, z, base) {
+      const f = RUNWAY_FIELD;
+      const dx = Math.max(0, f.minX - x, x - f.maxX), dz = Math.max(0, f.minZ - z, z - f.maxZ);
+      const swell = 0.22 * Math.sin(x * 0.021 + 0.7) * Math.cos(z * 0.013) * Math.min(1, Math.max(0, (f.maxZ - z) / 40));
+      if (!dx && !dz) return f.y + swell;
+      const out = Math.hypot(dx, dz);
+      if (out >= f.blend) return base;
+      const t = out / f.blend, k = t * t * (3 - 2 * t);
+      return f.y + swell + (base - f.y - swell) * k;
     }
 
 function groundDugAt(x, z) {
@@ -726,6 +749,11 @@ function islandContains(x, z, pad = 0) {
 // Height beyond the main terrain: the mountain's back side falls away into further ranges,
 // hills roll off east and west, and south of the shore the land drops into open water
 function outerTerrainHeight(x, z) {
+      // North of the island this is the ground itself (the field, the Workshop's north yard)
+      return z < -ISLAND_HALF_Z ? getAnalyticalGroundHeight(x, z) : outerNaturalHeight(x, z);
+    }
+
+function outerNaturalHeight(x, z) {
       const cx = Math.max(ISLAND_MIN_X, Math.min(ISLAND_MAX_X, x));
       const cz = Math.max(-ISLAND_HALF_Z, Math.min(ISLAND_HALF_Z, z));
       const edge = getAnalyticalGroundHeight(cx, cz);

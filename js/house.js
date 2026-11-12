@@ -1,5 +1,5 @@
 // Kelo-bot-1 — js/house.js
-// Loaded right after scene.js. Kelo-1's home: a cosy gabled cottage sized for a 2.8-unit robot
+// Loaded after weldstudio.js. Kelo-1's home: a cosy gabled cottage sized for a 2.8-unit robot
 // (3.6 tall walls, a door taller than him). It has glass windows, a front door that swings open
 // when he walks up, a porch with steps and a railing, a stone chimney, flower boxes and a stepping
 // stone path. Inside are his bed and couch (at TOWN_LOCATIONS 'bed' and 'couch' in agent.js), a desk,

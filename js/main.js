@@ -1,5 +1,5 @@
 // Kelo-bot-1 — js/main.js
-// Loaded THIRD. Connects all UI tabs, keyboard/mouse/upload listeners, and boots the 3D world.
+// Loaded after upgrades.js, near the end. Connects all UI tabs, keyboard/mouse/upload listeners, and boots the 3D world.
 
 // Write text only when it changed (no layout work, no screen-reader repeats)
 function hudSetText(el, text) {

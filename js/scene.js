@@ -1,5 +1,5 @@
 // Kelo-bot-1 — js/scene.js
-// Loaded SECOND. Uses state & TOWN_LOCATIONS from js/agent.js to render the 3D Kelowna world,
+// Loaded after kelo-body.js. Uses state & TOWN_LOCATIONS from js/agent.js to render the 3D Kelowna world,
 // continuous mountain/valley altitude raycasting, 3D mining/welding tools, and Bird's-Eye flight.
 
 let scene, camera, renderer, controls, clock;

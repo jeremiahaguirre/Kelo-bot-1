@@ -226,6 +226,7 @@ function exploreEase(u) { return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u +
 
 // --- The per-frame update (called from the animate loop in js/scene.js) --------------------------
 // Returns true when it placed the camera this frame
+const exploreScratchGoal = new THREE.Vector3(), exploreScratchAcc = new THREE.Vector3();
 function exploreCameraUpdate() {
       if (!exploreCam.ready || !camera || !controls) return false;
       const now = performance.now();
@@ -279,12 +280,19 @@ function exploreCameraUpdate() {
           else {
             const fv = exploreCam.fv || (exploreCam.fv = new THREE.Vector3());
             const w = 5.5;
+            // The goal moved from where it was last frame to where it is now: the substeps follow it
+            // along that line, so the camera lands in the same place at any frame rate
+            const g0 = exploreCam.goalWas || (exploreCam.goalWas = goal.target.clone());
+            if (g0.distanceTo(goal.target) > 5) g0.copy(goal.target);
+            const gi = exploreScratchGoal, acc = exploreScratchAcc;
             for (let left = dt; left > 1e-4;) {
               const h = Math.min(left, 1 / 120);
               left -= h;
-              fv.addScaledVector(goal.target.clone().sub(cur.target).multiplyScalar(w * w).addScaledVector(fv, -2 * w), h);
+              gi.lerpVectors(goal.target, g0, dt > 0 ? left / dt : 0);
+              fv.addScaledVector(acc.copy(gi).sub(cur.target).multiplyScalar(w * w).addScaledVector(fv, -2 * w), h);
               cur.target.addScaledVector(fv, h);
             }
+            g0.copy(goal.target);
           }
         } else {
           exploreCam.fv = null;

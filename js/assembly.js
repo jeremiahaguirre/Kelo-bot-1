@@ -766,7 +766,9 @@ async function runBuildTests(id, originLabel = 'Inspecting the Build') {
                 state.speechBubble = phases[i];
                 renderAllUI();
                 const until = Date.now() + 1600 * ASSEMBLY_PACE;
-                while (Date.now() < until) { if (prop) prop.rotation.x += i === 3 ? 1.4 : i === 4 ? 0.2 : 0.7; await new Promise(r => setTimeout(r, 40)); }
+                // (the prop's speed in turns per second, drawn every frame)
+                let last = Date.now();
+                while (Date.now() < until) { const now = Date.now(); if (prop) prop.rotation.x += (i === 3 ? 35 : i === 4 ? 5 : 17.5) * Math.min(0.25, (now - last) / 1000); last = now; await keloNextFrame(); }
               }
               p.fuelGal = Math.round((fuel - 1) * 10) / 10;
               result = { ok: true, note: 'Static 6,100 rpm, ignition drops 150/160 rpm, EGT 1,150 °F, coolant 65 °C, idle 1,900 rpm. Used 1 gal of fuel.' };
@@ -911,9 +913,9 @@ async function learnToFly(originLabel = 'Learning to Fly') {
               m.position.copy(start).addScaledVector(dir, f * 4.5);
               m.position.y = start.y + (tr.taxiRuns === 2 && k > 0.3 && k < 0.55 ? 0.35 : 0);
               const prop = m.userData.inner.userData.prop;
-              if (prop) prop.rotation.x += 0.9;
+              if (prop) prop.rotation.x = (Date.now() - t0) / 1000 * 15;
               if (k >= 1) break;
-              await new Promise(r => setTimeout(r, 60));
+              await keloNextFrame();
             }
             m.position.copy(start);
           } else await sleepPace(3000);
@@ -1054,7 +1056,7 @@ async function pushPlane(v, to, label) {
         if (typeof renderVehicles3D === 'function') renderVehicles3D();
         holdPlaneTail(v);
         if (k >= 1) break;
-        await new Promise(r => setTimeout(r, 60));
+        await keloNextFrame();
       }
       v.x = to.x;
       v.z = to.z;
@@ -1080,7 +1082,7 @@ async function turnPlaneTo(v, rotY, label) {
         if (typeof renderVehicles3D === 'function') renderVehicles3D();
         holdPlaneTail(v);
         if (k >= 1) break;
-        await new Promise(r => setTimeout(r, 60));
+        await keloNextFrame();
       }
       v.rotY = Math.atan2(Math.sin(rotY), Math.cos(rotY));
       if (typeof renderVehicles3D === 'function') renderVehicles3D();
@@ -1205,12 +1207,11 @@ function planePoseAt(plan, s) {
 
 // One frame of the flight (from planeAltitude). Moves him and the plane along the circuit, says what
 // is happening, and returns the height above the floor under him that vehicles.js adds
-function planeFlightStep(m, v, u) {
-      const f = u.flight, plan = f.plan;
-      const now = performance.now() / 1000;
-      const dt = Math.min(0.1, Math.max(0, now - (f.lastT ?? now)));
-      f.lastT = now;
-      const before = f.s;
+// One fixed simulation step of a planned flight (js/scene.js keloEveryStep): distance along the
+// circuit, heading, pitch and bank. The frame (planeFlightStep) draws between the last two steps.
+function planeFlightAdvance(f, dt) {
+      const plan = f.plan;
+      f.sPrev = f.s; f.headPrev = f.heading; f.pitchPrev = f.pitch; f.bankPrev = f.bank;
       if (!f.done) f.s = Math.min(plan.sEnd, f.s + planeSpeedAt(plan, f.s) * dt);
       if (f.s >= plan.sEnd - 1e-6) f.done = true;
       const p = planePoseAt(plan, f.s), ahead = planePoseAt(plan, Math.min(plan.sEnd, f.s + 1)), back = planePoseAt(plan, Math.max(0, f.s - 1));
@@ -1224,6 +1225,25 @@ function planeFlightStep(m, v, u) {
       f.pitch += (Math.max(-0.25, Math.min(0.3, Math.atan(slope))) - f.pitch) * k;
       const airborne = p.alt > 0.3;
       f.bank += ((airborne ? Math.max(-0.45, Math.min(0.45, -turn * planeSpeedAt(plan, f.s) * 0.05)) : 0) - f.bank) * k;
+    }
+
+function planeFlightsStep(h) {
+      if (typeof vehicleMeshes === 'undefined') return;
+      for (const id in vehicleMeshes) { const f = vehicleMeshes[id].userData.flight; if (f && f.plan) planeFlightAdvance(f, h); }
+    }
+
+function planeFlightStep(m, v, u) {
+      const f = u.flight, plan = f.plan;
+      // Between the last two simulation steps (alpha from js/scene.js)
+      const a = typeof keloSim !== 'undefined' ? keloSim.alpha : 1;
+      const mix = (x0, x1) => (x0 === undefined || x0 === null ? x1 : x0 + (x1 - x0) * a);
+      const before = f.sPrev ?? f.s;
+      const s = mix(f.sPrev, f.s);
+      const p = planePoseAt(plan, s);
+      const dh = f.headPrev === undefined ? 0 : Math.atan2(Math.sin(f.heading - f.headPrev), Math.cos(f.heading - f.headPrev));
+      const heading = f.heading - dh * (1 - a);
+      f.shownPitch = mix(f.pitchPrev, f.pitch);
+      f.shownBank = mix(f.bankPrev, f.bank);
       state.botPos = { x: p.x, z: p.z };
       state.targetPos = { x: p.x, z: p.z };
       state.botRotY = heading;
@@ -1250,7 +1270,7 @@ function planeFlightStep(m, v, u) {
       // Never under the water, whatever happens: the floor under him right now
       const floor = Math.max(getIslandGroundHeight(p.x, p.z), WATER_LEVEL);
       u.alt = Math.max(0, p.y - floor);
-      if (u.mini) u.mini.rotation.z = f.pitch;
+      if (u.mini) u.mini.rotation.z = f.shownPitch;
       return u.alt;
     }
 
@@ -1300,9 +1320,16 @@ async function flyPlaneCircuit(v, start, u) {
 const PLANE_CRUISE = 12, PLANE_ROLL = 4;
 function planeAltitude(m, v, t, u) {
       if (u.flight) return planeFlightStep(m, v, u);
-      const now = performance.now() / 1000;
-      const dt = Math.min(0.5, Math.max(0, now - (u.lastT ?? now)));
-      u.lastT = now;
+      const alt0 = u.alt || 0;
+      const shown = airAltSteps(u, h => planeAltStep(u, h));
+      // Nose up on the climb, down on the descent
+      const body = u.mini;
+      if (body) body.rotation.z = Math.max(-0.15, Math.min(0.2, (u.alt - alt0) / Math.max((typeof keloSim !== 'undefined' ? keloSim.steps : 1) / 60, 1 / 60) * 0.05));
+      return shown;
+    }
+
+// One simulation step of the plain (unplanned) roll, climb and glide
+function planeAltStep(u, dt) {
       const alt = u.alt || 0;
       let want;
       if (u.landing) want = 0;
@@ -1319,10 +1346,6 @@ function planeAltitude(m, v, t, u) {
       const rate = want > alt ? 4 : 3.2;
       u.alt = alt < want ? Math.min(want, alt + rate * dt) : Math.max(want, alt - rate * dt);
       if (u.landing && u.alt < 0.05) { u.rollFrom = null; u.airborne = false; u.cruising = false; }
-      // Nose up on the climb, down on the descent
-      const body = u.mini;
-      if (body) body.rotation.z = Math.max(-0.15, Math.min(0.2, (u.alt - alt) / Math.max(dt, 0.01) * 0.05));
-      return u.alt;
     }
 
 // Where the takeoff roll heads: straight down the strip toward the lake
@@ -1343,7 +1366,7 @@ function assemblyFrame() {
       if (!state.riding || typeof vehicleMeshes === 'undefined') return;
       const m = vehicleMeshes[state.riding];
       // (js/vehicles.js spools it up and down by real time; this is the fallback)
-      if (m && m.userData.prop && typeof vehicleRideFrame !== 'function') m.userData.prop.rotation.x += 0.9;
+      if (m && m.userData.prop && typeof vehicleRideFrame !== "function") m.userData.prop.rotation.x = performance.now() / 1000 * 54;
     }
 
 // --- 6. Brain tab, AI and talking ---------------------------------------------------------------------
@@ -1484,6 +1507,8 @@ window.addEventListener('DOMContentLoaded', () => {
     renderBuildProjectsList();
     if (typeof keloEveryFrame === 'function') keloEveryFrame(assemblyFrame);
     else (function loop() { assemblyFrame(); requestAnimationFrame(loop); })();
+    // Planned flights move in the fixed simulation steps (js/scene.js)
+    if (typeof keloEveryStep === 'function') keloEveryStep(planeFlightsStep);
     // Once a sub-assembly's parts and tools are all here, he gets building (and keeps his lists going)
     setInterval(() => {
       renderBuildProjectsList();

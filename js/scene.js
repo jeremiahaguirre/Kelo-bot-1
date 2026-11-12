@@ -2021,7 +2021,39 @@ function keloEveryFrame(fn) {
       if (typeof fn === 'function') keloFrameHooks.push({ fn, failed: false });
     }
 
+// Scripted motion (a plane pushed by hand, a truck bed tipping, an item dropped in the pit) waits for
+// the next drawn frame instead of a fixed timer, and works out where it is from the clock, so it is
+// smooth and runs at the same pace at any frame rate. In a hidden tab (no frames) a slow timer
+// keeps it going.
+const keloFrameWaiters = [];
+let keloFrameWaitTimer = 0;
+function keloFlushFrameWaiters() {
+      if (keloFrameWaitTimer) { clearTimeout(keloFrameWaitTimer); keloFrameWaitTimer = 0; }
+      const list = keloFrameWaiters.splice(0);
+      list.forEach(r => r());
+    }
+function keloNextFrame() {
+      return new Promise(r => {
+        keloFrameWaiters.push(r);
+        if (!keloFrameWaitTimer) keloFrameWaitTimer = setTimeout(keloFlushFrameWaiters, 250);
+      });
+    }
+// Runs fn(k, dt) once a frame for `ms` (k from 0 to 1 by the clock, dt in seconds since the last call);
+// resolves after the call with k = 1
+async function keloTween(ms, fn) {
+      const t0 = performance.now();
+      let last = t0;
+      for (;;) {
+        const now = performance.now(), k = ms > 0 ? Math.min(1, (now - t0) / ms) : 1;
+        fn(k, Math.min(0.25, (now - last) / 1000));
+        last = now;
+        if (k >= 1) return;
+        await keloNextFrame();
+      }
+    }
+
 function runKeloFrameHooks(now) {
+      if (keloFrameWaiters.length) keloFlushFrameWaiters();
       for (const h of keloFrameHooks) {
         try { h.fn(now); } catch (e) { if (!h.failed) { h.failed = true; console.warn('A per-frame update failed:', e); } }
       }
@@ -2053,9 +2085,108 @@ function keloToolWords() {
       return w;
     }
 
+// --- Fixed-step simulation ----------------------------------------------------------------------------
+// Movement and collision run at a fixed KELO_SIM_HZ, whatever the display does (30, 60, 144 Hz):
+// each frame adds its real time to an accumulator and runs as many whole steps as fit (at most
+// KELO_SIM_MAX_STEPS, so a stalled frame can't snowball). Drawing happens every display frame,
+// between the last two simulation states: for the rest of the frame state.botPos and state.botRotY
+// hold the in-between position (alpha = accumulator / step), and the real ones are put back at the
+// end, unless something placed him during the frame (an indoor trip, a flight, a script): that wins.
+// Other files add steps with keloEveryStep(fn(h, simT)); keloSim.steps says how many ran this frame.
+const KELO_SIM_HZ = 60, KELO_SIM_H = 1 / KELO_SIM_HZ, KELO_SIM_MAX_STEPS = 10;
+const keloSim = {
+  acc: 0, lastT: null, step: 0, steps: 0, alpha: 1, t: 0, walking: false,
+  prev: { x: 0, z: 0, rot: 0 }, cur: { x: 0, z: 0, rot: 0 }, has: false,
+  real: null, realRot: 0, shown: null, shownX: 0, shownZ: 0, shownRot: 0
+};
+const keloStepHooks = [];
+function keloEveryStep(fn) {
+      if (typeof fn === 'function') keloStepHooks.push({ fn, failed: false });
+    }
+
+function keloSimSnap() {
+      const s = keloSim, p = state.botPos;
+      s.cur.x = s.prev.x = p.x; s.cur.z = s.prev.z = p.z; s.cur.rot = s.prev.rot = state.botRotY || 0;
+      s.has = true;
+    }
+
+// One step of his walking (or driving): the A* path, steering, braking, sliding along obstacles
+function keloWalkStep(h, st) {
+      const trip = typeof indoorTrip !== 'undefined' ? indoorTrip : null;
+      if (trip && trip.active && trip.pos) { keloSim.walking = false; return; }
+      const dist = Math.hypot(state.targetPos.x - state.botPos.x, state.targetPos.z - state.botPos.z);
+      if (!(dist > arrivalRadius(state.targetPos))) { keloSim.walking = false; state.isWalking = false; return; }
+      keloSim.walking = true;
+      state.isWalking = true;
+      const [sx, sz, step] = keloLocomote(dist, h, st);
+      // A frozen lake he isn't sure of yet: he stops at the edge of the ice (js/weather.js)
+      if (typeof iceStepBlocked === 'function' && iceStepBlocked(state.botPos)) {
+        state.botPos.x -= sx * step;
+        state.botPos.z -= sz * step;
+        state.targetPos = { x: state.botPos.x, z: state.botPos.z };
+      }
+      // Exhausted legs give way now and then (js/needs.js); he stops while he picks himself up
+      if (typeof maybeStumble === 'function' && maybeStumble(st)) {
+        state.botPos.x -= sx * step;
+        state.botPos.z -= sz * step;
+      }
+    }
+
+// Run the steps this frame owes, then show him between the last two states
+function keloSimAdvance(t) {
+      const s = keloSim;
+      const raw = s.lastT === null ? KELO_SIM_H : Math.max(0, Math.min(0.25, t - s.lastT));
+      s.lastT = t;
+      // Moved by something else since the last step (a teleport, a script, a trip): no sliding over
+      const p = state.botPos;
+      if (!s.has || p.x !== s.cur.x || p.z !== s.cur.z || (state.botRotY || 0) !== s.cur.rot) keloSimSnap();
+      s.acc += raw;
+      let n = Math.floor(s.acc / KELO_SIM_H + 1e-9);
+      if (n > KELO_SIM_MAX_STEPS) { n = KELO_SIM_MAX_STEPS; s.acc = n * KELO_SIM_H; }
+      s.acc = Math.max(0, s.acc - n * KELO_SIM_H);
+      s.steps = n;
+      for (let i = 0; i < n; i++) {
+        s.step++;
+        s.t = t - s.acc - (n - 1 - i) * KELO_SIM_H;
+        s.prev.x = s.cur.x; s.prev.z = s.cur.z; s.prev.rot = s.cur.rot;
+        keloWalkStep(KELO_SIM_H, s.t);
+        for (const hk of keloStepHooks) {
+          try { hk.fn(KELO_SIM_H, s.t); } catch (e) { if (!hk.failed) { hk.failed = true; console.warn('A simulation step failed:', e); } }
+        }
+        s.cur.x = state.botPos.x; s.cur.z = state.botPos.z; s.cur.rot = state.botRotY || 0;
+      }
+      s.alpha = Math.min(1, s.acc / KELO_SIM_H);
+      // The in-between position for this frame's drawing
+      const a = s.alpha, dr = Math.atan2(Math.sin(s.cur.rot - s.prev.rot), Math.cos(s.cur.rot - s.prev.rot));
+      s.real = state.botPos;
+      s.realRot = state.botRotY;
+      s.shownX = s.cur.x + (s.prev.x - s.cur.x) * (1 - a);
+      s.shownZ = s.cur.z + (s.prev.z - s.cur.z) * (1 - a);
+      s.shownRot = a >= 1 || dr === 0 ? state.botRotY : s.cur.rot - dr * (1 - a);
+      s.shown = { x: s.shownX, z: s.shownZ };
+      state.botPos = s.shown;
+      state.botRotY = s.shownRot;
+    }
+
+// End of the frame: the real state goes back (unless the frame itself moved him)
+function keloSimRestore() {
+      const s = keloSim;
+      if (!s.shown) return;
+      const moved = state.botPos !== s.shown || s.shown.x !== s.shownX || s.shown.z !== s.shownZ;
+      const turned = state.botRotY !== s.shownRot;
+      if (!moved) state.botPos = s.real;
+      if (!turned) state.botRotY = s.realRot;
+      if (moved || turned) keloSimSnap();
+      s.shown = null;
+    }
+
 function animateDiorama() {
       requestAnimationFrame(animateDiorama);
       const t = clock.getElapsedTime();
+      // Joints start each frame at rest; the code below writes the pose it wants, and
+      // finishKeloPose() (js/animations.js) blends him smoothly toward it
+      const dt = beginKeloPose(t);
+      keloSimAdvance(t);
 
       // 0. Bird's-Eye View Arrow-Key / WASD Map Panning
       const panLeft = arrowKeyState.ArrowLeft || arrowKeyState.KeyA;
@@ -2072,7 +2203,7 @@ function animateDiorama() {
             camera.position.y = 28;
           }
         }
-        const panSpeed = 0.52;
+        const panSpeed = 0.52 * 60 * dt; // 31 units a second at any frame rate
         // Pan relative to camera horizontal heading so arrow keys always feel natural
         const forward = panScratch.forward;
         camera.getWorldDirection(forward);
@@ -2096,13 +2227,8 @@ function animateDiorama() {
         controls.target.z = Math.max(-150, Math.min(150, controls.target.z));
       }
 
-      // 1. Walk Kelo-1 smoothly to Target Location while clamping strictly ON TOP of any terrain altitude!
-      const dx = state.targetPos.x - state.botPos.x;
-      const dz = state.targetPos.z - state.botPos.z;
-      const dist = Math.hypot(dx, dz);
-      // Joints start each frame at rest; the code below writes the pose it wants, and
-      // finishKeloPose() (js/animations.js) blends him smoothly toward it
-      const dt = beginKeloPose(t);
+      // 1. Kelo-1 walked in the fixed steps above (keloWalkStep); here he is posed where he is drawn,
+      // clamped strictly ON TOP of any terrain altitude
 
       // Determine which 3D hand tool Kelo-1 is actively holding
       // (the text tests run only when the words change, not every frame)
@@ -2121,17 +2247,10 @@ function animateDiorama() {
         weldingSparks.visible = false;
         if (miningDebrisParticles) miningDebrisParticles.visible = false;
         forgeArcLight.intensity = 0;
-      } else if (dist > arrivalRadius(state.targetPos)) {
+      } else if (keloSim.walking) {
         state.isWalking = true;
-        // Speeding up and braking, eased turns (on the spot for big ones) and a smooth line around
-        // obstacles (js/motion.js); he moves the way he faces
-        const [sx, sz, step] = keloLocomote(dist, dt, t);
-        // A frozen lake he isn't sure of yet: he stops at the edge of the ice (js/weather.js)
-        if (typeof iceStepBlocked === 'function' && iceStepBlocked(state.botPos)) {
-          state.botPos.x -= sx * step;
-          state.botPos.z -= sz * step;
-          state.targetPos = { x: state.botPos.x, z: state.botPos.z };
-        }
+        // (speeding up and braking, eased turns and the smooth line around obstacles: js/motion.js,
+        // run in the fixed steps)
 
         // On lake ice that holds him he stands on top of it (js/weather.js)
         const groundY = Math.max(getIslandGroundHeight(state.botPos.x, state.botPos.z), typeof iceFloorAt === 'function' ? iceFloorAt(state.botPos) : -Infinity);
@@ -2140,11 +2259,8 @@ function animateDiorama() {
         const sink = typeof snowSink === 'function' ? snowSink(state.botPos) : 0;
         keloGroup.position.set(state.botPos.x, groundY - sink, state.botPos.z);
         keloGroup.rotation.set(0, state.botRotY, 0);
-        // Exhausted legs give way now and then (js/needs.js); he stops while he picks himself up
-        if (typeof maybeStumble === 'function' && maybeStumble(t)) {
-          state.botPos.x -= sx * step;
-          state.botPos.z -= sz * step;
-        }
+        // Exhausted legs give way now and then (js/needs.js): the fall itself (the step stops in keloWalkStep)
+        if (typeof maybeStumble === 'function') maybeStumble(t);
         // The walk cycle itself (legs, arm swing, bob, lean) is layered on in animations.js
         keloAnim.mode = 'walk';
         if (isMiningOrDrilling || isWeldingOrBuilding) {
@@ -2192,17 +2308,18 @@ function animateDiorama() {
             const mVels = miningDebrisParticles.userData.vels;
             const drillTipX = state.botPos.x + Math.sin(state.botRotY) * 0.85;
             const drillTipZ = state.botPos.z + Math.cos(state.botRotY) * 0.85;
+            const k60 = dt * 60; // the particle speeds were tuned per 60 fps frame
             for (let i = 0; i < mVels.length; i++) {
-              mVels[i].life += 0.055;
+              mVels[i].life += 0.055 * k60;
               if (mVels[i].life >= 1) {
                 mAttr.setXYZ(i, drillTipX, groundY + 0.35, drillTipZ);
                 mVels[i].life = 0;
               } else {
                 mAttr.setXYZ(
                   i,
-                  mAttr.getX(i) + mVels[i].vx,
-                  Math.max(groundY + 0.05, mAttr.getY(i) + mVels[i].vy - mVels[i].life * 0.14),
-                  mAttr.getZ(i) + mVels[i].vz
+                  mAttr.getX(i) + mVels[i].vx * k60,
+                  Math.max(groundY + 0.05, mAttr.getY(i) + (mVels[i].vy - mVels[i].life * 0.14) * k60),
+                  mAttr.getZ(i) + mVels[i].vz * k60
                 );
               }
             }
@@ -2211,17 +2328,18 @@ function animateDiorama() {
           // Also burst bright sparks at the drill bit contact point
           const posAttr = weldingSparks.geometry.attributes.position;
           const vels = weldingSparks.userData.vels;
+          const s60 = dt * 60;
           for (let i = 0; i < vels.length; i++) {
-            vels[i].life += 0.07;
+            vels[i].life += 0.07 * s60;
             if (vels[i].life >= 1) {
               posAttr.setXYZ(i, state.botPos.x, groundY + 0.9, state.botPos.z);
               vels[i].life = 0;
             } else {
               posAttr.setXYZ(
                 i,
-                posAttr.getX(i) + vels[i].vx,
-                Math.max(groundY + 0.1, posAttr.getY(i) + vels[i].vy - vels[i].life * 0.08),
-                posAttr.getZ(i) + vels[i].vz
+                posAttr.getX(i) + vels[i].vx * s60,
+                Math.max(groundY + 0.1, posAttr.getY(i) + (vels[i].vy - vels[i].life * 0.08) * s60),
+                posAttr.getZ(i) + vels[i].vz * s60
               );
             }
           }
@@ -2239,17 +2357,18 @@ function animateDiorama() {
 
           const posAttr = weldingSparks.geometry.attributes.position;
           const vels = weldingSparks.userData.vels;
+          const w60 = dt * 60;
           for (let i = 0; i < vels.length; i++) {
-            vels[i].life += 0.06;
+            vels[i].life += 0.06 * w60;
             if (vels[i].life >= 1) {
               posAttr.setXYZ(i, sparkOriginX, sparkOriginY, sparkOriginZ);
               vels[i].life = 0;
             } else {
               posAttr.setXYZ(
                 i,
-                posAttr.getX(i) + vels[i].vx,
-                Math.max(groundY + 0.05, posAttr.getY(i) + vels[i].vy - vels[i].life * 0.08),
-                posAttr.getZ(i) + vels[i].vz
+                posAttr.getX(i) + vels[i].vx * w60,
+                Math.max(groundY + 0.05, posAttr.getY(i) + (vels[i].vy - vels[i].life * 0.08) * w60),
+                posAttr.getZ(i) + vels[i].vz * w60
               );
             }
           }
@@ -2414,6 +2533,7 @@ function animateDiorama() {
 
       // 5. Project 3D Labels & Kelo-1 Speech Bubble to 2D Screen
       projectLabelsToScreen();
+      keloSimRestore();
     }
 
 // Pins are projected every frame: scratch vectors, the viewport size read once per resize, and

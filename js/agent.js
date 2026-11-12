@@ -919,7 +919,13 @@ function generateProcedural3DWeldParts(promptText = '', primaryHex = '#38bdf8', 
     }
 
 async function synthesizeUnboundedExperience(promptOrImpulse = null, originLabel = 'Unscripted Autonomy', forcedCoords = null, imageAttachment = null) {
-      if (state.isBusy) return;
+      // Asleep, mid-build, mid-job or on a mail run: he does it once he is free instead of walking off
+      // in the middle (or dropping it when he is mid-thought)
+      if (!keloIsFree()) {
+        doWhenFree(() => synthesizeUnboundedExperience(promptOrImpulse, originLabel, forcedCoords, imageAttachment),
+          { key: `synth:${originLabel}:${String(promptOrImpulse || '').slice(0, 120)}` });
+        return;
+      }
       state.isBusy = true;
 
       try {

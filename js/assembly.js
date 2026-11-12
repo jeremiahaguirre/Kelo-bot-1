@@ -687,6 +687,8 @@ async function pourFoundation(p, sub, site) {
             state.targetPos = typeof openGroundNear === 'function' ? (openGroundNear(spot, 0.5) || spot) : spot;
             await waitForArrival(15000);
             state.botRotY = Math.atan2(pour.x + (pour.toX - pour.x) * t - state.botPos.x, pour.z + (pour.toZ - pour.z) * t - state.botPos.z);
+            // (screenshots: window.__keloShotHold = 'pour' holds the pour half-way until cleared)
+            if (stage === 'pouring' && i === 2 && window.__keloShotHold === 'pour') { window.__keloShotHeld = 'pour'; for (let k = 0; k < 600 && window.__keloShotHold === 'pour'; k++) await new Promise(res => setTimeout(res, 500)); window.__keloShotHeld = null; }
             await sleepPace(700);
           }
           if (truck) truck.pouring = false;

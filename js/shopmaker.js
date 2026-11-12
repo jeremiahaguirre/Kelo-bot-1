@@ -606,6 +606,8 @@ async function makerWeldRun(job, label = 'Welding Something Real') {
         const grow = k => { if (piece) piece.scale.setScalar(full * (0.05 + 0.95 * Math.min(1, k))); };
         await weldTheJob(creation, grow);
         grow(1);
+        // (screenshots: window.__keloShotHold = 'weld' keeps the finished piece on the table until cleared)
+        if (window.__keloShotHold === 'weld') { window.__keloShotHeld = 'weld'; for (let k = 0; k < 600 && window.__keloShotHold === 'weld'; k++) await new Promise(r => setTimeout(r, 500)); window.__keloShotHeld = null; }
         if (typeof gainSkill === 'function') gainSkill('welding', 'welding', 6);
         addMadeThing(job.product, 'Welding Studio', { emoji: '🔥' });
         return true;
@@ -1634,8 +1636,11 @@ async function cookFoodOrder(id) {
           state.speechBubble = `In goes the ${plainItem(n).toLowerCase().replace(/^(a |an )?(bag|carton|pack|jar|loaf|block|head|tin|bottle|box|can|ball|pound|pint|bunch|tub|packet|wedge|bulb|fillet|bar) of /, '')}.`;
           renderAllUI();
           await new Promise(r => setTimeout(r, 2200));
-          useUpItem(n, 1, { quiet: true, why: `making ${o.dish}` });
+          if (typeof isConsumableItem === 'function' && isConsumableItem(n)) useUpItem(n, 1, { quiet: true, why: `making ${o.dish}` });
+          else if (typeof forgetItem === 'function') forgetItem(n);   // a jar or a head of lettuce he has no serving count for: it all goes in
           used.push(plainItem(n).toLowerCase());
+          // (screenshots: window.__keloShotHold = 'cook' keeps him at the stove until cleared)
+          if (window.__keloShotHold === 'cook') { window.__keloShotHeld = 'cook'; for (let k = 0; k < 600 && window.__keloShotHold === 'cook'; k++) await new Promise(r => setTimeout(r, 500)); window.__keloShotHeld = null; }
         }
         const made = `A freshly made ${o.dish}${o.for && o.for !== 'Kelo-1' ? ` for ${o.for}` : ''}`.slice(0, 70);
         state.belongings.unshift({ name: made, category: o.drink ? 'drink' : 'food', emoji: o.drink ? '🥤' : '🥪', from: 'his own stove' });

@@ -6,6 +6,7 @@ const { app, BrowserWindow, Menu, ipcMain, safeStorage, shell, session } = requi
 const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
+const imageSearch = require('./imagesearch');
 
 // The app's own pages (index.html, shop.html...) live in this folder; nothing else is trusted
 const APP_DIR = path.join(__dirname, '..');
@@ -199,6 +200,10 @@ function createWindow() {
 
 ipcMain.handle('kelo:get-keys', (event) => (fromAppPage(event) ? readKeys() : { gemini: '', anthropic: '' }));
 ipcMain.handle('kelo:set-keys', (event, keys) => (fromAppPage(event) ? writeKeys(keys) : false));
+// DuckDuckGo image search for his reference photos (js/refpaint.js): only words go out, and only
+// pictures one of these searches returned can be downloaded (desktop/imagesearch.js)
+ipcMain.handle('kelo:image-search', (event, query) => (fromAppPage(event) && typeof query === 'string' ? imageSearch.searchImages(query) : { ok: false, results: [] }));
+ipcMain.handle('kelo:image-fetch', (event, url) => (fromAppPage(event) && typeof url === 'string' ? imageSearch.fetchImage(url) : { ok: false }));
 
 app.on('second-instance', () => {
   const win = BrowserWindow.getAllWindows()[0];

@@ -429,6 +429,7 @@ function shatterAt(pos, count, key = 'glass') {
       keloTween(150 * STEP * 1000, (k, dt) => {
         acc += dt;
         while (acc >= STEP && steps < 150) { acc -= STEP; physics(); }
+        if (k >= 1) while (steps < 150) physics(); // (the last steps, so they always end where they settle)
         const a = Math.min(1, acc / STEP);
         shards.forEach(s => { if (s.userData.q) s.position.lerpVectors(s.userData.q, s.userData.p, a); });
       }).then(() => shards.forEach(s => { scene.remove(s); s.geometry.dispose(); s.material.dispose(); }));

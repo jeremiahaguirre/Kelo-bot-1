@@ -88,7 +88,7 @@ const WORKSHOP_SUPPLIES = {
 // What each kind of thing is for (js/itemuse.js): the most specific rules go first
 if (typeof ITEM_KINDS !== 'undefined') {
   const rules = [
-    { kind: 'made part', label: 'a part he made in his Workshop, for builds and repairs', re: /\b(FDM|SLA|DLP|MSLA|SLS|DMLS|MJF|PolyJet|binder-jetted|DED|EBM|LOM)-(printed|built)\b|\b(Haas|Taurus|Avid|AltMill|ShopSaber|Laguna|PCB|plasma)-(machined|routed|milled|cut)\b/i, uses: ['build', 'fix', 'display'], per: 1, unit: 'build' },
+    { kind: 'made part', label: 'a part he made in his Workshop, for builds and repairs', re: /\b(FDM|SLA|DLP|MSLA|SLS|DMLS|MJF|PolyJet|binder-jetted|DED|EBM|LOM)-(printed|built)\b|\b(Haas|Taurus|Avid|AltMill|ShopSaber|Laguna|PCB|plasma|wire-EDM)-(machined|routed|milled|cut)\b/i, uses: ['build', 'fix', 'display'], per: 1, unit: 'build' },
     { kind: 'homemade gadget', label: 'a gadget he built in his Workshop', re: /homemade (weather station|FM radio|radio|robot-friend controller|game console)/i, uses: ['gadget', 'listen', 'play', 'measure'] }
   ];
   Object.entries(WORKSHOP_SUPPLIES).forEach(([key, s]) => {
@@ -148,7 +148,7 @@ function supplyOwned(key) {
     }
 
 // Things he made himself ("An SLA-printed resin miniature") are never mistaken for supplies
-const MADE_THING_RE = /\b(FDM|SLA|DLP|MSLA|SLS|DMLS|MJF|PolyJet|binder-jetted|DED|EBM|LOM)-(printed|built)\b|\b(Haas|Taurus|Avid|AltMill|ShopSaber|Laguna|PCB|plasma)-(machined|routed|milled|cut)\b|\bhomemade\b|3-?D-printed/i;
+const MADE_THING_RE = /\b(FDM|SLA|DLP|MSLA|SLS|DMLS|MJF|PolyJet|binder-jetted|DED|EBM|LOM)-(printed|built)\b|\b(Haas|Taurus|Avid|AltMill|ShopSaber|Laguna|PCB|plasma|wire-EDM)-(machined|routed|milled|cut)\b|\bhomemade\b|3-?D-printed|\bgarage-fabricated\b|\bwelded (steel|aluminium|stainless)\b|\bcast concrete\b/i;
 function isMadeThing(name) {
       return MADE_THING_RE.test(String(name || ''));
     }
@@ -400,19 +400,6 @@ function workshopPartToAssembly(name) {
         if (typeof fn === 'function') { try { fn(name, { from: 'workshop' }); } catch (e) { console.warn(h, e); } return true; }
       }
       return false;
-    }
-
-// For the assembly system: which machine could make this parts-list line, and make it
-function workshopCanMake(lineName) {
-      const l = String(lineName || '').toLowerCase();
-      const m = Object.values(WORKSHOP_MACHINES).find(def => def.makes && def.makes.some(re => re.test(l)));
-      return m ? m.key : null;
-    }
-
-function workshopMakePart(lineName) {
-      const key = workshopCanMake(lineName);
-      if (!key) return Promise.resolve(false);
-      return runMachineJob(key, { make: lineName }, 'Making a part for a build');
     }
 
 // --- On his own --------------------------------------------------------------------------------------

@@ -197,7 +197,7 @@ function startServer() {
       await run(() => { if (keloIsFree() && !agendaWorking) { if (state.fullness < 30) eatSomething('Hungry'); else runAutonomousLifeTick(); } });
       await page.waitForTimeout(1500);
     }
-    const steps = order.filter(k => !k.startsWith('__'));
+    const steps = order.filter(k => !k.startsWith('__')).filter((k, i, a) => a.indexOf(k) === i);
     console.log('step order:', steps.join(' > '));
     const want = ['research', 'order', 'survey', 'clear', 'grade', 'drain', 'subgrade', 'base', 'compactbase', 'prime', 'pave', 'roll', 'cure', 'stripe'];
     expect(want.every((k, i) => steps.indexOf(k) === i), 'the steps ran in the right order');
@@ -207,6 +207,27 @@ function startServer() {
     expect(fin.used && fin.used.base > 0 && fin.used.prime > 0 && fin.used.stakes > 0 && fin.hma >= 5, 'materials were used up');
     await run(() => { const e = state.worldEdits.find(x => x.pro); state.cameraMode = 'none'; camera.position.set(e.x - 4, 9, e.z + 14); controls.target.set((e.x + e.toX) / 2, 0, e.z); controls.update(); });
     await page.waitForTimeout(1200); await shot('agenda-road-done');
+  }
+
+  if (scenario === 'roadfinish') {
+    // The last step on its own (the full road takes ~100 min on this machine): a cured road gets its lines and is crossed off
+    const id = await run(() => {
+      const t = startRoadworks({ x: -31, z: -8.5 }, { x: -53, z: -8.5 }, 'Test road', { force: true });
+      state.jobKnowledge.roadworks = { at: 1 };
+      t.step = 13; t.data.pavedAt = Date.now() - 1e7; t.data.hmaDone = 10;
+      const e = { id: newEditId('road'), type: 'road', pro: true, surface: 'works', stage: 'asphalt', prev: 'primed', prog: 1, x: t.data.x, z: t.data.z, toX: t.data.toX, toZ: t.data.toZ, width: t.data.width, at: Date.now(), task: t.id };
+      state.worldEdits.push(e); t.data.editId = e.id; renderEdit(e);
+      ['A walk-behind line striper (airless)'].forEach(n => state.toolInventory.push(n));
+      rwLearnGear();
+      Object.assign(state.roadworks.stock, { paintyellow: 19, beads: 22.7 });
+      return t.id;
+    });
+    const done = await waitFor(async i => { if (keloIsFree() && !agendaWorking) runAutonomousLifeTick(); const t = agendaGet(i) || state.agenda.tasks.find(x => x.id === i); return t && t.status === 'done'; }, 600000, id);
+    const fin2 = await run(i => { const t = state.agenda.tasks.find(x => x.id === i); const e = rwEdit(t); return { status: t.status, surface: e && e.surface, marked: e && e.marked, used: t.data.usedFor, diary: state.diaryEntries[0].text.slice(0, 200) }; }, id);
+    console.log('finished:', JSON.stringify(fin2));
+    expect(done && fin2.surface === 'asphalt' && fin2.marked && fin2.used && fin2.used.paintyellow > 0, 'the line striper paints the lines, the road is finished and crossed off');
+    await run(() => { const e = state.worldEdits.find(x => x.pro); state.cameraMode = 'none'; camera.position.set(e.x - 3, 8, e.z + 11); controls.target.set((e.x + e.toX) / 2, 0, e.z); controls.update(); });
+    await page.waitForTimeout(1500); await shot('agenda-road-done');
   }
 
   if (scenario === 'runway') {

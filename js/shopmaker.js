@@ -79,7 +79,7 @@ function makerState() {
     }
 
 const makerRegistered = new Set();
-function makerEscape(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+const makerEscape = escapeRegExp;
 
 function makerRegisterRule(key) {
       const k = makerState().makerKinds[key];

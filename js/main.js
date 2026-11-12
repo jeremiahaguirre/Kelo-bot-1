@@ -66,7 +66,7 @@ function journalSplitEmoji(text) {
 function journalMark(text, words) {
       const raw = String(text || '');
       if (!words.length) return escapeHtml(raw);
-      const re = new RegExp(`(${words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+      const re = new RegExp(`(${words.map(escapeRegExp).join('|')})`, 'gi');
       return raw.split(re).map((part, i) => (i % 2 ? `<mark class="journal-hit">${escapeHtml(part)}</mark>` : escapeHtml(part))).join('');
     }
 

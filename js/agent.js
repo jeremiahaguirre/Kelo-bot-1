@@ -434,6 +434,9 @@ function stripCoords(text) {
       return String(text ?? '').replace(/(?:\s+(?:at|to|near|from|around|towards?|over|up to))?\s*\(\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*\)/gi, '');
     }
 
+// Escape text for use inside a RegExp pattern
+function escapeRegExp(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
 // Escape any user- or LLM-supplied text before it goes into an innerHTML template
 // (coordinates are stripped here too, so no list ever shows them)
 function escapeHtml(value) {

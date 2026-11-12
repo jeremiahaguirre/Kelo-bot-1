@@ -726,7 +726,7 @@ async function pcWalkTo(spot, placeName) {
       await new Promise(r => setTimeout(r, 300));
     }
 
-const pcWait = (ms) => new Promise(r => setTimeout(r, ms));
+const pcWait = sleep;
 
 // Tip the can, let it run for `ms`, and soak the soil a little at a time
 async function pcPour(t, amount, ms = 3200) {

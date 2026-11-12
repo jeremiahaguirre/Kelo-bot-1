@@ -679,7 +679,7 @@ function ensureWeldGauntlets() {
     }
 
 // --- Moving him through the steps ---------------------------------------------------------------------
-const weldWait = ms => new Promise(r => setTimeout(r, ms));
+const weldWait = sleep;
 
 function weldSay(title, speech) {
       if (title) state.moodTitle = title.slice(0, 80);

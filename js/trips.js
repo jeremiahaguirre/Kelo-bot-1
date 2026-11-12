@@ -875,7 +875,7 @@ function requestTripGear(plan) {
     }
 
 // --- Driving, hitching, loading ---------------------------------------------------------------------
-const tripSleep = ms => new Promise(r => setTimeout(r, ms));
+const tripSleep = sleep;
 
 function tripFwd(b) {
       return { x: Math.cos(b), z: -Math.sin(b) };

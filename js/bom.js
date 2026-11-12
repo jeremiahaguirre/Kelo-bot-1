@@ -793,7 +793,7 @@ function bomKey(text, used) {
 // A tool's name turned into a loose pattern for "does he own one?" (the first two real words)
 function bomToolPattern(name) {
       const words = String(name || '').toLowerCase().replace(/\(.*?\)/g, ' ').replace(/^(an?|the)\s+/, '').match(/[a-z][a-z0-9-]+/g) || ['tool'];
-      return words.slice(0, 2).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join(' ');
+      return words.slice(0, 2).map(escapeRegExp).join(' ');
     }
 
 // Checks and caps any BOM (built-in or written by the AI) and gives every line its tracking fields

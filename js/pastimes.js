@@ -15,9 +15,7 @@ function pastimeBusy() {
       return state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || state.isCollectingMail;
     }
 
-function pastimeWait(ms) {
-      return new Promise(r => setTimeout(r, ms));
-    }
+const pastimeWait = sleep;
 
 function pastimeFace(x, z) {
       state.botRotY = Math.atan2(x - state.botPos.x, z - state.botPos.z);

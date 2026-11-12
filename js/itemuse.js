@@ -662,7 +662,7 @@ function vetDecisionItemUse(decision) {
         const core = plainItem(name).toLowerCase().replace(/^(a |an )?(pair|set|box|bag|jar|pack|can|bunch|basket|packet|load|tin|roll|spool) of /, '');
         const words = core.split(/\s+/).filter(Boolean);
         const tail = words.slice(-2).join(' ');
-        const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const esc = escapeRegExp;
         const nameRe = `(?:${esc(core)}|${esc(tail)}|${esc(words[words.length - 1] || core)})`;
         const asA = new RegExp(`(?:use|using|uses|with)\\s+(?:the |my |a |an |some )?${nameRe}\\s+as\\s+(?:an? |my |the )?([a-z -]{2,30})`, 'i').exec(text);
         const withIt = new RegExp(`^(.{2,80}?)\\s+(?:with|using)\\s+(?:the |my |a |an |some )?${nameRe}\\b`, 'i').exec(decision.actionTitle || '');

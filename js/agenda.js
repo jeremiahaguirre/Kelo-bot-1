@@ -314,7 +314,11 @@ function agendaWorkOn(t) {
         if ((r === false || r === null || typeof r === 'string') && t.status === 'active') {
           agendaWait(t.id, { type: 'time', label: typeof r === 'string' ? `a moment (${r.replace(/-/g, ' ')})` : 'a better moment', until: Date.now() + (typeof r === 'string' ? 6 : 3) * 60000 }, '');
         }
-      }).catch(e => console.warn('Agenda step failed:', e)).finally(() => { agendaWorking = null; agendaRenderSoon(); });
+      }).catch(e => {
+        console.warn('Agenda step failed:', e);
+        // A step that broke waits a while instead of being retried on every free tick
+        if (t.status === 'active') agendaWait(t.id, { type: 'time', label: 'a second try after something went wrong', until: Date.now() + 5 * 60000 }, '');
+      }).finally(() => { agendaWorking = null; agendaRenderSoon(); });
       return true;
     }
 

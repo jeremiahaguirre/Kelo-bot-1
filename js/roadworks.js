@@ -441,7 +441,7 @@ function rwListLines(t) {
       const gearKeys = [...new Set(Object.values(RW_STEP_GEAR).flat())];
       gearKeys.forEach(k => {
         const g = RW_GEAR[k];
-        lines.push({ id: 'g-' + k, key: k, name: g.ask, qty: 1, unit: '', kind: g.kind, why: g.how.split(',')[0] });
+        lines.push({ id: 'g-' + k, key: k, name: g.ask, qty: 1, unit: '', kind: g.kind, why: g.how ? g.how.split(',')[0] : (k === 'truck' ? 'hauls the base and the hot mix' : 'digs the ditches and sets the culvert') });
       });
       Object.entries(RW_SUPPLIES).forEach(([k, s]) => {
         if (!need[k]) return;

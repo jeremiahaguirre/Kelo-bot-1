@@ -240,7 +240,7 @@ body.eyecam-on #explorePad .explore-pad-btn[data-hold="zoomOut"], body.eyecam-on
 #svHud.hidden, #svCross.hidden, .sv-panel.hidden, .sv-lift.hidden { display: none !important; }
 body.shopvisit-on #exploreBar, body.shopvisit-on #explorePlaces, body.shopvisit-on #explorePreviewChip, body.shopvisit-on #exploreMinimapWrap,
 body.shopvisit-on #btnShowMinimap, body.shopvisit-on [data-where-kelo], body.shopvisit-on #keloOverheadHUD, body.shopvisit-on #poiLabelsContainer, body.shopvisit-on #eyeCamHud { display: none !important; }
-.sv-panel { background: rgba(2, 6, 23, 0.93); backdrop-filter: blur(10px); border: 1px solid rgba(251, 191, 36, 0.35); border-radius: 16px; padding: 10px; color: #e2e8f0; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45); font-size: 12px; }
+.sv-panel { background: rgba(2, 6, 23, 0.93); backdrop-filter: blur(12px); border: 1px solid rgba(71, 85, 105, 0.7); border-radius: 16px; padding: 12px; color: #e2e8f0; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45); font-size: 12px; }
 .sv-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .sv-title { font-size: 13px; font-weight: 800; color: #fde68a; line-height: 1.25; }
 .sv-sub { margin: 4px 0 8px; font-size: 11px; color: #94a3b8; line-height: 1.35; }
@@ -259,7 +259,7 @@ body.shopvisit-on #btnShowMinimap, body.shopvisit-on [data-where-kelo], body.sho
 .sv-bar, .sv-kelo, .sv-lift { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; padding: 5px; border-radius: 16px; background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(71, 85, 105, 0.8); box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35); }
 .sv-where { flex: 1 1 140px; min-width: 0; padding: 0 8px; font-size: 13px; font-weight: 800; color: #fde68a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sv-areas { display: flex; gap: 3px; flex-wrap: wrap; }
-.sv-area-btn, .sv-btn { min-height: 34px; min-width: 34px; padding: 4px 9px; border-radius: 10px; background: #0f172a; border: 1px solid #334155; color: #e2e8f0; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+.sv-area-btn, .sv-btn { min-height: 36px; min-width: 36px; padding: 4px 10px; border-radius: 12px; background: #1e293b; border: 1px solid rgba(71, 85, 105, 0.7); color: #e2e8f0; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
 .sv-area-btn:hover, .sv-btn:hover, .sv-area-btn:focus-visible, .sv-btn:focus-visible { background: rgba(245, 158, 11, 0.2); border-color: rgba(251, 191, 36, 0.7); outline: none; }
 .sv-area-btn.sv-on { background: rgba(245, 158, 11, 0.92); color: #0f172a; border-color: #fbbf24; }
 .sv-exit { border-color: rgba(248, 113, 113, 0.6); color: #fecaca; }
@@ -269,8 +269,9 @@ body.shopvisit-on #btnShowMinimap, body.shopvisit-on [data-where-kelo], body.sho
 .sv-lift { border-color: rgba(251, 191, 36, 0.7); color: #fde68a; font-weight: 700; padding-left: 10px; }
 .sv-help { align-self: center; font-size: 10.5px; color: #cbd5e1; background: rgba(2, 6, 23, 0.6); padding: 2px 10px; border-radius: 9999px; }
 #svList { position: absolute; z-index: 26; right: 12px; top: calc(var(--explore-top) + 128px); width: 290px; max-height: calc(100% - var(--explore-top) - 150px); display: flex; flex-direction: column; gap: 6px; }
-.sv-filter { width: 100%; padding: 6px 9px; border-radius: 10px; background: #0f172a; border: 1px solid #334155; color: #e2e8f0; font-size: 12px; user-select: text; }
-.sv-filter:focus { outline: none; border-color: rgba(251, 191, 36, 0.7); }
+.sv-filter { width: 100%; min-height: 38px; padding: 0 12px; border-radius: 12px; background: #020617; border: 1px solid rgba(71, 85, 105, 0.7); color: #fff; font-size: 13px; user-select: text; }
+.sv-filter::placeholder { color: #64748b; }
+.sv-filter:focus { outline: none; border-color: #fbbf24; box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15); }
 .sv-chips { display: flex; flex-wrap: wrap; gap: 3px; }
 .sv-chip { padding: 3px 8px; border-radius: 9999px; background: #0f172a; border: 1px solid #334155; color: #cbd5e1; font-size: 11px; font-weight: 600; min-height: 26px; }
 .sv-chip.sv-on { background: rgba(245, 158, 11, 0.9); border-color: #fbbf24; color: #0f172a; }
@@ -323,6 +324,7 @@ body.shopvisit-on #btnShowMinimap, body.shopvisit-on [data-where-kelo], body.sho
   .sv-stats-btn[aria-pressed="true"] { background: rgba(245, 158, 11, 0.25); border-color: rgba(251, 191, 36, 0.7); }
   /* a pinned card is a bottom sheet that scrolls inside */
   #svCard.sv-card-pinned { left: 0; right: 0; bottom: 0; width: auto; max-height: 45vh; border-radius: 18px 18px 0 0; z-index: 32; padding-bottom: calc(12px + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
+  #svCard.sv-card-pinned::before { content: ''; display: block; width: 36px; height: 4px; border-radius: 2px; background: #475569; margin: -4px auto 8px; }
 }
 /* --- The menu (Diary, Brain and the shared parts of every tab: js/main.js, js/menuui.js) --- */
 #sideMenu {

@@ -171,7 +171,7 @@ function practiseNamed(text) {
       const t = String(text || '').toLowerCase();
       const c = skillCandidates().find(x => (x.vehicle && (t.includes(x.vehicle.name.toLowerCase().replace(/^(an?|the)\s+/, '')) || SKILL_WORDS.some(w => w.kind === x.kind && w.re.test(t))))
         || (x.hobby && t.includes(String(x.hobby.name).toLowerCase())) || (x.telescope && /telescope|star/.test(t)));
-      if (c) doWhenFree(() => practiseSkill(c));
+      if (c) doWhenFree(() => practiseSkill(c), { key: `skill:${c.kind}:${(c.vehicle && c.vehicle.name) || (c.hobby && c.hobby.name) || ''}` });
       return Boolean(c);
     }
 

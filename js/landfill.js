@@ -147,7 +147,7 @@ async function dumpIntoLake(truck, amount) {
         state.diaryEntries.unshift({
           time: 'Making New Land', location: 'the new land', mood: '🏝️ Made new land',
           vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
-          text: `Dear Diary, after ${f.loads + 1} truckloads the dirt finally rose above the water. I can stand where the lake used to be. Next time I'll keep going further out.`
+          text: `Dear Diary, after ${(f.loads || 0) + 1} truckloads the dirt finally rose above the water. I can stand where the lake used to be. Next time I'll keep going further out.`
         });
         showToast('🏝️ Kelo-1 made new land in the lake!');
         if (typeof playEmote === 'function') playEmote('cheer');

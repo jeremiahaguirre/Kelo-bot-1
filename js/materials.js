@@ -372,7 +372,7 @@ function forceToolOnRock(toolName) {
         result.text = `I leaned my whole weight on the ${plainItemName(toolName)} against the bedrock. ${result.text}`;
         if (result.outcome === 'bends') {
           result.text += ' Metal bends instead of breaking, so I can straighten it at the welding bench.';
-          doWhenFree(() => straightenAtBench(result.newName));
+          doWhenFree(() => straightenAtBench(result.newName), { key: 'straighten:' + result.newName });
         }
       }
       return result;

@@ -225,6 +225,9 @@ function agendaItemsAtPostOffice(sources) {
     }
 
 function agendaWaitSatisfied(t) {
+      // A "not before" time is kept even when the kind's own check says the step could go now: a step that
+      // was blocked would otherwise be retried (and logged as waiting, then ready) every few seconds
+      if (t.waitingFor && Number.isFinite(t.waitingFor.until) && Date.now() < t.waitingFor.until) return false;
       const kind = AGENDA_KINDS[t.kind];
       if (kind && typeof kind.check === 'function') {
         try {

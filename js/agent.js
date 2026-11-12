@@ -379,7 +379,12 @@ const state = {
   "soundMuted": false,
   "shop": { "listings": [], "sold": [], "earnings": 0, "builtAt": null },
   "workshop": { "known": {}, "made": [], "jobs": 0, "programs": {}, "log": [], "asked": {}, "gadgetUses": 0 },
-  "printer": { "setUp": false, "skill": 0, "prints": 0, "fails": 0, "spools": [], "loadedSpoolId": null, "lessons": {}, "history": [], "designs": {}, "welcomeSent": false }
+  "printer": { "setUp": false, "skill": 0, "prints": 0, "fails": 0, "spools": [], "loadedSpoolId": null, "lessons": {}, "history": [], "designs": {}, "welcomeSent": false },
+  // Things he makes from ideas he reads about (js/shopmaker.js). They must be listed here, or a reload drops them
+  "makerKinds": {},
+  "makerThings": {},
+  "makerOrders": [],
+  "makerUses": {}
 };
 
 // Where Kelo-1's memory lives: browser storage on the website (about 5 MB), files on disk in the
@@ -518,6 +523,8 @@ async function callGeminiJSON(parts) {
           const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey.trim() },
+            // A request that hangs would keep him "thinking" (isBusy) and stop his life until it ended
+            signal: typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(90000) : undefined,
             body: JSON.stringify({
               contents: [{ parts }],
               generationConfig: { responseMimeType: 'application/json' }
@@ -590,7 +597,7 @@ async function callClaudeJSON(parts) {
           betas: ['server-side-fallback-2026-07-01'],
           fallbacks: 'default',
           messages: [{ role: 'user', content }]
-        });
+        }, { timeout: 180000 }); // a hung request would keep him busy (see callGeminiJSON)
         if (response.stop_reason === 'refusal') {
           console.warn('Claude declined this request:', response.stop_details?.category);
           return null;
@@ -914,7 +921,13 @@ function generateProcedural3DWeldParts(promptText = '', primaryHex = '#38bdf8', 
     }
 
 async function synthesizeUnboundedExperience(promptOrImpulse = null, originLabel = 'Unscripted Autonomy', forcedCoords = null, imageAttachment = null) {
-      if (state.isBusy) return;
+      // Asleep, mid-build, mid-job or on a mail run: he does it once he is free instead of walking off
+      // in the middle (or dropping it when he is mid-thought)
+      if (!keloIsFree()) {
+        doWhenFree(() => synthesizeUnboundedExperience(promptOrImpulse, originLabel, forcedCoords, imageAttachment),
+          { key: `synth:${originLabel}:${String(promptOrImpulse || '').slice(0, 120)}` });
+        return;
+      }
       state.isBusy = true;
 
       try {
@@ -2142,7 +2155,7 @@ function applyDecision(decision, originLabel) {
       }
 
       if (decision.dig && state.knowsDigging && typeof digAt === 'function' && Number.isFinite(Number(decision.dig.x)) && Number.isFinite(Number(decision.dig.z))) {
-        doWhenFree(() => digAt(Number(decision.dig.x), Number(decision.dig.z), 'Decided to Dig'));
+        doWhenFree(() => digAt(Number(decision.dig.x), Number(decision.dig.z), 'Decided to Dig'), { key: `dig:${decision.dig.x},${decision.dig.z}` });
       }
 
       if (decision.shape && typeof applyShapeDecision === 'function') applyShapeDecision(decision.shape);
@@ -2151,18 +2164,18 @@ function applyDecision(decision, originLabel) {
         const what = str(to.item, 120);
         // A stored thing is used only for what it's for: "display" a tool and he says no (js/itemuse.js)
         const forWhat = str(to.for, 120) || (to.purpose === 'display' ? 'display' : '');
-        if (findMuseumPiece(what)) doWhenFree(() => takeOutOfMuseum(what, 'display', '', 'Decided to Rearrange'));
-        else if (findOwnedName(what)) doWhenFree(() => takeOutToUse(what, '', forWhat));
+        if (findMuseumPiece(what)) doWhenFree(() => takeOutOfMuseum(what, 'display', '', 'Decided to Rearrange'), { key: 'museum-out:' + what });
+        else if (findOwnedName(what)) doWhenFree(() => takeOutToUse(what, '', forWhat), { key: `take-out:${what}:${forWhat}` });
       }
       const ui = decision.useItem;
       if (ui && typeof ui === 'object' && typeof useItemFor === 'function' && findOwnedName(str(ui.item, 120))) {
-        doWhenFree(() => useItemFor(str(ui.item, 120), str(ui.for, 120), '', 'Decided to Use Something'));
+        doWhenFree(() => useItemFor(str(ui.item, 120), str(ui.for, 120), '', 'Decided to Use Something'), { key: `use:${str(ui.item, 120)}:${str(ui.for, 120)}` });
       }
       if (decision.expandLand && typeof startLandFill === 'function') startLandFill(decision.expandLand.x, str(decision.expandLand.why, 160));
       if (typeof decision.practise === 'string' && typeof practiseNamed === 'function') practiseNamed(decision.practise);
       if (decision.takeTrip && typeof applyTripDecision === 'function') applyTripDecision(decision);
       if (typeof startProject === 'function' && typeof decision.buildProject === 'string' && planFor(decision.buildProject.toLowerCase().trim())) {
-        doWhenFree(() => startProject(decision.buildProject.toLowerCase().trim(), 'Decided to Build Something Real'));
+        doWhenFree(() => startProject(decision.buildProject.toLowerCase().trim(), 'Decided to Build Something Real'), { key: 'project:' + decision.buildProject.toLowerCase().trim() });
       }
 
       if (decision.buildAnything && typeof applyBuildAnythingDecision === 'function') applyBuildAnythingDecision(decision.buildAnything);
@@ -2171,7 +2184,7 @@ function applyDecision(decision, originLabel) {
 
       const dc = decision.discard;
       if (dc && typeof dc === 'object' && typeof disposeItem === 'function' && (findOwnedName(dc.item) || (typeof findMuseumPiece === 'function' && findMuseumPiece(dc.item)))) {
-        doWhenFree(() => disposeItem(dc.item, str(dc.why, 200), 'Decided to Throw Something Away'));
+        doWhenFree(() => disposeItem(dc.item, str(dc.why, 200), 'Decided to Throw Something Away'), { key: 'dispose:' + dc.item });
       }
 
       if (decision.startHobby && typeof addHobby === 'function') {
@@ -2361,7 +2374,11 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will', conte
       if (!state.life.bornAt) state.life.bornAt = Date.now();
       // Wait if he is mid-thought or mid-build, so gifts and photos are never silently dropped
       for (let i = 0; i < 360 && (state.isBusy || state.isBuilding || state.isPracticing); i++) await new Promise(r => setTimeout(r, 250));
-      if (state.isBusy || state.isBuilding || state.isPracticing) return;
+      if (state.isBusy || state.isBuilding || state.isPracticing) {
+        // Still busy after a long job: something that happened to him (a gift, an answer) waits its turn
+        if (trigger) doWhenFree(() => decideNextAction(trigger, originLabel, context), { key: `decide:${originLabel}:${String(trigger).slice(0, 160)}` });
+        return;
+      }
       state.isBusy = true;
       try {
         let decision = null;

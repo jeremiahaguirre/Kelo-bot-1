@@ -219,7 +219,7 @@ function paintReady(medium, context = 'Painting', { quiet = false } = {}) {
         if (!quiet) {
           state.speechBubble = `I've never painted in ${m.title.replace(/ (painting|drawing)$/, '')}. I'll read up on how it's done at NetNode first.`;
           renderAllUI();
-          doWhenFree(() => researchMedium(medium));
+          doWhenFree(() => researchMedium(medium), { key: 'research-medium:' + medium });
         }
         return false;
       }
@@ -556,7 +556,9 @@ async function paintPicture(medium, subject = null, { visitor = null, originLabe
         };
         if (typeof setCarriedObject === 'function') setCarriedObject(null);
         state.microPose = 'normal';
-        if (state.paintPlan && state.paintPlan.medium === medium) state.paintPlan = null;
+        // Only the plan this painting was (a visitor's ask stays until their painting is done)
+        const plan = state.paintPlan;
+        if (plan && plan.medium === medium && (plan.for || null) === (visitor || null) && (!plan.subject || plan.subject === subject)) state.paintPlan = null;
         // into the Museum (it goes down to a lower gallery if the walls upstairs are full)
         if (typeof carryIntoMuseum === 'function') { try { await carryIntoMuseum('painting', record, `"${title}"`); } catch (e) {} }
         state.murals = [record, ...state.murals];
@@ -690,7 +692,7 @@ function paintDecision(p) {
       const text = typeof p === 'string' ? p : `${p.medium || ''} ${p.subject || ''}`;
       const medium = (typeof p === 'object' && PAINT_MEDIA[p.medium]) ? p.medium : paintMediumOf(text) || pickPaintMedium();
       const subject = (typeof p === 'object' && PAINT_SUBJECTS[p.subject]) ? p.subject : paintSubjectOf(text);
-      doWhenFree(() => paintPicture(medium, subject, { originLabel: 'Decided to Paint' }));
+      doWhenFree(() => paintPicture(medium, subject, { originLabel: 'Decided to Paint' }), { key: `paint:${medium}:${subject}` });
     }
 
 function paintingSummaryForAI() {

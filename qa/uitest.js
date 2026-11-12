@@ -211,11 +211,14 @@ async function run(browser, kind) {
     const inp = [...document.querySelectorAll('input[type=text], textarea, input:not([type])')].find(el => el.offsetParent !== null);
     if (!inp) return 'no input';
     inp.focus();
-    const cam0 = camera.position.clone(), mode0 = state.cameraMode;
+    const mode0 = state.cameraMode;
+    const held = () => Object.entries(typeof arrowKeyState !== 'undefined' ? arrowKeyState : {}).concat(Object.entries((typeof exploreCam !== 'undefined' && exploreCam.keys) || {})).filter(([, v]) => v).map(([k]) => k);
     for (const k of ['KeyW', 'KeyA', 'KeyK', 'KeyV', 'ArrowUp']) inp.dispatchEvent(new KeyboardEvent('keydown', { code: k, key: k.replace('Key', '').toLowerCase(), bubbles: true }));
-    await new Promise(r => setTimeout(r, 600));
+    await new Promise(r => setTimeout(r, 300));
+    const heldWhileTyping = held();
     for (const k of ['KeyW', 'KeyA', 'ArrowUp']) inp.dispatchEvent(new KeyboardEvent('keyup', { code: k, key: k.replace('Key', '').toLowerCase(), bubbles: true }));
-    return { input: inp.id, moved: camera.position.distanceTo(cam0) > 0.01, modeChanged: state.cameraMode !== mode0 };
+    // (the camera itself may move: in Follow it follows him walking; what matters is no key reached the camera)
+    return { input: inp.id, moved: heldWhileTyping.length > 0, held: heldWhileTyping, modeChanged: state.cameraMode !== mode0 };
   });
   console.log('typing check:', JSON.stringify(typeRes));
   if (typeRes.moved || typeRes.modeChanged) note(`typing in ${typeRes.input} moves the camera or changes mode`);

@@ -215,7 +215,9 @@ function startServer() {
     await W(k => { const d = WORKSHOP_MACHINES[k]; jobNeeds(d, {}).forEach(n => { for (let i = 0; i < 3; i++) receiveItem(WORKSHOP_SUPPLIES[n].ask, '', 'test'); }); state.unstoredItems = [];
       window.__uses = {}; const base = useWorkshopSupply; window.useWorkshopSupply = (n, q, w) => { if (q > 0) window.__uses[n] = (window.__uses[n] || 0) + 1; return base(n, q, w); }; }, key);
     await atDoor(); await runJob(key, job);
-    const r = await jobDone();
+    let r = 'running';
+    for (let t = 0; t < 180 && r === 'running'; t++) { await wait(5000); r = await W(() => window.__job); if (t % 6 === 0) console.log(sc, 'at', JSON.stringify(await W(() => [state.moodTitle, state.botPos]))); }
+    console.log('job result', r);
     const uses = await W(() => window.__uses);
     const multi = Object.entries(uses).filter(([, n]) => n > 1);
     console.log(sc, 'supply uses', JSON.stringify(uses), r === 'true' && !multi.length ? 'PASS' : 'FAIL');

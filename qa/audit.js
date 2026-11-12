@@ -130,6 +130,54 @@ async function routes(page) {
     const r2 = await W(() => { const s = document.createElement('style'); s.textContent = '.hidden{display:none}'; document.head.prepend(s); const b = document.createElement('button'); b.className = 'ui-btn hidden'; document.body.appendChild(b); const d = getComputedStyle(b).display; b.remove(); s.remove(); return d; });
     check('.ui-btn.hidden hides even when Tailwind loads first (app build order)', r2 === 'none', r2);
   }
+  if (on('settingsesc')) {
+    for (const focusFirst of [null, 'chatInput', 'talkNameBtn', 'btnOpenSettings', 'talkGiftName']) {
+      await W(f => { if (f === 'talkGiftName' && typeof talkToggleGiftSheet === 'function') { document.getElementById('btnToggleMenu').click(); document.querySelector('[data-tab="talk"]').click(); talkToggleGiftSheet(true); } if (f) { if (!document.body.classList.contains('menu-open')) document.getElementById('btnToggleMenu').click(); document.querySelector('[data-tab="talk"]').click(); document.getElementById(f)?.focus(); } }, focusFirst);
+      await W(() => document.getElementById('btnOpenSettings').click());
+      await page.waitForTimeout(300);
+      const act = await W(() => document.activeElement && (document.activeElement.id || document.activeElement.tagName));
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+      const open = await W(() => !document.getElementById('aiConfigModal').classList.contains('hidden'));
+      check(`Escape closes settings (focus before: ${focusFirst || 'none'}, focus in dialog: ${act})`, !open);
+      await W(() => document.getElementById('btnCloseAIConfigModal').click());
+    }
+  }
+  if (on('visitesc')) {
+    // Settings opened during a Workshop visit: Escape closes the dialog first, the visit stays
+    await W(() => { document.getElementById('btnToggleMenu').click(); document.querySelector('[data-tab="world"]').click(); document.querySelector('[data-cam="visit"]').click(); });
+    await page.waitForTimeout(3000);
+    const inVisit = await W(() => state.cameraMode);
+    await W(() => document.getElementById('btnOpenSettings').click());
+    await page.waitForTimeout(300);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(400);
+    const r = await W(() => ({ settings: !document.getElementById('aiConfigModal').classList.contains('hidden'), mode: state.cameraMode }));
+    const chooser = await W(() => { const c = document.getElementById('svChooser'); return Boolean(c && !c.classList.contains('hidden')); });
+    check('Escape closes settings over the Workshop chooser/visit; the chooser/visit stays', !r.settings && r.mode === inVisit && (inVisit === 'visit' || chooser), { inVisit, chooser, ...r });
+  }
+  if (on('frames')) {
+    // A Workshop step's animation runs once per frame. Drive five frames inside its first 5% (as a 60-144 Hz screen
+    // does) and count the supplies taken; each should be taken once per job.
+    const r = await W(async () => {
+      const uses = {};
+      const realUse = window.useWorkshopSupply, realStep = window.machineStep, realSkill = window.machineSkill;
+      window.useWorkshopSupply = (n, q) => { if (q > 0) uses[n] = (uses[n] || 0) + 1; return null; };
+      window.machineSkill = () => null;
+      window.machineStep = async (ctx, title, ms, anim) => { for (const k of [0, 0.01, 0.02, 0.03, 0.04]) { try { anim && anim(k, k); } catch (e) {} } };
+      const deep = () => new Proxy({}, { get: (t, k) => (k in t ? t[k] : (t[k] = typeof k === 'string' ? deep() : undefined)), set: (t, k, v) => { t[k] = v; return true; } });
+      const ctx = { model: { userData: deep(), add() {}, remove() {} }, say() {}, work() {}, def: null };
+      try {
+        for (const key of ['glassstudio', 'woodshop']) {
+          const plan = WORKSHOP_MACHINES[key].plan({ make: key === 'woodshop' ? 'a side table' : 'a vase' });
+          for (const st of plan.stops) { try { await st.act(ctx); } catch (e) {} }
+        }
+      } finally { window.useWorkshopSupply = realUse; window.machineStep = realStep; window.machineSkill = realSkill; }
+      return uses;
+    });
+    const multi = Object.entries(r).filter(([, n]) => n > 1);
+    check('glass and woodshop take each supply once per job, however many frames a step draws', Object.keys(r).length > 0 && !multi.length, r);
+  }
   console.log('page errors:', errors.length ? errors : 'none');
   await browser.close();
   if (server) server.close();

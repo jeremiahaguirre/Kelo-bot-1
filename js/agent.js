@@ -526,7 +526,9 @@ async function callGeminiJSON(parts) {
             body: JSON.stringify({
               contents: [{ parts }],
               generationConfig: { responseMimeType: 'application/json' }
-            })
+            }),
+            // A stalled request must not keep him "thinking" (and busy) for good
+            signal: typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(90000) : undefined
           });
           if (!res.ok) {
             console.warn(`Gemini ${model} request failed:`, res.status);
@@ -555,7 +557,8 @@ async function getAnthropicClient() {
       if (anthropicClient && anthropicClientKey === claudeApiKey) return anthropicClient;
       const { default: Anthropic } = await import(ANTHROPIC_SDK_URL);
       // The visitor supplies their own key, so calling straight from the browser is intended here
-      anthropicClient = new Anthropic({ apiKey: claudeApiKey.trim(), dangerouslyAllowBrowser: true });
+      // 90 s and one retry (the SDK's own default is 10 minutes and two retries, which leaves him stuck "thinking")
+      anthropicClient = new Anthropic({ apiKey: claudeApiKey.trim(), dangerouslyAllowBrowser: true, timeout: 90000, maxRetries: 1 });
       anthropicClientKey = claudeApiKey;
       return anthropicClient;
     }

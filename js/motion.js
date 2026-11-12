@@ -84,7 +84,10 @@ function keloLocomote(dist, dt, t) {
       const jumped = m.lastX === null || Math.hypot(p.x - m.lastX, p.z - m.lastZ) > 1.5;
       // "Last frame" is the frame keloSmoothRoot saw end, so this holds at any frame rate (dt is capped
       // at 0.1 s, and comparing times made every frame look like a fresh start on a slow computer)
-      const movedLastFrame = Number.isFinite(m.frameT) ? m.lastCall === m.frameT : t - m.lastCall <= dt * 1.5 + 0.02;
+      // With the fixed-step simulation (js/scene.js keloSim) it is simply "did the previous step move him"
+      const sim = typeof keloSim !== 'undefined' ? keloSim : null;
+      const movedLastFrame = sim ? m.simStep === sim.step - 1 : Number.isFinite(m.frameT) ? m.lastCall === m.frameT : t - m.lastCall <= dt * 1.5 + 0.02;
+      if (sim) m.simStep = sim.step;
       if (jumped || !movedLastFrame || m.heading === null) {
         m.speed = 0; m.acc = 0; m.yawRate = 0; m.pivot = false;
         const shown = typeof keloAnim !== 'undefined' && keloAnim.yaw !== null && !state.riding ? keloAnim.yaw : state.botRotY;
@@ -174,25 +177,32 @@ function keloLocomote(dist, dt, t) {
 
       let sx = Math.sin(m.heading), sz = Math.cos(m.heading);
       const step = Math.min(dist, m.speed * dt);
-      // Brushing past something solid: slide along its edge rather than being shoved back out
-      if (typeof worldObstacles !== 'undefined') {
-        for (const o of worldObstacles) {
+      // Swept: a fast vehicle moves in pieces no longer than KELO_SUBSTEP, each checked against the
+      // obstacles, so nothing slips through a thin wall between one step and the next
+      const x0 = p.x, z0 = p.z, pieces = Math.max(1, Math.ceil(step / KELO_SUBSTEP)), piece = step / pieces;
+      const obstacles = typeof worldObstacles !== 'undefined' ? worldObstacles : [];
+      for (let k = 0; k < pieces; k++) {
+        // Brushing past something solid: slide along its edge rather than being shoved back out
+        for (const o of obstacles) {
           if (typeof obstacleHoldsTarget === 'function' && obstacleHoldsTarget(o, state.targetPos)) continue;
-          const P = obstacleProbe(o, p.x + sx * step, p.z + sz * step);
+          const P = obstacleProbe(o, p.x + sx * piece, p.z + sz * piece);
           if (P.d < KELO_RADIUS + 0.02) {
             const ux = P.nx, uz = P.nz, inward = sx * ux + sz * uz;
             if (inward < 0) { sx -= inward * ux; sz -= inward * uz; const l = Math.hypot(sx, sz) || 1; sx /= l; sz /= l; }
           }
         }
+        p.x += sx * piece;
+        p.z += sz * piece;
+        pushOutOfObstacles(p, state.targetPos);
       }
-      p.x += sx * step;
-      p.z += sz * step;
-      pushOutOfObstacles(p, state.targetPos);
+      const mx = p.x - x0, mz = p.z - z0, moved = Math.hypot(mx, mz);
+      if (moved > 1e-9) { sx = mx / moved; sz = mz / moved; }
       m.lastX = p.x; m.lastZ = p.z;
-      m.lastStep = [sx * step, sz * step];
+      m.lastStep = [mx, mz];
       state.botRotY = m.heading;
-      return [sx, sz, step];
+      return [sx, sz, moved];
     }
+const KELO_SUBSTEP = 0.12;
 
 // The walk cycle (animations.js) and the camera read his real speed from here while he moves
 function keloMotionSpeed(t) {

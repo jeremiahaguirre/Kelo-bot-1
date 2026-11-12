@@ -255,7 +255,7 @@ function updateVehicles(t) {
       }
       // Lean into turns with the vehicle (js/motion.js): the seat swings out with the lean
       let bank = typeof keloVehicleBank === 'function' ? keloVehicleBank(m, keloAnim.dt) : 0;
-      if (m.userData.flight) { bank = m.userData.flight.bank; m.rotation.order = 'YXZ'; m.rotation.x = bank; }
+      if (m.userData.flight) { bank = m.userData.flight.shownBank ?? m.userData.flight.bank; m.rotation.order = 'YXZ'; m.rotation.x = bank; }
       if (bank) {
         const a = m.rotation.y, lean = Math.sin(bank) * (seat ? seat.y : type.seatY);
         keloGroup.position.x += Math.sin(a) * lean;
@@ -398,20 +398,29 @@ function airAltitude(m, v, t) {
       const u = m.userData, balloon = /balloon/i.test(v.name);
       // His home-built airplane rolls down the strip before it climbs (js/assembly.js)
       if (u.fixedWing && typeof planeAltitude === 'function') return planeAltitude(m, v, t, u);
-      // Real seconds since the last frame, so slow computers climb just as fast
-      const now = performance.now() / 1000;
-      const dt = Math.min(0.5, Math.max(0, now - (u.lastT ?? now)));
-      u.lastT = now;
+      // Climbs and descends in the fixed simulation steps (js/scene.js keloSim), drawn between the last two
       const want = u.landing ? 0 : (balloon ? CRUISE_ALTITUDE.balloon : CRUISE_ALTITUDE.helicopter);
-      const alt = u.alt || 0, rate = balloon ? 1.6 : 3.2; // units per second
-      u.alt = alt < want ? Math.min(want, alt + rate * dt) : Math.max(want, alt - rate * 0.8 * dt);
+      const rate = balloon ? 1.6 : 3.2; // units per second
+      const shown = airAltSteps(u, h => { const alt = u.alt || 0; u.alt = alt < want ? Math.min(want, alt + rate * h) : Math.max(want, alt - rate * 0.8 * h); });
       // The burner flares while the balloon climbs, and idles once it is up
       if (u.flame) {
         const roar = u.alt < want - 0.2 ? 2.4 : u.alt > 0.5 ? 1.2 : 0.6;
         u.flame.scale.set(1, roar + Math.sin(t * 23) * 0.25 * roar, 1);
       }
-      const bob = u.alt > 1 ? Math.sin(t * (balloon ? 0.8 : 1.3)) * (balloon ? 0.45 : 0.3) * Math.min(1, u.alt / 4) : 0;
-      return (u.lift ?? 1) * (u.alt + bob);
+      const bob = shown > 1 ? Math.sin(t * (balloon ? 0.8 : 1.3)) * (balloon ? 0.45 : 0.3) * Math.min(1, shown / 4) : 0;
+      return (u.lift ?? 1) * (shown + bob);
+    }
+
+// Run this frame's simulation steps of an aircraft's height (step(h) moves u.alt) and return the height
+// to draw, between the last two steps. A height set from outside (a landing, a new flight) starts fresh.
+function airAltSteps(u, step) {
+      const sim = typeof keloSim !== 'undefined' ? keloSim : null;
+      if (u.altSim !== u.alt) u.altPrev = u.alt = u.alt || 0;
+      const n = sim ? sim.steps : 1, h = sim ? KELO_SIM_H : 1 / 60;
+      for (let i = 0; i < n; i++) { u.altPrev = u.alt || 0; step(h); }
+      u.altSim = u.alt;
+      const a = sim ? sim.alpha : 1;
+      return u.altPrev + (u.alt - u.altPrev) * a;
     }
 
 // Wait (up to `ms`) until an aircraft has climbed to `atLeast` or come down below `atMost`

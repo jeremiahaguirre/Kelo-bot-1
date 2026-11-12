@@ -566,8 +566,9 @@ function updateKeloFace(t, dt, resting) {
           const ax = (vx - a.lastV.x) / dt, ay = (vy - a.lastV.y) / dt, az = (vz - a.lastV.z) / dt;
           const yaw = keloGroup.rotation.y;
           const side = ax * Math.cos(yaw) - az * Math.sin(yaw), fwd = ax * Math.sin(yaw) + az * Math.cos(yaw);
-          a.vx += -fwd * 0.012 + ay * 0.006;   // a bounce up or down nods it too
-          a.vz += side * 0.012;
+          // (an impulse tuned per 60 fps frame, so scaled by the frame time)
+          a.vx += (-fwd * 0.012 + ay * 0.006) * dt * 60;   // a bounce up or down nods it too
+          a.vz += side * 0.012 * dt * 60;
         }
         a.lastV = { x: vx, y: vy, z: vz };
         const k = 140, c = 7;

@@ -48,9 +48,9 @@ vec3 keloToLinear( vec3 c ) {
 
 // --- 2. Graphics quality ------------------------------------------------------------------------
 const GRAPHICS_LEVELS = {
-  high:     { label: 'High',     pixelRatio: 2,   shadowSize: 4096, shadowRange: 46, softShadows: true,  bloom: true,  terrainDetail: 2, castMin: 0.08, anisotropy: 8, clouds: 22, grassRadius: 17, rainRipples: 1 },
-  balanced: { label: 'Balanced', pixelRatio: 1.5, shadowSize: 2048, shadowRange: 40, softShadows: true,  bloom: false, terrainDetail: 1, castMin: 0.15, anisotropy: 4, clouds: 16, grassRadius: 11, rainRipples: 1 },
-  fast:     { label: 'Fast',     pixelRatio: 1,   shadowSize: 1024, shadowRange: 32, softShadows: false, bloom: false, terrainDetail: 0, castMin: 0.4,  anisotropy: 1, clouds: 9, grassRadius: 0, rainRipples: 0 }
+  high:     { label: 'High',     pixelRatio: 2,   shadowSize: 4096, shadowRange: 46, softShadows: true,  bloom: true,  terrainDetail: 2, castMin: 0.08, anisotropy: 8, clouds: 22, grassRadius: 17, rainRipples: 1, drawDist: 900 },
+  balanced: { label: 'Balanced', pixelRatio: 1.5, shadowSize: 2048, shadowRange: 40, softShadows: true,  bloom: false, terrainDetail: 1, castMin: 0.15, anisotropy: 4, clouds: 16, grassRadius: 11, rainRipples: 1, drawDist: 600 },
+  fast:     { label: 'Fast',     pixelRatio: 1,   shadowSize: 1024, shadowRange: 32, softShadows: false, bloom: false, terrainDetail: 0, castMin: 0.4,  anisotropy: 1, clouds: 9, grassRadius: 0, rainRipples: 0, drawDist: 440 }
 };
 const GRAPHICS_KEY = 'kelo-graphics';
 let graphicsLevel = 'balanced';

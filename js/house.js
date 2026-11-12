@@ -206,11 +206,15 @@ function buildKeloHouse3D() {
         return leaf;
       });
       // Open while he is close by (and not asleep), eased each time the door is drawn
-      let doorOpen = 0;
+      // (by the real time since it was last drawn, so it swings at the same pace at any frame rate and
+      // however many passes draw it in one frame)
+      let doorOpen = 0, doorLastMs = null;
       leaves[0].children[0].onBeforeRender = () => {
         const p = state.botPos || { x: 999, z: 999 };
         const near = Math.hypot(p.x - wx(0), p.z - wz(d / 2)) < 2.8 && state.currentLocKey !== 'bed';
-        doorOpen += ((near ? 1 : 0) - doorOpen) * 0.08;
+        const now = performance.now(), dt = doorLastMs === null ? 1 / 60 : Math.min(0.1, (now - doorLastMs) / 1000);
+        doorLastMs = now;
+        doorOpen += ((near ? 1 : 0) - doorOpen) * (1 - Math.exp(-5 * dt));
         leaves.forEach(l => { l.position.x = l.userData.side * (leafW / 2 + doorOpen * (leafW - 0.06)); });
       };
 
@@ -534,9 +538,13 @@ function buildKeloHouse3D() {
       houseLights = { roomLight, porchLight, glassMat, shadeMat, lanternGlow, bulbMat, level: 0 };
 
       // Front wall (and porch details on it) fade along with the roof in cutaway mode
+      let fadeLastMs = null;
       const fadeFront = () => {
         const target = state.roofCutaway ? 0.22 : 1;
-        frontWallMat.opacity += (target - frontWallMat.opacity) * 0.15;
+        // Real time since the last call (it runs for every front-wall part, every pass): same pace at any fps
+        const now = performance.now(), dt = fadeLastMs === null ? 1 / 60 : Math.min(0.1, (now - fadeLastMs) / 1000);
+        fadeLastMs = now;
+        frontWallMat.opacity += (target - frontWallMat.opacity) * (1 - Math.exp(-9.75 * dt));
         frontWallMat.depthWrite = frontWallMat.opacity > 0.9;
       };
       front.children.forEach(m => { m.onBeforeRender = fadeFront; });

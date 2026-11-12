@@ -238,9 +238,9 @@ applyTimeOfDay = function () {
 function updateWeatherLook(t, dt) {
       const raining = isRaining();
       const before = rainShown;
-      rainShown += ((raining ? 1 : 0) - rainShown) * Math.min(1, dt * 0.9);
+      rainShown += ((raining ? 1 : 0) - rainShown) * (1 - Math.exp(-0.9 * dt));
       // The ground soaks up quickly and dries out slowly
-      wetShown += ((raining ? 1 : 0) - wetShown) * Math.min(1, dt * (raining ? 0.25 : 0.03));
+      wetShown += ((raining ? 1 : 0) - wetShown) * (1 - Math.exp(-(raining ? 0.25 : 0.03) * dt));
       if (Math.abs(rainShown - before) > 0.002 && Math.abs(rainShown - weatherApplied.rain) > 0.08) {
         weatherApplied.rain = rainShown;
         if (typeof applyTimeOfDay === 'function') applyTimeOfDay();

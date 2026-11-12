@@ -193,16 +193,21 @@ function buildSnowfall() {
     }
 
 // Every frame: flakes drift down around wherever the camera is looking
+let snowfallLastT = null;
 function updateSnowfall(t) {
+      // Real seconds since the last frame: 2.7 units a second down, at any frame rate
+      const dt = snowfallLastT === null ? 1 / 60 : Math.max(0, Math.min(0.1, t - snowfallLastT));
+      snowfallLastT = t;
       if (!snowfall || !snowfall.visible) return;
+      const fall = 0.045 * 60 * dt, sway = 0.004 * 60 * dt;
       const c = controls ? controls.target : { x: 0, y: 0, z: 0 };
       snowfall.position.set(c.x, c.y - 3, c.z);
       const p = snowfall.geometry.attributes.position;
       for (let i = 0; i < p.count; i++) {
-        let y = p.getY(i) - 0.045;
+        let y = p.getY(i) - fall;
         if (y < 0) y += 25;
         p.setY(i, y);
-        p.setX(i, p.getX(i) + Math.sin(t + i) * 0.004);
+        p.setX(i, p.getX(i) + Math.sin(t + i) * sway);
       }
       p.needsUpdate = true;
     }

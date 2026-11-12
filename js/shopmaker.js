@@ -1327,13 +1327,18 @@ async function answerMakerAsk(ask, visitor) {
 if (typeof parseUseRequest === 'function' && typeof answerUseRequest === 'function') {
   const baseParseUse = parseUseRequest, baseAnswerUse = answerUseRequest;
   parseUseRequest = function (message) {
+    // Food and drink go to his stove, before any shop or machine: "make me a sandwich", "cook us pancakes"
+    const fm = String(message || '').match(/\b(?:make|cook|bake|fix|prepare|brew|whip up|blend)\s+(?:me|us)\s+(?:an?|some|the)?\s*([a-z][a-z &-]{2,40}?)(?:\s+(?:please|for me|for us|now)\b|[.!?,]|$)/i);
+    if (fm && makerIsFood(fm[1])) return { candidate: { food: true }, food: { what: fm[1].trim() } };
     const first = baseParseUse(message);
     if (first && (first.workshop || first.candidate)) return first;
     const mk = parseMakerAsk(message);
+    if (mk && makerIsFood(mk.what)) return { candidate: { food: true }, food: mk };
     if (mk) return { candidate: { maker: true }, maker: mk };
     return first;
   };
   answerUseRequest = function (ask, visitor) {
+    if (ask && ask.food) return answerFoodAsk(ask.food, visitor);
     if (ask && ask.maker) return answerMakerAsk(ask.maker, visitor);
     return baseAnswerUse(ask, visitor);
   };
@@ -1484,6 +1489,183 @@ function makerWholeShopForAsk(target) {
       return MAKER_CAPS.find(c => makerShopCanWhole(c, t) && (!mats.length || mats.some(m => c.mat.includes(m)))) || null;
     }
 
+// --- 13. Food and drink: "make me a sandwich" is cooking, not a shop job --------------------------------------
+// The ingredients come through the Post Office like any supply; he cooks it at his stove and the result is
+// a real food (or drink) item in his things. state.foodOrders: { id, dish, drink, ingredients: [{ ask, re }],
+// for, status: waiting|ready|cooking|done, at, madeName }
+const FOOD_RECIPES = [
+  [/sandwich|sub\b|hoagie/, 'sandwich', [['A loaf of whole-wheat sandwich bread', /sandwich bread|\bbread\b|\bloaf\b/i], ['A block of cheddar cheese', /cheddar|\bcheese\b/i], ['A pack of sliced ham', /\bham\b|turkey|salami/i], ['A head of lettuce', /lettuce/i], ['A jar of mustard', /mustard|mayo/i]]],
+  [/pancake|crepe|waffle/, 'pancakes', [['A bag of all-purpose flour', /\bflour\b/i], ['A carton of eggs', /\beggs?\b/i], ['A carton of milk', /\bmilk\b/i], ['A pound of butter', /\bbutter\b/i], ['A bottle of maple syrup', /maple syrup/i]]],
+  [/cookie|biscuit/, 'cookies', [['A bag of all-purpose flour', /\bflour\b/i], ['A pound of butter', /\bbutter\b/i], ['A bag of brown sugar', /\bsugar\b/i], ['A carton of eggs', /\beggs?\b/i], ['A bag of chocolate chips', /chocolate chips?/i]]],
+  [/cake|cupcake|muffin|brownie/, 'cake', [['A bag of all-purpose flour', /\bflour\b/i], ['A bag of sugar', /\bsugar\b/i], ['A carton of eggs', /\beggs?\b/i], ['A pound of butter', /\bbutter\b/i], ['A tin of baking powder', /baking powder/i]]],
+  [/pizza/, 'pizza', [['A bag of bread flour', /\bflour\b/i], ['A packet of dry yeast', /\byeast\b/i], ['A can of tomato sauce', /tomato sauce|passata/i], ['A ball of mozzarella', /mozzarella|\bcheese\b/i], ['A bottle of olive oil', /olive oil/i]]],
+  [/soup|stew|chowder/, 'soup', [['A carton of vegetable stock', /\bstock\b|broth/i], ['A bag of carrots', /carrots?/i], ['A bag of onions', /onions?/i], ['A bag of potatoes', /potato(es)?/i]]],
+  [/salad/, 'salad', [['A head of lettuce', /lettuce/i], ['A pint of cherry tomatoes', /tomato(es)?/i], ['A cucumber', /cucumber/i], ['A bottle of vinaigrette', /vinaigrette|dressing/i]]],
+  [/omelet|omelette|scrambled eggs|fried eggs?/, 'omelette', [['A carton of eggs', /\beggs?\b/i], ['A pound of butter', /\bbutter\b/i], ['A block of cheddar cheese', /cheddar|\bcheese\b/i]]],
+  [/pasta|spaghetti|noodles|mac(aroni)? (and|&) cheese/, 'pasta', [['A box of dried pasta', /pasta|spaghetti|noodles|macaroni/i], ['A jar of tomato pasta sauce', /pasta sauce|tomato sauce/i], ['A wedge of parmesan', /parmesan|\bcheese\b/i]]],
+  [/toast/, 'toast', [['A loaf of whole-wheat sandwich bread', /sandwich bread|\bbread\b|\bloaf\b/i], ['A pound of butter', /\bbutter\b/i], ['A jar of strawberry jam', /\bjam\b|marmalade|honey/i]]],
+  [/lemonade/, 'lemonade', [['A bag of lemons', /lemons?/i], ['A bag of sugar', /\bsugar\b/i]], true],
+  [/hot chocolate|cocoa/, 'hot chocolate', [['A tin of cocoa powder', /cocoa/i], ['A carton of milk', /\bmilk\b/i], ['A bag of sugar', /\bsugar\b/i]], true],
+  [/smoothie|milkshake|shake/, 'smoothie', [['A bunch of bananas', /bananas?/i], ['A bag of frozen berries', /berr(y|ies)/i], ['A tub of plain yogurt', /yogh?urt/i]], true],
+  [/coffee|latte|espresso/, 'coffee', [['A bag of ground coffee', /coffee/i], ['A carton of milk', /\bmilk\b/i]], true],
+  [/\btea\b|chai/, 'tea', [['A box of black tea bags', /\btea\b/i], ['A jar of honey', /honey/i]], true],
+  [/juice/, 'juice', [['A bag of oranges', /oranges?/i]], true]
+];
+// Ingredients an article can name, for food he has no recipe for (no AI key needed)
+const FOOD_INGREDIENT_WORDS = [['flour', 'A bag of all-purpose flour'], ['egg', 'A carton of eggs'], ['milk', 'A carton of milk'], ['butter', 'A pound of butter'], ['sugar', 'A bag of sugar'],
+  ['cheese', 'A block of cheddar cheese'], ['rice', 'A bag of long-grain rice'], ['bread', 'A loaf of whole-wheat sandwich bread'], ['tomato', 'A pint of cherry tomatoes'], ['onion', 'A bag of onions'],
+  ['potato', 'A bag of potatoes'], ['beans', 'A can of black beans'], ['chicken', 'A pack of chicken thighs'], ['beef', 'A pound of ground beef'], ['fish', 'A fillet of salmon'], ['noodle', 'A pack of noodles'],
+  ['oil', 'A bottle of olive oil'], ['garlic', 'A bulb of garlic'], ['tortilla', 'A pack of flour tortillas'], ['chocolate', 'A bar of dark chocolate'], ['lemon', 'A bag of lemons'], ['yeast', 'A packet of dry yeast']];
+const FOOD_DRINK_RE = /\b(drink|juice|lemonade|tea|coffee|latte|cocoa|hot chocolate|smoothie|milkshake|shake|soda|cider|punch|kombucha)\b/i;
+
+function makerIsFood(what) {
+      const w = String(what || '');
+      const food = ITEM_KINDS.find(k => k.kind === 'food'), drink = ITEM_KINDS.find(k => k.kind === 'drink');
+      return Boolean((food && food.re.test(w)) || (drink && drink.re.test(w)) || FOOD_DRINK_RE.test(w) || FOOD_RECIPES.some(([re]) => re.test(w)) || /\b(lunch|dinner|breakfast|supper|snack|treat|meal|omelet+e?)\b/i.test(w));
+    }
+
+function foodState() {
+      if (!Array.isArray(state.foodOrders)) state.foodOrders = [];
+      return state.foodOrders;
+    }
+
+// The ingredient list: a real recipe, or one read from the article about the dish, or the AI's
+async function foodRecipeFor(what) {
+      const w = String(what || '').toLowerCase().trim();
+      const hit = FOOD_RECIPES.find(([re]) => re.test(w));
+      if (hit) return { dish: w.replace(/^(a|an|some)\s+/, '') || hit[1], drink: Boolean(hit[3]), ingredients: hit[2].map(([ask, re]) => ({ ask, re: re.source })), from: 'recipe' };
+      if (typeof hasLLMKey === 'function' && hasLLMKey() && typeof callLLMJSON === 'function') {
+        try {
+          const r = await callLLMJSON([{ text: `List the real ingredients a home cook needs to make "${w}". Return ONLY JSON: {"drink": true|false, "ingredients": [2 to 6 shop items like "A bag of all-purpose flour"]}` }]);
+          if (r && Array.isArray(r.ingredients) && r.ingredients.length >= 2) {
+            return { dish: w, drink: Boolean(r.drink), from: 'ai', ingredients: r.ingredients.slice(0, 6).map(a => String(a).replace(/[<>]/g, '').slice(0, 60)).filter(Boolean)
+              .map(ask => ({ ask, re: makerEscape(ask.replace(/^(an?|some)\s+(\w+\s+of\s+)?/i, '').split(/\s+/).slice(-1)[0]) })) };
+          }
+        } catch (e) {}
+      }
+      const article = typeof makerFetchArticle === 'function' ? await makerFetchArticle(w.replace(/^\w/, c => c.toUpperCase())) : null;
+      const text = article ? String(article.extract || '').toLowerCase() : '';
+      let ings = FOOD_INGREDIENT_WORDS.filter(([word]) => new RegExp(`\\b${word}`).test(text)).slice(0, 6);
+      if (ings.length < 2) ings = FOOD_INGREDIENT_WORDS.filter(([word]) => ['flour', 'egg', 'butter', 'milk'].includes(word));
+      return { dish: w, drink: FOOD_DRINK_RE.test(w), from: article ? 'article' : 'basics', ingredients: ings.map(([word, ask]) => ({ ask, re: `\\b${word}` })) };
+    }
+
+function foodIngredientOwned(i) { return [...new Set(ownedItemNames())].find(n => new RegExp(i.re, 'i').test(n) && !/freshly made/i.test(n)) || null; }
+function foodReservedNames() {
+      const out = new Set();
+      foodState().filter(o => o.status !== 'done').forEach(o => o.ingredients.forEach(i => { const n = foodIngredientOwned(i); if (n) out.add(n); }));
+      return out;
+    }
+
+async function answerFoodAsk(ask, visitor) {
+      const what = String(ask.what || '').toLowerCase().replace(/^(a|an|some|the)\s+/, '');
+      const recipe = await foodRecipeFor(what);
+      const o = { id: 'food-' + Date.now().toString(36), dish: recipe.dish, drink: recipe.drink, ingredients: recipe.ingredients, for: visitor, status: 'waiting', at: Date.now(), from: recipe.from };
+      foodState().unshift(o);
+      if (state.foodOrders.length > 10) state.foodOrders.length = 10;
+      const missing = o.ingredients.filter(i => !foodIngredientOwned(i));
+      missing.forEach(i => addItemRequest(i.ask, 'ingredient', `To make ${visitor} ${/^[aeiou]/.test(o.dish) ? 'an' : 'a'} ${o.dish} I need ${plainItem(i.ask).toLowerCase()}.`, `Making ${o.dish} for ${visitor}`));
+      const reply = missing.length
+        ? `${/^[aeiou]/.test(o.dish) ? 'An' : 'A'} ${o.dish}? I'd love to, ${visitor}! That's a job for my stove, not my Workshop. I need ${missing.map(i => plainItem(i.ask).toLowerCase()).join(', ')}, so I asked at the Post Office. I'll make it as soon as they come.`
+        : `${/^[aeiou]/.test(o.dish) ? 'An' : 'A'} ${o.dish}? Coming up, ${visitor}! I have everything, so I'll make it at my stove as soon as I'm free.`;
+      if (typeof sayToVisitor === 'function') sayToVisitor(reply, visitor);
+      if (typeof recordVisitorMemory === 'function') recordVisitorMemory(visitor, `Asked me to make ${o.dish} (I said yes; it's a kitchen job).`);
+      foodAdvance(o);
+      savePersistentBrainState();
+      renderAllUI();
+      return 'food';
+    }
+
+function foodAdvance(o) {
+      if (!o || o.status === 'done' || o.status === 'cooking') return o && o.status;
+      if (o.ingredients.some(i => !foodIngredientOwned(i))) { o.status = 'waiting'; return o.status; }
+      o.status = 'ready';
+      doWhenFree(() => cookFoodOrder(o.id), { key: `cook:${o.id}`, maxWaitMs: 6 * 3600000 });
+      return o.status;
+    }
+
+async function cookFoodOrder(id) {
+      const o = foodState().find(x => x.id === id);
+      if (!o || o.status !== 'ready') return false;
+      if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
+      if (o.ingredients.some(i => !foodIngredientOwned(i))) { o.status = 'waiting'; return false; }
+      o.status = 'cooking';
+      state.isPracticing = true;
+      if (typeof buildStove3D === 'function' && typeof pastimeStoveGroup !== 'undefined' && !pastimeStoveGroup) buildStove3D();
+      const u = typeof pastimeStoveGroup !== 'undefined' && pastimeStoveGroup ? pastimeStoveGroup.userData : null;
+      try {
+        const st = PASTIME_SPOTS.stove;
+        state.currentLocKey = 'custom';
+        state.customPlaceName = 'the stove by his house';
+        state.targetPos = { x: st.x + 1.3, z: st.z };
+        state.moodEmoji = o.drink ? '🥤' : '🍳';
+        state.moodTitle = `Making ${o.dish} for ${o.for}`.slice(0, 80);
+        state.speechBubble = `Everything for the ${o.dish} came. Off to my stove.`;
+        renderAllUI();
+        await waitForArrival(60000);
+        if (typeof pastimeFace === 'function') pastimeFace(st.x, st.z);
+        if (u) { u.cooking = !o.drink || /hot|tea|coffee|cocoa/.test(o.dish); u.pan.visible = true; if (u.food) u.food.material.color.setHex(o.drink ? 0xfef3c7 : 0xd97706); }
+        state.microPose = 'procedural_custom';
+        state.proceduralMotion = { headPitch: 0.3, headYawSpeed: 0.8, headTiltAmp: 0.1, armWaveAmp: 0.25, armRaiseOffset: -0.9, bodyBounceAmp: 0.02, spinSpeed: 0, crouchOffset: 0, sparkBurst: false };
+        const used = [];
+        for (const i of o.ingredients) {
+          const n = foodIngredientOwned(i);
+          if (!n) continue;
+          state.moodTitle = `${o.drink ? 'Mixing' : 'Cooking'} ${o.dish}: ${plainItem(n).toLowerCase().replace(/^(a |an )?(bag|carton|pack|jar|loaf|block|head|tin|bottle|box|can|ball|pound|pint|bunch|tub|packet|wedge|bulb|fillet|bar) of /, '')}`.slice(0, 80);
+          state.speechBubble = `In goes the ${plainItem(n).toLowerCase().replace(/^(a |an )?(bag|carton|pack|jar|loaf|block|head|tin|bottle|box|can|ball|pound|pint|bunch|tub|packet|wedge|bulb|fillet|bar) of /, '')}.`;
+          renderAllUI();
+          await new Promise(r => setTimeout(r, 2200));
+          useUpItem(n, 1, { quiet: true, why: `making ${o.dish}` });
+          used.push(plainItem(n).toLowerCase());
+        }
+        const made = `A freshly made ${o.dish}${o.for && o.for !== 'Kelo-1' ? ` for ${o.for}` : ''}`.slice(0, 70);
+        state.belongings.unshift({ name: made, category: o.drink ? 'drink' : 'food', emoji: o.drink ? '🥤' : '🥪', from: 'his own stove' });
+        state.unstoredItems.push(made);
+        o.status = 'done';
+        o.madeName = made;
+        o.madeAt = Date.now();
+        state.microPose = 'normal';
+        state.moodEmoji = '😋';
+        state.moodTitle = `Made ${o.dish} for ${o.for}`.slice(0, 80);
+        state.speechBubble = `${o.for}, your ${o.dish} is ready! Made with ${used.join(', ')}. It's waiting for you in my Storehouse.`;
+        state.chatLog.push({ sender: 'Kelo-1', text: state.speechBubble, time: 'Just now', isBot: true, at: Date.now() });
+        state.diaryEntries.unshift({ time: `Cooking for ${o.for}`, location: 'his stove', mood: `${o.drink ? '🥤' : '🍳'} Made ${o.dish}`.slice(0, 80), vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
+          text: `Dear Diary, ${o.for} asked me for ${/^[aeiou]/.test(o.dish) ? 'an' : 'a'} ${o.dish}. I don't make food in my Workshop: I got the ingredients through the Post Office (${used.join(', ')}) and made it at my stove. It's real food now, waiting in my Storehouse.` });
+        if (typeof bumpLifeStat === 'function') bumpLifeStat('mealsCooked');
+        showToast(`${o.drink ? '🥤' : '🍳'} Kelo-1 made ${o.dish} for ${o.for}`);
+        savePersistentBrainState();
+        return true;
+      } finally {
+        if (u) { u.cooking = false; u.pan.visible = false; }
+        if (o.status === 'cooking') o.status = 'ready';
+        if (state.microPose === 'procedural_custom') state.microPose = 'normal';
+        state.isPracticing = false;
+        renderAllUI();
+      }
+    }
+
+function foodTick() { foodState().forEach(o => { if (o.status === 'waiting' || (o.status === 'ready' && !state.isPracticing)) foodAdvance(o); }); }
+
+// Ingredients that come for a food order are kept for it: not eaten on arrival, not eaten as a snack
+if (typeof receiveItem === 'function') {
+  const baseReceiveItem = receiveItem;
+  receiveItem = function (name, category, from, note = '', extra = {}) {
+    const open = foodState().filter(o => o.status !== 'done');
+    if (open.some(o => o.ingredients.some(i => new RegExp(i.re, 'i').test(String(name || ''))))) category = 'ingredient';
+    return baseReceiveItem(name, category, from, note, extra);
+  };
+}
+if (typeof storedFoodName === 'function') {
+  const baseStoredFood = storedFoodName;
+  storedFoodName = function () {
+    const keep = foodReservedNames();
+    if (!keep.size) return baseStoredFood();
+    const names = [...new Set(ownedItemNames())].filter(n => !keep.has(n));
+    return names.find(n => usableFor(n, 'eat') && state.supplies && state.supplies[n.toLowerCase()]) || names.find(n => usableFor(n, 'eat')) || null;
+  };
+}
+if (typeof CATEGORY_ICONS !== 'undefined') CATEGORY_ICONS.ingredient = '🧂';
+
 // --- 11. The tick ------------------------------------------------------------------------------------------------
 function shopMakerChance() {
       const s = makerState();
@@ -1510,6 +1692,7 @@ function makerTick() {
         else if (!miss.length) doWhenFree(() => makerMakeBuildPart(p.id, l.id), { key: `part:${p.id}:${l.id}` });
       }
       makerCastingTick();
+      foodTick();
     }
 
 function makerSummaryForAI() {

@@ -563,7 +563,10 @@ function buildSeaDragon3D() {
       }
       bodyGeo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
       bodyGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      bodyGeo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(verts.length), 3));
       bodyGeo.setIndex(index);
+      // A fixed sphere that holds every pose (the body is re-shaped each frame it is seen)
+      bodyGeo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 1.1, 0), 6.5);
       const body = new THREE.Mesh(bodyGeo, skin);
       body.castShadow = true;
       dragon.add(body);
@@ -637,7 +640,7 @@ function updateSeaDragon(t, dragon = ogopogoGroup) {
       // The lake's own dragon is only re-shaped while it can be seen (a new one is always shaped once)
       if (dragon === ogopogoGroup && !dragonOnScreen(dragon)) return;
       const { body, head, spines, tailFin } = dragon.userData;
-      const pos = body.geometry.attributes.position;
+      const pos = body.geometry.attributes.position, nrm = body.geometry.attributes.normal;
       const T = dragonTmp;
       for (let i = 0; i <= DRAGON_RINGS; i++) {
         const u = i / DRAGON_RINGS;
@@ -649,14 +652,17 @@ function updateSeaDragon(t, dragon = ogopogoGroup) {
         for (let j = 0; j <= DRAGON_SIDES; j++) {
           const ang = (j / DRAGON_SIDES) * Math.PI * 2;
           const k = (i * (DRAGON_SIDES + 1) + j) * 3;
-          pos.array[k] = p.x + (normal.x * Math.sin(ang) + side.x * Math.cos(ang)) * r;
-          pos.array[k + 1] = p.y + (normal.y * Math.sin(ang) + side.y * Math.cos(ang)) * r;
-          pos.array[k + 2] = p.z + (normal.z * Math.sin(ang) + side.z * Math.cos(ang)) * r;
+          // The ring's outward direction is the surface normal (no computeVertexNormals each frame)
+          const sa = Math.sin(ang), ca = Math.cos(ang);
+          const nx = normal.x * sa + side.x * ca, ny = normal.y * sa + side.y * ca, nz = normal.z * sa + side.z * ca;
+          pos.array[k] = p.x + nx * r;
+          pos.array[k + 1] = p.y + ny * r;
+          pos.array[k + 2] = p.z + nz * r;
+          nrm.array[k] = nx; nrm.array[k + 1] = ny; nrm.array[k + 2] = nz;
         }
       }
       pos.needsUpdate = true;
-      body.geometry.computeVertexNormals();
-      body.geometry.computeBoundingSphere();
+      nrm.needsUpdate = true;
 
       const neck = dragonSpine(1, t, T.p);
       head.position.set(neck.x + 0.25, neck.y + 0.1, neck.z);

@@ -1597,12 +1597,6 @@ function addObstacle(...list) {
       return list[0];
     }
 
-function removeObstacle(o) {
-      const n = worldObstacles.length;
-      worldObstacles = worldObstacles.filter(x => x !== o);
-      if (worldObstacles.length !== n) obstacleVersion++;
-    }
-
 // Changes whenever an obstacle is added, removed or moved, whoever did it
 function obstacleSignature() {
       let sum = 0;

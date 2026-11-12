@@ -1459,9 +1459,6 @@ function scheduleNextOrganicImpulse() {
         ? `Finishing his current thought before opening ${state.unopenedNotesQueue[0].sender}'s note...`
         : rhythmDescriptions[Math.floor(Math.random() * rhythmDescriptions.length)];
 
-      const badge = document.getElementById('rhythmStateBadge');
-      if (badge) badge.textContent = state.rhythmPhaseText;
-
       organicTimeoutId = setTimeout(async () => {
         // Always schedule the next one, even if this one fails, or his life would stop here
         try {
@@ -2614,15 +2611,7 @@ async function handleVisitorChatMessage(userMessage) {
       const visitor = (document.getElementById('visitorNameInput').value || 'curiousWanderer').trim();
       const attachedImg = state.pendingImageAttachment;
 
-      // Clear the preview bar if an image was attached
-      if (attachedImg) {
-        state.pendingImageAttachment = null;
-        const previewBar = document.getElementById('attachedImagePreviewBar');
-        if (previewBar) {
-          previewBar.classList.add('hidden');
-          previewBar.classList.remove('flex');
-        }
-      }
+      if (attachedImg) state.pendingImageAttachment = null;
 
       // An image inspires a creation straight away
       if (attachedImg) {

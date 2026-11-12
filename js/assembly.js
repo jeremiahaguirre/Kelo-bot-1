@@ -469,7 +469,6 @@ function bomListCardHtml(req) {
     }
 
 function copyToClipboard(text) {
-      window.__lastBomCopy = text;
       const fallback = () => {
         try {
           const ta = document.createElement('textarea');

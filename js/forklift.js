@@ -359,7 +359,7 @@ window.addEventListener('DOMContentLoaded', () => {
 async function forkliftDeliverUpstairs(floor = 3, what = 'glass batch') {
       const v = theForklift();
       if (!v || forkliftBusy || typeof goIntoWorkshop !== 'function') return false;
-      if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || state.isCollectingMail) return false;
+      if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
       if (typeof readyToOperate === 'function' && !readyToOperate(v.name, v)) return 'learning';
       if (forkliftCharge(v) < 25) { await forkliftToCharger(v, 'The forklift needs charging first'); return 'charging'; }
       forkliftBusy = true;

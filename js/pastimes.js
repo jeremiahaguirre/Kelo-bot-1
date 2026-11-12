@@ -63,7 +63,7 @@ async function goFishing(originLabel = 'Gone Fishing') {
       if (pastimeBusy()) return false;
       state.isPracticing = true;
       const props = new THREE.Group();
-      let rod = null;
+      let rod = null, fishReach = null;
       try {
         const spot = PASTIME_SPOTS.dock;
         state.currentLocKey = 'custom';
@@ -76,11 +76,16 @@ async function goFishing(originLabel = 'Gone Fishing') {
         renderAllUI();
         await waitForArrival(60000);
         pastimeFace(spot.x, spot.z + 5);
-        // The rod rides with him (only his position and turn, never his arms)
+        // The rod rides with him at his right hip; the fishing clips swing it (cast, wait, reel) and
+        // his hands hold its grip (js/kelo-clips.js, the hand IK in js/kelo-ik.js)
         rod = pastimeRod();
         rod.position.set(0.45, 1.0, 0.35);
-        rod.rotation.x = -0.85;
+        rod.rotation.x = 0.55;
         keloGroup.add(rod);
+        const rodHands = { l: new THREE.Vector3(), r: new THREE.Vector3() };
+        fishReach = () => (rod.parent ? { r: rod.localToWorld(rodHands.r.set(0, 0.12, 0)), l: rod.localToWorld(rodHands.l.set(0, 0.42, 0)) } : null);
+        if (typeof setKeloReach === 'function') setKeloReach(fishReach);
+        if (typeof keloDoing === 'function') keloDoing('fish', { rod });
         scene.add(props);
         const bobber = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), new THREE.MeshStandardMaterial({ color: 0xef4444 }));
         const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), new THREE.LineBasicMaterial({ color: 0xf8fafc }));
@@ -112,6 +117,7 @@ async function goFishing(originLabel = 'Gone Fishing') {
           return true;
         }
         state.speechBubble = 'The bobber went under! Reel, reel, reel!';
+        if (typeof keloDoing === 'function') keloDoing('fishReel', { rod });
         renderAllUI();
         await pastimeWait(2500);
         const fish = pick(LAKE_FISH);
@@ -125,6 +131,7 @@ async function goFishing(originLabel = 'Gone Fishing') {
         line.visible = false;
         state.moodEmoji = '🐟';
         state.moodTitle = `Caught a ${fish.name}!`;
+        if (typeof keloDoing === 'function') keloDoing('fishShow', { rod });
         state.speechBubble = `A ${fish.name}! About ${kg} kilograms. ${fish.fact.split('. ')[0]}.`;
         renderAllUI();
         await pastimeWait(3500);
@@ -158,6 +165,8 @@ async function goFishing(originLabel = 'Gone Fishing') {
         return true;
       } finally {
         if (rod && rod.parent) rod.parent.remove(rod);
+        if (typeof keloDoing === 'function') keloDoing(null);
+        if (fishReach && typeof clearKeloReach === 'function') clearKeloReach(fishReach);
         scene.remove(props);
         state.isPracticing = false;
       }

@@ -678,6 +678,7 @@ function pcHoldCan() {
     }
 
 function pcDropHeld() {
+      if (typeof keloDoing === 'function' && keloClip.hint === 'water') keloDoing(null);
       if (pcWater) pcWater.source = null;
       if (pcGrain) pcGrain.source = null;
       if (pcHeld && pcHeld.obj.parent === scene) scene.remove(pcHeld.obj); // still standing under the tap
@@ -733,6 +734,8 @@ async function pcPour(t, amount, ms = 3200) {
       const pc = pcState();
       pcWater.source = pcRoseSource(t.floorY);
       pcHeld.want = 0.95;
+      // leaning in with the can held out, sweeping the rose over the plants (js/kelo-clips.js)
+      if (typeof keloDoing === 'function') keloDoing('water');
       const parts = 8;
       await pcWait(500);
       for (let i = 0; i < parts; i++) {
@@ -743,6 +746,7 @@ async function pcPour(t, amount, ms = 3200) {
         refreshPlantLooks();
       }
       pcHeld.want = 0;
+      if (typeof keloDoing === 'function') keloDoing(null);
       await pcWait(400);
       pcWater.source = null;
     }

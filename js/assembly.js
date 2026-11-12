@@ -299,7 +299,9 @@ function assemblyPose(verb) {
       const m = { weld: [-1.05, 0.08, 0.35], rivet: [-1.1, 0.12, 0.2], drill: [-1.0, 0.1, 0.25], bolt: [-0.9, 0.3, 0.2], cut: [-0.8, 0.45, 0.1], notch: [-0.85, 0.3, 0.2],
         swage: [-0.9, 0.25, 0.25], fit: [-0.9, 0.35, 0.15], glue: [-1.0, 0.4, 0.2], cover: [-1.2, 0.55, 0.0], sand: [-0.95, 0.6, 0.2], paint: [-1.25, 0.6, -0.1] }[verb] || [-0.9, 0.3, 0.1];
       state.microPose = 'procedural_custom';
-      state.proceduralMotion = { armRaiseOffset: m[0], armWaveAmp: m[1], headPitch: m[2], headYawSpeed: 1.2, headTiltAmp: 0.12, bodyBounceAmp: 0.02, spinSpeed: 0, sparkBurst: verb === 'weld' };
+      // (each kind of step has a hand-keyed clip: js/kelo-clips.js)
+      const clip = { drill: 'drillBench', cut: 'saw', sand: 'sand', glue: 'sand', cover: 'sand', paint: 'paint' }[verb] || 'hammer';
+      state.proceduralMotion = { armRaiseOffset: m[0], armWaveAmp: m[1], headPitch: m[2], headYawSpeed: 1.2, headTiltAmp: 0.12, bodyBounceAmp: 0.02, spinSpeed: 0, sparkBurst: verb === 'weld', clip };
     }
 
 const ASSEMBLY_VERB_SKILL = { weld: 'welding', rivet: 'riveting', drill: 'drilling and machining', cut: 'cutting and measuring', notch: 'fitting tube joints', bolt: 'bolting to torque',

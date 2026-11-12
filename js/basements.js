@@ -135,7 +135,9 @@ function updateIndoorTrip(t) {
       // An elevator ride moves the car and whatever rides it here, in the frame that draws them
       if (trip.ride) tripRideStep(trip.ride, performance.now(), true);
       const pos = trip.pos;
-      if (trip.path) {
+      // (getting up off a chair finishes before he walks off, js/kelo-clips.js)
+      const hold = typeof keloClipHolds === 'function' && keloClipHolds();
+      if (trip.path && !hold) {
         let move = trip.speed * dt;
         // A hidden tab can stall the frames: never leave a walk hanging for long
         if (Date.now() - trip.walkStarted > 90000) move = Infinity;
@@ -159,7 +161,7 @@ function updateIndoorTrip(t) {
           if (done) done();
         }
       }
-      const walking = Boolean(trip.path);
+      const walking = Boolean(trip.path) && !hold;
       state.isWalking = walking;
       keloAnim.mode = walking ? 'walk' : trip.pose ? 'other' : 'idle';
       if (!walking && trip.pose) trip.pose(t);

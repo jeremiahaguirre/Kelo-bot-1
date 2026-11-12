@@ -17,6 +17,8 @@ function imKit() {
           // A part modelled with its own finish keeps it (the name's words don't turn a bag of glass beads
           // into glass); wooden parts still get their grain
           if (Object.keys(extra).length && extra !== IM.wood) m.userData.keepLook = true;
+          // Polished metal needs something to reflect (js/materials.js; null when the HDR sky lights the scene)
+          if (m.metalness >= 0.5 && typeof materialReflections === 'function') { m.envMap = materialReflections(); m.envMapIntensity = 1; }
           mats.set(key, m);
         }
         return mats.get(key);
@@ -2244,7 +2246,7 @@ function imCrateModel(lower) {
 const IM_RULES = [
   // things he makes or gets delivered by the line
   [/^roadwork kit|^runway kit|parts crate|^crate of/, l => imCrateModel(l)],
-  [/binder-jetted|-printed\b|-sintered|-machined|-milled|-routed/, l => (typeof madePartModel === 'function' ? realSize(madePartModel(l)) : imCartonModel(0.1, 0.06, 0.08, 0xd6b38a, 0xf8fafc))],
+  [/binder-jetted|-printed\b|-sintered|-machined|-milled|-routed|laser-cut (?!.*(sign|coaster|stencil|plaque))/, l => (typeof madePartModel === 'function' ? realSize(madePartModel(l)) : imCartonModel(0.1, 0.06, 0.08, 0xd6b38a, 0xf8fafc))],
   [/smelting furnace|melting furnace|\bkiln\b|\bforge\b(?!d)/, l => imFurnaceModel(l)],
   [/rock splitter|plug and feathers|feathers and wedges/, () => imBase('jackhammer', 0.9)],
   [/screed|bull float|darby|concrete float|hand float|concrete edger|groover/, l => imConcreteToolModel(l)],

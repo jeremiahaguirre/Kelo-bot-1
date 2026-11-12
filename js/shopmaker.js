@@ -688,7 +688,7 @@ function madeTableLampModel() {
 if (typeof ITEM_MODEL_RULES !== 'undefined') ITEM_MODEL_RULES.unshift(
   [/\bglass (cup|tumbler|mug)\b|hand-?blown (glass )?(cup|tumbler)/, () => madeGlassModel('cup')],
   [/\bglass bowl\b|hand-?blown (glass )?bowl/, () => madeGlassModel('bowl')],
-  [/\bglass vase\b|hand-?blown (glass )?vase/, () => madeGlassModel('vase')],
+  [/^(?!.*shards).*(\bglass vase\b|hand-?blown (glass )?vase)/, () => madeGlassModel('vase')],
   [/\bglass ornament\b|hand-?blown (glass )?ornament/, () => madeGlassModel('ornament')],
   [/(hand-?turned|turned|wooden|handmade) (wooden )?bowl\b/, () => madeWoodBowlModel()],
   [/\b(handmade|wooden|floating|wall) (wooden |wall )?shelf\b/, () => madeShelfModel()],

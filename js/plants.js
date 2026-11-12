@@ -475,6 +475,13 @@ async function servicePlant(kind, key, originLabel = 'Servicing the Plant') {
       const spare = PLANT_SPARES[key];
       const part = hasItem(spare.re);
       if (!part) return false;
+      // He is busy while he walks over and fits it, so nothing else starts and takes him away mid-job
+      const wasPractising = state.isPracticing;
+      state.isPracticing = true;
+      try { return await servicePlantNow(kind, key, spare, part, originLabel); } finally { state.isPracticing = wasPractising; }
+    }
+
+async function servicePlantNow(kind, key, spare, part, originLabel) {
       const spot = kind === 'batch' ? (key === 'filter' ? plantSpot('batch', 'silo') : plantSpot('batch', 'mixer')) : (key === 'bags' ? plantSpot('asphalt', 'baghouse') : plantSpot('asphalt', 'burner'));
       state.currentLocKey = 'aggregate_plant';
       state.customPlaceName = null;

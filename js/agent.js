@@ -1387,8 +1387,9 @@ function savePersistentBrainStateNow() {
       brainSaveAskedAt = 0;
       trimBrainState();
       try {
-        const visitor = (document.getElementById('visitorNameInput')?.value || '').trim();
-        if (visitor) state.lastVisitorName = visitor;
+        // The name box is the truth: a name the visitor cleared stays cleared after a reload
+        const nameBox = document.getElementById('visitorNameInput');
+        if (nameBox) state.lastVisitorName = (nameBox.value || '').trim();
         const snapshot = {};
         const apart = new Set(BRAIN_PARTS.flatMap(p => p.fields));
         Object.keys(state).forEach(k => { if (!TRANSIENT_STATE_KEYS.has(k) && !apart.has(k)) snapshot[k] = state[k]; });

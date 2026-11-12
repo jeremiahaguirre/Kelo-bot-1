@@ -158,7 +158,7 @@ p, li, .journal-body { text-wrap: pretty; }
 .ui-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--hud-s-2); min-height: 36px; padding: 0 var(--hud-s-4); border-radius: var(--hud-r-md); background: var(--hud-surface-2); border: 1px solid var(--hud-line-strong); color: var(--hud-text); font-size: var(--hud-fs-xs); font-weight: var(--hud-fw-semibold); line-height: 1.2; white-space: nowrap; transition: background var(--hud-dur-fast) var(--hud-ease), border-color var(--hud-dur-fast) var(--hud-ease), transform var(--hud-dur-fast) var(--hud-ease); }
 .ui-btn:hover { background: var(--hud-surface-3); }
 .ui-btn:active, .menu-btn:active, .talk-btn-primary:active, .hud-round-btn:active, .explore-mode-btn:active, .hud-chip-btn:active, .talk-round-btn:active:not(:disabled) { transform: scale(0.97); }
-.ui-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ui-btn:disabled { background: transparent; border-color: var(--hud-line); color: var(--hud-faint); cursor: not-allowed; transform: none; }
 .ui-btn-primary { background: var(--hud-accent); border-color: transparent; color: var(--hud-on-accent); font-weight: var(--hud-fw-bold); }
 .ui-btn-primary:hover { background: var(--hud-accent-hover); }
 .ui-btn-quiet { background: transparent; border-color: transparent; color: var(--hud-text-2); }

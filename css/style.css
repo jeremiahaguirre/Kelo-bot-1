@@ -774,3 +774,8 @@ body.shopvisit-on #btnShowMinimap, body.shopvisit-on [data-where-kelo], body.sho
 :is(.ui-btn, .ui-chip, .ui-section-title, .explore-mode-btn, .explore-bar-btn, .hud-chip, .menu-btn, .explore-place, .explore-spot-btn) > i { line-height: 1; transform: translateY(-0.03em); }
 .ui-section-meta, .brain-count, .hud-need-val, .hud-clock, .journal-when, .menu-toolbar-note { font-variant-numeric: tabular-nums; }
 .hud-round-btn, .ui-icon-btn, .explore-round { padding: 0; }
+
+/* .hidden always hides. In the app builds Tailwind's stylesheet loads before this one, so a component's own
+   display (.ui-btn, .ui-row, .ui-empty, .journal-featured ...) used to win and "hidden" things stayed on screen.
+   Elements with a responsive override (hidden sm:grid) are left to Tailwind. */
+.hidden:not([class*="sm:"]):not([class*="md:"]):not([class*="lg:"]):not([class*="xl:"]) { display: none !important; }

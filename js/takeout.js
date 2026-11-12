@@ -44,6 +44,8 @@ async function takeOutOfMuseum(name, purpose = 'display', why = '', originLabel 
           state.inventedCreations = state.inventedCreations.filter(c => c !== found.piece);
         } else {
           state.murals = state.murals.filter(m => m !== found.piece);
+          // Thrown out for good: its saved pictures go too (as when a painting sells, js/shopkeeping.js)
+          if (purpose === 'dispose' && found.piece && found.piece.id && typeof forgetPaintingImages === 'function') forgetPaintingImages(found.piece.id);
         }
         renderMuseum3D();
         if (carried && typeof setCarriedObject === 'function') setCarriedObject(lifeSize(carried, 1.4));

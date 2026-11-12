@@ -498,10 +498,15 @@ function answerWorkshopAsk(ask, visitor) {
 const workshopAsks = [];
 function takeWorkshopAsk() {
       if (!workshopAsks.length || workshopJobRunning) return false;
-      if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) { setTimeout(takeWorkshopAsk, 8000); return false; }
+      if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || state.isCollectingMail) { setTimeout(takeWorkshopAsk, 8000); return false; }
       const ask = workshopAsks.shift();
       if (!machineKnown(ask.key)) { researchMachine(ask.key, 'A Visitor Asked'); workshopAsks.unshift(ask); setTimeout(takeWorkshopAsk, 20000); return true; }
-      if (!machineReady(ask.key, ask.job, { context: 'A visitor asked' })) return true;
+      // Not ready yet (its supplies were just asked for): keep the ask and try again later, for about a day
+      if (!machineReady(ask.key, ask.job, { context: 'A visitor asked', quiet: ask.tries > 0 })) {
+        ask.tries = (ask.tries || 0) + 1;
+        if (ask.tries < 300) { workshopAsks.push(ask); setTimeout(takeWorkshopAsk, 5 * 60000); }
+        return true;
+      }
       runMachineJob(ask.key, ask.job, 'A Visitor Asked');
       return true;
     }

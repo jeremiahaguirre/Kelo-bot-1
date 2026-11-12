@@ -581,7 +581,8 @@ async function getAnthropicClient() {
       if (anthropicClient && anthropicClientKey === claudeApiKey) return anthropicClient;
       const { default: Anthropic } = await import(ANTHROPIC_SDK_URL);
       // The visitor supplies their own key, so calling straight from the browser is intended here
-      anthropicClient = new Anthropic({ apiKey: claudeApiKey.trim(), dangerouslyAllowBrowser: true });
+      // 90 s and one retry (the SDK's own default is 10 minutes and two retries, which leaves him stuck "thinking")
+      anthropicClient = new Anthropic({ apiKey: claudeApiKey.trim(), dangerouslyAllowBrowser: true, timeout: 90000, maxRetries: 1 });
       anthropicClientKey = claudeApiKey;
       return anthropicClient;
     }
@@ -1474,8 +1475,9 @@ function savePersistentBrainStateNow() {
       brainSaveAskedAt = 0;
       trimBrainState();
       try {
-        const visitor = (document.getElementById('visitorNameInput')?.value || '').trim();
-        if (visitor) state.lastVisitorName = visitor;
+        // The name box is the truth: a name the visitor cleared stays cleared after a reload
+        const nameBox = document.getElementById('visitorNameInput');
+        if (nameBox) state.lastVisitorName = (nameBox.value || '').trim();
         const snapshot = {};
         const apart = new Set(BRAIN_PARTS.flatMap(p => p.fields));
         Object.keys(state).forEach(k => { if (!TRANSIENT_STATE_KEYS.has(k) && !apart.has(k)) snapshot[k] = state[k]; });

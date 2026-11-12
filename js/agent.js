@@ -320,6 +320,7 @@ const state = {
   "paintKnowledge": {},
   "paintPlan": null,
   "paintingImages": {},
+  "photoFavourites": [],
   "paintingsSold": [],
   "activityCooldowns": {},
   "tripState": {},
@@ -1344,7 +1345,9 @@ const BRAIN_PARTS = [
   { key: 'kelo1_brain_v4_lore', fields: ['vocabulary', 'itemLookups', 'aiLearned'] },
   { key: 'kelo1_brain_v4_designs', fields: ['itemDesigns'] },
   // his paintings' pictures (js/paintstudio.js): a JPEG and a thumbnail each
-  { key: 'kelo1_brain_v4_paintings', fields: ['paintingImages'] }
+  { key: 'kelo1_brain_v4_paintings', fields: ['paintingImages'] },
+  // photos he liked at the NetNode cafe (js/photobrowse.js): small thumbnails and their credits, capped
+  { key: 'kelo1_brain_v4_photos', fields: ['photoFavourites'] }
 ];
 const BRAIN_PICTURES_KEY = 'kelo1_brain_v4_shop_pictures';
 const brainWritten = {};   // storage key -> what was last written there (nothing is rewritten unchanged)

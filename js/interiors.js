@@ -483,7 +483,9 @@ function interiorDrawScreen(scr, t) {
       const g = scr.c.getContext('2d'), W = scr.c.width, Hh = scr.c.height;
       const shown = scr.query.slice(0, scr.typed);
       const done = scr.typed >= scr.query.length;
-      const key = shown + (done ? 'r' + Math.floor(t / 1.6) % 4 : '|' + (Math.floor(t * 2) % 2));
+      // photos he is browsing (js/photobrowse.js) show under the search box for a couple of minutes
+      const photos = done && typeof phobScreenState !== 'undefined' && phobScreenState.photos.length && Date.now() - phobScreenState.at < 120000;
+      const key = shown + (photos ? 'p' + phobScreenState.version : done ? 'r' + Math.floor(t / 1.6) % 4 : '|' + (Math.floor(t * 2) % 2));
       if (key === scr.lastKey) return;
       scr.lastKey = key;
       g.fillStyle = '#f8fafc'; g.fillRect(0, 0, W, Hh);
@@ -497,7 +499,9 @@ function interiorDrawScreen(scr, t) {
       let text = shown;
       while (g.measureText(text).width > W - 44 && text.length > 1) text = text.slice(1);
       g.fillText(text + (!done && Math.floor(t * 2) % 2 ? '|' : ''), 20, 55);
-      if (done) {
+      if (photos) {
+        phobDrawScreen(g, W, Hh);
+      } else if (done) {
         const n = 1 + Math.floor(t / 1.6) % 4;
         for (let i = 0; i < n; i++) {
           g.fillStyle = '#1d4ed8'; g.fillRect(14, 86 + i * 26, 120 + (i * 37) % 90, 7);

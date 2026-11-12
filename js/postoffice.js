@@ -98,9 +98,8 @@ async function pickUpMail(originLabel = 'Checking the Mail') {
       try {
         directKeloToActivity('post_office', `Walked to the post office to see what people sent (${state.mailbox.length} waiting).`, originLabel);
         await waitForArrival();
-        const parcels = state.mailbox.splice(0, MAX_PARCELS_PER_TRIP);
-        state.lettersReceived = (state.lettersReceived || 0) + parcels.length;
-        savePersistentBrainState();
+        // Each parcel leaves the mailbox only as he opens it: a reload or an error mid-trip keeps the rest waiting
+        const parcels = state.mailbox.slice(0, MAX_PARCELS_PER_TRIP);
         renderAllUI();
         showToast(`📬 Kelo-1 picked up ${parcels.length} item${parcels.length > 1 ? 's' : ''} from the post office`);
         for (const parcel of parcels) {
@@ -122,7 +121,12 @@ async function pickUpMail(originLabel = 'Checking the Mail') {
               setCarriedObject(model, parcel.kind === 'message' || isFood ? 4000 : 30000);
             }
           }
-          await openParcel(parcel);
+          const at = state.mailbox.indexOf(parcel);
+          if (at < 0) continue;
+          state.mailbox.splice(at, 1);
+          state.lettersReceived = (state.lettersReceived || 0) + 1;
+          savePersistentBrainState();
+          try { await openParcel(parcel); } catch (e) { console.warn('Could not open a parcel', e); }
         }
         savePersistentBrainState();
         renderAllUI();

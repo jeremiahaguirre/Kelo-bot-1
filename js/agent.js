@@ -523,6 +523,8 @@ async function callGeminiJSON(parts) {
           const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey.trim() },
+            // A request that hangs would keep him "thinking" (isBusy) and stop his life until it ended
+            signal: typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(90000) : undefined,
             body: JSON.stringify({
               contents: [{ parts }],
               generationConfig: { responseMimeType: 'application/json' }
@@ -595,7 +597,7 @@ async function callClaudeJSON(parts) {
           betas: ['server-side-fallback-2026-07-01'],
           fallbacks: 'default',
           messages: [{ role: 'user', content }]
-        });
+        }, { timeout: 180000 }); // a hung request would keep him busy (see callGeminiJSON)
         if (response.stop_reason === 'refusal') {
           console.warn('Claude declined this request:', response.stop_details?.category);
           return null;

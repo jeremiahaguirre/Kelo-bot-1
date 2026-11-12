@@ -367,7 +367,7 @@ if (typeof ITEM_MODEL_RULES !== 'undefined') {
     [/asphalt distributor|emulsion sprayer|tack (coat )?sprayer/, () => rwDistributorModel()],
     [/line striper|striping machine|line marking machine/, () => rwStriperModel()],
     [/yellow traffic paint/, () => rwPailModel(0xfacc15)],
-    [/white traffic paint|prime emulsion/, () => rwPailModel(0xf8fafc)]
+    [/^(?!.*drum).*(white traffic paint|prime emulsion)/, () => rwPailModel(0xf8fafc)]
   );
 }
 

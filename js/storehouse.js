@@ -12,7 +12,9 @@ const STOREHOUSE_SCALE = 1.6;
 const STOREHOUSE_MODEL = { w: 5.2, d: 3.6, wallH: 2.6 };
 const STOREHOUSE = { x: 7.6, z: -8.4, w: 5.2 * STOREHOUSE_SCALE, d: 3.6 * STOREHOUSE_SCALE, wallH: 2.6 * STOREHOUSE_SCALE };
 const SHELF_SLOT = 0.68;
-const ITEM_FIT = 0.62; // the most an item can measure and still fit on a shelf
+// The room a thing has in its shelf slot (world units): the slot's width, the clear height under the
+// next shelf and the plank's depth. A thing bigger than that is shown smaller; long things lie across.
+const SHELF_FIT = { w: 1.0, h: 0.74, d: 0.72 };
 // The stairwell down to the basements, in the middle of the floor (local to the Storehouse).
 // The spiral stairs themselves and the rooms below are built in js/basements.js while he uses them.
 const STOREHOUSE_HATCH_LOCAL = { x: 0, z: 0.55 };
@@ -216,7 +218,15 @@ function storehouseLevelOf(name) {
 // Life size on the shelf (a screwdriver stays small, a toolbox big) unless it's too big to fit,
 // then sit it on the plank
 function fitOnShelf(model) {
-      lifeSize(model, ITEM_FIT);
+      lifeSize(model);
+      const size = new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());
+      // Deeper than the plank but narrow: turn it to lie along the shelf
+      if (size.z > SHELF_FIT.d && size.z > size.x) {
+        model.rotation.y += Math.PI / 2;
+        [size.x, size.z] = [size.z, size.x];
+      }
+      const k = Math.min(1, SHELF_FIT.w / size.x, SHELF_FIT.h / size.y, SHELF_FIT.d / size.z);
+      if (k < 1) model.scale.multiplyScalar(k);
       const fitted = new THREE.Box3().setFromObject(model);
       model.position.y -= fitted.min.y;
       return model;

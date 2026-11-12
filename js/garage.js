@@ -115,19 +115,24 @@ async function liftTo(ctx, h, ms = 2500) {
       });
     }
 
+// Which service a job is: its own, else the one its words name, else an oil change (readiness and the plan agree)
+function garageServiceFor(job) {
+      return job.service && GARAGE_SERVICES[job.service] ? job.service : Object.keys(GARAGE_SERVICES).find(k => GARAGE_SERVICES[k].words.test(job.make || job.service || '')) || 'oil';
+    }
+
 // --- The garage job ----------------------------------------------------------------------------------
 registerWorkshopMachine({
   key: 'garage', name: 'Garage lift bay', short: 'garage', kind: 'garage', floor: 2, learnAs: 'garage', emoji: '🔧', skill: 'Servicing vehicles',
   teaches: ['lift2', 'lift4', 'tirechanger', 'balancer', 'brakelathe', 'hoist', 'press', 'partswasher', 'migtig', 'compressor', 'airtools'],
   wiki: ['Automobile repair shop', 'Vehicle lift', 'Tire changer'],
   learned: 'In a garage the vehicle goes up on a lift at its jacking points. Wheels come off with an impact wrench from the air compressor; tires are swapped on a tire changer and balanced with weights; brake pads are replaced and rotors turned on a brake lathe; oil drains from the sump and a new filter goes on; an engine comes out with a hoist after everything is disconnected.',
-  needsFor: job => (GARAGE_SERVICES[job.service] || GARAGE_SERVICES.oil).needs,
+  needsFor: job => GARAGE_SERVICES[garageServiceFor(job)].needs,
   words: [/garage|lift|oil change|tire|tyre|brake|engine pull|service (the|my)|truck|mechanic/i],
   products: [], noSolo: false,
   plan(job) {
     const v = job.vehicle || garageVehicles()[0];
     if (!v) { state.speechBubble = 'I don\'t have a vehicle to work on yet.'; return null; }
-    const service = job.service && GARAGE_SERVICES[job.service] ? job.service : Object.keys(GARAGE_SERVICES).find(k => GARAGE_SERVICES[k].words.test(job.make || '')) || 'oil';
+    const service = garageServiceFor(job);
     job.vehicle = v;
     job.service = service;
     const svc = GARAGE_SERVICES[service];

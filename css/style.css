@@ -320,7 +320,7 @@ button.ui-chip:hover { border-color: var(--hud-accent-line); color: var(--hud-te
 .hud-activity-card { padding: 10px 14px 11px; }
 .hud-activity-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; }
 .hud-activity-emoji { flex: none; font-size: var(--hud-fs-md); line-height: 1; }
-.hud-activity-title { flex: 1 1 auto; max-width: 100%; min-width: 0; font-size: var(--hud-fs-base); font-weight: var(--hud-fw-bold); color: var(--hud-accent-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud-activity-title { flex: 1 1 auto; max-width: 100%; min-width: 0; font-size: var(--hud-fs-base); font-weight: var(--hud-fw-bold); color: var(--hud-text); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .hud-activity-chips { flex: 0 1 auto; display: flex; align-items: center; gap: 6px; max-width: 100%; min-width: 0; margin-left: auto; }
 .hud-chip { display: inline-flex; align-items: center; gap: 5px; height: 28px; min-width: 0; padding: 0 10px; border-radius: var(--hud-r-pill); font-size: var(--hud-fs-xs); font-weight: var(--hud-fw-semibold); white-space: nowrap; background: rgb(var(--hud-n-400) / 0.12); color: var(--hud-text-2); }
 .hud-chip i { font-size: var(--hud-fs-sm); flex: none; }
@@ -645,7 +645,7 @@ body.hud-kelo-away #exploreTouchColumn .explore-touch-where { display: flex; }
 .brain-head::-webkit-details-marker { display: none; }
 .brain-head:hover { background: rgb(var(--hud-n-800) / 0.5); }
 .brain-title { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.brain-title > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brain-title > span { min-width: 0; line-height: 1.3; }
 .brain-caret { color: var(--m-faint); transition: transform var(--hud-dur); }
 .brain-count { flex-shrink: 0; margin-left: auto; min-width: 24px; padding: 1px 8px; border-radius: var(--hud-r-pill); background: rgb(var(--hud-n-800) / 0.95); color: var(--hud-text-2); font-size: var(--hud-fs-2xs); font-weight: var(--hud-fw-semibold); text-align: center; font-variant-numeric: tabular-nums; }
 .brain-head-btn { flex-shrink: 0; padding: 2px 10px; border-radius: var(--hud-r-pill); background: var(--hud-surface-2); border: 1px solid var(--hud-line-strong); color: var(--hud-text); font-size: var(--hud-fs-2xs); font-weight: var(--hud-fw-semibold); }
@@ -678,3 +678,7 @@ body.hud-kelo-away #exploreTouchColumn .explore-touch-where { display: flex; }
 .brain-hero .brain-hero-title.truncate { white-space: normal; overflow: visible; text-overflow: clip; }
 .brain-hero-goal .text-amber-300 { color: var(--hud-text); }
 .brain-focus .truncate { white-space: normal; }
+/* Optical alignment: icons sit on the text's centre line, numbers line up in rows */
+:is(.ui-btn, .ui-chip, .ui-section-title, .explore-mode-btn, .explore-bar-btn, .hud-chip, .menu-btn, .explore-place, .explore-spot-btn) > i { line-height: 1; transform: translateY(-0.03em); }
+.ui-section-meta, .brain-count, .hud-need-val, .hud-clock, .journal-when, .menu-toolbar-note { font-variant-numeric: tabular-nums; }
+.hud-round-btn, .ui-icon-btn, .explore-round { padding: 0; }

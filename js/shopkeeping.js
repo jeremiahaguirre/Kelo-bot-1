@@ -189,6 +189,7 @@ function guessPrice(c) {
 function writeDescription(c) {
       if (c.kind === 'painting') {
         const p = c.painting, M = PAINT_MEDIA[p.medium];
+        if (p.reference) return `${p.title}: ${String(p.subjectLabel || 'a reference photo').replace(/\bhis\b/g, 'my')}, painted my own way from reference photos I found at the NetNode cafe. ${M ? M.on : 'Original'}, ${paintingInches(p).join('x')} in. The original, one of a kind, signed by me.`;
         return `${p.title}: ${String(p.subjectLabel || 'a scene from my valley').replace(/\bhis\b/g, 'my')}, painted ${p.place ? `at ${String(p.place).replace(/\bmy\b/g, 'his').replace(/^his /, 'my ')}` : 'from life'} in ${String(p.season || '').toLowerCase()}. ${M ? M.on : 'Original'}, ${paintingInches(p).join('x')} in. The original, one of a kind, signed by me.`;
       }
       const v = printFileVerdict(c.design);
@@ -322,7 +323,7 @@ async function listForSale(c, price, description, originLabel = 'Working on His 
         if (c.kind === 'sculpture') c.creation.shopId = id;
         shop.listings.unshift(isArt
           ? { id, kind: 'painting', ref: c.ref, name: String(c.name).slice(0, 80), description: desc, price: p, currency: 'CAD', image, listedAt: new Date().toISOString(),
-            painting: { id: c.painting.id, title: c.painting.title, medium: c.painting.medium, on: PAINT_MEDIA[c.painting.medium] ? PAINT_MEDIA[c.painting.medium].on : '', size: c.painting.size, subject: c.painting.subjectLabel || '', details: paintingDetails(c.painting) }, sales: 0 }
+            painting: { id: c.painting.id, title: c.painting.title, medium: c.painting.medium, on: PAINT_MEDIA[c.painting.medium] ? PAINT_MEDIA[c.painting.medium].on : '', size: c.painting.size, subject: c.painting.subjectLabel || '', details: paintingDetails(c.painting), credit: typeof refpCreditLine === 'function' ? refpCreditLine(c.painting) : '' }, sales: 0 }
           : { id, kind: c.kind, ref: c.ref, name: String(c.name).slice(0, 80), description: desc, price: p, currency: 'CAD', image, listedAt: new Date().toISOString(),
             file: { format: 'STL', details: fileDetails(c.design), design: { key: c.design.key || null, parts: c.design.parts || null, color: c.design.color || '#f97316', size: c.design.size || null } }, sales: 0 });
         if (firstTime) shop.builtAt = Date.now();
@@ -456,7 +457,9 @@ function shopExportData() {
         soldCount: shop.sold.length,
         listings: shop.listings.map(({ id, kind, name, description, price, currency, image, listedAt, file, painting }) => ({ id, kind, name, description, price, currency, image, listedAt,
           format: file ? file.format : painting ? 'original' : null, details: file ? file.details : painting ? painting.details : null,
-          medium: painting ? painting.on : undefined, size: painting ? painting.size : undefined, subject: painting ? painting.subject : undefined, original: painting ? true : undefined }))
+          medium: painting ? painting.on : undefined, size: painting ? painting.size : undefined, subject: painting ? painting.subject : undefined, original: painting ? true : undefined,
+          // a painting made from reference photos keeps its credit line on the website
+          credit: painting && painting.credit ? painting.credit : undefined }))
       };
     }
 

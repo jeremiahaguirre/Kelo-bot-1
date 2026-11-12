@@ -546,7 +546,7 @@ function renderWebTastesTab() {
       const safeWikiUrl = (url) => {
         try {
           const u = new URL(url);
-          return u.protocol === 'https:' && ['en.wikipedia.org', 'en.wiktionary.org', 'duckduckgo.com'].includes(u.hostname) ? u.href : null;
+          return u.protocol === 'https:' && ['en.wikipedia.org', 'en.wiktionary.org', 'duckduckgo.com', 'commons.wikimedia.org'].includes(u.hostname) ? u.href : null;
         } catch (e) { return null; }
       };
       perfSetHtml(document.getElementById('webHistoryList'), state.webHistory.map(w => `

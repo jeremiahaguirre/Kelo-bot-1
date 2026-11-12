@@ -1,6 +1,15 @@
 // Kelo-bot-1 — js/main.js
 // Loaded THIRD. Connects all UI tabs, keyboard/mouse/upload listeners, and boots the 3D world.
 
+// Escape closes only the top thing: if a dialog, viewer or panel was open when it was pressed, the side menu stays.
+// (Window capture, registered before every other key handler, so it sees them before they close.)
+let escapeClosedOverlay = false;
+window.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  escapeClosedOverlay = Boolean(document.getElementById('keloViewer')
+    || document.querySelector('#codeViewerModal:not(.hidden), #aiConfigModal:not(.hidden), #exploreHelp:not(.hidden), #explorePlaces:not(.hidden)'));
+}, true);
+
 // Write text only when it changed (no layout work, no screen-reader repeats)
 function hudSetText(el, text) {
       if (el && el.textContent !== text) el.textContent = text;
@@ -775,7 +784,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnCloseMenu')?.addEventListener('click', () => setMenuOpen(false));
   scrim?.addEventListener('click', () => setMenuOpen(false));
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && document.getElementById('aiConfigModal').classList.contains('hidden')) setMenuOpen(false);
+    if (e.key === 'Escape' && !escapeClosedOverlay) setMenuOpen(false);
   });
   // Open a specific tab from elsewhere (e.g. "Kelo-1 sent you a letter")
   window.openKeloMenu = (tabId) => { showTab(tabId); setMenuOpen(true); };

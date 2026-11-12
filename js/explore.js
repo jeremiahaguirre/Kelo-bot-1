@@ -593,6 +593,8 @@ function exploreTyping(e) {
 function exploreBindKeys() {
       // Capture phase, so the old Bird's-Eye arrow handling in js/main.js never sees these keys
       window.addEventListener('keydown', (e) => {
+        // Escape closes the help card and Places even when one of their own checkboxes has focus
+        if (e.code === 'Escape' && exploreTyping(e) && e.target.closest && e.target.closest('#exploreHelp, #explorePlaces')) { exploreTogglePlaces(false); exploreShowHelp(false); return; }
         if (exploreTyping(e) || e.ctrlKey || e.metaKey || e.altKey) return;
         if (document.getElementById('keloViewer')) return; // the arrows page through the viewer
         if (state.cameraMode === 'visit' && typeof shopVisitKey === 'function' && shopVisitKey(e)) { e.stopPropagation(); return; }

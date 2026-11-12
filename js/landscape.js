@@ -550,8 +550,9 @@ async function raiseHill(x, z, why = '', originLabel = 'Shaping the Valley', low
 // Undo something he added: dig up a planting, pick up a road, flatten a hill.
 // A chopped tree can't be un-chopped, but he can plant a new one.
 async function undoEdit(id, why = '', originLabel = 'Changing His Mind') {
-      const e = state.worldEdits.find(w => w.id === id) || (id === 'last' ? [...state.worldEdits].reverse().find(w => w.type !== 'chop') : null);
-      if (!e || e.type === 'chop') return false;
+      const e = state.worldEdits.find(w => w.id === id) || (id === 'last' ? [...state.worldEdits].reverse().find(w => w.type !== 'chop' && !w.pro) : null);
+      // A proper road (js/roadworks.js) is a job on his agenda: he finishes it or drops it on purpose, never undoes it on a whim
+      if (!e || e.type === 'chop' || e.pro) return false;
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
       state.isPracticing = true;
       try {
@@ -617,7 +618,7 @@ function shapeTheValleyOnMyOwn() {
       const open = () => openGroundSpot(1.5, Math.random() < 0.5 ? state.botPos : null);
       if (hasItem(/^(?!.*bird ?seed).*(seed|sapling|bulb)/i)) { const p = open(); return plantSeeds(p.x, p.z, 'I wanted something living that I put there myself.', 'Felt Like Planting'); }
       // A gravel road he's had a while: he may want it paved, which means learning how and asking for asphalt
-      const gravelRoad = state.worldEdits.find(e => e.type === 'road' && e.surface !== 'asphalt');
+      const gravelRoad = state.worldEdits.find(e => e.type === 'road' && !e.pro && e.surface !== 'asphalt');
       if (gravelRoad && typeof paveRoad === 'function' && Math.random() < 0.3) return paveRoad(gravelRoad.id, 'The gravel keeps washing out, and asphalt would last for years.', 'Felt Like Paving');
       if (Math.random() < 0.35 || (hasItem(/gravel|crushed stone|paving/i) && hasItem(/shovel|spade/i))) {
         // The first road runs out west from the edge of town toward the Museum; later ones join places he likes

@@ -253,7 +253,10 @@ function agendaWaitSatisfied(t) {
 
 // The things he is waiting for are at the Post Office: that makes going for the mail more urgent
 function agendaMailWaiting() {
-      return agendaOpenTasks().some(t => t.status === 'waiting' && t.waitingFor && agendaItemsAtPostOffice(t.waitingFor.items));
+      const mail = state.mailbox || [];
+      return agendaOpenTasks().some(t => t.status === 'waiting' && t.waitingFor && (agendaItemsAtPostOffice(t.waitingFor.items)
+        // a kit sent from one of this task's own parts lists
+        || mail.some(m => m.jobKit && ((t.data && t.data.reqIds) || []).includes(m.jobKit.reqId))));
     }
 
 function agendaTick() {

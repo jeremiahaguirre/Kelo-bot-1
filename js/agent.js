@@ -334,6 +334,7 @@ const state = {
   "basementDepth": 0,
   "projects": [],
   "agenda": { "tasks": [], "focusId": null },
+  "roadworks": {},
   "buildProjects": [],
   "pilotTraining": { "groundSchoolAt": null, "taxiRuns": 0 },
   "landFills": [],
@@ -1896,6 +1897,7 @@ Current state:
 - Your welding setup (gas, wire, hoses): ${typeof weldingSummaryForAI === 'function' ? weldingSummaryForAI() : 'unknown'}
 - Your real skills (practise with the things you asked for and were given; this matters more than welding): ${typeof skillsSummaryForAI === 'function' ? skillsSummaryForAI() : 'none yet'}
 - Groundwork you've researched (roads, asphalt paving, moving earth, planting): ${typeof groundworkSummaryForAI === 'function' ? groundworkSummaryForAI() : 'nothing yet'}
+- Proper roads and the runway (survey, clear, grade, drain, compact, base, prime, pave from your plant, roll, cure, stripe; real machines and materials from your parts list): ${typeof roadworksSummaryForAI === 'function' ? roadworksSummaryForAI() : 'none'}
 - Your concrete and asphalt plant (right beside the Workshop, to its east): ${typeof plantSummaryForAI === 'function' ? plantSummaryForAI() : 'none'}
 - In your Storehouse: ${typeof storehouseSummaryForAI === 'function' ? storehouseSummaryForAI() : 'empty'}
 - Tidying up: ${typeof tidySummaryForAI === 'function' ? tidySummaryForAI() : 'nothing to tidy'}

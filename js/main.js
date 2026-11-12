@@ -798,10 +798,15 @@ window.addEventListener('DOMContentLoaded', () => {
   // Keychain or the Android Keystore) instead of browser storage
   const secureKeys = window.keloDesktop && window.keloDesktop.isDesktop ? window.keloDesktop
     : window.keloNative && window.keloNative.isNative ? window.keloNative : null;
+  // The AI keys he is thinking with: Save starts a fresh AI decision only when this set changes
+  // (a key added, removed or replaced), not on every save (say, when only the shop contact changed)
+  const aiKeySetNow = () => `${apiKey}\n${claudeApiKey}`;
+  let aiKeySetApplied = aiKeySetNow();
   if (secureKeys) {
     secureKeys.getKeys().then(keys => {
       apiKey = keys.gemini || '';
       claudeApiKey = keys.anthropic || '';
+      aiKeySetApplied = aiKeySetNow();
       try {
         localStorage.removeItem('kelo1_gemini_api_key');
         localStorage.removeItem('kelo1_anthropic_api_key');
@@ -903,8 +908,11 @@ window.addEventListener('DOMContentLoaded', () => {
     const contact = document.getElementById('shopContactInput');
     if (contact && typeof normalizeShopContact === 'function' && normalizeShopContact(contact.value) === null) { contact.focus(); return; }
     closeModal('aiConfigModal');
-    showToast(hasLLMKey() ? '🧠 AI keys saved on this device. He starts thinking with the AI now.' : '🧠 Using the built-in procedural brain.');
-    if (hasLLMKey()) switchToAIThinking();
+    const keysChanged = aiKeySetNow() !== aiKeySetApplied;
+    aiKeySetApplied = aiKeySetNow();
+    if (keysChanged) showToast(hasLLMKey() ? '🧠 AI keys saved on this device. He starts thinking with the AI now.' : '🧠 Using the built-in procedural brain.');
+    else showToast('✅ Settings saved.');
+    if (keysChanged && hasLLMKey()) switchToAIThinking();
   });
 
   // Remove a key: cleared from the box and from storage straight away
@@ -945,7 +953,10 @@ window.addEventListener('DOMContentLoaded', () => {
     } catch (e) {}
     updateBrainButtonText();
     updateKeyStatus();
-    if (!hadKey && hasLLMKey()) {
+    // (another tab or the secure store changed them: that is the set he thinks with now)
+    const before = aiKeySetApplied;
+    aiKeySetApplied = aiKeySetNow();
+    if (!hadKey && hasLLMKey() && before !== aiKeySetApplied) {
       showToast('🧠 Found an AI key: Kelo-1 is switching to AI thinking.');
       switchToAIThinking();
     }

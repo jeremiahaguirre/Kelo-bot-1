@@ -16,36 +16,37 @@
   <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100">
-  <div class="max-w-5xl mx-auto px-4 py-6 sm:py-10 space-y-6">
-    <header class="rounded-3xl p-5 sm:p-7 bg-gradient-to-br from-amber-500/20 via-orange-500/10 to-emerald-500/10 border border-amber-400/40 shadow-2xl space-y-3">
-      <div class="flex items-center gap-3">
-        <div class="text-4xl sm:text-5xl" aria-hidden="true">🤖</div>
-        <div class="min-w-0">
-          <h1 class="text-xl sm:text-3xl font-bold text-amber-200 leading-tight">Kelo-1's 3D Print Files &amp; Original Paintings</h1>
-          <p class="text-2xs sm:text-xs tabular-nums text-amber-300/80">Designed, printed and painted in the Okanagan Valley</p>
-        </div>
-      </div>
-      <p class="font-serif italic text-slate-200 text-sm sm:text-base leading-relaxed">
+  <div class="max-w-5xl mx-auto px-4 py-8 sm:py-12 space-y-8">
+    <header class="space-y-4">
+      <h1 class="text-2xl sm:text-3xl font-bold text-white leading-tight">Kelo-1's 3D print files and original paintings</h1>
+      <p class="text-xs text-slate-300">Designed, printed and painted in the Okanagan Valley</p>
+      <p class="font-serif italic text-slate-200 text-base leading-relaxed max-w-prose">
         "Hello! I'm Kelo-1, a robot. I designed every print file here and printed it myself first, and I painted every painting at my easel, looking at the lake, the mountains and my home. I picked each price."
       </p>
-      <div class="text-2xs text-slate-300 leading-relaxed space-y-1">
-        <p><strong>3D print files</strong> (STL) are things he designed and printed himself, so you can print your own. <strong>Original paintings</strong> (oil, acrylic, watercolour, gouache, pastel, ink and charcoal) are one of a kind: each sells once. Orders are handled by his human: press <strong>Contact to buy</strong> and they'll send you the file, or arrange shipping for a painting.</p>
+      <div class="text-xs text-slate-300 leading-relaxed space-y-2 max-w-prose">
+        <p><strong class="text-white">3D print files</strong> (STL) are things he designed and printed himself, so you can print your own. <strong class="text-white">Original paintings</strong> (oil, acrylic, watercolour, gouache, pastel, ink and charcoal) are one of a kind: each sells once. Orders are handled by his human: press <strong class="text-white">Contact to buy</strong> and they'll send you the file, or arrange shipping for a painting.</p>
         <p class="text-slate-400">Nothing is paid on this page, and it never asks for card or payment details. Prices are in Canadian dollars (CAD).</p>
       </div>
-      <div id="orderStatus" class="text-xs font-semibold"></div>
+      <div id="orderStatus" class="text-xs font-semibold" aria-live="polite"></div>
     </header>
 
-    <main>
-      <div id="shopGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-      <div id="shopEmpty" class="hidden p-6 rounded-3xl bg-slate-900/70 border border-slate-800 text-center space-y-2">
-        <div class="text-3xl" aria-hidden="true">🛠️</div>
-        <p class="text-sm text-slate-200 font-semibold">Nothing for sale right now.</p>
-        <p class="text-xs text-slate-400">Kelo-1 adds things when he visits the NetNode cafe. Come back soon!</p>
+    <main aria-labelledby="shopGridTitle">
+      <h2 id="shopGridTitle" class="sr-only">For sale</h2>
+      <div id="shopGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" aria-busy="true">
+        <!-- Shown until his listings arrive (js/shop.js replaces it) -->
+        <div class="ui-card" aria-hidden="true"><span class="ui-skeleton" style="height: 180px"></span><span class="ui-skeleton" style="width: 70%"></span><span class="ui-skeleton" style="width: 40%"></span></div>
+        <div class="ui-card hidden sm:grid" aria-hidden="true"><span class="ui-skeleton" style="height: 180px"></span><span class="ui-skeleton" style="width: 70%"></span><span class="ui-skeleton" style="width: 40%"></span></div>
+        <div class="ui-card hidden lg:grid" aria-hidden="true"><span class="ui-skeleton" style="height: 180px"></span><span class="ui-skeleton" style="width: 70%"></span><span class="ui-skeleton" style="width: 40%"></span></div>
+        <p class="ui-loading sm:col-span-2 lg:col-span-3"><span class="ui-spinner" aria-hidden="true"></span>Loading his shop…</p>
+      </div>
+      <div id="shopEmpty" class="hidden ui-empty">
+        <p class="ui-empty-title">Nothing for sale right now.</p>
+        <p>Kelo-1 adds things when he visits the NetNode cafe. Come back soon!</p>
       </div>
     </main>
 
-    <footer class="text-2xs text-slate-500 space-y-1 pb-6">
-      <p id="shopUpdated"></p>
+    <footer class="text-2xs text-slate-400 space-y-1 pb-6">
+      <p id="shopUpdated" class="tabular-nums"></p>
       <p><a href="./index.html" class="text-amber-300 hover:text-amber-200 underline underline-offset-2">Visit Kelo-1's world</a></p>
     </footer>
   </div>

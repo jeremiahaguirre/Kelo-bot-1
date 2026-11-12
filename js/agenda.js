@@ -62,7 +62,7 @@ function agendaNote(t, what, text, { diary = true } = {}) {
       if (!t) return;
       if (!Array.isArray(t.history)) t.history = [];
       t.history.unshift({ at: Date.now(), what, text: String(text).slice(0, 160) });
-      if (t.history.length > 8) t.history.length = 8;
+      if (t.history.length > 16) t.history.length = 16;
       if (!diary || !Array.isArray(state.diaryEntries)) return;
       const moods = { start: 'Took on', pause: 'Paused', resume: 'Back to', wait: 'Waiting on', ready: 'Picked back up', done: 'Finished', abandon: 'Dropped', step: 'Working on' };
       state.diaryEntries.unshift({

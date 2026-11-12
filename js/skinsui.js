@@ -68,8 +68,8 @@ function drawKeloFigure(fig, yaw, canvas, ss = 2) {
       fig.group.position.set(0, 0, 0);
       fig.group.rotation.set(0, yaw, 0);
       S.cam.aspect = W / H;
-      S.cam.position.set(0, 1.55, 7.1);
-      S.cam.lookAt(0, 1.3, 0);
+      S.cam.position.set(0, 1.5, 5.9);
+      S.cam.lookAt(0, 1.32, 0);
       S.cam.updateProjectionMatrix();
       const prevTarget = renderer.getRenderTarget(), prevClear = renderer.getClearColor(new THREE.Color()), prevAlpha = renderer.getClearAlpha();
       const prevShadow = renderer.shadowMap.autoUpdate;

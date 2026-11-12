@@ -2062,7 +2062,7 @@ function madePartModel(lower) {
       const shaped = typeof imMadeShapeModel === 'function' ? imMadeShapeModel(l) : null;
       if (shaped) return shaped;
       const g = new THREE.Group();
-      const metal = /steel|stainless|titanium|aluminium|aluminum|metal|dmls|ebm|ded|machined|haas|taurus|plasma|binder/.test(l);
+      const metal = /steel|stainless|titanium|aluminium|aluminum|bronze|brass|copper|cast(ing)?\b|metal|dmls|ebm|ded|machined|haas|taurus|plasma|binder/.test(l);
       const mat = /titanium|ebm/.test(l) ? 'tiPowder' : /alumin/.test(l) ? 'alu' : metal ? 'steel'
         : /resin|sla|dlp|msla|polyjet/.test(l) ? 'greyResin' : /nylon|sls|mjf|pa12/.test(l) ? 'powder' : /paper|lom/.test(l) ? 'paper' : /plywood|sign/.test(l) ? 'ply' : /mdf/.test(l) ? 'mdf' : 'orange';
       if (/sign/.test(l)) {

@@ -180,7 +180,8 @@ function machineReady(key, job = {}, { quiet = false, context = 'Workshop' } = {
         if (!quiet) {
           state.speechBubble = `I've never used the ${def.name}. I'll read up on how it's really done at NetNode before I touch it.`;
           renderAllUI();
-          doWhenFree(() => researchMachine(key));
+          // Its own key: closures with the same source text would otherwise be merged into one (doWhenFree)
+          doWhenFree(() => researchMachine(key), { key: 'learn-machine:' + key });
         }
         return false;
       }
@@ -299,7 +300,7 @@ let workshopJobRunning = null;
 async function runMachineJob(key, job = {}, originLabel = 'In the Workshop') {
       const def = WORKSHOP_MACHINES[key];
       if (!def || !def.plan) return false;
-      if (workshopJobRunning || state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
+      if (workshopJobRunning || state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || state.isCollectingMail) return false;
       if (typeof buildWorkshop3D === 'function') buildWorkshop3D();
       if (!machineReady(key, job, { context: originLabel })) return 'not-ready';
       const plan = def.plan(job);
@@ -508,10 +509,15 @@ function answerWorkshopAsk(ask, visitor) {
 const workshopAsks = [];
 function takeWorkshopAsk() {
       if (!workshopAsks.length || workshopJobRunning) return false;
-      if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) { setTimeout(takeWorkshopAsk, 8000); return false; }
+      if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || state.isCollectingMail) { setTimeout(takeWorkshopAsk, 8000); return false; }
       const ask = workshopAsks.shift();
       if (!machineKnown(ask.key)) { researchMachine(ask.key, 'A Visitor Asked'); workshopAsks.unshift(ask); setTimeout(takeWorkshopAsk, 20000); return true; }
-      if (!machineReady(ask.key, ask.job, { context: 'A visitor asked' })) return true;
+      // Not ready yet (its supplies were just asked for): keep the ask and try again later, for about a day
+      if (!machineReady(ask.key, ask.job, { context: 'A visitor asked', quiet: ask.tries > 0 })) {
+        ask.tries = (ask.tries || 0) + 1;
+        if (ask.tries < 300) { workshopAsks.push(ask); setTimeout(takeWorkshopAsk, 5 * 60000); }
+        return true;
+      }
       runMachineJob(ask.key, ask.job, 'A Visitor Asked');
       return true;
     }

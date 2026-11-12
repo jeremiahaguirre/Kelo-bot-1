@@ -348,6 +348,7 @@ body.eyecam-on #explorePad .explore-pad-btn[data-hold="zoomOut"], body.eyecam-on
 .brain-bar-orange > span { background: linear-gradient(90deg, #f97316, #fbbf24); }
 .brain-pill { flex-shrink: 0; padding: 1px 8px; border-radius: 999px; background: rgba(30, 41, 59, 0.95); border: 1px solid var(--m-line); color: #cbd5e1; font-size: 11px; }
 .brain-pill-done { background: rgba(16, 185, 129, 0.14); border-color: rgba(52, 211, 153, 0.35); color: #6ee7b7; }
+.brain-pill-active { background: rgba(245, 158, 11, 0.16); border-color: rgba(251, 191, 36, 0.45); color: #fde68a; }
 .brain-chip { padding: 1px 7px; border-radius: 8px; background: rgba(30, 41, 59, 0.9); color: var(--m-dim); font-size: 11px; }
 .brain-chip-ok { background: rgba(16, 185, 129, 0.14); color: #6ee7b7; }
 .brain-empty { font-size: 12px; font-style: italic; color: var(--m-faint); }

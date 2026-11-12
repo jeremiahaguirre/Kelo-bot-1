@@ -3,10 +3,11 @@
 // dashboard (summary at the top, counts in section headings, search across every section, sections
 // that remember being open or closed). Only draws what is on screen: nothing runs with the menu closed.
 
-const BRAIN_SECTION_ORDER = ['projects', 'buildprojects', 'skills', 'built', 'workshop', 'plants', 'vehicles', 'hobbies', 'upgrades',
+const BRAIN_SECTION_ORDER = ['agenda', 'projects', 'buildprojects', 'skills', 'built', 'workshop', 'plants', 'vehicles', 'hobbies', 'upgrades',
   'landscape', 'digging', 'memories', 'opinions', 'concepts', 'shapes', 'likes', 'dislikes', 'visitors', 'web'];
 // How many things each section holds, straight from his state (sections not listed are counted from the page)
 const BRAIN_SECTION_COUNTS = {
+  agenda: () => (typeof agendaOpenTasks === 'function' ? agendaOpenTasks().length + (state.agenda.tasks || []).filter(agendaClosed).length : 0),
   projects: () => (state.projects || []).length,
   skills: () => Object.keys(state.skills || {}).length,
   vehicles: () => (state.vehicles || []).length,

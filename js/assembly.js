@@ -300,7 +300,7 @@ function assemblyPose(verb) {
         swage: [-0.9, 0.25, 0.25], fit: [-0.9, 0.35, 0.15], glue: [-1.0, 0.4, 0.2], cover: [-1.2, 0.55, 0.0], sand: [-0.95, 0.6, 0.2], paint: [-1.25, 0.6, -0.1] }[verb] || [-0.9, 0.3, 0.1];
       state.microPose = 'procedural_custom';
       // (each kind of step has a hand-keyed clip: js/kelo-clips.js)
-      const clip = { drill: 'drillBench', cut: 'saw', sand: 'sand', glue: 'sand', cover: 'sand', paint: 'paint' }[verb] || 'hammer';
+      const clip = { drill: 'drillBench', cut: 'saw', sand: 'sand', glue: 'sand', cover: 'sand', paint: 'paint', bolt: 'twist', swage: 'twist' }[verb] || 'hammer';
       state.proceduralMotion = { armRaiseOffset: m[0], armWaveAmp: m[1], headPitch: m[2], headYawSpeed: 1.2, headTiltAmp: 0.12, bodyBounceAmp: 0.02, spinSpeed: 0, sparkBurst: verb === 'weld', clip };
     }
 

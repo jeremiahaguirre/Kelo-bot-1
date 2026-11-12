@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-09T22:30:22.466Z",
-  "runs": 15,
+  "updatedAt": "2026-11-10T19:52:00.931Z",
+  "runs": 17,
   "curiosities": [
-    "Alternative stable state"
+    "Anti-predator adaptation"
   ],
   "entries": [
     {
@@ -524,6 +524,73 @@
       },
       "shapeFrom": "Chemosynthesis",
       "nextCuriosity": "Alternative stable state",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794295782102",
+      "at": 1794295782102,
+      "brain": "procedural",
+      "topic": "Alternative stable state",
+      "title": "Dreaming of Animal coloration",
+      "text": "Dear Diary, while nobody was around I looked up \"Alternative stable state\" and drifted from Alternative stable state to Animal coloration. Animal coloration is the general appearance of an animal resulting from the reflection or emission of light from its surfaces. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Alternative stable state",
+          "url": "https://en.wikipedia.org/wiki/Alternative_stable_state",
+          "extract": "In ecology, the theory of alternative stable states predicts that ecosystems can exist under multiple \"states\". These alternative states are non-transitory and therefore considered stable over ecologically-relevant timescales. Ecosystems may transition from one stable state to an"
+        },
+        {
+          "title": "Animal coloration",
+          "url": "https://en.wikipedia.org/wiki/Animal_coloration",
+          "extract": "Animal coloration is the general appearance of an animal resulting from the reflection or emission of light from its surfaces. Some animals are brightly coloured, while others are hard to see. In some species, such as the peafowl, the male has strong patterns, conspicuous colours"
+        }
+      ],
+      "concept": {
+        "name": "Alternative Coloration Craft",
+        "emoji": "🧩",
+        "definition": "The idea that alternative stable state and animal coloration share a hidden pattern.",
+        "builtFrom": [
+          "Alternative stable state",
+          "Animal coloration"
+        ]
+      },
+      "shapeFrom": "Animal coloration",
+      "nextCuriosity": "Allee effect",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about Shavkat Mirziyoyev. Shavkat Miromonovich Mirziyoyev is an Uzbek politician who has served as the second president of Uzbekistan since 2016. It still makes me curious.",
+        "emoji": "🌙"
+      }
+    },
+    {
+      "id": "dream-1794340320931",
+      "at": 1794340320931,
+      "brain": "procedural",
+      "topic": "Allee effect",
+      "title": "Dreaming of Animal navigation",
+      "text": "Dear Diary, while nobody was around I looked up \"Allee effect\" and drifted from Allee effect to Animal navigation. Animal navigation is the ability of many animals to find their way accurately without maps or instruments. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Allee effect",
+          "url": "https://en.wikipedia.org/wiki/Allee_effect",
+          "extract": "The Allee effect is a phenomenon in biology characterized by a correlation between population size or density and the mean individual fitness of a population or species."
+        },
+        {
+          "title": "Animal navigation",
+          "url": "https://en.wikipedia.org/wiki/Animal_navigation",
+          "extract": "Animal navigation is the ability of many animals to find their way accurately without maps or instruments. Birds such as the Arctic tern, insects such as the monarch butterfly and fish such as the salmon regularly migrate thousands of miles to and from their breeding grounds, and"
+        }
+      ],
+      "concept": {
+        "name": "Effect Navigation Theory",
+        "emoji": "🌀",
+        "definition": "The idea that allee effect and animal navigation share a hidden pattern.",
+        "builtFrom": [
+          "Allee effect",
+          "Animal navigation"
+        ]
+      },
+      "shapeFrom": "Animal navigation",
+      "nextCuriosity": "Anti-predator adaptation",
       "coreMemory": null
     }
   ]

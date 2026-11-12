@@ -109,7 +109,7 @@ function initDiorama3D() {
       scene.background = new THREE.Color(AMBIANCE_PRESETS[0].bg);
       scene.fog = new THREE.FogExp2(AMBIANCE_PRESETS[0].fog, AMBIANCE_PRESETS[0].fogDensity);
 
-      camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 900);
+      camera = new THREE.PerspectiveCamera(45, w / h, 0.25, 900); // (near 0.25: the camera never comes closer than 4 units, and 2.5x the depth precision of 0.1 keeps close trims from flickering)
       camera.position.set(0, 18, 24);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -1776,8 +1776,9 @@ function segmentClear(ax, az, bx, bz, target) {
 // Which grid cells he can't stand in (each obstacle marks only the cells under it). Cells keep a
 // little extra room (PATH_MARGIN), so a path never squeezes through a gap he only just fits.
 // Near the start, something he is already brushing against only blocks cells deeper into it,
-// so he can always step away from it.
-const PATH_MARGIN = 0.12;
+// so he can always step away from it. 0.18: the narrowest gap a path takes is 2 x (0.55 + 0.18) =
+// 1.46 units (0.9 m), so he never threads the 0.89 m alley between the NetNode and the Post Office.
+const PATH_MARGIN = 0.18;
 function pathBlockedGrid(to, from = null) {
       const blocked = new Uint8Array(PATH_COLS * PATH_ROWS);
       const R = KELO_RADIUS + PATH_MARGIN;

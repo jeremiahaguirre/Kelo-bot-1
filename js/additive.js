@@ -300,7 +300,7 @@ registerWorkshopMachine({
 
 // SLS: a nylon powder bed fused by a laser, cooled, then depowdered and bead blasted
 registerWorkshopMachine({
-  key: 'sls', name: 'EOS Formiga P 110 (SLS)', short: 'SLS printer', kind: 'printer', floor: 1, at: { x: -3.15, z: 2.3, ry: 0 }, size: { w: 1.3, h: 1.6, d: 0.9 }, color: 0xeef0f2,
+  key: 'sls', name: 'EOS Formiga P 110 (SLS)', short: 'SLS printer', kind: 'printer', floor: 1, at: { x: -3.15, z: 1.95, ry: 0 }, size: { w: 1.3, h: 1.6, d: 0.9 }, color: 0xeef0f2,
   emoji: '🟫', skill: 'SLS printing', teaches: ['depowder', 'beadblast'], model: slsPrinterModel, stand: { x: -2.1, z: 2.95 },
   wiki: ['Selective laser sintering'], learned: 'SLS spreads thin layers of nylon PA12 powder and a laser sinters each slice; the loose powder holds the part up, so it needs no supports. Afterwards it cools, is dug out and depowdered, then bead blasted smooth. Fine powder means a respirator.',
   needs: ['pa12', 'respirator', 'blastMedia'], words: [/\bsls\b|selective laser sinter|formiga/i],
@@ -342,7 +342,7 @@ registerWorkshopMachine({
 
 // DMLS/SLM: metal powder under argon, a fibre laser; then off the plate by wire EDM (or the bandsaw) and heat treated
 registerWorkshopMachine({
-  key: 'dmls', name: 'EOS M 290 (DMLS/SLM)', short: 'DMLS printer', kind: 'printer', floor: 1, at: { x: -2.65, z: 3.95, ry: 0 }, size: { w: 2.3, h: 1.8, d: 1.0 }, color: 0xd2d5d9,
+  key: 'dmls', name: 'EOS M 290 (DMLS/SLM)', short: 'DMLS printer', kind: 'printer', floor: 1, at: { x: -2.65, z: 4.35, ry: 0 }, size: { w: 2.3, h: 1.8, d: 1.0 }, color: 0xd2d5d9,
   emoji: '🔩', skill: 'Metal 3D printing (DMLS)', teaches: ['edm', 'bandsaw', 'furnace'], model: dmlsPrinterModel,
   stand: { x: -2.75, z: 4.8 },
   wiki: ['Selective laser melting', 'Electrical discharge machining'], learned: 'DMLS/SLM melts metal powder with a fibre laser in a chamber flooded with argon so it can\'t oxidise. The part is welded to a steel build plate: it comes off by wire EDM or bandsaw, then gets a stress-relief heat treatment. Metal powder needs a respirator and gloves.',
@@ -385,13 +385,13 @@ registerWorkshopMachine({
   learnAs: 'bandsaw', skill: 'Bandsaw cutting', model: bandsawModel
 });
 registerWorkshopMachine({
-  key: 'furnace', name: 'Sintering / heat-treat furnace', short: 'furnace', kind: 'post', floor: 1, at: { x: -1.45, z: 5.6, ry: Math.PI }, size: { w: 0.95, h: 1.3, d: 0.85 }, stand: { x: -1.45, z: 4.8 },
+  key: 'furnace', name: 'Sintering / heat-treat furnace', short: 'furnace', kind: 'post', floor: 1, at: { x: -1.45, z: 6.7, ry: Math.PI }, size: { w: 0.95, h: 1.3, d: 0.85 }, stand: { x: -1.45, z: 5.7 },
   learnAs: 'furnace', skill: 'Heat treating and sintering', model: () => furnaceModel()
 });
 
 // MJF: PA12 with fusing and detailing agents, infrared fusing; it cools in the build unit, then unpacking
 registerWorkshopMachine({
-  key: 'mjf', name: 'HP Jet Fusion 5200 (MJF)', short: 'MJF printer', kind: 'printer', floor: 1, at: { x: -3.0, z: 5.55, ry: Math.PI }, size: { w: 1.5, h: 1.5, d: 0.8 }, color: 0xeef0f2,
+  key: 'mjf', name: 'HP Jet Fusion 5200 (MJF)', short: 'MJF printer', kind: 'printer', floor: 1, at: { x: -3.0, z: 6.7, ry: Math.PI }, size: { w: 1.5, h: 1.5, d: 0.8 }, color: 0xeef0f2,
   emoji: '🟫', skill: 'MJF printing', teaches: ['mjfstation', 'beadblast'], model: mjfPrinterModel, stand: { x: -3.0, z: 4.8 },
   wiki: ['Multi Jet Fusion'], learned: 'Multi Jet Fusion spreads PA12 powder, jets a fusing agent where the part goes and a detailing agent round its edges, then an infrared lamp fuses the layer. The build unit cools for hours before unpacking at the processing station, then bead blasting.',
   needs: ['pa12', 'fusingAgent', 'detailingAgent', 'respirator', 'blastMedia'], words: [/\bmjf\b|multi ?jet fusion|jet fusion|\bhp\b.*print/i],
@@ -433,7 +433,7 @@ registerWorkshopMachine({
   }
 });
 registerWorkshopMachine({
-  key: 'mjfstation', name: 'HP processing station', short: 'MJF processing station', kind: 'post', floor: 1, at: { x: -0.95, z: 2.3, ry: 0 }, size: { w: 1.0, h: 1.6, d: 0.75 },
+  key: 'mjfstation', name: 'HP processing station', short: 'MJF processing station', kind: 'post', floor: 1, at: { x: -0.95, z: 1.95, ry: 0 }, size: { w: 1.0, h: 1.6, d: 0.75 },
   learnAs: 'mjfstation', skill: 'MJF unpacking', model: mjfStationModel
 });
 
@@ -518,7 +518,7 @@ registerWorkshopMachine({
 // DED: a robot arm with a wire-fed deposition head lays down weld beads under argon; then machined on the Haas
 registerWorkshopMachine({
   key: 'ded', name: 'DED robot cell', short: 'DED cell', kind: 'printer', floor: 1, at: { x: 2.6, z: 0.15, ry: 0 }, size: { w: 1.95, h: 1.7, d: 1.95 }, color: 0xf4b400,
-  emoji: '🤖', skill: 'Directed energy deposition', model: dedCellModel, stand: { x: 2.6, z: 1.45 },
+  emoji: '🤖', skill: 'Directed energy deposition', model: dedCellModel, stand: { x: 1.0, z: 0.3 },
   wiki: ['Directed energy deposition'], learned: 'Directed energy deposition feeds metal wire (or powder) into a melt pool made by an arc or laser on a robot arm, under shielding gas, building big near-net shapes bead by bead. The rough part is then machined to size.',
   needs: ['dedWire', 'shieldGas', 'weldHelmet', 'gloves', 'endMills', 'coolant'], words: [/\bded\b|directed energy|robot arm|wire arc|waam/i],
   products: ['A DED-built stainless turbine blade', 'A DED-built stainless flange'], makes: [/turbine|flange|blade/],
@@ -609,7 +609,7 @@ registerWorkshopMachine({
 
 // LOM: sheets of paper glued and cut with a knife, one by one; the waste is cut into cubes and broken away
 registerWorkshopMachine({
-  key: 'lom', name: 'Mcor LOM printer', short: 'LOM printer', kind: 'printer', floor: 1, at: { x: -0.9, z: 3.95, ry: 0 }, size: { w: 0.9, h: 1.4, d: 0.65 }, color: 0xeef0f2,
+  key: 'lom', name: 'Mcor LOM printer', short: 'LOM printer', kind: 'printer', floor: 1, at: { x: -0.9, z: 4.35, ry: 0 }, size: { w: 0.9, h: 1.4, d: 0.65 }, color: 0xeef0f2,
   emoji: '📄', skill: 'LOM printing', stand: { x: -0.9, z: 4.8 },
   model: () => { const g = new THREE.Group(); mmBox(g, 0.9, 0.85, 0.65, 'dark', 0, 0, 0); const m = lomPrinterModel(); m.position.y = 0.85; g.add(m); g.userData = { ...m.userData, inner: m }; return g; },
   wiki: ['Laminated object manufacturing'], learned: 'Laminated object manufacturing glues sheet after sheet of paper (or laminate) and cuts each outline with a knife or laser. The waste around the part is cross-hatched into cubes that are broken away afterwards: decubing.',

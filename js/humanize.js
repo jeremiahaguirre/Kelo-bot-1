@@ -263,6 +263,23 @@ function keloHumanize(out, t, dt, ctx) {
         if (talking) { a.lookTarget = { x: 0, y: 0, z: 0 }; a.nextLookAt = Math.max(a.nextLookAt, t + 1.5); }
       }
 
+      // --- Working on something: his head turns to it (the point "through his eyes" looks at,
+      // js/eyecam.js), within what his neck turns, over the idle glances
+      const fp = !ctx.walking && !ctx.riding && !ctx.resting && typeof keloFocusPoint === 'function' ? keloFocusPoint() : null;
+      if (fp) {
+        const g = keloGroup.position, eyeY = g.y + KELO_HIP_Y + out.bodyLift + 0.71 + 0.3;
+        const fdx = fp.x - g.x, fdz = fp.z - g.z;
+        const fyaw = wrap(Math.atan2(fdx, fdz) - a.yaw) - out.bodyY;
+        const fpitch = Math.atan2(eyeY - fp.y, Math.max(0.15, Math.hypot(fdx, fdz))) - out.bodyX;
+        h.fy = dampTo(h.fy || 0, Math.max(-1.0, Math.min(1.0, fyaw)), 6, dt);
+        h.fp = dampTo(h.fp || 0, Math.max(-0.45, Math.min(0.7, fpitch)), 6, dt);
+      }
+      h.focusW = dampTo(h.focusW || 0, fp ? 0.85 : 0, fp ? 3 : 4, dt);
+      if (h.focusW > 0.001) {
+        out.headY += (h.fy - out.headY) * h.focusW;
+        out.headX += (h.fp - out.headX) * h.focusW;
+      }
+
       // --- Blink as his head swings round
       const headYaw = a.yaw + out.bodyY + out.headY;
       if (h.lastHeadYaw !== null && dt > 0 && typeof keloFace !== 'undefined') {

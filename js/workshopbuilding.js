@@ -174,7 +174,8 @@ function machineCircles(def) {
       const sz = def.size || { w: 1, d: 1 };
       const a = def.at.ry || 0;
       const long = Math.max(sz.w, sz.d), short = Math.min(sz.w, sz.d);
-      const n = Math.max(1, Math.round(long / Math.max(0.8, short)));
+      // (close enough together that a long thin thing, a clamp rack or a bench, has no gaps to walk through)
+      const n = long - short < 1e-6 ? 1 : Math.max(2, Math.ceil((long - short) / Math.max(0.3, short / 2 + 0.25)) + 1);
       const alongX = sz.w >= sz.d;
       const out = [];
       for (let i = 0; i < n; i++) {
@@ -1426,6 +1427,11 @@ function workshopSite() {
 function wsObstacles(floor) {
       const out = [];
       workshopMachinesOn(floor).forEach(def => out.push(...machineCircles(def)));
+      // The car elevator's open west side and north end (masts, rails, the shaft when the platform
+      // is on another floor): he steps on and off only through the landing gate, never along its edge
+      const lx0 = WS_LIFT.x - WS_LIFT.w / 2, lz0 = WS_LIFT.z - WS_LIFT.d / 2, lz1 = WS_LIFT.z + WS_LIFT.d / 2;
+      for (let z = lz0; z <= lz1 + 1e-6; z += 0.4) if (Math.abs(z - WS_LIFT_GATE) > 0.8) out.push({ x: lx0, z, r: 0.12 });
+      for (let x = lx0 + 0.4; x <= WS_LIFT.x + WS_LIFT.w / 2 + 1e-6; x += 0.4) out.push({ x, z: lz0, r: 0.12 });
       if (floor === 1) {
         // The deck columns, the Taurus bay edge, the stations
         for (let z = -WS_IN.z + 1.45; z < WS_IN.z - 0.4; z += 3.5) out.push({ x: -3.8, z, r: 0.35 });
@@ -1434,8 +1440,8 @@ function wsObstacles(floor) {
         const sd = WS_WING.doors.shop;
         for (let x = -WS_IN.x; x <= WS_IN.x; x += 0.5) if (Math.abs(x - sd.x) > sd.w / 2 - 0.2) out.push({ x, z: -WORKSHOP_SITE.d / 2, r: 0.32 });
       } else {
-        // The open edge over the high bay
-        for (let z = -WS_IN.z; z <= WS_IN.z; z += 0.8) out.push({ x: -4.4, z, r: 0.5 });
+        // The open edge over the high bay (floor 2; the floor-3 deck covers it)
+        if (floor === 2) for (let z = -WS_IN.z; z <= WS_IN.z; z += 0.8) out.push({ x: -4.4, z, r: 0.5 });
         if (workshopTrip.vehicle) {
           const v = workshopTrip.vehicleAt;
           if (v) for (let k = -3; k <= 3; k++) out.push({ x: v.x, z: v.z + k * 1.2, r: 1.5 });
@@ -1454,33 +1460,32 @@ function wsOnLift(p) {
       return Math.abs(p.x - WS_LIFT.x) < WS_LIFT.w / 2 && Math.abs(p.z - WS_LIFT.z) < WS_LIFT.d / 2;
     }
 
-// Ride the car elevator between floors. Whatever stands on the platform (him, a vehicle) rides with it.
+// Ride the car elevator between floors. Whatever stands on the platform (him, a vehicle) rides with
+// it: riders(y) puts them on the platform top y in the same frame the platform moves (tripRide, js/basements.js),
+// eased in and out. The decks change as he passes them (the one above stays see-through until his
+// feet are past it, so he never vanishes under a deck that turned solid before he got there).
 async function wsRideLift(toFloor, riders = []) {
       const from = workshopTrip.liftY, to = wsFloorY(toFloor) - WS_F1;
-      const ms = Math.max(800, Math.abs(to - from) / 0.9 * 1000);
-      let start = Date.now(), pausedAt = 0, held = false;
+      const ms = Math.max(1000, Math.abs(to - from) / 0.9 * 1000 * 1.25);
       const base = wsGroup.position.y;
-      await new Promise(resolve => {
-        const tick = () => {
-          // (window.__wsHold = 'elevator' stops the ride half way, for a screenshot; see js/machines.js)
-          if (pausedAt) {
-            if (window.__wsHold && /elevator/i.test(window.__wsHold) && workshopTrip.active) { setTimeout(tick, 50); return; }
-            start += Date.now() - pausedAt; pausedAt = 0; window.__wsHeld = null;
-          } else if (!held && window.__wsHold && /elevator/i.test(window.__wsHold) && Date.now() - start > ms / 2) {
-            held = true; pausedAt = Date.now(); window.__wsHeld = 'car elevator';
-            setTimeout(tick, 50);
-            return;
-          }
-          const t = Math.min(1, (Date.now() - start) / ms), e = t * t * (3 - 2 * t);
-          const y = from + (to - from) * e;
-          workshopTrip.liftY = y;
-          wsUpdateLift(y);
-          riders.forEach(r => r(base + WS_F1 + y));
-          if (t < 1 && workshopTrip.active) setTimeout(tick, 16); else resolve();
-        };
-        tick();
-      });
+      let held = false;
+      // (window.__wsHold = 'elevator' stops the ride half way, for a screenshot; see js/machines.js)
+      const holdIf = t => {
+        const want = Boolean(window.__wsHold && /elevator/i.test(window.__wsHold) && workshopTrip.active);
+        if (!held && want && t > 0.5) { held = true; window.__wsHeld = 'car elevator'; }
+        if (held && !want && window.__wsHeld === 'car elevator') window.__wsHeld = null;
+        return held && want;
+      };
+      await tripRide(ms, e => {
+        const y = from + (to - from) * e;
+        workshopTrip.liftY = y;
+        wsUpdateLift(y);
+        riders.forEach(r => r(base + WS_F1 + y));
+        const top = WS_F1 + y + 0.05, f = top >= WS_F3 ? 3 : top >= WS_F2 ? 2 : 1;
+        if (f !== wsViewFloor) wsSetDecksFor(f);
+      }, holdIf);
       workshopTrip.liftY = to;
+      wsUpdateLift(to);
     }
 
 // Animate something over ms: fn(k 0..1, seconds since start). Keeps going when the tab is hidden.
@@ -1569,8 +1574,11 @@ async function runWorkshopVisit(plan) {
           const ctx = wsContext(site, def, model, stop);
           const focusFn = typeof machineFocusFn === 'function' ? machineFocusFn(model) : null;
           if (focusFn) setKeloFocus(focusFn);
+          // his hands on the machine's controls while he works it (js/kelo-ik.js)
+          const reachFn = typeof setKeloReach === 'function' ? wsControlReach(model) : null;
+          if (reachFn) setKeloReach(reachFn);
           try { results.push(await stop.act(ctx)); } catch (e) { console.warn('workshop stop', e); results.push(false); }
-          finally { if (focusFn) clearKeloFocus(focusFn); }
+          finally { if (focusFn) clearKeloFocus(focusFn); if (reachFn) clearKeloReach(reachFn); }
           indoorTrip.pose = null;
           indoorTrip.crouchTarget = 0;
           if (results[results.length - 1] === false) break; // a failed step ends the job (no washing a print that never came off)
@@ -1593,6 +1601,7 @@ async function runWorkshopVisit(plan) {
         if (hold) hold();
         indoorTrip.active = false;
         indoorTrip.site = null;
+        if (typeof clearKeloReach === 'function') clearKeloReach();
         indoorTrip.pose = null;
         indoorTrip.crouch = 0;
         state.basementDepth = 0;
@@ -1644,7 +1653,6 @@ async function wsChangeFloor(site, cur, floor) {
       await tripWalk([siteToWorld(site, onLift.x, onLift.z, wsFloorY(from))]);
       tripFace(siteToWorld(site, onLift.x, onLift.z + 2, 0));
       if (floor > 1) workshopShowFloor(floor, true);
-      wsSetDecksFor(floor);
       tripMood(`Taking the car elevator to floor ${floor}`, floor > from ? `Up to floor ${floor}!` : null);
       await tripPause(400);
       // (the engine hoist parks over the shaft on floor 2: it's only there while the platform is up there)
@@ -1837,7 +1845,6 @@ async function wsDriveIn(site, v) {
       await wsDriveAlong(site, v, [{ x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 1.5, ry }, { x: WS_LIFT.x, z: WS_LIFT.z, ry }], 4200);
       workshopShowUpstairs(true);
       if (wsModels.hoist) wsModels.hoist.visible = false;
-      wsSetDecksFor(2);
       tripMood('Taking the car elevator up', `Going up with the ${nm}. This is the best part.`);
       await wsRideLift(2, [y => { mesh.position.y = y; wsHoldVehicle(mesh); wsSeatKelo(mesh); }]);
       workshopTrip.floor = 2;
@@ -1892,7 +1899,6 @@ async function wsVehicleTour(site, v, floors) {
       await wsDriveAlong(site, v, [{ x: WS_DOORS.vehicle.x, z: WORKSHOP_SITE.d / 2 + 1.5, ry }, { x: WS_LIFT.x, z: WS_LIFT.z, ry }], 3800);
       for (const f of floors) {
         if (f > 1) workshopShowFloor(f, true);
-        wsSetDecksFor(f);
         tripMood(`Car elevator: riding to floor ${f} with the ${nm}`);
         await wsRideLift(f, [y => { mesh.position.y = y; wsHoldVehicle(mesh); wsSeatKelo(mesh); }]);
         workshopTrip.floor = f;
@@ -1930,13 +1936,37 @@ function wsContext(site, def, model, stop) {
         face: (lx, lz) => tripFace(siteToWorld(site, lx, lz, 0)),
         // Hands on the controls (or reaching to a height above the floor)
         reach: h => { indoorTrip.pose = () => reachPose(h); },
-        work: () => { indoorTrip.pose = t => wsWorkPose(t); },
+        work: () => { indoorTrip.pose = wsWorkPose; },
         idle: () => { indoorTrip.pose = null; indoorTrip.crouchTarget = 0; },
         walk: async (lx, lz) => {
           const cur = { x: indoorTrip.pos.x - wsGroup.position.x, z: indoorTrip.pos.z - wsGroup.position.z };
           await wsWalkTo(site, cur, { x: lx, z: lz });
         },
         floor: workshopTrip.floor
+      };
+    }
+
+// Where his hands go on a machine while he works it (wsWorkPose): the face of its box nearest his
+// chest, at working height, the two hands side by side and pressing in turn. Only while the work pose
+// is on (not while he reaches up, walks round it or waits).
+function wsControlReach(model) {
+      if (!model) return null;
+      model.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(model);
+      if (box.isEmpty()) return null;
+      const l = new THREE.Vector3(), r = new THREE.Vector3();
+      return () => {
+        if (!indoorTrip.active || !indoorTrip.pos || indoorTrip.pose !== wsWorkPose) return null;
+        const p = indoorTrip.pos, f = indoorTrip.rotY, fx = Math.sin(f), fz = Math.cos(f);
+        const y = Math.max(box.min.y + 0.15, Math.min(box.max.y - 0.05, p.y + 1.15));
+        if (y < p.y + 0.6 || y > p.y + 1.75) return null;
+        const cx = Math.max(box.min.x, Math.min(box.max.x, p.x + fx * 0.3)), cz = Math.max(box.min.z, Math.min(box.max.z, p.z + fz * 0.3));
+        if (Math.hypot(cx - p.x, cz - p.z) > 1.1) return null;   // out of reach from where he stands
+        const t = keloAnim.lastT || 0, side = 0.13;
+        const tapL = 0.03 * Math.max(0, Math.sin(t * 6)), tapR = 0.03 * Math.max(0, -Math.sin(t * 6));
+        l.set(cx - fz * side + fx * tapL, y, cz + fx * side + fz * tapL);
+        r.set(cx + fz * side + fx * tapR, y, cz - fx * side + fz * tapR);
+        return { l, r };
       };
     }
 

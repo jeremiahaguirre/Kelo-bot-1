@@ -241,7 +241,7 @@ g3({ key: 'pipewarmer', name: 'Pipe warmer (blowpipes and punties)', short: 'pip
 g3({ key: 'glasstools', name: 'Glass tools: jacks, shears, tweezers, paddles, blocks, torch', short: 'glass tools', at: { x: -2.3, z: -3.4, ry: 0 }, size: { w: 1.0, h: 1.5, d: 0.45 }, model: glassToolRackModel });
 g3({ key: 'glassbins', name: 'Cullet, frit and colour rod bins', short: 'glass bins', at: { x: -4.0, z: 1.4, ry: Math.PI }, size: { w: 1.7, h: 0.6, d: 0.5 }, model: glassBinsModel });
 g3({ key: 'glasssafety', name: 'Fire extinguisher, gas meter and safety gear', short: 'glass safety', at: { x: -1.6, z: -7.1, ry: 0 }, size: { w: 1.0, h: 1.2, d: 0.3 }, model: glassSafetyModel, stand: { x: -1.2, z: -5.6 } });
-g3({ key: 'fumehood', name: 'Fume extraction hood', short: 'fume hood', at: { x: -5.6, z: -6.5, ry: 0 }, size: { w: 0.2, h: 0.2, d: 0.2 },
+g3({ key: 'fumehood', name: 'Fume extraction hood', short: 'fume hood', at: { x: -5.6, z: -6.5, ry: 0 }, size: { w: 0.2, h: 0.2, d: 0.2 }, stand: { x: -5.5, z: -4.7 },
   model: glassFumeHoodModel });
 
 const GLASS_PIECES = {

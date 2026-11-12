@@ -43,6 +43,9 @@ function eyeCamHideBody(hide) {
         if (c === keloLeftArm || c === keloRightArm) { c.children.forEach(m => { if (m !== keloLeftElbow && m !== keloRightElbow) off(m); }); return; }
         off(c);
       });
+      // A skin's own parts (js/skins.js) are never in the view, wherever they hang
+      // (each hangs in a "skin" group straight on a joint; the head is hidden whole)
+      if (typeof KELO_JOINTS !== 'undefined') KELO_JOINTS.forEach(([, get]) => { const j = get(); if (j) j.children.forEach(c => { if (c.userData.keloSkin) off(c); }); });
     }
 
 // What he is working on, for "through his eyes" to look at (a machine's moving part, the screen he

@@ -208,6 +208,29 @@ function startServer() {
     await jobDone();
     console.log('oil done', JSON.stringify(await W(() => { const v = findVehicle('truck'); return { s: v.service, cond: vehicleCondition(v), supplies: state.supplies, owned: ownedItemNames().filter(n => /oil|tire/i.test(n)) }; })));
   }
+  // Audit (agent/audit-places): each supply is taken once per job, not once per animation frame
+  for (const [sc, key, job] of [['glassonce', 'glassstudio', { make: 'a vase' }], ['woodonce', 'woodshop', { make: 'a side table' }]]) {
+    if (!SC.has(sc)) continue;
+    await knowAll(); await cutaway();
+    await W(k => { const d = WORKSHOP_MACHINES[k]; jobNeeds(d, {}).forEach(n => { for (let i = 0; i < 3; i++) receiveItem(WORKSHOP_SUPPLIES[n].ask, '', 'test'); }); state.unstoredItems = [];
+      window.__uses = {}; const base = useWorkshopSupply; window.useWorkshopSupply = (n, q, w) => { if (q > 0) window.__uses[n] = (window.__uses[n] || 0) + 1; return base(n, q, w); }; }, key);
+    await atDoor(); await runJob(key, job);
+    const r = await jobDone();
+    const uses = await W(() => window.__uses);
+    const multi = Object.entries(uses).filter(([, n]) => n > 1);
+    console.log(sc, 'supply uses', JSON.stringify(uses), r === 'true' && !multi.length ? 'PASS' : 'FAIL');
+  }
+  // Audit: a brake job checks brake supplies; a visitor's ask waits for its supplies instead of being dropped
+  if (SC.has('garagebrakes')) {
+    await knowAll();
+    await give(['A 5 L jug of 5W-30 engine oil', 'An oil filter', 'A box of nitrile gloves', 'A pair of safety glasses', 'A bottle of air tool oil']);
+    await giveTruck();
+    const r = await W(() => ({ needs: jobNeeds(WORKSHOP_MACHINES.garage, { service: 'a brake job', make: 'a brake job' }), ready: machineReady('garage', { service: 'a brake job', make: 'a brake job' }, { quiet: true }) }));
+    console.log('garagebrakes', JSON.stringify(r), r.needs.includes('brakePads') && !r.ready ? 'PASS' : 'FAIL');
+    await W(() => { state.isCollectingMail = false; state.isBusy = false; state.isPracticing = false; workshopAsks.length = 0; workshopAsks.push({ key: 'glassstudio', job: { make: 'a vase', visitor: 'Test' } }); takeWorkshopAsk(); });
+    const kept = await W(() => workshopAsks.length);
+    console.log('askretry kept', kept, kept === 1 ? 'PASS' : 'FAIL');
+  }
   if (SC.has('pcb')) {
     await knowAll(); await cutaway();
     await give(['A pack of bare FR-4 circuit boards', 'A set of PCB milling bits', 'A jar of SAC305 solder paste', 'A laser-cut stainless stencil', 'A kit of SMD component reels', 'A bottle of no-clean flux', 'A bar of SAC305 wave solder', 'A sheet of clear acrylic', 'A spool of PLA filament', 'An ESD wrist strap', 'A pair of safety glasses']);

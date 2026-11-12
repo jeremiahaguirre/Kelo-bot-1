@@ -107,15 +107,18 @@ function wsPuff(u, color, t) {
       }
       const root = u.nozzle || u.brush;
       if (!root || !root.parent) return;
-      if (u.puffs.length < 10 && Math.random() < 0.5) {
+      // Real seconds since the last call (t is in seconds): same puffs per second at any frame rate
+      const dt = u.puffLastT === undefined || t - u.puffLastT > 0.5 || t < u.puffLastT ? 1 / 60 : t - u.puffLastT;
+      u.puffLastT = t;
+      if (u.puffs.length < 10 && Math.random() < 1 - Math.pow(0.5, dt * 60)) {
         const p = mmSphere(root.parent, 0.02 + Math.random() * 0.02, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.7, depthWrite: false }), root.position.x, root.position.y - 0.15, root.position.z);
         p.userData.born = t;
         u.puffs.push(p);
       }
       u.puffs = u.puffs.filter(p => {
         const age = t - p.userData.born;
-        p.position.y += 0.004;
-        p.position.x += (Math.random() - 0.5) * 0.01;
+        p.position.y += 0.24 * dt;
+        p.position.x += (Math.random() - 0.5) * 0.01 * Math.sqrt(dt * 60);
         p.material.opacity = Math.max(0, 0.7 - age * 0.9);
         if (age > 0.8) { if (p.parent) p.parent.remove(p); p.material.dispose(); return false; }
         return true;

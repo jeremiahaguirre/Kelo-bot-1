@@ -961,7 +961,7 @@ async function tripReverse(v, to, speed = 1.3) {
         state.targetPos = { ...state.botPos };
         state.botRotY = rot;
         if (p >= 1) break;
-        await tripSleep(40);
+        await keloNextFrame();
       }
       v.x = state.botPos.x; v.z = state.botPos.z; v.rotY = rot - Math.PI / 2;
     }
@@ -976,7 +976,7 @@ async function tripTurnTo(b) {
         state.botRotY = start + d * p;
         state.targetPos = { ...state.botPos };
         if (p >= 1) break;
-        await tripSleep(40);
+        await keloNextFrame();
       }
     }
 
@@ -1090,7 +1090,7 @@ async function tripSlide(cargo, from, to, b, ms) {
       for (;;) {
         tripRig.slide.p = Math.min(1, (performance.now() - t0) / ms);
         if (tripRig.slide.p >= 1) break;
-        await tripSleep(40);
+        await keloNextFrame();
       }
       tripRig.slide = null;
     }

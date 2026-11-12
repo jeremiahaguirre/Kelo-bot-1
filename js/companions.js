@@ -65,7 +65,7 @@ function companionStep(c, goal, speed, dt) {
       const dx = goal.x - c.pos.x, dz = goal.z - c.pos.z, dist = Math.hypot(dx, dz);
       if (dist < 0.05) { c.speed = 0; return 0; }
       const want = Math.min(speed, 0.8 + dist * 4);
-      c.speed = c.speed + (want - c.speed) * Math.min(1, dt * 5);
+      c.speed = c.speed + (want - c.speed) * (1 - Math.exp(-5 * dt));
       const step = Math.min(dist, c.speed * dt);
       c.pos.x += (dx / dist) * step;
       c.pos.z += (dz / dist) * step;
@@ -490,8 +490,8 @@ function updatePetAnimal(t) {
       // Poses: lying curled up by the bed, sitting while he stands, trotting along
       const lieGoal = asleep && Math.hypot(goal.x - p.pos.x, goal.z - p.pos.z) < 0.2 ? 1 : 0;
       const sitGoal = !lieGoal && p.speed < 0.15 && !companionFetch ? 1 : 0;
-      p.lie += (lieGoal - p.lie) * Math.min(1, dt * 2);
-      p.sit += (sitGoal - p.sit) * Math.min(1, dt * 3);
+      p.lie += (lieGoal - p.lie) * (1 - Math.exp(-2 * dt));
+      p.sit += (sitGoal - p.sit) * (1 - Math.exp(-3 * dt));
       p.gait += dt * (2 + p.speed * 3.2);
       const walkAmt = Math.min(1, p.speed / 1.2);
       p.legs.forEach((leg, i) => {

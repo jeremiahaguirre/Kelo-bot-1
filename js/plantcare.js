@@ -1084,8 +1084,8 @@ if (typeof ITEM_MODEL_RULES !== 'undefined') {
 function pcFrame(dt, realDt = dt) {
       pcUpdateSpray(pcWater, dt);
       pcUpdateSpray(pcGrain, dt);
-      if (pcHeld) pcHeld.tilt.rotation.x += (pcHeld.want - pcHeld.tilt.rotation.x) * Math.min(1, realDt * 3);
-      const k = Math.min(1, dt * 1.5);
+      if (pcHeld) pcHeld.tilt.rotation.x += (pcHeld.want - pcHeld.tilt.rotation.x) * (1 - Math.exp(-3 * realDt));
+      const k = (1 - Math.exp(-1.5 * dt));
       if (typeof editMeshes !== 'undefined') {
         (state.worldEdits || []).forEach(e => {
           const m = e.type === 'plant' && editMeshes[e.id];

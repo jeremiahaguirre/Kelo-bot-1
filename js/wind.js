@@ -151,10 +151,10 @@ function buildWindSock3D() {
 // Every frame: ease toward the real wind, then sway the trees, push the clouds and fill the sock
 function updateWindLook(t, dt) {
       const w = windNow();
-      windShown.s += (w.strength - windShown.s) * Math.min(1, dt * 0.5);
+      windShown.s += (w.strength - windShown.s) * (1 - Math.exp(-0.5 * dt));
       let da = w.angle - windShown.angle;
       da = Math.atan2(Math.sin(da), Math.cos(da));
-      windShown.angle += da * Math.min(1, dt * 0.4);
+      windShown.angle += da * (1 - Math.exp(-0.4 * dt));
       const s = windShown.s, dx = Math.cos(windShown.angle), dz = Math.sin(windShown.angle);
       // The firs sway on the GPU (js/realism.js foliageSwayShader)
       if (typeof FOLIAGE_WIND !== 'undefined') {

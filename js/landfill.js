@@ -114,7 +114,7 @@ async function dumpIntoLake(truck, amount) {
       if (tMesh) tMesh.rotation.y = truck.rotY;
       const bed = tMesh && tMesh.userData.bed;
       const tip = (a) => { if (bed) bed.rotation.z = a; };
-      for (let a = 0; a <= 12; a++) { tip(a * 0.07); await new Promise(r => setTimeout(r, 90)); }
+      await keloTween(1080, k => tip(k * 0.84));
       const load = truck.load || amount;
       truck.load = 0;
       renderVehicles3D();
@@ -125,17 +125,16 @@ async function dumpIntoLake(truck, amount) {
         clump.scale.set(1.4, 0.7, 1.0);
         clump.position.set(tMesh.position.x - Math.cos(truck.rotY) * 3.6, tMesh.position.y + 1.4, tMesh.position.z + Math.sin(truck.rotY) * 3.6);
         scene.add(clump);
-        for (let i = 0; i <= 14; i++) {
-          clump.position.lerp(new THREE.Vector3(f.x, WATER_LEVEL - 0.8, f.z), 0.18);
-          await new Promise(r => setTimeout(r, 50));
-        }
+        // Eases into the water (0.18 of the way every 50 ms, as a curve of time)
+        const c0 = clump.position.clone(), c1 = new THREE.Vector3(f.x, WATER_LEVEL - 0.8, f.z);
+        await keloTween(750, k => { clump.position.copy(c1).addScaledVector(c0.clone().sub(c1), Math.pow(0.82, k * 15)); });
         scene.remove(clump);
         clump.geometry.dispose();
       }
       f.volume = Math.round((f.volume + load * PILE_FLUFF) * 100) / 100;
       refreshTerrainAround(f.x, f.z, f.r + 7);
       if (typeof refreshTerrainColors === 'function') refreshTerrainColors(f);
-      for (let a = 12; a >= 0; a--) { tip(a * 0.07); await new Promise(r => setTimeout(r, 60)); }
+      await keloTween(720, k => tip((1 - k) * 0.84));
       const needed = totalVolumeNeeded(f);
       const pct = Math.min(100, Math.round(f.volume / needed * 100));
       if (f.volume >= needed) {

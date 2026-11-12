@@ -242,7 +242,7 @@ async function forkliftAnim(ms, fn) {
         const k = Math.min(1, (Date.now() - start) / ms);
         fn(k);
         if (k >= 1) return;
-        await new Promise(r => setTimeout(r, 30));
+        await keloNextFrame();
       }
     }
 

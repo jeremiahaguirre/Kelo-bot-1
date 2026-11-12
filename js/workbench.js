@@ -7,7 +7,7 @@
 // WORK_BENCH is the one place to change to move it: `x`, `z` is where he stands, the top is
 // `depth` in front of him (toward -z), `top` units up.
 
-const WORK_BENCH = { x: -3.2, z: -3.0, depth: 1.4, top: 0.8, face: Math.PI, locKey: 'workbench', name: 'his work bench' };
+const WORK_BENCH = { x: MAP_LAYOUT.workBench.x, z: MAP_LAYOUT.workBench.z, depth: 1.4, top: 0.8, face: Math.PI, locKey: 'workbench', name: 'his work bench' };
 let workBenchGroup = null;
 let workBenchTool = null;
 

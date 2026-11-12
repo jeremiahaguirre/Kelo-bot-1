@@ -426,6 +426,8 @@ function takeDownListing(id) {
       const l = shop.listings.find(x => x.id === id);
       if (!l) return;
       shop.listings = shop.listings.filter(x => x.id !== id);
+      // Remembered so his shop page also hides it when an older published copy still lists it (js/shop.js)
+      shop.removed = [id, ...(Array.isArray(shop.removed) ? shop.removed : []).filter(x => x !== id)].slice(0, 200);
       if (l.kind === 'sculpture') state.inventedCreations.forEach(c => { if (c.shopId === id) delete c.shopId; });
       shop.updatedAt = Date.now();
       savePersistentBrainState();

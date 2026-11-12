@@ -280,6 +280,9 @@ registerWorkshopMachine({
     const piece = job.product ? { ...GLASS_PIECES[kind], name: job.product, museum: false } : GLASS_PIECES[kind];
     const rush = Boolean(job.rush);
     let gather = null, heat = 1, size = 0.06;
+    // The step animations run every frame: take each supply once per job, not once per frame
+    const used = new Set();
+    const useOnce = (supply, n, why) => { if (used.has(supply)) return; used.add(supply); useWorkshopSupply(supply, n, why); };
     const follow = ctx => glassPipeFollow(gather, ctx, heat, size);
     const step = (stationKey, title, ms, speech, fn, stand) => ({
       floor: 3, key: stationKey, stand, act: async ctx => {
@@ -294,12 +297,12 @@ registerWorkshopMachine({
       speech: 'Didymium glasses and Kevlar gloves on. The furnace is at 2100 degrees.',
       stops: [
         step('glassfurnace', 'Gathering molten glass from the crucible', 3500, 'Dip the blowpipe, turn, turn, lift: a honey-bright gather.', (k, t, ctx) => {
-          if (k < 0.05) { useWorkshopSupply('furnaceGas', 1, 'Glass furnace'); useWorkshopSupply('glassBatch', 1, 'Glass'); useWorkshopSupply('didymium', 0); useWorkshopSupply('kevlarGloves', 0); }
+          useOnce('furnaceGas', 1, 'Glass furnace'); useOnce('glassBatch', 1, 'Glass'); useOnce('didymium', 0); useOnce('kevlarGloves', 0);
           heat = 1; size = 0.05 + k * 0.05;
           const u = ctx.model.userData; if (u.door) u.door.rotation.y = 1.1 + Math.sin(k * Math.PI) * 0.4;
         }),
         step('marver', 'Rolling the gather on the marver', 2600, 'Roll it on the steel to centre it and skin it over.', (k) => { heat = 0.85 - k * 0.15; }),
-        step('glasstools', 'Shaping it in a wet wooden block', 2200, 'Steam hisses off the wet block and the newspaper.', (k) => { heat = 0.72 - k * 0.1; useWorkshopSupply('colourFrit', k < 0.05 ? 1 : 0, 'Colour'); }),
+        step('glasstools', 'Shaping it in a wet wooden block', 2200, 'Steam hisses off the wet block and the newspaper.', (k) => { heat = 0.72 - k * 0.1; useOnce('colourFrit', 1, 'Colour'); }),
         step('glassbench', 'Blowing the first bubble', 3200, 'A puff, thumb over the end... it swells.', (k) => { heat = 0.62 - k * 0.12; size = 0.1 + k * 0.08 * piece.size; }, { x: -4.6, z: -2.5 }),
         step('gloryhole', 'Reheating in the glory hole', 3000, 'Back in the glory hole before it gets too stiff.', (k) => { heat = 0.5 + k * 0.5; }),
         step('glassbench', 'Shaping at the bench with the jacks', 3800, 'Rolling the pipe on the rails, jacks in the neck, a paddle on the base.', (k) => { heat = 0.95 - k * 0.3; size = 0.18 * piece.size + k * 0.02; }),

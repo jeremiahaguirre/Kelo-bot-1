@@ -235,6 +235,7 @@ function applyMaterialLook(model, itemName) {
       model.traverse(o => {
         if (!o.isMesh || !o.material || !o.material.isMeshStandardMaterial || o.material.map || (o.userData && (o.userData.isLabel || o.userData.realModel))) return;
         const mat = o.material;
+        if (mat.userData.keepLook) return; // modelled with its own finish (js/itemmodels.js)
         const key = guessPartMaterial(mat, named, explicit);
         if (!key) return;
         const m = MATERIALS[key];

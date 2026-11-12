@@ -51,7 +51,7 @@ function townBuildingAt(x, z, pad = 0) {
 // The town was rebuilt at real size: a memory saved with him standing where a bigger building now
 // stands (or inside one mid-visit) puts him back out at that building's door
 function townMoveOutOfBuildings() {
-      const keys = ['storehouse', ...Object.keys(typeof TOWN_BUILDINGS === 'object' ? TOWN_BUILDINGS : {})];
+      const keys = ['storehouse', 'museum', ...Object.keys(typeof TOWN_BUILDINGS === 'object' ? TOWN_BUILDINGS : {})];
       const p = state.botPos;
       if (!p || state.riding) return false;
       const o = worldObstacles.find(b => keys.includes(b.building) && b.hw !== undefined && b.door
@@ -62,7 +62,43 @@ function townMoveOutOfBuildings() {
       return true;
     }
 
+// The map's layout changed (2026-11, MAP_LAYOUT in agent.js): the north row moved onto the valley floor
+// the mountain's foot made room for, and Main Street runs in front of it. What stands there now:
+function mapLayoutCovers(x, z, pad = 0) {
+      const W = MAP_LAYOUT.weld, boxes = [
+        typeof HOUSE !== 'undefined' ? [HOUSE.x, HOUSE.z, HOUSE.w / 2 + 0.8, HOUSE.d / 2 + 0.8] : null,
+        typeof MUSEUM !== 'undefined' ? [MUSEUM.x, MUSEUM.z, MUSEUM.w / 2 + 0.8, MUSEUM.d / 2 + 0.8] : null,
+        typeof STOREHOUSE !== 'undefined' ? [STOREHOUSE.x, STOREHOUSE.z, STOREHOUSE.w / 2 + 0.8, STOREHOUSE.d / 2 + 0.8] : null,
+        [W.x - 0.4, W.z + 0.3, 4.2, 2.6]                // the welding studio, the printer bench and the work bench
+      ].filter(Boolean);
+      return boxes.some(([bx, bz, hw, hd]) => Math.abs(x - bx) < hw + pad && Math.abs(z - bz) < hd + pad);
+    }
+
+// An older save: Kelo-1 standing where a north-row building now stands goes out onto Main Street in
+// front of it; upgrades he set up on what is now town (the old mountain foot behind the north row) move
+// to the nearest open ground outside it. (Vehicles: reparkOldVehicles, js/vehicles.js; plantings, digs,
+// edits, art and builds in town: tidyTown above; holes and piles under buildings: tidyEarthworksInBuildings.)
+function mapLayoutMigrate() {
+      let moved = 0;
+      const p = state.botPos;
+      if (p && !state.riding && mapLayoutCovers(p.x, p.z, 0.3)) {
+        const front = { x: p.x, z: (typeof MAIN_STREET !== 'undefined' ? MAIN_STREET.z : -7.4) - 1.6 };
+        state.botPos = { ...front };
+        state.targetPos = { ...front };
+        moved++;
+      }
+      (state.worldUpgrades || []).forEach(u => {
+        if (!Number.isFinite(u.x) || !Number.isFinite(u.z) || !(inTown(u.x, u.z) || mapLayoutCovers(u.x, u.z, 1))) return;
+        const spot = typeof openGroundNear === 'function' ? openGroundNear({ x: u.x, z: Math.min(u.z, TOWN.minZ - 4) }, 2, { offLimits: true }) : null;
+        if (spot) { u.x = spot.x; u.z = spot.z; moved++; }
+      });
+      return moved;
+    }
+
 window.addEventListener('DOMContentLoaded', () => {
   // (after scene.js has built the town)
-  setTimeout(() => { try { townMoveOutOfBuildings(); } catch (e) { console.warn('town: move out', e); } }, 0);
+  setTimeout(() => {
+    try { townMoveOutOfBuildings(); } catch (e) { console.warn('town: move out', e); }
+    try { mapLayoutMigrate(); } catch (e) { console.warn('town: map layout', e); }
+  }, 0);
 });

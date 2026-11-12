@@ -1,5 +1,14 @@
 // Kelo-bot-1 — js/main.js
-// Loaded THIRD. Connects all UI tabs, keyboard/mouse/upload listeners, and boots the 3D world.
+// Loaded after upgrades.js, near the end. Connects all UI tabs, keyboard/mouse/upload listeners, and boots the 3D world.
+
+// Escape closes only the top thing: if a dialog, viewer or panel was open when it was pressed, the side menu stays.
+// (Window capture, registered before every other key handler, so it sees them before they close.)
+let escapeClosedOverlay = false;
+window.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  escapeClosedOverlay = Boolean(document.getElementById('keloViewer')
+    || document.querySelector('#codeViewerModal:not(.hidden), #aiConfigModal:not(.hidden), #exploreHelp:not(.hidden), #explorePlaces:not(.hidden)'));
+}, true);
 
 // Write text only when it changed (no layout work, no screen-reader repeats)
 function hudSetText(el, text) {
@@ -7,6 +16,8 @@ function hudSetText(el, text) {
     }
 
 function renderAllUI() {
+      // The roof button names the saved roof style (it is kept across reloads)
+      hudSetText(document.querySelector('#btnToggleRoof span'), state.roofCutaway ? 'Roofs: Cutaway' : 'Roofs: Solid');
       // How he feels: six small meters in the status block (numbers in its pop-up)
       [['Health', state.health], ['Fullness', state.fullness], ['Happy', state.happiness],
         ['Wonder', state.wonderLevel], ['Calm', state.calmLevel]].forEach(([k, v]) => {
@@ -66,7 +77,7 @@ function journalSplitEmoji(text) {
 function journalMark(text, words) {
       const raw = String(text || '');
       if (!words.length) return escapeHtml(raw);
-      const re = new RegExp(`(${words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+      const re = new RegExp(`(${words.map(escapeRegExp).join('|')})`, 'gi');
       return raw.split(re).map((part, i) => (i % 2 ? `<mark class="journal-hit">${escapeHtml(part)}</mark>` : escapeHtml(part))).join('');
     }
 
@@ -270,7 +281,6 @@ function renderRequestsTab() {
         </div>
       `).join('') + (grouped ? codeRequestsGroupHtml() : '');
 
-      if (typeof bindCodeRequestButtons === 'function') bindCodeRequestButtons(list);
       if (typeof bindBomListButtons === 'function') bindBomListButtons(list);
       if (typeof bindRoadworkListButtons === 'function') bindRoadworkListButtons(list);
 
@@ -400,6 +410,7 @@ function renderGitHubTab() {
           const modal = document.getElementById('codeViewerModal');
           modal.classList.remove('hidden');
           modal.classList.add('flex');
+          document.getElementById('btnCloseCodeModal')?.focus({ preventScroll: true });
         };
       });
     }
@@ -636,7 +647,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
   window.addEventListener('keydown', (e) => {
     const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
-    if (tag === 'input' || tag === 'textarea') return;
+    // Not while typing or choosing in a list, nor for shortcuts like Ctrl+S (their keyup may never reach us)
+    if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (typeof arrowKeyState !== 'undefined' && e.code in arrowKeyState) {
       if (document.getElementById('keloViewer')) return; // the arrows page through the viewer instead
       arrowKeyState[e.code] = true;
@@ -644,11 +657,13 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Capture phase: js/explore.js stops these keys' keyup from going further, which left a pan key held for good
   window.addEventListener('keyup', (e) => {
     if (typeof arrowKeyState !== 'undefined' && e.code in arrowKeyState) {
       arrowKeyState[e.code] = false;
     }
-  });
+  }, true);
+  window.addEventListener('blur', () => { if (typeof arrowKeyState !== 'undefined') Object.keys(arrowKeyState).forEach(k => { arrowKeyState[k] = false; }); });
 
   const mapDirToCode = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' };
   document.querySelectorAll('.pan-key-btn').forEach(btn => {
@@ -771,7 +786,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnCloseMenu')?.addEventListener('click', () => setMenuOpen(false));
   scrim?.addEventListener('click', () => setMenuOpen(false));
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && document.getElementById('aiConfigModal').classList.contains('hidden')) setMenuOpen(false);
+    if (e.key === 'Escape' && !escapeClosedOverlay) setMenuOpen(false);
   });
   // Open a specific tab from elsewhere (e.g. "Kelo-1 sent you a letter")
   window.openKeloMenu = (tabId) => { showTab(tabId); setMenuOpen(true); };
@@ -823,13 +838,23 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   // Modals: open/close helpers, close on backdrop click or Escape
+  // Focus moves into an open dialog (and back after), so Escape and Tab act on it, not on a panel behind it
+  const modalReturnFocus = {};
   const openModal = (id) => {
     const m = document.getElementById(id);
-    if (m) { m.classList.remove('hidden'); m.classList.add('flex'); }
+    if (!m) return;
+    if (m.classList.contains('hidden')) modalReturnFocus[id] = document.activeElement;
+    m.classList.remove('hidden'); m.classList.add('flex');
+    const first = m.querySelector('button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (first) first.focus({ preventScroll: true });
   };
   const closeModal = (id) => {
     const m = document.getElementById(id);
-    if (m) { m.classList.add('hidden'); m.classList.remove('flex'); }
+    if (!m || m.classList.contains('hidden')) return;
+    m.classList.add('hidden'); m.classList.remove('flex');
+    const back = modalReturnFocus[id];
+    modalReturnFocus[id] = null;
+    if (back && back.isConnected && typeof back.focus === 'function' && back.offsetParent !== null) back.focus({ preventScroll: true });
   };
   ['codeViewerModal', 'aiConfigModal'].forEach(id => {
     document.getElementById(id)?.addEventListener('click', (e) => {
@@ -882,6 +907,9 @@ window.addEventListener('DOMContentLoaded', () => {
       Object.keys(photoKeys).forEach(k => storeKey(`kelo1_${k}_api_key`, photoKeys[k]));
     }
     updateBrainButtonText();
+    // A shop contact that isn't valid wasn't saved (js/shopkeeping.js says so): keep the dialog open to fix it
+    const contact = document.getElementById('shopContactInput');
+    if (contact && typeof normalizeShopContact === 'function' && normalizeShopContact(contact.value) === null) { contact.focus(); return; }
     closeModal('aiConfigModal');
     showToast(hasLLMKey() ? '🧠 AI keys saved on this device. He starts thinking with the AI now.' : '🧠 Using the built-in procedural brain.');
     if (hasLLMKey()) switchToAIThinking();

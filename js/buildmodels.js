@@ -511,12 +511,12 @@ function finishedBuildItem(key) {
 
 // What the finished things look like anywhere else (the Post Office counter, a shelf, his hands)
 if (typeof ITEM_MODEL_RULES !== 'undefined') ITEM_MODEL_RULES.unshift(
-  [/home-built ultralight airplane/, () => finishedBuildVehicle('ultralight')],
-  [/home-built go-kart/, () => finishedBuildVehicle('gokart')],
-  [/cedar-strip canoe/, () => finishedBuildVehicle('canoe')],
-  [/wooden sea kayak/, () => finishedBuildVehicle('kayak')],
-  [/home-built fpv quadcopter/, () => finishedBuildItem('drone')],
-  [/home-built electric guitar/, () => finishedBuildItem('guitar')],
+  [/^(?!(parts kit|tools for)).*home-built ultralight airplane/, () => finishedBuildVehicle('ultralight')],
+  [/^(?!(parts kit|tools for)).*home-built go-kart/, () => finishedBuildVehicle('gokart')],
+  [/^(?!(parts kit|tools for)).*cedar-strip canoe/, () => finishedBuildVehicle('canoe')],
+  [/^(?!(parts kit|tools for)).*wooden sea kayak/, () => finishedBuildVehicle('kayak')],
+  [/^(?!(parts kit|tools for)).*home-built fpv quadcopter/, () => finishedBuildItem('drone')],
+  [/^(?!(parts kit|tools for)).*home-built electric guitar/, () => finishedBuildItem('guitar')],
   [/^parts (kit|crate)|^tools for /, () => {
     const g = group();
     g.add(at(mesh(new THREE.BoxGeometry(0.5, 0.32, 0.36), 0xc8a165, { roughness: 0.9 }), 0, 0.16, 0));

@@ -181,7 +181,7 @@ function renderViewer() {
             <figcaption class="w-full text-center text-2xs leading-tight text-amber-50 bg-black/40 rounded px-1 py-0.5 truncate" title="${escapeHtml(it.label)}">${escapeHtml(it.label)}${it.sub ? ` <span class="text-amber-300/80">· ${escapeHtml(it.sub)}</span>` : ''}</figcaption>
             <div class="flex gap-1">
               ${it.sub === 'Painting' ? '' : `<button data-take="${which === 'museum' ? 'display' : 'use'}" data-name="${escapeHtml(it.name || '')}" class="px-1.5 py-0.5 rounded bg-emerald-700/80 hover:bg-emerald-600 text-3xs text-white">${which === 'museum' ? 'Put outside' : 'Use it'}</button>`}
-              <button data-take="dispose" data-name="${escapeHtml(it.name || '')}" class="px-1.5 py-0.5 rounded bg-rose-800/80 hover:bg-rose-700 text-3xs text-white">Throw out</button>
+              <button data-take="dispose" data-from="${which}" data-name="${escapeHtml(it.name || '')}" class="px-1.5 py-0.5 rounded bg-rose-800/80 hover:bg-rose-700 text-3xs text-white">Throw out</button>
             </div>
           </figure>` : '<div></div>';
         const rows = [0, 1, 2].map(r => `
@@ -211,10 +211,14 @@ function renderViewer() {
       // Suggest he takes something out: he does it as soon as he's free (js/takeout.js)
       el.querySelectorAll('[data-take]').forEach(btn => btn.addEventListener('click', () => {
         const name = btn.getAttribute('data-name'), what = btn.getAttribute('data-take');
-        const job = what === 'dispose' ? () => disposeItem(name, 'A visitor suggested it.', 'A Visitor Suggested It')
+        // A Museum piece is thrown out from the Museum, never a Storehouse thing that shares its name
+        const job = what === 'dispose' && btn.getAttribute('data-from') === 'museum' && typeof findMuseumPiece === 'function' && findMuseumPiece(name)
+          ? () => takeOutOfMuseum(name, 'dispose', 'A visitor suggested it.', 'A Visitor Suggested It')
+          : what === 'dispose' ? () => disposeItem(name, 'A visitor suggested it.', 'A Visitor Suggested It')
           : what === 'display' ? () => takeOutOfMuseum(name, 'display', 'A visitor suggested it.', 'A Visitor Suggested It')
           : () => takeOutToUse(name, 'a visitor suggested it');
-        doWhenFree(job);
+        // Keyed by item: closures with the same source text would be merged into one, losing the second suggestion
+        doWhenFree(job, { key: `viewer-take:${what}:${name}` });
         showToast(what === 'dispose' ? `🗑️ Kelo-1 will throw out ${name} when he's free.` : `👍 Kelo-1 will take ${name} out when he's free.`);
         btn.disabled = true;
         btn.textContent = 'Asked ✓';

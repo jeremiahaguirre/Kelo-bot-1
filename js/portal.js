@@ -1,5 +1,5 @@
 // Kelo-bot-1 — js/portal.js
-// Loaded last. The "Send Kelo-1 Something" portal in the Post Office tab: messages, small tools
+// Loaded after main.js. The "Send Kelo-1 Something" portal in the Post Office tab: messages, small tools
 // and toys (or anything you can name), and photos. Everything is mailed to the post office
 // (js/postoffice.js); Kelo-1 picks it up when he chooses and decides what to do with each.
 
@@ -142,7 +142,7 @@ function renderPortal() {
               <span class="text-2xs tabular-nums text-slate-400 shrink-0">${escapeHtml(g.time)}</span>
             </div>
             <div class="text-2xs tabular-nums text-slate-400">from ${escapeHtml(g.from)}${g.note ? ` • "${escapeHtml(g.note)}"` : ''}</div>
-            ${g.reaction ? `<p class="text-2xs text-slate-300 font-serif italic">Kelo-1: "${escapeHtml(g.reaction)}"</p>` : '<p class="ui-loading text-2xs"><span class="ui-spinner" aria-hidden="true"></span>He is still thinking about it…</p>'}
+            ${g.reaction ? `<p class="text-2xs text-slate-300 font-serif italic">Kelo-1: "${escapeHtml(g.reaction)}"</p>` : state.isCollectingMail ? '<p class="ui-loading text-2xs"><span class="ui-spinner" aria-hidden="true"></span>He is still thinking about it…</p>' : '<p class="text-2xs text-slate-400">He opened it without a word.</p>'}
           </div>`).join(''));
       }
 

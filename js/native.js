@@ -232,6 +232,11 @@
       else if (shown('aiConfigModal')) click('btnCloseAIConfigModal');
       else if (shown('codeViewerModal')) click('btnCloseCodeModal');
       else if (document.body.classList.contains('menu-open')) click('btnCloseMenu');
+      // How-to-explore, Places, the Workshop chooser and a Workshop visit close the way Escape closes them
+      else if (shown('exploreHelp') || shown('explorePlaces') || shown('svChooser') || (typeof state !== 'undefined' && state.cameraMode === 'visit')) {
+        const esc = { key: 'Escape', code: 'Escape', bubbles: true };
+        document.dispatchEvent(new KeyboardEvent('keydown', esc));
+      }
       else App.minimizeApp().catch(() => App.exitApp());
     });
 

@@ -483,7 +483,7 @@ function checkForGlints() {
       } else if (!state.isBusy && !state.isBuilding && !state.isPracticing && Math.random() < 0.5) {
         state.speechBubble = 'Did something just glint over there? I want to dig and see.';
         renderAllUI();
-        doWhenFree(() => digAt(near.x, near.z, 'Saw Something Glint'));
+        doWhenFree(() => digAt(near.x, near.z, 'Saw Something Glint'), { key: `dig:${near.x},${near.z}` });
       }
     }
 

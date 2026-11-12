@@ -78,7 +78,7 @@ function groundworkReady(key, context = 'Shaping the valley', { quiet = false } 
         if (!quiet) {
           state.speechBubble = `I don't really know the right way to go about ${job.title}. I'll research it at NetNode before I start.`;
           renderAllUI();
-          doWhenFree(() => researchJob(key));
+          doWhenFree(() => researchJob(key), { key: 'research-job:' + key });
         }
         return false;
       }

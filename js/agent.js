@@ -2153,7 +2153,7 @@ function applyDecision(decision, originLabel) {
       }
 
       if (decision.dig && state.knowsDigging && typeof digAt === 'function' && Number.isFinite(Number(decision.dig.x)) && Number.isFinite(Number(decision.dig.z))) {
-        doWhenFree(() => digAt(Number(decision.dig.x), Number(decision.dig.z), 'Decided to Dig'));
+        doWhenFree(() => digAt(Number(decision.dig.x), Number(decision.dig.z), 'Decided to Dig'), { key: `dig:${decision.dig.x},${decision.dig.z}` });
       }
 
       if (decision.shape && typeof applyShapeDecision === 'function') applyShapeDecision(decision.shape);
@@ -2162,18 +2162,18 @@ function applyDecision(decision, originLabel) {
         const what = str(to.item, 120);
         // A stored thing is used only for what it's for: "display" a tool and he says no (js/itemuse.js)
         const forWhat = str(to.for, 120) || (to.purpose === 'display' ? 'display' : '');
-        if (findMuseumPiece(what)) doWhenFree(() => takeOutOfMuseum(what, 'display', '', 'Decided to Rearrange'));
-        else if (findOwnedName(what)) doWhenFree(() => takeOutToUse(what, '', forWhat));
+        if (findMuseumPiece(what)) doWhenFree(() => takeOutOfMuseum(what, 'display', '', 'Decided to Rearrange'), { key: 'museum-out:' + what });
+        else if (findOwnedName(what)) doWhenFree(() => takeOutToUse(what, '', forWhat), { key: `take-out:${what}:${forWhat}` });
       }
       const ui = decision.useItem;
       if (ui && typeof ui === 'object' && typeof useItemFor === 'function' && findOwnedName(str(ui.item, 120))) {
-        doWhenFree(() => useItemFor(str(ui.item, 120), str(ui.for, 120), '', 'Decided to Use Something'));
+        doWhenFree(() => useItemFor(str(ui.item, 120), str(ui.for, 120), '', 'Decided to Use Something'), { key: `use:${str(ui.item, 120)}:${str(ui.for, 120)}` });
       }
       if (decision.expandLand && typeof startLandFill === 'function') startLandFill(decision.expandLand.x, str(decision.expandLand.why, 160));
       if (typeof decision.practise === 'string' && typeof practiseNamed === 'function') practiseNamed(decision.practise);
       if (decision.takeTrip && typeof applyTripDecision === 'function') applyTripDecision(decision);
       if (typeof startProject === 'function' && typeof decision.buildProject === 'string' && planFor(decision.buildProject.toLowerCase().trim())) {
-        doWhenFree(() => startProject(decision.buildProject.toLowerCase().trim(), 'Decided to Build Something Real'));
+        doWhenFree(() => startProject(decision.buildProject.toLowerCase().trim(), 'Decided to Build Something Real'), { key: 'project:' + decision.buildProject.toLowerCase().trim() });
       }
 
       if (decision.buildAnything && typeof applyBuildAnythingDecision === 'function') applyBuildAnythingDecision(decision.buildAnything);
@@ -2182,7 +2182,7 @@ function applyDecision(decision, originLabel) {
 
       const dc = decision.discard;
       if (dc && typeof dc === 'object' && typeof disposeItem === 'function' && (findOwnedName(dc.item) || (typeof findMuseumPiece === 'function' && findMuseumPiece(dc.item)))) {
-        doWhenFree(() => disposeItem(dc.item, str(dc.why, 200), 'Decided to Throw Something Away'));
+        doWhenFree(() => disposeItem(dc.item, str(dc.why, 200), 'Decided to Throw Something Away'), { key: 'dispose:' + dc.item });
       }
 
       if (decision.startHobby && typeof addHobby === 'function') {

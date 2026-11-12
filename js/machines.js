@@ -180,7 +180,7 @@ function machineReady(key, job = {}, { quiet = false, context = 'Workshop' } = {
         if (!quiet) {
           state.speechBubble = `I've never used the ${def.name}. I'll read up on how it's really done at NetNode before I touch it.`;
           renderAllUI();
-          doWhenFree(() => researchMachine(key));
+          doWhenFree(() => researchMachine(key), { key: 'research-machine:' + key });
         }
         return false;
       }

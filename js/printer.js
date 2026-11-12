@@ -830,7 +830,7 @@ function printOnMyOwn() {
 function printDecision(pr) {
       if (!pr || typeof pr !== 'object' || !printerName()) return;
       const idea = printIdeaFor(typeof pr.what === 'string' ? pr.what : '');
-      doWhenFree(() => printSomething(idea, 'Decided to Print Something'));
+      doWhenFree(() => printSomething(idea, 'Decided to Print Something'), { key: 'print:' + (idea.what || pr.what || '') });
     }
 
 function printerSummaryForAI() {

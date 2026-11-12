@@ -219,7 +219,7 @@ function paintReady(medium, context = 'Painting', { quiet = false } = {}) {
         if (!quiet) {
           state.speechBubble = `I've never painted in ${m.title.replace(/ (painting|drawing)$/, '')}. I'll read up on how it's done at NetNode first.`;
           renderAllUI();
-          doWhenFree(() => researchMedium(medium));
+          doWhenFree(() => researchMedium(medium), { key: 'research-medium:' + medium });
         }
         return false;
       }
@@ -690,7 +690,7 @@ function paintDecision(p) {
       const text = typeof p === 'string' ? p : `${p.medium || ''} ${p.subject || ''}`;
       const medium = (typeof p === 'object' && PAINT_MEDIA[p.medium]) ? p.medium : paintMediumOf(text) || pickPaintMedium();
       const subject = (typeof p === 'object' && PAINT_SUBJECTS[p.subject]) ? p.subject : paintSubjectOf(text);
-      doWhenFree(() => paintPicture(medium, subject, { originLabel: 'Decided to Paint' }));
+      doWhenFree(() => paintPicture(medium, subject, { originLabel: 'Decided to Paint' }), { key: `paint:${medium}:${subject}` });
     }
 
 function paintingSummaryForAI() {

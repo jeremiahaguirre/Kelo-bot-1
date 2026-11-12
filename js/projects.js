@@ -343,7 +343,7 @@ function pickNewProject() {
 function maybeProjectFromReading(text) {
       if (activeProject()) return;
       const plan = BUILD_PLANS.find(p => (p.reads || new RegExp(p.name.split(' ').slice(-1)[0], 'i')).test(String(text || '')));
-      if (plan && Math.random() < 0.5) doWhenFree(() => startProject(plan.key, 'Read About It Online'));
+      if (plan && Math.random() < 0.5) doWhenFree(() => startProject(plan.key, 'Read About It Online'), { key: 'project:' + plan.key });
     }
 
 function projectsSummaryForAI() {

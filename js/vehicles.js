@@ -205,6 +205,9 @@ function reparkOldVehicles() {
         // (also anything left where a town building now stands, or on the balloon field's old spot)
         const stale = water ? v.z < 10.5 && v.z > 8.5 : Math.hypot(v.x - STOREHOUSE.x, v.z - STOREHOUSE.z) < 7
           || (typeof townBuildingAt === 'function' && Boolean(townBuildingAt(v.x, v.z, 1.5)))
+          || (typeof mapLayoutCovers === 'function' && mapLayoutCovers(v.x, v.z, 1.5))
+          // (or on the haul road, the only way over the range: road machines once parked on the plant's west strip)
+          || (!water && type.mode !== 'air' && typeof keloRoadAt === 'function' && (keloRoadAt(v.x, v.z) || {}).id === 'haul_road')
           || (type.mode === 'air' && BALLOON_OLD_SLOTS.some(([bx, bz]) => Math.hypot(v.x - bx, v.z - bz) < 0.5));
         if (!stale) return;
         const slots = parkingSlotsFor(type, v.name);
@@ -255,7 +258,7 @@ function updateVehicles(t) {
       }
       // Lean into turns with the vehicle (js/motion.js): the seat swings out with the lean
       let bank = typeof keloVehicleBank === 'function' ? keloVehicleBank(m, keloAnim.dt) : 0;
-      if (m.userData.flight) { bank = m.userData.flight.bank; m.rotation.order = 'YXZ'; m.rotation.x = bank; }
+      if (m.userData.flight) { bank = m.userData.flight.shownBank ?? m.userData.flight.bank; m.rotation.order = 'YXZ'; m.rotation.x = bank; }
       if (bank) {
         const a = m.rotation.y, lean = Math.sin(bank) * (seat ? seat.y : type.seatY);
         keloGroup.position.x += Math.sin(a) * lean;
@@ -267,11 +270,9 @@ function updateVehicles(t) {
         if (m.userData.rotor) m.userData.rotor.rotation.y = t * 14;
         if (m.userData.tailRotor) m.userData.tailRotor.rotation.z = t * 20;
       }
-      // Hands forward on the wheel or the handlebars
-      keloLeftArm.rotation.set(-0.6, 0, 0.05);
-      keloRightArm.rotation.set(-0.6, 0, -0.05);
-      keloLeftElbow.rotation.x = keloRightElbow.rotation.x = -0.7;
-      keloLeftHand.userData.grip = keloRightHand.userData.grip = 0.85;
+      // Climbing in, hands on the wheel or the handlebars (on a steering wheel's rim, so they turn it),
+      // glancing about, and climbing out again when he stops riding (js/kelo-clips.js)
+      keloAction('drive', { wheel: keloSteeringWheelOf(m) });
     }
 
 // --- Ride feel: wheels, steering, suspension, pitch, hydraulics and rotors ---------------------------
@@ -398,20 +399,29 @@ function airAltitude(m, v, t) {
       const u = m.userData, balloon = /balloon/i.test(v.name);
       // His home-built airplane rolls down the strip before it climbs (js/assembly.js)
       if (u.fixedWing && typeof planeAltitude === 'function') return planeAltitude(m, v, t, u);
-      // Real seconds since the last frame, so slow computers climb just as fast
-      const now = performance.now() / 1000;
-      const dt = Math.min(0.5, Math.max(0, now - (u.lastT ?? now)));
-      u.lastT = now;
+      // Climbs and descends in the fixed simulation steps (js/scene.js keloSim), drawn between the last two
       const want = u.landing ? 0 : (balloon ? CRUISE_ALTITUDE.balloon : CRUISE_ALTITUDE.helicopter);
-      const alt = u.alt || 0, rate = balloon ? 1.6 : 3.2; // units per second
-      u.alt = alt < want ? Math.min(want, alt + rate * dt) : Math.max(want, alt - rate * 0.8 * dt);
+      const rate = balloon ? 1.6 : 3.2; // units per second
+      const shown = airAltSteps(u, h => { const alt = u.alt || 0; u.alt = alt < want ? Math.min(want, alt + rate * h) : Math.max(want, alt - rate * 0.8 * h); });
       // The burner flares while the balloon climbs, and idles once it is up
       if (u.flame) {
         const roar = u.alt < want - 0.2 ? 2.4 : u.alt > 0.5 ? 1.2 : 0.6;
         u.flame.scale.set(1, roar + Math.sin(t * 23) * 0.25 * roar, 1);
       }
-      const bob = u.alt > 1 ? Math.sin(t * (balloon ? 0.8 : 1.3)) * (balloon ? 0.45 : 0.3) * Math.min(1, u.alt / 4) : 0;
-      return (u.lift ?? 1) * (u.alt + bob);
+      const bob = shown > 1 ? Math.sin(t * (balloon ? 0.8 : 1.3)) * (balloon ? 0.45 : 0.3) * Math.min(1, shown / 4) : 0;
+      return (u.lift ?? 1) * (shown + bob);
+    }
+
+// Run this frame's simulation steps of an aircraft's height (step(h) moves u.alt) and return the height
+// to draw, between the last two steps. A height set from outside (a landing, a new flight) starts fresh.
+function airAltSteps(u, step) {
+      const sim = typeof keloSim !== 'undefined' ? keloSim : null;
+      if (u.altSim !== u.alt) u.altPrev = u.alt = u.alt || 0;
+      const n = sim ? sim.steps : 1, h = sim ? KELO_SIM_H : 1 / 60;
+      for (let i = 0; i < n; i++) { u.altPrev = u.alt || 0; step(h); }
+      u.altSim = u.alt;
+      const a = sim ? sim.alpha : 1;
+      return u.altPrev + (u.alt - u.altPrev) * a;
     }
 
 // Wait (up to `ms`) until an aircraft has climbed to `atLeast` or come down below `atMost`
@@ -442,7 +452,9 @@ function vehicleDestination(v, type, target) {
         // would otherwise send it 10 units off the pad, and it would never come home)
         const pad = [...AIR_SLOTS, ...BALLOON_SLOTS].find(([x, z]) => Math.hypot(dest.x - x, dest.z - z) < 1.5);
         if (pad) return { x: pad[0], z: pad[1] };
-        return openGroundNear(dest, /balloon/i.test(v.name) ? 2.2 : 3.0) || dest;
+        // (none near: the nearest open ground back in the valley; never the runway field or the north yard)
+        const r = /balloon/i.test(v.name) ? 2.2 : 3.0;
+        return openGroundNear(dest, r) || openGroundNear({ x: dest.x, z: Math.max(dest.z, WORLD_VALLEY_MIN_Z + 4) }, r) || dest;
       }
       if (type.mode === 'water') {
         const from = { x: state.botPos.x, z: state.botPos.z };
@@ -463,6 +475,8 @@ function vehicleDestination(v, type, target) {
 // Walk to a vehicle, climb in, drive to a target, and park there
 async function driveVehicle(v, target, label) {
       const type = vehicleTypeFor(v.name);
+      // Nothing parks on the runway field or its taxiway (js/agent.js)
+      if (typeof runwayKeepOff === 'function') target = runwayKeepOff(target);
       state.targetPos = boardingSpot(v);
       state.moodTitle = `Walking to the ${v.name.replace(/^(an?|the)\s+/i, '')}`;
       renderAllUI();

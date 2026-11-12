@@ -20,8 +20,8 @@ const PC_MAX_STEPS = 40000;                  // catch-up limit (about 140 real d
 const PC_WILT_AT = 0.75;                     // health below this shows as wilting
 const PC_CAN_RE = /watering can|garden hose|\bhose\b/i;
 const PC_FERT_RE = /fertili[sz]er|compost|bone ?meal|blood ?meal|plant food|manure|worm castings/i;
-const PC_TAP = { x: -13.4, z: 2.5 };         // the garden's yard hydrant, west of the beds
-const PC_BEDS = [0, 1, 2, 3].map(p => ({ x: -11.5 + (p % 2) * 2.4, z: 1.6 + Math.floor(p / 2) * 1.8 })); // as built in js/scene.js
+const PC_TAP = { x: MAP_LAYOUT.garden.x + 1.2, z: MAP_LAYOUT.garden.z - 1.5 };   // the garden's yard hydrant, behind the beds (Garden Lane stays clear)
+const PC_BEDS = [0, 1, 2, 3].map(p => ({ x: MAP_LAYOUT.garden.x + (p % 2) * 2.4, z: MAP_LAYOUT.garden.z + Math.floor(p / 2) * 1.8 })); // as built in js/scene.js
 const PC_FEEDS = [
   { re: /bone ?meal/i, n: 0.35, label: 'bone meal' },
   { re: /compost|manure|worm castings/i, n: 0.3, m: 0.08, label: 'compost' },
@@ -678,6 +678,7 @@ function pcHoldCan() {
     }
 
 function pcDropHeld() {
+      if (typeof keloDoing === 'function' && keloClip.hint === 'water') keloDoing(null);
       if (pcWater) pcWater.source = null;
       if (pcGrain) pcGrain.source = null;
       if (pcHeld && pcHeld.obj.parent === scene) scene.remove(pcHeld.obj); // still standing under the tap
@@ -733,6 +734,8 @@ async function pcPour(t, amount, ms = 3200) {
       const pc = pcState();
       pcWater.source = pcRoseSource(t.floorY);
       pcHeld.want = 0.95;
+      // leaning in with the can held out, sweeping the rose over the plants (js/kelo-clips.js)
+      if (typeof keloDoing === 'function') keloDoing('water');
       const parts = 8;
       await pcWait(500);
       for (let i = 0; i < parts; i++) {
@@ -743,6 +746,7 @@ async function pcPour(t, amount, ms = 3200) {
         refreshPlantLooks();
       }
       pcHeld.want = 0;
+      if (typeof keloDoing === 'function') keloDoing(null);
       await pcWait(400);
       pcWater.source = null;
     }
@@ -1084,8 +1088,8 @@ if (typeof ITEM_MODEL_RULES !== 'undefined') {
 function pcFrame(dt, realDt = dt) {
       pcUpdateSpray(pcWater, dt);
       pcUpdateSpray(pcGrain, dt);
-      if (pcHeld) pcHeld.tilt.rotation.x += (pcHeld.want - pcHeld.tilt.rotation.x) * Math.min(1, realDt * 3);
-      const k = Math.min(1, dt * 1.5);
+      if (pcHeld) pcHeld.tilt.rotation.x += (pcHeld.want - pcHeld.tilt.rotation.x) * (1 - Math.exp(-3 * realDt));
+      const k = (1 - Math.exp(-1.5 * dt));
       if (typeof editMeshes !== 'undefined') {
         (state.worldEdits || []).forEach(e => {
           const m = e.type === 'plant' && editMeshes[e.id];

@@ -45,8 +45,14 @@ function offLimits(x, z, pad = 0) {
       if (typeof inParkingArea === 'function' && inParkingArea(x, z, pad)) return 'the vehicle yard';
       if (Math.hypot(x - DISPOSAL_PIT.x, z - DISPOSAL_PIT.z) < DISPOSAL_PIT.r + 1 + pad) return 'the Disposal Pit';
       if (z > 9.2) return 'the lake';
+      // His roads and paths stay clear (js/roads.js)
+      if (typeof keloRoadAt === 'function') { const road = keloRoadAt(x, z, pad); if (road) return road.name; }
+      // The runway field and its taxiway are kept for the runway (only a runway job may work on them)
+      if (typeof onRunwayReserve === 'function' && onRunwayReserve(x, z, pad) && !runwayJobActive) return 'the runway field';
       return null;
     }
+// Set by a runway job (future) while it works the field, so offLimits lets it clear, grade and pave
+let runwayJobActive = false;
 
 function newEditId(type) {
       return `${type}-${Date.now().toString(36)}-${Math.floor(Math.random() * 1000)}`;
@@ -309,8 +315,11 @@ function removeEditMesh(id) {
     }
 
 // A chopped tree is gone from the valley (and from the obstacles he walks around)
-function removeValleyTree(treeId) {
-      const tree = valleyTrees.find(t => t.id === treeId);
+function removeValleyTree(treeId, x, z) {
+      // (by where it stood when he chopped it, if that is known: the seeded trees' order can change when
+      // the map's layout does, so an id alone may name a different tree in an older save)
+      const at = Number.isFinite(x) && Number.isFinite(z) ? valleyTrees.find(t => !t.removed && Math.hypot(t.x - x, t.z - z) < 0.4) : null;
+      const tree = at || (Number.isFinite(x) ? null : valleyTrees.find(t => t.id === treeId));
       if (!tree) return;
       scene.remove(tree.group);
       worldObstacles = worldObstacles.filter(o => o !== tree.obstacle);
@@ -360,10 +369,7 @@ async function chopTree(x = state.botPos.x, z = state.botPos.z, why = '', origin
         state.speechBubble = 'Timber!';
         renderAllUI();
         // It topples away from him
-        for (let a = 0; a <= 16; a++) {
-          tree.group.rotation.z = -(a / 16) * (Math.PI / 2) * (a / 16);
-          await new Promise(r => setTimeout(r, 60));
-        }
+        await keloTween(1020, k => { tree.group.rotation.z = -k * (Math.PI / 2) * k; });
         await new Promise(r => setTimeout(r, 600));
         removeValleyTree(tree.id);
         const e = { id: newEditId('chop'), type: 'chop', treeId: tree.id, x: tree.x, z: tree.z, at: Date.now(), why: String(why).slice(0, 160) };
@@ -392,7 +398,7 @@ async function plantSeeds(x, z, why = '', originLabel = 'Shaping the Valley') {
       }
       if (typeof groundworkReady === 'function' && !groundworkReady('planting', 'Planting')) return 'getting-ready';
       x = Math.round(clampNumber(x, WORLD_MIN_X + 2, WORLD_MAX_X - 2, state.botPos.x) * 10) / 10;
-      z = Math.round(clampNumber(z, WORLD_MIN_Z + 2, 9, state.botPos.z) * 10) / 10;
+      z = Math.round(clampNumber(z, WORLD_VALLEY_MIN_Z + 2, 9, state.botPos.z) * 10) / 10;
       if (!startJob(x, z)) return false;
       try {
         state.currentLocKey = 'custom';
@@ -445,6 +451,20 @@ async function buildRoad(fromX, fromZ, toX, toZ, why = '', originLabel = 'Shapin
       if (len < 2) return false;
       // Long roads are built a stretch at a time
       if (len > 18) { toX = fromX + (toX - fromX) * 18 / len; toZ = fromZ + (toZ - fromZ) * 18 / len; }
+      // The whole line must stay out of town, buildings and the lake: it stops short of the first spot that isn't
+      const segLen = Math.min(len, 18);
+      let clear = segLen, blockedBy = null;
+      for (let d = 0.5; d <= segLen; d += 0.5) {
+        const b = offLimits(fromX + (toX - fromX) * d / segLen, fromZ + (toZ - fromZ) * d / segLen);
+        if (b) { clear = d - 0.5; blockedBy = b; break; }
+      }
+      if (blockedBy && clear >= 2) { toX = fromX + (toX - fromX) * clear / segLen; toZ = fromZ + (toZ - fromZ) * clear / segLen; }
+      else if (blockedBy && !offLimits(fromX, fromZ)) {
+        state.speechBubble = blockedBy === 'town' ? "That road would run into town. Town isn't mine to build in, so I'll lay it somewhere else."
+          : `That road would run into ${blockedBy}. I'll lay it somewhere else.`;
+        renderAllUI();
+        return false;
+      }
       if (!startJob(fromX, fromZ)) return false;
       try {
         if (typeof fetchFromStorehouse === 'function') await fetchFromStorehouse(shovel);
@@ -509,7 +529,7 @@ async function raiseHill(x, z, why = '', originLabel = 'Shaping the Valley', low
       }
       if (typeof readyToOperate === 'function' && !readyToOperate(shovel)) return 'learning';
       x = Math.round(clampNumber(x, WORLD_MIN_X + 3, WORLD_MAX_X - 3, state.botPos.x) * 10) / 10;
-      z = Math.round(clampNumber(z, WORLD_MIN_Z + 3, 8.5, state.botPos.z) * 10) / 10;
+      z = Math.round(clampNumber(z, WORLD_VALLEY_MIN_Z + 3, 8.5, state.botPos.z) * 10) / 10;
       const full = lower ? -HILL_HEIGHT * 0.7 : HILL_HEIGHT;
       if (offLimits(x, z, HILL_RADIUS) || !startJob(x, z)) {
         if (offLimits(x, z, HILL_RADIUS)) { state.speechBubble = `${lower ? 'A hollow' : 'A hill'} there would spill onto ${offLimits(x, z, HILL_RADIUS)}. I'll leave it.`; renderAllUI(); }
@@ -550,8 +570,9 @@ async function raiseHill(x, z, why = '', originLabel = 'Shaping the Valley', low
 // Undo something he added: dig up a planting, pick up a road, flatten a hill.
 // A chopped tree can't be un-chopped, but he can plant a new one.
 async function undoEdit(id, why = '', originLabel = 'Changing His Mind') {
-      const e = state.worldEdits.find(w => w.id === id) || (id === 'last' ? [...state.worldEdits].reverse().find(w => w.type !== 'chop') : null);
-      if (!e || e.type === 'chop') return false;
+      const e = state.worldEdits.find(w => w.id === id) || (id === 'last' ? [...state.worldEdits].reverse().find(w => w.type !== 'chop' && !w.pro) : null);
+      // A proper road (js/roadworks.js) is a job on his agenda: he finishes it or drops it on purpose, never undoes it on a whim
+      if (!e || e.type === 'chop' || e.pro) return false;
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
       state.isPracticing = true;
       try {
@@ -591,8 +612,8 @@ async function undoEdit(id, why = '', originLabel = 'Changing His Mind') {
 function openGroundSpot(pad = 1.5, near = null) {
       for (let i = 0; i < 60; i++) {
         const x = near && i < 30 ? near.x + randRange(-18, 18) : randRange(WORLD_MIN_X + 4, WORLD_MAX_X - 4);
-        const z = near && i < 30 ? near.z + randRange(-18, 18) : randRange(WORLD_MIN_Z + 4, 8.8);
-        if (x < WORLD_MIN_X + 3 || x > WORLD_MAX_X - 3 || z < WORLD_MIN_Z + 3 || z > 8.8) continue;
+        const z = near && i < 30 ? near.z + randRange(-18, 18) : randRange(WORLD_VALLEY_MIN_Z + 4, 8.8);
+        if (x < WORLD_MIN_X + 3 || x > WORLD_MAX_X - 3 || z < WORLD_VALLEY_MIN_Z + 3 || z > 8.8) continue;
         if (offLimits(x, z, pad) || pointBlocked(x, z, { x: 999, z: 999 })) continue;
         if (typeof getAnalyticalGroundHeight === 'function') {
           const slope = Math.abs(getAnalyticalGroundHeight(x + 1, z) - getAnalyticalGroundHeight(x - 1, z)) + Math.abs(getAnalyticalGroundHeight(x, z + 1) - getAnalyticalGroundHeight(x, z - 1));
@@ -617,7 +638,7 @@ function shapeTheValleyOnMyOwn() {
       const open = () => openGroundSpot(1.5, Math.random() < 0.5 ? state.botPos : null);
       if (hasItem(/^(?!.*bird ?seed).*(seed|sapling|bulb)/i)) { const p = open(); return plantSeeds(p.x, p.z, 'I wanted something living that I put there myself.', 'Felt Like Planting'); }
       // A gravel road he's had a while: he may want it paved, which means learning how and asking for asphalt
-      const gravelRoad = state.worldEdits.find(e => e.type === 'road' && e.surface !== 'asphalt');
+      const gravelRoad = state.worldEdits.find(e => e.type === 'road' && !e.pro && e.surface !== 'asphalt');
       if (gravelRoad && typeof paveRoad === 'function' && Math.random() < 0.3) return paveRoad(gravelRoad.id, 'The gravel keeps washing out, and asphalt would last for years.', 'Felt Like Paving');
       if (Math.random() < 0.35 || (hasItem(/gravel|crushed stone|paving/i) && hasItem(/shovel|spade/i))) {
         // The first road runs out west from the edge of town toward the Museum; later ones join places he likes
@@ -664,7 +685,7 @@ function renderLandscapeList() {
       if (!el) return;
       const label = { chop: '🪓 Chopped a tree', plant: '🌱 Planted', road: '🛤️ Built a road', hill: '⛰️ Raised a hill' };
       el.innerHTML = state.worldEdits.slice().reverse().slice(0, 12).map(e => `
-        <div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200">
+        <div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-200">
           ${escapeHtml(e.type === 'hill' && e.h < 0 ? '🕳️ Dug a hollow' : (label[e.type] || e.type))}${e.type === 'plant' ? ` ${escapeHtml(e.kind === 'tree' ? 'a tree' : 'flowers')} <span class="text-slate-500">(${typeof plantStageOf === 'function' ? escapeHtml(plantStageOf(e)) + ', ' : ''}${Math.round(growthOf(e) * 100)}% grown)</span>` : ''}
           ${e.why ? `<div class="text-slate-400 italic">${escapeHtml(e.why)}</div>` : ''}
         </div>`).join('');
@@ -675,7 +696,7 @@ window.addEventListener('DOMContentLoaded', () => {
     landscapeGroup = new THREE.Group();
     scene.add(landscapeGroup);
     state.worldEdits.forEach(e => {
-      if (e.type === 'chop') removeValleyTree(e.treeId);
+      if (e.type === 'chop') removeValleyTree(e.treeId, e.x, e.z);
       renderEdit(e);
     });
     if (state.worldEdits.some(e => e.type === 'hill')) state.worldEdits.filter(e => e.type === 'hill').forEach(hillTerrainRefresh);

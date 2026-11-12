@@ -219,7 +219,7 @@ function digToolModelName(site) {
 async function digAt(x, z, originLabel = 'Digging') {
       if (state.isBusy || state.isBuilding || state.isPracticing) return 'busy';
       x = Math.round(clampNumber(x, WORLD_MIN_X + 1, WORLD_MAX_X - 1, 0) * 10) / 10;
-      z = Math.round(clampNumber(z, WORLD_MIN_Z + 1, 7, -20) * 10) / 10;
+      z = Math.round(clampNumber(z, WORLD_VALLEY_MIN_Z + 1, 7, -20) * 10) / 10;
       // Town isn't his to dig up
       if (typeof inTown === 'function' && inTown(x, z)) {
         state.speechBubble = "That's in town. I'll dig out on the mountain instead.";
@@ -483,7 +483,7 @@ function checkForGlints() {
       } else if (!state.isBusy && !state.isBuilding && !state.isPracticing && Math.random() < 0.5) {
         state.speechBubble = 'Did something just glint over there? I want to dig and see.';
         renderAllUI();
-        doWhenFree(() => digAt(near.x, near.z, 'Saw Something Glint'));
+        doWhenFree(() => digAt(near.x, near.z, 'Saw Something Glint'), { key: `dig:${near.x},${near.z}` });
       }
     }
 
@@ -491,7 +491,7 @@ function renderMiningUI() {
       const el = document.getElementById('digSitesContainer');
       if (!el) return;
       if (!state.knowsDigging) {
-        el.innerHTML = '<p class="text-[11px] text-slate-500 italic">He hasn\'t discovered that things are buried here yet. Exploring the mountain, reading at NetNode, or a shovel might teach him.</p>';
+        el.innerHTML = '<p class="text-2xs text-slate-500 italic">He hasn\'t discovered that things are buried here yet. Exploring the mountain, reading at NetNode, or a shovel might teach him.</p>';
         return;
       }
       const sites = state.digSites.map(s => {
@@ -500,19 +500,19 @@ function renderMiningUI() {
           <div class="p-2.5 rounded-xl bg-slate-900/90 border border-amber-700/40 text-xs space-y-1">
             <div class="flex items-center justify-between gap-2">
               <span class="font-bold text-amber-200">⛏️ ${s.z < -14 ? 'Mountain dig' : 'Valley dig'}</span>
-              <span class="text-[10px] font-mono text-slate-400">${escapeHtml(s.sessions || 0)} sessions</span>
+              <span class="text-2xs tabular-nums text-slate-400">${escapeHtml(s.sessions || 0)} sessions</span>
             </div>
-            <div class="text-[10px] font-mono text-slate-300">Depth ${escapeHtml(s.depth.toFixed(1))} m (${s.depth >= ROCK_DEPTH ? 'bedrock' : 'soil'}) • Dirt pile ${escapeHtml(s.dirt.toFixed(1))}/${PILE_LIMIT}</div>
-            ${missing ? `<div class="text-[10px] text-rose-300">Needs ${escapeHtml(TOOL_NEEDS[missing].ask.toLowerCase())} to continue</div>` : ''}
+            <div class="text-2xs tabular-nums text-slate-300">Depth ${escapeHtml(s.depth.toFixed(1))} m (${s.depth >= ROCK_DEPTH ? 'bedrock' : 'soil'}) • Dirt pile ${escapeHtml(s.dirt.toFixed(1))}/${PILE_LIMIT}</div>
+            ${missing ? `<div class="text-2xs text-rose-300">Needs ${escapeHtml(TOOL_NEEDS[missing].ask.toLowerCase())} to continue</div>` : ''}
           </div>`;
       }).join('');
-      const finds = state.foundItems.filter(f => !f.disposed).map(f => `<span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-100 text-[10px]">${escapeHtml(f.emoji)} ${escapeHtml(f.name)}</span>`).join('');
-      const gear = ['dig', 'rock', 'truck', 'excavator'].map(k => `<span class="px-2 py-0.5 rounded-lg text-[10px] font-mono ${hasEquipment(k) ? 'bg-emerald-500/15 text-emerald-200' : 'bg-slate-800 text-slate-500'}">${hasEquipment(k) ? '✓' : '✗'} ${escapeHtml(TOOL_NEEDS[k].ask.replace(/^an? (sturdy )?/i, ''))}</span>`).join('');
+      const finds = state.foundItems.filter(f => !f.disposed).map(f => `<span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-400/30 text-amber-100 text-2xs">${escapeHtml(f.emoji)} ${escapeHtml(f.name)}</span>`).join('');
+      const gear = ['dig', 'rock', 'truck', 'excavator'].map(k => `<span class="px-2 py-0.5 rounded-lg text-2xs tabular-nums ${hasEquipment(k) ? 'bg-emerald-500/15 text-emerald-200' : 'bg-slate-800 text-slate-500'}">${hasEquipment(k) ? '✓' : '✗'} ${escapeHtml(TOOL_NEEDS[k].ask.replace(/^an? (sturdy )?/i, ''))}</span>`).join('');
       el.innerHTML = `
         <div class="flex flex-wrap gap-1">${gear}</div>
-        ${sites || '<p class="text-[11px] text-slate-500 italic">No digs yet.</p>'}
-        <div class="text-[11px] font-bold text-amber-300 pt-1">Finds (${state.foundItems.length} of ${HIDDEN_FINDS.length} hidden treasures)</div>
-        <div class="flex flex-wrap gap-1">${finds || '<span class="text-[11px] text-slate-500 italic">Nothing found yet. Things are buried all over the mountain.</span>'}</div>`;
+        ${sites || '<p class="text-2xs text-slate-500 italic">No digs yet.</p>'}
+        <div class="text-2xs font-bold text-amber-300 pt-1">Finds (${state.foundItems.length} of ${HIDDEN_FINDS.length} hidden treasures)</div>
+        <div class="flex flex-wrap gap-1">${finds || '<span class="text-2xs text-slate-500 italic">Nothing found yet. Things are buried all over the mountain.</span>'}</div>`;
     }
 
 window.addEventListener('DOMContentLoaded', () => {

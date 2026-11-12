@@ -96,7 +96,7 @@ function practiceWaypoint(v, kind, level, i) {
       for (let n = 0; n < 30; n++) {
         const a = Math.random() * Math.PI * 2;
         const x = v.x + Math.cos(a) * reach, z = v.z + Math.sin(a) * reach;
-        if (x < WORLD_MIN_X + 3 || x > WORLD_MAX_X - 3 || z < WORLD_MIN_Z + 3) continue;
+        if (x < WORLD_MIN_X + 3 || x > WORLD_MAX_X - 3 || z < WORLD_VALLEY_MIN_Z + 3) continue;
         if (kind === 'boat') { if (z > 11 && z < WORLD_MAX_Z + 30) return { x, z: Math.max(12, z) }; continue; }
         if (z > 8.6) continue; // land and air practice stays over land
         if (kind !== 'air' && kind !== 'balloon' && typeof inTown === 'function' && inTown(x, z)) continue;
@@ -171,7 +171,7 @@ function practiseNamed(text) {
       const t = String(text || '').toLowerCase();
       const c = skillCandidates().find(x => (x.vehicle && (t.includes(x.vehicle.name.toLowerCase().replace(/^(an?|the)\s+/, '')) || SKILL_WORDS.some(w => w.kind === x.kind && w.re.test(t))))
         || (x.hobby && t.includes(String(x.hobby.name).toLowerCase())) || (x.telescope && /telescope|star/.test(t)));
-      if (c) doWhenFree(() => practiseSkill(c));
+      if (c) doWhenFree(() => practiseSkill(c), { key: `skill:${c.kind}:${(c.vehicle && c.vehicle.name) || (c.hobby && c.hobby.name) || ''}` });
       return Boolean(c);
     }
 
@@ -243,14 +243,14 @@ function renderSkillsList() {
         const ago = skillAgo(s.lastAt);
         return `
         <div class="brain-card brain-skill">
-          <div class="brain-skill-lv" aria-hidden="true"><small>Lv</small>${s.level}</div>
+          <div class="brain-skill-lv" aria-hidden="true"><small>Lv</small>${escapeHtml(s.level)}</div>
           <div class="min-w-0 flex-1 space-y-1">
             <div class="flex items-baseline justify-between gap-2">
               <span class="brain-card-title truncate">${escapeHtml(String(s.label || '').replace(/^./, ch => ch.toUpperCase()))}</span>
-              <span class="brain-card-meta shrink-0">${s.level >= 10 ? 'Mastered' : `${pct}% to Lv ${s.level + 1}`}</span>
+              <span class="brain-card-meta shrink-0">${s.level >= 10 ? 'Mastered' : `${pct}% to Lv ${escapeHtml(Number(s.level) + 1)}`}</span>
             </div>
-            <div class="brain-bar" role="progressbar" aria-label="${escapeHtml(s.label)}: level ${s.level}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>
-            <div class="brain-card-meta">${s.sessions || 0} ${s.sessions === 1 ? 'session' : 'sessions'}${ago ? ` · last ${ago}` : ''}</div>
+            <div class="brain-bar" role="progressbar" aria-label="${escapeHtml(s.label)}: level ${escapeHtml(s.level)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>
+            <div class="brain-card-meta">${escapeHtml(s.sessions || 0)} ${s.sessions === 1 ? 'session' : 'sessions'}${ago ? ` · last ${ago}` : ''}</div>
           </div>
         </div>`;
       }).join('') : '<p class="brain-empty">No skills practised yet. Give him something to learn!</p>');

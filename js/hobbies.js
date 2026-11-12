@@ -58,15 +58,10 @@ function addHobby(raw, sparkedBy) {
       return hobby;
     }
 
-// Try a hobby as soon as he is free (he may be mid-build or mid-errand), giving up after ~3 minutes
-function practiceWhenFree(hobby, originLabel, attempt = 0) {
-      setTimeout(() => {
-        if (state.isBusy || state.isBuilding || state.isPracticing || state.isCollectingMail) {
-          if (attempt < 36) practiceWhenFree(hobby, originLabel, attempt + 1);
-          return;
-        }
-        practiceHobby(hobby, originLabel);
-      }, attempt === 0 ? 4000 : 5000);
+// Try a hobby as soon as he is free (he may be asleep, mid-build or mid-errand). It used to give up after
+// about 3 minutes, so a hobby gift that came at night was never tried
+function practiceWhenFree(hobby, originLabel) {
+      doWhenFree(() => practiceHobby(hobby, originLabel), { key: 'hobby:' + hobby.name, delayMs: 4000 });
     }
 
 // Called after he receives an item: it may spark a hobby (he then tries it out soon)
@@ -307,6 +302,20 @@ async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
       if (!hobby || state.isBusy || state.isBuilding || state.isPracticing) return false;
       // Painting is done for real now, in a real medium with its own supplies (js/paintstudio.js)
       if (hobby.style === 'easel' && typeof paintFromHobby === 'function') return paintFromHobby(hobby, originLabel);
+      // Stargazing is done with the real telescope, which knows day from night (js/knowhow.js)
+      if (typeof hobbyPurpose === 'function' && hobbyPurpose(hobby) === 'stargaze' && typeof stargaze === 'function') return stargaze(originLabel);
+      // Gardening plants real seeds that really grow (js/landscape.js) on open ground outside town (as
+      // using seeds does, js/itemuse.js), and uses them up there
+      if (hobby.style === 'plant' && typeof plantSeeds === 'function' && typeof openGroundSpot === 'function') {
+        const spot = openGroundSpot(1.5, Math.random() < 0.5 ? state.botPos : null);
+        const r = await plantSeeds(spot.x, spot.z, `My ${String(hobby.name).toLowerCase()} hobby.`, originLabel);
+        if (r === true) {
+          hobby.practiced += 1;
+          hobby.skill = Math.min(100, hobby.skill + 6 + Math.floor(Math.random() * 6));
+          hobby.lastPracticed = Date.now();
+        }
+        return r;
+      }
       // No kite, or (once he knows) no wind for it (js/wind.js)
       if (hobby.style === 'kite' && typeof kiteWontFlyToday === 'function' && kiteWontFlyToday(hobby)) return false;
       // The right gear for it (paint for murals, seeds for planting...), or he says so and asks (js/itemuse.js)
@@ -324,7 +333,7 @@ async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
         } else if (hobby.style === 'plant') {
           spot = { x: -22 - Math.random() * 6, z: 3 + Math.random() * 3, label: 'the wildflower patch west of town' };
         } else if (hobby.style === 'easel') {
-          spot = pick([{ x: 3, z: 8.4, label: 'the lakeshore' }, { x: -20, z: -12, label: 'the foot of the mountains' }]);
+          spot = pick([{ x: 3, z: 8.4, label: 'the lakeshore' }, { x: -38, z: -17.5, label: 'the foot of the mountains' }]);
         } else {
           spot = pick([{ x: -16, z: -1.5, label: 'the meadow' }, { x: 4.2, z: 9.6, label: 'the lake edge' }, { x: -4, z: -2, label: 'the valley' }]);
         }
@@ -345,7 +354,9 @@ async function practiceHobby(hobby, originLabel = 'Practising a Hobby') {
         state.proceduralMotion = {
           headPitch: hobby.style === 'kite' ? -0.35 : 0.1, headYawSpeed: 1.2, headTiltAmp: 0.2,
           armWaveAmp: hobby.style === 'mural' ? 0.6 : 0.35, armRaiseOffset: hobby.style === 'kite' ? -1.3 : -0.8,
-          bodyBounceAmp: hobby.style === 'music' || hobby.style === 'tricks' ? 0.1 : 0.03, spinSpeed: 0, crouchOffset: 0, sparkBurst: false
+          bodyBounceAmp: hobby.style === 'music' || hobby.style === 'tricks' ? 0.1 : 0.03, spinSpeed: 0, crouchOffset: 0, sparkBurst: false,
+          // (hand-keyed clips, js/kelo-clips.js)
+          clip: hobby.style === 'kite' ? 'kite' : hobby.style === 'easel' || hobby.style === 'mural' ? 'paint' : null
         };
         state.moodTitle = `${hobby.name}${hobby.practiced ? '' : ' (first try!)'}`.slice(0, 80);
         renderAllUI();
@@ -453,15 +464,15 @@ function renderHobbiesUI() {
       const el = document.getElementById('hobbiesContainer');
       if (!el) return;
       el.innerHTML = state.hobbies.length === 0
-        ? '<p class="text-[11px] text-slate-500 italic">No hobbies yet. Some gifts (spray paint, a kite, an instrument, seeds, a paint set...) might spark one.</p>'
+        ? '<p class="text-2xs text-slate-500 italic">No hobbies yet. Some gifts (spray paint, a kite, an instrument, seeds, a paint set...) might spark one.</p>'
         : state.hobbies.map((h, i) => `
           <button data-hobby-idx="${i}" class="hobby-card w-full text-left p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-orange-500/25 hover:border-orange-400/60 transition space-y-1">
             <div class="flex items-center justify-between gap-2 text-xs">
               <span class="font-bold text-orange-200">${escapeHtml(h.emoji)} ${escapeHtml(h.name)}</span>
-              <span class="text-[10px] font-mono text-slate-400">practised ${escapeHtml(h.practiced)}×</span>
+              <span class="text-2xs tabular-nums text-slate-400">practised ${escapeHtml(h.practiced)}×</span>
             </div>
             <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-orange-400" style="width:${Math.max(0, Math.min(100, Number(h.skill) || 0))}%"></div></div>
-            <div class="text-[10px] font-mono text-slate-500 truncate">Skill ${escapeHtml(h.skill)}/100${h.sparkedBy ? ` • sparked by ${escapeHtml(h.sparkedBy)}` : ''}</div>
+            <div class="text-2xs tabular-nums text-slate-500 truncate">Skill ${escapeHtml(h.skill)}/100${h.sparkedBy ? ` • sparked by ${escapeHtml(h.sparkedBy)}` : ''}</div>
           </button>`).join('');
       el.querySelectorAll('.hobby-card').forEach(card => {
         card.addEventListener('click', () => {

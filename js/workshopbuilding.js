@@ -42,8 +42,17 @@ const WORKSHOP_LAND = {
   lane: { minX: WORKSHOP_SITE.x + 5.85 - 2.6, maxX: WORKSHOP_SITE.x + WORKSHOP_SITE.w / 2 + 1.0, minZ: WORKSHOP_SITE.z, maxZ: 9.0 },
   // The hangar's pad (js/workshopbuilding.js, buildWorkshopHangar3D) and its apron down to the helipad
   hangar: { minX: 23.6, maxX: 45.6, minZ: -22.9, maxZ: -6.9 },
+  // Task 7b, the north land (js/workshopnorth.js): a haul road up the east side of the Workshop from the
+  // plant's pad, the pass cut through the range behind it, and the north yard over the crest where the
+  // garage hall and the big hangar stand at the south end of the runway field. Each has its own cut
+  // slope (blend) so the pass's sides are rock cuts and the yard eases into the hills.
+  eastRoad: { minX: 62.6, maxX: 68.4, minZ: -26, maxZ: -8, blend: 3 },
+  pass: { minX: 51, maxX: 73, minZ: -101, maxZ: -23.6, blend: 20, blendS: 8 },
+  yard: { minX: 0, maxX: 118, minZ: -173, maxZ: -100, blend: 16 },
   y: WORKSHOP_PAD_Y, blend: 3.2, blendNorth: 9, shore: 1.4
 };
+// Every piece of the Workshop's levelled land (the north land only once the field exists)
+const WORKSHOP_LAND_RECTS = [WORKSHOP_LAND.pad, WORKSHOP_LAND.lane, WORKSHOP_LAND.hangar, WORKSHOP_LAND.eastRoad, WORKSHOP_LAND.pass, WORKSHOP_LAND.yard];
 // The hangar and assembly high bay: a single big bay beside the Workshop (west, north of the
 // helipad) for his biggest projects and vehicles: an ultralight with a 10 m span (16 units), a
 // pickup with its trailer, the dump truck, the mixer truck. A wide, tall roll-up door faces the
@@ -105,9 +114,11 @@ function workshopRectDist(r, x, z) {
 function workshopLandAt(x, z, base) {
       const L = WORKSHOP_LAND;
       let k = 1;
-      [L.pad, L.lane, L.hangar].forEach(r => {
+      // (the north land and its slopes are all north of z -5: skip it for the valley's points)
+      const rects = z > -5 ? WORKSHOP_LAND_RECTS.slice(0, 3) : WORKSHOP_LAND_RECTS;   // (the pass's mouth eases over 8 units, so z > -15.6 is never touched)
+      rects.forEach(r => {
         const d = workshopRectDist(r, x, z);
-        const blend = d.dzN > 0 ? L.blendNorth : d.dzS > 0 && r === L.lane ? L.shore : L.blend;
+        const blend = d.dzS > 0 && r.blendS ? r.blendS : r.blend || (d.dzN > 0 ? L.blendNorth : d.dzS > 0 && r === L.lane ? L.shore : L.blend);
         const out = Math.hypot(d.dx, d.dzN, d.dzS);
         const t = Math.min(1, out / blend);
         k = Math.min(k, t * t * (3 - 2 * t));
@@ -121,8 +132,7 @@ function workshopPadAt(x, z, base) {
     }
 
 function inWorkshopSite(x, z, pad = 0) {
-      const L = WORKSHOP_LAND;
-      return [L.pad, L.lane, L.hangar].some(r => x > r.minX - pad && x < r.maxX + pad && z > r.minZ - pad && z < r.maxZ + pad);
+      return WORKSHOP_LAND_RECTS.some(r => x > r.minX - pad && x < r.maxX + pad && z > r.minZ - pad && z < r.maxZ + pad);
     }
 
 // A point in the building's own coordinates (x across, z towards the front doors), as a world point
@@ -746,7 +756,7 @@ function buildWorkshop3D() {
         perfWatchBuilding({
           key: 'workshop', radius: 11,
           center: () => wsGroup.position.clone().setY(WORKSHOP_PAD_Y + 3),
-          forced: () => Boolean(workshopTrip.active),
+          forced: () => Boolean(workshopTrip.active) || (typeof shopVisitActive === 'function' && shopVisitActive()),
           show: near => wsShowFloor1(near),
           tick: near => { if (near) { wsBuildQueued(2); wsViewCull(); } }
         });
@@ -1496,6 +1506,7 @@ function wsAnimate(ms, fn) {
         const step = () => {
           if (done) return;
           const t = performance.now() - start, k = Math.min(1, t / ms);
+          workshopTrip.anim = { t0: start, ms };   // (how far through the step, for the visitor's status card)
           try { fn(k, t / 1000); } catch (e) { console.warn(e); }
           if (k >= 1 || !workshopTrip.active) { done = true; resolve(); return; }
           if (document.hidden) setTimeout(step, 50); else requestAnimationFrame(step);
@@ -1565,6 +1576,7 @@ async function runWorkshopVisit(plan) {
         }
         for (const stop of plan.stops || []) {
           const floor = stop.floor || 1;
+          workshopTrip.stop = { key: stop.key || null, i: plan.stops.indexOf(stop), n: plan.stops.length, t0: performance.now() };
           if (floor !== workshopTrip.floor && !veh) cur = await wsChangeFloor(site, cur, floor);
           const def = stop.key ? WORKSHOP_MACHINES[stop.key] : null;
           const stand = stop.stand || (def ? machineStand(def) : null);
@@ -1583,6 +1595,7 @@ async function runWorkshopVisit(plan) {
           indoorTrip.crouchTarget = 0;
           if (results[results.length - 1] === false) break; // a failed step ends the job (no washing a print that never came off)
         }
+        workshopTrip.stop = null;
         if (veh && (plan.vehicleTour || plan.driveThrough)) {
           // (the tour drove back out already)
         } else if (veh) {
@@ -1609,7 +1622,7 @@ async function runWorkshopVisit(plan) {
         else state.botPos = { x: outside.x, z: outside.z };
         state.targetPos = { ...state.botPos };
         wsUnhitchTrailer();
-        Object.assign(workshopTrip, { active: false, floor: 1, vehicle: null, vehicleAt: null, vehicleOut: null, vehicleHome: null, vehPose: null, liftY: 0 });
+        Object.assign(workshopTrip, { active: false, floor: 1, vehicle: null, vehicleAt: null, vehicleOut: null, vehicleHome: null, vehPose: null, liftY: 0, stop: null, anim: null });
         wsUpdateLift(0);
         workshopShowUpstairs(false);
         wsSetFrontFade(1);
@@ -1691,9 +1704,8 @@ function wsSeatKelo(mesh) {
 
 function wsDrivePose() {
       keloSitPose(typeof KELO_SIT_OFFSET === 'number' ? KELO_SIT_OFFSET : 0.3, 1.3);
-      keloLeftArm.rotation.set(-0.6, 0, 0.05);
-      keloRightArm.rotation.set(-0.6, 0, -0.05);
-      keloLeftElbow.rotation.x = keloRightElbow.rotation.x = -0.7;
+      // climbing in, hands on the wheel, glancing about, climbing out (js/kelo-clips.js)
+      keloAction('drive');
     }
 
 // Move the vehicle along local points [{x, z, ry}] (on the floor he's on), with him driving
@@ -1972,13 +1984,9 @@ function wsControlReach(model) {
 
 // Busy hands at a control panel or bench
 function wsWorkPose(t) {
-      const s = Math.sin(t * 6) * 0.12;
-      keloLeftArm.rotation.set(-1.05 + s, 0, 0.12);
-      keloRightArm.rotation.set(-1.0 - s, 0, -0.12);
-      keloLeftElbow.rotation.x = keloRightElbow.rotation.x = -0.5;
-      keloLeftHand.userData.grip = keloRightHand.userData.grip = 0.4;
-      keloBody.rotation.x = 0.12;
-      keloHead.rotation.x = 0.25;
+      // press the controls, step back and check, wait with arms folded (js/kelo-clips.js); his hands
+      // go to the controls by wsControlReach while the clip has them there
+      keloAction('machine');
     }
 
 function workshopSummaryForAI() {

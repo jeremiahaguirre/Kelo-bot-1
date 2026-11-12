@@ -24,7 +24,7 @@
 const ASSEMBLY_SITES = {
   airfield: { x: -27, z: 9.5, rotY: -Math.PI / 2, name: 'his airfield build site' },
   beach: { x: -8.5, z: 8.3, rotY: 0, name: 'his boat-building spot on the beach' },
-  benchFallback: { x: 1.9, z: -7.4, rotY: 0, y: 0, top: 0.92, standX: 1.9, standZ: -6.2, name: 'the bench by the welding studio' }
+  benchFallback: { x: MAP_LAYOUT.workBench.x, z: MAP_LAYOUT.workBench.z - 1.2, rotY: 0, y: 0, top: 0.92, standX: MAP_LAYOUT.workBench.x, standZ: MAP_LAYOUT.workBench.z, name: 'the bench by the welding studio' }
 };
 // The airfield stands on new land along the shore west of town (the owner's permission): three
 // finished patches of fill, made with the same code as the land he makes from dug dirt
@@ -181,17 +181,23 @@ function workshopBayFor(p) {
       if (!big) return null;
       const fp = buildFootprint(p.bom);
       if (!fp) return null;
-      let n = p.bom.vehicle === 'plane' ? 1 : 2;
-      if (n === 2 && typeof workshopFits === 'function') {
-        try { const f = workshopFits({ x: fp.length, y: fp.height, z: fp.width }); if (!f.bays || !f.bays.build2) n = 1; } catch (e) {}
-      }
+      // The airplane keeps build bay 1 (its flights start at that hangar's door onto the helipad). Anything
+      // else takes build bay 2 if it fits, else the big hangar's bays 3 and 4 over the pass (task 7b,
+      // js/workshopnorth.js), else bay 1; a bay another unfinished build already holds is skipped.
+      let fits = null;
+      if (typeof workshopFits === 'function') { try { fits = workshopFits({ x: fp.length, y: fp.height, z: fp.width }); } catch (e) { fits = null; } }
+      const taken = n => (state.buildProjects || []).some(q => q !== p && q.site && q.site.inWorkshop && q.site.bay === n && q.status !== 'finished' && q.status !== 'complete');
+      const ok = n => !fits || !fits.bays || (n === 1 ? fits.bays.build1 !== false : n === 2 ? fits.bays.build2 : fits.bays['build' + n] !== false && fits.northHangarDoor !== false);
+      let n = 1;
+      if (p.bom.vehicle !== 'plane') n = [2, 3, 4, 1].find(k => ok(k) && !taken(k)) || (ok(2) ? 2 : 1);
       let bay = null;
       try { bay = workshopAssemblyBay(n); } catch (e) { bay = null; }
       if (!bay || !Number.isFinite(bay.x) || !Number.isFinite(bay.z)) return null;
-      const rotY = -Math.PI / 2; // model +x (its nose) toward the door
+      // model +x (its nose) toward the door: south in the first hangar, north in the big one
+      const north = Boolean(bay.north), rotY = north ? Math.PI / 2 : -Math.PI / 2;
       const over = Math.max(0, fp.length - (bay.d || fp.length)) / 2;
-      return { x: bay.x, z: bay.z - fp.centerX + over, rotY, floorY: Number.isFinite(bay.y) ? bay.y : null, bay: n, door: bay.door || null, outside: bay.outside || null,
-        name: n === 1 ? 'build bay 1 in his hangar' : 'build bay 2 in his hangar', inWorkshop: true };
+      return { x: bay.x, z: north ? bay.z + fp.centerX - over : bay.z - fp.centerX + over, rotY, floorY: Number.isFinite(bay.y) ? bay.y : null, bay: n, bayKey: bay.key, door: bay.door || null, outside: bay.outside || null,
+        name: n <= 2 ? `build bay ${n} in his hangar` : `build bay ${n} in his big hangar`, inWorkshop: true };
     }
 
 function siteFor(p) {
@@ -299,7 +305,9 @@ function assemblyPose(verb) {
       const m = { weld: [-1.05, 0.08, 0.35], rivet: [-1.1, 0.12, 0.2], drill: [-1.0, 0.1, 0.25], bolt: [-0.9, 0.3, 0.2], cut: [-0.8, 0.45, 0.1], notch: [-0.85, 0.3, 0.2],
         swage: [-0.9, 0.25, 0.25], fit: [-0.9, 0.35, 0.15], glue: [-1.0, 0.4, 0.2], cover: [-1.2, 0.55, 0.0], sand: [-0.95, 0.6, 0.2], paint: [-1.25, 0.6, -0.1] }[verb] || [-0.9, 0.3, 0.1];
       state.microPose = 'procedural_custom';
-      state.proceduralMotion = { armRaiseOffset: m[0], armWaveAmp: m[1], headPitch: m[2], headYawSpeed: 1.2, headTiltAmp: 0.12, bodyBounceAmp: 0.02, spinSpeed: 0, sparkBurst: verb === 'weld' };
+      // (each kind of step has a hand-keyed clip: js/kelo-clips.js)
+      const clip = { drill: 'drillBench', cut: 'saw', sand: 'sand', glue: 'sand', cover: 'sand', paint: 'paint' }[verb] || 'hammer';
+      state.proceduralMotion = { armRaiseOffset: m[0], armWaveAmp: m[1], headPitch: m[2], headYawSpeed: 1.2, headTiltAmp: 0.12, bodyBounceAmp: 0.02, spinSpeed: 0, sparkBurst: verb === 'weld', clip };
     }
 
 const ASSEMBLY_VERB_SKILL = { weld: 'welding', rivet: 'riveting', drill: 'drilling and machining', cut: 'cutting and measuring', notch: 'fitting tube joints', bolt: 'bolting to torque',
@@ -438,7 +446,7 @@ function askForLists(p) {
 
 function bomListCardHtml(req) {
       const p = buildProjectById(req.listProject);
-      if (!p) return `<div class="p-3 rounded-2xl border border-slate-800 text-xs text-slate-400">${escapeHtml(req.title)} (that build is gone)</div>`;
+      if (!p) return `<div class="ui-card ui-card-done text-xs text-slate-400">${escapeHtml(req.title)} (that build is gone)</div>`;
       const lines = bomListLines(p.bom, req.listSub);
       const sub = p.bom.subs.find(s => s.key === req.listSub);
       const id = escapeHtml(req.id);
@@ -446,32 +454,32 @@ function bomListCardHtml(req) {
       const rows = lines.map(l => {
         const sent = (l.sent || 0) >= l.qty, got = l.got >= l.qty;
         // A part he makes in one of his own shops: not something to send
-        if (l.make) return `<div class="flex items-start gap-2 px-2 py-1 rounded-lg ${got ? 'bg-emerald-500/10' : 'bg-violet-500/10'}">
-          <span class="mt-0.5 text-[11px]">🛠️</span>
-          <span class="flex-1 text-[11px] text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="font-mono font-bold text-amber-300">× ${escapeHtml(bomFmtQty(l.qty))}</span> <span class="block text-[10px] text-violet-300 italic">I'll make this on the ${escapeHtml(l.makeOn || l.make)}</span></span>
-          <span class="text-[10px] font-mono shrink-0 ${got ? 'text-emerald-300' : 'text-violet-300'}">${got ? '✓ made' : l.making ? 'making' : 'my shop'}</span>
+        if (l.make) return `<div class="flex items-start gap-2 px-2 py-1.5 rounded-lg">
+          <i class="ph-bold ph-wrench mt-0.5 text-slate-400" data-hud-emoji="🛠️" aria-hidden="true"></i>
+          <span class="flex-1 text-2xs text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="tabular-nums font-semibold text-white">× ${escapeHtml(bomFmtQty(l.qty))}</span> <span class="block text-2xs text-slate-400">I'll make this on the ${escapeHtml(l.makeOn || l.make)}</span></span>
+          <span class="text-2xs tabular-nums shrink-0 ${got ? 'text-emerald-300' : 'text-slate-400'}">${got ? 'Made' : l.making ? 'Making' : 'My shop'}</span>
         </div>`;
-        return `<label class="flex items-start gap-2 px-2 py-1 rounded-lg ${got ? 'bg-emerald-500/10' : sent ? 'bg-sky-500/10' : 'hover:bg-slate-800/60'} cursor-pointer">
+        return `<label class="flex items-start gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-800/60 cursor-pointer">
           <input type="checkbox" class="bom-line-cb mt-0.5 accent-amber-400" data-req-id="${id}" data-line-id="${escapeHtml(l.id)}" ${sent || got ? 'disabled' : 'checked'} />
-          <span class="flex-1 text-[11px] text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="font-mono font-bold text-amber-300">× ${escapeHtml(bomFmtQty(l.qty))}${l.unit ? ' ' + escapeHtml(l.unit) : ''}</span>${kindTag[l.kind] ? ` <span class="text-[9px] uppercase text-slate-500">${kindTag[l.kind]}</span>` : ''}${l.forShop ? ` <span class="text-[9px] text-violet-300">for my ${escapeHtml(typeof makerShopName === 'function' ? makerShopName(l.forShop) : l.forShop)}</span>` : ''}</span>
-          <span class="text-[10px] font-mono shrink-0 ${got ? 'text-emerald-300' : sent ? 'text-sky-300' : 'text-slate-500'}">${got ? '✓ here' : sent ? '📮 sent' : `${bomFmtQty(Math.min(l.got, l.qty))}/${bomFmtQty(l.qty)}`}</span>
+          <span class="flex-1 text-2xs text-slate-200 leading-snug">${escapeHtml(l.name)} <span class="tabular-nums font-semibold text-white">× ${escapeHtml(bomFmtQty(l.qty))}${l.unit ? ' ' + escapeHtml(l.unit) : ''}</span>${kindTag[l.kind] ? ` <span class="text-2xs text-slate-400">${kindTag[l.kind]}</span>` : ''}${l.forShop ? ` <span class="text-2xs text-slate-400">for my ${escapeHtml(typeof makerShopName === 'function' ? makerShopName(l.forShop) : l.forShop)}</span>` : ''}</span>
+          <span class="text-2xs tabular-nums shrink-0 ${got ? 'text-emerald-300' : sent ? 'text-sky-300' : 'text-slate-400'}">${got ? 'Here' : sent ? 'Sent' : `${bomFmtQty(Math.min(l.got, l.qty))}/${bomFmtQty(l.qty)}`}</span>
         </label>`;
       }).join('');
       const left = lines.filter(l => !l.make && (l.sent || 0) < l.qty && l.got < l.qty).length;
-      return `<div class="p-4 rounded-2xl border ${req.fulfilled ? 'bg-slate-950/60 border-emerald-500/30' : 'bg-slate-950 border-amber-500/50 shadow-lg'} space-y-2.5" data-bom-card="${id}">
-        <div class="flex items-center justify-between gap-2">
-          <span class="text-xs font-bold text-white flex items-center gap-1.5"><span class="text-lg">${escapeHtml(req.icon)}</span><span>${escapeHtml(req.title)}</span></span>
-          <span class="text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${req.fulfilled ? 'bg-emerald-500/20 text-emerald-300' : req.declined ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/25 text-amber-300 border border-amber-400/40'}">${req.declined ? '✗ Not now' : req.fulfilled ? '📮 All sent' : `${lines.filter(l => !l.make).length - left}/${lines.filter(l => !l.make).length} sent`}</span>
+      return `<div class="ui-card ${req.fulfilled ? 'ui-card-done' : ''}" data-bom-card="${id}">
+        <div class="ui-section-head">
+          <h4 class="ui-section-title min-w-0"><span class="text-base leading-none" aria-hidden="true">${escapeHtml(req.icon)}</span><span>${escapeHtml(req.title)}</span></h4>
+          <span class="ui-section-meta ${req.fulfilled ? 'text-emerald-300' : req.declined ? 'text-rose-300' : ''}">${req.declined ? 'Not now' : req.fulfilled ? 'All sent' : `${lines.filter(l => !l.make).length - left}/${lines.filter(l => !l.make).length} sent`}</span>
         </div>
-        <p class="text-xs text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
-        ${sub ? `<div class="text-[10px] font-mono text-slate-400">${lines.length} lines · ${escapeHtml(bomFmtQty(bomFastenerCount(sub)))} fasteners · ${bomSubReceived(sub)}/${lines.length} received</div>` : ''}
-        <div class="max-h-72 overflow-y-auto space-y-0.5 rounded-xl bg-slate-900/70 border border-slate-800 p-1">${rows}</div>
+        <p class="text-sm text-slate-200 leading-relaxed font-serif italic">"${escapeHtml(req.question)}"</p>
+        ${sub ? `<div class="ui-section-meta">${lines.length} lines · ${escapeHtml(bomFmtQty(bomFastenerCount(sub)))} fasteners · ${bomSubReceived(sub)}/${lines.length} received</div>` : ''}
+        <div class="max-h-72 overflow-y-auto space-y-0.5 rounded-xl bg-slate-950/60 p-1">${rows}</div>
         <div class="flex flex-wrap gap-1.5">
-          ${!req.fulfilled && !req.declined ? `<button data-req-id="${id}" class="bom-send-sel flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-bold text-xs">📦 Send checked</button>
-          <button data-req-id="${id}" class="bom-send-all flex-1 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs">📦 Send all (${left})</button>` : ''}
-          <button data-req-id="${id}" class="bom-copy-text px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 text-xs">📋 Copy as text</button>
-          <button data-req-id="${id}" class="bom-copy-md px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 text-xs">⬇ Copy as Markdown</button>
-          ${!req.fulfilled && !req.declined ? `<button data-req-id="${id}" class="bom-decline px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-400 text-xs">✗ Not now</button>` : ''}
+          ${!req.fulfilled && !req.declined ? `<button data-req-id="${id}" class="bom-send-sel ui-btn ui-btn-primary flex-1">Send checked</button>
+          <button data-req-id="${id}" class="bom-send-all ui-btn flex-1">Send all <span class="tabular-nums">(${left})</span></button>` : ''}
+          <button data-req-id="${id}" class="bom-copy-text ui-btn ui-btn-sm">Copy as text</button>
+          <button data-req-id="${id}" class="bom-copy-md ui-btn ui-btn-sm">Copy as Markdown</button>
+          ${!req.fulfilled && !req.declined ? `<button data-req-id="${id}" class="bom-decline ui-btn ui-btn-sm ui-btn-quiet">Not now</button>` : ''}
         </div>
       </div>`;
     }
@@ -504,7 +512,8 @@ function bindBomListButtons(list) {
         const req = reqOf(btn), p = req && buildProjectById(req.listProject);
         if (!p) return;
         copyToClipboard(btn.classList.contains('bom-copy-md') ? bomListMarkdown(p.bom, req.listSub) : bomListText(p.bom, req.listSub));
-        showToast(btn.classList.contains('bom-copy-md') ? '⬇ Copied the list as Markdown' : '📋 Copied the list as text');
+        showToast(btn.classList.contains('bom-copy-md') ? 'Copied the list as Markdown' : 'Copied the list as text');
+        if (typeof uiFlash === 'function') uiFlash(btn);
       }; });
       list.querySelectorAll('.bom-decline').forEach(btn => { btn.onclick = () => {
         const req = reqOf(btn);
@@ -878,7 +887,9 @@ async function runBuildTests(id, originLabel = 'Inspecting the Build') {
                 state.speechBubble = phases[i];
                 renderAllUI();
                 const until = Date.now() + 1600 * ASSEMBLY_PACE;
-                while (Date.now() < until) { if (prop) prop.rotation.x += i === 3 ? 1.4 : i === 4 ? 0.2 : 0.7; await new Promise(r => setTimeout(r, 40)); }
+                // (the prop's speed in turns per second, drawn every frame)
+                let last = Date.now();
+                while (Date.now() < until) { const now = Date.now(); if (prop) prop.rotation.x += (i === 3 ? 35 : i === 4 ? 5 : 17.5) * Math.min(0.25, (now - last) / 1000); last = now; await keloNextFrame(); }
               }
               p.fuelGal = Math.round((fuel - 1) * 10) / 10;
               result = { ok: true, note: 'Static 6,100 rpm, ignition drops 150/160 rpm, EGT 1,150 °F, coolant 65 °C, idle 1,900 rpm. Used 1 gal of fuel.' };
@@ -1023,9 +1034,9 @@ async function learnToFly(originLabel = 'Learning to Fly') {
               m.position.copy(start).addScaledVector(dir, f * 4.5);
               m.position.y = start.y + (tr.taxiRuns === 2 && k > 0.3 && k < 0.55 ? 0.35 : 0);
               const prop = m.userData.inner.userData.prop;
-              if (prop) prop.rotation.x += 0.9;
+              if (prop) prop.rotation.x = (Date.now() - t0) / 1000 * 15;
               if (k >= 1) break;
-              await new Promise(r => setTimeout(r, 60));
+              await keloNextFrame();
             }
             m.position.copy(start);
           } else await sleepPace(3000);
@@ -1166,7 +1177,7 @@ async function pushPlane(v, to, label) {
         if (typeof renderVehicles3D === 'function') renderVehicles3D();
         holdPlaneTail(v);
         if (k >= 1) break;
-        await new Promise(r => setTimeout(r, 60));
+        await keloNextFrame();
       }
       v.x = to.x;
       v.z = to.z;
@@ -1192,7 +1203,7 @@ async function turnPlaneTo(v, rotY, label) {
         if (typeof renderVehicles3D === 'function') renderVehicles3D();
         holdPlaneTail(v);
         if (k >= 1) break;
-        await new Promise(r => setTimeout(r, 60));
+        await keloNextFrame();
       }
       v.rotY = Math.atan2(Math.sin(rotY), Math.cos(rotY));
       if (typeof renderVehicles3D === 'function') renderVehicles3D();
@@ -1317,12 +1328,11 @@ function planePoseAt(plan, s) {
 
 // One frame of the flight (from planeAltitude). Moves him and the plane along the circuit, says what
 // is happening, and returns the height above the floor under him that vehicles.js adds
-function planeFlightStep(m, v, u) {
-      const f = u.flight, plan = f.plan;
-      const now = performance.now() / 1000;
-      const dt = Math.min(0.1, Math.max(0, now - (f.lastT ?? now)));
-      f.lastT = now;
-      const before = f.s;
+// One fixed simulation step of a planned flight (js/scene.js keloEveryStep): distance along the
+// circuit, heading, pitch and bank. The frame (planeFlightStep) draws between the last two steps.
+function planeFlightAdvance(f, dt) {
+      const plan = f.plan;
+      f.sPrev = f.s; f.headPrev = f.heading; f.pitchPrev = f.pitch; f.bankPrev = f.bank;
       if (!f.done) f.s = Math.min(plan.sEnd, f.s + planeSpeedAt(plan, f.s) * dt);
       if (f.s >= plan.sEnd - 1e-6) f.done = true;
       const p = planePoseAt(plan, f.s), ahead = planePoseAt(plan, Math.min(plan.sEnd, f.s + 1)), back = planePoseAt(plan, Math.max(0, f.s - 1));
@@ -1336,6 +1346,25 @@ function planeFlightStep(m, v, u) {
       f.pitch += (Math.max(-0.25, Math.min(0.3, Math.atan(slope))) - f.pitch) * k;
       const airborne = p.alt > 0.3;
       f.bank += ((airborne ? Math.max(-0.45, Math.min(0.45, -turn * planeSpeedAt(plan, f.s) * 0.05)) : 0) - f.bank) * k;
+    }
+
+function planeFlightsStep(h) {
+      if (typeof vehicleMeshes === 'undefined') return;
+      for (const id in vehicleMeshes) { const f = vehicleMeshes[id].userData.flight; if (f && f.plan) planeFlightAdvance(f, h); }
+    }
+
+function planeFlightStep(m, v, u) {
+      const f = u.flight, plan = f.plan;
+      // Between the last two simulation steps (alpha from js/scene.js)
+      const a = typeof keloSim !== 'undefined' ? keloSim.alpha : 1;
+      const mix = (x0, x1) => (x0 === undefined || x0 === null ? x1 : x0 + (x1 - x0) * a);
+      const before = f.sPrev ?? f.s;
+      const s = mix(f.sPrev, f.s);
+      const p = planePoseAt(plan, s);
+      const dh = f.headPrev === undefined ? 0 : Math.atan2(Math.sin(f.heading - f.headPrev), Math.cos(f.heading - f.headPrev));
+      const heading = f.heading - dh * (1 - a);
+      f.shownPitch = mix(f.pitchPrev, f.pitch);
+      f.shownBank = mix(f.bankPrev, f.bank);
       state.botPos = { x: p.x, z: p.z };
       state.targetPos = { x: p.x, z: p.z };
       state.botRotY = heading;
@@ -1362,7 +1391,7 @@ function planeFlightStep(m, v, u) {
       // Never under the water, whatever happens: the floor under him right now
       const floor = Math.max(getIslandGroundHeight(p.x, p.z), WATER_LEVEL);
       u.alt = Math.max(0, p.y - floor);
-      if (u.mini) u.mini.rotation.z = f.pitch;
+      if (u.mini) u.mini.rotation.z = f.shownPitch;
       return u.alt;
     }
 
@@ -1412,9 +1441,16 @@ async function flyPlaneCircuit(v, start, u) {
 const PLANE_CRUISE = 12, PLANE_ROLL = 4;
 function planeAltitude(m, v, t, u) {
       if (u.flight) return planeFlightStep(m, v, u);
-      const now = performance.now() / 1000;
-      const dt = Math.min(0.5, Math.max(0, now - (u.lastT ?? now)));
-      u.lastT = now;
+      const alt0 = u.alt || 0;
+      const shown = airAltSteps(u, h => planeAltStep(u, h));
+      // Nose up on the climb, down on the descent
+      const body = u.mini;
+      if (body) body.rotation.z = Math.max(-0.15, Math.min(0.2, (u.alt - alt0) / Math.max((typeof keloSim !== 'undefined' ? keloSim.steps : 1) / 60, 1 / 60) * 0.05));
+      return shown;
+    }
+
+// One simulation step of the plain (unplanned) roll, climb and glide
+function planeAltStep(u, dt) {
       const alt = u.alt || 0;
       let want;
       if (u.landing) want = 0;
@@ -1431,10 +1467,6 @@ function planeAltitude(m, v, t, u) {
       const rate = want > alt ? 4 : 3.2;
       u.alt = alt < want ? Math.min(want, alt + rate * dt) : Math.max(want, alt - rate * dt);
       if (u.landing && u.alt < 0.05) { u.rollFrom = null; u.airborne = false; u.cruising = false; }
-      // Nose up on the climb, down on the descent
-      const body = u.mini;
-      if (body) body.rotation.z = Math.max(-0.15, Math.min(0.2, (u.alt - alt) / Math.max(dt, 0.01) * 0.05));
-      return u.alt;
     }
 
 // Where the takeoff roll heads: straight down the strip toward the lake
@@ -1455,7 +1487,7 @@ function assemblyFrame() {
       if (!state.riding || typeof vehicleMeshes === 'undefined') return;
       const m = vehicleMeshes[state.riding];
       // (js/vehicles.js spools it up and down by real time; this is the fallback)
-      if (m && m.userData.prop && typeof vehicleRideFrame !== 'function') m.userData.prop.rotation.x += 0.9;
+      if (m && m.userData.prop && typeof vehicleRideFrame !== "function") m.userData.prop.rotation.x = performance.now() / 1000 * 54;
     }
 
 // --- 6. Brain tab, AI and talking ---------------------------------------------------------------------
@@ -1464,29 +1496,30 @@ function renderBuildProjectsList() {
       if (!el) return;
       const list = (state.buildProjects || []).slice(0, 6);
       const badge = document.getElementById('buildProjectsBadge');
-      if (badge) badge.textContent = list.length ? `${list.filter(p => p.status !== 'finished').length} active` : 'none';
+      if (badge) badge.textContent = String(list.filter(p => p.status !== 'finished').length);
+      if (badge) badge.title = 'Active build projects';
       const statusText = { gathering: 'gathering parts and building', testing: 'inspections and tests', complete: 'finished, inspected', finished: 'finished', abandoned: 'set aside' };
       const html = list.length ? list.map(p => {
         const b = p.bom, pct = bomPercentBuilt(b), rec = bomPercentReceived(b);
         const tools = b.tools.filter(bomToolOwned).length;
         const subs = b.subs.map(s => {
           const f = s.built ? 1 : s.stepsDone / Math.max(1, s.steps.length);
-          return `<div class="flex items-center gap-2 text-[10px]">
+          return `<div class="flex items-center gap-2 text-2xs">
             <span class="w-4">${s.built ? '✅' : bomSubComplete(s) ? '📦' : '○'}</span>
             <span class="flex-1 text-slate-300">${escapeHtml(s.name)}</span>
-            <span class="font-mono text-slate-400">${bomSubReceived(s)}/${s.lines.length} parts</span>
-            <span class="font-mono text-slate-500">${escapeHtml(bomFmtQty(bomFastenersLeft(s)))}/${escapeHtml(bomFmtQty(bomFastenerCount(s)))} fst</span>
+            <span class="tabular-nums text-slate-400">${bomSubReceived(s)}/${s.lines.length} parts</span>
+            <span class="tabular-nums text-slate-500">${escapeHtml(bomFmtQty(bomFastenersLeft(s)))}/${escapeHtml(bomFmtQty(bomFastenerCount(s)))} fst</span>
             <span class="w-12 h-1.5 rounded bg-slate-700 overflow-hidden"><span class="block h-full bg-amber-400" style="width:${Math.round(f * 100)}%"></span></span>
           </div>`;
         }).join('');
-        const tests = Object.values(p.tests || {}).map(t => `<div class="text-[10px] ${t.ok ? 'text-emerald-300' : 'text-rose-300'}">${t.ok ? '✓' : '✗'} ${escapeHtml(t.name)}: ${escapeHtml(t.note)}</div>`).join('');
-        return `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200 space-y-1.5" data-build-project="${escapeHtml(p.id)}">
-          <div class="flex items-center gap-2"><span class="font-semibold flex-1">${escapeHtml(b.emoji)} ${escapeHtml(b.name)}</span><span class="text-[10px] text-slate-400">${escapeHtml(statusText[p.status] || p.status)}</span></div>
-          <div class="text-[10px] text-slate-400">${pct}% built · ${rec}% of parts received · ${tools}/${b.tools.length} tools${b.vehicle === 'plane' ? ` · pilot: ${pilotTrained() ? 'trained' : 'not yet'}` : ''}</div>
-          <div class="w-full h-2 rounded bg-slate-800 overflow-hidden"><span class="block h-full bg-gradient-to-r from-amber-400 to-emerald-400" style="width:${pct}%"></span></div>
+        const tests = Object.values(p.tests || {}).map(t => `<div class="text-2xs ${t.ok ? 'text-emerald-300' : 'text-rose-300'}">${t.ok ? '✓' : '✗'} ${escapeHtml(t.name)}: ${escapeHtml(t.note)}</div>`).join('');
+        return `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-200 space-y-1.5" data-build-project="${escapeHtml(p.id)}">
+          <div class="flex items-center gap-2"><span class="font-semibold flex-1">${escapeHtml(b.emoji)} ${escapeHtml(b.name)}</span><span class="text-2xs text-slate-400">${escapeHtml(statusText[p.status] || p.status)}</span></div>
+          <div class="text-2xs text-slate-400">${pct}% built · ${rec}% of parts received · ${tools}/${b.tools.length} tools${b.vehicle === 'plane' ? ` · pilot: ${pilotTrained() ? 'trained' : 'not yet'}` : ''}</div>
+          <div class="w-full h-2 rounded bg-slate-800 overflow-hidden"><span class="block h-full bg-amber-500" style="width:${pct}%"></span></div>
           <div class="space-y-0.5">${subs}</div>${tests}
         </div>`;
-      }).join('') : '<div class="text-[11px] text-slate-500 italic">No big builds yet. He can build anything with the right parts.</div>';
+      }).join('') : '<div class="text-2xs text-slate-500 italic">No big builds yet. He can build anything with the right parts.</div>';
       if (typeof perfSetHtml === 'function') perfSetHtml(el, html); else el.innerHTML = html;
     }
 
@@ -1598,6 +1631,8 @@ window.addEventListener('DOMContentLoaded', () => {
     renderBuildProjectsList();
     if (typeof keloEveryFrame === 'function') keloEveryFrame(assemblyFrame);
     else (function loop() { assemblyFrame(); requestAnimationFrame(loop); })();
+    // Planned flights move in the fixed simulation steps (js/scene.js)
+    if (typeof keloEveryStep === 'function') keloEveryStep(planeFlightsStep);
     // Once a sub-assembly's parts and tools are all here, he gets building (and keeps his lists going)
     setInterval(() => {
       renderBuildProjectsList();

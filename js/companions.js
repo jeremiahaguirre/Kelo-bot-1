@@ -65,7 +65,7 @@ function companionStep(c, goal, speed, dt) {
       const dx = goal.x - c.pos.x, dz = goal.z - c.pos.z, dist = Math.hypot(dx, dz);
       if (dist < 0.05) { c.speed = 0; return 0; }
       const want = Math.min(speed, 0.8 + dist * 4);
-      c.speed = c.speed + (want - c.speed) * Math.min(1, dt * 5);
+      c.speed = c.speed + (want - c.speed) * (1 - Math.exp(-5 * dt));
       const step = Math.min(dist, c.speed * dt);
       c.pos.x += (dx / dist) * step;
       c.pos.z += (dz / dist) * step;
@@ -276,7 +276,7 @@ function companionSay(text, ms = 4200) {
         if (!host) return;
         companionBubbleEl = document.createElement('div');
         companionBubbleEl.id = 'companionBubble';
-        companionBubbleEl.className = 'absolute pointer-events-none px-2.5 py-1 rounded-2xl bg-teal-50/95 text-teal-900 text-[11px] font-semibold shadow-lg border border-teal-300 max-w-[200px] text-center';
+        companionBubbleEl.className = 'absolute pointer-events-none px-2.5 py-1 rounded-2xl bg-teal-50/95 text-teal-900 text-2xs font-semibold shadow-lg border border-teal-300 max-w-[200px] text-center';
         companionBubbleEl.style.transform = 'translate(-50%, -100%)';
         companionBubbleEl.style.zIndex = '5';
         companionBubbleEl.style.transition = 'opacity 0.3s';
@@ -490,8 +490,8 @@ function updatePetAnimal(t) {
       // Poses: lying curled up by the bed, sitting while he stands, trotting along
       const lieGoal = asleep && Math.hypot(goal.x - p.pos.x, goal.z - p.pos.z) < 0.2 ? 1 : 0;
       const sitGoal = !lieGoal && p.speed < 0.15 && !companionFetch ? 1 : 0;
-      p.lie += (lieGoal - p.lie) * Math.min(1, dt * 2);
-      p.sit += (sitGoal - p.sit) * Math.min(1, dt * 3);
+      p.lie += (lieGoal - p.lie) * (1 - Math.exp(-2 * dt));
+      p.sit += (sitGoal - p.sit) * (1 - Math.exp(-3 * dt));
       p.gait += dt * (2 + p.speed * 3.2);
       const walkAmt = Math.min(1, p.speed / 1.2);
       p.legs.forEach((leg, i) => {
@@ -555,15 +555,10 @@ async function playFetch(originLabel = 'Playing Fetch') {
           p.ball.visible = true;
           // The arc through the air
           const flight = 1100;
-          const t0 = performance.now();
-          await new Promise(res => {
-            const fly = () => {
-              const k = Math.min(1, (performance.now() - t0) / flight);
-              const gy = getAnalyticalGroundHeight(land.x, land.z) + 0.09;
-              p.ball.position.set(from.x + (land.x - from.x) * k, from.y + (gy - from.y) * k + Math.sin(k * Math.PI) * 2.4, from.z + (land.z - from.z) * k);
-              if (k >= 1) res(); else requestAnimationFrame(fly);
-            };
-            fly();
+          // (keloTween keeps going in a hidden tab, where animation frames stop and he would stay "busy")
+          await keloTween(flight, k => {
+            const gy = getAnalyticalGroundHeight(land.x, land.z) + 0.09;
+            p.ball.position.set(from.x + (land.x - from.x) * k, from.y + (gy - from.y) * k + Math.sin(k * Math.PI) * 2.4, from.z + (land.z - from.z) * k);
           });
           const chases = !cat || Math.random() < 0.7;
           if (!chases) {

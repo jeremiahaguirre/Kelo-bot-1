@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-11T19:43:14.770Z",
-  "runs": 19,
+  "updatedAt": "2026-11-12T07:24:30.062Z",
+  "runs": 20,
   "curiosities": [
-    "African golden cat"
+    "African palm civet"
   ],
   "entries": [
     {
@@ -666,6 +666,41 @@
       "shapeFrom": "American mink",
       "nextCuriosity": "African golden cat",
       "coreMemory": null
+    },
+    {
+      "id": "dream-1794468270061",
+      "at": 1794468270061,
+      "brain": "procedural",
+      "topic": "African golden cat",
+      "title": "Dreaming of Asian badger",
+      "text": "Dear Diary, while nobody was around I looked up \"African golden cat\" and drifted from African golden cat to Asian badger. The Asian badger, also known as the sand badger, is a species of badger native to Mongolia, China, Kazakhstan, Kyrgyzstan, Uzbekistan, the Korean Peninsula and Russia. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "African golden cat",
+          "url": "https://en.wikipedia.org/wiki/African_golden_cat",
+          "extract": "The African golden cat is a wild cat endemic to the rainforests of West and Central Africa. It is threatened due to deforestation and bushmeat hunting and listed as Vulnerable on the IUCN Red List. It is a close relative of both the caracal and the serval. Previously, it was plac"
+        },
+        {
+          "title": "Asian badger",
+          "url": "https://en.wikipedia.org/wiki/Asian_badger",
+          "extract": "The Asian badger, also known as the sand badger, is a species of badger native to Mongolia, China, Kazakhstan, Kyrgyzstan, Uzbekistan, the Korean Peninsula and Russia."
+        }
+      ],
+      "concept": {
+        "name": "African Badger Principle",
+        "emoji": "🔮",
+        "definition": "The idea that african golden cat and asian badger share a hidden pattern.",
+        "builtFrom": [
+          "African golden cat",
+          "Asian badger"
+        ]
+      },
+      "shapeFrom": "Asian badger",
+      "nextCuriosity": "African palm civet",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about Animal navigation. Animal navigation is the ability of many animals to find their way accurately without maps or instruments. I keep coming back to it.",
+        "emoji": "🌙"
+      }
     }
   ]
 }

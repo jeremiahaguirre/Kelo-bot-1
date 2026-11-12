@@ -15,8 +15,8 @@ const PRINTER_RE = /\b3-?d printer\b/i;
 const FILAMENT_RE = /filament/i;
 const SPOOL_GRAMS = 1000;
 // The bench beside the Welding Studio, out of the way of the path (scene.js builds the studio at -1.2, -8.2), between it and his house
-const PRINTER_SPOT = { x: -3.9, z: -8.6 };
-const PRINTER_STAND = { x: -3.9, z: -7.35 };
+const PRINTER_SPOT = { x: MAP_LAYOUT.weld.x - 2.7, z: MAP_LAYOUT.weld.z - 0.4 };
+const PRINTER_STAND = { x: MAP_LAYOUT.weld.x - 2.7, z: MAP_LAYOUT.weld.z + 0.85 };
 const PRINTER_SCALE = 1.6; // the bench and printer are modelled in metres, shown at life size (ITEM_LIFE_SCALE)
 // How long a print takes on screen (tests may shorten it)
 const PRINT_TIME = { perGram: 260, min: 9000, max: 42000, hold: 4000 };
@@ -378,7 +378,15 @@ function paintPrint(model, color, clipPlane = null) {
 function printedThingModel(lower) {
       const d = printerState().designs[lower];
       const color = d ? d.color : '#f97316';
-      const def = d && PRINTABLES.find(x => x.key === d.key);
+      const def = d ? PRINTABLES.find(x => x.key === d.key) : PRINTABLES.find(x => x.name.toLowerCase() === lower);
+      // No design saved for it (an old save, or a print named some other way): the named thing itself, in
+      // print plastic ("A 3D-printed wall hook" is a hook), else the printed figure
+      if (!d && !def) {
+        const what = lower.replace(/^(an?|the|some)\s+/, '').replace(/\b3-?d-printed\s*/, '').replace(/^(pla|petg|abs|tpu|resin|nylon)\s+/, '').trim();
+        const rule = what && ITEM_MODEL_RULES.find(([re]) => !re.test('3d-printed') && re.test(what));
+        const thing = rule ? rule[1](what) : null;
+        if (thing) return paintPrint(fitPrint(thing, Math.min(0.2, modelMaxSize(thing) * (thing.userData.realSize ? 1 : 1 / ITEM_LIFE_SCALE))), color);
+      }
       const raw = def ? def.build() : printedDesign(d && d.parts, color);
       return paintPrint(fitPrint(raw, d && d.size ? d.size : modelMaxSize(raw)), color);
     }
@@ -830,7 +838,7 @@ function printOnMyOwn() {
 function printDecision(pr) {
       if (!pr || typeof pr !== 'object' || !printerName()) return;
       const idea = printIdeaFor(typeof pr.what === 'string' ? pr.what : '');
-      doWhenFree(() => printSomething(idea, 'Decided to Print Something'));
+      doWhenFree(() => printSomething(idea, 'Decided to Print Something'), { key: 'print:' + (idea.what || pr.what || '') });
     }
 
 function printerSummaryForAI() {

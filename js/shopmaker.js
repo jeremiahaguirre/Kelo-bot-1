@@ -654,8 +654,10 @@ async function makerCastRun(job, label = 'Casting Concrete') {
           state.speechBubble = say;
           if (typeof holdJobTool === 'function') holdJobTool(/shovel|spade/i, 'digging');
           renderAllUI();
-          const t0 = Date.now(), y0 = mesh.scale.y / full;
-          while (Date.now() - t0 < 2500) { mesh.scale.y = full * Math.max(0.02, y0 + (h - y0) * (Date.now() - t0) / 2500); await new Promise(r => setTimeout(r, 100)); }
+          const y0 = mesh.scale.y / full;
+          const grow = k => { mesh.scale.y = full * Math.max(0.02, y0 + (h - y0) * k); };
+          if (typeof keloTween === 'function') await keloTween(2500, grow);
+          else { const t0 = Date.now(); while (Date.now() - t0 < 2500) { grow((Date.now() - t0) / 2500); await new Promise(r => setTimeout(r, 100)); } }
         }
         useReadyMixFor(`casting ${wsWhat(job.product)}`);
         const s = makerState();
@@ -1042,7 +1044,7 @@ function madeTableLampModel() {
 if (typeof ITEM_MODEL_RULES !== 'undefined') ITEM_MODEL_RULES.unshift(
   [/\bglass (cup|tumbler|mug)\b|hand-?blown (glass )?(cup|tumbler)/, () => madeGlassModel('cup')],
   [/\bglass bowl\b|hand-?blown (glass )?bowl/, () => madeGlassModel('bowl')],
-  [/\bglass vase\b|hand-?blown (glass )?vase/, () => madeGlassModel('vase')],
+  [/^(?!.*shards).*(\bglass vase\b|hand-?blown (glass )?vase)/, () => madeGlassModel('vase')],
   [/\bglass ornament\b|hand-?blown (glass )?ornament/, () => madeGlassModel('ornament')],
   [/(hand-?turned|turned|wooden|handmade) (wooden )?bowl\b/, () => madeWoodBowlModel()],
   [/\b(handmade|wooden|floating|wall) (wooden |wall )?shelf\b/, () => madeShelfModel()],

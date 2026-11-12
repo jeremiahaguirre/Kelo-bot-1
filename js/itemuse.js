@@ -620,6 +620,8 @@ async function useItemFor(name, purposeText = '', why = '', originLabel = 'Took 
         case 'dig': case 'break rock': if (typeof digAt === 'function') { const s = state.digSites[0] || chooseDigSpot(); return digAt(s.x, s.z, originLabel); } break;
         case 'fuel': if (typeof refuelWith === 'function') { const done = await refuelWith(item, originLabel); if (!done) { state.speechBubble = `My tanks are full. I'll keep the ${plain} for when they're not.`; renderAllUI(); } return done; } break;
         case 'print': if (typeof printOnMyOwn === 'function') return printOnMyOwn(); break;
+        // Fertilizer is used up by really feeding plants (js/plantcare.js), not in the catch-all below
+        case 'fertilize': if (typeof feedPlants === 'function') return feedPlants(null, why, originLabel); break;
         case 'stargaze': if (/telescope/i.test(item) && typeof stargaze === 'function') return stargaze(originLabel); break;
         case 'fire': return warmUpByFire(originLabel);
         case 'ride': if (typeof goBoating === 'function' && vehicleTypeFor(item) && vehicleTypeFor(item).kind === 'boat') return goBoating(originLabel); break;

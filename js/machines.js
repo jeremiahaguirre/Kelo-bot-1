@@ -180,7 +180,7 @@ function machineReady(key, job = {}, { quiet = false, context = 'Workshop' } = {
         if (!quiet) {
           state.speechBubble = `I've never used the ${def.name}. I'll read up on how it's really done at NetNode before I touch it.`;
           renderAllUI();
-          doWhenFree(() => researchMachine(key));
+          doWhenFree(() => researchMachine(key), { key: 'research-machine:' + key });
         }
         return false;
       }
@@ -304,7 +304,7 @@ async function runMachineJob(key, job = {}, originLabel = 'In the Workshop') {
       if (!machineReady(key, job, { context: originLabel })) return 'not-ready';
       const plan = def.plan(job);
       if (!plan) return false;
-      workshopJobRunning = { key, at: Date.now() };
+      workshopJobRunning = { key, at: Date.now(), title: plan.title || '', product: plan.product || '' };
       state.isPracticing = true;
       try {
         state.currentLocKey = 'workshop';
@@ -313,7 +313,8 @@ async function runMachineJob(key, job = {}, originLabel = 'In the Workshop') {
         state.moodTitle = wsBadgeTitle(plan.title || `Using the ${def.name}`);
         state.speechBubble = plan.speech || `Off to the Workshop to use the ${def.name}.`;
         renderAllUI();
-        const results = await goIntoWorkshop({ vehicle: job.vehicle || null, stops: plan.stops });
+        // (a plan with its own visit, like the garage hall's, goes there instead of into the Workshop)
+        const results = plan.visit ? await plan.visit() : await goIntoWorkshop({ vehicle: job.vehicle || null, stops: plan.stops });
         if (!results) {
           state.speechBubble = `I couldn't get into the Workshop just now. I'll try the ${def.name} later.`;
           return false;
@@ -541,7 +542,7 @@ function renderWorkshopBrain() {
       const html = groups.map(([title, kind]) => {
         const defs = Object.values(WORKSHOP_MACHINES).filter(d => d.kind === kind && d.key !== 'printbench');
         if (!defs.length) return '';
-        return `<div class="text-[10px] uppercase tracking-wide text-slate-500 mt-1">${title}</div>` + defs.map(d => {
+        return `<div class="text-2xs uppercase tracking-wide text-slate-500 mt-1">${title}</div>` + defs.map(d => {
           const known = machineKnown(d.key);
           const missing = known ? missingSupplies(d) : [];
           const lvl = machineLevel(d.key);
@@ -552,15 +553,15 @@ function renderWorkshopBrain() {
             return `<span class="${have ? 'text-emerald-300' : supplyAwaited(k) ? 'text-amber-300' : 'text-slate-500'}">${escapeHtml(plainItem(s ? s.ask : k).replace(/^(a|an)\s+/i, ''))}${note ? ` (${escapeHtml(note)})` : ''}</span>`;
           }).join(' · ');
           const status = !known ? '<span class="text-slate-400">not learned yet</span>' : !d.plan ? '<span class="text-sky-300">learned</span>' : missing.length ? `<span class="text-amber-300">needs ${missing.length} thing${missing.length > 1 ? 's' : ''}</span>` : '<span class="text-emerald-300 font-bold">ready</span>';
-          return `<div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200">
-            <div class="flex items-center gap-2"><span class="flex-1">${d.emoji || '⚙️'} ${escapeHtml(d.name)}</span>${known ? `<span class="text-amber-300 font-bold">Lv ${lvl}</span>` : ''} ${status}</div>
-            ${known ? `<div class="text-[10px] mt-0.5 leading-snug">${supplies}</div>` : ''}
+          return `<div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-200">
+            <div class="flex items-center gap-2"><span class="flex-1">${d.emoji || '⚙️'} ${escapeHtml(d.name)}</span>${known ? `<span class="text-amber-300 font-bold">Lv ${escapeHtml(lvl)}</span>` : ''} ${status}</div>
+            ${known ? `<div class="text-2xs mt-0.5 leading-snug">${supplies}</div>` : ''}
           </div>`;
         }).join('');
       }).join('');
-      const made = w.made.length ? `<div class="text-[10px] uppercase tracking-wide text-slate-500 mt-1">Made lately</div><div class="text-[11px] text-slate-300">${w.made.slice(0, 6).map(m => escapeHtml(m.name)).join(', ')}</div>` : '';
+      const made = w.made.length ? `<div class="text-2xs uppercase tracking-wide text-slate-500 mt-1">Made lately</div><div class="text-2xs text-slate-300">${w.made.slice(0, 6).map(m => escapeHtml(m.name)).join(', ')}</div>` : '';
       const vehicles = typeof garageConditionHtml === 'function' ? garageConditionHtml() : '';
-      const out = html + made + vehicles || '<div class="text-[11px] text-slate-500 italic">His Workshop is being built.</div>';
+      const out = html + made + vehicles || '<div class="text-2xs text-slate-500 italic">His Workshop is being built.</div>';
       if (typeof perfSetHtml === 'function') perfSetHtml(el, out); else el.innerHTML = out;
     }
 

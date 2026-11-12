@@ -12,7 +12,8 @@
 // This file drives the camera itself; OrbitControls (js/scene.js) stays only to aim it, with its own
 // mouse and touch handling switched off.
 
-const EXPLORE_BOUNDS = { minX: WORLD_MIN_X, maxX: WORLD_MAX_X, minZ: WORLD_MIN_Z, maxZ: 20 };
+// (the whole world with the runway field, js/agent.js WORLD_EXTENT, a little past the field's ends)
+const EXPLORE_BOUNDS = { minX: WORLD_EXTENT.minX - 10, maxX: WORLD_EXTENT.maxX + 10, minZ: WORLD_EXTENT.minZ - 10, maxZ: 20 };
 const EXPLORE_LIMITS = { minDist: 5, maxDist: 140, minPitch: 0.12, maxPitch: 1.45 };
 const EXPLORE_CLEARANCE = 1.4;   // the camera always stays at least this far above the ground
 const EXPLORE_IDLE_MS = 90000;   // "go back to Kelo-1" after this long without touching anything
@@ -51,20 +52,14 @@ function exploreSavePrefs() {
     }
 
 // The ground (or the lake surface) at a spot. Inside the island this is the exact terrain; beyond
-// it, the backdrop lands are measured with a ray now and then
+// it the backdrop lands' own height function (what their meshes are built from). The far lands'
+// mesh is coarse, so there the camera keeps a little extra room over the hills.
 function exploreGroundAt(x, z) {
       const water = typeof WATER_LEVEL === 'number' ? WATER_LEVEL : -0.18;
       if (islandContains(x, z)) return Math.max(water, getAnalyticalGroundHeight(x, z));
-      const o = exploreCam.outerGround;
-      if (Date.now() - o.at > 150 || Math.hypot(o.x - x, o.z - z) > 4) {
-        o.at = Date.now(); o.x = x; o.z = z; o.y = water;
-        if (terrainSwapGroup) {
-          const ray = new THREE.Raycaster(new THREE.Vector3(x, 120, z), new THREE.Vector3(0, -1, 0));
-          const hit = ray.intersectObjects(terrainSwapGroup.children, true)[0];
-          if (hit) o.y = Math.max(water, hit.point.y);
-        }
-      }
-      return o.y;
+      const y = Math.max(water, outerTerrainHeight(x, z));
+      const coarse = !inRectXZ(NORTH_PATCH, x, z) && !(Math.abs(x) < OUTER_LANDS_HALF && Math.abs(z) < OUTER_LANDS_HALF);
+      return coarse && !onRunwayField(x, z) ? y + Math.min(4, y * 0.15) : y;
     }
 
 const EXPLORE_GROUND_SAMPLES = [0.2, 0.4, 0.6, 0.8, 1];
@@ -160,7 +155,7 @@ function exploreKeloSpot() {
 function exploreTakeOver(kind) {
       exploreCam.lastInput = Date.now();
       exploreHideSpotMenu();
-      if (state.cameraMode === 'eyes') return;   // looking around through his eyes stays there
+      if (state.cameraMode === 'eyes' || state.cameraMode === 'visit') return;   // his eyes and a Workshop visit stay put
       const mode = state.cameraMode;
       if (exploreCam.fly) {
         exploreCam.fly = null;
@@ -226,6 +221,7 @@ function exploreEase(u) { return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u +
 
 // --- The per-frame update (called from the animate loop in js/scene.js) --------------------------
 // Returns true when it placed the camera this frame
+const exploreScratchGoal = new THREE.Vector3(), exploreScratchAcc = new THREE.Vector3();
 function exploreCameraUpdate() {
       if (!exploreCam.ready || !camera || !controls) return false;
       const now = performance.now();
@@ -234,6 +230,8 @@ function exploreCameraUpdate() {
       const mode = state.cameraMode;
       // Through his eyes (js/eyecam.js) places the camera itself
       if (typeof eyeCamFrame === 'function' && eyeCamFrame(dt)) { exploreCam.driving = false; return true; }
+      // Walking round the Workshop as a visitor (js/shopvisit.js) places it too
+      if (typeof shopVisitFrame === 'function' && shopVisitFrame(dt)) { exploreCam.driving = false; return true; }
 
       if (!exploreCam.fly) {
         if (mode === 'follow') {
@@ -279,12 +277,19 @@ function exploreCameraUpdate() {
           else {
             const fv = exploreCam.fv || (exploreCam.fv = new THREE.Vector3());
             const w = 5.5;
+            // The goal moved from where it was last frame to where it is now: the substeps follow it
+            // along that line, so the camera lands in the same place at any frame rate
+            const g0 = exploreCam.goalWas || (exploreCam.goalWas = goal.target.clone());
+            if (g0.distanceTo(goal.target) > 5) g0.copy(goal.target);
+            const gi = exploreScratchGoal, acc = exploreScratchAcc;
             for (let left = dt; left > 1e-4;) {
               const h = Math.min(left, 1 / 120);
               left -= h;
-              fv.addScaledVector(goal.target.clone().sub(cur.target).multiplyScalar(w * w).addScaledVector(fv, -2 * w), h);
+              gi.lerpVectors(goal.target, g0, dt > 0 ? left / dt : 0);
+              fv.addScaledVector(acc.copy(gi).sub(cur.target).multiplyScalar(w * w).addScaledVector(fv, -2 * w), h);
               cur.target.addScaledVector(fv, h);
             }
+            g0.copy(goal.target);
           }
         } else {
           exploreCam.fv = null;
@@ -482,10 +487,12 @@ function exploreBindPointer() {
         exploreTakeOver('zoom');
         const factor = Math.exp(exploreClamp(e.deltaY, -120, 120) * 0.0022);
         if (state.cameraMode === 'eyes' && typeof eyeCamZoom === 'function') return eyeCamZoom(factor);
+        if (state.cameraMode === 'visit' && typeof shopVisitZoom === 'function') return shopVisitZoom(factor);
         exploreZoomAbout(exploreTerrainPoint(e.clientX, e.clientY), factor);
       }, { passive: false });
 
       el.addEventListener('dblclick', (e) => {
+        if (state.cameraMode === 'visit') return;
         clearTimeout(exploreSpotTimer);
         exploreHideSpotMenu();
         const p = exploreTerrainPoint(e.clientX, e.clientY);
@@ -521,6 +528,10 @@ function exploreMoveDrag(e, px, py) {
         exploreTakeOver(d.kind === 'pan' ? 'pan' : 'turn');
       }
       exploreCam.lastInput = Date.now();
+      if (state.cameraMode === 'visit' && typeof shopVisitLook === 'function') {
+        if (d.kind !== 'pinch') shopVisitLook(e.clientX - px, e.clientY - py);
+        return;
+      }
       if (state.cameraMode === 'eyes' && typeof eyeCamLook === 'function') {
         // Through his eyes: a drag looks around, a pinch zooms
         if (d.kind === 'pinch' && pts.length >= 2) {
@@ -579,6 +590,7 @@ function exploreBindKeys() {
       window.addEventListener('keydown', (e) => {
         if (exploreTyping(e) || e.ctrlKey || e.metaKey || e.altKey) return;
         if (document.getElementById('keloViewer')) return; // the arrows page through the viewer
+        if (state.cameraMode === 'visit' && typeof shopVisitKey === 'function' && shopVisitKey(e)) { e.stopPropagation(); return; }
         if (e.key === '?') { exploreShowHelp(true); return; }
         if (e.code === 'Escape') { exploreHideSpotMenu(); exploreTogglePlaces(false); exploreShowHelp(false); return; }
         if (e.code === 'KeyK' || e.code === 'Home') { exploreFlyToKelo(); e.stopPropagation(); return; }
@@ -625,15 +637,15 @@ function exploreOpenSpotMenu(x, y, pt) {
       const where = exploreDescribeSpot(pt, true);
       menu.innerHTML = `
         <div class="flex items-start justify-between gap-2">
-          <div class="text-[11px] font-bold text-amber-200 leading-snug">${escapeHtml(where)}</div>
-          <button type="button" data-spot="close" class="explore-x" aria-label="Close">✕</button>
+          <div class="text-xs font-semibold text-white leading-snug">${escapeHtml(where)}</div>
+          <button type="button" data-spot="close" class="explore-x" aria-label="Close"><i class="ph-bold ph-x" data-hud-emoji="✕" aria-hidden="true"></i></button>
         </div>
         <div class="flex flex-col gap-1 mt-1.5">
-          <button type="button" data-spot="fly" class="explore-spot-btn"><span aria-hidden="true">✈️</span> Fly here</button>
-          <button type="button" data-spot="send" class="explore-spot-btn"><span aria-hidden="true">🤖</span> Send Kelo-1 here</button>
-          <button type="button" data-spot="info" class="explore-spot-btn"><span aria-hidden="true">❓</span> What's this?</button>
+          <button type="button" data-spot="fly" class="explore-spot-btn"><i class="ph-bold ph-airplane-tilt" data-hud-emoji="✈️" aria-hidden="true"></i> Fly here</button>
+          <button type="button" data-spot="send" class="explore-spot-btn"><i class="ph-bold ph-person-simple-walk" data-hud-emoji="🤖" aria-hidden="true"></i> Send Kelo-1 here</button>
+          <button type="button" data-spot="info" class="explore-spot-btn"><i class="ph-bold ph-question" data-hud-emoji="❓" aria-hidden="true"></i> What's this?</button>
         </div>
-        <p data-spot-info class="hidden mt-1.5 text-[11px] text-slate-300 leading-snug"></p>`;
+        <p data-spot-info class="hidden mt-1.5 text-2xs text-slate-300 leading-snug"></p>`;
       menu.classList.remove('hidden');
       const vw = window.innerWidth, vh = window.innerHeight;
       const r = menu.getBoundingClientRect();
@@ -686,7 +698,7 @@ function exploreDescribeSpot(pt, short) {
       const ice = typeof iceThicknessCm === 'function' ? iceThicknessCm() : 0;
       if (z > 7.5 && h < water) ground = ice > 0 ? `frozen Okanagan Lake: ${ice} cm of ice over water about ${Math.max(1, Math.round(water - h))} m deep` : `Okanagan Lake, about ${Math.max(1, Math.round(water - h))} m deep here`;
       else if (z > 8.2 && h < 0.6) ground = 'the sandy beach';
-      else if (h > 2.6 || z < -12) ground = `the mountain, ${Math.round(h)} m up`;
+      else if (h > 2.6 || z < valleyFootZ(x)) ground = `the mountain, ${Math.round(h)} m up`;
       else if (x > 14 && z < -6) ground = 'the rise toward the Eastern Overlook';
       else ground = 'the valley meadow';
       if (short) return near ? `${near.l.icon || '📍'} Near ${near.l.name}` : `📍 On ${ground}`;
@@ -743,7 +755,7 @@ function explorePlaces() {
       const known = new Set(['storehouse', 'post_office', 'bed', 'couch', 'weld', 'garden', 'cafe', 'cyber', 'shoreline', 'meadow', 'mountain_peak', 'disposal_pit', 'museum', 'east_cliff']);
       Object.values(TOWN_LOCATIONS).forEach(l => { if (!known.has(l.id) && l.showPin !== false) add('His spots', l.id, l.icon || '📍', l.name, l.x, l.z, { dist: 18 }); });
       (state.digSites || []).forEach((s, i) => {
-        const mountain = s.z < -12 || getAnalyticalGroundHeight(s.x, s.z) > 2.2;
+        const mountain = s.z < valleyFootZ(s.x) || getAnalyticalGroundHeight(s.x, s.z) > 2.2;
         add('His digs', 'dig-' + i, '⛏️', `${mountain ? 'Mountain' : 'Valley'} dig (${s.depth.toFixed(1)} m deep)`, s.x, s.z, { dist: 14, pitch: 0.75 });
       });
       (state.projects || []).filter(p => Number.isFinite(p.x)).forEach(p => {
@@ -761,6 +773,7 @@ function explorePlaces() {
 function exploreGoToPlace(id) {
       if (id === 'kelo') return exploreFlyToKelo();
       if (id === 'eyes' && typeof eyeCamStart === 'function') { exploreTogglePlaces(false); return eyeCamStart(); }
+      if (id === 'shopvisit' && typeof shopVisitOpenChooser === 'function') { exploreTogglePlaces(false); return shopVisitOpenChooser(); }
       const p = explorePlaces().find(pl => pl.id === id);
       if (p) exploreFlyTo(p);
       exploreTogglePlaces(false);
@@ -773,13 +786,14 @@ function exploreRenderPlaces() {
       explorePlaces().forEach(p => { (groups[p.group] = groups[p.group] || []).push(p); });
       list.innerHTML = `
         <div class="grid grid-cols-2 gap-1">
-          <button type="button" data-place="kelo" class="explore-place explore-place-kelo"><span aria-hidden="true">🤖</span><span>Where is Kelo-1?</span></button>
-          <button type="button" data-place="eyes" class="explore-place explore-place-kelo"><span aria-hidden="true">👀</span><span>Through his eyes</span></button>
+          <button type="button" data-place="kelo" class="explore-place explore-place-kelo"><i class="ph-bold ph-robot" data-hud-emoji="🤖" aria-hidden="true"></i><span>Where is Kelo-1?</span></button>
+          <button type="button" data-place="eyes" class="explore-place explore-place-kelo"><i class="ph-bold ph-eye" data-hud-emoji="👀" aria-hidden="true"></i><span>Through his eyes</span></button>
+          ${typeof shopVisitOpenChooser === 'function' ? '<button type="button" data-place="shopvisit" class="explore-place explore-place-kelo col-span-2"><i class="ph-bold ph-factory" data-hud-emoji="🏭" aria-hidden="true"></i><span>Visit the Workshop</span></button>' : ''}
         </div>
         ${Object.entries(groups).map(([g, items]) => `
           <div class="explore-place-group">${escapeHtml(g)}</div>
           <div class="grid grid-cols-2 gap-1">
-            ${items.map(p => `<button type="button" data-place="${escapeHtml(p.id)}" class="explore-place"><span aria-hidden="true">${escapeHtml(p.icon)}</span><span class="truncate">${escapeHtml(p.name)}</span></button>`).join('')}
+            ${items.map(p => `<button type="button" data-place="${escapeHtml(p.id)}" class="explore-place"><span aria-hidden="true">${escapeHtml(p.icon)}</span><span class="min-w-0">${escapeHtml(p.name)}</span></button>`).join('')}
           </div>`).join('')}`;
     }
 
@@ -864,6 +878,7 @@ function exploreBindButtons() {
         const cam = b.id === 'btnFocusKelo' ? 'follow' : b.getAttribute('data-cam');
         if (cam === 'follow') return exploreFlyToKelo();
         if (cam === 'eyes' && typeof eyeCamStart === 'function') return eyeCamStart();
+        if (cam === 'visit' && typeof shopVisitOpenChooser === 'function') return shopVisitOpenChooser();
         if (cam === 'bird') {
           const k = exploreKeloSpot();
           return exploreFlyTo({ x: k.x, z: k.z, dist: 60, pitch: 1.2 });

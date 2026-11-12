@@ -17,7 +17,7 @@ const WIND_LEVELS = [
 // Spring and autumn are windier, summer a little stiller
 const SEASON_WIND = { Spring: 0.07, Summer: -0.06, Autumn: 0.06, Winter: 0.02 };
 // Where the wind sock stands: at the edge of the balloon field, clear of the balloon itself
-const WIND_SOCK_SPOT = { x: -19.6, z: -6.4 };
+const WIND_SOCK_SPOT = { x: MAP_LAYOUT.windSock.x, z: MAP_LAYOUT.windSock.z };
 // The pieces a crashed balloon breaks into
 const BALLOON_PIECES = [
   { name: 'Torn balloon envelope', emoji: '🎈' },
@@ -25,7 +25,7 @@ const BALLOON_PIECES = [
   { name: 'Cracked wicker basket', emoji: '🧺' }
 ];
 const BROKEN_KITE = 'Broken kite';
-const WELD_BENCH_TOP = { x: -1.2, z: -8.2, y: 0.92 };
+const WELD_BENCH_TOP = { x: MAP_LAYOUT.weld.x, z: MAP_LAYOUT.weld.z, y: 0.92 };
 
 // For testing or a visitor's experiment: set to 'calm' / 'breeze' / 'windy' / 'gale' to force it
 let windOverride = null;
@@ -151,10 +151,10 @@ function buildWindSock3D() {
 // Every frame: ease toward the real wind, then sway the trees, push the clouds and fill the sock
 function updateWindLook(t, dt) {
       const w = windNow();
-      windShown.s += (w.strength - windShown.s) * Math.min(1, dt * 0.5);
+      windShown.s += (w.strength - windShown.s) * (1 - Math.exp(-0.5 * dt));
       let da = w.angle - windShown.angle;
       da = Math.atan2(Math.sin(da), Math.cos(da));
-      windShown.angle += da * Math.min(1, dt * 0.4);
+      windShown.angle += da * (1 - Math.exp(-0.4 * dt));
       const s = windShown.s, dx = Math.cos(windShown.angle), dz = Math.sin(windShown.angle);
       // The firs sway on the GPU (js/realism.js foliageSwayShader)
       if (typeof FOLIAGE_WIND !== 'undefined') {
@@ -383,7 +383,8 @@ function windKiteProps(kite, line) {
       const spot = { ...state.botPos };
       kiteSession = { key: w.key, snapped: false, snapAt: w.key === 'gale' && Math.random() < 0.6 ? Date.now() + 5000 + Math.random() * 3000 : 0, flyAway: null };
       const session = kiteSession;
-      const hand = () => new THREE.Vector3(state.botPos.x, state.botAltitudeY + 1.4, state.botPos.z);
+      // (the line runs from his right hand, which the kite clip holds up: js/kelo-clips.js)
+      const hand = () => keloRightHand ? keloRightHand.getWorldPosition(new THREE.Vector3()) : new THREE.Vector3(state.botPos.x, state.botAltitudeY + 1.4, state.botPos.z);
       if (w.key === 'calm') {
         // He runs back and forth trying to get it up; it bounces along behind him and drops
         state.speechBubble = 'Come on, up you go! ...Why won\'t it fly?';

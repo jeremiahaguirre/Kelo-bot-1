@@ -18,7 +18,14 @@
 function wsSpray(model, from, opts) {
       const u = model.userData;
       if (!u.spray) u.spray = [];
-      const n = opts.rate || 2;
+      // Real seconds since the last call: `rate` is per 60 fps frame, so the same number fly per second
+      // at any frame rate
+      const now = performance.now();
+      const dt = u.sprayLastMs === undefined || now - u.sprayLastMs > 500 ? 1 / 60 : Math.min(0.1, (now - u.sprayLastMs) / 1000);
+      u.sprayLastMs = now;
+      u.sprayDue = Math.min(20, (u.sprayDue || 0) + (opts.rate || 2) * 60 * dt);
+      const n = Math.floor(u.sprayDue);
+      u.sprayDue -= n;
       for (let i = 0; i < n && u.spray.length < (opts.max || 40); i++) {
         const mat = opts.mat || (opts.mat = new THREE.MeshStandardMaterial({ color: opts.color, roughness: 0.4, metalness: opts.metal ? 0.8 : 0, transparent: true, opacity: 0.9, depthWrite: false }));
         const p = new THREE.Mesh(MM_GEO.box, mat);
@@ -31,13 +38,12 @@ function wsSpray(model, from, opts) {
         model.add(p);
         u.spray.push(p);
       }
-      const dt = 1 / 60;
       u.spray = u.spray.filter(p => {
         p.userData.life += dt;
         p.userData.v.y -= (opts.gravity === undefined ? 4 : opts.gravity) * dt;
         p.position.addScaledVector(p.userData.v, dt);
         if (p.position.y < (opts.floor || 0)) { p.position.y = opts.floor || 0; p.userData.v.set(0, 0, 0); }
-        p.rotation.x += 0.2;
+        p.rotation.x += 12 * dt;
         if (p.userData.life > (opts.life || 0.9)) { model.remove(p); return false; }
         return true;
       });

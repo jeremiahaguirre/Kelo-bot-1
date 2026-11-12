@@ -236,7 +236,7 @@ const ITEM_MODEL_RULES = [
   [/^(?!.*(pie|tart|cobbler|cake|jam)).*(peach|apricot)/, () => fruitBasket(0xffa36c, 0.038, 9, 'peach')],
   [/^(?!.*(pie|tart|cobbler|cake|jam|muffin|juice)).*(blueberr|grape)/, () => fruitBasket(0x3b4cca, 0.009, 60, 'berry')],
   [/bread|loaf|sourdough|baguette|\bbun\b|croissant/, (lower) => realSize(loafModel(lower))],
-  [/tart|pie|cobbler|cake|cookie/, (lower) => realSize(bakedModel(lower))],
+  [/tart|\bpies?\b|cobbler|cake|cookie/, (lower) => realSize(bakedModel(lower))],
   [/ramen|noodle|soup|stew|bowl/, (lower) => realSize(noodleBowlModel())],
   [/cheese|cheddar/, (lower) => realSize(cheeseModel())],
   [/pizza/, (lower) => realSize(pizzaModel())],
@@ -257,10 +257,10 @@ const ITEM_MODEL_RULES = [
   [/duck/, (lower) => realSize(duckModel())],
   [/spinning top|\btop\b/, (lower) => realSize(spinningTopModel())],
   [/frog/, (lower) => realSize(frogModel())],
-  [/puzzle|cube|block|lego/, (lower) => realSize(blocksModel())],
+  [/puzzle|cube|\bblocks?\b|lego/, (lower) => realSize(blocksModel())],
   [/harmonica/, (lower) => realSize(harmonicaModel())],
   [/drill/, () => realSize(cordlessDrillModel())],
-  [/rope|cable|wire/, (lower) => {
+  [/\bropes?\b|cable|wire/, (lower) => {
     const coil = mesh(new THREE.TorusGeometry(0.22, 0.05, 8, 24), /wire|copper/.test(lower) ? 0xb45309 : 0xd6a35c);
     coil.rotation.x = Math.PI / 2;
     coil.position.y = 0.06;
@@ -316,7 +316,7 @@ const ITEM_MODEL_RULES = [
   [/knife/, () => realSize(knifeModel())],
   [/\bsaw\b|handsaw/, () => realSize(handSawModel())],
   [/multitool|iron|tool/, () => realSize(toolboxModel())],
-  [/canoe|kayak|boat|raft|paddle ?board/, () => rowboatModel()],
+  [/canoe|kayak|boat|\braft\b|paddle ?board/, () => rowboatModel()],
   [/bike|bicycle|scooter/, () => bicycleModel()],
   [/submarine/, () => {
     const hull = mesh(new THREE.SphereGeometry(0.2, 14, 10), 0xfacc15);
@@ -335,7 +335,7 @@ const ITEM_MODEL_RULES = [
     tree.position.y = 0.36;
     return group(water, isle, tree);
   }],
-  [/treehouse|cabin|house|observatory|tower/, () => {
+  [/treehouse|cabin|\bhouse\b|observatory|tower/, () => {
     const hut = mesh(new THREE.BoxGeometry(0.35, 0.3, 0.35), 0xa16207);
     hut.position.y = 0.15;
     const roof = mesh(new THREE.ConeGeometry(0.3, 0.22, 4), 0x7c2d12);
@@ -573,7 +573,9 @@ function aiDesignedItemModel(lower) {
 // truck), then one the AI designed for things nobody has a model for, then a guess from the name's
 // words and shapes he knows. A plain box only if all of that comes up empty.
 function singleItemModel(lower) {
-      const drawn = drawnItemModel(lower);
+      let drawn = drawnItemModel(lower);
+      // Older display-size models are scaled to the real thing's size (js/itemmodels.js)
+      if (typeof imTrueSize === 'function') drawn = imTrueSize(lower, drawn);
       // A real 3D model of the thing takes the drawn one's place once it has loaded (js/realmodels.js)
       return typeof withRealModel === 'function' ? withRealModel(lower, drawn) : drawn;
     }
@@ -669,22 +671,29 @@ async function unboxInHands(itemModel) {
       itemModel.userData.unboxBase = itemModel.scale.x;
       itemModel.scale.setScalar(itemModel.userData.unboxBase * 0.01);
       wrapper.add(itemModel);
-      for (let i = 1; i <= 12; i++) {
-        const t = i / 12;
+      await keloTween(540, t => {
         box.scale.setScalar(Math.max(0.01, 1.4 * (1 - t)));
         box.position.y = -t * 0.3;
         box.rotation.z = t * 0.6;
         itemModel.scale.setScalar(itemModel.userData.unboxBase * (0.01 + 0.99 * t));
         itemModel.position.y = 0.25 * Math.sin(t * Math.PI);
-        await new Promise(r => setTimeout(r, 45));
-      }
+      });
       wrapper.remove(box);
     }
 
-// "A crucible, borax flux & a graphite mold" -> three separate things side by side
+// "A crucible, borax flux & a graphite mold" -> three separate things side by side. Kept whole: kits and
+// sets ("Parts kit: Rear axle and brake", "Socket and wrench set"), anything in brackets ("TIG welder
+// (AC/DC, 200 A)"), sizes ("Hex drivers 1.5, 2, 2.5 mm") and names where a piece has no model of its own
+// ("Climbing rope and carabiners" is one coil of rope with its carabiners).
 function splitItemList(name) {
-      const parts = String(name || '').split(/\s*(?:,|&|\+|\band\b)\s*/i).map(p => p.trim()).filter(p => p.length > 2);
-      return parts.length > 1 && parts.length <= 5 ? parts : null;
+      const lower = String(name || '').toLowerCase();
+      // A dish named for what is in it ("tomato and carrot soup") is one dish
+      if (/\b(soup|stew|pies?|cobbler|crumble|salad|sandwich|curry|cake|tart|muffins?|jam|sauce|smoothie|juice|pizza|pasta)$/.test(lower)) return null;
+      if (/^(an? )?(parts kit|tools for|set of|kit of|pair of|box of|bundle of|bag of|survey kit)\b|\b(set|kit)$|^[^:]+:/.test(lower.replace(/\([^)]*\)/g, '').trim())) return null;
+      const parts = lower.replace(/\([^)]*\)/g, ' ').split(/\s*(?:,|&|\+|\band\b)\s*/i).map(p => p.trim()).filter(p => p.length > 2);
+      if (parts.length < 2 || parts.length > 5 || parts.some(p => !/[a-z]{3}/.test(p))) return null;
+      const modelled = p => ITEM_MODEL_RULES.some(([re]) => re.test(p)) || Boolean(typeof realModelEntry === 'function' && realModelEntry(p));
+      return parts.every(modelled) ? parts : null;
     }
 
 // A model for any named item, with its name on a small label above it
@@ -697,19 +706,35 @@ function buildItemModel3D(name, { kind = 'gift', thumb = null, label = true } = 
         const list = aiDesignedItemModel(lower) ? null : splitItemList(lower);
         if (list) {
           model = group();
-          list.forEach((piece, i) => {
-            const sub = singleItemModel(piece);
-            sub.scale.multiplyScalar(0.8);
-            sub.position.x = (i - (list.length - 1) / 2) * 0.45;
+          // Side by side at their own sizes (realSize pieces in metres, the others at display size)
+          const subs = list.map(piece => singleItemModel(piece));
+          const anyReal = subs.some(sub => sub.userData.realSize);
+          const widths = subs.map(sub => {
+            if (anyReal && !sub.userData.realSize) sub.scale.multiplyScalar(1 / ITEM_LIFE_SCALE);
+            const box = new THREE.Box3().setFromObject(sub);
+            return box.isEmpty() ? 0.2 : box.max.x - box.min.x;
+          });
+          const gap = anyReal ? 0.04 : 0.08;
+          let x = -(widths.reduce((a, b) => a + b, 0) + gap * (subs.length - 1)) / 2;
+          subs.forEach((sub, i) => {
+            const box = new THREE.Box3().setFromObject(sub);
+            sub.position.x = x - (box.isEmpty() ? 0 : box.min.x);
+            x += widths[i] + gap;
             model.add(sub);
           });
+          if (anyReal) realSize(model);
         } else {
           model = singleItemModel(lower);
         }
-        // Wood grain, brushed metal, see-through glass... (js/materials.js)
-        if (typeof applyMaterialLook === 'function') applyMaterialLook(model, name);
-        if (typeof polishItemSurfaces === 'function') polishItemSurfaces(model, name);
+        // Wood grain, brushed metal, see-through glass... (js/materials.js). A parts kit is a crate,
+        // whatever its lines are made of.
+        const kit = /^(parts kit|tools for|roadwork kit|runway kit)/.test(lower);
+        if (!kit && typeof applyMaterialLook === 'function') applyMaterialLook(model, name);
+        if (!kit && typeof polishItemSurfaces === 'function') polishItemSurfaces(model, name);
+        // Standing on y = 0, so it sits on a shelf, the pick-up table or the ground (js/itemmodels.js)
+        if (typeof imGround === 'function' && !model.userData.fullSize) imGround(model);
       }
+      if (name) model.userData.itemName = String(name); // (js/kelo-clips.js picks how he swings a tool by it)
       if (label && name) {
         const text = String(name).replace(/^(an?|the|some)\s+/i, '').slice(0, 22).toUpperCase();
         const tag = makeSignMesh(text, { bg: '#fff7ed', fg: '#7c2d12', width: 0.75, height: 0.16 });
@@ -748,7 +773,7 @@ Make it look like the actual object (proportions, colours, distinctive features)
 // --- Post office pickup counter: deliveries wait here as their real models ------------------
 let parcelDisplayGroup = null;
 // The pick-up table out front of the Post Office, east of its door (x, z its centre; the sign faces the lake)
-const PICKUP_TABLE = { x: 16.0, z: 6.0, rotY: 0, scale: 1.6 };
+const PICKUP_TABLE = { x: 17.6, z: 6.0, rotY: 0, scale: 1.6 };
 let parcelDisplayKey = null;
 
 function renderPostOfficeParcels3D() {

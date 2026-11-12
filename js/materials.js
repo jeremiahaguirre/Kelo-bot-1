@@ -235,6 +235,7 @@ function applyMaterialLook(model, itemName) {
       model.traverse(o => {
         if (!o.isMesh || !o.material || !o.material.isMeshStandardMaterial || o.material.map || (o.userData && (o.userData.isLabel || o.userData.realModel))) return;
         const mat = o.material;
+        if (mat.userData.keepLook) return; // modelled with its own finish (js/itemmodels.js)
         const key = guessPartMaterial(mat, named, explicit);
         if (!key) return;
         const m = MATERIALS[key];
@@ -372,7 +373,7 @@ function forceToolOnRock(toolName) {
         result.text = `I leaned my whole weight on the ${plainItemName(toolName)} against the bedrock. ${result.text}`;
         if (result.outcome === 'bends') {
           result.text += ' Metal bends instead of breaking, so I can straighten it at the welding bench.';
-          doWhenFree(() => straightenAtBench(result.newName));
+          doWhenFree(() => straightenAtBench(result.newName), { key: 'straighten:' + result.newName });
         }
       }
       return result;
@@ -410,20 +411,29 @@ function shatterAt(pos, count, key = 'glass') {
         shards.push(s);
       }
       const floor = pos.y;
-      let frame = 0;
-      const step = () => {
-        frame++;
+      // Physics in fixed 30 ms steps (the floor clamp in every step, so no shard falls through it),
+      // drawn every frame between the last two steps
+      const STEP = 0.03;
+      let acc = 0, steps = 0;
+      const physics = () => {
+        steps++;
         shards.forEach(s => {
-          const v = s.userData.v;
-          s.position.x += v.x; s.position.z += v.z; s.position.y = Math.max(floor - 0.05, s.position.y + v.y);
+          const v = s.userData.v, P = s.userData.p || (s.userData.p = s.position.clone());
+          s.userData.q = (s.userData.q || new THREE.Vector3()).copy(P);
+          P.x += v.x; P.z += v.z; P.y = Math.max(floor - 0.05, P.y + v.y);
           v.y -= 0.012;
           v.x *= 0.9; v.z *= 0.9;
-          if (s.position.y > floor - 0.05) { s.rotation.x += 0.3; s.rotation.y += 0.2; }
+          if (P.y > floor - 0.05) { s.rotation.x += 0.3; s.rotation.y += 0.2; }
         });
-        if (frame < 150) setTimeout(step, 30);
-        else shards.forEach(s => { scene.remove(s); s.geometry.dispose(); s.material.dispose(); });
       };
-      step();
+      physics();
+      keloTween(150 * STEP * 1000, (k, dt) => {
+        acc += dt;
+        while (acc >= STEP && steps < 150) { acc -= STEP; physics(); }
+        if (k >= 1) while (steps < 150) physics(); // (the last steps, so they always end where they settle)
+        const a = Math.min(1, acc / STEP);
+        shards.forEach(s => { if (s.userData.q) s.position.lerpVectors(s.userData.q, s.userData.p, a); });
+      }).then(() => shards.forEach(s => { scene.remove(s); s.geometry.dispose(); s.material.dispose(); }));
       return shards;
     }
 

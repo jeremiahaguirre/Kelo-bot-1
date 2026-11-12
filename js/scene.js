@@ -20,6 +20,10 @@ const hoverPointer = { x: 0, y: 0, active: false, touchUntil: 0 };
 const downRaycaster = new THREE.Raycaster();
 
 function getAnalyticalGroundHeight(x, z) {
+      // North of the island's own mesh (the back of the mountains, the Workshop's north yard and the
+      // runway field) the ground is the backdrop lands' shape, so walking matches what is drawn there
+      // ...and the same east and west of it (the hills a flight or the camera passes over)
+      if (z < -ISLAND_HALF_Z || x < ISLAND_MIN_X || x > ISLAND_MAX_X) return groundAboveNatural(x, z, outerNaturalHeight(x, z));
       let h = Math.sin(x * 0.11) * Math.cos(z * 0.11) * 0.32;
       // Gently slope down toward Okanagan Lake shoreline in the south (z > 7)
       if (z > 7.5) {
@@ -27,21 +31,52 @@ function getAnalyticalGroundHeight(x, z) {
         // Past the beach the lake bed drops away: deep water a few steps out (water is at -0.18)
         if (z > 9.2) h -= Math.min(5.5, (z - 9.2) * 0.75);
       }
-      // Northern & Eastern Alpine Mountain Massif elevation (z < -12)
-      if (z < -12) {
-        const depthIntoMtn = Math.abs(z + 12);
+      // Northern & Eastern Alpine Mountain Massif elevation, from the valley's foot (valleyFootZ: z -12,
+      // and further north behind the town, where the north row stands); the col over the Workshop's pass
+      // lowers both the range and the eastern cliff (passSaddle)
+      const foot = valleyFootZ(x), sad = 1 - 0.8 * passSaddle(x, z);
+      if (z < foot) {
+        const depthIntoMtn = foot - z;
         const ridgeWave = Math.cos(x * 0.16) * 2.2 + Math.sin(x * 0.08) * 3.0;
         const mtnRise = Math.pow(depthIntoMtn, 1.32) * 0.42 + Math.max(0, ridgeWave) * (depthIntoMtn * 0.12);
-        h += mtnRise;
+        h += mtnRise * sad;
       }
       // Eastern cliff overlook rise. East of the Workshop (the land added for the concrete plant) it
       // climbs out of the meadow over a few units instead of standing up as a wall at z -6.
       if (x > 14 && z < -6) {
         const east = Math.max(0, Math.min(1, (x - 58) / 4)), t = Math.min(1, (-6 - z) / 5);
-        h += (x - 14) * 0.28 * Math.max(0.2, Math.abs(z) / 14) * (1 - east + east * t * t * (3 - 2 * t));
+        h += (x - 14) * 0.28 * Math.max(0.2, Math.abs(z) / 14) * (1 - east + east * t * t * (3 - 2 * t)) * sad;
       }
       // The valley floor never dips below the waterline; the lake bed does
-      const natural = z > 7.5 ? h : Math.max(-0.25, h);
+      return groundAboveNatural(x, z, z > 7.5 ? h : Math.max(-0.25, h));
+    }
+
+// Map layout (2026-11): behind the town the mountain's foot is further north (z -19 instead of -12,
+// x -45 to 14, easing back by x -61 and x 26), so the town's north row stands on level ground with a
+// proper street in front of it. East of x 22 (the hangar, the Workshop, the Disposal Pit) it is unchanged.
+const VALLEY_FOOT = { z: -12, townZ: -19, x0: -45, x1: 14, easeW: 16, easeE: 12 };
+function valleyFootZ(x) {
+      const F = VALLEY_FOOT;
+      const a = Math.min(1, Math.max(0, (x - (F.x0 - F.easeW)) / F.easeW)), b = Math.min(1, Math.max(0, (F.x1 + F.easeE - x) / F.easeE));
+      const k = Math.min(a, b), s = k * k * (3 - 2 * k);
+      return F.z + (F.townZ - F.z) * s;
+    }
+// The col over the range behind the Workshop: 1 along the pass (x about 52 to 72, z -24 to -100), easing
+// to 0 over 14 units round it; the range and the cliff there are lowered to a fifth of their height
+const PASS_SADDLE = { x0: 52, x1: 72, z0: -100, z1: -24, ease: 22 };
+function passSaddle(x, z) {
+      const P = PASS_SADDLE;
+      if (z > P.z1 + P.ease) return 0;
+      const dx = Math.max(0, P.x0 - x, x - P.x1), dz = Math.max(0, P.z0 - z, z - P.z1);
+      const k = Math.max(0, 1 - Math.hypot(dx, dz) / P.ease);
+      return k * k * (3 - 2 * k);
+    }
+
+// What is made of the natural ground: the runway field and the Workshop's levelled land, holes,
+// hills, piles and new land
+function groundAboveNatural(x, z, natural) {
+      // The runway field (RUNWAY_FIELD, js/agent.js) lies level, the hills blending down to it
+      if (z < RUNWAY_FIELD.maxZ + RUNWAY_FIELD.blend) natural = runwayFieldLandAt(x, z, natural);
       // The Workshop stands on levelled ground (js/workshopbuilding.js)
       const base = typeof workshopPadAt === 'function' ? workshopPadAt(x, z, natural) : natural;
       // Holes Kelo-1 has dug (js/mining.js) and the Disposal Pit (js/disposal.js) lower the ground;
@@ -50,6 +85,19 @@ function getAnalyticalGroundHeight(x, z) {
         + (typeof dirtPileRaiseAt === 'function' ? dirtPileRaiseAt(x, z) : 0);
       // Dirt he has dumped into the lake builds up on the bed below it, and new land meets the old shore (js/landfill.js)
       return typeof landFillRaiseAt === 'function' && z > 4 ? ground + landFillRaiseAt(x, z, ground) : ground;
+    }
+
+// The runway field's ground: a plain, gently rolling grass field at RUNWAY_FIELD.y (the swell fades
+// out toward the Workshop's apron so the two meet flush); round it the hills blend back in
+function runwayFieldLandAt(x, z, base) {
+      const f = RUNWAY_FIELD;
+      const dx = Math.max(0, f.minX - x, x - f.maxX), dz = Math.max(0, f.minZ - z, z - f.maxZ);
+      const swell = 0.22 * Math.sin(x * 0.021 + 0.7) * Math.cos(z * 0.013) * Math.min(1, Math.max(0, (f.maxZ - z) / 40));
+      if (!dx && !dz) return f.y + swell;
+      const out = Math.hypot(dx, dz);
+      if (out >= f.blend) return base;
+      const t = out / f.blend, k = t * t * (3 - 2 * t);
+      return f.y + swell + (base - f.y - swell) * k;
     }
 
 function groundDugAt(x, z) {
@@ -199,6 +247,8 @@ function initDiorama3D() {
         const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(mouse, camera);
 
+        // Inside the Workshop as a visitor a click picks a machine; outside, a click on it offers a visit (js/shopvisit.js)
+        if (typeof shopVisitClick === 'function' && shopVisitClick(raycaster, e)) return;
         // Clicking the Storehouse or the Museum opens a look at everything inside (js/viewer.js)
         const building = typeof buildingAtClick === 'function' ? buildingAtClick(raycaster) : null;
         if (building) {
@@ -298,10 +348,11 @@ function buildAlpineTerrainAndMountains3D() {
           if (vy > 8.5) c.lerp(snowC, snowHoldsOn(nrm.getY(i)) * Math.min(1, (vy - 8.5) / 0.6 + 0.4));
         }
         else if (vz > 8.2) c.setHex(0xc8b48c); // Sandy beach
-        else if (Math.abs(vx + 2) < 2.0 && vz > -10 && vz < 9) c.setHex(0x8f7656); // Dirt trail
         else c.setHex(0x5d7d33).lerp(new THREE.Color(0x46662a), Math.max(0, wobble)).lerp(new THREE.Color(0x87884a), dry * 0.55); // Meadow grass, drier in patches
         // Grass thins into bare ground and scree where the slope starts to climb
         if (vy > 1.6 && vy <= 2.6) c.lerp(new THREE.Color(0x76705f), (vy - 1.6) / 1.0 * 0.7);
+        // His roads and paths (js/roads.js) are worn into the ground
+        if (vy < 2.6 && vz < 8.2) keloRoadColour(c, vx, vz);
         colors.push(c.r, c.g, c.b);
       }
       groundGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
@@ -336,6 +387,8 @@ function buildAlpineTerrainAndMountains3D() {
         // Not on a near-vertical face (the cliffs and the Workshop's cut behind town) and not on the
         // Workshop's or hangar's levelled land and its cut slopes, where a tree would hang in the air
         if (groundTooSteep(tx, tz, 1.2) || (typeof inWorkshopSite === 'function' && inWorkshopSite(tx, tz, 3))) continue;
+        // (only on the mountain itself, not on the valley floor behind the town where the north row stands)
+        if (tz > valleyFootZ(tx) - 1.5 || inTown(tx, tz)) continue;
         const ty = groundUnderTrunk(tx, tz);
         if (ty > 9.5) continue;
         let tree;
@@ -398,8 +451,8 @@ function buildHomesteadAndBuildings3D() {
       if (typeof buildWeldingStudio3D === 'function') buildWeldingStudio3D();
       else {
         const forgeGroup = new THREE.Group();
-        const fy = getAnalyticalGroundHeight(-1.2, -8.2);
-        forgeGroup.position.set(-1.2, fy, -8.2);
+        const fy = getAnalyticalGroundHeight(MAP_LAYOUT.weld.x, MAP_LAYOUT.weld.z);
+        forgeGroup.position.set(MAP_LAYOUT.weld.x, fy, MAP_LAYOUT.weld.z);
         const bench = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 1.4), new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.7 }));
         bench.position.y = 0.45;
         const argonTank = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 1.6, 12), new THREE.MeshStandardMaterial({ color: 0x0d9488, metalness: 0.6 }));
@@ -413,7 +466,7 @@ function buildHomesteadAndBuildings3D() {
         forgeGroup.add(bench, argonTank, anvil, signPost, forgeSign);
         scene.add(forgeGroup);
       }
-      worldObstacles.push({ x: -1.2, z: -8.2, r: 1.5 });
+      worldObstacles.push({ x: MAP_LAYOUT.weld.x, z: MAP_LAYOUT.weld.z, r: 1.5 });
 
       // Welding Sparks Particle System
       const sparkGeo = new THREE.BufferGeometry();
@@ -465,8 +518,8 @@ function buildHomesteadAndBuildings3D() {
       const cropBuilders = [buildPeachTree3D, buildTomatoVines3D, buildCarrotRow3D, buildBlueberryBushes3D];
       const cropLabels = ['PEACHES', 'TOMATOES', 'CARROTS', 'BLUEBERRIES'];
       for (let p = 0; p < 4; p++) {
-        const gx = -11.5 + (p % 2) * 2.4;
-        const gz = 1.6 + Math.floor(p / 2) * 1.8;
+        const gx = MAP_LAYOUT.garden.x + (p % 2) * 2.4;
+        const gz = MAP_LAYOUT.garden.z + Math.floor(p / 2) * 1.8;
         const gy = getAnalyticalGroundHeight(gx, gz);
         const box = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.45, 1.2), new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.9 }));
         box.position.set(gx, gy + 0.22, gz);
@@ -716,7 +769,17 @@ function buildSkyAndClouds3D() {
 
 // --- The lands around the island, so there is never an edge to fall off -------------------
 // The island's own terrain mesh: 4 units past the world bounds (js/agent.js) on the east and west
-const ISLAND_MIN_X = WORLD_MIN_X - 4, ISLAND_MAX_X = WORLD_MAX_X + 4, ISLAND_HALF_Z = 48;
+// (fixed numbers: the world's bounds grew north in task 7b, the island's mesh did not)
+const ISLAND_MIN_X = -64, ISLAND_MAX_X = 90, ISLAND_HALF_Z = 48;
+// Past the island (task 7b): the north patch is a 1.5-unit mesh over the Workshop's pass and north yard;
+// the far lands are a coarse mesh (cells 6 to 60 units, fine only where the field's edges blend) under
+// everything else out to FAR_LANDS: the runway field, the hills either side of it and the coast.
+const NORTH_PATCH = { minX: -6, maxX: 124, minZ: -180, maxZ: -48, cell: 1.5 };
+const FAR_LANDS = { minX: -620, maxX: 640, minZ: -3440, maxZ: 22 };
+const OUTER_LANDS_HALF = 170;
+function inRectXZ(r, x, z, pad = 0) {
+      return x > r.minX + pad && x < r.maxX - pad && z > r.minZ + pad && z < r.maxZ - pad;
+    }
 
 // Is this point over the island's terrain mesh (pad shrinks the box)?
 function islandContains(x, z, pad = 0) {
@@ -726,6 +789,11 @@ function islandContains(x, z, pad = 0) {
 // Height beyond the main terrain: the mountain's back side falls away into further ranges,
 // hills roll off east and west, and south of the shore the land drops into open water
 function outerTerrainHeight(x, z) {
+      // North of the island this is the ground itself (the field, the Workshop's north yard)
+      return z < -ISLAND_HALF_Z ? getAnalyticalGroundHeight(x, z) : outerNaturalHeight(x, z);
+    }
+
+function outerNaturalHeight(x, z) {
       const cx = Math.max(ISLAND_MIN_X, Math.min(ISLAND_MAX_X, x));
       const cz = Math.max(-ISLAND_HALF_Z, Math.min(ISLAND_HALF_Z, z));
       const edge = getAnalyticalGroundHeight(cx, cz);
@@ -749,15 +817,12 @@ function buildOuterLands3D() {
       const c = new THREE.Color();
       for (let i = 0; i < pos.count; i++) {
         const x = pos.getX(i), z = pos.getZ(i);
-        const inside = islandContains(x, z);
-        // Under the island it only matters at the seam; deeper in, it drops well below so holes and the pit stay open
-        const nearSeam = !islandContains(x, z, 3);
+        const inside = islandContains(x, z) || inRectXZ(NORTH_PATCH, x, z);
+        // Under the island (and the north patch) it only matters at the seam; deeper in, it drops well below so holes and the pit stay open
+        const nearSeam = islandContains(x, z) ? !islandContains(x, z, 3) : !inRectXZ(NORTH_PATCH, x, z, 3);
         const y = inside ? getAnalyticalGroundHeight(x, z) - (nearSeam ? 0.4 : 8) : outerTerrainHeight(x, z);
         pos.setY(i, y);
-        if (y > 26) c.setHex(0xeef1f5); // snow only on the high peaks
-        else if (y > 7) c.setHex(0x4c5a35).lerp(new THREE.Color(0x77736a), Math.min(1, (y - 7) / 12)); // forest giving way to rock
-        else if (y < 0.2 && z > 0) c.setHex(0xc8b48c);
-        else c.setHex(0x5b7a32).lerp(new THREE.Color(0x3d5a28), Math.min(1, Math.max(0, y / 6)));
+        outerLandColour(c, x, y, z);
         colors.push(c.r, c.g, c.b);
       }
       geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
@@ -766,15 +831,18 @@ function buildOuterLands3D() {
       const outer = new THREE.Mesh(geo, terrainGroundMesh && terrainGroundMesh.material.userData.keloTerrain ? terrainGroundMesh.material : new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }));
       outer.receiveShadow = true;
       scene.add(outer);
+      buildNorthPatch3D(outer.material);
+      buildFarLands3D(outer.material);
 
       // The lake opens into a wide sea to the south, east and west
       const seaDepth = size / 2 + 10;
-      const sea = new THREE.Mesh(new THREE.PlaneGeometry(size, seaDepth),
+      // (as wide as the far lands, so the coast never ends in the air)
+      const sea = new THREE.Mesh(new THREE.PlaneGeometry(FAR_LANDS.maxX - FAR_LANDS.minX, seaDepth + 120),
         typeof makeRealisticWaterMaterial === 'function' ? makeRealisticWaterMaterial()
           : new THREE.MeshStandardMaterial({ color: 0x0b5f99, roughness: 0.18, metalness: 0.2, transparent: true, opacity: 0.95 }));
       sea.receiveShadow = true;
       sea.rotation.x = -Math.PI / 2;
-      sea.position.set(0, -0.18, 6 + seaDepth / 2); // starts at the shoreline, so it never shows through the valley
+      sea.position.set((FAR_LANDS.minX + FAR_LANDS.maxX) / 2, -0.18, 6 + (seaDepth + 120) / 2); // starts at the shoreline, so it never shows through the valley
       scene.add(sea);
 
       // Pine forests on the far hills
@@ -783,7 +851,7 @@ function buildOuterLands3D() {
         const spots = [];
         for (let k = 0; k < 2600 && spots.length < 900; k++) {
           const x = (Math.random() - 0.5) * size * 0.9, z = (Math.random() - 0.5) * size * 0.9;
-          if (islandContains(x, z, -2)) continue;
+          if (islandContains(x, z, -2) || inRectXZ(NORTH_PATCH, x, z, -2) || onRunwayReserve(x, z, 8)) continue;
           const y = outerTerrainHeight(x, z);
           if (y < 0.5 || y > 16 || Math.random() < y / 22) continue;
           spots.push([x, y - 0.2, z, 0.9 + Math.random() * 0.8, Math.random() * 6.28, Math.random()]);
@@ -801,6 +869,98 @@ function buildOuterLands3D() {
         pine.position.set(x, y + 2, z);
         scene.add(pine);
       }
+    }
+
+// The colour of the lands past the island (the realistic terrain material reads it to choose grass,
+// rock, sand or snow): snow on the high peaks, forest giving way to rock, sand at the shore, meadow
+const outerRock = new THREE.Color(0x77736a), outerForest = new THREE.Color(0x3d5a28), outerMown = new THREE.Color(0x6a8a3a);
+function outerLandColour(c, x, y, z) {
+      if (y > 26) c.setHex(0xeef1f5);
+      else if (y > 7) c.setHex(0x4c5a35).lerp(outerRock, Math.min(1, (y - 7) / 12));
+      else if (y < 0.2 && z > 0) c.setHex(0xc8b48c);
+      else c.setHex(0x5b7a32).lerp(outerForest, Math.min(1, Math.max(0, y / 6)));
+      // The runway field is kept mown, a shade lighter than the meadows round it
+      if (z < -100 && onRunwayField(x, z, -2)) c.lerp(outerMown, 0.55);
+      return c;
+    }
+
+// A ground mesh over a grid of x and z lines (not necessarily even), heights and colours from fn
+function groundGridMesh(xs, zs, heightAt, colourAt, material) {
+      const n = xs.length * zs.length, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), c = new THREE.Color();
+      let i = 0;
+      for (const z of zs) for (const x of xs) {
+        const y = heightAt(x, z);
+        pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = z;
+        colourAt(c, x, y, z);
+        col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+        i++;
+      }
+      const idx = [], W = xs.length;
+      for (let r = 0; r < zs.length - 1; r++) for (let q = 0; q < W - 1; q++) {
+        const a = r * W + q, b = a + W;
+        idx.push(a, b, a + 1, b, b + 1, a + 1);
+      }
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      // UVs from world x/z (the terrain material tiles its textures by world position anyway)
+      const uv = new Float32Array(n * 2);
+      for (let k = 0; k < n; k++) { uv[k * 2] = pos[k * 3] / 20; uv[k * 2 + 1] = pos[k * 3 + 2] / 20; }
+      geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+      geo.setIndex(n > 65535 ? new THREE.Uint32BufferAttribute(idx, 1) : new THREE.Uint16BufferAttribute(idx, 1));
+      geo.computeVertexNormals();
+      geo.computeBoundingSphere();
+      const mesh = new THREE.Mesh(geo, material);
+      mesh.receiveShadow = true;
+      mesh.matrixAutoUpdate = false;
+      return mesh;
+    }
+
+function rangeSteps(a, b, step) {
+      const out = [];
+      for (let v = a; v < b - 1e-6; v += step) out.push(Math.round(v * 100) / 100);
+      out.push(b);
+      return out;
+    }
+
+// The Workshop's pass over the range and its north yard: 1.5-unit cells (the island's own are 0.6),
+// so the cut slopes and the yard's edges look as they walk (getAnalyticalGroundHeight)
+let northPatchMesh = null;
+function buildNorthPatch3D(material) {
+      const P = NORTH_PATCH;
+      northPatchMesh = groundGridMesh(rangeSteps(P.minX, P.maxX, P.cell), rangeSteps(P.minZ, P.maxZ, P.cell),
+        (x, z) => getAnalyticalGroundHeight(x, z),
+        (c, x, y, z) => {
+          // the levelled yard and roads read as worn ground, the cuts as rock, the rest as the hills
+          outerLandColour(c, x, y, z);
+          if (keloRoadColour(c, x, z)) return c;
+          if (typeof inWorkshopSite === 'function' && inWorkshopSite(x, z) && y < 0.6) c.setHex(0x8a8070);
+          else if (y > 1.2 && typeof inWorkshopSite === 'function' && inWorkshopSite(x, z, -14)) c.lerp(outerRock, 0.6);
+          return c;
+        }, material);
+      northPatchMesh.name = 'northPatch';
+      scene.add(northPatchMesh);
+    }
+
+// Everything else past the island, cheap: a coarse grid whose lines crowd only where the field's
+// edges blend into the hills (so the field stays flat where it is drawn flat). Under the island,
+// the outer lands and the north patch it sinks out of sight.
+let farLandsMesh = null;
+function buildFarLands3D(material) {
+      const F = FAR_LANDS, R = RUNWAY_FIELD, b = R.blend;
+      const lines = (a, z, coarse, fine, edges) => {
+        const set = new Set(rangeSteps(a, z, coarse));
+        edges.forEach(([e0, e1]) => rangeSteps(Math.max(a, e0), Math.min(z, e1), fine).forEach(v => set.add(v)));
+        return [...set].sort((p, q) => p - q);
+      };
+      // (a line exactly on the outer lands' edges, so the seam is at true height; finer only where the
+      // field blends into the hills and along the coast)
+      const xs = lines(F.minX, F.maxX, 60, 6, [[R.minX - b - 6, R.minX + 6], [R.maxX - 6, R.maxX + b + 6], [-OUTER_LANDS_HALF, -OUTER_LANDS_HALF], [OUTER_LANDS_HALF, OUTER_LANDS_HALF]]);
+      const zs = lines(F.minZ, F.maxZ, 60, 6, [[R.minZ - b - 6, R.minZ + 6], [R.maxZ - b - 6, R.maxZ + 6], [-OUTER_LANDS_HALF, -OUTER_LANDS_HALF], [-10, F.maxZ]]);
+      const under = (x, z) => (Math.abs(x) < OUTER_LANDS_HALF - 3 && z > -OUTER_LANDS_HALF + 3) || inRectXZ(NORTH_PATCH, x, z, 3) || islandContains(x, z);
+      farLandsMesh = groundGridMesh(xs, zs, (x, z) => outerTerrainHeight(x, z) - (under(x, z) ? 6 : 0), outerLandColour, material);
+      farLandsMesh.name = 'farLands';
+      scene.add(farLandsMesh);
     }
 
 function updateClouds(dt) {
@@ -856,7 +1016,7 @@ function buildValleyScenery3D() {
       const clearOf = (x, z, r) => !worldObstacles.some(o => o.legacy ? o.legacy.some(c => Math.hypot(x - c.x, z - c.z) < c.r + r) : Math.hypot(x - o.x, z - o.z) < (o.placeR ?? o.r) + r)
         && !Object.values(TOWN_LOCATIONS).some(l => Math.hypot(x - l.x, z - l.z) < r + 2.2)
         && !(typeof inParkingArea === 'function' && inParkingArea(x, z, r))
-        && Math.abs(x + 2) > 3 && z < 7.5;
+        && !onKeloRoad(x, z, r) && !(typeof inTown === 'function' && inTown(x, z) && z < valleyFootZ(x) + 6) && z < 7.5;
       // Seeded, so every tree is in the same place each visit and can be chopped for good (js/landscape.js)
       const treeRng = makeRng('kelo1-valley-trees');
       let placed = 0;
@@ -1536,7 +1696,7 @@ function createPOILabelsDOM() {
         const el = document.createElement('div');
         el.className = 'poi-label';
         el.innerHTML = `
-          <div class="px-2.5 py-1 rounded-full bg-gradient-to-r ${loc.pinColor} text-white text-[11px] font-bold shadow-lg border border-white/25 flex items-center gap-1 whitespace-nowrap">
+          <div class="px-2.5 py-1 rounded-full bg-slate-950/85 text-white text-2xs font-semibold shadow flex items-center gap-1 whitespace-nowrap">
             <span>${escapeHtml(loc.icon)}</span>
             <span>${escapeHtml(loc.name)}</span>
           </div>
@@ -1748,7 +1908,10 @@ function arrivalRadius(target) {
 
 // --- Pathfinding: A* over a coarse grid, so he routes around buildings instead of getting stuck
 const PATH_CELL = 0.75;
-const PATH_MIN_X = WORLD_MIN_X - 2, PATH_MAX_X = WORLD_MAX_X + 2, PATH_MIN_Z = WORLD_MIN_Z - 2, PATH_MAX_Z = WORLD_MAX_Z + 4;
+// (the grid's cells stay where they were before the world grew north: its south-west corner is still
+// on the old -46 line's lattice, so every path in the valley is planned exactly as before)
+const PATH_MIN_X = WORLD_MIN_X - 2, PATH_MAX_X = WORLD_MAX_X + 2, PATH_MAX_Z = WORLD_MAX_Z + 4;
+const PATH_MIN_Z = -46 - 0.75 * Math.ceil((-46 - (WORLD_MIN_Z - 2)) / 0.75);
 const PATH_COLS = Math.ceil((PATH_MAX_X - PATH_MIN_X) / PATH_CELL);
 const PATH_ROWS = Math.ceil((PATH_MAX_Z - PATH_MIN_Z) / PATH_CELL);
 let currentPath = [];
@@ -1818,9 +1981,60 @@ function pathBlockedGrid(to, from = null) {
 
 // A* with a binary heap over the whole grid. If the goal can't be reached, the path leads to the
 // reachable cell nearest to it (currentPathPartial tells the walker).
+// The grid covers WORLD_* (the valley, the range and the Workshop's north land). Past it (the runway
+// field and the hills round it, WORLD_EXTENT) is the coarse layer: open ground with nothing built
+// on it, crossed in straight legs to and from the nearest point on the grid's edge.
+function pathOffGrid(p) {
+      return p.x < PATH_MIN_X + 0.5 || p.x > PATH_MAX_X - 0.5 || p.z < PATH_MIN_Z + 0.5 || p.z > PATH_MAX_Z - 0.5;
+    }
+function pathGridEdge(p) {
+      return { x: Math.max(PATH_MIN_X + 0.6, Math.min(PATH_MAX_X - 0.6, p.x)), z: Math.max(PATH_MIN_Z + 0.6, Math.min(PATH_MAX_Z - 0.6, p.z)) };
+    }
+// Paths only see obstacles, not the ground's slope, so between the valley and the land over the range
+// (the Workshop's north yard, the runway field) they go by the pass: up the east road behind the
+// Workshop and along the cut (WORKSHOP_LAND.eastRoad / pass, js/workshopbuilding.js)
+function pathPassRoute(from, to) {
+      if (typeof WORKSHOP_LAND === 'undefined' || !WORKSHOP_LAND.pass) return null;
+      const valley = p => p.z > -30, north = p => p.z < -62;
+      const E = WORKSHOP_LAND.eastRoad, P = WORKSHOP_LAND.pass, ex = (E.minX + E.maxX) / 2;
+      const route = [{ x: ex, z: E.maxZ + 1 }, { x: ex, z: E.minZ + 1 }, { x: ex - 2, z: -62 }, { x: (P.minX + P.maxX) / 2, z: P.minZ - 1 }];
+      if (valley(from) && north(to)) return route;
+      if (north(from) && valley(to)) return route.reverse();
+      return null;
+    }
+// Reused between searches (the grid is about 50k cells)
+const pathBuf = { g: null, came: null, closed: null };
+// His roads and paths cost a little less to walk or drive (js/roads.js), so routes follow them where it makes sense
+const PATH_ROAD_COST = 0.75;
+let pathRoadMask = null;
+function pathRoadCells() {
+      if (pathRoadMask) return pathRoadMask;
+      pathRoadMask = new Uint8Array(PATH_COLS * PATH_ROWS);
+      KELO_ROAD_BOXES.forEach(b => {
+        const c0 = Math.max(0, Math.floor((b.minX - PATH_MIN_X) / PATH_CELL)), c1 = Math.min(PATH_COLS - 1, Math.floor((b.maxX - PATH_MIN_X) / PATH_CELL));
+        const r0 = Math.max(0, Math.floor((b.minZ - PATH_MIN_Z) / PATH_CELL)), r1 = Math.min(PATH_ROWS - 1, Math.floor((b.maxZ - PATH_MIN_Z) / PATH_CELL));
+        for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) {
+          if (roadCentreDistance(b.r, PATH_MIN_X + (c + 0.5) * PATH_CELL, PATH_MIN_Z + (r + 0.5) * PATH_CELL) < b.r.w / 2) pathRoadMask[r * PATH_COLS + c] = 1;
+        }
+      });
+      return pathRoadMask;
+    }
 function findPath(from, to) {
       currentPathPartial = false;
+      const pass = pathPassRoute(from, to);
+      if (pass) {
+        const first = findPath(from, pass[0]);
+        if (currentPathPartial) return first;
+        const last = findPath(pass[pass.length - 1], to);
+        return [...first, ...pass.slice(1), ...last];
+      }
       if (segmentClear(from.x, from.z, to.x, to.z, to)) return [{ x: to.x, z: to.z }];
+      if (pathOffGrid(to)) {
+        const edge = pathGridEdge(to), part = findPath(from, edge), partial = currentPathPartial;
+        currentPathPartial = partial;
+        return partial ? part : [...part, { x: to.x, z: to.z }];
+      }
+      if (pathOffGrid(from)) return [pathGridEdge(from), ...findPath(pathGridEdge(from), to)];
       const N = PATH_COLS * PATH_ROWS;
       const col = x => Math.max(0, Math.min(PATH_COLS - 1, Math.floor((x - PATH_MIN_X) / PATH_CELL)));
       const row = z => Math.max(0, Math.min(PATH_ROWS - 1, Math.floor((z - PATH_MIN_Z) / PATH_CELL)));
@@ -1828,12 +2042,11 @@ function findPath(from, to) {
       const cz = r => PATH_MIN_Z + (r + 0.5) * PATH_CELL;
       const start = row(from.z) * PATH_COLS + col(from.x);
       const goal = row(to.z) * PATH_COLS + col(to.x);
-      const blocked = pathBlockedGrid(to, from);
+      const blocked = pathBlockedGrid(to, from), roadMask = pathRoadCells();
       blocked[start] = 0;
       if (!pointBlocked(to.x, to.z, to)) blocked[goal] = 0;
-      const g = new Float32Array(N).fill(Infinity);
-      const came = new Int32Array(N).fill(-1);
-      const closed = new Uint8Array(N);
+      if (!pathBuf.g) { pathBuf.g = new Float32Array(N); pathBuf.came = new Int32Array(N); pathBuf.closed = new Uint8Array(N); }
+      const g = pathBuf.g.fill(Infinity), came = pathBuf.came.fill(-1), closed = pathBuf.closed.fill(0);
       const h = i => Math.hypot(cx(i % PATH_COLS) - to.x, cz((i / PATH_COLS) | 0) - to.z);
       // Binary heap of [f, cell]
       const heapF = [], heapI = [];
@@ -1880,7 +2093,7 @@ function findPath(from, to) {
             if (blocked[n] || closed[n]) continue;
             // No cutting corners between two blocked cells
             if (dr && dc && (blocked[cr * PATH_COLS + nc] || blocked[nr * PATH_COLS + cc])) continue;
-            const cost = g[cur] + (dr && dc ? 1.414 : 1) * PATH_CELL;
+            const cost = g[cur] + (dr && dc ? 1.414 : 1) * PATH_CELL * (roadMask[n] ? PATH_ROAD_COST : 1);
             if (cost < g[n]) {
               g[n] = cost;
               came[n] = cur;
@@ -2021,7 +2234,39 @@ function keloEveryFrame(fn) {
       if (typeof fn === 'function') keloFrameHooks.push({ fn, failed: false });
     }
 
+// Scripted motion (a plane pushed by hand, a truck bed tipping, an item dropped in the pit) waits for
+// the next drawn frame instead of a fixed timer, and works out where it is from the clock, so it is
+// smooth and runs at the same pace at any frame rate. In a hidden tab (no frames) a slow timer
+// keeps it going.
+const keloFrameWaiters = [];
+let keloFrameWaitTimer = 0;
+function keloFlushFrameWaiters() {
+      if (keloFrameWaitTimer) { clearTimeout(keloFrameWaitTimer); keloFrameWaitTimer = 0; }
+      const list = keloFrameWaiters.splice(0);
+      list.forEach(r => r());
+    }
+function keloNextFrame() {
+      return new Promise(r => {
+        keloFrameWaiters.push(r);
+        if (!keloFrameWaitTimer) keloFrameWaitTimer = setTimeout(keloFlushFrameWaiters, 250);
+      });
+    }
+// Runs fn(k, dt) once a frame for `ms` (k from 0 to 1 by the clock, dt in seconds since the last call);
+// resolves after the call with k = 1
+async function keloTween(ms, fn) {
+      const t0 = performance.now();
+      let last = t0;
+      for (;;) {
+        const now = performance.now(), k = ms > 0 ? Math.min(1, (now - t0) / ms) : 1;
+        fn(k, Math.min(0.25, (now - last) / 1000));
+        last = now;
+        if (k >= 1) return;
+        await keloNextFrame();
+      }
+    }
+
 function runKeloFrameHooks(now) {
+      if (keloFrameWaiters.length) keloFlushFrameWaiters();
       for (const h of keloFrameHooks) {
         try { h.fn(now); } catch (e) { if (!h.failed) { h.failed = true; console.warn('A per-frame update failed:', e); } }
       }
@@ -2030,8 +2275,8 @@ function runKeloFrameHooks(now) {
 // Fixed camera views: target x, y, z then camera x, y, z
 const CAMERA_PRESET_VIEWS = {
   overview: [0, 0.5, -1, 0, 22, 27],
-  house: [-9.2, 1.4, -8.0, -9.2, 9.5, 0.5],
-  storehouse: [7.6, 2.0, -7.6, 7.6, 7.5, 3.5],
+  house: [MAP_LAYOUT.house.x + 0.3, 1.4, MAP_LAYOUT.house.z + 0.7, MAP_LAYOUT.house.x + 0.3, 9.5, MAP_LAYOUT.house.z + 9.2],
+  storehouse: [MAP_LAYOUT.storehouse.x, 2.0, MAP_LAYOUT.storehouse.z + 0.8, MAP_LAYOUT.storehouse.x, 7.5, MAP_LAYOUT.storehouse.z + 11.9],
   cafes: [-4, 2.5, 2.5, -4, 22, 30]
 };
 const camScratch = new THREE.Vector3();
@@ -2053,9 +2298,110 @@ function keloToolWords() {
       return w;
     }
 
+// --- Fixed-step simulation ----------------------------------------------------------------------------
+// Movement and collision run at a fixed KELO_SIM_HZ, whatever the display does (30, 60, 144 Hz):
+// each frame adds its real time to an accumulator and runs as many whole steps as fit (at most
+// KELO_SIM_MAX_STEPS, so a stalled frame can't snowball). Drawing happens every display frame,
+// between the last two simulation states: for the rest of the frame state.botPos and state.botRotY
+// hold the in-between position (alpha = accumulator / step), and the real ones are put back at the
+// end, unless something placed him during the frame (an indoor trip, a flight, a script): that wins.
+// Other files add steps with keloEveryStep(fn(h, simT)); keloSim.steps says how many ran this frame.
+const KELO_SIM_HZ = 60, KELO_SIM_H = 1 / KELO_SIM_HZ, KELO_SIM_MAX_STEPS = 10;
+const keloSim = {
+  acc: 0, lastT: null, step: 0, steps: 0, alpha: 1, t: 0, walking: false,
+  prev: { x: 0, z: 0, rot: 0 }, cur: { x: 0, z: 0, rot: 0 }, has: false,
+  real: null, realRot: 0, shown: null, shownX: 0, shownZ: 0, shownRot: 0
+};
+const keloStepHooks = [];
+function keloEveryStep(fn) {
+      if (typeof fn === 'function') keloStepHooks.push({ fn, failed: false });
+    }
+
+function keloSimSnap() {
+      const s = keloSim, p = state.botPos;
+      s.cur.x = s.prev.x = p.x; s.cur.z = s.prev.z = p.z; s.cur.rot = s.prev.rot = state.botRotY || 0;
+      s.has = true;
+    }
+
+// One step of his walking (or driving): the A* path, steering, braking, sliding along obstacles
+function keloWalkStep(h, st) {
+      const trip = typeof indoorTrip !== 'undefined' ? indoorTrip : null;
+      if (trip && trip.active && trip.pos) { keloSim.walking = false; return; }
+      const dist = Math.hypot(state.targetPos.x - state.botPos.x, state.targetPos.z - state.botPos.z);
+      if (!(dist > arrivalRadius(state.targetPos))) { keloSim.walking = false; state.isWalking = false; return; }
+      // Getting up off a seat, the bed or the ground finishes before he walks off (js/kelo-clips.js)
+      if (typeof keloClipHolds === 'function' && keloClipHolds()) { keloSim.walking = false; state.isWalking = false; return; }
+      keloSim.walking = true;
+      state.isWalking = true;
+      const [sx, sz, step] = keloLocomote(dist, h, st);
+      // A frozen lake he isn't sure of yet: he stops at the edge of the ice (js/weather.js)
+      if (typeof iceStepBlocked === 'function' && iceStepBlocked(state.botPos)) {
+        state.botPos.x -= sx * step;
+        state.botPos.z -= sz * step;
+        state.targetPos = { x: state.botPos.x, z: state.botPos.z };
+      }
+      // Exhausted legs give way now and then (js/needs.js); he stops while he picks himself up
+      if (typeof maybeStumble === 'function' && maybeStumble(st)) {
+        state.botPos.x -= sx * step;
+        state.botPos.z -= sz * step;
+      }
+    }
+
+// Run the steps this frame owes, then show him between the last two states
+function keloSimAdvance(t) {
+      const s = keloSim;
+      const raw = s.lastT === null ? KELO_SIM_H : Math.max(0, Math.min(0.25, t - s.lastT));
+      s.lastT = t;
+      // Moved by something else since the last step (a teleport, a script, a trip): no sliding over
+      const p = state.botPos;
+      if (!s.has || p.x !== s.cur.x || p.z !== s.cur.z || (state.botRotY || 0) !== s.cur.rot) keloSimSnap();
+      s.acc += raw;
+      let n = Math.floor(s.acc / KELO_SIM_H + 1e-9);
+      if (n > KELO_SIM_MAX_STEPS) { n = KELO_SIM_MAX_STEPS; s.acc = n * KELO_SIM_H; }
+      s.acc = Math.max(0, s.acc - n * KELO_SIM_H);
+      s.steps = n;
+      for (let i = 0; i < n; i++) {
+        s.step++;
+        s.t = t - s.acc - (n - 1 - i) * KELO_SIM_H;
+        s.prev.x = s.cur.x; s.prev.z = s.cur.z; s.prev.rot = s.cur.rot;
+        keloWalkStep(KELO_SIM_H, s.t);
+        for (const hk of keloStepHooks) {
+          try { hk.fn(KELO_SIM_H, s.t); } catch (e) { if (!hk.failed) { hk.failed = true; console.warn('A simulation step failed:', e); } }
+        }
+        s.cur.x = state.botPos.x; s.cur.z = state.botPos.z; s.cur.rot = state.botRotY || 0;
+      }
+      s.alpha = Math.min(1, s.acc / KELO_SIM_H);
+      // The in-between position for this frame's drawing
+      const a = s.alpha, dr = Math.atan2(Math.sin(s.cur.rot - s.prev.rot), Math.cos(s.cur.rot - s.prev.rot));
+      s.real = state.botPos;
+      s.realRot = state.botRotY;
+      s.shownX = s.cur.x + (s.prev.x - s.cur.x) * (1 - a);
+      s.shownZ = s.cur.z + (s.prev.z - s.cur.z) * (1 - a);
+      s.shownRot = a >= 1 || dr === 0 ? state.botRotY : s.cur.rot - dr * (1 - a);
+      s.shown = { x: s.shownX, z: s.shownZ };
+      state.botPos = s.shown;
+      state.botRotY = s.shownRot;
+    }
+
+// End of the frame: the real state goes back (unless the frame itself moved him)
+function keloSimRestore() {
+      const s = keloSim;
+      if (!s.shown) return;
+      const moved = state.botPos !== s.shown || s.shown.x !== s.shownX || s.shown.z !== s.shownZ;
+      const turned = state.botRotY !== s.shownRot;
+      if (!moved) state.botPos = s.real;
+      if (!turned) state.botRotY = s.realRot;
+      if (moved || turned) keloSimSnap();
+      s.shown = null;
+    }
+
 function animateDiorama() {
       requestAnimationFrame(animateDiorama);
       const t = clock.getElapsedTime();
+      // Joints start each frame at rest; the code below writes the pose it wants, and
+      // finishKeloPose() (js/animations.js) blends him smoothly toward it
+      const dt = beginKeloPose(t);
+      keloSimAdvance(t);
 
       // 0. Bird's-Eye View Arrow-Key / WASD Map Panning
       const panLeft = arrowKeyState.ArrowLeft || arrowKeyState.KeyA;
@@ -2072,7 +2418,7 @@ function animateDiorama() {
             camera.position.y = 28;
           }
         }
-        const panSpeed = 0.52;
+        const panSpeed = 0.52 * 60 * dt; // 31 units a second at any frame rate
         // Pan relative to camera horizontal heading so arrow keys always feel natural
         const forward = panScratch.forward;
         camera.getWorldDirection(forward);
@@ -2096,13 +2442,8 @@ function animateDiorama() {
         controls.target.z = Math.max(-150, Math.min(150, controls.target.z));
       }
 
-      // 1. Walk Kelo-1 smoothly to Target Location while clamping strictly ON TOP of any terrain altitude!
-      const dx = state.targetPos.x - state.botPos.x;
-      const dz = state.targetPos.z - state.botPos.z;
-      const dist = Math.hypot(dx, dz);
-      // Joints start each frame at rest; the code below writes the pose it wants, and
-      // finishKeloPose() (js/animations.js) blends him smoothly toward it
-      const dt = beginKeloPose(t);
+      // 1. Kelo-1 walked in the fixed steps above (keloWalkStep); here he is posed where he is drawn,
+      // clamped strictly ON TOP of any terrain altitude
 
       // Determine which 3D hand tool Kelo-1 is actively holding
       // (the text tests run only when the words change, not every frame)
@@ -2116,22 +2457,17 @@ function animateDiorama() {
         keloWeldTorchGroup.visible = !isMiningOrDrilling && isWeldingOrBuilding;
       }
 
+      // Getting up off a seat, the bed or the ground finishes before he walks off (js/kelo-clips.js)
+      const clipHold = typeof keloClipHolds === 'function' && keloClipHolds();
       if (typeof updateIndoorTrip === 'function' && updateIndoorTrip(t)) {
         // Inside the Storehouse or the Museum (js/basements.js): his walk in, the stairs and the shelves are scripted there
         weldingSparks.visible = false;
         if (miningDebrisParticles) miningDebrisParticles.visible = false;
         forgeArcLight.intensity = 0;
-      } else if (dist > arrivalRadius(state.targetPos)) {
+      } else if (keloSim.walking && !clipHold) {
         state.isWalking = true;
-        // Speeding up and braking, eased turns (on the spot for big ones) and a smooth line around
-        // obstacles (js/motion.js); he moves the way he faces
-        const [sx, sz, step] = keloLocomote(dist, dt, t);
-        // A frozen lake he isn't sure of yet: he stops at the edge of the ice (js/weather.js)
-        if (typeof iceStepBlocked === 'function' && iceStepBlocked(state.botPos)) {
-          state.botPos.x -= sx * step;
-          state.botPos.z -= sz * step;
-          state.targetPos = { x: state.botPos.x, z: state.botPos.z };
-        }
+        // (speeding up and braking, eased turns and the smooth line around obstacles: js/motion.js,
+        // run in the fixed steps)
 
         // On lake ice that holds him he stands on top of it (js/weather.js)
         const groundY = Math.max(getIslandGroundHeight(state.botPos.x, state.botPos.z), typeof iceFloorAt === 'function' ? iceFloorAt(state.botPos) : -Infinity);
@@ -2140,11 +2476,8 @@ function animateDiorama() {
         const sink = typeof snowSink === 'function' ? snowSink(state.botPos) : 0;
         keloGroup.position.set(state.botPos.x, groundY - sink, state.botPos.z);
         keloGroup.rotation.set(0, state.botRotY, 0);
-        // Exhausted legs give way now and then (js/needs.js); he stops while he picks himself up
-        if (typeof maybeStumble === 'function' && maybeStumble(t)) {
-          state.botPos.x -= sx * step;
-          state.botPos.z -= sz * step;
-        }
+        // Exhausted legs give way now and then (js/needs.js): the fall itself (the step stops in keloWalkStep)
+        if (typeof maybeStumble === 'function') maybeStumble(t);
         // The walk cycle itself (legs, arm swing, bob, lean) is layered on in animations.js
         keloAnim.mode = 'walk';
         if (isMiningOrDrilling || isWeldingOrBuilding) {
@@ -2163,23 +2496,34 @@ function animateDiorama() {
         const groundY = Math.max(getIslandGroundHeight(state.botPos.x, state.botPos.z), typeof iceFloorAt === 'function' ? iceFloorAt(state.botPos) : -Infinity);
         state.botAltitudeY = groundY;
 
-        if (state.microPose === 'collapsed') {
-          // Fell asleep where he stood
+        if (clipHold) {
+          // Still getting up (the clip moves him); standing here until he is up
+          keloGroup.position.set(state.botPos.x, groundY, state.botPos.z);
+          keloGroup.rotation.set(0, state.botRotY, 0);
+          keloAnim.mode = 'idle';
+          weldingSparks.visible = false;
+          if (miningDebrisParticles) miningDebrisParticles.visible = false;
+          forgeArcLight.intensity = 0;
+        } else if (state.microPose === 'collapsed') {
+          // Fell asleep where he stood: his knees go and he folds over (js/kelo-clips.js)
           keloGroup.position.set(state.botPos.x, groundY + 0.35, state.botPos.z);
           keloGroup.rotation.set(-Math.PI / 2, state.botRotY, 0);
+          keloAction('doze');
           weldingSparks.visible = false;
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
           forgeArcLight.intensity = 0;
         } else if (state.currentLocKey === 'bed') {
-          keloGroup.position.set(-11.6, Math.max(groundY, 0.95), -8.8);
+          keloGroup.position.set(TOWN_LOCATIONS.bed.x, Math.max(groundY, 0.95), TOWN_LOCATIONS.bed.z);
           keloGroup.rotation.set(-Math.PI / 2, 0, 0);
-          keloHead.rotation.set(0, 0, 0);
+          // sits on the edge, swings round and lies back; breathes; stretches and gets up (js/kelo-clips.js)
+          keloAction('sleep');
           weldingSparks.visible = false;
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
           forgeArcLight.intensity = 0;
         } else if (isMiningOrDrilling) {
           // ACTIVE 3D MOUNTAIN GOLD DRILLING / AUGERING POSE WITH SPINNING BIT & FLYING ROCK/GOLD DEBRIS!
-          const drillVibration = Math.abs(Math.sin(t * 28)) * 0.05;
+          // (the built-in drill shakes him; a hand tool's own clip carries its jolts)
+          const drillVibration = typeof carriedObject !== 'undefined' && carriedObject ? 0 : Math.abs(Math.sin(t * 28)) * 0.05;
           keloGroup.position.set(state.botPos.x, groundY + drillVibration, state.botPos.z);
           keloGroup.rotation.set(0, state.botRotY, 0);
           keloDigPose(t);
@@ -2192,17 +2536,18 @@ function animateDiorama() {
             const mVels = miningDebrisParticles.userData.vels;
             const drillTipX = state.botPos.x + Math.sin(state.botRotY) * 0.85;
             const drillTipZ = state.botPos.z + Math.cos(state.botRotY) * 0.85;
+            const k60 = dt * 60; // the particle speeds were tuned per 60 fps frame
             for (let i = 0; i < mVels.length; i++) {
-              mVels[i].life += 0.055;
+              mVels[i].life += 0.055 * k60;
               if (mVels[i].life >= 1) {
                 mAttr.setXYZ(i, drillTipX, groundY + 0.35, drillTipZ);
                 mVels[i].life = 0;
               } else {
                 mAttr.setXYZ(
                   i,
-                  mAttr.getX(i) + mVels[i].vx,
-                  Math.max(groundY + 0.05, mAttr.getY(i) + mVels[i].vy - mVels[i].life * 0.14),
-                  mAttr.getZ(i) + mVels[i].vz
+                  mAttr.getX(i) + mVels[i].vx * k60,
+                  Math.max(groundY + 0.05, mAttr.getY(i) + (mVels[i].vy - mVels[i].life * 0.14) * k60),
+                  mAttr.getZ(i) + mVels[i].vz * k60
                 );
               }
             }
@@ -2211,17 +2556,18 @@ function animateDiorama() {
           // Also burst bright sparks at the drill bit contact point
           const posAttr = weldingSparks.geometry.attributes.position;
           const vels = weldingSparks.userData.vels;
+          const s60 = dt * 60;
           for (let i = 0; i < vels.length; i++) {
-            vels[i].life += 0.07;
+            vels[i].life += 0.07 * s60;
             if (vels[i].life >= 1) {
               posAttr.setXYZ(i, state.botPos.x, groundY + 0.9, state.botPos.z);
               vels[i].life = 0;
             } else {
               posAttr.setXYZ(
                 i,
-                posAttr.getX(i) + vels[i].vx,
-                Math.max(groundY + 0.1, posAttr.getY(i) + vels[i].vy - vels[i].life * 0.08),
-                posAttr.getZ(i) + vels[i].vz
+                posAttr.getX(i) + vels[i].vx * s60,
+                Math.max(groundY + 0.1, posAttr.getY(i) + (vels[i].vy - vels[i].life * 0.08) * s60),
+                posAttr.getZ(i) + vels[i].vz * s60
               );
             }
           }
@@ -2239,17 +2585,18 @@ function animateDiorama() {
 
           const posAttr = weldingSparks.geometry.attributes.position;
           const vels = weldingSparks.userData.vels;
+          const w60 = dt * 60;
           for (let i = 0; i < vels.length; i++) {
-            vels[i].life += 0.06;
+            vels[i].life += 0.06 * w60;
             if (vels[i].life >= 1) {
               posAttr.setXYZ(i, sparkOriginX, sparkOriginY, sparkOriginZ);
               vels[i].life = 0;
             } else {
               posAttr.setXYZ(
                 i,
-                posAttr.getX(i) + vels[i].vx,
-                Math.max(groundY + 0.05, posAttr.getY(i) + vels[i].vy - vels[i].life * 0.08),
-                posAttr.getZ(i) + vels[i].vz
+                posAttr.getX(i) + vels[i].vx * w60,
+                Math.max(groundY + 0.05, posAttr.getY(i) + (vels[i].vy - vels[i].life * 0.08) * w60),
+                posAttr.getZ(i) + vels[i].vz * w60
               );
             }
           }
@@ -2257,52 +2604,25 @@ function animateDiorama() {
         } else if (state.currentLocKey === 'cyber') {
           keloGroup.position.set(state.botPos.x, Math.max(groundY, 0.2), state.botPos.z);
           keloGroup.rotation.set(0, Math.PI, 0);
-          const typingBurst = Math.sin(t * 1.5) > -0.2;
-          // forearms out over the keyboard, fingers tapping; between bursts a hand goes up to his chin
-          keloLeftArm.rotation.x = typingBurst ? -0.4 + Math.sin(t * 16) * 0.06 : -0.25;
-          keloRightArm.rotation.x = typingBurst ? -0.4 + Math.cos(t * 16) * 0.06 : -0.5;
-          keloLeftElbow.rotation.x = typingBurst ? -1.1 : -0.9;
-          keloRightElbow.rotation.x = typingBurst ? -1.1 : -2.1;
-          keloLeftHand.rotation.x = keloRightHand.rotation.x = typingBurst ? -0.4 : 0;
-          keloLeftHand.userData.grip = typingBurst ? 0.2 + 0.25 * Math.max(0, Math.sin(t * 22)) : 0.4;
-          keloRightHand.userData.grip = typingBurst ? 0.2 + 0.25 * Math.max(0, Math.cos(t * 22)) : 0.6;
-          keloHead.rotation.z = typingBurst ? 0.05 : 0.24;
-          keloHead.rotation.y = Math.sin(t * 0.9) * 0.2;
+          // bursts of typing, a pause with his chin on his hand (js/kelo-clips.js)
+          keloAction('typeStand');
           weldingSparks.visible = false;
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
           forgeArcLight.intensity = 0;
         } else if (state.currentLocKey === 'shoreline' && Math.hypot(state.botPos.x - 4.2, state.botPos.z - 10.2) < 2.2) {
-          // Sitting on the flat shoreline stones, knees up, leaning back on his hands, feet tapping
-          keloGroup.position.set(state.botPos.x, Math.max(groundY, 0.05) - (KELO_LEG_Y - 0.2), state.botPos.z);
+          // Sitting on the flat shoreline stones, knees up, leaning back on his hands: he lowers himself
+          // down and gets back up with the clip (js/kelo-clips.js), so his root stays on the ground
+          keloGroup.position.set(state.botPos.x, groundY, state.botPos.z);
           keloGroup.rotation.set(0, 0, 0);
-          keloLeftLeg.rotation.set(-2.0, 0, -0.1);
-          keloRightLeg.rotation.set(-2.0, 0, 0.1);
-          keloLeftKnee.rotation.x = keloSitKnee(-2.0, 0.2) + Math.max(0, Math.sin(t * 2.4)) * 0.25;
-          keloRightKnee.rotation.x = keloSitKnee(-2.0, 0.2) + Math.max(0, -Math.sin(t * 2.4)) * 0.25;
-          keloBody.rotation.x = -0.2;
-          keloLeftArm.rotation.set(0.55, 0, -0.25);
-          keloRightArm.rotation.set(0.55, 0, 0.25);
-          keloLeftElbow.rotation.x = keloRightElbow.rotation.x = 0.1;
-          keloLeftHand.userData.grip = keloRightHand.userData.grip = 0.1;
-          keloHead.rotation.z = Math.sin(t * 1.1) * 0.22;
-          keloHead.rotation.x = -0.1 + Math.sin(t * 0.8) * 0.1;
+          keloAction('sitGround');
           weldingSparks.visible = false;
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
           forgeArcLight.intensity = 0;
         } else if (state.currentLocKey === 'meadow' || state.microPose === 'crouch_inspect') {
-          // Crouching on top of the terrain without sinking below groundY!
-          // a deep squat, leaning in, one hand reaching down to look closely at something
-          const squat = 0.42 * (KELO_THIGH + KELO_SHIN);
-          keloSquat(squat);
-          keloGroup.position.set(state.botPos.x, groundY - squat + Math.abs(Math.sin(t * 2)) * 0.03, state.botPos.z);
-          keloBody.rotation.x = 0.4;
-          keloRightArm.rotation.x = -0.75 + Math.sin(t * 3) * 0.1;
-          keloRightElbow.rotation.x = -0.3;
-          keloRightHand.userData.grip = 0.1;
-          keloLeftArm.rotation.set(-0.5, 0, 0.1);
-          keloLeftElbow.rotation.x = -0.9;
-          keloHead.rotation.x = 0.35;
-          keloHead.rotation.z = 0.28 * Math.sin(t * 1.3);
+          // Crouched down looking closely at something, head tilting, a hand reaching to touch it (js/kelo-clips.js)
+          keloGroup.position.set(state.botPos.x, groundY, state.botPos.z);
+          keloGroup.rotation.set(0, state.botRotY, 0);
+          keloAction('inspect');
           weldingSparks.visible = false;
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
           forgeArcLight.intensity = 0;
@@ -2317,11 +2637,16 @@ function animateDiorama() {
           } else {
             keloGroup.rotation.set(0, state.botRotY, 0);
           }
-          keloLeftArm.rotation.x = (pm.armRaiseOffset ?? -0.5) + Math.sin(t * 4.5) * (pm.armWaveAmp ?? 0.35);
-          keloRightArm.rotation.x = (pm.armRaiseOffset ?? -0.5) + Math.cos(t * 4.5) * (pm.armWaveAmp ?? 0.35);
-          keloHead.rotation.x = (pm.headPitch ?? -0.15) + Math.sin(t * 1.6) * 0.12;
-          keloHead.rotation.y = Math.sin(t * (pm.headYawSpeed ?? 1.4)) * 0.38;
-          keloHead.rotation.z = Math.sin(t * 1.9) * (pm.headTiltAmp ?? 0.24);
+          // A known activity has a hand-keyed clip (pm.clip: painting, the kite, bench work; js/kelo-clips.js)
+          if (pm.clip && typeof keloAction === 'function' && keloAction(pm.clip)) {
+            keloGroup.position.y = groundY;
+          } else {
+            keloLeftArm.rotation.x = (pm.armRaiseOffset ?? -0.5) + Math.sin(t * 4.5) * (pm.armWaveAmp ?? 0.35);
+            keloRightArm.rotation.x = (pm.armRaiseOffset ?? -0.5) + Math.cos(t * 4.5) * (pm.armWaveAmp ?? 0.35);
+            keloHead.rotation.x = (pm.headPitch ?? -0.15) + Math.sin(t * 1.6) * 0.12;
+            keloHead.rotation.y = Math.sin(t * (pm.headYawSpeed ?? 1.4)) * 0.38;
+            keloHead.rotation.z = Math.sin(t * 1.9) * (pm.headTiltAmp ?? 0.24);
+          }
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
         } else {
           // Standing idle: breathing, glancing around and shifting his weight come from animations.js
@@ -2414,6 +2739,7 @@ function animateDiorama() {
 
       // 5. Project 3D Labels & Kelo-1 Speech Bubble to 2D Screen
       projectLabelsToScreen();
+      keloSimRestore();
     }
 
 // Pins are projected every frame: scratch vectors, the viewport size read once per resize, and

@@ -7,7 +7,7 @@
 // WORK_BENCH is the one place to change to move it: `x`, `z` is where he stands, the top is
 // `depth` in front of him (toward -z), `top` units up.
 
-const WORK_BENCH = { x: -3.2, z: -3.0, depth: 1.4, top: 0.8, face: Math.PI, locKey: 'workbench', name: 'his work bench' };
+const WORK_BENCH = { x: MAP_LAYOUT.workBench.x, z: MAP_LAYOUT.workBench.z, depth: 1.4, top: 0.8, face: Math.PI, locKey: 'workbench', name: 'his work bench' };
 let workBenchGroup = null;
 let workBenchTool = null;
 
@@ -124,33 +124,10 @@ function poseKeloAtWorkBench(t) {
       state.botRotY = WORK_BENCH.face;
       keloGroup.rotation.set(0, WORK_BENCH.face, 0);
       const step = String(state.moodTitle || '');
-      const kind = /saw/i.test(step) ? 'saw' : /together|assembl|fix/i.test(step) ? 'hammer' : 'sand';
+      const kind = /saw/i.test(step) ? 'saw' : /drill/i.test(step) ? 'drill' : /together|assembl|fix/i.test(step) ? 'hammer' : 'sand';
       ensureWorkBenchTool(kind);
-      keloBody.rotation.x = 0.25;
-      keloHead.rotation.x = 0.4;
-      if (kind === 'saw') {
-        const s = Math.sin(t * 7);
-        keloRightArm.rotation.set(-1.0 + s * 0.35, 0, 0.15);
-        keloRightElbow.rotation.x = -0.9 - s * 0.45;
-        keloRightHand.userData.grip = 1;
-        keloLeftArm.rotation.set(-0.9, 0, -0.05);
-        keloLeftElbow.rotation.x = -0.7;
-        keloLeftHand.userData.grip = 0.3;
-      } else if (kind === 'hammer') {
-        const s = Math.pow(Math.max(0, Math.sin(t * 5)), 0.6);
-        keloRightArm.rotation.set(-0.8 - s * 1.2, 0, 0.1);
-        keloRightElbow.rotation.x = -0.6 - s * 0.9;
-        keloRightHand.userData.grip = 1;
-        keloLeftArm.rotation.set(-0.95, 0, -0.15);
-        keloLeftElbow.rotation.x = -0.6;
-        keloLeftHand.userData.grip = 0.8;
-      } else {
-        keloRightArm.rotation.set(-0.95 + Math.sin(t * 6) * 0.12, 0, 0.1 + Math.cos(t * 6) * 0.12);
-        keloRightElbow.rotation.x = -0.7;
-        keloLeftArm.rotation.set(-0.95 + Math.cos(t * 6) * 0.12, 0, -0.1 + Math.sin(t * 6) * 0.12);
-        keloLeftElbow.rotation.x = -0.7;
-        keloRightHand.userData.grip = keloLeftHand.userData.grip = 0.4;
-      }
+      // Hand-keyed strokes with a wind-up, the hit and the follow-through (js/kelo-clips.js)
+      keloAction({ saw: 'saw', drill: 'drillBench', hammer: 'hammer', sand: 'sand' }[kind]);
     }
 
 // A saw, hammer or sanding block in his right hand
@@ -161,6 +138,7 @@ function ensureWorkBenchTool(kind) {
         const g = new THREE.Group();
         const m = (geo, color, x, y, z, metal = 0) => { const o = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: metal })); o.position.set(x, y, z); o.castShadow = true; g.add(o); return o; };
         if (kind === 'saw') { m(new THREE.BoxGeometry(0.03, 0.06, 0.1), 0x9a3412, 0, -0.06, 0); m(new THREE.BoxGeometry(0.004, 0.09, 0.4), 0xc0c4c8, 0, -0.08, 0.24, 0.9); }
+        else if (kind === 'drill') { m(new THREE.BoxGeometry(0.05, 0.13, 0.12), 0x1d4ed8, 0, -0.07, 0.04); m(new THREE.CylinderGeometry(0.006, 0.006, 0.1, 6), 0xc0c4c8, 0, -0.16, 0.08, 0.9); }
         else if (kind === 'hammer') { m(new THREE.BoxGeometry(0.03, 0.03, 0.26), 0x6e4b2a, 0, -0.06, 0.08); m(new THREE.BoxGeometry(0.05, 0.12, 0.04), 0x4b5563, 0, -0.06, 0.22, 0.8); }
         else m(new THREE.BoxGeometry(0.09, 0.05, 0.14), 0xd6b88a, 0, -0.09, 0.02);
         g.userData.kind = kind;

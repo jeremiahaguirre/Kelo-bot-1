@@ -475,6 +475,13 @@ async function servicePlant(kind, key, originLabel = 'Servicing the Plant') {
       const spare = PLANT_SPARES[key];
       const part = hasItem(spare.re);
       if (!part) return false;
+      // He is busy while he walks over and fits it, so nothing else starts and takes him away mid-job
+      const wasPractising = state.isPracticing;
+      state.isPracticing = true;
+      try { return await servicePlantNow(kind, key, spare, part, originLabel); } finally { state.isPracticing = wasPractising; }
+    }
+
+async function servicePlantNow(kind, key, spare, part, originLabel) {
       const spot = kind === 'batch' ? (key === 'filter' ? plantSpot('batch', 'silo') : plantSpot('batch', 'mixer')) : (key === 'bags' ? plantSpot('asphalt', 'baghouse') : plantSpot('asphalt', 'burner'));
       state.currentLocKey = 'aggregate_plant';
       state.customPlaceName = null;
@@ -785,7 +792,7 @@ function concretePathSpotOk(x, z, toX, toZ, w = 1.2) {
       const len = Math.hypot(toX - x, toZ - z);
       for (let d = 0; d <= len; d += 0.6) {
         const px = x + (toX - x) * d / len, pz = z + (toZ - z) * d / len;
-        if (offLimits(px, pz, w / 2) || !plantDryAt(px, pz + w / 2) || px < WORLD_MIN_X + 2 || px > WORLD_MAX_X - 2 || pz < WORLD_MIN_Z + 2) return false;
+        if (offLimits(px, pz, w / 2) || !plantDryAt(px, pz + w / 2) || px < WORLD_MIN_X + 2 || px > WORLD_MAX_X - 2 || pz < WORLD_VALLEY_MIN_Z + 2) return false;
         if ((state.concretePours || []).some(p => segDist(px, pz, p) < (p.w || 1.2) / 2 + w / 2 + 0.3)) return false;
         if ((state.worldEdits || []).some(e => e.type === 'road' && segDist(px, pz, e) < 1.6)) return false;
       }
@@ -1125,14 +1132,14 @@ function applyPlantDecision(decision) {
 // --- The Brain tab ---------------------------------------------------------------------------------
 function plantBar(label, v, cap, unit, color = 'bg-sky-500') {
       const f = Math.max(0, Math.min(1, v / cap));
-      return `<div class="flex items-center gap-1.5"><span class="w-24 shrink-0 text-slate-400">${escapeHtml(label)}</span><span class="flex-1 h-1.5 rounded-full bg-slate-800 overflow-hidden"><span class="block h-full ${color}" style="width:${Math.round(f * 100)}%"></span></span><span class="w-16 text-right font-mono text-slate-300">${unit === 'L' ? fmtL(v) : unit === '%' ? Math.round(v) + '%' : fmtT(v)}</span></div>`;
+      return `<div class="flex items-center gap-1.5"><span class="w-24 shrink-0 text-slate-400">${escapeHtml(label)}</span><span class="flex-1 h-1.5 rounded-full bg-slate-800 overflow-hidden"><span class="block h-full ${color}" style="width:${Math.round(f * 100)}%"></span></span><span class="w-16 text-right tabular-nums text-slate-300">${unit === 'L' ? fmtL(v) : unit === '%' ? Math.round(v) + '%' : fmtT(v)}</span></div>`;
     }
 
 function renderPlantsPanel() {
       const el = document.getElementById('plantsPanelContainer');
       if (!el) return;
       const bp = plantStateOf('batch'), ap = plantStateOf('asphalt');
-      const card = (title, known, body) => `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200 space-y-1">
+      const card = (title, known, body) => `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-200 space-y-1">
           <div class="font-semibold">${title} <span class="text-slate-500 font-normal">${known ? '· researched' : '· not researched yet (he reads up at NetNode first)'}</span></div>${body}</div>`;
       const bars = (rows) => `<div class="space-y-0.5">${rows.join('')}</div>`;
       const rmLoad = bp.loads[0], hmLoad = ap.loads[0];
@@ -1145,7 +1152,7 @@ function renderPlantsPanel() {
         plantBar('Lake water', bp.stock.water, 8000, 'L', 'bg-sky-500'),
         plantBar('Mixer wear', bp.wear.mixer, 100, '%', bp.wear.mixer >= 80 ? 'bg-red-500' : 'bg-emerald-500'),
         plantBar('Silo filters', bp.wear.filter, 100, '%', bp.wear.filter >= 80 ? 'bg-red-500' : 'bg-emerald-500')
-      ]) + `<div class="text-slate-400">${bp.batches} batch${bp.batches === 1 ? '' : 'es'} made${bp.wasted ? `, ${bp.wasted} wasted` : ''}.${bp.lastTicket ? ` Last ticket: ${escapeHtml(bp.lastTicket.mix)}, ${bp.lastTicket.cement} kg cement, w/c ${bp.lastTicket.wc}, slump ${bp.lastTicket.slump} mm, ~${bp.lastTicket.strength} MPa.` : ''}</div>`
+      ]) + `<div class="text-slate-400">${escapeHtml(bp.batches)} batch${bp.batches === 1 ? '' : 'es'} made${bp.wasted ? `, ${escapeHtml(bp.wasted)} wasted` : ''}.${bp.lastTicket ? ` Last ticket: ${escapeHtml(bp.lastTicket.mix)}, ${escapeHtml(bp.lastTicket.cement)} kg cement, w/c ${escapeHtml(bp.lastTicket.wc)}, slump ${escapeHtml(bp.lastTicket.slump)} mm, ~${escapeHtml(bp.lastTicket.strength)} MPa.` : ''}</div>`
         + (rmLoad ? `<div class="text-amber-300">🚚 2 m³ in the mixer truck: pour within ${mins(CONCRETE_WORKABLE_MS - (Date.now() - rmLoad.madeAt))} min.</div>` : '');
       const aBody = bars([
         plantBar('Crushed stone', ap.stock.coarse, plantFeed('coarse').cap, 't', 'bg-stone-400'),
@@ -1154,14 +1161,14 @@ function renderPlantsPanel() {
         plantBar('Burner diesel', ap.stock.fuel, plantFeed('fuel').cap, 'L', 'bg-rose-400'),
         plantBar('Baghouse bags', ap.wear.bags, 100, '%', ap.wear.bags >= 80 ? 'bg-red-500' : 'bg-emerald-500'),
         plantBar('Burner', ap.wear.burner, 100, '%', ap.wear.burner >= 80 ? 'bg-red-500' : 'bg-emerald-500')
-      ]) + `<div class="text-slate-400">${plantHasGas() ? 'Burner on natural gas. ' : ''}Bitumen tank ${bitumenTankTemp()} °C. ${ap.batches} batch${ap.batches === 1 ? '' : 'es'} made${ap.wasted ? `, ${ap.wasted} went cold and were wasted` : ''}.</div>`
+      ]) + `<div class="text-slate-400">${plantHasGas() ? 'Burner on natural gas. ' : ''}Bitumen tank ${bitumenTankTemp()} °C. ${escapeHtml(ap.batches)} batch${ap.batches === 1 ? '' : 'es'} made${ap.wasted ? `, ${escapeHtml(ap.wasted)} went cold and were wasted` : ''}.</div>`
         + (hmLoad ? `<div class="text-amber-300">🔥 5 t of hot mix in the dump truck, about ${hotMixTemp(hmLoad)} °C: lay it within ${mins(HMA_WORKABLE_MS - (Date.now() - hmLoad.madeAt))} min.</div>` : '');
       const pours = (state.concretePours || []).slice(-6).reverse().map(p => `<div>🧱 ${escapeHtml(concretePourLabel(p.id))}</div>`).join('');
       const log = [...bp.log.map(l => ({ ...l, k: '🏗️' })), ...ap.log.map(l => ({ ...l, k: '🛢️' }))].sort((a, b) => b.at - a.at).slice(0, 5)
         .map(l => `<div class="text-slate-400">${l.k} ${escapeHtml(l.text)}</div>`).join('');
       perfSetHtml(el, card('🏗️ Ready-mix concrete plant', jobKnown('batchPlant'), cBody) + card('🛢️ Hot-mix asphalt plant', jobKnown('asphaltPlant'), aBody)
-        + (pours ? `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200 space-y-0.5"><div class="font-semibold">Concrete he has poured</div>${pours}</div>` : '')
-        + (log ? `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] space-y-0.5">${log}</div>` : ''));
+        + (pours ? `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-200 space-y-0.5"><div class="font-semibold">Concrete he has poured</div>${pours}</div>` : '')
+        + (log ? `<div class="px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-2xs space-y-0.5">${log}</div>` : ''));
     }
 
 function injectPlantsPanel() {

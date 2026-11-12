@@ -168,6 +168,7 @@ Kelo-bot-1/
 │   ├── talk.js          # The Talk tab: the live chat with Kelo-1, suggested messages, photos and gifts from the + menu
 │   ├── explore.js       # Looking around: Follow Kelo-1 or Explore freely, Places, the click menu, help card, touch joystick
 │   ├── eyecam.js        # "Through his eyes": a first-person camera at Kelo-1's eyes with look-around and a small HUD
+│   ├── shopvisit.js     # "Visit the Workshop": walk round the hangar, wing and floors 1-3 yourself and check every machine's status
 │   ├── minimap.js       # The live minimap: terrain, buildings, his vehicles, digs and builds, Kelo-1 and the camera's view, and the Map tab of everything he has changed
 │   ├── tryit.js         # The World tab's Try it panel: preview seasons, night and wind, send sample gifts
 │   ├── plants.js        # His concrete and asphalt plant beside the workshop: research, materials, mix designs, batches, hot mix that cools, concrete pours that cure, wear and service

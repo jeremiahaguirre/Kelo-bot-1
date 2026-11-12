@@ -93,15 +93,13 @@ async function dropIntoPit(object3d, from, itemName = null) {
       new THREE.Box3().setFromObject(object3d).getSize(size);
       const startScale = object3d.scale.x;
       const endScale = startScale * Math.min(1, (DISPOSAL_PIT.r * 1.2) / Math.max(size.x, size.z, 0.01));
-      const steps = 18;
-      for (let i = 1; i <= steps; i++) {
-        const t = i / steps;
+      // About a second, drawn every frame (js/scene.js keloTween); it tumbles at the same rate at any fps
+      await keloTween(990, (t, dt) => {
         object3d.position.set(from.x + (tx - from.x) * t, from.y + (bottom - from.y) * t + Math.sin(t * Math.PI) * 1.2, from.z + (tz - from.z) * t);
         object3d.scale.setScalar(startScale + (endScale - startScale) * Math.min(1, t * 1.6));
-        object3d.rotation.x += 0.35;
-        object3d.rotation.z += 0.2;
-        await new Promise(r => setTimeout(r, 55));
-      }
+        object3d.rotation.x += 6.4 * dt;
+        object3d.rotation.z += 3.6 * dt;
+      });
       const impact = itemName && typeof pitImpact === 'function' ? pitImpact(itemName, object3d, from.y - bottom) : null;
       await new Promise(r => setTimeout(r, impact && impact.outcome === 'shatters' ? 1800 : 400));
       scene.remove(object3d);
@@ -192,7 +190,7 @@ async function tipDirtIntoPit(truck) {
       truck.rotY = Math.atan2(DISPOSAL_PIT.z - truck.z, -(DISPOSAL_PIT.x - truck.x));
       if (tMesh) tMesh.rotation.y = truck.rotY;
       const tip = (a) => { if (bed) bed.rotation.z = a; else if (tMesh) tMesh.rotation.z = -a * 0.4; };
-      for (let a = 0; a <= 12; a++) { tip(a * 0.07); await new Promise(r => setTimeout(r, 90)); }
+      await keloTween(1080, k => tip(k * 0.84));
       const load = truck.load || 0;
       truck.load = 0;
       renderVehicles3D();
@@ -201,7 +199,7 @@ async function tipDirtIntoPit(truck) {
         clump.scale.set(1.4, 0.7, 1.0);
         const back = 3.6; // the tailgate, behind the truck's middle
         await dropIntoPit(clump, { x: tMesh.position.x - Math.cos(truck.rotY) * back, y: tMesh.position.y + 1.4, z: tMesh.position.z + Math.sin(truck.rotY) * back });
-        for (let a = 12; a >= 0; a--) { tip(a * 0.07); await new Promise(r => setTimeout(r, 60)); }
+        await keloTween(720, k => tip((1 - k) * 0.84));
       }
       state.dirtDisposed = Math.round(((state.dirtDisposed || 0) + load) * 10) / 10;
       return load;

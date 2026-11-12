@@ -304,7 +304,7 @@ function updateWildlife(t) {
       wildLastT = t;
       // How fast is Kelo-1 moving? Animals don't mind a slow, quiet walker
       const kp = state.botPos;
-      if (wildKeloPrev) wildKeloSpeed = wildKeloSpeed * 0.85 + (Math.hypot(kp.x - wildKeloPrev.x, kp.z - wildKeloPrev.z) / dt) * 0.15;
+      if (wildKeloPrev) { const k = 1 - Math.exp(-9.75 * dt); wildKeloSpeed += ((Math.hypot(kp.x - wildKeloPrev.x, kp.z - wildKeloPrev.z) / dt) - wildKeloSpeed) * k; } // (0.15 a frame at 60 fps)
       wildKeloPrev = { x: kp.x, z: kp.z };
       const cam = typeof camera !== 'undefined' && camera ? camera.position : null;
       wildDeerHerd.forEach(d => updateWildDeer(d, t, dt, cam));
@@ -378,9 +378,9 @@ function updateWildDeer(d, t, dt, cam) {
         const nx = d.x + Math.sin(d.heading) * speed * dt, nz = d.z + Math.cos(d.heading) * speed * dt;
         if (wildStepOk(nx, nz)) { d.x = nx; d.z = nz; } else { d.target = wildRandomSpot(d.range); d.heading += 0.6; }
       }
-      d.speed = d.speed + (speed - d.speed) * Math.min(1, dt * 4);
-      d.neckPitch = d.neckPitch + (neckGoal - d.neckPitch) * Math.min(1, dt * 2.2);
-      d.headYaw = d.headYaw + (headYawGoal - d.headYaw) * Math.min(1, dt * 3);
+      d.speed = d.speed + (speed - d.speed) * (1 - Math.exp(-4 * dt));
+      d.neckPitch = d.neckPitch + (neckGoal - d.neckPitch) * (1 - Math.exp(-2.2 * dt));
+      d.headYaw = d.headYaw + (headYawGoal - d.headYaw) * (1 - Math.exp(-3 * dt));
       const gy = getAnalyticalGroundHeight(d.x, d.z);
       d.group.position.set(d.x, gy, d.z);
       d.group.rotation.y = d.heading;
@@ -457,7 +457,7 @@ function updateWildFlock(f, t, dt, cam) {
         if (b.mode === 'fly') {
           const ang = t * 0.35 + b.phase;
           wildTmpV.set(b.offset.x * Math.cos(ang) - b.offset.z * Math.sin(ang), b.offset.y + Math.sin(t * 1.3 + b.phase) * 0.35, b.offset.x * Math.sin(ang) + b.offset.z * Math.cos(ang)).add(f.center);
-          b.pos.lerp(wildTmpV, Math.min(1, dt * 2.2));
+          b.pos.lerp(wildTmpV, (1 - Math.exp(-2.2 * dt)));
         } else if (b.mode === 'land') {
           // Swoop down, slowing as it arrives
           const to = wildTmpV.copy(b.land.p).sub(b.pos);

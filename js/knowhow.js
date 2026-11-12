@@ -62,7 +62,7 @@ function readyToOperate(name, v = null, { quiet = false } = {}) {
         if (!quiet) {
           state.speechBubble = `I don't actually know how to use the ${plain} yet. I'll read up on it at NetNode first.`;
           renderAllUI();
-          doWhenFree(() => learnToUse(name, 'Learning How Things Work'));
+          doWhenFree(() => learnToUse(name, 'Learning How Things Work'), { key: 'learn:' + name });
         }
         return false;
       }
@@ -102,7 +102,7 @@ function requestFuel(fuel, why) {
         refuelsQueued.set(fuel, Date.now());
         doWhenFree(async () => {
           try { await refuelWith(can); } finally { refuelsQueued.delete(fuel); }
-        });
+        }, { key: 'refuel:' + fuel });
         return;
       }
       // Already waiting for some (asked, or sitting in the mailbox)?
@@ -181,7 +181,7 @@ function receiveFuel(item) {
       refuelsQueued.set(fuel, Date.now());
       doWhenFree(async () => {
         try { await refuelWith(item); } finally { refuelsQueued.delete(fuel); }
-      });
+      }, { key: 'refuel:' + fuel });
     }
 
 // Couldn't fill up: say why once, and leave it alone for a while instead of trying again and again

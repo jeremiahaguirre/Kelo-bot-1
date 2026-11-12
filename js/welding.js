@@ -710,7 +710,7 @@ async function weldWalkTo(spotKey) {
         const k = Math.min(1, (Date.now() - t0) / 350);
         state.botPos = { x: from.x + (w.x - from.x) * k, z: from.z + (w.z - from.z) * k };
         state.targetPos = { ...state.botPos };
-        await weldWait(30);
+        await keloNextFrame();
       }
       state.botPos = { x: w.x, z: w.z };
       state.targetPos = { ...state.botPos };
@@ -1215,7 +1215,7 @@ function poseKeloForWelding(t) {
         // The gun tip sits just above the joint: the wire stick-out and the arc gap
         const tipTarget = seam.clone().add(_weldV2.set(0, 0.03, 0.012));
         const e = weldSolveArm('right', tipTarget, v => keloWeldTipGlow.getWorldPosition(v));
-        if (e > 0.03 && weldRig.lean < 0.5) weldRig.lean += 0.01;
+        if (e > 0.03 && weldRig.lean < 0.5) weldRig.lean = Math.min(0.5, weldRig.lean + 0.6 * (typeof keloAnim !== 'undefined' ? keloAnim.dt : 1 / 60));
         // Left hand steadies on the table beside the plates
         keloLeftHand.userData.grip = 0.2;
         weldSolveArm('left', weldLocal(0.32, 0.96, 0.64), v => weldPalmWorld(v, keloLeftHand));
@@ -1304,15 +1304,18 @@ function updateWeldArc(dt) {
           forgeArcLight.intensity = (2 + Math.random() * 2.2) * (renderer && renderer.physicallyCorrectLights ? 6 : 1);
         }
         // New sparks shoot out of the puddle
+        // (up to six a 60 fps frame: 360 a second, at any frame rate)
+        weldRig.sparkDue = Math.min(12, (weldRig.sparkDue || 0) + 360 * dt);
         let born = 0;
         for (const p of pts) {
-          if (p.life < p.max || born > 5) continue;
+          if (p.life < p.max || born + 1 > weldRig.sparkDue) continue;
           born++;
           p.x = seam.x; p.y = seam.y + 0.005; p.z = seam.z;
           const a = Math.random() * Math.PI * 2, sp = 0.5 + Math.random() * 1.6;
           p.vx = Math.cos(a) * sp * 0.6; p.vz = Math.sin(a) * sp * 0.6 + 0.15; p.vy = 0.4 + Math.random() * 1.4;
           p.life = 0; p.max = 0.35 + Math.random() * 0.7;
         }
+        weldRig.sparkDue -= born;
         // Spatter now and then: a droplet that lands and sticks near the bead
         if (Math.random() < dt * 4 && weldRig.spatter.dots.length < weldRig.spatter.MAXS) {
           const a = Math.random() * Math.PI * 2, d = 0.02 + Math.random() * 0.07;

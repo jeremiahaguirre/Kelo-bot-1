@@ -150,12 +150,14 @@ function tripHasHitch(tow) {
       return Boolean(tow && (/hitch/i.test(tow.name) || (vehicleKindKey(tow.name) === 'dump truck' ? ownedItemNames().some(n => /hitch/i.test(n) && !PICKUP_RE.test(n)) : ownedItemNames().some(n => /trailer hitch|tow hitch|hitch receiver/i.test(n)))));
     }
 
-// A coarse grid over the island: ground height, snow, water, roads. Built fresh for each plan.
-const TRIP_GRID = { x0: WORLD_MIN_X, z0: WORLD_MIN_Z, step: 2, nx: Math.round((WORLD_MAX_X - WORLD_MIN_X) / 2) + 1, nz: 29 };
+// A coarse grid over the island, the range and the Workshop's north land (to 2 units past the shore):
+// ground height, snow, water, roads. Built fresh for each plan.
+const TRIP_GRID = { x0: WORLD_MIN_X, z0: WORLD_MIN_Z, step: 2, nx: Math.round((WORLD_MAX_X - WORLD_MIN_X) / 2) + 1, nz: Math.round((WORLD_MAX_Z + 2 - WORLD_MIN_Z) / 2) + 1 };
 
 function tripOnRoad(x, z) {
       if (typeof inParkingArea === 'function' && inParkingArea(x, z, 1)) return true;
       if (x > TOWN.minX && x < TOWN.maxX && z > TOWN.minZ && z < TOWN.maxZ) return true;
+      if (typeof onKeloRoad === 'function' && onKeloRoad(x, z, 0.5)) return true;
       return (state.worldEdits || []).some(e => {
         if (e.type !== 'road') return false;
         const dx = e.toX - e.x, dz = e.toZ - e.z, len2 = dx * dx + dz * dz || 1;
@@ -280,6 +282,17 @@ function canDriveThere(v, target) {
       if (tripLoadOf(v) || tripCargoOn(v)) return false; // strapped on a trailer, or a trailer itself
       if (key.includes('trailer') || key === 'lowboy') return false;
       const from = state.riding === v.id ? state.botPos : { x: v.x, z: v.z };
+      // Over the range it goes by the pass (pathPassRoute, js/scene.js): each leg must be drivable
+      const pass = typeof pathPassRoute === 'function' && key !== 'excavator' ? pathPassRoute(from, target) : null;
+      if (pass) {
+        const legs = [from, ...pass, target];
+        return legs.every((p, i) => !i || canDriveLeg(key, legs[i - 1], p));
+      }
+      return canDriveLeg(key, from, target);
+    }
+
+// Can this kind of vehicle drive straight from a to b?
+function canDriveLeg(key, from, target) {
       const steps = Math.max(2, Math.ceil(Math.hypot(target.x - from.x, target.z - from.z) / 2));
       if (key === 'excavator' && steps * 2 > VEHICLE_TERRAIN.excavator.reach) return false;
       let a = null;
@@ -444,7 +457,7 @@ function tireChainsModel() {
 if (typeof ITEM_MODEL_RULES !== 'undefined') {
   ITEM_MODEL_RULES.unshift(
     [/^(?!.*hitch).*(trailer|low-?boy|low-?bed|low ?loader)/, lower => (trailerKindOf(lower) ? trailerModel(lower) : null) || trailerModel('snowmobile trailer')],
-    [/\bpick-?up\b.*truck|\bpick-?up\b$/, () => pickupTruckModel()],
+    [/^(?!.*\bhitch(es)? for\b).*(\bpick-?up\b.*truck|\bpick-?up\b$)/, () => pickupTruckModel()],
     [/ratchet straps?|tie-?down straps?|cargo straps?/, () => ratchetStrapsModel()],
     [/tire chains|tyre chains|snow chains|load binders?/, () => tireChainsModel()]
   );
@@ -635,7 +648,7 @@ function vehicleLocationLabel(v) {
       if (TRAILER_SLOTS.some(([x, z]) => Math.hypot(v.x - x, v.z - z) < 4)) return 'the trailer row by the yard';
       if (DOCK_SLOTS.some(([x, z]) => Math.hypot(v.x - x, v.z - z) < 3)) return 'the dock';
       if (v.z > 9.2) return 'out on the lake';
-      if (v.z < -12) return 'up the mountain';
+      if (v.z < valleyFootZ(v.x)) return 'up the mountain';
       const near = Object.values(TOWN_LOCATIONS).filter(l => l.building).sort((a, b) => Math.hypot(a.x - v.x, a.z - v.z) - Math.hypot(b.x - v.x, b.z - v.z))[0];
       return near ? `near the ${near.building}` : 'out in the valley';
     }
@@ -961,7 +974,7 @@ async function tripReverse(v, to, speed = 1.3) {
         state.targetPos = { ...state.botPos };
         state.botRotY = rot;
         if (p >= 1) break;
-        await tripSleep(40);
+        await keloNextFrame();
       }
       v.x = state.botPos.x; v.z = state.botPos.z; v.rotY = rot - Math.PI / 2;
     }
@@ -976,7 +989,7 @@ async function tripTurnTo(b) {
         state.botRotY = start + d * p;
         state.targetPos = { ...state.botPos };
         if (p >= 1) break;
-        await tripSleep(40);
+        await keloNextFrame();
       }
     }
 
@@ -1090,7 +1103,7 @@ async function tripSlide(cargo, from, to, b, ms) {
       for (;;) {
         tripRig.slide.p = Math.min(1, (performance.now() - t0) / ms);
         if (tripRig.slide.p >= 1) break;
-        await tripSleep(40);
+        await keloNextFrame();
       }
       tripRig.slide = null;
     }
@@ -1441,7 +1454,7 @@ function renderVehiclesList() {
         const ready = vehicleReadiness(v);
         const ok = ready === 'ready' || ready.startsWith('carrying') || ready === 'empty';
         return `
-        <div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200 space-y-0.5">
+        <div class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-200 space-y-0.5">
           <div class="flex items-center gap-2">
             <span class="flex-1 font-semibold">${escapeHtml(v.name)}</span>
             <span class="${ok ? 'text-emerald-300' : 'text-amber-300'}">${escapeHtml(ready)}</span>
@@ -1452,7 +1465,7 @@ function renderVehiclesList() {
           </div>
           <div class="text-slate-500">${escapeHtml(((VEHICLE_TERRAIN[key] || {}).text || '').replace(/^./, c => c.toUpperCase()))}</div>
         </div>`;
-      }).join('') : '<div class="text-[11px] text-slate-500 italic">No vehicles yet. He has to ask for each one.</div>';
+      }).join('') : '<div class="text-2xs text-slate-500 italic">No vehicles yet. He has to ask for each one.</div>';
       if (typeof perfSetHtml === 'function') perfSetHtml(el, html); else el.innerHTML = html;
     }
 

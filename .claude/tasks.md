@@ -221,4 +221,8 @@ Six owner requests the audit (REPORT.md on `qa-results-audit-cleanup`, section 3
 4. Foundations: footing/slab subs pour ready-mix (batched on his plant via a make-line) at the site and wait for the 7-day cure.
 5. Supplies: upgrades order materials (`state.upgradePlans`, `upgradeMaterialsFor`) before they are built; welds need steel stock (`WELD_STOCK`).
 6. Visitor paintings: painted once (`paintPlanRun(id)`).
+- Also fixed: `perfInstances` (perf.js) now sets a bounding box over every copy. Before, js/chunks.js filed instanced sets in groups at chunk (0,0), so concrete pours away from the origin were never drawn.
+- Open from this work:
+  - end-to-end runs of a cast concrete item, a garage hitch and an EDM part (routing is tested, the run path is shared);
+  - food can't be handed to the visitor yet (no outbox).
 See handoff.md and REPORT.md on `qa-results-gaps` for what is left.

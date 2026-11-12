@@ -165,7 +165,7 @@ const REFS_SOURCES = [
       const items = (d && Array.isArray(d.results) ? d.results : []).filter(r => !r.mature).map(r => refsItem({
         sourceId: 'openverse', source: `Openverse${r.provider ? ` (${refsText(r.provider, 30)})` : ''}`, hosts: ['api.openverse.org'],
         title: r.title, author: r.creator, licence: refsNormaliseLicence(r.license === 'pdm' ? 'pdm' : r.license === 'cc0' ? 'cc0' : r.license, r.license_url),
-        licenceLabel: `${String(r.license || '').toUpperCase()} ${r.license_version || ''}`.trim(), licenceUrl: r.license_url,
+        licenceLabel: r.license === 'cc0' ? 'CC0' : r.license === 'pdm' ? 'Public Domain Mark' : `CC ${String(r.license || '').toUpperCase()} ${r.license_version || ''}`.trim(), licenceUrl: r.license_url,
         pageUrl: r.foreign_landing_url, thumbUrl: r.id ? `https://api.openverse.org/v1/images/${encodeURIComponent(r.id)}/thumb/` : '', imageUrl: '',
         text: (Array.isArray(r.tags) ? r.tags.map(t => t && t.name).filter(Boolean).join(' ') : '')
       }));

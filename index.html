@@ -55,7 +55,6 @@
             <button type="button" data-explore-mode="explore" class="explore-mode-btn" aria-pressed="false" title="Move the camera yourself (W A S D)"><i class="ph-bold ph-compass" data-hud-emoji="🧭" aria-hidden="true"></i><span>Explore</span></button>
             <button type="button" data-explore-mode="eyes" class="explore-mode-btn" aria-pressed="false" title="See through his eyes (V)"><i class="ph-bold ph-eye" data-hud-emoji="👀" aria-hidden="true"></i><span>Eyes</span></button>
           </div>
-          <span class="hud-divider" aria-hidden="true"></span>
           <button type="button" id="btnPlaces" class="explore-bar-btn" aria-expanded="false" aria-controls="explorePlaces" aria-label="Places" title="Jump to a place"><i class="ph-bold ph-map-pin" data-hud-emoji="📍" aria-hidden="true"></i><span class="hud-bar-label">Places</span></button>
           <button type="button" data-explore-help class="explore-bar-btn explore-round" aria-label="How to explore" title="How to explore (?)"><i class="ph-bold ph-question" data-hud-emoji="?" aria-hidden="true"></i></button>
         </div>
@@ -77,7 +76,7 @@
              (what he thinks is in the activity card). It fades after a few seconds (js/hud.js). -->
         <div id="eyeCamVignette" aria-hidden="true"></div>
         <div id="eyeCamHud" class="hidden absolute z-20 hud-panel" role="status">
-          <span class="hud-eyes-tag"><i class="ph-bold ph-eye" data-hud-emoji="👀" aria-hidden="true"></i><span>Eyes</span></span>
+          <span class="hud-eyes-tag" title="Through his eyes"><i class="ph-bold ph-eye" data-hud-emoji="👀" aria-hidden="true"></i><span class="sr-only">Through his eyes</span></span>
           <span data-eyecam-body class="hud-eyes-body"><span class="hud-muted">Looking at</span> <span data-eyecam-look aria-live="polite"></span></span>
           <button type="button" data-eyecam-hud class="eyecam-btn hud-hit" aria-pressed="true" title="Show or hide what he looks at">Hide</button>
           <button type="button" data-eyecam-exit class="eyecam-btn eyecam-x hud-hit" aria-label="Back to following him (V)" title="Back to following him (V)"><i class="ph-bold ph-x" data-hud-emoji="✕" aria-hidden="true"></i></button>
@@ -89,7 +88,7 @@
         <!-- Minimap (js/minimap.js draws it; this is only its frame): folds away to a button -->
         <div id="exploreMinimapWrap" class="hidden absolute z-20 hud-panel">
           <div class="hud-map-head">
-            <span class="hud-map-title"><i class="ph-bold ph-map-trifold" data-hud-emoji="🗺️" aria-hidden="true"></i>Map</span>
+            <span class="hud-map-title sr-only">Map</span>
             <button type="button" data-minimap-zoom="-1" class="explore-mini-btn hud-hit" aria-label="Zoom the map out" title="Zoom out"><i class="ph-bold ph-minus" data-hud-emoji="−" aria-hidden="true"></i></button>
             <button type="button" data-minimap-zoom="1" class="explore-mini-btn hud-hit" aria-label="Zoom the map in" title="Zoom in"><i class="ph-bold ph-plus" data-hud-emoji="+" aria-hidden="true"></i></button>
             <button type="button" id="btnHideMinimap" class="explore-mini-btn hud-hit" aria-label="Fold the map away" title="Fold the map away"><i class="ph-bold ph-caret-down" data-hud-emoji="⌄" aria-hidden="true"></i></button>
@@ -140,7 +139,6 @@
   <div id="hudTop" class="fixed top-0 inset-x-0 z-30 flex items-start justify-between gap-2 pointer-events-none">
     <div id="hudStatus" class="hud-panel pointer-events-auto">
       <div class="hud-status-row">
-        <div class="hud-avatar" aria-hidden="true">K1</div>
         <h1 class="hud-name">Kelo-1</h1>
         <p id="worldClockText" class="hud-clock"></p>
       </div>
@@ -185,7 +183,7 @@
       <button type="button" role="tab" aria-controls="tab-talk" data-tab="talk" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-2xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Talk">
             <i class="ph-fill ph-chat-circle-dots text-base" data-tab-emoji="💬"></i><span>Talk</span>
           </button><button type="button" role="tab" aria-controls="tab-requests" data-tab="requests" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-2xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Post">
-            <i class="ph-fill ph-envelope-simple text-base" data-tab-emoji="✉️"></i><span>Post</span><span id="requestsCountBadge" class="absolute -mt-1 ml-8 px-1 rounded-full bg-amber-500 text-slate-950 font-mono text-3xs">0</span>
+            <i class="ph-fill ph-envelope-simple text-base" data-tab-emoji="✉️"></i><span>Post</span><span id="requestsCountBadge" class="menu-tab-badge">0</span>
           </button><button type="button" role="tab" aria-controls="tab-diary" data-tab="diary" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-2xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Diary">
             <i class="ph-fill ph-notebook text-base" data-tab-emoji="📓"></i><span>Diary</span>
           </button><button type="button" role="tab" aria-controls="tab-brain" data-tab="brain" class="inspector-tab-btn relative flex flex-col items-center gap-0.5 py-2 rounded-xl text-2xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/70 transition" aria-label="Brain">
@@ -499,165 +497,165 @@
         <div class="px-4 pb-4 pt-3 space-y-3">
         <div id="brainSummary" class="brain-summary" aria-label="At a glance"></div>
         <div class="brain-outlook">
-          <div id="worldviewStageBadge" class="journal-kicker text-purple-300">His outlook</div>
+          <div id="worldviewStageBadge" class="journal-kicker">His outlook</div>
           <p id="worldviewManifestoText" class="journal-body">"I don't know anything yet. I want to find out what everything is."</p>
         </div>
         <div id="brainSections" class="space-y-2">
         <details class="brain-section" data-section="built" open>
-          <summary class="brain-head text-emerald-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🏗️ Things He Has Built</span></span>
-            <span id="inventedCountBadge" class="brain-count">0 built</span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Things he has built</span></span>
+            <span id="inventedCountBadge" class="brain-count">0</span>
           </summary>
           <div class="brain-body">
             <div id="inventedActionsContainer" class="space-y-2"></div>
           </div>
         </details>
         <details class="brain-section" data-section="upgrades" open>
-          <summary class="brain-head text-violet-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>⌨️ Upgrades He Coded</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Upgrades he coded</span></span>
             <span id="worldUpgradesCount" class="brain-count">0</span>
           </summary>
           <div class="brain-body">
-            <p class="text-2xs text-slate-500">He writes these at NetNode in a small, safe JSON language (never JavaScript). View the code, switch one off, or remove it.</p>
+            <p class="ui-note">He writes these at NetNode in a small, safe JSON language (never JavaScript). View the code, switch one off, or remove it.</p>
             <div id="worldUpgradesList" class="space-y-2"></div>
           </div>
         </details>
         <details class="brain-section" data-section="projects" open>
-          <summary class="brain-head text-orange-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🔨 Real Things He's Building</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Real things he is building</span></span>
           </summary>
           <div class="brain-body">
             <div id="projectsListContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="buildprojects" open>
-          <summary class="brain-head text-sky-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>✈️ Build projects</span></span>
-            <span id="buildProjectsBadge" class="brain-count">none</span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Build projects</span></span>
+            <span id="buildProjectsBadge" class="brain-count">0</span>
           </summary>
           <div class="brain-body">
             <div id="buildProjectsContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="skills" open>
-          <summary class="brain-head text-amber-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🎓 Skills He Is Learning</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Skills he is learning</span></span>
           </summary>
           <div class="brain-body">
             <div id="skillsListContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="workshop" open>
-          <summary class="brain-head text-amber-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🏭 His Workshop</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>His Workshop</span></span>
           </summary>
           <div class="brain-body">
             <div id="workshopListContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="vehicles" open>
-          <summary class="brain-head text-sky-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🚚 His Vehicles</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>His vehicles</span></span>
           </summary>
           <div class="brain-body">
             <div id="vehiclesListContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="landscape" open>
-          <summary class="brain-head text-lime-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🌲 How He Has Shaped the Valley</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>How he has shaped the valley</span></span>
           </summary>
           <div class="brain-body">
             <div id="landscapeListContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="digging" open>
-          <summary class="brain-head text-amber-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>⛏️ Digging, Equipment &amp; Finds</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Digging, equipment and finds</span></span>
           </summary>
           <div class="brain-body">
             <div id="digSitesContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="hobbies" open>
-          <summary class="brain-head text-orange-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🎨 Hobbies</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>His hobbies</span></span>
           </summary>
           <div class="brain-body">
             <div id="hobbiesContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="memories" open>
-          <summary class="brain-head text-pink-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🧠 Core Memories</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Core memories</span></span>
           </summary>
           <div class="brain-body">
-            <p id="lifeStatsText" class="text-2xs font-mono text-slate-400"></p>
+            <p id="lifeStatsText" class="ui-note tabular-nums"></p>
             <div id="coreMemoriesContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="concepts">
-          <summary class="brain-head text-yellow-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>💡 Concepts He Invented</span></span>
-            <span id="conceptsCountBadge" class="brain-count">0 Concepts</span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Concepts he invented</span></span>
+            <span id="conceptsCountBadge" class="brain-count">0</span>
           </summary>
           <div class="brain-body">
             <div id="conceptsListContainer" class="space-y-2"></div>
           </div>
         </details>
         <details class="brain-section" data-section="shapes">
-          <summary class="brain-head text-cyan-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>📐 Shapes He Designed or Discovered</span></span>
-            <span id="shapesCountBadge" class="brain-count">0 Shapes</span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Shapes he designed or found</span></span>
+            <span id="shapesCountBadge" class="brain-count">0</span>
           </summary>
           <div class="brain-body">
             <div id="shapeLibraryContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
           </div>
         </details>
         <details class="brain-section" data-section="opinions">
-          <summary class="brain-head text-purple-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🧠 Opinions</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>His opinions</span></span>
           </summary>
           <div class="brain-body">
             <div id="opinionsListContainer" class="space-y-2"></div>
           </div>
         </details>
         <details class="brain-section" data-section="visitors">
-          <summary class="brain-head text-amber-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>👥 Visitors He Remembers</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Visitors he remembers</span></span>
           </summary>
           <div class="brain-body">
             <div id="visitorMemoriesContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="likes">
-          <summary class="brain-head text-indigo-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>✨ Things That Fascinate Him</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Things that fascinate him</span></span>
           </summary>
           <div class="brain-body">
             <div id="likesListContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="dislikes">
-          <summary class="brain-head text-amber-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>⚖️ Things That Puzzle Him</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Things that puzzle him</span></span>
           </summary>
           <div class="brain-body">
             <div id="dislikesListContainer" class="space-y-1.5"></div>
           </div>
         </details>
         <details class="brain-section" data-section="web">
-          <summary class="brain-head text-sky-300">
-            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>🌐 What He Read at NetNode</span></span>
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>What he read at NetNode</span></span>
             <button id="btnBrowseWebNow" type="button" class="brain-head-btn">Browse now</button>
           </summary>
           <div class="brain-body">
-            <p id="curiosityQueueText" class="text-2xs font-mono text-slate-400"></p>
+            <p id="curiosityQueueText" class="ui-note"></p>
             <div id="webHistoryList" class="space-y-1.5"></div>
           </div>
         </details>
       </div>
-        <div id="brainNoMatch" class="menu-empty hidden"><div class="menu-empty-icon" aria-hidden="true">🔍</div><p class="menu-empty-title">Nothing in his brain matches</p><p>Try another word.</p></div>
+        <div id="brainNoMatch" class="menu-empty hidden"><i class="ph-bold ph-magnifying-glass menu-empty-icon" data-hud-emoji="🔍" aria-hidden="true"></i><p class="menu-empty-title">Nothing in his brain matches</p><p>Try another word.</p></div>
         </div>
       </section>
 

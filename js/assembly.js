@@ -1352,7 +1352,8 @@ function renderBuildProjectsList() {
       if (!el) return;
       const list = (state.buildProjects || []).slice(0, 6);
       const badge = document.getElementById('buildProjectsBadge');
-      if (badge) badge.textContent = list.length ? `${list.filter(p => p.status !== 'finished').length} active` : 'none';
+      if (badge) badge.textContent = String(list.filter(p => p.status !== 'finished').length);
+      if (badge) badge.title = 'Active build projects';
       const statusText = { gathering: 'gathering parts and building', testing: 'inspections and tests', complete: 'finished, inspected', finished: 'finished', abandoned: 'set aside' };
       const html = list.length ? list.map(p => {
         const b = p.bom, pct = bomPercentBuilt(b), rec = bomPercentReceived(b);

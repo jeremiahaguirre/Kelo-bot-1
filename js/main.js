@@ -424,7 +424,7 @@ function renderWebTastesTab() {
 
       // Concepts Kelo-1 invented; clicking one asks him to explore it further (he may take it anywhere)
       const conceptsBadge = document.getElementById('conceptsCountBadge');
-      if (conceptsBadge) conceptsBadge.textContent = `${state.concepts.length} ${state.concepts.length === 1 ? 'idea' : 'ideas'}`;
+      if (conceptsBadge) conceptsBadge.textContent = String(state.concepts.length);
       const conceptsEl = document.getElementById('conceptsListContainer');
       if (conceptsEl) {
         perfSetHtml(conceptsEl, state.concepts.map((c, idx) => `
@@ -448,7 +448,7 @@ function renderWebTastesTab() {
 
       // Shape library; clicking a shape asks Kelo-1 to weld it again (or remix it)
       const shapesBadge = document.getElementById('shapesCountBadge');
-      if (shapesBadge) shapesBadge.textContent = `${state.shapeLibrary.length} ${state.shapeLibrary.length === 1 ? 'shape' : 'shapes'}`;
+      if (shapesBadge) shapesBadge.textContent = String(state.shapeLibrary.length);
       const shapesEl = document.getElementById('shapeLibraryContainer');
       if (shapesEl) {
         perfSetHtml(shapesEl, state.shapeLibrary.length === 0
@@ -486,7 +486,7 @@ function renderWebTastesTab() {
 
       // Emergent Unscripted Actions & 3D Creations Invented by Kelo-1
       const invBadge = document.getElementById('inventedCountBadge');
-      if (invBadge) invBadge.textContent = `${state.inventedCreations.length} built`;
+      if (invBadge) invBadge.textContent = String(state.inventedCreations.length);
       const invEl = document.getElementById('inventedActionsContainer');
       if (invEl) {
         perfSetHtml(invEl, state.inventedCreations.slice(0, perfListLimit('inventedActionsContainer', 8)).map((c, idx) => `

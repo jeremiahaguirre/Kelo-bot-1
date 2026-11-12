@@ -136,12 +136,12 @@ function tryRenderChip() {
       if (!chip) return;
       const parts = [];
       if (previewSeason) parts.push(`${TRY_SEASONS.find(s => s.key === previewSeason).emoji} ${previewSeason}`);
-      if (previewHour !== null) parts.push(previewHour >= 21 || previewHour < 5.5 ? '🌙 Night' : '☀️ Day');
+      if (previewHour !== null) parts.push(previewHour >= 21 || previewHour < 5.5 ? 'Night' : 'Day');
       if (typeof windOverride !== 'undefined' && windOverride) parts.push(`${TRY_WIND.find(w => w.key === windOverride).emoji} ${TRY_WIND.find(w => w.key === windOverride).label}`);
       if (typeof rainOverride !== 'undefined' && rainOverride !== null) parts.push(rainOverride ? '🌧️ Rain' : '🌤️ Dry');
       chip.classList.toggle('hidden', !parts.length);
-      chip.innerHTML = parts.length ? `<span class="font-bold text-sky-200">Preview:</span> <span>${escapeHtml(parts.join(' · '))}</span>
-        <button type="button" data-try="reset" class="ml-1 underline text-sky-200 hover:text-white">Back to real</button>` : '';
+      chip.innerHTML = parts.length ? `<span class="font-semibold text-white">Preview:</span> <span>${escapeHtml(parts.join(' · '))}</span>
+        <button type="button" data-try="reset" class="ml-1 underline text-amber-300 hover:text-amber-200">Back to real</button>` : '';
     }
 
 function tryRenderPanel() {
@@ -151,32 +151,32 @@ function tryRenderPanel() {
       const realSeason = realWorldNow().season;
       const wind = typeof windOverride !== 'undefined' ? windOverride : null;
       root.innerHTML = `
-        <div class="flex items-center justify-between gap-2">
-          <div class="text-xs font-bold text-slate-200">🧪 Try it</div>
-          <span class="text-2xs tabular-nums px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-200 border border-sky-500/30">preview only · not saved</span>
+        <div class="ui-section-head">
+          <h3 class="ui-section-title">Preview a season, time or weather</h3>
+          <span class="ui-section-meta">Not saved</span>
         </div>
         <p class="text-2xs text-slate-400">See his world's features now instead of waiting for them. Previews last until you reload or press "Back to his real calendar". His real season is ${escapeHtml(realSeason.toLowerCase())}.</p>
         <div class="space-y-1">
           <div class="try-label">Season</div>
-          <div class="flex flex-wrap gap-1.5">${TRY_SEASONS.map(s => btn(`data-try-season="${s.key}"`, `${s.emoji} ${s.key}`, previewSeason === s.key, s.hint)).join('')}</div>
+          <div class="flex flex-wrap gap-1.5">${TRY_SEASONS.map(s => btn(`data-try-season="${s.key}"`, s.key, previewSeason === s.key, s.hint)).join('')}</div>
           ${previewSeason ? `<p class="text-2xs text-slate-400">${escapeHtml(TRY_SEASONS.find(s => s.key === previewSeason).hint)}</p>` : ''}
         </div>
         <div class="space-y-1">
           <div class="try-label">Time of day</div>
           <div class="flex flex-wrap gap-1.5">
-            ${btn('data-try-hour="12"', '☀️ Day', previewHour === 12, 'Midday light')}
-            ${btn('data-try-hour="23"', '🌙 Night', previewHour === 23, 'Night: the house lights come on and he can stargaze with a telescope')}
+            ${btn('data-try-hour="12"', 'Day', previewHour === 12, 'Midday light')}
+            ${btn('data-try-hour="23"', 'Night', previewHour === 23, 'Night: the house lights come on and he can stargaze with a telescope')}
           </div>
         </div>
         <div class="space-y-1">
           <div class="try-label">Wind</div>
-          <div class="flex flex-wrap gap-1.5">${TRY_WIND.map(w => btn(`data-try-wind="${w.key}"`, `${w.emoji} ${w.label}`, wind === w.key, w.key === 'gale' ? 'A gale can crash his hot air balloon' : w.key === 'calm' ? 'Too still for a kite' : 'Good for a kite')).join('')}</div>
+          <div class="flex flex-wrap gap-1.5">${TRY_WIND.map(w => btn(`data-try-wind="${w.key}"`, w.label, wind === w.key, w.key === 'gale' ? 'A gale can crash his hot air balloon' : w.key === 'calm' ? 'Too still for a kite' : 'Good for a kite')).join('')}</div>
         </div>
         ${typeof rainOverride !== 'undefined' ? `<div class="space-y-1">
           <div class="try-label">Rain</div>
           <div class="flex flex-wrap gap-1.5">
-            ${btn('data-try-rain="1"', '🌧️ Spring shower', rainOverride === true, 'Rain falls, the ground gets wet, puddles form and his plantings grow faster. He enjoys it or heads indoors.')}
-            ${btn('data-try-rain="0"', '🌤️ Dry spell', rainOverride === false, 'No rain, even in spring')}
+            ${btn('data-try-rain="1"', 'Spring shower', rainOverride === true, 'Rain falls, the ground gets wet, puddles form and his plantings grow faster. He enjoys it or heads indoors.')}
+            ${btn('data-try-rain="0"', 'Dry spell', rainOverride === false, 'No rain, even in spring')}
           </div>
         </div>` : ''}
         <button type="button" data-try="reset" class="w-full px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${tryPreviewActive() ? 'bg-sky-500/20 hover:bg-sky-500/30 border-sky-400/50 text-sky-100' : 'bg-slate-900 border-slate-800 text-slate-500'}">📅 Back to his real calendar</button>

@@ -1,0 +1,79 @@
+{
+ "classic0": {
+  "calls": 1273,
+  "callsMin": 1272,
+  "tris": 288547,
+  "keloMeshes": 105,
+  "keloTris": 26584
+ },
+ "explorer": {
+  "calls": 1294,
+  "callsMin": 1292,
+  "tris": 289969,
+  "keloMeshes": 123,
+  "keloTris": 30068
+ },
+ "twirl": {
+  "calls": 1275,
+  "callsMin": 1272,
+  "tris": 294497,
+  "keloMeshes": 110,
+  "keloTris": 31444
+ },
+ "kitbot": {
+  "calls": 1284,
+  "callsMin": 1282,
+  "tris": 292349,
+  "keloMeshes": 117,
+  "keloTris": 30808
+ },
+ "marshmallow": {
+  "calls": 1283,
+  "callsMin": 1281,
+  "tris": 290949,
+  "keloMeshes": 114,
+  "keloTris": 30012
+ },
+ "spark": {
+  "calls": 1286,
+  "callsMin": 1284,
+  "tris": 290965,
+  "keloMeshes": 118,
+  "keloTris": 31812
+ },
+ "ember": {
+  "calls": 1308,
+  "callsMin": 1307,
+  "tris": 291873,
+  "keloMeshes": 127,
+  "keloTris": 29780
+ },
+ "aegis": {
+  "calls": 1302,
+  "callsMin": 1302,
+  "tris": 296989,
+  "keloMeshes": 128,
+  "keloTris": 33016
+ },
+ "nebula": {
+  "calls": 1274,
+  "callsMin": 1272,
+  "tris": 285465,
+  "keloMeshes": 114,
+  "keloTris": 27692
+ },
+ "clockwork": {
+  "calls": 1321,
+  "callsMin": 1295,
+  "tris": 295027,
+  "keloMeshes": 143,
+  "keloTris": 33536
+ },
+ "classic": {
+  "calls": 1193,
+  "callsMin": 1189,
+  "tris": 262607,
+  "keloMeshes": 105,
+  "keloTris": 26584
+ }
+}

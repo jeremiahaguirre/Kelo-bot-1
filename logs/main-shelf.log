@@ -1,0 +1,13 @@
+setup {"per":36,"saw":{"name":"Hand saw","kind":"tool","slot":42},"hammers":[{"name":"Claw hammer","kind":"thing","slot":40},{"name":"Claw hammer","kind":"thing","slot":41}]}
+Hand saw taken in 185 s
+FAIL Hand saw taken out: its slot is empty on the shelf, in the basement room and in the viewer {"slot":42,"up":36,"basement":7,"cell":{"empty":false,"name":"Hand saw"},"pageNames":["Thing number 37","Thing number 38","Thing number 39","Thing number 40","Claw hammer","Claw hammer","Hand saw"],"out":null}
+shot openfix-shelf-saw-out
+Hand saw put back in 5 s
+FAIL Hand saw put back: it shows on its own slot again (shelf/basement and viewer) {"back":false,"up":36,"basement":7,"cell":{"empty":false,"name":"Hand saw"},"pageNames":["Thing number 37","Thing number 38","Thing number 39","Thing number 40","Claw hammer","Claw hammer","Hand saw"],"out":null}
+shot openfix-shelf-saw-back
+Claw hammer taken in 58 s
+FAIL Claw hammer taken out: its slot is empty on the shelf, in the basement room and in the viewer {"slot":40,"up":36,"basement":7,"cell":{"empty":false,"name":"Claw hammer"},"pageNames":["Thing number 37","Thing number 38","Thing number 39","Thing number 40","Claw hammer","Claw hammer","Hand saw"],"out":null}
+Claw hammer put back in 4 s
+FAIL Claw hammer put back: it shows on its own slot again (shelf/basement and viewer) {"back":false,"up":36,"basement":7,"cell":{"empty":false,"name":"Claw hammer"},"pageNames":["Thing number 37","Thing number 38","Thing number 39","Thing number 40","Claw hammer","Claw hammer","Hand saw"],"out":null}
+page errors: none
+exit 1

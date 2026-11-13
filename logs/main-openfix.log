@@ -1,0 +1,24 @@
+FAIL two chop decisions at different places are two jobs {"chopTwoPlaces":1,"chopSamePlace":1,"sellTwo":1,"machineTwo":1,"eatTwice":1,"putawayThrice":1,"noKeyTwo":1}
+PASS the same chop twice is one job
+FAIL selling two different things is two jobs
+FAIL two different machine jobs are two jobs
+PASS eating twice / putting away thrice are one job each
+FAIL calls without a key are never merged
+PASS an older save keeps its shelf layout {"old":["Pebble","Pebble","Yo-yo","Wrench","Hand saw"],"now":["undefined:Pebble","undefined:Pebble","undefined:Yo-yo","undefined:Wrench","undefined:Hand saw"]}
+FAIL the stored Claw hammer shows although another copy is still to put away []
+FAIL each copy has its own id and slot
+FAIL taking one Pebble out hides only that copy {"got":"Pebble","pebblesBefore":[null,null],"pebblesAfter":[null,null],"out":[],"putBack":true,"pebblesBack":[null,null],"hammerSlotsBefore":[],"hammerSlotsAfter":[null,null],"unstored":[]}
+PASS putting it back returns it to its own slot
+FAIL a new copy of a name already stored gets its own slot; the older copy stays put {"before":[],"after":[null,null]}
+FAIL shelf records (ids, slots, a copy out) survive a reload {"pre":"[]","post":"[]"}
+PASS a Museum piece taken out is gone from the Museum, its basement and the viewer; the rest stay {"ok":true,"inList":false,"in3d":false,"inViewer":false,"inBasement":false,"others":11}
+FAIL a letter waiting to be read survives a reload (still waiting, or read since) {"waiting":[],"read":false,"diary":["Rearranging the Museum","Tidying Up","My Open Tasks"]}
+FAIL once read it leaves the queue, and the same letter opened again is not read twice {"left":0,"again":0,"giftsAdded":1,"readIds":[]}
+PASS after another reload nothing is waiting (no second read) {"q":0,"ids":0}
+FAIL the saved queue is bounded null
+PASS Save with a new key starts one AI decision 1
+FAIL Save with the same key (only the shop contact changed) starts none {"same":1,"sameAgain":1}
+PASS Save with a changed key starts one 1
+PASS Save with no key starts none 0
+page errors: none
+exit 1

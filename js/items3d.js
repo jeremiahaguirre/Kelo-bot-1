@@ -667,6 +667,8 @@ async function unboxInHands(itemModel) {
       setCarriedObject(wrapper);
       wrapper.scale.setScalar(1); // only the box is scaled up, so the item keeps its own life size
       box.scale.setScalar(1.4);
+      // (he has it in his hands before he opens it: js/kelo-handoff.js)
+      if (typeof keloHandoffSettled === 'function') await keloHandoffSettled();
       await new Promise(r => setTimeout(r, 900));
       itemModel.userData.unboxBase = itemModel.scale.x;
       itemModel.scale.setScalar(itemModel.userData.unboxBase * 0.01);
@@ -835,17 +837,21 @@ function setHoveredParcelLabel(raycaster) {
 let carriedObject = null;
 let carriedUntil = 0;
 
-function setCarriedObject(object3d, holdMs = 0) {
-      if (carriedObject && keloGroup) {
-        keloGroup.remove(carriedObject);
-        carriedObject.traverse(o => { if (o.geometry) o.geometry.dispose(); });
-      }
+// opts (js/kelo-handoff.js): from / to (where it is picked up from or set down), placed, real, stow
+function setCarriedObject(object3d, holdMs = 0, opts = null) {
+      const old = carriedObject;
       carriedObject = object3d || null;
       // Anything not already sized is held at life size, up to an armful
       if (carriedObject && carriedObject.scale.x === 1) lifeSize(carriedObject, 1.4);
       carriedUntil = holdMs > 0 ? Date.now() + holdMs : 0;
-      if (carriedObject && keloGroup) {
-        carriedObject.traverse(o => { if (o.userData && o.userData.isLabel) o.visible = false; });
+      if (carriedObject) carriedObject.traverse(o => { if (o.userData && o.userData.isLabel) o.visible = false; });
+      // He reaches for it and sets the old one down for real (js/kelo-handoff.js)
+      const handed = typeof keloHandoffSwap === 'function' && keloGroup ? keloHandoffSwap(old === carriedObject ? null : old, carriedObject, opts) : false;
+      if (!handed && typeof keloHandoffSwap !== 'function' && old && old !== carriedObject && keloGroup) {
+        keloGroup.remove(old);
+        old.traverse(o => { if (o.geometry) o.geometry.dispose(); });
+      }
+      if (carriedObject && keloGroup && !handed && carriedObject.parent !== keloGroup) {
         carriedObject.position.set(0, 1.05, 0.62);
         keloGroup.add(carriedObject);
       }
@@ -855,10 +861,11 @@ function setCarriedObject(object3d, holdMs = 0) {
 function updateCarriedObject(t) {
       if (!carriedObject) return;
       if (carriedUntil && Date.now() > carriedUntil) {
-        setCarriedObject(null);
+        // (a timed carry is eaten, read or pocketed: put away, not set down)
+        setCarriedObject(null, 0, { stow: true });
         return;
       }
-      carriedObject.position.y = 1.05 + (state.isWalking ? Math.abs(Math.sin(t * 9.5)) * 0.05 : 0);
+      if (carriedObject.parent === keloGroup) carriedObject.position.y = 1.05 + (state.isWalking ? Math.abs(Math.sin(t * 9.5)) * 0.05 : 0);
     }
 
 // When the page opens: anything he owns or that waits at the post office with no model yet gets looked up,

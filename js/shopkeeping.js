@@ -114,6 +114,11 @@ function paintingFor(name) {
 // Would he sell it? Not his first clumsy attempts, and never one he chose to keep
 function paintingVerdict(p) {
       if (!p) return { ok: false, why: "I don't have a painting by that name." };
+      // From a reference photo: only with a licence that allows it, never a study (js/refpaint.js)
+      if (p.study || p.reference || p.subject === 'reference') {
+        const v = typeof refpSellable === 'function' ? refpSellable(p) : { ok: false, why: `"${p.title}" was painted from a photo, and I can't check its licence right now.` };
+        if (!v.ok) return v;
+      }
       if (p.keep) return { ok: false, why: `"${p.title}" is one I'm keeping. It means too much to me to sell.` };
       if ((p.level || 0) < PAINT_SELL_LEVEL) return { ok: false, why: `"${p.title}" is one of my first clumsy tries. I'll sell paintings once I'm good enough that they're worth it.` };
       return { ok: true };
@@ -189,6 +194,7 @@ function guessPrice(c) {
 function writeDescription(c) {
       if (c.kind === 'painting') {
         const p = c.painting, M = PAINT_MEDIA[p.medium];
+        if (p.reference) return `${p.title}: ${String(p.subjectLabel || 'a reference photo').replace(/\bhis\b/g, 'my')}, painted my own way from reference photos I found at the NetNode cafe. ${M ? M.on : 'Original'}, ${paintingInches(p).join('x')} in. The original, one of a kind, signed by me.`;
         return `${p.title}: ${String(p.subjectLabel || 'a scene from my valley').replace(/\bhis\b/g, 'my')}, painted ${p.place ? `at ${String(p.place).replace(/\bmy\b/g, 'his').replace(/^his /, 'my ')}` : 'from life'} in ${String(p.season || '').toLowerCase()}. ${M ? M.on : 'Original'}, ${paintingInches(p).join('x')} in. The original, one of a kind, signed by me.`;
       }
       const v = printFileVerdict(c.design);
@@ -322,7 +328,7 @@ async function listForSale(c, price, description, originLabel = 'Working on His 
         if (c.kind === 'sculpture') c.creation.shopId = id;
         shop.listings.unshift(isArt
           ? { id, kind: 'painting', ref: c.ref, name: String(c.name).slice(0, 80), description: desc, price: p, currency: 'CAD', image, listedAt: new Date().toISOString(),
-            painting: { id: c.painting.id, title: c.painting.title, medium: c.painting.medium, on: PAINT_MEDIA[c.painting.medium] ? PAINT_MEDIA[c.painting.medium].on : '', size: c.painting.size, subject: c.painting.subjectLabel || '', details: paintingDetails(c.painting) }, sales: 0 }
+            painting: { id: c.painting.id, title: c.painting.title, medium: c.painting.medium, on: PAINT_MEDIA[c.painting.medium] ? PAINT_MEDIA[c.painting.medium].on : '', size: c.painting.size, subject: c.painting.subjectLabel || '', details: paintingDetails(c.painting), credit: typeof refpCreditLine === 'function' ? refpCreditLine(c.painting) : '' }, sales: 0 }
           : { id, kind: c.kind, ref: c.ref, name: String(c.name).slice(0, 80), description: desc, price: p, currency: 'CAD', image, listedAt: new Date().toISOString(),
             file: { format: 'STL', details: fileDetails(c.design), design: { key: c.design.key || null, parts: c.design.parts || null, color: c.design.color || '#f97316', size: c.design.size || null } }, sales: 0 });
         if (firstTime) shop.builtAt = Date.now();
@@ -458,7 +464,9 @@ function shopExportData() {
         soldCount: shop.sold.length,
         listings: shop.listings.map(({ id, kind, name, description, price, currency, image, listedAt, file, painting }) => ({ id, kind, name, description, price, currency, image, listedAt,
           format: file ? file.format : painting ? 'original' : null, details: file ? file.details : painting ? painting.details : null,
-          medium: painting ? painting.on : undefined, size: painting ? painting.size : undefined, subject: painting ? painting.subject : undefined, original: painting ? true : undefined }))
+          medium: painting ? painting.on : undefined, size: painting ? painting.size : undefined, subject: painting ? painting.subject : undefined, original: painting ? true : undefined,
+          // a painting made from reference photos keeps its credit line on the website
+          credit: painting && painting.credit ? painting.credit : undefined }))
       };
     }
 

@@ -332,8 +332,14 @@ function keloApplyReach(t, dt, ctx) {
       const share = typeof keloClipValue === 'function' ? Math.max(0, Math.min(1, keloClipValue('reach', 1))) : 1;
       K.reachW = dampTo(K.reachW, targets ? share : 0, targets ? 4.5 : 6, dt);
       if (targets) K.lastReach = targets;
-      const tg = targets || K.lastReach;
-      if (K.reachW < 0.002 || !tg) { if (!targets) K.lastReach = null; return; }
+      let tg = targets || K.lastReach, W = K.reachW;
+      // Picking something up or setting it down (js/kelo-handoff.js): his hands to its sides, timed by the clip
+      const ho = !ctx.riding && typeof keloHandoffReach === 'function' ? keloHandoffReach() : null;
+      if (ho && ho.w > W) { tg = ho; W = ho.w; }
+      // A two-handed tool: his left hand on its handle (js/kelo-clips.js keloToolReach)
+      const tool = !ctx.riding && !ho && !targets && typeof keloToolReach === 'function' ? keloToolReach() : null;
+      if (tool && tool.w > W) { tg = tool; W = tool.w; }
+      if (W < 0.002 || !tg) { if (!targets) K.lastReach = null; return; }
       // keloBody's world matrix, from keloGroup's (keloGroup hangs straight off the scene)
       keloGroup.updateMatrix(); keloBody.updateMatrix();
       _ikMb.multiplyMatrices(keloGroup.matrix, keloBody.matrix);
@@ -350,7 +356,7 @@ function keloApplyReach(t, dt, ctx) {
         _ikPole.set(s * 0.55, -0.35, -1);
         _ikArmQ.copy(sh.quaternion);
         const elX = keloIkSolve(sh.position, T, KELO_UPPER_ARM, KELO_FOREARM + KELO_PALM, _ikPole, -1, _ikQt);
-        sh.quaternion.copy(_ikArmQ).slerp(_ikQt, K.reachW);
-        el.rotation.set(el.rotation.x + (Math.min(-0.05, elX) - el.rotation.x) * K.reachW, el.rotation.y * (1 - K.reachW), el.rotation.z * (1 - K.reachW));
+        sh.quaternion.copy(_ikArmQ).slerp(_ikQt, W);
+        el.rotation.set(el.rotation.x + (Math.min(-0.05, elX) - el.rotation.x) * W, el.rotation.y * (1 - W), el.rotation.z * (1 - W));
       }
     }

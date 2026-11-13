@@ -157,6 +157,7 @@ function renderViewer() {
               <h3 class="text-base font-semibold text-white">${escapeHtml(m.title)}</h3>
               <div class="text-2xs tabular-nums text-slate-300">${escapeHtml(m.on || m.medium)} · ${escapeHtml(m.size || '')} · ${escapeHtml(m.subjectLabel || '')}</div>
               <div class="text-2xs tabular-nums text-slate-400">Kelo-1, ${escapeHtml(m.season || '')} · skill ${escapeHtml(m.skill)}/100${m.keep ? ' · he is keeping this one' : ''}${m.for ? ` · painted for ${escapeHtml(m.for)}` : ''}</div>
+              ${m.reference && typeof refpCreditHtml === 'function' ? refpCreditHtml(m) : ''}
             </div>
           </div>
           <div class="shrink-0 flex items-center justify-center gap-3 p-3 bg-slate-900">

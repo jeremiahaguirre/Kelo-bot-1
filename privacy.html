@@ -61,6 +61,23 @@
       <li><strong>Lookups.</strong> When Kelo-1 reads about something, the word or topic he is curious about is sent to
         Wikipedia (<code>en.wikipedia.org</code>), Wiktionary (<code>en.wiktionary.org</code>) or DuckDuckGo
         (<code>api.duckduckgo.com</code>). Nothing about you is included.</li>
+      <li><strong>Photos he looks at and paints from.</strong> When Kelo-1 browses photos or looks for a reference photo,
+        the few plain words he is looking for (for example "lighthouse" or "misty forest", never your name or anything you
+        typed about yourself) are sent to these photo services, and the small pictures are downloaded from their image servers:
+        DuckDuckGo (<code>api.duckduckgo.com</code>, <code>duckduckgo.com</code>; safe search strict; in the Windows and phone
+        apps its image search too, with pictures from the sites the results point to), Wikimedia Commons
+        (<code>commons.wikimedia.org</code>, <code>upload.wikimedia.org</code>), Openverse (<code>api.openverse.org</code>),
+        The Met (<code>collectionapi.metmuseum.org</code>, <code>images.metmuseum.org</code>), the Art Institute of Chicago
+        (<code>api.artic.edu</code>, <code>www.artic.edu</code>), the Cleveland Museum of Art
+        (<code>openaccess-api.clevelandart.org</code>, <code>openaccess-cdn.clevelandart.org</code>), NASA
+        (<code>images-api.nasa.gov</code>, <code>images-assets.nasa.gov</code>) and the Library of Congress
+        (<code>www.loc.gov</code>, <code>tile.loc.gov</code>). Only if you add your own free key in Settings: Pexels
+        (<code>api.pexels.com</code>, <code>images.pexels.com</code>), Unsplash (<code>api.unsplash.com</code>,
+        <code>images.unsplash.com</code>), Pixabay (<code>pixabay.com</code>, <code>cdn.pixabay.com</code>), Flickr
+        (<code>api.flickr.com</code>, <code>live.staticflickr.com</code>), the Smithsonian (<code>api.si.edu</code>,
+        <code>ids.si.edu</code>), Europeana (<code>api.europeana.eu</code>) and the Rijksmuseum (<code>www.rijksmuseum.nl</code>,
+        pictures from <code>lh3.googleusercontent.com</code>). Each key is sent only to its own service. Small copies of the
+        photos he liked or painted from, and their credits, are kept on your device.</li>
       <li><strong>His "dreams".</strong> The apps download a small public file (<code>brain/growth.json</code>) from this
         website on GitHub Pages to catch up on what he did while you were away.</li>
       <li><strong>The website only:</strong> the web version loads its 3D engine, icons, styles and fonts from public
@@ -69,6 +86,30 @@
     </ul>
     <p>Like any internet service, the sites above can see your device's IP address when it connects to them.
       We do not run a server that receives any of this.</p>
+
+    <h2 id="licences">Licences and credits for his paintings</h2>
+    <p>Kelo-1 sells some of his paintings on his website, so the photos he paints from have to allow it. The game enforces
+      these rules itself:</p>
+    <ul>
+      <li><strong>Only free-to-use photos.</strong> He paints only from photos whose licence is known and allows changed,
+        commercial use: public domain (including CC0 and the Public Domain Mark), CC BY, CC BY-SA, and the Pexels, Unsplash
+        and Pixabay licences. Anything marked non-commercial (NC), no-derivatives (ND), "all rights reserved", fair use or
+        with no licence is never used. DuckDuckGo's pictures have no licence information, so he only looks at them for ideas,
+        and then finds a free photo of the same thing to paint from.</li>
+      <li><strong>No people, brands or characters.</strong> He skips photos where a person is the subject, logos and branded
+        products, famous characters, and photos of other people's artworks (unless a museum marks the artwork public domain).</li>
+      <li><strong>His own picture, not a copy.</strong> Every painting changes the photo in several ways: his own crop, his own
+        limited palette, a different light or season, and his medium's brushwork; a combined painting takes its subject and its
+        setting from two different sources. The game then measures how close the finished painting is to the photo. If it is too
+        close he reworks it; if it is still too close it stays in his Museum as a study and is never sold.</li>
+      <li><strong>Credit.</strong> Each painting's label and website listing name the photo, its author, its licence and a link
+        to it ("after …" or "based on a public-domain image …"). A painting after a CC BY-SA photo is itself shared under
+        CC BY-SA 4.0, and its listing says so.</li>
+      <li><strong>The shop checks.</strong> His website refuses any painting whose photo has no licence information or a licence
+        that does not allow this, and any study. Paintings he made from life (his lake, his mountains, his house) are not
+        affected.</li>
+    </ul>
+    <p>These rules are a careful, good-faith approach, not legal advice.</p>
 
     <h2>What we don't do</h2>
     <ul>

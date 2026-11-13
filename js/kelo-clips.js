@@ -28,7 +28,7 @@ const KELO_CLIP_CHANNELS = (() => {
   const c = [];
   ['lArm', 'rArm', 'lLeg', 'rLeg', 'head', 'body', 'lElbow', 'rElbow', 'lHand', 'rHand', 'lKnee', 'rKnee', 'lFoot', 'rFoot']
     .forEach(j => c.push(j + 'X', j + 'Y', j + 'Z'));
-  return c.concat(['lGrip', 'rGrip', 'bodyLift', 'bodyShift', 'lift', 'yaw', 'root', 'tilt', 'tool', 'toolZ', 'lit', 'reach', 'rod']);
+  return c.concat(['lGrip', 'rGrip', 'bodyLift', 'bodyShift', 'lift', 'yaw', 'root', 'tilt', 'tool', 'toolY', 'toolZ', 'lit', 'reach', 'rod', 'rodZ']);
 })();
 const KELO_CLIP_IDX = {};
 KELO_CLIP_CHANNELS.forEach((ch, i) => { KELO_CLIP_IDX[ch] = i; });
@@ -154,15 +154,15 @@ const KELO_CLIP_DEFS = {
     [3.1, { root: 0, tilt: 0 }, 's']] },
 
   // Shovel: drive it in, lift the load, swing it aside and toss, back to ready
-  dig: { k: [
-    [0, kpm(KP.stance, { lArmX: -0.7, rArmX: -0.7, lArmZ: 0.15, rArmZ: -0.15, lElbowX: -0.4, rElbowX: -0.4, bodyX: 0.2, headX: 0.3, lGrip: 1, rGrip: 1, tool: -0.3 })],
-    [0.3, { lArmX: -0.95, rArmX: -0.95, lArmZ: 0.15, rArmZ: -0.15, lElbowX: -0.75, rElbowX: -0.75, bodyX: 0.12, headX: 0.35, lift: 0.03, tool: -0.1, lLegX: -0.2, lKneeX: 0.2, rLegX: 0.18, rKneeX: 0.12 }, 's'],
-    [0.48, { lArmX: -0.3, rArmX: -0.3, lArmZ: 0.15, rArmZ: -0.15, lElbowX: -0.15, rElbowX: -0.15, bodyX: 0.55, headX: 0.45, lift: -0.07, tool: -0.55, lLegX: -0.35, lKneeX: 0.55, rLegX: 0.18, rKneeX: 0.2 }, 'i'],
-    [0.62, { lArmX: -0.34, rArmX: -0.34, lArmZ: 0.15, rArmZ: -0.15, lElbowX: -0.2, rElbowX: -0.2, bodyX: 0.5, headX: 0.42, lift: -0.06, tool: -0.5, lLegX: -0.33, lKneeX: 0.5, rLegX: 0.18, rKneeX: 0.2 }, 'b'],
-    [1.05, { lArmX: -0.95, rArmX: -0.95, lArmZ: 0.15, rArmZ: -0.15, lElbowX: -0.95, rElbowX: -0.95, bodyX: 0.25, headX: 0.25, lift: -0.1, tool: -0.75, lLegX: -0.42, lKneeX: 0.6, rLegX: 0.05, rKneeX: 0.35 }, 's'],
-    [1.35, { lArmX: -1.0, rArmX: -1.0, lArmZ: 0.15, rArmZ: -0.15, lElbowX: -0.9, rElbowX: -0.9, bodyX: 0.22, bodyY: 0.35, headX: 0.2, headY: 0.1, lift: -0.04, tool: -0.7, lLegX: -0.25, lKneeX: 0.3, rLegX: 0.15, rKneeX: 0.15 }, 's'],
-    [1.55, { lArmX: -1.3, rArmX: -1.3, lArmZ: 0.35, rArmZ: 0.05, lElbowX: -0.45, rElbowX: -0.45, bodyX: 0.15, bodyY: -0.5, headX: 0.1, headY: -0.35, tool: -1.15, lLegX: -0.2, lKneeX: 0.22, rLegX: 0.18, rKneeX: 0.12 }, 'i'],
-    [1.8, { lArmX: -1.2, rArmX: -1.2, lArmZ: 0.38, rArmZ: 0.08, lElbowX: -0.5, rElbowX: -0.5, bodyX: 0.12, bodyY: -0.58, headX: 0.05, headY: -0.45, tool: -1.0, lLegX: -0.2, lKneeX: 0.22, rLegX: 0.18, rKneeX: 0.12 }, 'o'],
+  dig: { k: [   // shovel: drive the blade in, lift the load, turn at the waist and toss it off to the side
+    [0, kpm(KP.stance, { lArmX: -0.7, rArmX: -0.75, lArmZ: 0.15, rArmZ: -0.15, lElbowX: -0.4, rElbowX: -0.6, bodyX: 0.2, headX: 0.3, lGrip: 1, rGrip: 1, tool: -0.3 })],
+    [0.3, { lArmX: -0.95, rArmX: -1.0, lArmZ: 0.15, rArmZ: -0.15, lElbowX: -0.75, rElbowX: -0.9, bodyX: 0.12, headX: 0.35, lift: 0.03, tool: -0.1, lLegX: -0.2, lKneeX: 0.2, rLegX: 0.18, rKneeX: 0.12 }, 's'],
+    [0.48, { lArmX: -0.3, rArmX: -0.4, lArmZ: 0.15, rArmZ: -0.15, lElbowX: -0.15, rElbowX: -0.35, bodyX: 0.55, headX: 0.45, lift: -0.07, tool: -0.6, lLegX: -0.35, lKneeX: 0.55, rLegX: 0.18, rKneeX: 0.2 }, 'i'],
+    [0.62, { lArmX: -0.34, rArmX: -0.45, lArmZ: 0.15, rArmZ: -0.15, lElbowX: -0.2, rElbowX: -0.4, bodyX: 0.5, headX: 0.42, lift: -0.06, tool: -0.5, toolY: 0.1, lLegX: -0.33, lKneeX: 0.5, rLegX: 0.18, rKneeX: 0.2 }, 'b'],
+    [1.05, { lArmX: -0.95, rArmX: -0.95, lArmZ: 0.15, rArmZ: -0.15, lElbowX: -0.95, rElbowX: -1.1, bodyX: 0.25, headX: 0.25, lift: -0.1, tool: -0.85, lLegX: -0.42, lKneeX: 0.6, rLegX: 0.05, rKneeX: 0.35 }, 's'],
+    [1.35, { lArmX: -1.0, rArmX: -1.05, lArmZ: 0.1, rArmZ: 0.1, lElbowX: -0.9, rElbowX: -1.0, bodyX: 0.22, bodyY: 0.35, headX: 0.2, headY: 0.1, lift: -0.04, tool: -0.8, toolZ: -0.25, lLegX: -0.25, lKneeX: 0.3, rLegX: 0.15, rKneeX: 0.15 }, 's'],
+    [1.55, { lArmX: -1.3, rArmX: -1.2, lArmZ: 0.35, rArmZ: 0.25, lElbowX: -0.45, rElbowX: -0.6, bodyX: 0.15, bodyY: -0.55, headX: 0.1, headY: -0.4, tool: -1.15, toolZ: 0.45, toolY: -1.1, lLegX: -0.2, lKneeX: 0.22, rLegX: 0.18, rKneeX: 0.12 }, 'i'],
+    [1.8, { lArmX: -1.2, rArmX: -1.1, lArmZ: 0.38, rArmZ: 0.28, lElbowX: -0.5, rElbowX: -0.65, bodyX: 0.12, bodyY: -0.6, headX: 0.05, headY: -0.45, tool: -1.0, toolZ: 0.5, toolY: -1.3, lLegX: -0.2, lKneeX: 0.22, rLegX: 0.18, rKneeX: 0.12 }, 'o'],
     [2.3, {}, 's']], base: 'first' },
   digRest: { k: [   // leans on the shovel and looks at the hole
     [0, kpm(KP.stance, { lArmX: -0.7, rArmX: -0.7, lArmZ: 0.15, rArmZ: -0.15, lElbowX: -0.4, rElbowX: -0.4, bodyX: 0.2, headX: 0.3, lGrip: 1, rGrip: 1, tool: -0.3 })],
@@ -170,29 +170,33 @@ const KELO_CLIP_DEFS = {
     [1.7, { lArmX: -0.85, rArmX: -0.85, lArmZ: 0.15, rArmZ: -0.15, lElbowX: -1.1, rElbowX: -1.1, bodyX: 0.12, headX: 0.4, headZ: -0.12, headY: 0.2, tool: 0, rGrip: 1, lGrip: 1 }, 's'],
     [2.4, {}, 's']], base: 'first' },
   // Pickaxe: slow wind-up overhead, a fast heavy strike, the jolt, pull it free
-  pick: { k: [
-    [0, kpm(KP.stance, { lArmX: -0.8, rArmX: -0.8, lArmZ: 0.12, rArmZ: -0.12, lElbowX: -0.45, rElbowX: -0.45, bodyX: 0.2, headX: 0.3, lGrip: 1, rGrip: 1, tool: 2.8 })],
-    [0.6, { lArmX: -2.65, rArmX: -2.65, lArmZ: 0.12, rArmZ: -0.12, lElbowX: -0.9, rElbowX: -0.9, bodyX: -0.15, headX: -0.1, lift: 0.03, tool: -0.4, lLegX: -0.22, lKneeX: 0.18, rLegX: 0.2, rKneeX: 0.08 }, 's'],
-    [0.7, { lArmX: -2.72, rArmX: -2.72, lArmZ: 0.12, rArmZ: -0.12, lElbowX: -0.95, rElbowX: -0.95, bodyX: -0.17, headX: -0.08, lift: 0.03, tool: -0.5, lLegX: -0.22, lKneeX: 0.18, rLegX: 0.2, rKneeX: 0.08 }, 'o'],
-    [0.86, { lArmX: -0.4, rArmX: -0.4, lArmZ: 0.12, rArmZ: -0.12, lElbowX: -0.1, rElbowX: -0.1, bodyX: 0.55, headX: 0.45, lift: -0.09, tool: 2.4, lLegX: -0.38, lKneeX: 0.55, rLegX: 0.2, rKneeX: 0.22 }, 'i'],
-    [0.98, { lArmX: -0.52, rArmX: -0.52, lArmZ: 0.12, rArmZ: -0.12, lElbowX: -0.2, rElbowX: -0.2, bodyX: 0.5, headX: 0.38, lift: -0.07, tool: 2.5, lLegX: -0.36, lKneeX: 0.5, rLegX: 0.2, rKneeX: 0.2 }, 'O'],
-    [1.25, { lArmX: -0.62, rArmX: -0.62, lArmZ: 0.12, rArmZ: -0.12, lElbowX: -0.55, rElbowX: -0.55, bodyX: 0.35, bodyY: 0.08, headX: 0.35, lift: -0.04, tool: 2.7 }, 's'],
+  pick: { k: [   // pickaxe (and sledge): a slow wind-up up and over his head, a fast heavy strike, the jolt, pull it free
+    [0, kpm(KP.stance, { lArmX: -0.8, rArmX: -0.85, lArmZ: 0.12, rArmZ: -0.12, lElbowX: -0.45, rElbowX: -0.55, bodyX: 0.2, headX: 0.3, lGrip: 1, rGrip: 1, tool: 2.6 })],
+    [0.35, { lArmX: -1.8, rArmX: -1.9, lArmZ: 0.12, rArmZ: 0.05, lElbowX: -0.7, rElbowX: -0.8, bodyX: 0.0, headX: 0.0, lift: 0.02, tool: 1.0, toolZ: -0.15, lLegX: -0.22, lKneeX: 0.18, rLegX: 0.2, rKneeX: 0.08 }, 's'],
+    [0.6, { lArmX: -2.65, rArmX: -2.7, lArmZ: 0.12, rArmZ: 0.0, lElbowX: -0.9, rElbowX: -1.0, bodyX: -0.15, headX: -0.1, lift: 0.03, tool: -0.4, toolZ: -0.1, lLegX: -0.22, lKneeX: 0.18, rLegX: 0.2, rKneeX: 0.08 }, 's'],
+    [0.7, { lArmX: -2.72, rArmX: -2.75, lArmZ: 0.12, rArmZ: 0.0, lElbowX: -0.95, rElbowX: -1.05, bodyX: -0.17, headX: -0.08, lift: 0.03, tool: -0.5, toolZ: -0.08, lLegX: -0.22, lKneeX: 0.18, rLegX: 0.2, rKneeX: 0.08 }, 'o'],
+    [0.86, { lArmX: -0.4, rArmX: -0.45, lArmZ: 0.12, rArmZ: -0.12, lElbowX: -0.1, rElbowX: -0.2, bodyX: 0.55, headX: 0.45, lift: -0.09, tool: 2.4, toolZ: 0, rHandX: 0.3, lLegX: -0.38, lKneeX: 0.55, rLegX: 0.2, rKneeX: 0.22 }, 'i'],
+    [0.98, { lArmX: -0.52, rArmX: -0.57, lArmZ: 0.12, rArmZ: -0.12, lElbowX: -0.2, rElbowX: -0.3, bodyX: 0.5, headX: 0.38, lift: -0.07, tool: 2.5, lLegX: -0.36, lKneeX: 0.5, rLegX: 0.2, rKneeX: 0.2 }, 'O'],
+    [1.25, { lArmX: -0.62, rArmX: -0.67, lArmZ: 0.12, rArmZ: -0.12, lElbowX: -0.55, rElbowX: -0.65, bodyX: 0.35, bodyY: 0.08, headX: 0.35, lift: -0.04, tool: 2.7, toolY: 0.2 }, 's'],
     [1.6, {}, 's']], base: 'first', z: [0.86, 1.1, 30, { lArmX: 0.035, rArmX: 0.035, headZ: 0.03 }] },
   // Axe: twist away and lift, swing through at the trunk, the bite, wrench it out
-  chop: { k: [
-    [0, kpm(KP.stance, { lArmX: -1.1, rArmX: -1.1, lArmZ: 0.2, rArmZ: -0.05, lElbowX: -0.5, rElbowX: -0.5, bodyX: 0.12, headX: 0.15, lGrip: 1, rGrip: 1, tool: 2.2 })],
-    [0.55, { lArmX: -2.1, rArmX: -2.1, lArmZ: 0.45, rArmZ: 0.3, lElbowX: -0.8, rElbowX: -0.8, bodyX: -0.05, bodyY: 0.6, headY: 0.15, headX: 0, tool: -0.3, lLegX: -0.22, lKneeX: 0.15, rLegX: 0.22, rKneeX: 0.18 }, 's'],
-    [0.64, { lArmX: -2.15, rArmX: -2.15, lArmZ: 0.46, rArmZ: 0.31, lElbowX: -0.82, rElbowX: -0.82, bodyX: -0.06, bodyY: 0.62, headY: 0.12, tool: -0.35, lLegX: -0.22, lKneeX: 0.15, rLegX: 0.22, rKneeX: 0.18 }, 'o'],
-    [0.8, { lArmX: -1.35, rArmX: -1.35, lArmZ: -0.05, rArmZ: -0.2, lElbowX: -0.1, rElbowX: -0.1, bodyX: 0.25, bodyY: -0.3, headX: 0.15, headY: -0.05, lift: -0.05, tool: 1.8, lLegX: -0.32, lKneeX: 0.42, rLegX: 0.2, rKneeX: 0.2 }, 'i'],
-    [0.92, { lArmX: -1.3, rArmX: -1.3, lArmZ: -0.02, rArmZ: -0.17, lElbowX: -0.18, rElbowX: -0.18, bodyX: 0.22, bodyY: -0.24, headX: 0.12, lift: -0.04, tool: 1.9, lLegX: -0.3, lKneeX: 0.4, rLegX: 0.2, rKneeX: 0.2 }, 'O'],
-    [1.25, { lArmX: -1.2, rArmX: -1.2, lArmZ: 0.15, rArmZ: -0.05, lElbowX: -0.55, rElbowX: -0.55, bodyX: 0.05, bodyY: 0.1, headX: 0.1, tool: 2.2 }, 's'],
+  chop: { k: [   // axe: twist away and lift it over the right shoulder, swing down and across with a roll of
+                 // the wrists, the bite, wrench it out
+    [0, kpm(KP.stance, { lArmX: -1.1, rArmX: -1.15, lArmZ: 0.2, rArmZ: -0.05, lElbowX: -0.5, rElbowX: -0.6, bodyX: 0.12, headX: 0.15, lGrip: 1, rGrip: 1, tool: 2.2, toolZ: 0.15 })],
+    [0.55, { lArmX: -2.1, rArmX: -2.2, lArmZ: 0.45, rArmZ: 0.55, lElbowX: -0.8, rElbowX: -0.95, bodyX: -0.05, bodyY: 0.6, headY: 0.15, headX: 0, tool: -0.3, toolZ: -0.6, toolY: 0.3, rHandZ: -0.35, lLegX: -0.22, lKneeX: 0.15, rLegX: 0.22, rKneeX: 0.18 }, 's'],
+    [0.64, { lArmX: -2.15, rArmX: -2.25, lArmZ: 0.46, rArmZ: 0.56, lElbowX: -0.82, rElbowX: -0.97, bodyX: -0.06, bodyY: 0.62, headY: 0.12, tool: -0.35, toolZ: -0.62, toolY: 0.32, rHandZ: -0.38, lLegX: -0.22, lKneeX: 0.15, rLegX: 0.22, rKneeX: 0.18 }, 'o'],
+    [0.8, { lArmX: -1.35, rArmX: -1.35, lArmZ: -0.05, rArmZ: -0.3, lElbowX: -0.1, rElbowX: -0.2, bodyX: 0.25, bodyY: -0.3, headX: 0.15, headY: -0.05, lift: -0.05, tool: 1.75, toolZ: 0.4, toolY: -0.25, rHandZ: 0.35, lLegX: -0.32, lKneeX: 0.42, rLegX: 0.2, rKneeX: 0.2 }, 'i'],
+    [0.92, { lArmX: -1.3, rArmX: -1.3, lArmZ: -0.02, rArmZ: -0.27, lElbowX: -0.18, rElbowX: -0.28, bodyX: 0.22, bodyY: -0.24, headX: 0.12, lift: -0.04, tool: 1.85, toolZ: 0.38, toolY: -0.25, rHandZ: 0.3, lLegX: -0.3, lKneeX: 0.4, rLegX: 0.2, rKneeX: 0.2 }, 'O'],
+    [1.25, { lArmX: -1.2, rArmX: -1.25, lArmZ: 0.15, rArmZ: -0.05, lElbowX: -0.55, rElbowX: -0.65, bodyX: 0.05, bodyY: 0.1, headX: 0.1, tool: 2.2, toolZ: 0.15, toolY: 0.15 }, 's'],
     [1.6, {}, 's']], base: 'first', z: [0.8, 1.0, 26, { lArmX: 0.03, rArmX: 0.03, bodyY: 0.02 }] },
   // Rake or hoe: reach out, draw it back toward him
-  rake: { k: [
-    [0, kpm(KP.stance, { lArmX: -0.55, rArmX: -0.55, lArmZ: 0.12, rArmZ: -0.12, lElbowX: -0.9, rElbowX: -0.9, bodyX: 0.15, headX: 0.35, lGrip: 1, rGrip: 1, tool: -0.35 })],
-    [0.55, { lArmX: -1.05, rArmX: -1.05, lArmZ: 0.12, rArmZ: -0.12, lElbowX: -0.2, rElbowX: -0.2, bodyX: 0.4, headX: 0.45, lift: -0.05, tool: -0.8, lLegX: -0.35, lKneeX: 0.45, rLegX: 0.2, rKneeX: 0.15 }, 's'],
-    [1.25, { lArmX: -0.5, rArmX: -0.5, lArmZ: 0.12, rArmZ: -0.12, lElbowX: -0.95, rElbowX: -0.95, bodyX: 0.15, bodyY: 0.06, headX: 0.38, tool: -0.32 }, 'o'],
-    [1.5, {}, 's']], base: 'first' },
+  rake: { k: [   // rake or hoe: reach out to one side, draw it back across toward him, the other way next
+    [0, kpm(KP.stance, { lArmX: -0.55, rArmX: -0.6, lArmZ: 0.12, rArmZ: -0.12, lElbowX: -0.9, rElbowX: -1.0, bodyX: 0.15, headX: 0.35, lGrip: 1, rGrip: 1, tool: -0.35 })],
+    [0.55, { lArmX: -1.05, rArmX: -1.1, lArmZ: 0.2, rArmZ: 0.05, lElbowX: -0.2, rElbowX: -0.3, bodyX: 0.4, bodyY: 0.3, headX: 0.45, headY: 0.2, lift: -0.05, tool: -0.85, toolZ: -0.3, lLegX: -0.35, lKneeX: 0.45, rLegX: 0.2, rKneeX: 0.15 }, 's'],
+    [1.25, { lArmX: -0.5, rArmX: -0.55, lArmZ: 0.05, rArmZ: -0.2, lElbowX: -0.95, rElbowX: -1.05, bodyX: 0.15, bodyY: -0.2, headX: 0.38, headY: -0.15, tool: -0.32, toolZ: 0.25 }, 'o'],
+    [1.8, { lArmX: -1.05, rArmX: -1.1, lArmZ: 0.0, rArmZ: -0.3, lElbowX: -0.2, rElbowX: -0.3, bodyX: 0.4, bodyY: -0.3, headX: 0.45, headY: -0.2, lift: -0.05, tool: -0.85, toolZ: 0.3, lLegX: -0.35, lKneeX: 0.45, rLegX: 0.2, rKneeX: 0.15 }, 's'],
+    [2.5, { lArmX: -0.5, rArmX: -0.55, lArmZ: 0.2, rArmZ: 0.0, lElbowX: -0.95, rElbowX: -1.05, bodyX: 0.15, bodyY: 0.2, headX: 0.38, headY: 0.15, tool: -0.32, toolZ: -0.25 }, 'o'],
+    [2.8, {}, 's']], base: 'first' },
   // The built-in core drill along his right forearm: draw back, thrust in, ride the vibration, ease off
   drill: { k: [
     [0, kpm(KP.stance, { rArmX: -0.55, rElbowX: -0.3, rGrip: 1, lArmX: -0.75, lArmZ: 0.3, lElbowX: -0.75, lGrip: 0.6, bodyX: 0.06, headX: 0.3 })],
@@ -215,12 +219,12 @@ const KELO_CLIP_DEFS = {
     [0.35, kpm(KP.stance, { bodyX: 0.08, headX: -0.05, rArmX: -0.9, rElbowX: -0.7, rGrip: 1, lArmX: -0.6, lElbowX: -0.5, lit: 0 }), 's'],
     [0.5, kpm(KP.stance, { bodyX: 0.12, headX: 0.45, rArmX: -1.0, rElbowX: -0.55, rGrip: 1, lArmX: -0.75, lArmZ: 0.25, lElbowX: -0.6, lit: 0 }), 'i'],
     [0.7, kpm(KP.stance, { bodyX: 0.17, headX: 0.28, rArmX: -1.3, rArmZ: -0.12, rElbowX: -0.45, rGrip: 1, lArmX: -0.85, lArmZ: 0.3, lElbowX: -0.6, lGrip: 0.15, lit: 0 }), 'b']] },
-  weldBead: { k: [
+  weldBead: { k: [   // the torch weaves small circles along the seam, the wrist doing the weave
     [0, kpm(KP.stance, { bodyX: 0.17, headX: 0.28, rArmX: -1.3, rArmZ: -0.12, rElbowX: -0.45, rGrip: 1, lArmX: -0.85, lArmZ: 0.3, lElbowX: -0.6, lGrip: 0.15, lit: 1 })],
-    [0.5, { rArmX: -1.36, rArmZ: -0.08 }, 's'], [1.0, { rArmX: -1.3, rArmZ: -0.04, headZ: 0.05 }, 's'],
-    [1.5, { rArmX: -1.24, rArmZ: -0.08 }, 's'], [2.0, { rArmX: -1.3, rArmZ: -0.13, headZ: -0.04 }, 's'],
-    [2.5, { rArmX: -1.36, rArmZ: -0.17, bodyShift: 0.02 }, 's'], [3.0, { rArmX: -1.3, rArmZ: -0.21, bodyShift: 0.03 }, 's'],
-    [3.5, {}, 's']], base: 'first', z: [0, 3.5, 31, { rArmX: 0.012 }] },
+    [0.5, { rArmX: -1.36, rArmZ: -0.08, rHandZ: 0.12, rHandX: 0.06 }, 's'], [1.0, { rArmX: -1.3, rArmZ: -0.04, rHandZ: -0.12, rHandX: -0.06, headZ: 0.05 }, 's'],
+    [1.5, { rArmX: -1.24, rArmZ: -0.08, rHandZ: 0.12, rHandX: 0.06 }, 's'], [2.0, { rArmX: -1.3, rArmZ: -0.13, rHandZ: -0.12, rHandX: -0.06, headZ: -0.04 }, 's'],
+    [2.5, { rArmX: -1.36, rArmZ: -0.17, rHandZ: 0.12, rHandX: 0.06, bodyShift: 0.02 }, 's'], [3.0, { rArmX: -1.3, rArmZ: -0.21, rHandZ: -0.12, rHandX: -0.06, bodyShift: 0.03 }, 's'],
+    [3.5, {}, 's']], base: 'first', z: [0, 3.5, 31, { rArmX: 0.012, rHandZ: 0.05 }] },
   weldLook: { k: [
     [0, kpm(KP.stance, { bodyX: 0.17, headX: 0.28, rArmX: -1.3, rArmZ: -0.12, rElbowX: -0.45, rGrip: 1, lArmX: -0.85, lArmZ: 0.3, lElbowX: -0.6, lGrip: 0.15, lit: 0 })],
     [0.45, { bodyX: -0.03, headX: 0.1, headY: 0.25, headZ: -0.15, rArmX: -0.75, rArmZ: 0.1, rElbowX: -0.95, rGrip: 1, lArmX: -0.3, lArmZ: 0.1, lElbowX: -0.4, lit: 0 }, 's'],
@@ -230,24 +234,24 @@ const KELO_CLIP_DEFS = {
     [2.3, { lit: 0 }, 's'], [2.31, { lit: 1 }, 'h']], base: 'first' },
 
   // At the work bench: hammer, saw, sanding block, drill; the left hand holds the work
-  hammer: { k: [
+  hammer: { k: [   // the arm comes up and back with the wrist cocked, then whips down with a snap of the wrist
     [0, kpm(KP.stance, { bodyX: 0.25, headX: 0.4, rArmX: -0.9, rElbowX: -0.6, rArmZ: 0.1, rGrip: 1, lArmX: -0.95, lArmZ: -0.15, lElbowX: -0.6, lGrip: 0.8 })],
-    [0.35, { rArmX: -1.95, rElbowX: -1.45, rArmZ: 0.12, bodyX: 0.18, headX: 0.38 }, 's'],
-    [0.47, { rArmX: -0.75, rElbowX: -0.45, bodyX: 0.29, headX: 0.42, lift: -0.015 }, 'i'],
-    [0.57, { rArmX: -0.95, rElbowX: -0.7, bodyX: 0.26 }, 'O'],
-    [0.85, { rArmX: -1.8, rElbowX: -1.35, bodyX: 0.2 }, 's'],
-    [0.96, { rArmX: -0.75, rElbowX: -0.45, bodyX: 0.29, lift: -0.015 }, 'i'],
-    [1.06, { rArmX: -0.95, rElbowX: -0.7, bodyX: 0.26 }, 'O'],
-    [1.34, { rArmX: -1.85, rElbowX: -1.4, bodyX: 0.19 }, 's'],
-    [1.45, { rArmX: -0.75, rElbowX: -0.45, bodyX: 0.3, lift: -0.02 }, 'i'],
-    [1.6, { rArmX: -0.95, rElbowX: -0.7, bodyX: 0.26 }, 'O'],
+    [0.35, { rArmX: -1.95, rElbowX: -1.45, rArmZ: 0.12, rHandX: -0.7, bodyX: 0.18, headX: 0.38 }, 's'],
+    [0.47, { rArmX: -0.75, rElbowX: -0.45, rHandX: 0.45, bodyX: 0.29, headX: 0.42, lift: -0.015 }, 'i'],
+    [0.57, { rArmX: -0.95, rElbowX: -0.7, rHandX: 0.1, bodyX: 0.26 }, 'O'],
+    [0.85, { rArmX: -1.8, rElbowX: -1.35, rHandX: -0.65, bodyX: 0.2 }, 's'],
+    [0.96, { rArmX: -0.75, rElbowX: -0.45, rHandX: 0.45, bodyX: 0.29, lift: -0.015 }, 'i'],
+    [1.06, { rArmX: -0.95, rElbowX: -0.7, rHandX: 0.1, bodyX: 0.26 }, 'O'],
+    [1.34, { rArmX: -1.85, rElbowX: -1.4, rHandX: -0.7, bodyX: 0.19 }, 's'],
+    [1.45, { rArmX: -0.75, rElbowX: -0.45, rHandX: 0.5, bodyX: 0.3, lift: -0.02 }, 'i'],
+    [1.6, { rArmX: -0.95, rElbowX: -0.7, rHandX: 0.1, bodyX: 0.26 }, 'O'],
     [2.1, { headX: 0.55, headZ: 0.18, bodyX: 0.32, lElbowX: -0.7 }, 's'],   // checks the nail
     [2.6, {}, 's']], base: 'first' },
-  saw: { k: [
+  saw: { k: [   // long push-pull strokes along the cut, the body rocking with them, the wrist staying in line
     [0, kpm(KP.stance, { bodyX: 0.25, headX: 0.42, rArmX: -1.0, rElbowX: -0.9, rArmZ: 0.15, rGrip: 1, lArmX: -0.9, lArmZ: -0.05, lElbowX: -0.7, lGrip: 0.3 })],
-    [0.42, { rArmX: -1.35, rElbowX: -0.4, bodyX: 0.33, bodyShift: 0.02, headX: 0.45 }, 's'],
-    [0.85, { rArmX: -0.68, rElbowX: -1.4, bodyX: 0.21, headX: 0.4 }, 's'],
-    [1.27, { rArmX: -1.35, rElbowX: -0.4, bodyX: 0.33, bodyShift: 0.02, headX: 0.45 }, 's'],
+    [0.42, { rArmX: -1.35, rElbowX: -0.4, rHandX: -0.15, bodyX: 0.33, bodyZ: -0.04, bodyShift: 0.02, headX: 0.45 }, 's'],
+    [0.85, { rArmX: -0.68, rElbowX: -1.4, rHandX: 0.15, bodyX: 0.21, bodyZ: 0.03, headX: 0.4 }, 's'],
+    [1.27, { rArmX: -1.35, rElbowX: -0.4, rHandX: -0.15, bodyX: 0.33, bodyZ: -0.04, bodyShift: 0.02, headX: 0.45 }, 's'],
     [1.7, {}, 's']], base: 'first' },
   sand: { k: [
     [0, kpm(KP.stance, { bodyX: 0.25, headX: 0.4, rArmX: -0.95, rArmZ: 0.1, rElbowX: -0.7, lArmX: -0.95, lArmZ: -0.1, lElbowX: -0.7, rGrip: 0.4, lGrip: 0.4 })],
@@ -255,12 +259,25 @@ const KELO_CLIP_DEFS = {
     [0.6, { rArmX: -0.95, rArmZ: 0.34, lArmX: -0.95, lArmZ: -0.34 }, 's'],
     [0.9, { rArmX: -0.83, rArmZ: 0.22, lArmX: -1.07, lArmZ: -0.22, bodyShift: -0.02 }, 's'],
     [1.2, {}, 's']], base: 'first' },
-  drillBench: { k: [
+  drillBench: { k: [   // leans on it, holds it steady, small corrections of the wrist while it bites, backs it out
     [0, kpm(KP.stance, { bodyX: 0.25, headX: 0.42, rArmX: -0.85, rElbowX: -1.0, rGrip: 1, lArmX: -0.95, lArmZ: 0.2, lElbowX: -0.9, lGrip: 0.7 })],
     [0.35, { bodyX: 0.36, lift: -0.03, rArmX: -0.75, rElbowX: -0.85, lArmX: -0.85, lArmZ: 0.2, lElbowX: -0.75, headX: 0.48 }, 'i'],
-    [1.4, { bodyX: 0.38, lift: -0.035, rArmX: -0.72, rElbowX: -0.82, lArmX: -0.83, lArmZ: 0.2, lElbowX: -0.73, headX: 0.5 }, 'l'],
+    [0.7, { bodyX: 0.37, lift: -0.03, rArmX: -0.74, rElbowX: -0.84, rHandZ: 0.08, lArmX: -0.84, lArmZ: 0.2, lElbowX: -0.74, headX: 0.5, headZ: 0.06 }, 's'],
+    [1.05, { bodyX: 0.38, lift: -0.035, rArmX: -0.73, rElbowX: -0.83, rHandZ: -0.06, rHandX: 0.05, lArmX: -0.83, lArmZ: 0.2, lElbowX: -0.73, headX: 0.5, headZ: -0.04 }, 's'],
+    [1.4, { bodyX: 0.38, lift: -0.035, rArmX: -0.72, rElbowX: -0.82, rHandZ: 0.02, lArmX: -0.83, lArmZ: 0.2, lElbowX: -0.73, headX: 0.5 }, 's'],
     [1.75, { bodyX: 0.18, rArmX: -0.95, rElbowX: -1.15, headX: 0.32, headZ: 0.12 }, 's'],
-    [2.2, {}, 's']], base: 'first', z: [0.35, 1.4, 22, { rArmX: 0.025, lArmX: 0.02, headZ: 0.02 }] },
+    [2.2, {}, 's']], base: 'first', z: [0.35, 1.4, 22, { rArmX: 0.02, lArmX: 0.015, headZ: 0.015 }] },
+  twist: { k: [   // a wrench or screwdriver: the forearm turns the tool, a regrip, turn again; then a look
+    [0, kpm(KP.stance, { bodyX: 0.28, headX: 0.45, rArmX: -0.95, rElbowX: -0.9, rArmZ: 0.05, rGrip: 1, lArmX: -0.9, lArmZ: -0.1, lElbowX: -0.75, lGrip: 0.7 })],
+    [0.45, { rHandY: 1.1, rArmZ: -0.05, rElbowX: -0.95, bodyX: 0.3 }, 's'],
+    [0.6, { rHandY: 1.1, rGrip: 0.4 }, 's'],
+    [0.85, { rHandY: -0.2, rGrip: 0.4, rArmZ: 0.08 }, 's'],
+    [0.95, { rHandY: -0.2, rGrip: 1 }, 's'],
+    [1.4, { rHandY: 1.0, rArmZ: -0.04, rElbowX: -0.95, bodyX: 0.31 }, 's'],
+    [1.55, { rHandY: 1.0, rGrip: 0.4 }, 's'],
+    [1.8, { rHandY: -0.2, rGrip: 0.4 }, 's'],
+    [1.9, { rHandY: -0.2, rGrip: 1, headZ: 0.15, headX: 0.5 }, 's'],
+    [2.4, {}, 's']], base: 'first' },
 
   // Machines: press the controls, step back and check, wait with arms folded
   machinePress: { k: [
@@ -389,11 +406,11 @@ const KELO_CLIP_DEFS = {
     [0.35, kpm(KP.kneel, { bodyX: 0.55, headX: 0.2, lArmX: -0.4, lArmZ: 0.2, lElbowX: -1.2 }), 's'],   // hand on knee, push
     [0.8, keloClipSquat(0.2, { bodyX: 0.35, headX: 0.05 }), 's'],
     [1.1, { bodyX: -0.04 }, 'o'], [1.3, {}, 's']] },
-  plantScoop: { k: [
+  plantScoop: { k: [   // the trowel goes in, scoops, twists the soil out to the side and comes back
     [0, kpm(KP.kneel, { bodyX: 0.38, headX: 0.38, rArmX: -0.6, rElbowX: -0.3, lArmX: -0.3, lArmZ: -0.2, lElbowX: -0.6, rGrip: 1, tool: -0.6 })],
     [0.3, { rArmX: -0.75, rElbowX: -0.7, tool: -1.0, bodyX: 0.36 }, 's'],
     [0.45, { rArmX: -0.35, rElbowX: -0.1, tool: -0.2, bodyX: 0.48, headX: 0.45 }, 'i'],
-    [0.75, { rArmX: -0.55, rElbowX: -0.35, rArmZ: 0.35, tool: -1.2, bodyX: 0.42, bodyY: 0.15 }, 's'],
+    [0.75, { rArmX: -0.55, rElbowX: -0.35, rArmZ: 0.35, tool: -1.2, toolY: 0.9, toolZ: -0.3, bodyX: 0.42, bodyY: 0.15 }, 's'],
     [1.0, { rArmX: -0.6, rElbowX: -0.3, tool: -0.6 }, 'o'],
     [1.2, {}, 's']], base: 'first' },
   plantPat: { k: [
@@ -414,25 +431,25 @@ const KELO_CLIP_DEFS = {
     [3.6, {}, 's']], base: 'first' },
   // Painting at the easel, brush in his right hand and palette in his left
   paintDab: { k: [
-    [0, kpm(KP.palette, { rArmX: -1.15, rArmZ: 0.1, rElbowX: -0.7, rGrip: 0.9, bodyX: 0.06, headX: 0.05 })],
+    [0, kpm(KP.palette, { rArmX: -1.15, rArmZ: 0.1, rElbowX: -0.7, rGrip: 0.9, bodyX: 0.06, headX: 0.05, tool: -1.3 })],
     [0.2, { rArmX: -1.2, rElbowX: -0.85 }, 's'], [0.3, { rArmX: -1.28, rElbowX: -0.55, bodyX: 0.1 }, 'i'], [0.42, { rArmX: -1.2, rElbowX: -0.8 }, 'O'],
     [0.62, { rArmX: -1.22, rArmZ: 0.2, rElbowX: -0.85 }, 's'], [0.72, { rArmX: -1.3, rArmZ: 0.2, rElbowX: -0.55, bodyX: 0.1 }, 'i'], [0.84, { rArmX: -1.22, rArmZ: 0.2, rElbowX: -0.8 }, 'O'],
     [1.04, { rArmX: -1.32, rArmZ: 0.05, rElbowX: -0.85 }, 's'], [1.14, { rArmX: -1.4, rArmZ: 0.05, rElbowX: -0.55, bodyX: 0.1 }, 'i'], [1.26, { rArmX: -1.3, rElbowX: -0.8 }, 'O'],
     [1.6, {}, 's']], base: 'first' },
-  paintStroke: { k: [
-    [0, kpm(KP.palette, { rArmX: -1.15, rArmZ: 0.1, rElbowX: -0.7, rGrip: 0.9, bodyX: 0.06, headX: 0.05 })],
-    [0.35, { rArmX: -1.4, rArmZ: -0.15, rElbowX: -0.6, bodyX: 0.1, bodyY: -0.12, headY: -0.08 }, 's'],
-    [1.0, { rArmX: -1.1, rArmZ: 0.45, rElbowX: -0.5, bodyX: 0.1, bodyY: 0.15, headY: 0.12, bodyShift: 0.02 }, 's'],
-    [1.15, { rArmX: -1.05, rArmZ: 0.5, rElbowX: -0.75, bodyX: 0.08, bodyY: 0.15 }, 'O'],
+  paintStroke: { k: [   // a long sweep across the canvas, the brush turned to keep its bristles on it
+    [0, kpm(KP.palette, { rArmX: -1.15, rArmZ: 0.1, rElbowX: -0.7, rGrip: 0.9, bodyX: 0.06, headX: 0.05, tool: -1.3 })],
+    [0.35, { rArmX: -1.4, rArmZ: -0.15, rElbowX: -0.6, bodyX: 0.1, bodyY: -0.12, headY: -0.08, tool: -1.35, toolZ: 0.35, toolY: 0.2 }, 's'],
+    [1.0, { rArmX: -1.1, rArmZ: 0.45, rElbowX: -0.5, bodyX: 0.1, bodyY: 0.15, headY: 0.12, bodyShift: 0.02, tool: -1.25, toolZ: -0.4, toolY: -0.2 }, 's'],
+    [1.15, { rArmX: -1.05, rArmZ: 0.5, rElbowX: -0.75, bodyX: 0.08, bodyY: 0.15, tool: -1.0, toolZ: -0.45 }, 'O'],
     [1.6, {}, 's']], base: 'first' },
   paintMix: { k: [   // dips the brush on the palette
-    [0, kpm(KP.palette, { rArmX: -1.15, rArmZ: 0.1, rElbowX: -0.7, rGrip: 0.9, bodyX: 0.06, headX: 0.05 })],
+    [0, kpm(KP.palette, { rArmX: -1.15, rArmZ: 0.1, rElbowX: -0.7, rGrip: 0.9, bodyX: 0.06, headX: 0.05, tool: -1.3 })],
     [0.45, { rArmX: -0.7, rArmZ: -0.35, rArmY: -0.3, rElbowX: -1.2, headX: 0.35, headY: -0.3, lArmX: -0.75, lArmZ: -0.15, lElbowX: -1.2 }, 's'],
     [0.6, { rArmX: -0.65, rArmZ: -0.38, rArmY: -0.3, rElbowX: -1.15, headX: 0.38, headY: -0.32, lArmX: -0.75, lArmZ: -0.15, lElbowX: -1.2 }, 's'],
     [0.75, { rArmX: -0.72, rArmZ: -0.33, rArmY: -0.3, rElbowX: -1.22, headX: 0.36, headY: -0.3, lArmX: -0.75, lArmZ: -0.15, lElbowX: -1.2 }, 's'],
     [1.25, {}, 's']], base: 'first' },
   paintLook: { k: [   // steps back, head on one side, looks at it
-    [0, kpm(KP.palette, { rArmX: -1.15, rArmZ: 0.1, rElbowX: -0.7, rGrip: 0.9, bodyX: 0.06, headX: 0.05 })],
+    [0, kpm(KP.palette, { rArmX: -1.15, rArmZ: 0.1, rElbowX: -0.7, rGrip: 0.9, bodyX: 0.06, headX: 0.05, tool: -1.3 })],
     [0.6, { bodyX: -0.08, bodyShift: -0.03, headZ: 0.22, headX: -0.02, rArmX: -0.6, rArmZ: -0.05, rElbowX: -1.5, rHandX: 0.2 }, 's'],
     [1.5, { bodyX: -0.08, bodyShift: -0.03, headZ: -0.15, headX: 0.02, rArmX: -0.6, rArmZ: -0.05, rElbowX: -1.5, rHandX: 0.2 }, 's'],
     [1.75, { bodyX: -0.06, headZ: -0.1, headX: 0.15, rArmX: -0.6, rArmZ: -0.05, rElbowX: -1.5 }, 's'],   // nods
@@ -440,10 +457,10 @@ const KELO_CLIP_DEFS = {
   // Fishing: wind back over his shoulder, whip the cast out, follow through; wait; reel in
   fishCast: { k: [
     [0, kpm(KP.stance, { rod: 0.55, bodyX: 0.05, headX: 0.1, lGrip: 0.9, rGrip: 0.9 })],
-    [0.6, { rod: -0.55, bodyX: -0.12, bodyY: 0.25, headX: -0.1, lLegX: -0.15, rLegX: 0.15, rKneeX: 0.2 }, 's'],
-    [0.7, { rod: -0.62, bodyX: -0.13, bodyY: 0.27, headX: -0.12, lLegX: -0.15, rLegX: 0.15, rKneeX: 0.2 }, 'o'],
-    [0.9, { rod: 1.35, bodyX: 0.28, bodyY: -0.15, headX: 0.05, lLegX: -0.3, lKneeX: 0.35, rLegX: 0.2 }, 'i'],
-    [1.25, { rod: 0.95, bodyX: 0.15, bodyY: -0.05, headX: 0.0, lLegX: -0.25, lKneeX: 0.28, rLegX: 0.2 }, 'O'],
+    [0.6, { rod: -0.55, rodZ: -0.35, bodyX: -0.12, bodyY: 0.25, headX: -0.1, lLegX: -0.15, rLegX: 0.15, rKneeX: 0.2 }, 's'],
+    [0.7, { rod: -0.62, rodZ: -0.38, bodyX: -0.13, bodyY: 0.27, headX: -0.12, lLegX: -0.15, rLegX: 0.15, rKneeX: 0.2 }, 'o'],
+    [0.9, { rod: 1.35, rodZ: 0.12, bodyX: 0.28, bodyY: -0.15, headX: 0.05, lLegX: -0.3, lKneeX: 0.35, rLegX: 0.2 }, 'i'],
+    [1.25, { rod: 0.95, rodZ: 0.04, bodyX: 0.15, bodyY: -0.05, headX: 0.0, lLegX: -0.25, lKneeX: 0.28, rLegX: 0.2 }, 'O'],
     [1.7, kpm(KP.stance, { rod: 0.9, bodyX: 0.08, headX: 0.05 }), 's']] },
   fishWait: { k: [
     [0, kpm(KP.stance, { rod: 0.9, bodyX: 0.08, headX: 0.05, lGrip: 0.9, rGrip: 0.9 })],
@@ -519,6 +536,17 @@ const KELO_CLIP_DEFS = {
     [1.0, { lArmZ: -0.2, rArmZ: 0.2, lElbowX: -0.5, rElbowX: -0.5, lHandZ: 0.3, rHandZ: -0.3 }, 's'],   // brushes his hands
     [1.15, { lArmZ: -0.15, rArmZ: 0.15, lElbowX: -0.5, rElbowX: -0.5, lHandZ: -0.3, rHandZ: 0.3 }, 's'],
     [1.4, {}, 's']] },
+  // From and onto something high (a shelf, a table): no squat, arms up and out, up on his toes a little
+  pickHigh: { k: [
+    [0, {}],
+    [0.3, { lArmX: -1.35, rArmX: -1.35, lElbowX: -0.35, rElbowX: -0.35, bodyX: 0.12, headX: -0.05, lGrip: 0.2, rGrip: 0.2, lift: 0.02 }, 's'],
+    [0.42, { lArmX: -1.4, rArmX: -1.4, lElbowX: -0.3, rElbowX: -0.3, bodyX: 0.14, headX: 0, lGrip: 1, rGrip: 1, lift: 0.02 }, 'o'],
+    [0.8, { lArmX: -0.6, rArmX: -0.6, lElbowX: -1.0, rElbowX: -1.0, bodyX: -0.03, headX: 0.1, lGrip: 1, rGrip: 1 }, 's'], [1.0, {}, 'b']] },
+  putHigh: { k: [
+    [0, {}],
+    [0.35, { lArmX: -1.4, rArmX: -1.4, lElbowX: -0.3, rElbowX: -0.3, bodyX: 0.15, headX: 0, lGrip: 0.9, rGrip: 0.9, lift: 0.02 }, 's'],
+    [0.5, { lArmX: -1.38, rArmX: -1.38, lElbowX: -0.32, rElbowX: -0.32, bodyX: 0.15, lGrip: 0, rGrip: 0, lift: 0.02 }, 'o'],
+    [0.9, { lArmX: -0.3, rArmX: -0.3, headX: 0.1, lGrip: 0, rGrip: 0 }, 's'], [1.1, {}, 's']] },
   // Carrying: a light thing held easily; a heavy one leaned back against, hoisted now and then
   carryLight: { k: [[0, { bodyX: -0.02, headX: 0.05 }], [1.6, { headX: 0.12, headY: 0.1 }, 's'], [3.2, {}, 's']], base: 'first' },
   carryHeavy: { k: [
@@ -544,10 +572,10 @@ const KELO_ACTS = {
   sitGround: { in: 'sitDownGround', loop: ['shoreIdle', 'shoreLook'], out: 'standUpGround', hold: 1 },
   sleep: { in: 'lieDown', loop: ['sleepBreathe', 'sleepBreathe', 'sleepShift'], out: 'wake', hold: 1, bi: 0.1 },
   doze: { in: 'collapse', loop: ['sleepBreathe', 'sleepShift'], out: 'wake', hold: 1, bi: 0.1 },
-  dig: { loop: ['dig', 'dig', 'dig', 'digRest'], mode: 'dig' },
-  pick: { loop: ['pick'], mode: 'dig', grip: 0.15 },
-  chop: { loop: ['chop'], mode: 'dig', grip: 0.15 },
-  rake: { loop: ['rake'], mode: 'dig' },
+  dig: { loop: ['dig', 'dig', 'dig', 'digRest'], mode: 'dig', sep: 0.32 },
+  pick: { loop: ['pick'], mode: 'dig', grip: 0.15, sep: 0.13 },
+  chop: { loop: ['chop'], mode: 'dig', grip: 0.15, sep: 0.13 },
+  rake: { loop: ['rake'], mode: 'dig', sep: 0.35 },
   drill: { loop: ['drill'], mode: 'dig' },
   jackhammer: { loop: ['jackhammer'], mode: 'dig' },
   plant: { in: 'kneelDown', loop: ['plantScoop', 'plantScoop', 'plantPat'], out: 'kneelUp', hold: 1, mode: 'dig', hand: 'r' },
@@ -556,6 +584,7 @@ const KELO_ACTS = {
   saw: { loop: ['saw'] },
   sand: { loop: ['sand'] },
   drillBench: { loop: ['drillBench'] },
+  twist: { loop: ['twist'] },
   machine: { loop: ['machinePress', 'machinePress', 'machineCheck', 'machineWait'] },
   greet: { loop: ['wave'] },
   think: { loop: ['think'] },
@@ -679,7 +708,11 @@ function keloDoing(name, opts) {
 // Whether he is still getting up (walking waits for it)
 function keloClipHolds() {
       const c = keloClip.cur;
-      return Boolean(c && c.phase === 'out' && c.A.hold && !keloClip.riding);
+      return Boolean(c && c.phase === 'out' && c.A.hold && !keloClip.riding) || (typeof keloHandoffBusy === 'function' && keloHandoffBusy());
+    }
+// Play a one-shot clip on top of whatever he is doing (picking up, putting down)
+function keloClipShot(name) {
+      if (KELO_CLIPS[name]) keloClip.shot = { clip: KELO_CLIPS[name], t: 0 };
     }
 function keloClipActive() { return Boolean(keloClip.cur) || keloClip.w > 0.05; }
 // A special channel's value this frame (tool, lit, reach, rod), or `def`
@@ -792,6 +825,7 @@ function keloClipLayer(out, t, dt, ctx) {
         // the fishing rod swings with the clip (js/pastimes.js hands it over)
         const rod = C.optsNow && C.optsNow.rod;
         if (rod && C.ch.rod !== undefined) rod.rotation.x += (C.ch.rod - rod.rotation.x) * W;
+        if (rod) rod.rotation.z += ((C.ch.rodZ || 0) - rod.rotation.z) * W;
       }
       keloClipOneShots(out, t, dt, ctx);
     }
@@ -818,15 +852,7 @@ function keloClipApply(out, vals, mask, W, ctx, A) {
 function keloClipOneShots(out, t, dt, ctx) {
       const C = keloClip;
       const carried = typeof carriedObject !== 'undefined' ? carriedObject : null;
-      if (C.carried !== undefined && carried !== C.carried && !ctx.riding && !ctx.resting && !ctx.walking && !C.cur) {
-        let heavy = false;
-        if (carried && typeof keloCarrySize === 'function' && carried.parent === keloGroup) {
-          const s = keloCarrySize(carried);
-          heavy = s.x * s.y * s.z > 0.09 || Math.max(s.x, s.y, s.z) > 0.95;
-        }
-        C.shot = { clip: KELO_CLIPS[carried ? (heavy ? 'pickUpHeavy' : 'pickUp') : 'putDown'], t: 0 };
-      }
-      C.carried = carried;
+      // (picking up and putting down are started by the hand-off, js/kelo-handoff.js: keloClipShot)
       const vals = C.vals, mask = C.mask;
       if (C.shot) {
         const S = C.shot;
@@ -917,7 +943,7 @@ function keloDigActFor(obj) {
       if (!obj) return 'drill';
       const n = String(obj.userData && obj.userData.itemName || '').toLowerCase();
       if (/jack ?hammer|breaker|demolition/.test(n)) return 'jackhammer';
-      if (/pick ?axe|pickaxe|mattock|\bpick\b/.test(n)) return 'pick';
+      if (/pick ?axe|pickaxe|mattock|\bpick\b|sledge|\bmaul\b/.test(n)) return 'pick';
       if (/\baxe\b|hatchet|chain ?saw/.test(n)) return 'chop';
       if (/\brake\b|\blute\b|\bhoe\b/.test(n)) return 'rake';
       if (/trowel|dibber/.test(n)) return 'plant';
@@ -949,4 +975,30 @@ function keloSteeringWheelOf(mesh) {
         keloWheelCache.set(mesh, found);
       }
       return keloWheelCache.get(mesh);
+    }
+
+// Two-handed tools (shovel, pickaxe, axe, rake): the tool hangs from his right hand (keloHoldInHands),
+// and his left hand goes to the handle further along it, wherever the clip swings it, so both hands
+// stay on it. Read by js/kelo-ik.js keloApplyReach before the hands are solved.
+const _ktV = new THREE.Vector3(), _ktE = new THREE.Euler(), _ktR = { l: null, r: null, w: 0 };
+function keloToolSep() {
+      const C = keloClip, cur = C.cur;
+      if (!cur || !cur.A.sep || C.hand || cur.phase === 'out') return 0;
+      const obj = typeof carriedObject !== 'undefined' ? carriedObject : null;
+      if (!obj || obj.parent !== keloGroup || !keloRightHand) return 0;
+      return cur.A.sep;
+    }
+function keloToolReach() {
+      const sep = keloToolSep();
+      if (!sep) return null;
+      const obj = carriedObject, h = typeof keloCarrySize === 'function' ? keloCarrySize(obj).y : 1;
+      keloGroup.updateMatrixWorld(true);
+      keloPalmLocal(keloRightHand, _ktV);
+      _ktE.set(-0.2 + keloClipValue('tool'), keloClipValue('toolY'), keloClipValue('toolZ'));
+      // (down the handle from the right hand: toward the blade on a shovel, to the end on an axe)
+      const d = Math.min(0.42, Math.max(0.1, sep * Math.max(0.6, h)));
+      _ktV.add(_kcWr.set(0, -d, 0).applyEuler(_ktE));
+      _ktR.l = keloGroup.localToWorld(_ktV);
+      _ktR.w = smoothstep(keloClip.w);
+      return _ktR;
     }

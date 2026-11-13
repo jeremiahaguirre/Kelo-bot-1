@@ -666,18 +666,29 @@ async function placeJob(site, job, temps) {
       if (typeof setKeloReach === 'function') setKeloReach(reachFn);
       await tripPause(750);
       const landed = job.landing ? job.landing() : null;
+      // He sets it on the slot itself: his hands open there and it stays (js/kelo-handoff.js); the
+      // stand-in for the slot takes over from what he carried, on the same spot
+      const parent = basementBuilt && job.level > 0 ? basementBuilt.group : site.group;
+      const to = { x: job.slot.x, y: job.slot.y + shift, z: job.slot.z };
+      const carriedSize = typeof carriedObject !== 'undefined' && carriedObject ? maxSizeOf(carriedObject) : null;
+      let swapped = null;
+      if (typeof setCarriedObject === 'function') {
+        setCarriedObject(null, 0, { to: slotW, real: !landed, placed: ghost => { swapped = ghost; } });
+        if (typeof keloHandoffSettled === 'function') await keloHandoffSettled();
+      }
       if (landed) {
-        const parent = basementBuilt && job.level > 0 ? basementBuilt.group : site.group;
-        const to = { x: job.slot.x, y: job.slot.y + shift, z: job.slot.z };
-        const hand = site.group.worldToLocal(handsWorldPosition());
-        const carriedSize = typeof carriedObject !== 'undefined' && carriedObject ? maxSizeOf(carriedObject) : null;
         parent.add(landed);
         const finalSize = maxSizeOf(landed), own = landed.scale.x;
-        if (typeof setCarriedObject === 'function') setCarriedObject(null);
-        await flyObject(landed, hand, to, own * (carriedSize ? carriedSize / finalSize : 1), own);
+        landed.position.set(to.x, to.y, to.z);
+        if (swapped) { if (swapped.parent) swapped.parent.remove(swapped); disposeTree(swapped); }
+        // (the stand-in starts the size of what he carried and settles to its own, on the spot)
+        const s0 = own * (carriedSize ? carriedSize / finalSize : 1), start = Date.now();
+        for (let k = 0; k < 1;) {
+          k = smoothstep(Math.min(1, (Date.now() - start) / 300));
+          landed.scale.setScalar(s0 + (own - s0) * k);
+          if (k < 1) await tripPause(30);
+        }
         if (parent === site.group) temps.push(landed);
-      } else if (typeof setCarriedObject === 'function') {
-        setCarriedObject(null);
       }
       job.done = true;
       if (typeof clearKeloReach === 'function') clearKeloReach(reachFn);
@@ -703,19 +714,12 @@ async function takeJob(site, job) {
       await tripPause(750);
       let real = null;
       site.group.traverse(o => { if (!real && o.visible && job.match && job.match(o)) real = o; });
-      if (real) {
-        const copy = real.clone();
-        copy.userData = {};
-        copy.traverse(c => { c.userData = { ...c.userData, sharedGeometry: true }; });
-        const at = site.group.worldToLocal(real.getWorldPosition(new THREE.Vector3()));
-        copy.position.copy(at);
-        copy.quaternion.copy(real.quaternion);
-        real.visible = false;
-        site.group.add(copy);
-        await flyObject(copy, at, site.group.worldToLocal(handsWorldPosition()), copy.scale.x, copy.scale.x * 0.9, 600);
-        site.group.remove(copy);
-      }
-      if (job.carried && typeof setCarriedObject === 'function') setCarriedObject(job.carried());
+      // He picks it off its slot: what he carries starts where it stands, his hands close on it there
+      // and it comes away with them (js/kelo-handoff.js)
+      if (job.carried && typeof setCarriedObject === 'function') {
+        setCarriedObject(job.carried(), 0, { from: real || slotW });
+        if (typeof keloHandoffSettled === 'function') await keloHandoffSettled();
+      } else if (real) real.visible = false;
       job.done = true;
       indoorTrip.pose = null;
       if (typeof clearKeloReach === 'function') clearKeloReach(reachFn);

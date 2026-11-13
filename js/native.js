@@ -122,7 +122,7 @@
 
   // --- AI keys in the Keychain (iOS) or Keystore (Android) -----------------------------------------
   const KEY_ITEM = 'kelo1-ai-keys';
-  const ALLOWED_KEYS = ['gemini', 'anthropic'];
+  const ALLOWED_KEYS = ['gemini', 'anthropic', 'pexels', 'unsplash', 'pixabay', 'flickr', 'smithsonian', 'europeana', 'rijksmuseum'];
   const cleanKeys = (keys) => Object.fromEntries(ALLOWED_KEYS.map(k => [k, typeof keys?.[k] === 'string' ? keys[k].trim().slice(0, 300) : '']));
 
   async function getKeys() {

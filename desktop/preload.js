@@ -1,5 +1,5 @@
 // Kelo-1 World — the only bridge between the web page and the desktop app.
-// Exposes a tiny API: secure key storage and two menu events. Nothing else from Node is available.
+// Exposes a tiny API: secure key storage, two menu events and the reference-photo image search. Nothing else from Node is available.
 
 const { contextBridge, ipcRenderer } = require('electron');
 
@@ -7,6 +7,9 @@ contextBridge.exposeInMainWorld('keloDesktop', {
   isDesktop: true,
   getKeys: () => ipcRenderer.invoke('kelo:get-keys'),
   setKeys: (keys) => ipcRenderer.invoke('kelo:set-keys', keys),
+  // Reference photos for his paintings: a DuckDuckGo image search and the pictures it found
+  imageSearch: (query) => ipcRenderer.invoke('kelo:image-search', String(query || '').slice(0, 80)),
+  fetchImage: (url) => ipcRenderer.invoke('kelo:image-fetch', String(url || '').slice(0, 2048)),
   onOpenSettings: (callback) => ipcRenderer.on('kelo:open-settings', () => callback()),
   onToggleMenu: (callback) => ipcRenderer.on('kelo:toggle-menu', () => callback()),
   // His memory, stored as files on disk with a 10 GB budget (synchronous, like localStorage)

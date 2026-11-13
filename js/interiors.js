@@ -483,7 +483,9 @@ function interiorDrawScreen(scr, t) {
       const g = scr.c.getContext('2d'), W = scr.c.width, Hh = scr.c.height;
       const shown = scr.query.slice(0, scr.typed);
       const done = scr.typed >= scr.query.length;
-      const key = shown + (done ? 'r' + Math.floor(t / 1.6) % 4 : '|' + (Math.floor(t * 2) % 2));
+      // photos he is browsing (js/photobrowse.js) show under the search box for a couple of minutes
+      const photos = done && typeof phobScreenState !== 'undefined' && phobScreenState.photos.length && Date.now() - phobScreenState.at < 120000;
+      const key = shown + (photos ? 'p' + phobScreenState.version : done ? 'r' + Math.floor(t / 1.6) % 4 : '|' + (Math.floor(t * 2) % 2));
       if (key === scr.lastKey) return;
       scr.lastKey = key;
       g.fillStyle = '#f8fafc'; g.fillRect(0, 0, W, Hh);
@@ -497,7 +499,9 @@ function interiorDrawScreen(scr, t) {
       let text = shown;
       while (g.measureText(text).width > W - 44 && text.length > 1) text = text.slice(1);
       g.fillText(text + (!done && Math.floor(t * 2) % 2 ? '|' : ''), 20, 55);
-      if (done) {
+      if (photos) {
+        phobDrawScreen(g, W, Hh);
+      } else if (done) {
         const n = 1 + Math.floor(t / 1.6) % 4;
         for (let i = 0; i < n; i++) {
           g.fillStyle = '#1d4ed8'; g.fillRect(14, 86 + i * 26, 120 + (i * 37) % 90, 7);
@@ -837,17 +841,13 @@ async function interiorAtMailbox(v, S, room) {
         const item = mail.kind === 'message' ? intBox(fg, 0.02, 0.14, 0.2, M.white, at.x, at.y, at.z) : intBox(fg, 0.16, 0.13, 0.18, M.kraft, at.x, at.y - 0.06, at.z);
         v.temps.push(item);
         await tripPause(500);
-        if (typeof handsWorldPosition === 'function') {
-          const from = item.position.clone(), to = (room.furniture || room.root).worldToLocal(handsWorldPosition());
-          const start = Date.now();
-          for (;;) {
-            const k = smoothstep(Math.min(1, (Date.now() - start) / 600));
-            item.position.lerpVectors(from, to, k);
-            if (k >= 1) break;
-            await tripPause(30);
-          }
-        }
-        item.visible = false;
+        // His left hand is in the box: it closes on the parcel and takes it out with him; it stays in his
+        // hand until the post office hands him the real thing (js/kelo-handoff.js)
+        if (typeof keloHandoffHoldInHand === 'function') {
+          v.temps.splice(v.temps.indexOf(item), 1);
+          keloHandoffHoldInHand(item, keloLeftHand);
+          await tripPause(400);
+        } else item.visible = false;
       } else {
         tripMood('Checking my PO box', 'Nothing in my box right now.');
         await tripPause(900);
@@ -895,12 +895,12 @@ if (interiorBaseWait) {
 // While he sits at the cafe table, food handed to him goes onto his plate instead of into his hands
 const interiorBaseCarry = typeof setCarriedObject === 'function' ? setCarriedObject : null;
 if (interiorBaseCarry) {
-  setCarriedObject = function (object3d, holdMs) {
+  setCarriedObject = function (object3d, holdMs, opts) {
     const v = interiorVisitNow;
     if (object3d && v && v.serve && v.plateTop && !v.food && !v.leaving && v.readyAt) {
       try { v.serve(object3d); return; } catch (e) { console.warn('interior serve', e); }
     }
-    return interiorBaseCarry(object3d, holdMs);
+    return interiorBaseCarry(object3d, holdMs, opts);
   };
 }
 

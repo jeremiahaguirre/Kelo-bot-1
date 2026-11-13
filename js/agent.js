@@ -339,6 +339,7 @@ const state = {
   "paintKnowledge": {},
   "paintPlan": null,
   "paintingImages": {},
+  "photoFavourites": [],
   "paintingsSold": [],
   "activityCooldowns": {},
   "tripState": {},
@@ -1424,7 +1425,9 @@ const BRAIN_PARTS = [
   { key: 'kelo1_brain_v4_lore', fields: ['vocabulary', 'itemLookups', 'aiLearned'] },
   { key: 'kelo1_brain_v4_designs', fields: ['itemDesigns'] },
   // his paintings' pictures (js/paintstudio.js): a JPEG and a thumbnail each
-  { key: 'kelo1_brain_v4_paintings', fields: ['paintingImages'] }
+  { key: 'kelo1_brain_v4_paintings', fields: ['paintingImages'] },
+  // photos he liked at the NetNode cafe (js/photobrowse.js): small thumbnails and their credits, capped
+  { key: 'kelo1_brain_v4_photos', fields: ['photoFavourites'] }
 ];
 const BRAIN_PICTURES_KEY = 'kelo1_brain_v4_shop_pictures';
 const brainWritten = {};   // storage key -> what was last written there (nothing is rewritten unchanged)
@@ -2027,7 +2030,7 @@ Return JSON:
   "codeUpgrade": null OR an upgrade you code yourself, right now, in the safe JSON language below (it is checked and then built in your world; for things beyond it, use codeRequest),
 ${typeof wishFeaturesPromptLines === 'function' ? wishFeaturesPromptLines() : ''}
   "sellItem": null OR {"item": "exact name of a design you 3D-printed well that people would find fun or useful, OR the exact title of one of your good paintings that you don't want to keep (your shop sells only 3D print files and your original paintings)", "price": number in Canadian dollars: a print file $1.99-$5.99; an original painting by an emerging artist $35-$120 for watercolour, ink, pastel or charcoal, $60-$180 for acrylic or gouache, $90-$350 for oil, higher as your skill grows, "description": "1-2 sentences for buyers: what it's for or why it's fun, or what the painting shows"} (put it in your shop website at the NetNode cafe; real people may buy it; an original sells only once and leaves your Museum),
-  "paint": null OR {"medium": "oil|acrylic|watercolour|gouache|pastel|ink|charcoal", "subject": "lake|night|mountains|house|wildlife|stilllife|friend", "why": "1 sentence"} (set up your easel facing the subject and paint a real picture; if you haven't learned the medium or lack its supplies you research it and ask for them first),
+  "paint": null OR {"medium": "oil|acrylic|watercolour|gouache|pastel|ink|charcoal", "subject": "lake|night|mountains|house|wildlife|stilllife|friend", "why": "1 sentence"${typeof refpPromptHint === 'function' ? ', ' + refpPromptHint() : ''}} (set up your easel facing the subject and paint a real picture; if you haven't learned the medium or lack its supplies you research it and ask for them first),
 ${typeof workshopPromptLine === 'function' ? workshopPromptLine() + '\n' : ''}  "print": null OR {"what": "something small to make on your 3D printer: a useful thing, a toy, or a shape or idea of yours as a sculpture", "why": "1 sentence"} (only if you have a 3D printer and filament),
   "webQuery": null OR "a topic you want to look up at the NetNode cafe",
   "usedConcept": null OR "name of one of your existing concepts this decision builds on",

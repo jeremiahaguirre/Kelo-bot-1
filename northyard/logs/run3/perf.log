@@ -1,0 +1,7 @@
+PROBE {"hall":{"top":0.05,"at":[74.25,-139.75],"samplesAboveFloor":0,"samples":832},"hangar":{"top":0.05,"at":[6.25,-143.75],"samplesAboveFloor":0,"samples":1792}}
+PERF owner-view {"calls":1377,"tris":269529}
+PERF between-buildings {"calls":1181,"tris":254128}
+PERF hall-inside {"calls":62,"tris":86024}
+PERF valley-high {"calls":30,"tris":166470}
+PERF town {"calls":825,"tris":222402}
+errors: 0

@@ -1,6 +1,6 @@
 # North yard fixes: owner's three arrows
 
-Branch `agent/northyard` (5a16dba, merged with origin/main at 7539b6b). Screenshots are in `shots/` (before = main at 1eed4fe, after = this branch), taken at deviceScaleFactor 2 and noon from the same camera positions. QA scripts are in `qa/ny/`.
+Branch `agent/northyard` (3b79ef8, merged with origin/main at 416ca1e, skins). Screenshots are in `shots/` (before = main at 1eed4fe, after = this branch), taken at deviceScaleFactor 2 and noon from the same camera positions. QA scripts are in `qa/ny/`.
 
 ## What was wrong (one cause for all three arrows)
 The far-lands mesh (`buildFarLands3D`, js/scene.js) has 60-unit cells and sat only 6 units below the finer meshes it hides under. Where a sunken vertex in the pass or the yard sat next to a high ridge vertex, the coarse triangle between them sloped up through the pass, the gap between the two buildings, and the garage hall's floor. Walking and driving used the analytic ground (flat), so trips "worked" through what looked like a solid mountain.
@@ -81,6 +81,18 @@ Both sides at the same merge base (main 7539b6b):
 - **What adds calls:** the road surface is one mesh. The rest comes from the hall and hangar, plus what lies beyond them, being genuinely in view now that the pass is open.
 
 ## Regression tests
+**Run 3, on the final merge with main at 416ca1e (skins; logs/run3/):**
+- **Passed, no page errors:**
+  - reload, ui, chat, vehicle, haul, basement
+  - navtest: framesUnderGround 0 and framesInsideBuilding 0 on every path
+  - navfollow
+- **Probes:**
+  - Route probe at real speed: 40 of 40 legs arrived (logs/routes-real-speed-416ca1e.json).
+  - Ground-in-building probe: 0 samples above the floor in either building.
+- **Draw calls:** owner's view 1,377, between the buildings 1,181, inside the hall 62, valley up the pass 30. All inside the range measured above.
+- **After shots:** the owner's view, between-buildings and hall-inside-back shots were retaken on this build.
+- **Not rerun:** ws hangar and ws garage. Skins change only js/skins.js, js/skinsui.js, kelo-body.js, eyecam.js, agent.js, index.html and css, none of them Workshop code. Both passed in run 2.
+
 **Run 2, on the final merge with main at 7539b6b (logs/run2/):**
 - **Passed, no page errors:**
   - reload, ui, chat, vehicle, haul, basement

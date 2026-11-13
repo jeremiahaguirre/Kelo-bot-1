@@ -8,6 +8,12 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
+## Reference-photo paintings (branch `agent/refpaint`, not merged; QA on `qa-results-refpaint`)
+- Owner: "Enable Kelo on Netnode to search DuckDuckGo for live reference images rather than using pre-programmed paintings. Kelo should be able to paint directly from a single search result or creatively combine two different search results into one original painting."
+- Status: built and tested with stubbed network (scenario `refpaint` in qa/harness.js, plus qa/imagesearch-test.js). Waiting for the owner to review and merge.
+- Scope added by the owner (via the parent session): all photo sources, the NetNode photo-browsing pastime with a favourites board, and the legal rules (licence gate, risk check, measured originality, credits, website gate, Licences and credits page). Built and tested with stubs.
+- Open: live DuckDuckGo/Commons calls were never reachable from the test container (proxy blocks them), so the real endpoints are untested; the phone apps' CapacitorHttp path is untested; see REPORT.md on qa-results-refpaint.
+
 ## Done and pushed to main (2026-11-04)
 - Task 1 Paintings, task 2 Accurate welding + work bench, task 3 Humanize/eye cam/fluid motion, task 4 Garden, task 6 Code anything + self-upgrades, task 10 phase 1 audit (plan in .claude/review.md).
 - Task 11 Talk tab (pushed).

@@ -9,6 +9,7 @@
 //      white paper), gouache (matte opaque shapes, dry-brush edges), soft pastel (chalk caught on the
 //      paper's tooth), ink (sumi-e washes and brush lines) and charcoal or graphite (smudged values).
 // His skill (q, 0..1) changes everything: early pictures wobble, go muddy and lose detail.
+// A painting from reference photos (js/refpaint.js) swaps step 1 for a simplified underpainting of the photo.
 // Nothing here touches his state; js/paintstudio.js decides what to paint and keeps the results.
 
 const ART_W = 512, ART_H = 384;
@@ -1054,7 +1055,8 @@ function paintingSceneRef(spec) {
 // A painting in progress: everything is drawn in stages, and `progress(canvas, fraction)` is awaited
 // between them, so the easel in the world can show the canvas filling in.
 async function renderPaintingInMedium(spec, { progress = null } = {}) {
-      const scene = paintingSceneRef(spec);
+      // From reference photos he found at NetNode (js/refpaint.js), or a scene he knows by heart
+      const scene = spec.refImages && spec.refImages.length && typeof refpSceneFromReference === 'function' ? refpSceneFromReference(spec) : paintingSceneRef(spec);
       // A beginner can't see or place detail yet: everything comes out vaguer and a little lopsided
       const qq = artClamp01(spec.q == null ? 0.5 : spec.q);
       if (qq < 0.5) {

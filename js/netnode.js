@@ -300,6 +300,8 @@ async function searchOnce(query, originLabel) {
 // for things he might want), and he logs off when his interest runs out.
 async function browseInternet(topic = null, originLabel = 'Own Curiosity') {
       if (state.isBusy || state.isBrowsing || state.isBuilding || state.isPracticing) return;
+      // Now and then he spends the visit paging through photos instead (js/photobrowse.js)
+      if (!topic && typeof photoBrowse === 'function' && refpOnline() && Math.random() < PHOB_CHANCE) return photoBrowse(null, originLabel);
       let query = String(topic || pickCuriosity()).trim().slice(0, 100);
       directKeloToActivity('cyber', `Logged on at the NetNode cafe to look up "${query}".`, 'Browsing the Web');
       state.isBrowsing = true;

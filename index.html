@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Security: the page may only run scripts from these CDNs and its own files, and only talk to the AI
        and lookup services it uses (GitHub Pages can't send headers, so the policy lives here) -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file: https://cdn.tailwindcss.com https://unpkg.com/@phosphor-icons/web@2.1.1 https://unpkg.com/@phosphor-icons/web@2.1.1/ https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/ https://cdn.jsdelivr.net; style-src 'self' file: 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' file: data: https://unpkg.com https://cdn.jsdelivr.net https://fonts.gstatic.com; img-src 'self' file: data: blob:; connect-src 'self' file: blob: https://generativelanguage.googleapis.com https://api.anthropic.com https://en.wikipedia.org https://en.wiktionary.org https://api.duckduckgo.com https://jeremiahaguirre.github.io https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; script-src 'self' file: https://cdn.tailwindcss.com https://unpkg.com/@phosphor-icons/web@2.1.1 https://unpkg.com/@phosphor-icons/web@2.1.1/ https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/ https://cdn.jsdelivr.net; style-src 'self' file: 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' file: data: https://unpkg.com https://cdn.jsdelivr.net https://fonts.gstatic.com; img-src 'self' file: data: blob:; connect-src 'self' file: blob: https://generativelanguage.googleapis.com https://api.anthropic.com https://en.wikipedia.org https://en.wiktionary.org https://api.duckduckgo.com https://duckduckgo.com https://commons.wikimedia.org https://upload.wikimedia.org https://api.openverse.org https://collectionapi.metmuseum.org https://images.metmuseum.org https://api.artic.edu https://www.artic.edu https://openaccess-api.clevelandart.org https://openaccess-cdn.clevelandart.org https://images-api.nasa.gov https://images-assets.nasa.gov https://www.loc.gov https://tile.loc.gov https://api.pexels.com https://images.pexels.com https://api.unsplash.com https://images.unsplash.com https://pixabay.com https://cdn.pixabay.com https://api.flickr.com https://live.staticflickr.com https://api.si.edu https://ids.si.edu https://api.europeana.eu https://www.rijksmuseum.nl https://lh3.googleusercontent.com https://jeremiahaguirre.github.io https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <title>Kelo-1 — Autonomous 3D Kelowna Island & AI Agent</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
@@ -663,6 +663,16 @@
             <div id="webHistoryList" class="space-y-1.5"></div>
           </div>
         </details>
+        <details class="brain-section" data-section="photos">
+          <summary class="brain-head">
+            <span class="brain-title"><svg class="brain-caret" aria-hidden="true" viewBox="0 0 20 20" width="12" height="12"><path d="M7 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Photos he liked at NetNode</span></span>
+            <button id="btnBrowsePhotosNow" type="button" class="brain-head-btn">Browse photos</button>
+          </summary>
+          <div class="brain-body">
+            <p class="ui-note">His favourites board: small copies with their credits. Free-to-use ones he may paint from later; the others he only looks at.</p>
+            <div id="photoFavouritesBoard" class="grid grid-cols-2 gap-2"></div>
+          </div>
+        </details>
       </div>
         <div id="brainNoMatch" class="menu-empty hidden"><i class="ph-bold ph-magnifying-glass menu-empty-icon" data-hud-emoji="🔍" aria-hidden="true"></i><p class="menu-empty-title">Nothing in his brain matches</p><p>Try another word.</p></div>
         </div>
@@ -800,6 +810,21 @@
         <p id="aiKeyStatus" class="ui-note" aria-live="polite"></p>
       </section>
       <section class="ui-dialog-section">
+        <details>
+          <summary class="ui-section-title cursor-pointer">Photo sources (optional keys)</summary>
+          <p class="ui-note">Without keys Kelo-1 finds free-to-use photos on Wikimedia Commons, Openverse, museum collections and NASA. A free key from any of these adds it as a source too. Keys stay on this device and are only sent to their own site.</p>
+          <div id="photoKeyInputs" class="space-y-2">
+            <label class="ui-label" for="photoKey_pexels">Pexels API key</label><input id="photoKey_pexels" data-photo-key="pexels" type="password" autocomplete="off" class="ui-input w-full font-mono">
+            <label class="ui-label" for="photoKey_unsplash">Unsplash access key</label><input id="photoKey_unsplash" data-photo-key="unsplash" type="password" autocomplete="off" class="ui-input w-full font-mono">
+            <label class="ui-label" for="photoKey_pixabay">Pixabay API key</label><input id="photoKey_pixabay" data-photo-key="pixabay" type="password" autocomplete="off" class="ui-input w-full font-mono">
+            <label class="ui-label" for="photoKey_flickr">Flickr API key</label><input id="photoKey_flickr" data-photo-key="flickr" type="password" autocomplete="off" class="ui-input w-full font-mono">
+            <label class="ui-label" for="photoKey_smithsonian">Smithsonian (api.data.gov) key</label><input id="photoKey_smithsonian" data-photo-key="smithsonian" type="password" autocomplete="off" class="ui-input w-full font-mono">
+            <label class="ui-label" for="photoKey_europeana">Europeana API key</label><input id="photoKey_europeana" data-photo-key="europeana" type="password" autocomplete="off" class="ui-input w-full font-mono">
+            <label class="ui-label" for="photoKey_rijksmuseum">Rijksmuseum API key</label><input id="photoKey_rijksmuseum" data-photo-key="rijksmuseum" type="password" autocomplete="off" class="ui-input w-full font-mono">
+          </div>
+        </details>
+      </section>
+      <section class="ui-dialog-section">
         <label class="ui-section-title" for="graphicsLevelSelect">Graphics quality</label>
         <p class="ui-note">High adds soft glow and the sharpest shadows. Balanced suits most computers. Fast is for phones and older machines. Saved on this device.</p>
         <select id="graphicsLevelSelect" class="ui-input">
@@ -908,6 +933,9 @@
   <script src="./js/pastimes.js"></script>
   <script src="./js/paintrender.js"></script>
   <script src="./js/paintstudio.js"></script>
+  <script src="./js/refsources.js"></script>
+  <script src="./js/refpaint.js"></script>
+  <script src="./js/photobrowse.js"></script>
   <script src="./js/shopkeeping.js"></script>
   <script src="./js/printer.js"></script>
   <script src="./js/machinemodels.js"></script>

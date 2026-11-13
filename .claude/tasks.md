@@ -8,8 +8,9 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
-## In progress: skins (branch `agent/skins`, results to `qa-results-skins`)
-- Ten skins (Classic; Explorer, Twirl, Kitbot, Marshmallow, Spark after the owner's pictures; legendary Ember, Aegis, Nebula, Clockwork), owner approved the looks. state.skins, in-place equip, World tab Skins UI, mock payments behind KELO_DEV_UNLOCK. origin/main merged (2026-11-12). Tests: `skins` scenario (passed), animation check per skin (qa/skinanim.js + skincompare.js), perf + contact sheet (qa/skinperf.js), regressions reload/ui/chat/vehicle/haul. Results go to `qa-results-skins`.
+## Done, waiting for the owner to merge: skins (branch `agent/skins`, results on `qa-results-skins`)
+- Ten skins (Classic; Explorer, Twirl, Kitbot, Marshmallow, Spark after the owner's pictures; legendary Ember, Aegis, Nebula, Clockwork), looks approved by the owner. state.skins, in-place equip, World tab Skins UI, mock payments behind KELO_DEV_UNLOCK. origin/main (with the pick-up/put-down hand-off) merged 2026-11-13.
+- Tests on the merged code: `skins` scenario 54/54; animation check 10/10 (every skin identical to Classic on all 9475 frames x 42 joint channels, carried items identical); reload/ui/chat/vehicle/haul no page errors; perf max +3.8% draw calls. Open items are listed in qa-results-skins/REPORT.md (real payments, rigid parts through seats, eye-camera height on big heads).
 
 ## Done and pushed to main (2026-11-04)
 - Task 1 Paintings, task 2 Accurate welding + work bench, task 3 Humanize/eye cam/fluid motion, task 4 Garden, task 6 Code anything + self-upgrades, task 10 phase 1 audit (plan in .claude/review.md).

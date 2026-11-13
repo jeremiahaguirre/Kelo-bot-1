@@ -1,0 +1,15 @@
+probe {"ok":true,"hall":{"top":0.05,"floor":0.16999999999999998,"at":{"x":105.25,"z":-114.75,"mesh":"northPatch"},"samples":832,"ok":true},"hangar":{"top":0.05,"floor":0.16999999999999998,"at":{"x":61.25,"z":-112.75,"mesh":"northPatch"},"samples":1792,"ok":true}}
+shot owner-view
+shot valley-up-route
+shot valley-high
+shot pass-mid
+shot between-buildings
+shot yard-street
+shot hall-inside
+shot hall-inside-back
+shot hangar-inside
+shot north-apron
+shot minimap-north
+cm box {"x":837,"y":259.390625,"width":421,"height":262.4375}
+shot maptab-north
+errors: 0

@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-12T20:06:55.525Z",
-  "runs": 21,
+  "updatedAt": "2026-11-13T06:56:30.660Z",
+  "runs": 22,
   "curiosities": [
-    "Ailuropoda"
+    "Ailuropoda microta"
   ],
   "entries": [
     {
@@ -737,6 +737,38 @@
       },
       "shapeFrom": "American marten",
       "nextCuriosity": "Ailuropoda",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794552990660",
+      "at": 1794552990660,
+      "brain": "procedural",
+      "topic": "Ailuropoda",
+      "title": "Dreaming of Arctocephalus",
+      "text": "Dear Diary, while nobody was around I looked up \"Ailuropoda\" and drifted from Ailuropoda to Arctocephalus. The genus Arctocephalus consists of the southern fur seals. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Ailuropoda",
+          "url": "https://en.wikipedia.org/wiki/Ailuropoda",
+          "extract": "Ailuropoda is the only extant genus in the ursid (bear) subfamily Ailuropodinae. It contains one living and one or more fossil species of panda."
+        },
+        {
+          "title": "Arctocephalus",
+          "url": "https://en.wikipedia.org/wiki/Arctocephalus",
+          "extract": "The genus Arctocephalus consists of the southern fur seals. Arctocephalus translates to \"bear head\"."
+        }
+      ],
+      "concept": {
+        "name": "Ailuropoda Arctocephalus Loop",
+        "emoji": "🌀",
+        "definition": "The idea that ailuropoda and arctocephalus share a hidden pattern.",
+        "builtFrom": [
+          "Ailuropoda",
+          "Arctocephalus"
+        ]
+      },
+      "shapeFrom": "Arctocephalus",
+      "nextCuriosity": "Ailuropoda microta",
       "coreMemory": null
     }
   ]

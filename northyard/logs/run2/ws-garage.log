@@ -1,0 +1,21 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+due "My dump truck needs an oil change (82% worn)."
+shot elev-up
+shot at ["Driving the Dump truck onto the lift","Going up with the Dump truck. This is the best part."]
+shot garage-raise
+shot at ["Starting the compressor","Tank up to 175 psi. A few drops of air tool oil in the wrench."]
+shot garage-beadbreak
+shot at ["Breaking the bead on the tire changer","Valve core out, wheel against the pad, step on the bead breaker. Both sides."]
+shot garage-tirechanger
+shot at ["Demounting the old tire, new one on","Rim clamped, head set a hair off the rim, tire iron over the head... turntable round. Then"]
+shot garage-balancer
+shot at ["Spinning each wheel on the balancer","15 grams on the inside... spin again: zero, zero. Balanced."]
+job result true
+tires done {"s":{"tires":0,"brakes":0,"oil":82,"engine":0,"body":0},"wear":82,"cond":18,"x":59.55,"z":4.6,"bot":{"x":57.199999999999996,"z":2.3999999999999995}}
+shot garage-oil
+shot at ["Pulling the drain plug","Dark and thin. It was overdue."]
+shot garage-oil-fill
+shot at ["Filling with fresh 5W-30","Right on the full mark."]
+job result true
+oil done {"s":{"tires":0,"brakes":0,"oil":0,"engine":0,"body":0},"cond":100,"supplies":{"a box of wheel weights":{"cur":4,"per":8},"a bottle of air tool oil":{"cur":5,"per":6},"a box of nitrile gloves":{"cur":8,"per":10}},"owned":["A bottle of air tool oil"]}
+page errors: none

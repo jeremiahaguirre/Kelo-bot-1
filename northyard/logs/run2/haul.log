@@ -1,0 +1,5 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+hauled 4
+{"dirtDisposed":4,"load":0,"speech":"Tipped 4.0 loads of dirt into the Disposal Pit."}
+shot haul-after
+page errors: none

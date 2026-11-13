@@ -9,6 +9,8 @@ module.exports = async ({ ev, look, shot, page }) => {
     state.vehicles.forEach(v => { v.fuel = 100; v.wear = 0; });
     // know-how for each (readyToOperate is not used by driveVehicle, but keep it honest)
     window.__speedup = speedup;
+    // Real speeds need more wall time under swiftshader (few frames a second): stretch the game's arrival timeouts instead
+    if (+(window.__waitScale = speedup < 2 ? 8 : 1) > 1 && !window.__waitPatched) { const w = waitForArrival; window.__waitPatched = true; waitForArrival = t => w((t || 15000) * window.__waitScale); }
     VEHICLE_TYPES.forEach(t => { if (!t.__s) { t.__s = t.speed; t.speed *= speedup; } });
     if (typeof TRIP_TYPE_PICKUP !== 'undefined' && !TRIP_TYPE_PICKUP.__s) { TRIP_TYPE_PICKUP.__s = TRIP_TYPE_PICKUP.speed; TRIP_TYPE_PICKUP.speed *= speedup; }
   }, [names, speedup]);

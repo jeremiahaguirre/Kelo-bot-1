@@ -220,6 +220,8 @@ const TOWN_LOCATIONS = {
 
 // Kelo-1 starts with nothing: no opinions, ideas, creations, tools or memories. He learns it all.
 const state = {
+  // Kelo-1's looks (js/skins.js): which he owns, which he wears, and the receipts of unlocks
+  "skins": { "owned": ["classic"], "equipped": "classic", "purchases": [] },
   "health": 80,
   "fullness": 70,
   "happiness": 70,
@@ -1407,6 +1409,8 @@ function loadPersistentBrainState() {
           }
         }
       } catch (e) {}
+      // His skins: older saves have none (Classic), and a damaged entry is repaired (js/skins.js)
+      if (typeof normalizeKeloSkins === 'function') normalizeKeloSkins();
       // Things that get used up: older saves have no counts, so whatever he has starts full (js/itemuse.js)
       if (typeof ensureSupplies === 'function') ensureSupplies();
       // Anything he added in town earlier moves out (js/town.js)

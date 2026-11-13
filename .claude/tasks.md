@@ -12,10 +12,15 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - Arrow 1 (drive through the range), arrow 2 (land inside the buildings), arrow 3 (road between the hall and the hangar): fixed (far lands sunk under the finer meshes; paved Pass Road, Yard Street, Hangar Lane, North Apron). Report: qa-results-northyard/REPORT.md.
 
 ## Reference-photo paintings (branch `agent/refpaint`, not merged; QA on `qa-results-refpaint`)
+
+## Reference-photo paintings (merged to `main`; QA on `qa-results-refpaint`)
 - Owner: "Enable Kelo on Netnode to search DuckDuckGo for live reference images rather than using pre-programmed paintings. Kelo should be able to paint directly from a single search result or creatively combine two different search results into one original painting."
-- Status: built and tested with stubbed network (scenario `refpaint` in qa/harness.js, plus qa/imagesearch-test.js). Waiting for the owner to review and merge.
+- Status: built and tested with stubbed network (scenario `refpaint` in qa/harness.js, plus qa/imagesearch-test.js). Merged and live.
 - Scope added by the owner (via the parent session): all photo sources, the NetNode photo-browsing pastime with a favourites board, and the legal rules (licence gate, risk check, measured originality, credits, website gate, Licences and credits page). Built and tested with stubs.
 - Open: live DuckDuckGo/Commons calls were never reachable from the test container (proxy blocks them), so the real endpoints are untested; the phone apps' CapacitorHttp path is untested; see REPORT.md on qa-results-refpaint.
+## Done and merged: skins (branch `agent/skins`, results on `qa-results-skins`)
+- Ten skins (Classic; Explorer, Twirl, Kitbot, Marshmallow, Spark after the owner's pictures; legendary Ember, Aegis, Nebula, Clockwork), owner approved all ten, Kitbot as is. state.skins, in-place equip, World tab Skins UI, mock payments behind KELO_DEV_UNLOCK. origin/main (with the pick-up/put-down hand-off) merged 2026-11-13.
+- Tests on the merged code: `skins` scenario 54/54; animation check 10/10 (every skin identical to Classic on all 9475 frames x 42 joint channels, carried items identical); reload/ui/chat/vehicle/haul no page errors; perf max +3.8% draw calls. Open items are listed in qa-results-skins/REPORT.md (real payments, rigid parts through seats, eye-camera height on big heads).
 
 ## Done and pushed to main (2026-11-04)
 - Task 1 Paintings, task 2 Accurate welding + work bench, task 3 Humanize/eye cam/fluid motion, task 4 Garden, task 6 Code anything + self-upgrades, task 10 phase 1 audit (plan in .claude/review.md).

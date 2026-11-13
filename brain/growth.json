@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-13T06:56:30.660Z",
-  "runs": 22,
+  "updatedAt": "2026-11-13T19:51:55.484Z",
+  "runs": 23,
   "curiosities": [
-    "Ailuropoda microta"
+    "Arctotherium"
   ],
   "entries": [
     {
@@ -769,6 +769,38 @@
       },
       "shapeFrom": "Arctocephalus",
       "nextCuriosity": "Ailuropoda microta",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794599515484",
+      "at": 1794599515484,
+      "brain": "procedural",
+      "topic": "Ailuropoda microta",
+      "title": "Dreaming of Aurorarctos",
+      "text": "Dear Diary, while nobody was around I looked up \"Ailuropoda microta\" and drifted from Ailuropoda microta to Aurorarctos. Aurorarctos is an extinct North American genus of bears. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Ailuropoda microta",
+          "url": "https://en.wikipedia.org/wiki/Ailuropoda_microta",
+          "extract": "Ailuropoda microta is the earliest known member of the genus Ailuropoda, which includes the living giant panda. It is the smallest and most primitive member of the genus, with an estimated body mass of around 70 kilograms (150 lb). It measured 1 m (3 ft) in length; the modern gia"
+        },
+        {
+          "title": "Aurorarctos",
+          "url": "https://en.wikipedia.org/wiki/Aurorarctos",
+          "extract": "Aurorarctos is an extinct North American genus of bears. It contains a single species, Aurorarctos tirawa, which lived in the Middle Miocene. Its fossils were discovered in the Valentine formation and Myers Farm of Nebraska, and represent the earliest known member of the Ursinae,"
+        }
+      ],
+      "concept": {
+        "name": "Ailuropoda Aurorarctos Loop",
+        "emoji": "🌙",
+        "definition": "The idea that ailuropoda microta and aurorarctos share a hidden pattern.",
+        "builtFrom": [
+          "Ailuropoda microta",
+          "Aurorarctos"
+        ]
+      },
+      "shapeFrom": "Aurorarctos",
+      "nextCuriosity": "Arctotherium",
       "coreMemory": null
     }
   ]

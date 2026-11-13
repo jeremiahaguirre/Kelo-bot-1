@@ -1,0 +1,19 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+upgrade {"out":"needs-materials","plans":[{"name":"Meadow Fountain","mats":["A bundle of cedar boards (1 × 6 in., 8 ft)","A box of exterior deck screws","A solar LED lamp kit","A submersible fountain pump kit","A cast stone fountain basin"]}],"built":0,"open":["A cast stone fountain basin","A submersible fountain pump kit","A solar LED lamp kit","A box of exterior deck screws","A bundle of cedar boards (1 × 6 in., 8 ft)","A sturdy shovel"]}
+PASS a coded upgrade is not built from nothing
+PASS its materials are asked at the Post Office :: A bundle of cedar boards (1 × 6 in., 8 ft) | A box of exterior deck screws | A solar LED lamp kit | A submersible fountain pump kit | A cast stone fountain basin
+build returned true
+built {"ups":[{"name":"Meadow Fountain","materials":["bundle of cedar boards (1 × 6 in., 8 ft)","box of exterior deck screws","solar led lamp kit","submersible fountain pump kit","cast stone fountain basin"]}],"left":[]}
+PASS the upgrade is built once its materials come, and they are used (boxes of screws lose a serving) :: []
+mats ["lantern_path",["A pallet of flagstone pavers","A box of 6 solar path lights"]]
+mats ["bird_bath",["A bundle of cedar boards (1 × 6 in., 8 ft)","A box of exterior deck screws"]]
+mats ["sundial",["A bundle of mild steel stock (square tube, angle, flat bar and plate)","A box of exterior deck screws"]]
+mats ["observatory",["A bundle of mild steel stock (square tube, angle, flat bar and plate)","A box of exterior deck screws","A solar LED lamp kit"]]
+mats ["fountain",["A bundle of cedar boards (1 × 6 in., 8 ft)","A box of exterior deck screws","A solar LED lamp kit","A submersible fountain pump kit","A cast stone fountain basin"]]
+mats ["house_sign",["A solar LED lamp kit","A cedar sign board","A can of exterior sign paint","A set of aluminium wind chime tubes"]]
+mats ["garden_arch",["A bundle of cedar boards (1 × 6 in., 8 ft)","A box of exterior deck screws","A bundle of cedar fence pickets and rails","Pressure-treated fence posts","A box of galvanised fence nails","A string of warm-white solar fairy lights"]]
+PASS every built-in upgrade template needs real materials
+photo weld {"ready":false,"missing":["A bundle of mild steel stock (square tube, angle, flat bar and plate)"],"open":["A bundle of mild steel stock (square tube, angle, flat bar and plate)",null,"A sturdy shovel"]}
+PASS a photo weld waits for steel stock and asks for it
+PASS with steel stock it welds, and a weld uses some stock :: {"ready":true,"sup":{"cur":3,"per":4}}
+page errors: none

@@ -1,0 +1,5 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+asked {"before":0,"plan":{"id":"pp-mweayv7b7p","medium":"watercolour","subject":"lake","for":"Tester","overrides":{},"reference":null,"at":1794533594231}}
+painted {"n":1,"plan":null,"forTester":1}
+PASS the visitor painting was painted exactly once :: {"n":1,"plan":null,"forTester":1}
+page errors: none

@@ -1,0 +1,32 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+template ["ultralight",["Flaperon frames (aluminium) -> Welding Studio"]]
+template ["gokart",[]]
+template ["canoe",["Ash cane seats -> woodshop"]]
+template ["shed",["Ready-mix concrete for 9 pier footings (0.4 m³) -> concrete batch plant"]]
+template ["drone",[]]
+template ["guitar",[]]
+template ["kayak",[]]
+template ["treefort",[]]
+PASS some template BOM lines are marked for his machines
+PASS parseBuildRequest leaves "build me a table" to the woodshop (with a key)
+PASS "build me a shed" is still a big build (with a key)
+gazebo {
+ "out": true,
+ "name": "Gazebo",
+ "fromAI": false,
+ "subs": [
+  "Foundation: Ready-mix concrete for 6 pier footings (0.3 m³) x1 [make concrete batch plant]; 8 in. cardboard concrete tube forms, 4 ft x6; Galvanised post bases x6; 1/2 in. anchor bolts with washers x6",
+  "Frame: Pressure-treated 4 × 4 posts, 8 ft x6; 2 × 6 beams and joists, 10 ft x10; Galvanised framing connectors x24; 3 in. structural screws x200",
+  "Roof: 2 × 4 rafters, 8 ft x12; Corrugated metal roof panels, 8 ft x6; Roofing screws with washers x150",
+  "Walls and finish: Cedar siding boards, 8 ft x40; Exterior wood stain x2; 2 in. siding nails x600",
+  "Parts from the article: Wooden wall for the gazebo x1; Wooden shade for the gazebo x1"
+ ]
+}
+PASS no-key gazebo build is planned (not "no-plans") :: true
+PASS the gazebo BOM has machine lines
+PASS the gazebo foundation is ready-mix from the batch plant
+shot gaps-2-nokey-build-machine-lines
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+PASS no-key pedal car (no article) is planned from part families :: {"out":true,"subs":["Frame","Wheels and axles","Deck and handle"]}
+page errors: none

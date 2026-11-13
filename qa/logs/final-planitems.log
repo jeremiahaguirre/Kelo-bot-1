@@ -1,0 +1,6 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+plans: []
+missing now: {"materials":[],"tools":[]}
+treehouse: built | Built a real treehouse platform! {"x":-36.6,"z":2.4,"tree":"tree-o12"}
+shot treehouse-built
+page errors: none

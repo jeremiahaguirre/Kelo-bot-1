@@ -1,0 +1,12 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+setup {"mix":{"id":"foundation-0","name":"Ready-mix concrete for 9 pier footings (0.4 m³)","qty":1,"unit":"load","kind":"p","step":null,"got":0,"sent":0,"used":0,"stepAt":-1,"make":"batchplant","makeOn":"concrete batch plant","product":"A cast concrete ready-mix for 9 pier footings"},"site":{"x":-42.3,"z":8.4,"rotY":0,"name":"the spot for the garden shed"},"tools":["Circular saw","Framing hammer","Cordless drill","4 ft level","Tape measure","Shovel","Hammer stapler"]}
+PASS the shed footing ready-mix line is made on the batch plant :: concrete batch plant
+PASS he batched the ready-mix at his own plant :: Found a Concrete & Asphalt Plant | 1 batches
+pour started
+shot gaps-4-foundation-pour
+poured {"pour":{"stage":"curing","kind":"pad","w":3.1},"mixLeft":false,"sub0":true}
+PASS the footings were poured visibly at the site and are curing :: {"stage":"curing","kind":"pad","w":3.1}
+PASS nothing is built on it while it cures :: curing
+PASS after 7 days the pour is cured :: cured
+PASS the floor is built once the footings have cured :: true
+page errors: none

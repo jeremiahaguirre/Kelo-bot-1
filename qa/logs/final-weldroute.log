@@ -1,0 +1,51 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+route ["steel bench","weldstudio","A welded steel bench"]
+route ["steel table","weldstudio","A welded steel table"]
+route ["nylon hinge","sls","An SLS-printed nylon hinge"]
+route ["titanium implant","ebm","An EBM-printed titanium implant"]
+route ["concrete planter","batchplant","A cast concrete planter"]
+route ["concrete bird bath","batchplant","A cast concrete bird bath"]
+route ["steel gear","edm","A wire-EDM-cut steel gear"]
+route ["trailer hitch","garage","A garage-fabricated steel trailer hitch"]
+route ["stainless impeller","dmls","A DMLS-printed stainless impeller"]
+route ["architectural model","lom","A LOM-built paper architectural model"]
+route ["clear prototype","polyjet","A PolyJet-printed photopolymer clear prototype"]
+route ["steel shed",null,""]
+route ["steel bottle opener","haasvs1","A Haas-machined steel bottle opener"]
+route ["nylon pedal","mjf","An MJF-printed nylon pedal"]
+route ["stainless flange","ded","A DED-built stainless flange"]
+route ["steel coat rack","weldstudio","A welded steel coat rack"]
+PASS route steel bench -> weldstudio :: weldstudio
+PASS route steel table -> weldstudio :: weldstudio
+PASS route nylon hinge -> sls :: sls
+PASS route titanium implant -> ebm :: ebm
+PASS route concrete planter -> batchplant :: batchplant
+PASS route concrete bird bath -> batchplant :: batchplant
+PASS route steel gear -> edm :: edm
+PASS route trailer hitch -> garage :: garage
+PASS route stainless impeller -> dmls :: dmls
+PASS route architectural model -> lom :: lom
+PASS route clear prototype -> polyjet :: polyjet
+PASS route steel shed -> null
+PASS route nylon pedal -> mjf :: mjf
+PASS route stainless flange -> ded :: ded
+PASS route steel coat rack -> weldstudio :: weldstudio
+PASS all 13 new shops have MAKER_CAPS entries :: [["weldstudio",true,true,300],["batchplant",true,true,250],["sls",true,true,33],["mjf",true,true,38],["dmls",true,true,32],["polyjet",true,true,49],["binder",true,true,16],["ded",true,true,90],["ebm",true,true,20],["lom",true,true,25],["waterjet",true,true,49],["edm",true,true,40],["garage",true,true,400]]
+PASS old workshopCanMake reader removed
+ai [["table","fdm",null],["garden shed","weldstudio",null],["bench","weldstudio","weldstudio"]]
+PASS AI wholeShop fdm for a table is rejected
+PASS AI wholeShop for a shed is rejected (too big)
+PASS AI wholeShop weldstudio for a bench is kept
+PASS "make me a steel bench" parsed as a maker ask :: {"what":"steel bench"}
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+order {"r":"shop","shop":"weldstudio","name":"A welded steel bench","status":"learning","reply":"A steel bench? Yes, Tester! That's a job for my Welding Studio, the whole thing. I'll read up on the Welding Studio first, then ask for its supplies."}
+PASS steel bench order is on the weld studio :: A welded steel bench
+asked {"status":"waiting","waitingFor":["A welding hood with an auto-darkening lens","A pair of leather welding gloves","A 75/25 argon-CO2 shielding gas cylinder","A spool of ER70S-6 MIG wire (0.030 inch)","A bundle of mild steel stock (square tube, angle, flat bar and plate)"],"open":["A bundle of mild steel stock (square tube, angle, flat bar and plate)","A spool of ER70S-6 MIG wire (0.030 inch)","A 75/25 argon-CO2 shielding gas cylinder","A pair of leather welding gloves","A welding hood with an auto-darkening lens","A sturdy shovel"]}
+PASS order waits for weld supplies incl. steel stock
+PASS steel stock asked at the Post Office
+PASS he goes to weld it :: Welding a steel bench
+shot gaps-1-weld-studio-job
+result {"o":{"id":"mk-mweakg8a","name":"A welded steel bench","noun":"steel bench","shop":"weldstudio","metal":"steel","status":"done","from":"steel bench","url":"","visitor":"Tester","at":1794532921642,"purposes":["sit"],"art":false,"waitingFor":[],"madeAt":1794533871394,"where":"storehouse"},"own":["A welded steel bench"],"kind":"learned steel bench","stock":["A bundle of mild steel stock (square tube, angle, flat bar and plate)"],"sup":[["a bundle of mild steel stock (square tube, angle, flat bar and plate)",{"cur":3,"per":4}]]}
+PASS the welded steel bench is made and his own (a real item) :: learned steel bench
+page errors: none

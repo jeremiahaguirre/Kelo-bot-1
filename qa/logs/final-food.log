@@ -1,0 +1,16 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+parsed [["make me a sandwich","food"],["Could you make me a lemonade please","food"],["cook us pancakes","food"],["make me a steel bench","maker"],["make me a stool","maker"]]
+PASS sandwich, lemonade and pancakes go to food; bench and stool to the maker
+order {"out":"food","o":{"id":"food-mweb64un","dish":"sandwich","drink":false,"ingredients":[{"ask":"A loaf of whole-wheat sandwich bread","re":"sandwich bread|\\bbread\\b|\\bloaf\\b"},{"ask":"A block of cheddar cheese","re":"cheddar|\\bcheese\\b"},{"ask":"A pack of sliced ham","re":"\\bham\\b|turkey|salami"},{"ask":"A head of lettuce","re":"lettuce"},{"ask":"A jar of mustard","re":"mustard|mayo"}],"for":"Tester","status":"waiting","at":1794533933327,"from":"recipe"},"open":["A jar of mustard","A head of lettuce","A pack of sliced ham","A block of cheddar cheese","A loaf of whole-wheat sandwich bread"],"shop":false,"reply":"A sandwich? I'd love to, Tester! That's a job for my stove, not my Workshop. I need loaf of whole-wheat sandwich bread, block of cheddar cheese, pack of sliced ham, head of lettuce, jar of mustard, so I asked at the Post Office. I'll make it as soon as they come."}
+PASS sandwich order is a food order, not a shop order
+PASS ingredients asked at the Post Office :: A jar of mustard | A head of lettuce | A pack of sliced ham | A block of cheddar cheese | A loaf of whole-wheat sandwich bread
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+arrived {"first":"A jar of mustard","kept":true,"cat":"ingredient","snack":null}
+PASS a delivered ingredient is kept for the order (not eaten) :: ingredient
+PASS reserved ingredients are not picked as a snack
+shot gaps-3-sandwich-at-stove
+made {"o":{"id":"food-mweb64un","dish":"sandwich","drink":false,"ingredients":[{"ask":"A loaf of whole-wheat sandwich bread","re":"sandwich bread|\\bbread\\b|\\bloaf\\b"},{"ask":"A block of cheddar cheese","re":"cheddar|\\bcheese\\b"},{"ask":"A pack of sliced ham","re":"\\bham\\b|turkey|salami"},{"ask":"A head of lettuce","re":"lettuce"},{"ask":"A jar of mustard","re":"mustard|mayo"}],"for":"Tester","status":"done","at":1794533933327,"from":"recipe","madeName":"A freshly made sandwich for Tester","madeAt":1794534408524},"b":{"name":"A freshly made sandwich for Tester","category":"food","emoji":"🥪","from":"his own stove"},"kind":"food","left":0,"chat":"Tester, your sandwich is ready! Made with loaf of whole-wheat sandwich bread, block of cheddar cheese, pack of sliced ham, head of lettuce, jar of mustard. It's waiting for you in my Storehouse."}
+PASS the sandwich is made and is a real food item :: A freshly made sandwich for Tester
+PASS each ingredient was used (gone, or one serving less)
+page errors: none

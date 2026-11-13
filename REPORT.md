@@ -1,8 +1,7 @@
 # Open audit fixes (agent/openfixes)
 
 The five issues left open by the Workshop/town/UI audit (`qa-results-audit-places`, REPORT.md, "Open (written up, not
-changed)"). The owner approved all five. Branch `agent/openfixes` (pushed; latest `origin/main` merged at 4a34ffc, which
-includes kelo-handoff, refsources and photobrowse). The tests are in `qa/openfix.js` on this branch:
+changed)"). The owner approved all five. Branch `agent/openfixes` (pushed; latest `origin/main` merged, including kelo-handoff, refsources, photobrowse and skins). The tests are in `qa/openfix.js` on this branch:
 `KELO_ROOT=<repo> PORT=<port> node qa/openfix.js [free,store,shelf,museum,notes,settings | all]`.
 
 "main" in the before/after columns is `019c981`, the main these fixes started from. The bugs are in code that later main
@@ -195,18 +194,29 @@ photo-source keys (`refsSetKeys`); they aren't AI keys and don't trigger a decis
 | key changed | 1 | 1 |
 | no key | 0 | 0 |
 
-## Regressions on the merged branch (4a34ffc, one at a time, software GL)
-All exit 0 with "page errors: none":
-- `openfix.js all`: 27 PASS (1037 s)
-- `audit.js all`: 19 PASS (458 s)
-- `harness.js` reload (71 s), ui (152 s), chat (339 s), vehicle (57 s), haul (345 s), basement (125 s)
-- `uitest.js both`: desktop 132 and phone 134 controls pressed, 0 problems (1954 s)
+## Regressions on the final branch (d493b6f: origin/main 416ca1e with skins, kelo-handoff and reference paintings merged; one at a time, software GL)
+All exit 0 with "page errors: none" unless noted:
+- `openfix.js all`: 27 PASS (753 s)
+- `audit.js all`: 18 PASS and 1 FAIL, `museum` (see below)
+- `harness.js` reload (71 s), ui (155 s), chat (322 s), vehicle (53 s), haul (336 s), basement (114 s)
+- `uitest.js both`: desktop 151 and phone 148 controls pressed, 0 problems (1841 s)
 
-The same set also passed on the branch before the merge, except for one run of `audit.js museum`. In that run, after
-the reload he was outside the Museum but had walked about 10 units from its door before the check. It failed the same
-way on main in two of two runs, so it is a timing race in that check, not a regression, and it passed in the post-merge
-run. The `harness.js basement` scenario's put-away step prints `put away: false` on both main and the branch: he is busy
-"Found a Workshop" at that moment. The real basement take-out and put-back are covered by `openfix.js shelf`.
+After that, main gained only fba283a (`brain/growth.json`, data only). It was merged as the branch tip without another
+rerun.
+
+Earlier runs:
+- On the branch before any merge, and after merging 7539b6b (4a34ffc): the same set, all PASS, with audit 19/19 at 4a34ffc.
+- `openfix.js shelf` was rerun on 4a34ffc with the final test code: 4 PASS.
+
+**`audit.js museum`** fails some runs on both main and the branch. After the reload he is correctly outside the Museum,
+but his life ticks walk him away from the door before the check reads his position:
+- main: failed 2 of 2 runs
+- branch: failed 3 runs and passed 1
+
+It is a timing race in that check, not a regression.
+
+**`harness.js basement`** prints `put away: false` on both main and the branch: he is busy "Found a Workshop" at that
+step. The real basement take-out and put-back are covered by `openfix.js shelf`.
 
 Checks: `node --check` on every JS file; the top-level duplicate-name check prints nothing; no `doWhenFree` call without
 a key; no remaining `storedItems()` index-as-slot use.

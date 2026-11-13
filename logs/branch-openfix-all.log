@@ -13,18 +13,18 @@ PASS putting it back returns it to its own slot
 PASS a new copy of a name already stored gets its own slot; the older copy stays put {"before":[5],"after":[5,6]}
 PASS shelf records (ids, slots, a copy out) survive a reload {"pre":"[[\"sc1\",\"Pebble\",0,false],[\"sc2\",\"Pebble\",1,false],[\"sc3\",\"Yo-yo\",2,false],[\"sc4\",\"Wrench\",3,false],[\"sc5\",\"Hand saw\",4,true],[\"sc6\",\"Claw hammer\",5,false],[\"sc7\",\"Claw hammer\",6,false]]","post":"[[\"sc1\",\"Pebble\",0,false],[\"sc2\",\"Pebble\",1,false],[\"sc3\",\"Yo-yo\",2,false],[\"sc4\",\"Wrench\",3,false],[\"sc5\",\"Hand saw\",4,true],[\"sc6\",\"Claw hammer\",5,false],[\"sc7\",\"Claw hammer\",6,false]]"}
 setup {"per":36,"saw":{"name":"Hand saw","kind":"tool","id":"sc8","slot":0},"hammers":[{"name":"Claw hammer","kind":"thing","id":"sc49","slot":41},{"name":"Claw hammer","kind":"thing","id":"sc50","slot":42}]}
-Hand saw taken in 81 s
+Hand saw taken in 53 s
 PASS Hand saw taken out: its slot is empty on the shelf, in the basement room and in the viewer {"slot":0,"up":35,"basement":null,"cell":{"empty":true,"name":"Hand saw"},"pageNames":["","Thing number 1","Thing number 2","Thing number 3","Thing number 4","Thing number 5","Thing number 6","Thing number 7","Thing number 8","Thing number 9","Thing number 10","Thing number 11"],"out":[0]}
 shot openfix-shelf-saw-out
-Hand saw put back in 27 s
+Hand saw put back in 118 s
 PASS Hand saw put back: it shows on its own slot again (shelf/basement and viewer) {"back":true,"up":36,"basement":null,"cell":{"empty":false,"name":"Hand saw"},"pageNames":["Hand saw","Thing number 1","Thing number 2","Thing number 3","Thing number 4","Thing number 5","Thing number 6","Thing number 7","Thing number 8","Thing number 9","Thing number 10","Thing number 11"],"out":[]}
 shot openfix-shelf-saw-back
-Claw hammer taken in 265 s
+Claw hammer taken in 110 s
 PASS Claw hammer taken out: its slot is empty on the shelf, in the basement room and in the viewer {"slot":41,"up":36,"basement":6,"cell":{"empty":true,"name":"Claw hammer"},"pageNames":["Thing number 36","Thing number 37","Thing number 38","Thing number 39","Thing number 40","","Claw hammer"],"out":[41]}
-Claw hammer put back in 164 s
+Claw hammer put back in 155 s
 PASS Claw hammer put back: it shows on its own slot again (shelf/basement and viewer) {"back":true,"up":36,"basement":7,"cell":{"empty":false,"name":"Claw hammer"},"pageNames":["Thing number 36","Thing number 37","Thing number 38","Thing number 39","Thing number 40","Claw hammer","Claw hammer"],"out":[]}
 PASS a Museum piece taken out is gone from the Museum, its basement and the viewer; the rest stay {"ok":true,"inList":false,"in3d":false,"inViewer":false,"inBasement":false,"others":11}
-PASS a letter waiting to be read survives a reload (still waiting, or read since) {"waiting":[],"read":true,"diary":["After Reading a Note","Rearranging the Museum","Tidying Up"]}
+PASS a letter waiting to be read survives a reload (still waiting, or read since) {"waiting":[],"read":true,"diary":["After Reading a Note","Autonomous Agent Tick","Rearranging the Museum"]}
 PASS once read it leaves the queue, and the same letter opened again is not read twice {"left":0,"again":0,"giftsAdded":0,"readIds":["parcel:openfix-1"]}
 PASS after another reload nothing is waiting (no second read) {"q":0,"ids":1}
 PASS the saved queue is bounded 20

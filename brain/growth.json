@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-13T19:51:55.484Z",
-  "runs": 23,
+  "updatedAt": "2026-11-14T06:43:18.906Z",
+  "runs": 24,
   "curiosities": [
-    "Arctotherium"
+    "Ailuropodinae"
   ],
   "entries": [
     {
@@ -802,6 +802,41 @@
       "shapeFrom": "Aurorarctos",
       "nextCuriosity": "Arctotherium",
       "coreMemory": null
+    },
+    {
+      "id": "dream-1794638598906",
+      "at": 1794638598906,
+      "brain": "procedural",
+      "topic": "Arctotherium",
+      "title": "Dreaming of Baird's tapir",
+      "text": "Dear Diary, while nobody was around I looked up \"Arctotherium\" and drifted from Arctotherium to Baird's tapir. The Baird's tapir, also known as the Central American tapir, is a species of tapir native to Mexico, Central America, and northwestern South America. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Arctotherium",
+          "url": "https://en.wikipedia.org/wiki/Arctotherium",
+          "extract": "Arctotherium angustidens is an extinct genus of short-faced bears endemic to Central and South America (Neotropics) from the Late Pliocene to the end of the Late Pleistocene. Arctotherium migrated from North America to South America during the Great American Interchange, followin"
+        },
+        {
+          "title": "Baird's tapir",
+          "url": "https://en.wikipedia.org/wiki/Baird's_tapir",
+          "extract": "The Baird's tapir, also known as the Central American tapir, is a species of tapir native to Mexico, Central America, and northwestern South America. It is the largest of the three species of tapir native to the Americas, as well as the largest native land mammal in both Central "
+        }
+      ],
+      "concept": {
+        "name": "Arctotherium Baird Principle",
+        "emoji": "🌀",
+        "definition": "The idea that arctotherium and baird's tapir share a hidden pattern.",
+        "builtFrom": [
+          "Arctotherium",
+          "Baird's tapir"
+        ]
+      },
+      "shapeFrom": "Baird's tapir",
+      "nextCuriosity": "Ailuropodinae",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about Aurorarctos. Aurorarctos is an extinct North American genus of bears. I keep coming back to it.",
+        "emoji": "🌙"
+      }
     }
   ]
 }

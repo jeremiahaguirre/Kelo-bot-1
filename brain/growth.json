@@ -1,9 +1,11 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-14T18:17:21.316Z",
-  "runs": 25,
-  "curiosities": [],
+  "updatedAt": "2026-11-14T22:34:08.681Z",
+  "runs": 26,
+  "curiosities": [
+    "Afforestation"
+  ],
   "entries": [
     {
       "id": "dream-1793689119348",
@@ -866,6 +868,38 @@
       },
       "shapeFrom": "Europe",
       "nextCuriosity": "Ailuropoda microta",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794695648681",
+      "at": 1794695648681,
+      "brain": "procedural",
+      "topic": "Glacier",
+      "title": "Dreaming of Andes",
+      "text": "Dear Diary, while nobody was around I looked up \"Glacier\" and drifted from Glacier to Andes. The Andes, Andes Mountains or Andean Mountain Range are the longest continental mountain range in the world, forming a continuous highland along the western edge of South America. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Glacier",
+          "url": "https://en.wikipedia.org/wiki/Glacier",
+          "extract": "A glacier is a persistent body of natural ice, a form of\nrock, that is constantly moving under its own weight. A glacier forms where the accumulation of snow exceeds its ablation over many years, often centuries. It slowly flows and deforms under stresses induced by gravity, unde"
+        },
+        {
+          "title": "Andes",
+          "url": "https://en.wikipedia.org/wiki/Andes",
+          "extract": "The Andes, Andes Mountains or Andean Mountain Range are the longest continental mountain range in the world, forming a continuous highland along the western edge of South America. The range is 8,900 kilometres (5,500 mi) long and 200 to 700 kilometres wide and has an average heig"
+        }
+      ],
+      "concept": {
+        "name": "Glacier Andes Loop",
+        "emoji": "🌙",
+        "definition": "The idea that glacier and andes share a hidden pattern.",
+        "builtFrom": [
+          "Glacier",
+          "Andes"
+        ]
+      },
+      "shapeFrom": "Andes",
+      "nextCuriosity": "Afforestation",
       "coreMemory": null
     }
   ]

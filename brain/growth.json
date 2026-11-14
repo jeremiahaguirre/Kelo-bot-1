@@ -1,11 +1,9 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-14T06:43:18.906Z",
-  "runs": 24,
-  "curiosities": [
-    "Ailuropodinae"
-  ],
+  "updatedAt": "2026-11-14T18:17:21.316Z",
+  "runs": 25,
+  "curiosities": [],
   "entries": [
     {
       "id": "dream-1793689119348",
@@ -837,6 +835,38 @@
         "text": "I remember a quiet night dreaming about Aurorarctos. Aurorarctos is an extinct North American genus of bears. I keep coming back to it.",
         "emoji": "🌙"
       }
+    },
+    {
+      "id": "dream-1794680241316",
+      "at": 1794680241316,
+      "brain": "procedural",
+      "topic": "Ailuropodinae",
+      "title": "Dreaming of Europe",
+      "text": "Dear Diary, while nobody was around I looked up \"Ailuropodinae\" and drifted from Ailuropodinae to Europe. Europe is a continent located entirely in the Northern Hemisphere and mostly in the Eastern Hemisphere. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Ailuropodinae",
+          "url": "https://en.wikipedia.org/wiki/Ailuropodinae",
+          "extract": "Ailuropodinae is a subfamily of Ursidae that contains only one extant species, the giant panda of China. The fossil record of this group has shown that various species of pandas were more widespread across the Holarctic, with species found in places such as Europe, much of Asia, "
+        },
+        {
+          "title": "Europe",
+          "url": "https://en.wikipedia.org/wiki/Europe",
+          "extract": "Europe is a continent located entirely in the Northern Hemisphere and mostly in the Eastern Hemisphere. It is bordered by the Arctic Ocean to the north, the Atlantic Ocean to the west, the Mediterranean Sea to the south, and Asia to the east. Europe shares the landmass of Eurasia"
+        }
+      ],
+      "concept": {
+        "name": "Ailuropodinae Europe Principle",
+        "emoji": "🔮",
+        "definition": "The idea that ailuropodinae and europe share a hidden pattern.",
+        "builtFrom": [
+          "Ailuropodinae",
+          "Europe"
+        ]
+      },
+      "shapeFrom": "Europe",
+      "nextCuriosity": "Ailuropoda microta",
+      "coreMemory": null
     }
   ]
 }

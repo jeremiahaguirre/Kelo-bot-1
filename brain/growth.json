@@ -1,9 +1,11 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-15T06:48:39.020Z",
-  "runs": 27,
-  "curiosities": [],
+  "updatedAt": "2026-11-15T18:57:52.771Z",
+  "runs": 28,
+  "curiosities": [
+    "Barnard's Express"
+  ],
   "entries": [
     {
       "id": "dream-1793689119348",
@@ -936,6 +938,46 @@
       "shapeFrom": "Agrivoltaics",
       "nextCuriosity": "Afforestation",
       "coreMemory": null
+    },
+    {
+      "id": "dream-1794769072770",
+      "at": 1794769072770,
+      "brain": "procedural",
+      "topic": "Okanagan Lake",
+      "title": "Dreaming of Bonnington (sternwheeler)",
+      "text": "Dear Diary, while nobody was around I looked up \"Okanagan Lake\" and drifted from Okanagan Lake to BC Express to Bonnington (sternwheeler). SS Bonnington was a sternwheel steamboat that ran on the Arrow Lakes in British Columbia from 1911 to 1931. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Okanagan Lake",
+          "url": "https://en.wikipedia.org/wiki/Okanagan_Lake",
+          "extract": "Okanagan Lake is a lake in the Okanagan Valley of British Columbia, Canada. The lake is 135 km (84 mi) long, between 4 and 5 km wide, and has a surface area of 348 km2."
+        },
+        {
+          "title": "BC Express",
+          "url": "https://en.wikipedia.org/wiki/BC_Express",
+          "extract": "The BC Express was a stern wheel paddle steamer (sternwheeler) that operated on the Fraser River in British Columbia, Canada, from 1912 to 1919. The BC Express was built for the BC Express Company by Alexander Watson Jr to work on the upper Fraser River between Tête Jaune Cache a"
+        },
+        {
+          "title": "Bonnington (sternwheeler)",
+          "url": "https://en.wikipedia.org/wiki/Bonnington_(sternwheeler)",
+          "extract": "SS Bonnington was a sternwheel steamboat that ran on the Arrow Lakes in British Columbia from 1911 to 1931. SS Bonnington and her two sisterships, the SS Sicamous and SS Nasookin, were the largest sternwheelers ever built in British Columbia by the Canadian Pacific Railway Lake a"
+        }
+      ],
+      "concept": {
+        "name": "Okanagan Sternwheeler Loop",
+        "emoji": "💡",
+        "definition": "The idea that okanagan lake and bonnington (sternwheeler) share a hidden pattern.",
+        "builtFrom": [
+          "Okanagan Lake",
+          "Bonnington (sternwheeler)"
+        ]
+      },
+      "shapeFrom": "Bonnington (sternwheeler)",
+      "nextCuriosity": "Barnard's Express",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about Europe. Europe is a continent located entirely in the Northern Hemisphere and mostly in the Eastern Hemisphere. It still makes me curious.",
+        "emoji": "🌙"
+      }
     }
   ]
 }

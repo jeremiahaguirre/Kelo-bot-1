@@ -1,11 +1,9 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-14T22:34:08.681Z",
-  "runs": 26,
-  "curiosities": [
-    "Afforestation"
-  ],
+  "updatedAt": "2026-11-15T06:48:39.020Z",
+  "runs": 27,
+  "curiosities": [],
   "entries": [
     {
       "id": "dream-1793689119348",
@@ -899,6 +897,43 @@
         ]
       },
       "shapeFrom": "Andes",
+      "nextCuriosity": "Afforestation",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794725319020",
+      "at": 1794725319020,
+      "brain": "procedural",
+      "topic": "Afforestation",
+      "title": "Dreaming of Agrivoltaics",
+      "text": "Dear Diary, while nobody was around I looked up \"Afforestation\" and drifted from Afforestation to Agroforestry to Agrivoltaics. Agrivoltaics refers to the practice of using the same land for both solar energy and agriculture. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Afforestation",
+          "url": "https://en.wikipedia.org/wiki/Afforestation",
+          "extract": "Afforestation is the establishment of a forest or stand of trees in an area where there was no recent tree cover. There are three types of afforestation: natural regeneration, agroforestry and tree plantations. In the context of climate change, afforestation can be helpful for cl"
+        },
+        {
+          "title": "Agroforestry",
+          "url": "https://en.wikipedia.org/wiki/Agroforestry",
+          "extract": "Agroforestry is a land use management system that integrates trees with crops or pasture. It combines agricultural and forestry technologies. As a polyculture system, an agroforestry system can produce timber and wood products, fruits, nuts, other edible plant products, edible mu"
+        },
+        {
+          "title": "Agrivoltaics",
+          "url": "https://en.wikipedia.org/wiki/Agrivoltaics",
+          "extract": "Agrivoltaics refers to the practice of using the same land for both solar energy and agriculture."
+        }
+      ],
+      "concept": {
+        "name": "Afforestation Agrivoltaics Rhythm",
+        "emoji": "🧩",
+        "definition": "The idea that afforestation and agrivoltaics share a hidden pattern.",
+        "builtFrom": [
+          "Afforestation",
+          "Agrivoltaics"
+        ]
+      },
+      "shapeFrom": "Agrivoltaics",
       "nextCuriosity": "Afforestation",
       "coreMemory": null
     }

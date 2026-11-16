@@ -349,8 +349,6 @@ function goalStep(g) {
       try { b = typeof action.blocker === 'function' ? action.blocker(task, g) : null; } catch (e) { b = null; }
       if (b) { goalBlock(g, b); return 'waiting'; }
       const key = action.key(task);
-      // The loop guard says not now (it just failed, or it's the third time running): a short wait instead
-      if (typeof canTry === 'function' && !canTry(key) && task.tries > 0) { goalBlock(g, { type: 'time', label: `a better moment for ${label}`, until: Date.now() + 6 * 60000 }, { quiet: true }); return 'waiting'; }
       // What went wrong last time changes how he does it now (js/outcomes.js): the fix becomes a step first
       if (task.tries > 0 && !task.fixed && typeof outcomeFixFor === 'function') {
         const fix = outcomeFixFor(key);
@@ -359,12 +357,16 @@ function goalStep(g) {
           task.fixed = true;
           task.appliedFix = { reason: fix.reason, kind: fix.kind };
           const st = g.stages[g.stage];
-          st.tasks.splice(st.tasks.indexOf(task), 0, { ...extra, status: 'todo', tries: 0, isFix: true });
+          st.tasks.splice(st.tasks.indexOf(task), 0, { ...extra, status: 'todo', tries: 0, isFix: true, fixFor: task.do });
           goalDiary(g, fix.learned ? `Last time ${fix.why} when I tried ${label}. What I tried before that didn't help much, so this time I'll ${fix.fix}.` : `Last time ${fix.why} when I tried ${label}, so this time I'll ${fix.fix} first.`, `🔁 ${g.title}: trying it differently`);
           goalTouch(g);
           return goalStep(g);
         }
       }
+      // The loop guard says not now (it just failed the same way and nothing changed): a short wait instead.
+      // Once a fix step has been done, something HAS changed, so he tries again
+      const fixDone = task.fixed && g.stages[g.stage].tasks.some(x => x.isFix && x.fixFor === task.do && x.status !== 'todo');
+      if (typeof canTry === 'function' && !canTry(key) && task.tries > 0 && !(fixDone && !(typeof activityCoolingDown === 'function' && activityCoolingDown(key)))) { goalBlock(g, { type: 'time', label: `a better moment for ${label}`, until: Date.now() + 6 * 60000 }, { quiet: true }); return 'waiting'; }
       goalRunning = g.id;
       task.tries++;
       g.lastWorkAt = Date.now();

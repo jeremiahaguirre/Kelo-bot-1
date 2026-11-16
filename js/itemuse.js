@@ -600,8 +600,8 @@ async function useItemFor(name, purposeText = '', why = '', originLabel = 'Took 
         renderAllUI();
         if (alt) return useItemFor(alt, want, why, originLabel);
         // He can still eat or drink at the cafe or the lake
-        if (want === 'eat' && typeof eatSomething === 'function') doWhenFree(() => eatSomething('Hungry'));
-        if (want === 'drink' && typeof drinkFromLake === 'function') doWhenFree(() => drinkFromLake('Thirsty'));
+        if (want === 'eat' && typeof eatSomething === 'function') doWhenFree(() => eatSomething('Hungry'), { key: 'eat' });
+        if (want === 'drink' && typeof drinkFromLake === 'function') doWhenFree(() => drinkFromLake('Thirsty'), { key: 'drink' });
         return false;
       }
       if (k.kind === 'unknown') lookUpItemUse(item).catch(() => null);

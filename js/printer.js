@@ -423,7 +423,7 @@ function receivePrinterThing(item) {
         const p = printerState();
         // It doesn't go on a shelf: he sets it up on the bench by the Welding Studio
         state.unstoredItems = state.unstoredItems.filter(n => n !== item);
-        if (!p.setUp) doWhenFree(() => setUpPrinter('Setting Up the 3D Printer'));
+        if (!p.setUp) doWhenFree(() => setUpPrinter('Setting Up the 3D Printer'), { key: 'printer-setup' });
       } else if (FILAMENT_RE.test(item)) {
         const spool = addSpool(item);
         if (printerState().setUp && !loadedSpool()) loadSpool(spool.material);

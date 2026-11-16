@@ -9,6 +9,15 @@ function goalFreeNow() {
       return !(state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || state.isCollectingMail || state.isBrowsing);
     }
 
+// Wait until something changes (calmer weather, a little time) before the next try
+registerGoalAction('waitfor', {
+  key: () => 'reflect',
+  label: t => t.label || 'wait a while',
+  blocker: t => (t.cond === 'calm' ? (goalBlockerOver({ type: 'calm' }) ? null : { type: 'calm', label: 'calmer weather' })
+    : (Date.now() < (t.until || 0) ? { type: 'time', label: t.label || 'a while', until: t.until } : null)),
+  run: t => { t.quietDone = true; return true; }
+});
+
 // Read about something at NetNode
 registerGoalAction('research', {
   key: () => 'browse',

@@ -357,9 +357,10 @@ function goalStep(g) {
         const extra = fix && goalFixTask(fix, task, g);
         if (extra) {
           task.fixed = true;
+          task.appliedFix = { reason: fix.reason, kind: fix.kind };
           const st = g.stages[g.stage];
           st.tasks.splice(st.tasks.indexOf(task), 0, { ...extra, status: 'todo', tries: 0, isFix: true });
-          goalDiary(g, `Last time ${fix.why} when I tried ${label}, so this time I'll ${fix.fix} first.`, `🔁 ${g.title}: trying it differently`);
+          goalDiary(g, fix.learned ? `Last time ${fix.why} when I tried ${label}. What I tried before that didn't help much, so this time I'll ${fix.fix}.` : `Last time ${fix.why} when I tried ${label}, so this time I'll ${fix.fix} first.`, `🔁 ${g.title}: trying it differently`);
           goalTouch(g);
           return goalStep(g);
         }
@@ -382,12 +383,17 @@ function goalFixTask(fix, task, g) {
       if (fix.kind === 'learn' || fix.kind === 'prepare') return { do: 'research', topic: `how to ${String(topic).replace(/^(how to|learn to)\s+/i, '')}`.slice(0, 80), label: `read up on ${String(topic).toLowerCase()}` };
       if (fix.kind === 'practise' && task.do !== 'practise' && task.skill) return { do: 'practise', match: task.skill };
       if (fix.kind === 'mail') return { do: 'mail' };
+      if (fix.kind === 'order') return Array.isArray(task.items) && task.items.length ? { do: 'ask', items: task.items } : { do: 'mail' };
+      if (fix.kind === 'weather') return { do: 'waitfor', cond: 'calm', label: 'wait for calmer weather' };
+      if (fix.kind === 'wait') return { do: 'waitfor', cond: 'time', until: Date.now() + 25 * 60000, label: 'give it some time' };
       return null;
     }
 
 function goalAfterStep(g, task, label, r) {
       if (g.status === 'done' || g.status === 'abandoned') return;
       const ok = !(r === false || r === null || typeof r === 'string');
+      // Did the fix he chose get him past it? He remembers, so next time he picks the fix that works
+      if (task.appliedFix && !task.fixJudged && (ok || typeof r === 'string') && typeof outcomeFixResult === 'function') { task.fixJudged = true; outcomeFixResult(task.appliedFix.reason, task.appliedFix.kind, ok); }
       if (ok) {
         task.status = 'done';
         task.doneAt = Date.now();

@@ -37,6 +37,18 @@ const OUTCOME_REASONS = {
   'waiting': { why: 'I was still waiting on something', fix: 'wait until it comes', fixKind: 'wait' }
 };
 
+// Different ways to get past each kind of failure, tried in turn; the one that has worked best for that
+// reason is chosen first (outcomeFixFor), so he learns which fix really works
+const OUTCOME_FIX_ALTS = {
+  order: ['order', 'mail', 'wait'], mail: ['mail', 'wait', 'order'], prepare: ['prepare', 'learn', 'wait'], learn: ['learn', 'practise', 'wait'],
+  practise: ['practise', 'learn', 'retry'], weather: ['weather', 'wait'], retry: ['retry', 'learn', 'wait'], wait: ['wait', 'retry']
+};
+const OUTCOME_FIX_WORDS = {
+  order: 'order what is missing first', mail: 'check the post office first', prepare: 'get everything ready first', learn: 'read up on it first',
+  practise: 'practise first', weather: 'wait for better weather', retry: 'try it a different way', wait: 'give it some time first'
+};
+const OUTCOME_DECAY = 0.93;          // older results count a little less each time (he adapts when things change)
+
 // Failures some activities keep their own count of (the result alone says "it ran"): a rise in the
 // counter means it failed, and the latest lesson says why and what he does differently
 const OUTCOME_PROBES = [
@@ -57,6 +69,7 @@ function outcomeState() {
       if (!Array.isArray(o.log)) o.log = [];
       if (!o.stats || typeof o.stats !== 'object' || Array.isArray(o.stats)) o.stats = {};
       if (!Array.isArray(o.lessons)) o.lessons = [];
+      ['ctx', 'fixes', 'prefs'].forEach(k => { if (!o[k] || typeof o[k] !== 'object' || Array.isArray(o[k])) o[k] = {}; });
       return o;
     }
 
@@ -71,6 +84,15 @@ function outcomeWorldSig() {
       return [owned, skills, knows, (state.mailbox || []).length, w.season, w.isNight ? 'n' : 'd', windy ? 'w' : 'c'].join('|');
     }
 
+// The circumstances an attempt happened in: he learns what works WHEN (night or day, the season, tired
+// or rested, windy or calm), not just what works
+function outcomeContext() {
+      const w = typeof worldNow === 'function' ? worldNow() : { season: '', isNight: false };
+      const windy = typeof windSummaryForAI === 'function' ? /strong|gust|gale|storm/i.test(windSummaryForAI()) : false;
+      return { season: w.season || '?', time: w.isNight ? 'night' : 'day', energy: (state.health || 0) < 40 || (state.fullness || 0) < 35 ? 'tired' : 'rested', wind: windy ? 'windy' : 'calm' };
+    }
+const OUTCOME_CTX_WORDS = { night: 'at night', day: 'in the daytime', tired: 'when I am tired or hungry', rested: 'when I am rested', windy: 'in the wind', calm: 'on calm days', Winter: 'in winter', Spring: 'in spring', Summer: 'in summer', Autumn: 'in autumn' };
+
 function outcomeSuppliesTotal() {
       let n = 0;
       Object.values(state.supplies || {}).forEach(s => { if (s && Number.isFinite(s.cur)) n += s.cur; });
@@ -80,7 +102,7 @@ function outcomeSuppliesTotal() {
 // Taken just before an activity starts
 function outcomeSnapshot(key) {
       return {
-        key, at: Date.now(), mood: state.happiness, owned: typeof ownedItemNames === 'function' ? ownedItemNames().length : 0,
+        key, at: Date.now(), mood: state.happiness, ctx: outcomeContext(), owned: typeof ownedItemNames === 'function' ? ownedItemNames().length : 0,
         supplies: outcomeSuppliesTotal(), probes: OUTCOME_PROBES.filter(p => p.key === key).map(p => p.count())
       };
     }
@@ -127,13 +149,18 @@ function outcomeRecord(snap, result, error = null, extra = {}) {
       // Per-activity tallies (a "did not start" counts as neither)
       const s = o.stats[key] || (o.stats[key] = { n: 0, ok: 0, fail: 0, streak: 0, ms: 0, mood: 0 });
       if (ok !== null) {
-        s.n++;
-        if (ok) { s.ok++; s.streak = 0; s.lastOkAt = rec.at; }
-        else { s.fail++; s.streak = (s.lastReason === reason ? s.streak : 0) + 1; s.lastReason = reason; s.lastFailAt = rec.at; s.failSig = rec.sig; s.why = rec.why; s.fix = rec.fix; }
+        // Recent results weigh more than old ones, so when his world changes he changes his mind
+        s.n = s.n * OUTCOME_DECAY + 1;
+        s.ok = s.ok * OUTCOME_DECAY + (ok ? 1 : 0);
+        s.fail = s.fail * OUTCOME_DECAY + (ok ? 0 : 1);
+        s.tries = (s.tries || 0) + 1;
+        if (ok) { s.streak = 0; s.lastOkAt = rec.at; }
+        else { s.streak = (s.lastReason === reason ? s.streak : 0) + 1; s.lastReason = reason; s.lastFailAt = rec.at; s.failSig = rec.sig; s.why = rec.why; s.fix = rec.fix; }
         s.ms = Math.round(s.ms ? s.ms * 0.7 + rec.ms * 0.3 : rec.ms);
         s.mood = Math.round((s.mood * 0.7 + rec.mood * 0.3) * 10) / 10;
       }
       s.lastAt = rec.at;
+      if (ok !== null) { outcomeLearnContext(key, snap.ctx || outcomeContext(), ok); outcomeNoticePreference(key, s); }
       const keys = Object.keys(o.stats);
       if (keys.length > OUTCOME_MAX_KEYS) keys.sort((a, b) => (o.stats[a].lastAt || 0) - (o.stats[b].lastAt || 0)).slice(0, keys.length - OUTCOME_MAX_KEYS).forEach(k => delete o.stats[k]);
       // A failure becomes a lesson he can quote; a success after a failure confirms the fix worked
@@ -163,6 +190,76 @@ function outcomeDiary(text, mood) {
       });
     }
 
+// Per circumstance tallies for each activity (one tally per feature value, so a few tries are enough
+// to see a pattern): o.ctx[key][feature:value] = { n, ok }
+function outcomeLearnContext(key, ctx, ok) {
+      const o = outcomeState();
+      const c = o.ctx[key] || (o.ctx[key] = {});
+      Object.entries(ctx || {}).forEach(([f, v]) => {
+        const k = `${f}:${v}`;
+        const t = c[k] || (c[k] = { n: 0, ok: 0 });
+        t.n = Math.round((t.n * OUTCOME_DECAY + 1) * 100) / 100;
+        t.ok = Math.round((t.ok * OUTCOME_DECAY + (ok ? 1 : 0)) * 100) / 100;
+      });
+      // A pattern he hasn't noticed before becomes a diary line ("painting goes badly at night")
+      const insight = outcomeContextInsight(key);
+      if (insight && !(o.prefs[`ctx:${key}:${insight.k}`])) {
+        o.prefs[`ctx:${key}:${insight.k}`] = Date.now();
+        outcomeDiary(`I've noticed a pattern: ${outcomeLabel(key)} ${insight.good ? 'goes well' : 'tends to go wrong'} ${OUTCOME_CTX_WORDS[insight.v] || insight.v}. ${insight.good ? "I'll lean into that." : "I'll pick a better moment for it."}`, `🧠 Learned when ${outcomeLabel(key)} works`);
+      }
+      const ks = Object.keys(o.ctx);
+      if (ks.length > OUTCOME_MAX_KEYS) ks.filter(k => !o.stats[k]).forEach(k => delete o.ctx[k]);
+    }
+
+// The strongest circumstance effect for an activity: { k, v, good, lift } or null
+function outcomeContextInsight(key) {
+      const s = outcomeState().stats[key], c = outcomeState().ctx[key];
+      if (!s || !c || s.n < 3) return null;
+      const base = (s.ok + 1) / (s.n + 2);
+      let best = null;
+      Object.entries(c).forEach(([k, t]) => {
+        if (t.n < 2.5) return;
+        const rate = (t.ok + 0.5) / (t.n + 1);
+        const lift = rate - base;
+        if (Math.abs(lift) >= 0.3 && (!best || Math.abs(lift) > Math.abs(best.lift))) best = { k, v: k.split(':')[1], good: lift > 0, lift };
+      });
+      return best;
+    }
+
+// How the current circumstances change his odds, from what he has seen: a factor around 1
+function outcomeContextFactor(key, ctx = outcomeContext()) {
+      const s = outcomeState().stats[key], c = outcomeState().ctx[key];
+      if (!s || !c || s.n < 2) return 1;
+      const base = (s.ok + 1) / (s.n + 2);
+      let f = 1;
+      Object.entries(ctx).forEach(([feat, v]) => {
+        const t = c[`${feat}:${v}`];
+        if (!t || t.n < 1.5) return;
+        const rate = (t.ok + base) / (t.n + 1);   // shrunk towards his overall rate
+        f *= Math.max(0.4, Math.min(1.8, rate / Math.max(0.05, base)));
+      });
+      return Math.max(0.3, Math.min(2, f));
+    }
+
+// He notices what he enjoys and what he doesn't (once each), and it shapes what he picks
+function outcomeNoticePreference(key, s) {
+      const o = outcomeState();
+      if (s.n < 4 || o.prefs[key]) return;
+      const rate = s.ok / s.n;
+      if (s.mood >= 3 && rate >= 0.6) { o.prefs[key] = 'likes'; outcomeDiary(`I've noticed something about myself: I really enjoy ${outcomeLabel(key)}. It usually works out and it lifts my mood.`, `💛 I like ${outcomeLabel(key)}`); }
+      else if (s.mood <= -3 || rate <= 0.25) { o.prefs[key] = 'dislikes'; outcomeDiary(`Honestly, ${outcomeLabel(key)} rarely goes well for me${s.mood <= -3 ? ' and leaves me grumpy' : ''}. I'll do it less, or find a better way.`, `🌧️ Not my favourite: ${outcomeLabel(key)}`); }
+    }
+
+// Which fix got him past this kind of failure before: o.fixes[reason][kind] = { n, ok }
+function outcomeFixResult(reason, kind, ok) {
+      if (!reason || !kind) return;
+      const o = outcomeState();
+      const r = o.fixes[reason] || (o.fixes[reason] = {});
+      const t = r[kind] || (r[kind] = { n: 0, ok: 0 });
+      t.n++; if (ok) t.ok++;
+      if (Object.keys(o.fixes).length > 24) delete o.fixes[Object.keys(o.fixes)[0]];
+    }
+
 // --- Using what he learned ------------------------------------------------------------------------------
 // Never the same failing plan twice: it failed (twice in a row for the same reason, or once for a reason
 // nothing has fixed yet) and his world hasn't changed since. A blocked-and-waiting reason is left to
@@ -179,13 +276,17 @@ function outcomeCanTry(key) {
 // How much he leans towards an activity from how it went before: 0.35 (keeps failing) .. 1.6 (works
 // and he enjoys it). 1 when he has never tried it.
 function outcomeBias(key) {
-      const s = outcomeState().stats[key];
-      if (!s || !s.n) return 1;
+      const o = outcomeState();
+      const s = o.stats[key];
+      if (!s || !s.n) return 1.15;              // never tried: a little pull to find out
       const rate = (s.ok + 1) / (s.n + 2);
       let b = 0.5 + rate;                       // 0.5 .. 1.5
       if (s.mood > 2) b += 0.1; else if (s.mood < -2) b -= 0.1;
+      if (o.prefs[key] === 'likes') b += 0.15; else if (o.prefs[key] === 'dislikes') b -= 0.15;
+      b *= outcomeContextFactor(key);           // what works WHEN: night, season, tired, wind
+      b += 0.25 / Math.sqrt((s.tries || s.n) + 1);   // keep exploring what he has rarely tried
       if (s.streak >= 2) b *= 0.6;
-      return Math.max(0.35, Math.min(1.6, b));
+      return Math.max(0.3, Math.min(1.8, b));
     }
 
 // Before he tries something that went wrong last time: a diary line saying what he'll do differently.
@@ -205,7 +306,44 @@ function outcomeFixFor(key) {
       const s = outcomeState().stats[key];
       if (!s || !s.fail || (s.lastOkAt || 0) > (s.lastFailAt || 0)) return null;
       const r = OUTCOME_REASONS[s.lastReason] || {};
-      return { kind: r.fixKind || 'retry', fix: s.fix || r.fix || 'try it differently', why: s.why || r.why || 'it did not work', reason: s.lastReason };
+      const first = r.fixKind || 'retry';
+      // The fix that has worked best for this kind of failure (an untried one gets a fair chance)
+      const tried = outcomeState().fixes[s.lastReason] || {};
+      const alts = OUTCOME_FIX_ALTS[first] || [first];
+      const score = k => { const t = tried[k]; return t ? (t.ok + 1) / (t.n + 2) : (k === first ? 0.6 : 0.5); };
+      const kind = alts.slice().sort((a, b) => score(b) - score(a))[0];
+      const fix = kind === first ? (s.fix || r.fix || OUTCOME_FIX_WORDS[kind]) : OUTCOME_FIX_WORDS[kind];
+      return { kind, fix: fix || 'try it differently', why: s.why || r.why || 'it did not work', reason: s.lastReason, learned: kind !== first };
+    }
+
+// Things he can simply go and do (the same calls his life tick makes), for picking a learned favourite
+const OUTCOME_RUNNERS = {
+  paint: () => typeof paintOnMyOwn === 'function' && paintOnMyOwn(),
+  print: () => typeof printOnMyOwn === 'function' && printOnMyOwn(),
+  stargaze: () => typeof stargaze === 'function' && stargaze('A Favourite'),
+  hobby: () => typeof practiceHobby === 'function' && (state.hobbies || []).length && practiceHobby(pickHobbyToPractise(), 'A Favourite'),
+  skill: () => typeof practiseSkill === 'function' && typeof pickSkillToPractise === 'function' && practiseSkill(pickSkillToPractise()),
+  browse: () => typeof browseInternet === 'function' && browseInternet(null, 'A Favourite'),
+  landscape: () => typeof shapeTheValleyOnMyOwn === 'function' && shapeTheValleyOnMyOwn(),
+  workshop: () => typeof workshopOnMyOwn === 'function' && workshopOnMyOwn(),
+  boat: () => typeof goBoating === 'function' && typeof findVehicle === 'function' && findVehicle('boat') && goBoating('A Favourite')
+};
+
+// Now and then he goes for what he has LEARNED suits this moment: an activity that works well in these
+// circumstances (night, season, rested, calm) and that he enjoys. Null when nothing stands out.
+function outcomeFavouriteNow() {
+      const o = outcomeState();
+      const cands = Object.keys(OUTCOME_RUNNERS).map(k => {
+        const s = o.stats[k];
+        if (!s || s.n < 2.5 || o.prefs[k] === 'dislikes') return null;
+        if (typeof canTry === 'function' && !canTry(k)) return null;
+        const b = outcomeBias(k) * (o.prefs[k] === 'likes' ? 1.2 : 1);
+        return b >= 1.3 ? { key: k, w: b, run: OUTCOME_RUNNERS[k] } : null;
+      }).filter(Boolean);
+      if (!cands.length || Math.random() > 0.25) return null;
+      let r = Math.random() * cands.reduce((t, c) => t + c.w, 0);
+      for (const c of cands) { r -= c.w; if (r <= 0) return c; }
+      return cands[0];
     }
 
 // For the AI prompt and the relevance ranker (js/brainrank.js): one line per lesson or habit
@@ -213,8 +351,10 @@ function outcomeLinesForAI() {
       const o = outcomeState();
       const lines = [];
       o.lessons.slice(0, 8).forEach(l => lines.push({ key: l.key, text: `${outcomeLabel(l.key)}: last time ${l.why}${l.worked ? `; ${l.fix} worked` : `; next time ${l.fix}`}`, at: l.at }));
+      Object.keys(o.stats).forEach(k => { const i = outcomeContextInsight(k); if (i) lines.push({ key: k, text: `${outcomeLabel(k)} ${i.good ? 'goes well' : 'tends to go wrong'} ${OUTCOME_CTX_WORDS[i.v] || i.v}`, at: o.stats[k].lastAt }); });
+      Object.entries(o.prefs).filter(([k, v]) => v === 'likes' || v === 'dislikes').slice(0, 4).forEach(([k, v]) => lines.push({ key: k, text: `you ${v === 'likes' ? 'enjoy' : 'do not much enjoy'} ${outcomeLabel(k)}`, at: 0 }));
       Object.entries(o.stats).filter(([, s]) => s.n >= 2 && s.ok / s.n >= 0.7).slice(0, 6)
-        .forEach(([k, s]) => lines.push({ key: k, text: `${outcomeLabel(k)} usually goes well (${s.ok}/${s.n})${s.mood > 2 ? ' and makes you happy' : ''}`, at: s.lastAt }));
+        .forEach(([k, s]) => lines.push({ key: k, text: `${outcomeLabel(k)} usually goes well (${Math.round(s.ok / s.n * 100)}%)${s.mood > 2 ? ' and makes you happy' : ''}`, at: s.lastAt }));
       return lines;
     }
 
@@ -232,7 +372,7 @@ function renderOutcomesList() {
       if (badge) badge.textContent = String(o.lessons.length);
       const stats = Object.entries(o.stats).filter(([, s]) => s.n).sort((a, b) => (b[1].lastAt || 0) - (a[1].lastAt || 0)).slice(0, 8);
       const html = (o.lessons.length ? o.lessons.slice(0, 6).map(l => `<div class="brain-card space-y-1"><div class="brain-card-title">${l.worked ? '✅' : '🔁'} ${escapeHtml(outcomeLabel(l.key))}</div><div class="brain-card-meta">Last time ${escapeHtml(l.why)}; ${l.worked ? 'what worked' : 'next time'}: ${escapeHtml(l.fix)}${(l.times || 1) > 1 ? ` (${l.times}×)` : ''}</div></div>`).join('') : '')
-        + (stats.length ? `<div class="brain-card-meta pt-1">How things have gone</div>` + stats.map(([k, s]) => `<div class="brain-card-meta">${escapeHtml(outcomeLabel(k))}: ${s.ok} of ${s.n} went well</div>`).join('') : '');
+        + (stats.length ? `<div class="brain-card-meta pt-1">How things have gone</div>` + stats.map(([k, s]) => `<div class="brain-card-meta">${escapeHtml(outcomeLabel(k))}: ${Math.round(s.ok / s.n * 100)}% went well recently${o.prefs[k] === 'likes' ? ' 💛' : ''}</div>`).join('') : '');
       const out = html || '<div class="brain-empty text-xs text-slate-500 italic">Nothing learned from results yet.</div>';
       if (typeof perfSetHtml === 'function') perfSetHtml(el, out); else el.innerHTML = out;
     }

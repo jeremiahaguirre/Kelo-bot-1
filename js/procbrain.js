@@ -105,7 +105,7 @@ function pbLink(goal) {
       const lesson = typeof outcomeState === 'function' ? outcomeState().lessons.find(l => !l.worked) : null;
       const g = goal || (typeof goalsOpen === 'function' ? goalsOpen()[0] : null);
       const opts = [`I felt ${pick(PB_FEELINGS)}.`, `It made me feel ${pick(PB_FEELINGS)}.`];
-      if (g) opts.push(`It isn't part of ${g.title.toLowerCase()}, but it gave me ideas for it.`, `My mind kept drifting back to ${g.title.toLowerCase()}.`);
+      if (g) opts.push(`It isn't part of my goal (${g.title.toLowerCase()}), but it gave me ideas for it.`, `My mind kept drifting back to my goal: ${g.title.toLowerCase()}.`);
       if (lesson) opts.push(`I kept remembering that last time ${lesson.why}. Next time I'll ${lesson.fix}.`);
       const c = (state.concepts || [])[0];
       if (c) opts.push(`It fits my idea of "${c.name}", or maybe it argues with it.`);

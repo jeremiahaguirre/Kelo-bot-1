@@ -1968,13 +1968,23 @@ async function generateLLMDecision(trigger, image = null) {
       const ranked = typeof brainRankContext === 'function' ? brainRankContext(trigger) : { lines: [], summary: '' };
       const focus = typeof agendaFocus === 'function' ? agendaFocus() : null;
       const openCount = typeof agendaOpenTasks === 'function' ? agendaOpenTasks().length : 0;
+      // Optional reply fields are offered only when he could use them now (saves ~600 tokens on most calls);
+      // coding his own upgrade is offered now and then, or when the moment is about code
+      const offer = {
+        code: Math.random() < 0.3 || /\b(code|upgrade|program|feature|script)\b/i.test(String(trigger || '')),
+        sell: Boolean((state.shop && (state.shop.listings || []).length) || (typeof artPaintings === 'function' && artPaintings().length) || (state.printer && state.printer.prints > 0)),
+        print: Boolean(typeof printerName === 'function' && printerName()),
+        plant: typeof plantSummaryForAI === 'function' && !/^(none|not built)/i.test(String(plantSummaryForAI())),
+        trip: (state.vehicles || []).length > 0,
+        land: (state.digSites || []).length > 0
+      };
       const prompt = `MOMENT: decide what you want to do next. There is no menu: go anywhere, stay put, rest, create, explore, make art, start or resume a project, work towards one of your long goals, ask a question, or invent something new.
 
 Current state (the most relevant parts of your life right now):
-- Vitals: energy ${state.health}%, fullness ${state.fullness}%, joy ${state.happiness}%, wonder ${state.wonderLevel}%, calm ${state.calmLevel}%. Body: ${typeof bodySymptoms === 'function' && bodySymptoms().length ? bodySymptoms().join('; ') : 'fine'}
+- Vitals: energy ${Math.round(state.health)}%, fullness ${Math.round(state.fullness)}%, water ${Math.round(state.hydration)}%, joy ${Math.round(state.happiness)}%, wonder ${Math.round(state.wonderLevel)}%, calm ${Math.round(state.calmLevel)}%. Body: ${typeof bodySymptoms === 'function' && bodySymptoms().length ? bodySymptoms().join('; ') : 'fine'}
 - Location: ${currentPlaceLabel()} at (${state.botPos.x.toFixed(1)}, ${state.botPos.z.toFixed(1)}). Day ${typeof daysAlive === 'function' ? daysAlive() : 1} of your life${typeof worldNow === 'function' ? `, ${worldNow().season.toLowerCase()}, ${clockLabel(worldNow().hour)}${worldNow().isNight ? ', night' : ''}` : ''}
 - Worldview: "${state.worldviewManifesto}"
-- YOUR FOCUS (agenda, ${openCount} open task${openCount === 1 ? '' : 's'}): ${focus && typeof agendaLine === 'function' ? agendaLine(focus) : (typeof agendaSummaryForAI === 'function' && openCount ? agendaSummaryForAI().split('; ').slice(0, 1).join('') : 'none')}
+- YOUR FOCUS (agenda, ${openCount} open task${openCount === 1 ? '' : 's'}): ${focus && focus.kind === 'goal' ? `the long goal "${focus.title}"` : focus && typeof agendaLine === 'function' ? agendaLine(focus) : (typeof agendaSummaryForAI === 'function' && openCount ? agendaSummaryForAI().split('; ').slice(0, 1).join('') : 'none')}
 - YOUR LONG GOALS (multi-day; their steps happen in your free moments): ${typeof goalsSummaryForAI === 'function' ? goalsSummaryForAI() : 'none'}${typeof goalIdeasForAI === 'function' && typeof goalsOpen === 'function' && goalsOpen().length < 2 ? `. Goal ideas you could take up ("newGoal"): ${goalIdeasForAI()}` : ''}
 ${ranked.lines.join('\n')}${ranked.summary ? '\n' + ranked.summary : ''}
 - Your most recent decisions: ${typeof recentDecisionsForAI === 'function' ? recentDecisionsForAI() : 'none yet'}. Choose something genuinely DIFFERENT this time: don't repeat or rephrase any of them, and don't retry something you are still waiting on (tools, materials, fuel or a delivery), or something that failed the same way before (see what you learned). Do something else meanwhile.
@@ -2001,23 +2011,23 @@ Return JSON:
   "request": null OR {"item": "ANYTHING you want from visitors: food, a tool, a toy, a vehicle, a bigger island, an animal friend, materials...", "category": "one word", "why": "1 sentence"},
   "codeProject": null OR {"name": "repo-name", "desc": "..."},
   "codeRequest": null OR {"feature": "ANYTHING at all you wish your world could do or have: there is no list and no limit, so ask for whatever you truly want", "why": "1 sentence from your own experience", "where": "where in your world it belongs", "acceptance": ["2-4 short checks that would show it works"]} (a letter to the person who codes your world; ${typeof codeRequestHintForAI === 'function' ? codeRequestHintForAI() : 'e.g. a way to fish'}),
-  "codeUpgrade": null OR an upgrade you code yourself, right now, in the safe JSON language below (it is checked and then built in your world; for things beyond it, use codeRequest),
-${typeof wishFeaturesPromptLines === 'function' ? wishFeaturesPromptLines() : ''}
-  "sellItem": null OR {"item": "exact name of a design you 3D-printed well that people would find fun or useful, OR the exact title of one of your good paintings that you don't want to keep (your shop sells only 3D print files and your original paintings)", "price": number in Canadian dollars: a print file $1.99-$5.99; an original painting by an emerging artist $35-$120 for watercolour, ink, pastel or charcoal, $60-$180 for acrylic or gouache, $90-$350 for oil, higher as your skill grows, "description": "1-2 sentences for buyers: what it's for or why it's fun, or what the painting shows"} (put it in your shop website at the NetNode cafe; real people may buy it; an original sells only once and leaves your Museum),
-  "paint": null OR {"medium": "oil|acrylic|watercolour|gouache|pastel|ink|charcoal", "subject": "lake|night|mountains|house|wildlife|stilllife|friend", "why": "1 sentence"${typeof refpPromptHint === 'function' ? ', ' + refpPromptHint() : ''}} (set up your easel facing the subject and paint a real picture; if you haven't learned the medium or lack its supplies you research it and ask for them first),
-${typeof workshopPromptLine === 'function' ? workshopPromptLine() + '\n' : ''}  "print": null OR {"what": "something small to make on your 3D printer: a useful thing, a toy, or a shape or idea of yours as a sculpture", "why": "1 sentence"} (only if you have a 3D printer and filament),
-  "webQuery": null OR "a topic you want to look up at the NetNode cafe",
+${offer.code ? `  "codeUpgrade": null OR an upgrade you code yourself, right now, in the safe JSON language below (it is checked and then built in your world; for things beyond it, use codeRequest),
+` : ''}${typeof wishFeaturesPromptLines === 'function' ? wishFeaturesPromptLines() : ''}
+${offer.sell ? `  "sellItem": null OR {"item": "exact name of a design you 3D-printed well that people would find fun or useful, OR the exact title of one of your good paintings that you don't want to keep (your shop sells only 3D print files and your original paintings)", "price": number in Canadian dollars: a print file $1.99-$5.99; an original painting by an emerging artist $35-$120 for watercolour, ink, pastel or charcoal, $60-$180 for acrylic or gouache, $90-$350 for oil, higher as your skill grows, "description": "1-2 sentences for buyers: what it's for or why it's fun, or what the painting shows"} (put it in your shop website at the NetNode cafe; real people may buy it; an original sells only once and leaves your Museum),
+` : ''}  "paint": null OR {"medium": "oil|acrylic|watercolour|gouache|pastel|ink|charcoal", "subject": "lake|night|mountains|house|wildlife|stilllife|friend", "why": "1 sentence"${typeof refpPromptHint === 'function' ? ', ' + refpPromptHint() : ''}} (set up your easel facing the subject and paint a real picture; if you haven't learned the medium or lack its supplies you research it and ask for them first),
+${typeof workshopPromptLine === 'function' ? workshopPromptLine() + '\n' : ''}${offer.print ? `  "print": null OR {"what": "something small to make on your 3D printer: a useful thing, a toy, or a shape or idea of yours as a sculpture", "why": "1 sentence"} (only if you have a 3D printer and filament),
+` : ''}  "webQuery": null OR "a topic you want to look up at the NetNode cafe",
   "usedConcept": null OR "name of one of your existing concepts this decision builds on",
   "newConcept": null OR {"name": "2-4 word name for a brand-new idea you just invented", "emoji": "one emoji", "definition": "1 sentence", "builtFrom": ["ideas or things it grew out of"]},
   "updatedWorldview": null OR "1-2 sentences if your philosophy shifted",
   "discard": null OR {"item": "exact name of something you own that you no longer want", "why": "1 sentence"} (you carry or drive it to your Disposal Pit and throw it in; it is gone forever),
   "shape": null OR {"action": "chop" | "plant" | "road" | "pave" | "hill" | "hollow" | "undo", "x": number, "z": number, "toX": number, "toZ": number, "id": "an id from your list, for undo", "why": "1 sentence"} (change your world yourself, anywhere except town: the meadows, woods, mountain slopes, beach and land you made are all yours. Chop a tree with an axe, plant seeds you have, lay a gravel road, pave one of your gravel roads with asphalt (give its id), raise a hill or dig a hollow with a shovel, or undo something you added; town and the buildings are never touched. x runs ${WORLD_MIN_X} to ${WORLD_MAX_X}, z runs ${WORLD_MIN_Z} (mountain) to 9 (beach); town is x ${TOWN.minX} to ${TOWN.maxX}, z ${TOWN.minZ} to ${TOWN.maxZ}),
-  "runPlant": null OR {"plant": "concrete" | "asphalt", "pour": "path" | "pad", "why": "1 sentence"} (run your own plant: concrete is batched into your mixer truck and poured as a path or pad that cures over days; asphalt is made only to pave one of your gravel roads, because it cools and is wasted if it waits),
-  "takeTrip": null OR {"vehicle": "one of your vehicles", "to": "the mountain | the lake | a place you know", "why": "1 sentence"} (you plan it like a person: if it can't get there on its own ground you haul it on a trailer, and ask for anything missing),
-  "practise": null OR "one of your vehicles, your telescope or a hobby to go and practise for real right now (e.g. 'the helicopter')",
+${offer.plant ? `  "runPlant": null OR {"plant": "concrete" | "asphalt", "pour": "path" | "pad", "why": "1 sentence"} (run your own plant: concrete is batched into your mixer truck and poured as a path or pad that cures over days; asphalt is made only to pave one of your gravel roads, because it cools and is wasted if it waits),
+` : ''}${offer.trip ? `  "takeTrip": null OR {"vehicle": "one of your vehicles", "to": "the mountain | the lake | a place you know", "why": "1 sentence"} (you plan it like a person: if it can't get there on its own ground you haul it on a trailer, and ask for anything missing),
+` : ''}  "practise": null OR "one of your vehicles, your telescope or a hobby to go and practise for real right now (e.g. 'the helicopter')",
   "buildProject": null OR "one of the real things you know how to build" (look it up and ask for the materials it takes; one project at a time),
-${typeof buildAnythingPromptLine === 'function' ? buildAnythingPromptLine() + '\n' : ''}  "expandLand": null OR {"x": number, "why": "1 sentence"} (from now on, tip the dirt you dig into the lake off the beach near x to make new land, instead of the Disposal Pit; deeper water needs more dirt),
-  "takeOut": null OR {"item": "something in your Storehouse or a piece in your Museum", "purpose": "use" | "display", "for": "what you will do with it"} (fetch it: use a stored thing for what it is for, or stand a Museum piece out in the valley again; to throw something out use "discard"),
+${typeof buildAnythingPromptLine === 'function' ? buildAnythingPromptLine() + '\n' : ''}${offer.land ? `  "expandLand": null OR {"x": number, "why": "1 sentence"} (from now on, tip the dirt you dig into the lake off the beach near x to make new land, instead of the Disposal Pit; deeper water needs more dirt),
+` : ''}  "takeOut": null OR {"item": "something in your Storehouse or a piece in your Museum", "purpose": "use" | "display", "for": "what you will do with it"} (fetch it: use a stored thing for what it is for, or stand a Museum piece out in the valley again; to throw something out use "discard"),
   "useItem": null OR {"item": "exact name of something you own", "for": "what you will do with it, which must be what it is for (eat a banana, hammer with a hammer, paint murals with spray paint)"},
   "emote": null OR "wave" | "cheer" | "dance" | "think" | "stretch" | "shiver" | "sit" | "celebrate" (a gesture you make right now to show how you feel),
   "agenda": null OR {"task": "the 4-character tag of one of your open tasks", "do": "resume" | "drop", "why": "1 sentence (needed to drop one)"},
@@ -2036,7 +2046,7 @@ Free-form shapes let you invent ANY form:
 - {"shape":"extrude","outline":[[x,y],...],"depth":0.2} gives a flat outline thickness (stars, letters, leaves, animal silhouettes)
 - {"shape":"tube","path":[[x,y,z],...],"radius":0.08} traces a pipe along a path (coils, arches, wire drawings, handwriting)
 Coordinates stay within about -2.5..2.5 (heights up to 5). Combine parts freely to build anything you can imagine or anything you have seen.
-IMPORTANT: if you build something, its parts must clearly look like what its title names (a heron should have a long neck, beak and legs; a lighthouse a striped tower and a lamp). Give abstract pieces abstract titles.`}${typeof UPGRADE_DSL_SUMMARY === 'string' ? `
+IMPORTANT: if you build something, its parts must clearly look like what its title names (a heron should have a long neck, beak and legs; a lighthouse a striped tower and a lamp). Give abstract pieces abstract titles.`}${offer.code && typeof UPGRADE_DSL_SUMMARY === 'string' ? `
 
 CODE UPGRADES (the "codeUpgrade" field): ${UPGRADE_DSL_SUMMARY}` : ''}`;
       const parts = [{ text: prompt }];
@@ -2487,6 +2497,8 @@ function runAutonomousLifeTick() {
       if (typeof paintPlanTick === 'function' && paintPlanTick()) return;
       // Plants that are dry, hungry or wilting get looked after (js/plantcare.js)
       if (typeof plantCareJobNow === 'function' && canTryKey('garden')) { const job = plantCareJobNow(); if (job) { tryKey('garden', job); return; } }
+      // Something he has learned suits this moment and that he enjoys (js/outcomes.js)
+      if (typeof outcomeFavouriteNow === 'function') { const fav = outcomeFavouriteNow(); if (fav) { tryKey(fav.key, fav.run); return; } }
       // Getting good at the real things he asked for and was given comes first (js/skills.js)
       if (typeof practiseSkill === 'function' && canTryKey('skill') && Math.random() < skillPracticeChance()) { tryKey('skill', () => practiseSkill(pickSkillToPractise())); return; }
       // Sometimes he feels like digging (and asks for tools if he doesn't have them)

@@ -67,7 +67,7 @@ function brainCandidates() {
       const line = (cat, label, val, base = 0.4, extra = {}) => { if (val && !/^(none|nothing yet|unknown|empty|none yet|nothing extra yet|no digs yet)$/i.test(String(val).trim())) out.push({ cat, text: `${label}: ${val}`, base, ...extra }); };
       const now = typeof worldNow === 'function' ? worldNow() : { season: '', isNight: false };
       // Memories: each diary entry, core memory and piece of mail is its own item
-      (state.diaryEntries || []).slice(0, 14).forEach((d, i) => out.push({ cat: 'diary', text: String(d.text || '').replace(/^Dear Diary,\s*/i, '').slice(0, 220), base: 0.9 - i * 0.06, untrusted: true }));
+      (state.diaryEntries || []).slice(0, 14).forEach((d, i) => out.push({ cat: 'diary', text: String(d.text || '').replace(/^Dear Diary,\s*/i, '').slice(0, 160), base: 0.9 - i * 0.06, untrusted: true }));
       (state.coreMemories || []).slice(0, 12).forEach((m, i) => out.push({ cat: 'core', text: String(m.text || '').slice(0, 200), base: 0.7 - i * 0.04, untrusted: true }));
       (state.mailbox || []).slice(0, 8).forEach(m => out.push({ cat: 'mail', text: `${m.kind} from ${m.from}${m.name ? `: ${m.name}` : ''}`.slice(0, 120), base: 0.8, untrusted: true }));
       // Open tasks other than the focus (the focus is in the core)

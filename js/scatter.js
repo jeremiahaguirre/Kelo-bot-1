@@ -232,6 +232,8 @@ updateGrassTufts = function scatUpdateGrass() {
       if (R > Ri) ring(co, Ri, R, 1.35, 1);
       grassTufts.count = k;
       scatFlowers.count = kf;
+      // culled as one patch around where they were laid
+      [grassTufts, scatFlowers].forEach(mm => { mm.frustumCulled = true; mm.geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(tg.x, getAnalyticalGroundHeight(tg.x, tg.z), tg.z), R + 2); });
       [grassTufts, scatFlowers].forEach(mm => { mm.instanceMatrix.needsUpdate = true; if (mm.instanceColor) mm.instanceColor.needsUpdate = true; });
     };
 
@@ -362,6 +364,11 @@ function scatBuildContact() {
         strength.setX(i, sp.k);
       });
       scatContact.count = spots.length;
+      if (spots.length) {
+        const xs = spots.map(p => p.x), zs = spots.map(p => p.z), cx = (Math.min(...xs) + Math.max(...xs)) / 2, cz = (Math.min(...zs) + Math.max(...zs)) / 2;
+        scatContact.geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(cx, 0, cz), Math.hypot(Math.max(...xs) - cx, Math.max(...zs) - cz) + 12);
+        scatContact.frustumCulled = true;
+      }
       scatContact.instanceMatrix.needsUpdate = true;
       strength.needsUpdate = true;
       scatContact.visible = true;

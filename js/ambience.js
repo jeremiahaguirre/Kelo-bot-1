@@ -258,10 +258,14 @@ function ambBuildPeople(n) {
         parts[4].setColorAt(i * 2, c.setHex(L.shirt)); parts[4].setColorAt(i * 2 + 1, c.setHex(L.shirt));
         ambPeople.push({ route: r, u: (i * 0.37) % 1, dir: i % 2 ? -1 : 1, speed: 1.0 + (i % 3) * 0.18, phase: i * 1.3, wait: 0, H });
       }
+      // culled as one: a sphere around all the routes (out of view in the north yard, the Workshop...)
+      const xs = routes.flat().map(p => p[0]), zs = routes.flat().map(p => p[1]);
+      const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cz = (Math.min(...zs) + Math.max(...zs)) / 2;
+      const rr = Math.hypot(Math.max(...xs) - cx, Math.max(...zs) - cz) + 4;
       parts.forEach(m => {
         m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         m.castShadow = true; m.receiveShadow = true;
-        m.frustumCulled = false;
+        m.geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(cx, 2, cz), rr);
         if (typeof chunkDynamic !== 'undefined' && chunkDynamic.add) chunkDynamic.add(m);
         scene.add(m);
       });

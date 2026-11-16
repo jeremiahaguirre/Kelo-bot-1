@@ -8,6 +8,11 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
+## Farm stage 1: land, buildings, grain (branch `agent/farm`, results on `qa-results-farm`) — IN PROGRESS
+- Owner's ask: a big mechanized farm from scratch (land, buildings, machines, grain), designed for stage 2 (orchard, vegetables, livestock, hay, feed) on another machine.
+- Built: js/farmdata.js (registries + `state.farm` + crop sim), js/farmland.js (site, grading, ditches, lane, fence, paths), js/farmmodels.js (models, instanced crops), js/farm.js (agenda goal "Build the farm", lists, buildings, field work, harvest, dryer, sales, flour, diary, Brain-tab Farm panel).
+- Testing: qa/farm/cycle.js (whole cycle in fast time), snapshots -> shots.js at DSF 2; regressions still to run. See REPORT.md on qa-results-farm.
+
 ## North yard fixes (owner's annotated screenshot, 2026-11-12): branch agent/northyard, waiting for merge
 - Arrow 1 (drive through the range), arrow 2 (land inside the buildings), arrow 3 (road between the hall and the hangar): fixed (far lands sunk under the finer meshes; paved Pass Road, Yard Street, Hangar Lane, North Apron). Report: qa-results-northyard/REPORT.md.
 

@@ -858,18 +858,21 @@ function farmFillCrop(f, force = false) {
       const M = farmFieldMeshes[f.id], im = farmCropMeshFor(f);
       if (!im || !camera) return;
       const cx = camera.position.x, cz = camera.position.z;
-      const key = `${Math.round(cx / 6)}|${Math.round(cz / 6)}|${f.op ? f.op.done.join('') + (f.op.cur ?? '') + Math.round((f.op.prog || 0) * 10) : ''}|${Math.round(f.g * 50)}|${Math.round(f.p * 10)}`;
+      const key = `${Math.round(cx / 12)}|${Math.round(cz / 12)}|${f.op ? f.op.done.join('') + (f.op.cur ?? '') + Math.round((f.op.prog || 0) * 10) : ''}|${Math.round(f.g * 50)}|${Math.round(f.p * 10)}`;
       if (!force && M.cropCam === key) return;
+      // (refilling ~8 000 spots is a few ms: not more than every 400 ms per field)
+      const nowMs = performance.now();
+      if (!force && nowMs - (M.cropAt || 0) < 400) return;
+      M.cropAt = nowMs;
       M.cropCam = key;
       const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), c = new THREE.Color();
       const st = farmCropStage(f), grow = st ? Math.min(1, 0.35 + f.g * 1.2) : 1;
       let n = 0;
       const box = new THREE.Box3();
-      for (const [x, z, j] of M.spots) {
+      for (const [x, z, j, y] of M.spots) {
         const d = Math.hypot(x - cx, z - cz);
         if (d > FARM_CROP_MID || (d > FARM_CROP_NEAR && j > 0.12)) continue;
         if (farmHarvestedAt(f, x, z)) continue;
-        const y = getAnalyticalGroundHeight(x, z);
         q.setFromAxisAngle(up, j * 6.28);
         const k = (0.85 + j * 0.3) * grow * (d > FARM_CROP_NEAR ? 1.15 : 1);
         m.compose(p.set(x, y, z), q, s.set(k, k, k));
@@ -911,13 +914,13 @@ function farmFillWeeds(f) {
       const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
       let n = 0;
       const box = new THREE.Box3();
-      for (const [x, z, j] of M.spots) {
+      for (const [x, z, j, y] of M.spots) {
         if (n >= 1600) break;
         if (((j * 97.13) % 1) > w * 0.35) continue;
         if (farmStripLook(f, x, z) === 'ploughed' || farmHarvestedAt(f, x, z)) continue;
         q.setFromAxisAngle(up, j * 9);
         const k = 0.6 + j;
-        m.compose(p.set(x + 0.5, getAnalyticalGroundHeight(x, z), z - 0.4), q, s.set(k, k, k));
+        m.compose(p.set(x + 0.5, y, z - 0.4), q, s.set(k, k, k));
         im.setMatrixAt(n++, m);
         box.expandByPoint(p);
       }
@@ -935,7 +938,7 @@ function farmRefreshFieldLook(f, quick = false) {
         farmGroup.add(M.soil);
       } else farmRecolourSoil(f, M.soil);
       farmFillCrop(f, true);
-      if (!quick) farmFillWeeds(f); else farmFillWeeds(f);
+      if (!quick || !f.op) farmFillWeeds(f);
     }
 // Per frame (cheap): refill the clumps near the camera when it has moved
 function farmFieldsFrame() {

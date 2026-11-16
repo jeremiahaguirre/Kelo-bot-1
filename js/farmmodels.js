@@ -572,7 +572,9 @@ function farmClumpSpots(f) {
       const nx = Math.floor((f.x1 - f.x0) / FARM_CLUMP), nz = Math.floor((f.z1 - f.z0) / FARM_CLUMP);
       for (let i = 0; i < nx; i++) for (let k = 0; k < nz; k++) {
         const h = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453, j = h - Math.floor(h);
-        out.push([f.x0 + (i + 0.5) * FARM_CLUMP + (j - 0.5) * 0.6, f.z0 + (k + 0.5) * FARM_CLUMP + ((j * 7) % 1 - 0.5) * 0.6, j]);
+        const x = f.x0 + (i + 0.5) * FARM_CLUMP + (j - 0.5) * 0.6, z = f.z0 + (k + 0.5) * FARM_CLUMP + ((j * 7) % 1 - 0.5) * 0.6;
+        // (the ground under a field is graded and doesn't change: its height is looked up once)
+        out.push([x, z, j, getAnalyticalGroundHeight(x, z)]);
       }
       return out;
     }

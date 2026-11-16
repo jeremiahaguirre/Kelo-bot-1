@@ -1,0 +1,10 @@
+reg ui exit 0
+reg chat exit 0
+reg vehicle exit 0
+reg haul exit 0
+reg basement exit 0
+reg navtest exit 0
+perf final balanced exit 0
+perf final high exit 0
+perf final fast exit 0
+REGDONE

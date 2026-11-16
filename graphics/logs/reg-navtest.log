@@ -1,0 +1,8 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+{"path":"shore row low","maxJerk":0.044,"maxDistStep":0,"distFlips":0,"minDist":22,"framesUnderGround":0,"framesInsideBuilding":0}
+{"path":"shore row high","maxJerk":0.044,"maxDistStep":0,"distFlips":0,"minDist":40,"framesUnderGround":0,"framesInsideBuilding":0}
+{"path":"north row","maxJerk":5.035,"maxDistStep":0,"distFlips":0,"minDist":26,"framesUnderGround":0,"framesInsideBuilding":0}
+{"path":"town diagonal close","maxJerk":4.472,"maxDistStep":0,"distFlips":0,"minDist":14,"framesUnderGround":0,"framesInsideBuilding":0}
+{"path":"low over hills","maxJerk":6.697,"maxDistStep":0,"distFlips":0,"minDist":35,"framesUnderGround":0,"framesInsideBuilding":0}
+{"path":"workshop pass","maxJerk":0.395,"maxDistStep":0,"distFlips":0,"minDist":24,"framesUnderGround":0,"framesInsideBuilding":0}
+page errors: none

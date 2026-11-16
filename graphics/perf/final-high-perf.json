@@ -1,0 +1,65 @@
+{
+ "town": {
+  "calls": 1215,
+  "tris": 329578,
+  "jsFrame": 20.28,
+  "jsLogic": 7.68,
+  "frame": 1330.4
+ },
+ "mainstreet": {
+  "calls": 1106,
+  "tris": 282628,
+  "jsFrame": 16.93,
+  "jsLogic": 6.22,
+  "frame": 1518.5
+ },
+ "lakeshore": {
+  "calls": 1158,
+  "tris": 275029,
+  "jsFrame": 15.1,
+  "jsLogic": 4.98,
+  "frame": 1845.4
+ },
+ "meadow": {
+  "calls": 903,
+  "tris": 267954,
+  "jsFrame": 14.23,
+  "jsLogic": 4.23,
+  "frame": 1666.9
+ },
+ "workshop": {
+  "calls": 1317,
+  "tris": 381920,
+  "jsFrame": 24.02,
+  "jsLogic": 11.25,
+  "frame": 2213.6
+ },
+ "northyard": {
+  "calls": 260,
+  "tris": 213503,
+  "jsFrame": 17.42,
+  "jsLogic": 11.03,
+  "frame": 1610.3
+ },
+ "golden": {
+  "calls": 1101,
+  "tris": 290585,
+  "jsFrame": 10.82,
+  "jsLogic": 1.88,
+  "frame": 1287.1
+ },
+ "night": {
+  "calls": 1066,
+  "tris": 285942,
+  "jsFrame": 14.37,
+  "jsLogic": 2.78,
+  "frame": 1233.7
+ },
+ "sunset": {
+  "calls": 1197,
+  "tris": 296256,
+  "jsFrame": 13.48,
+  "jsLogic": 2.18,
+  "frame": 1525
+ }
+}

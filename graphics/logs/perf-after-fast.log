@@ -1,0 +1,44 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+[0s] booted
+[1s] town light
+[2s] town look
+[5s] town measure
+[13s] town full
+fast town {"calls":1042,"tris":296615,"jsFrame":21.37,"jsLogic":8.3,"frame":916.3}
+[13s] mainstreet light
+[14s] mainstreet look
+[17s] mainstreet measure
+[24s] mainstreet full
+fast mainstreet {"calls":1021,"tris":266096,"jsFrame":20.65,"jsLogic":6.85,"frame":967.3}
+[25s] lakeshore light
+[26s] lakeshore look
+[28s] lakeshore measure
+[36s] lakeshore full
+fast lakeshore {"calls":1072,"tris":264636,"jsFrame":18.87,"jsLogic":6.43,"frame":1081.6}
+[37s] meadow light
+[38s] meadow look
+[40s] meadow measure
+[48s] meadow full
+fast meadow {"calls":878,"tris":256763,"jsFrame":16.77,"jsLogic":4.57,"frame":1015.3}
+[49s] workshop light
+[50s] workshop look
+[53s] workshop measure
+[65s] workshop full
+fast workshop {"calls":1155,"tris":366768,"jsFrame":37.35,"jsLogic":13.28,"frame":1612.6}
+[66s] northyard light
+[68s] northyard look
+[71s] northyard measure
+[77s] northyard full
+fast northyard {"calls":179,"tris":208548,"jsFrame":13.7,"jsLogic":7.25,"frame":786.2}
+[78s] golden light
+[79s] golden look
+[81s] golden measure
+[88s] golden full
+fast golden {"calls":1263,"tris":311936,"jsFrame":15.85,"jsLogic":2,"frame":851}
+[89s] night light
+[90s] night look
+[92s] night measure
+[99s] night full
+fast night {"calls":913,"tris":260039,"jsFrame":10.72,"jsLogic":1.58,"frame":783.7}
+RESULT {"gfx":"fast","res":{"town":{"calls":1042,"tris":296615,"jsFrame":21.37,"jsLogic":8.3,"frame":916.3},"mainstreet":{"calls":1021,"tris":266096,"jsFrame":20.65,"jsLogic":6.85,"frame":967.3},"lakeshore":{"calls":1072,"tris":264636,"jsFrame":18.87,"jsLogic":6.43,"frame":1081.6},"meadow":{"calls":878,"tris":256763,"jsFrame":16.77,"jsLogic":4.57,"frame":1015.3},"workshop":{"calls":1155,"tris":366768,"jsFrame":37.35,"jsLogic":13.28,"frame":1612.6},"northyard":{"calls":179,"tris":208548,"jsFrame":13.7,"jsLogic":7.25,"frame":786.2},"golden":{"calls":1263,"tris":311936,"jsFrame":15.85,"jsLogic":2,"frame":851},"night":{"calls":913,"tris":260039,"jsFrame":10.72,"jsLogic":1.58,"frame":783.7}}}
+page errors: none

@@ -1,0 +1,27 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+[0s] booted
+[7s] town light
+[12s] town look
+shot before-balanced-town.png
+[76s] mainstreet light
+[82s] mainstreet look
+shot before-balanced-mainstreet.png
+[141s] lakeshore light
+[146s] lakeshore look
+shot before-balanced-lakeshore.png
+[214s] meadow light
+[222s] meadow look
+shot before-balanced-meadow.png
+[283s] workshop light
+[290s] workshop look
+shot before-balanced-workshop.png
+[371s] northyard light
+[380s] northyard look
+shot before-balanced-northyard.png
+[437s] golden light
+[443s] golden look
+shot before-balanced-golden.png
+[495s] night light
+[502s] night look
+shot before-balanced-night.png
+page errors: none

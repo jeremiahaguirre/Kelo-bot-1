@@ -1,0 +1,116 @@
+{
+ "gfx": "balanced",
+ "view": [
+  0,
+  22,
+  27,
+  0,
+  0.5,
+  -1
+ ],
+ "calls": {
+  "total": 1707.5,
+  "by": {
+   "townspeople": {
+    "main": 7.5,
+    "shadow": 7.5,
+    "post": 0
+   },
+   "valley flowers": {
+    "main": 1.5,
+    "shadow": 0,
+    "post": 0
+   },
+   "grass": {
+    "main": 1.5,
+    "shadow": 0,
+    "post": 0
+   },
+   "flowers": {
+    "main": 1.5,
+    "shadow": 0,
+    "post": 0
+   },
+   "contact shadows": {
+    "main": 1.5,
+    "shadow": 0,
+    "post": 0
+   },
+   "air motes": {
+    "main": 1.5,
+    "shadow": 0,
+    "post": 0
+   },
+   "chimney smoke": {
+    "main": 1.5,
+    "shadow": 0,
+    "post": 0
+   },
+   "post passes": {
+    "main": 0,
+    "shadow": 0,
+    "post": 21
+   }
+  }
+ },
+ "js": {
+  "lookFrame": 0.0037,
+  "ambFrame": 0.0213,
+  "grassRelay": 1.62,
+  "contactRebuild": 4.7,
+  "counts": {
+   "tufts": 8,
+   "flowers": 0,
+   "contact": 306,
+   "people": 5
+  }
+ },
+ "frame": {
+  "bloom": {
+   "offMs": 1200,
+   "onMs": 1218,
+   "deltaPct": 1.5
+  },
+  "grading": {
+   "offMs": 1273,
+   "onMs": 1229,
+   "deltaPct": -3.5
+  },
+  "light shafts": "off at this level",
+  "valley mist": {
+   "offMs": 1215,
+   "onMs": 1172,
+   "deltaPct": -3.6
+  },
+  "cloud shadows": {
+   "offMs": 1153,
+   "onMs": 1179,
+   "deltaPct": 2.2
+  },
+  "ground blending": {
+   "offMs": 1136,
+   "onMs": 1139,
+   "deltaPct": 0.3
+  },
+  "grass + flowers": {
+   "offMs": 1157,
+   "onMs": 1202,
+   "deltaPct": 3.9
+  },
+  "contact shadows": {
+   "offMs": 1177,
+   "onMs": 1196,
+   "deltaPct": 1.6
+  },
+  "air motes": {
+   "offMs": 1180,
+   "onMs": 1180,
+   "deltaPct": 0
+  },
+  "town life": {
+   "offMs": 1202,
+   "onMs": 1264,
+   "deltaPct": 5.2
+  }
+ }
+}

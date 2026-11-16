@@ -1,0 +1,44 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+[0s] booted
+[1s] town light
+[3s] town look
+[5s] town measure
+[15s] town full
+balanced town {"calls":1297,"tris":307817,"jsFrame":21.28,"jsLogic":6.1,"frame":1204.1}
+[16s] mainstreet light
+[17s] mainstreet look
+[19s] mainstreet measure
+[28s] mainstreet full
+balanced mainstreet {"calls":1342,"tris":274286,"jsFrame":20.78,"jsLogic":5.73,"frame":1230.6}
+[30s] lakeshore light
+[31s] lakeshore look
+[33s] lakeshore measure
+[45s] lakeshore full
+balanced lakeshore {"calls":1180,"tris":267403,"jsFrame":19.62,"jsLogic":5.98,"frame":1564.1}
+[46s] meadow light
+[48s] meadow look
+[50s] meadow measure
+[59s] meadow full
+balanced meadow {"calls":1093,"tris":255130,"jsFrame":16.75,"jsLogic":4.47,"frame":1321.4}
+[61s] workshop light
+[62s] workshop look
+[65s] workshop measure
+[80s] workshop full
+balanced workshop {"calls":1203,"tris":369070,"jsFrame":33.15,"jsLogic":14.63,"frame":2010.3}
+[81s] northyard light
+[83s] northyard look
+[86s] northyard measure
+[96s] northyard full
+balanced northyard {"calls":208,"tris":209893,"jsFrame":21.42,"jsLogic":13.8,"frame":1302.5}
+[97s] golden light
+[99s] golden look
+[101s] golden measure
+[110s] golden full
+balanced golden {"calls":1359,"tris":317793,"jsFrame":20.55,"jsLogic":2.43,"frame":1108.5}
+[111s] night light
+[113s] night look
+[115s] night measure
+[124s] night full
+balanced night {"calls":1085,"tris":269130,"jsFrame":21.5,"jsLogic":3.73,"frame":1135.5}
+RESULT {"gfx":"balanced","res":{"town":{"calls":1297,"tris":307817,"jsFrame":21.28,"jsLogic":6.1,"frame":1204.1},"mainstreet":{"calls":1342,"tris":274286,"jsFrame":20.78,"jsLogic":5.73,"frame":1230.6},"lakeshore":{"calls":1180,"tris":267403,"jsFrame":19.62,"jsLogic":5.98,"frame":1564.1},"meadow":{"calls":1093,"tris":255130,"jsFrame":16.75,"jsLogic":4.47,"frame":1321.4},"workshop":{"calls":1203,"tris":369070,"jsFrame":33.15,"jsLogic":14.63,"frame":2010.3},"northyard":{"calls":208,"tris":209893,"jsFrame":21.42,"jsLogic":13.8,"frame":1302.5},"golden":{"calls":1359,"tris":317793,"jsFrame":20.55,"jsLogic":2.43,"frame":1108.5},"night":{"calls":1085,"tris":269130,"jsFrame":21.5,"jsLogic":3.73,"frame":1135.5}}}
+page errors: none

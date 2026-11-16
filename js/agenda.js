@@ -157,7 +157,8 @@ function agendaReady(refOrId, note = '') {
       const w = t.waitingFor;
       t.status = 'open';
       t.waitingFor = null;
-      agendaNote(t, 'ready', note || `${w ? agendaWaitText(w).replace(/^./, c => c.toUpperCase()) : 'What I was waiting for'} came through, so "${t.title}" is back on: next is ${agendaStepLabel(t).toLowerCase() || 'the next step'}.`);
+      // (a quiet wait, such as a long goal's breather between steps, isn't worth a diary line: js/goals.js)
+      agendaNote(t, 'ready', note || `${w ? agendaWaitText(w).replace(/^./, c => c.toUpperCase()) : 'What I was waiting for'} came through, so "${t.title}" is back on: next is ${agendaStepLabel(t).toLowerCase() || 'the next step'}.`, { diary: !(w && w.quiet) });
       agendaTouch(t);
       return t;
     }

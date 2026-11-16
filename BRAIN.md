@@ -57,7 +57,7 @@ The charter is a request to the model, so the game also checks the replies itsel
 
 | Call | Where | Context it sends (besides the charter) | Reply format (unchanged) |
 |---|---|---|---|
-| Decide what to do next | `generateLLMDecision`, js/agent.js | the full state summary: vitals, place, things, agenda, diary, places, vehicles, shops, plant, garden, rules for each field | the decision JSON (`thought`, `actionTitle`, `speech`, `diary`, `destination`, `build`, … `agenda`) |
+| Decide what to do next | `generateLLMDecision`, js/agent.js | a fixed core (vitals, place and time, focus, long goals and goal ideas, recent decisions, welding and world rules, the trigger), then the most relevant memories, mail, tasks, lessons, places, things and feature lines ranked against the moment within a 900-token budget (`js/brainrank.js`), plus one line naming what was left out. Optional reply fields are offered only when he can use them | the decision JSON (`thought`, `actionTitle`, `speech`, `diary`, `destination`, `build`, … `agenda`) |
 | Unscripted experience / image | `synthesizeUnboundedExperience`, js/agent.js | tools, item uses, the visitor's prompt or image (untrusted) | `actionTitle`, `placeName`, `x`, `z`, `parts`, … |
 | Read a visitor's note | `processNextUnopenedVisitorNote`, js/agent.js | place, worldview, the note (untrusted) | `reply`, `opinionTopic`, `opinionStance`, `opinionReasoning`, `updatedWorldview` |
 | Talk tab chat | `respondToVisitor`, js/conversation.js | place, mood, vitals, things, outlook, new words, the message (untrusted) | `reply`, `unknownWords`, `wantsToAct` |
@@ -72,3 +72,10 @@ The charter is a request to the model, so the game also checks the replies itsel
 | Cloud dream | `buildPrompt`, scripts/dream.mjs | the Wikipedia rabbit hole (untrusted), growth so far | `title`, `text`, `concept`, `nextCuriosity`, … |
 
 Token sizes before and after, and the test results, are in `REPORT.md` on the `qa-results-brainprompt` branch.
+
+## Smarter memory, long goals and learning (agent/brain2)
+
+- **Ranked context** (`js/brainrank.js`): the decision prompt no longer sends every state line. It ranks each diary entry, core memory, letter, open task, skill, lesson, nearby place, thing he owns and feature summary against the moment, and sends the best within a budget. The ranking looks at his needs, the time of day and season, where he is, his focus and goals, and what prompted him. Untrusted text stays fenced.
+- **Long goals** (`js/goals.js`, `js/goaltemplates.js`, see [GOALS.md](GOALS.md)): multi-day goals (stages and tasks) with blockers, progress and resume after reloads. The AI sees them and may take one up with `"newGoal"`.
+- **Learning from results** (`js/outcomes.js`): outcomes of every activity, which change what he picks and how he retries. They show in his diary and in the prompt ("What you learned from how things went").
+- **No-key brain** (`js/procbrain.js`): the same goals, ranking and learning. Its free decisions fit the moment, and its diary lines are composed and checked against recent ones.

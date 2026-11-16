@@ -131,7 +131,10 @@ async function startTidyUp(originLabel = 'Tidy-Up Time') {
           vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
           text: picks.length
             ? `Dear Diary, it was tidy-up time. I decided to let go of ${picks.map(p => p.name).join(', ')}.${picks.keepNote ? ' ' + picks.keepNote : kept.length ? ` I thought about ${kept.join(', ')} too, but I'm keeping them for now.` : ''}`
-            : 'Dear Diary, it was tidy-up time. I went through everything and I still want it all. Everything has its place.'
+            : (kept.length ? pick([`Dear Diary, it was tidy-up time. I held the ${kept[0].replace(/^(an?|the)\s+/i, '').toLowerCase()} for a long moment and put it back: I still want it.`,
+                `Dear Diary, tidy-up time. ${kept.join(', ')}: all staying. Everything has its place.`,
+                `Dear Diary, I went through my shelves again. I almost let go of the ${kept[kept.length - 1].replace(/^(an?|the)\s+/i, '').toLowerCase()}, then changed my mind.`])
+              : 'Dear Diary, it was tidy-up time. I went through everything and I still want it all. Everything has its place.')
         });
         savePersistentBrainState();
         renderAllUI();

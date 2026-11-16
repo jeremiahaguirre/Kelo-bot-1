@@ -21,6 +21,8 @@ function activityCoolingDown(key) {
 // May he try this kind of activity now?
 function canTry(key) {
       if (activityCoolingDown(key)) return false;
+      // Not the same failing plan again while nothing has changed (js/outcomes.js)
+      if (typeof outcomeCanTry === 'function' && !outcomeCanTry(key)) return false;
       const lastTwo = recentActivities.slice(-2);
       return !(lastTwo.length === 2 && lastTwo.every(k => k === key));
     }
@@ -38,8 +40,12 @@ function tryActivity(key, fn) {
       recentActivities.push(key);
       currentActivityKey = key;
       if (recentActivities.length > 12) recentActivities.shift();
+      // How it goes is recorded, and what went wrong last time is remembered (js/outcomes.js)
+      const snap = typeof outcomeSnapshot === 'function' ? outcomeSnapshot(key) : null;
+      if (snap && typeof outcomeBeforeTry === 'function') outcomeBeforeTry(key);
       let result;
-      try { result = fn(); } catch (e) { coolDownActivity(key, QUICK_COOLDOWN_MS); throw e; }
+      try { result = fn(); } catch (e) { coolDownActivity(key, QUICK_COOLDOWN_MS); if (snap) outcomeRecord(snap, null, e); throw e; }
+      if (snap) Promise.resolve(result).then(r => outcomeRecord(snap, r), e => outcomeRecord(snap, null, e || 'error'));
       Promise.resolve(result).finally(() => { if (currentActivityKey === key) currentActivityKey = null; }).catch(() => {});
       Promise.resolve(result).then(r => {
         if (typeof r === 'string') {

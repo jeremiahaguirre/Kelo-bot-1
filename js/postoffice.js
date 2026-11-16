@@ -76,7 +76,8 @@ async function openPhotoParcel(parcel) {
 
 async function openParcel(parcel) {
       if (parcel.kind === 'message') {
-        state.unopenedNotesQueue.push({ sender: parcel.from, text: parcel.note, timestamp: parcel.time });
+        // (already read, say after a reload mid mail run: he doesn't read it twice)
+        if (!queueVisitorNote({ id: parcel.id ? 'parcel:' + parcel.id : '', sender: parcel.from, text: String(parcel.note || ''), timestamp: parcel.time })) return;
         recordVisitorMemory(parcel.from, `Mailed me a letter: "${parcel.note.slice(0, 70)}"`);
         const logEntry = { type: 'letter', name: 'Letter', category: 'letter', emoji: '✉️', from: parcel.from, note: parcel.note.slice(0, 200), time: parcel.time, reaction: '' };
         state.giftLog.unshift(logEntry);
@@ -133,7 +134,7 @@ async function pickUpMail(originLabel = 'Checking the Mail') {
         savePersistentBrainState();
         renderAllUI();
         // New things go to the Storehouse once he is free
-        if (state.unstoredItems.length && typeof putAwayItems === 'function') doWhenFree(putAwayItems);
+        if (state.unstoredItems.length && typeof putAwayItems === 'function') doWhenFree(putAwayItems, { key: 'putaway' });
         return true;
       } finally {
         state.isCollectingMail = false;

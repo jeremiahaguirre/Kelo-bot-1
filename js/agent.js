@@ -258,6 +258,7 @@ const state = {
   "lastStructuredTick": "",
   "toolInventory": [],
   "unopenedNotesQueue": [],
+  "readNoteIds": [],
   "gardenPlots": [
     {
       "name": "Okanagan Peaches",
@@ -321,6 +322,9 @@ const state = {
   "knowsDigging": false,
   "itemDesigns": {},
   "unstoredItems": [],
+  // One record per copy on the Storehouse shelves, each with its own slot (js/storehouse.js); null until set up
+  "storeCopies": null,
+  "storeCopyNext": 0,
   "foundItems": [],
   "life": {
     "bornAt": null
@@ -1394,6 +1398,10 @@ function loadPersistentBrainState() {
           });
         }
         if (Array.isArray(saved.unstoredItems)) state.unstoredItems = saved.unstoredItems.filter(n => typeof n === 'string');
+        // (a save from before the shelf records: they are laid out from his loaded things, as the shelves showed them)
+        if (!Array.isArray(saved.storeCopies)) state.storeCopies = null;
+        if (typeof cleanStoreCopies === 'function') cleanStoreCopies();
+        cleanNotesQueue();
         if (Array.isArray(saved.digSites)) state.digSites = saved.digSites.filter(d => d && Number.isFinite(d.x) && Number.isFinite(d.z) && Number.isFinite(d.depth));
         if (Array.isArray(saved.foundItems)) state.foundItems = saved.foundItems.filter(f => f && typeof f.id === 'string');
         if (Array.isArray(saved.coreMemories)) state.coreMemories = saved.coreMemories.filter(m => m && typeof m.text === 'string');
@@ -1422,7 +1430,7 @@ function loadPersistentBrainState() {
 
 // Moment-to-moment flags and things stored elsewhere; everything else in state is saved
 const TRANSIENT_STATE_KEYS = new Set(['riding', 'ridingSpeed', 'ridingMode', 'isSleeping', 'isBusy', 'isWalking', 'isBuilding', 'isPracticing', 'isCollectingMail', 'isBrowsing',
-  'photoAlbum', 'rhythmPhaseText', 'unopenedNotesQueue', 'basementDepth']);
+  'photoAlbum', 'rhythmPhaseText', 'basementDepth']);
 
 // Big parts of him that change rarely are kept under their own storage keys, so the main brain
 // stays small and an everyday save doesn't rewrite them: the words and things he has looked up,
@@ -2067,7 +2075,7 @@ function applyDecision(decision, originLabel) {
       const dest = decision.destination;
       if (dest && typeof dest === 'object' && Number(dest.z) > 9.5 && typeof wadeIntoLake === 'function') {
         // Somewhere out on the lake: by boat if he has one, otherwise he finds out about deep water
-        doWhenFree(() => wadeIntoLake('Wanted to Go Out on the Lake'));
+        doWhenFree(() => wadeIntoLake('Wanted to Go Out on the Lake'), { key: 'wade-lake' });
       } else if (dest && typeof dest === 'object' && !state.isCollectingMail) {
         // (Reacting to a parcel mid mail run, he stays at the post office until it's all opened)
         const x = Math.round(clampNumber(dest.x, WORLD_MIN_X, WORLD_MAX_X, state.botPos.x) * 10) / 10;
@@ -2245,7 +2253,7 @@ function applyDecision(decision, originLabel) {
 
       if (decision.buildAnything && typeof applyBuildAnythingDecision === 'function') applyBuildAnythingDecision(decision.buildAnything);
 
-      if (decision.repairBalloon === true && state.balloonWreck && typeof repairBalloon === 'function') doWhenFree(() => repairBalloon('Decided to Fix the Balloon'));
+      if (decision.repairBalloon === true && state.balloonWreck && typeof repairBalloon === 'function') doWhenFree(() => repairBalloon('Decided to Fix the Balloon'), { key: 'repair-balloon' });
 
       const dc = decision.discard;
       if (dc && typeof dc === 'object' && typeof disposeItem === 'function' && (findOwnedName(dc.item) || (typeof findMuseumPiece === 'function' && findMuseumPiece(dc.item)))) {
@@ -2293,9 +2301,13 @@ function keloIsFree() {
       return !(state.isBusy || state.isBuilding || state.isPracticing || state.isCollectingMail || state.isSleeping);
     }
 
+// Each call site names its job with opts.key (its argument included), so two different jobs never merge and the
+// same job is queued once. A call without a key is its own job: it never merges with another (the old default,
+// the closure's source text, merged every call from one line whatever its arguments).
+let freeQueueAnon = 0;
 function doWhenFree(fn, opts = {}) {
       if (typeof fn !== 'function') return false;
-      const key = opts.key ? String(opts.key) : 'code:' + fn.toString();
+      const key = opts.key ? String(opts.key) : 'anon:' + (++freeQueueAnon);
       if (freeQueue.some(j => j.key === key)) return false;
       const now = Date.now();
       freeQueue.push({ fn, key, notBefore: now + (opts.delayMs ?? 3000), expires: now + (opts.maxWaitMs || 45 * 60000) });
@@ -2424,7 +2436,7 @@ async function receiveItem(name, category, from, note = '', extra = {}) {
         if (!state.knowsDigging && typeof discoverDigging === 'function') discoverDigging(`${giver} gave me ${item}. It's made for digging!`);
         const site = state.digSites[0];
         const spot = site || chooseDigSpot();
-        doWhenFree(() => digAt(spot.x, spot.z, `Back to Digging with the ${item}`));
+        doWhenFree(() => digAt(spot.x, spot.z, `Back to Digging with the ${item}`), { key: `dig:${spot.x},${spot.z}` });
       }
       // Some things spark a lasting hobby (spray paint, a kite, an instrument, seeds...)
       if (cat !== 'food' && typeof maybeStartHobbyFromItem === 'function') maybeStartHobbyFromItem(item, giver);
@@ -2483,7 +2495,8 @@ function runAutonomousLifeTick() {
       // Finish the current thought, build or mail run before starting something new
       if (state.isBusy || state.isBuilding || state.isCollectingMail || state.isPracticing || state.isSleeping) return;
       // Tidy first: new things he is still holding go to the Storehouse
-      if (state.unstoredItems.length && typeof putAwayItems === 'function') {
+      // (and what he took down to use goes back on its own shelf)
+      if (typeof putAwayItems === 'function' && (typeof storehouseHasPutAway === 'function' ? storehouseHasPutAway() : state.unstoredItems.length)) {
         putAwayItems();
         return;
       }
@@ -2709,9 +2722,62 @@ async function handleVisitorChatMessage(userMessage) {
       renderAllUI();
     }
 
+// Letters he has opened but not read yet are saved (state.unopenedNotesQueue), so a reload doesn't lose
+// one. A letter stays in the queue until he has finished reading it, then its id goes on a short list of
+// read ones (state.readNoteIds), so neither a reload nor the same letter opened twice has him read it again.
+const NOTES_QUEUE_MAX = 20, READ_NOTE_IDS_MAX = 100;
+const notesBeingRead = new Set();
+
+function visitorNoteId(note) {
+      if (note && typeof note.id === 'string' && note.id) return note.id.slice(0, 80);
+      return `note:${String(note && note.sender || '').slice(0, 40)}|${String(note && note.timestamp || '').slice(0, 40)}|${String(note && note.text || '').slice(0, 60)}`;
+    }
+
+// Queue a letter to read; false if it is already waiting or already read
+function queueVisitorNote(note) {
+      if (!note || typeof note.text !== 'string') return false;
+      const id = visitorNoteId(note);
+      if (!Array.isArray(state.readNoteIds)) state.readNoteIds = [];
+      if (state.readNoteIds.includes(id) || state.unopenedNotesQueue.some(n => visitorNoteId(n) === id)) return false;
+      state.unopenedNotesQueue.push({ id, sender: String(note.sender || 'Someone').slice(0, 60), text: note.text.slice(0, 4000), timestamp: note.timestamp || '' });
+      // Bounded: if letters pile up past the limit, the oldest unread one is dropped
+      while (state.unopenedNotesQueue.length > NOTES_QUEUE_MAX) {
+        const i = state.unopenedNotesQueue.findIndex(n => !notesBeingRead.has(n));
+        if (i < 0) break;
+        state.unopenedNotesQueue.splice(i, 1);
+      }
+      savePersistentBrainState();
+      return true;
+    }
+
+// Older or damaged saves: well-formed letters only, none already read, none twice
+function cleanNotesQueue() {
+      state.readNoteIds = Array.isArray(state.readNoteIds) ? state.readNoteIds.filter(i => typeof i === 'string').slice(-READ_NOTE_IDS_MAX) : [];
+      const seen = new Set(state.readNoteIds);
+      state.unopenedNotesQueue = (Array.isArray(state.unopenedNotesQueue) ? state.unopenedNotesQueue : [])
+        .filter(n => n && typeof n.text === 'string' && typeof n.sender === 'string')
+        .filter(n => { const id = visitorNoteId(n); if (seen.has(id)) return false; seen.add(id); n.id = id; return true; })
+        .slice(-NOTES_QUEUE_MAX);
+    }
+
 async function processNextUnopenedVisitorNote() {
-      if (state.unopenedNotesQueue.length === 0) return;
-      const note = state.unopenedNotesQueue.shift();
+      const note = state.unopenedNotesQueue.find(n => !notesBeingRead.has(n));
+      if (!note) return;
+      notesBeingRead.add(note);
+      try {
+        await readVisitorNote(note);
+      } finally {
+        notesBeingRead.delete(note);
+        const i = state.unopenedNotesQueue.indexOf(note);
+        if (i >= 0) state.unopenedNotesQueue.splice(i, 1);
+        if (!Array.isArray(state.readNoteIds)) state.readNoteIds = [];
+        state.readNoteIds.push(visitorNoteId(note));
+        if (state.readNoteIds.length > READ_NOTE_IDS_MAX) state.readNoteIds.splice(0, state.readNoteIds.length - READ_NOTE_IDS_MAX);
+        savePersistentBrainState();
+      }
+    }
+
+async function readVisitorNote(note) {
       const visitor = note.sender;
       const userMessage = note.text;
 

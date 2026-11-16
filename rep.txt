@@ -1,0 +1,4 @@
+rep1 dev haul: {"dirtDisposed":0,"load":0,"speech":"Splash! The dirt sinks under the water. That patch is 29% filled: about 3 more truckloads before it breaks the surface."} | page errors: none
+rep1 dev basement: put away: false deepest went: 0.0 { level: 0, title: 'Found a Workshop', depthNow: 0 } | page errors: none
+rep1 built haul: {"dirtDisposed":4,"load":0,"speech":"Tipped 4.0 loads of dirt into the Disposal Pit."} | page errors: none
+rep1 built basement: put away: true deepest went: 0.0 { level: 1, title: 'Putting away Rubber duck', depthNow: 0 } | page errors: none

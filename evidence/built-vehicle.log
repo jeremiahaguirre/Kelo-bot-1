@@ -1,0 +1,3 @@
+vehicle disposed false {"vehicles":["Dump truck","Excavator"],"tools":["Dump truck","Excavator","A sturdy shovel"],"meshes":2}
+shot vehicle-after
+page errors: none

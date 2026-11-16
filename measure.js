@@ -77,12 +77,23 @@ async function once(browser, i, memMin) {
   cdp.on('Tracing.dataCollected', d => events.push(...d.value));
   const traceDone = new Promise(r => cdp.once('Tracing.tracingComplete', r));
   await cdp.send('Tracing.start', { categories: 'devtools.timeline,v8,disabled-by-default-devtools.timeline', transferMode: 'ReportEvents' });
+  if (process.env.PROFILE) { await cdp.send('Profiler.enable'); await cdp.send('Profiler.setSamplingInterval', { interval: 1000 }); await cdp.send('Profiler.start'); }
   bytes = 0; requests = 0; busyUntil = 0; for (const k in perType) delete perType[k];
   const t0 = Date.now();
   await page.goto(`http://localhost:${PORT}/index.html`, { timeout: 600000, waitUntil: 'commit' });
   await page.waitForFunction(() => window.__m && window.__m.ready, null, { timeout: 600000, polling: 250 });
   const m = await page.evaluate(() => ({ ...window.__m, fp: (performance.getEntriesByName('first-paint')[0] || {}).startTime, fcp: (performance.getEntriesByName('first-contentful-paint')[0] || {}).startTime }));
   const metrics = Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map(x => [x.name, x.value]));
+  if (process.env.PROFILE) {
+    const { profile } = await cdp.send('Profiler.stop');
+    if (m.ready > +(process.env.SLOW || 10000) || process.env.PROFILE === 'all') {
+      fs.writeFileSync(path.join(__dirname, `profile-${LABEL}-${i}.cpuprofile`), JSON.stringify(profile));
+      const dt = {}; profile.samples.forEach((id, k) => { dt[id] = (dt[id] || 0) + (profile.timeDeltas[k] || 0); });
+      const self = {};
+      for (const n of profile.nodes) { const c = n.callFrame; const key = `${c.functionName || '(anon)'} ${c.url.split('/').pop()}:${c.lineNumber}:${c.columnNumber}`; self[key] = (self[key] || 0) + (dt[n.id] || 0) / 1000; }
+      console.log('PROFILE run', i, 'ready', Math.round(m.ready), JSON.stringify(Object.entries(self).sort((a, b) => b[1] - a[1]).slice(0, 25).map(([k, v]) => k + ' ' + v.toFixed(0))));
+    }
+  }
   await page.waitForTimeout(3000); // let late loads (skies, textures) land before the trace stops
   await cdp.send('Tracing.end'); await traceDone;
   let compile = 0, evaluate = 0, parseBg = 0; const perUrl = {};

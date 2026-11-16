@@ -1,0 +1,17 @@
+> hi
+< Hi curiousWanderer! I'm first day awake.  (5900ms)
+> How are you?
+< I feel good! Energy 80%, and my wonder is at 90%.  (5561ms)
+> What are you doing?
+< Right now: first day awake.  (5724ms)
+> Where are you?
+< I'm at my front porch.  (5546ms)
+> What do you have?
+< Nothing yet. Everything I own comes through the post office.  (5309ms)
+> I saw a quokka at the zoo yesterday
+< I looked it up! "quokka": The quokka is a small macropod about the size of a domestic cat, found on islands off Western Australia. Now I understand what you meant, curiousWanderer.  (144567ms)
+> Did you know the lake is deep?
+< The lake is deep? Thank you for telling me that, curiousWanderer. I'll think about it.  (5558ms)
+vocab: {"quokka":{"meaning":"The quokka is a small macropod about the size of a domestic cat, found on islands off Western Australia.","from":"Quokka","at":1794835327393}}
+unknown in "the lake is beautiful": []
+page errors: none

@@ -14,12 +14,12 @@
 // Usage: npm run build:site   (then serve _site/, e.g. npx http-server _site)
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync, renameSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { bundleGameScripts, compileTailwind, copy, dropGoogleFontsImport, shortHash, shrinkHdrFolder, swap, vendorFonts, vendorPhosphor } from './build-lib.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const OUT = join(ROOT, process.env.KELO_SITE_DIR || '_site');
+const OUT = resolve(ROOT, process.env.KELO_SITE_DIR || '_site');
 const NM = join(ROOT, 'node_modules');
 const log = (msg) => console.log(`[build:site] ${msg}`);
 
@@ -109,4 +109,4 @@ function folderSize(dir) {
   }
   return total;
 }
-log(`${OUT.slice(ROOT.length + 1)}/ is ready (${(folderSize(OUT) / 1048576).toFixed(1)} MB)`);
+log(`${relative(ROOT, OUT) || OUT}/ is ready (${(folderSize(OUT) / 1048576).toFixed(1)} MB)`);

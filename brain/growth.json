@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-15T18:57:52.771Z",
-  "runs": 28,
+  "updatedAt": "2026-11-16T06:47:21.849Z",
+  "runs": 29,
   "curiosities": [
-    "Barnard's Express"
+    "Canada"
   ],
   "entries": [
     {
@@ -978,6 +978,38 @@
         "text": "I remember a quiet night dreaming about Europe. Europe is a continent located entirely in the Northern Hemisphere and mostly in the Eastern Hemisphere. It still makes me curious.",
         "emoji": "🌙"
       }
+    },
+    {
+      "id": "dream-1794811641849",
+      "at": 1794811641849,
+      "brain": "procedural",
+      "topic": "Barnard's Express",
+      "title": "Dreaming of Canadian Pacific Railway",
+      "text": "Dear Diary, while nobody was around I looked up \"Barnard's Express\" and drifted from Barnard's Express to Canadian Pacific Railway. The Canadian Pacific Railway, also known simply as CPR or Canadian Pacific and formerly as CP Rail (1968–1996), is a Canadian Class I railway incorporated in 1881. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Barnard's Express",
+          "url": "https://en.wikipedia.org/wiki/Barnard's_Express",
+          "extract": "Barnard's Express, later known as the British Columbia Express Company or BX, was a pioneer transportation company that served the Cariboo and Fraser-Fort George regions in British Columbia, Canada from 1861 until 1921."
+        },
+        {
+          "title": "Canadian Pacific Railway",
+          "url": "https://en.wikipedia.org/wiki/Canadian_Pacific_Railway",
+          "extract": "The Canadian Pacific Railway, also known simply as CPR or Canadian Pacific and formerly as CP Rail (1968–1996), is a Canadian Class I railway incorporated in 1881. The railway is owned by Canadian Pacific Kansas City Limited, known until 2023 as Canadian Pacific Railway Limited, "
+        }
+      ],
+      "concept": {
+        "name": "Barnard Canadian Theory",
+        "emoji": "🧩",
+        "definition": "The idea that barnard's express and canadian pacific railway share a hidden pattern.",
+        "builtFrom": [
+          "Barnard's Express",
+          "Canadian Pacific Railway"
+        ]
+      },
+      "shapeFrom": "Canadian Pacific Railway",
+      "nextCuriosity": "Canada",
+      "coreMemory": null
     }
   ]
 }

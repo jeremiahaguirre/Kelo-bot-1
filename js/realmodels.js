@@ -146,11 +146,11 @@ function normaliseRealModel(root, entry) {
     }
 
 // glTF colours are linear, while the game's shaders read every colour as sRGB (js/lighting.js), so a
-// loaded model's materials opt out of that conversion. Its colour textures are already marked sRGB by
-// GLTFLoader, so the GPU decodes them.
+// loaded model's materials opt out of that conversion. Its colour textures are sRGB pictures, decoded
+// the way the rest of the game's pictures are (keloPictureTexture).
 function matchRendererEncoding(material) {
       material.defines = Object.assign({}, material.defines, { KELO_LINEAR_COLORS: '' });
-      ['map', 'emissiveMap'].forEach(k => { const tex = material[k]; if (tex && tex.colorSpace !== THREE.SRGBColorSpace) { tex.colorSpace = THREE.SRGBColorSpace; tex.needsUpdate = true; } });
+      ['map', 'emissiveMap'].forEach(k => keloPictureTexture(material[k]));
       material.needsUpdate = true;
     }
 

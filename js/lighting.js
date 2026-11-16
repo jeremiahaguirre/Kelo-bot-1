@@ -12,9 +12,14 @@
 // material, emissive, vertex and instance colours from sRGB into linear light before lighting
 // (keloToLinear, patched into three's shader chunks below). A material whose colours are already linear
 // (glTF models) opts out with defines: { KELO_LINEAR_COLORS: '' }.
-// Pictures (textures used as colour maps) are marked colorSpace = SRGBColorSpace, so the GPU decodes
-// them; every CanvasTexture is a picture and starts out marked (data textures stay linear). The ground's
-// photo textures are the exception: realism.js decodes them in its own shader (much faster on software GL).
+// Pictures (textures used as colour maps: canvases, photos, glTF base colours) are sRGB too. How they are
+// decoded is KELO_GPU_DECODES_PICTURES below: false (the default, as r128 did) keeps every picture texture
+// stored as it is and the shaders decode it (map, emissive map, points); true marks them
+// colorSpace = SRGBColorSpace and lets the GPU decode on sampling. The picture is the same either way;
+// software GL (SwiftShader, which Chrome uses when there is no usable GPU) samples sRGB textures much
+// slower (measured on the town view: 4.1 s vs 2.8 s a frame), so the default keeps the decode in the
+// shader. Use keloPictureTexture(tex) on a picture you load, so it follows the switch. Data textures
+// (normal, bump, depth, HDR) stay linear.
 // Lighting happens in linear light, physically based (three's only mode since r155: light intensities
 // in candela / lux-like units, point lights fade with decay 2 unless a light says otherwise), then the
 // picture is tone mapped (ACES filmic) and written out as sRGB (renderer.outputColorSpace).
@@ -22,18 +27,20 @@
 // so the fog colour is an sRGB colour too (realism.js matches it to the sky behind it).
 
 THREE.ColorManagement.enabled = false;
+const KELO_GPU_DECODES_PICTURES = false;
+const KELO_PICTURE_SPACE = KELO_GPU_DECODES_PICTURES ? THREE.SRGBColorSpace : THREE.NoColorSpace;
 
-// Every canvas the game draws is a picture: sRGB, decoded by the GPU
+// Every canvas the game draws is a picture
 THREE.CanvasTexture = class KeloCanvasTexture extends THREE.CanvasTexture {
   constructor(...args) {
     super(...args);
-    this.colorSpace = THREE.SRGBColorSpace;
+    this.colorSpace = KELO_PICTURE_SPACE;
   }
 };
 
-// Mark a loaded texture as a picture (colour map); returns it
+// Mark a texture as a picture (colour map) the way KELO_GPU_DECODES_PICTURES says; returns it
 function keloPictureTexture(tex) {
-      if (tex) tex.colorSpace = THREE.SRGBColorSpace;
+      if (tex && tex.colorSpace !== KELO_PICTURE_SPACE) { tex.colorSpace = KELO_PICTURE_SPACE; tex.needsUpdate = true; }
       return tex;
     }
 
@@ -57,6 +64,11 @@ vec3 keloToLinear( vec3 c ) {
           '#ifdef USE_COLOR_ALPHA\n\tvColor *= color;\n\tvColor.rgb = keloToLinear( vColor.rgb );\n#elif defined( USE_COLOR )\n\tvColor.rgb *= color;\n\tvColor.rgb = keloToLinear( vColor.rgb );\n#endif'],
         ['vColor.rgb *= instanceColor.rgb;', 'vColor.rgb *= keloToLinear( instanceColor.rgb );']
       ];
+      if (!KELO_GPU_DECODES_PICTURES) swaps.push(
+        ['diffuseColor *= sampledDiffuseColor;', 'diffuseColor *= vec4( keloTexToLinear( sampledDiffuseColor.rgb ), sampledDiffuseColor.a );'],
+        ['totalEmissiveRadiance *= emissiveColor.rgb;', 'totalEmissiveRadiance *= keloTexToLinear( emissiveColor.rgb );'],
+        ['#ifdef USE_MAP\n\tdiffuseColor *= texture2D( map, uv );\n#endif', '#ifdef USE_MAP\n\tvec4 keloMapTexel = texture2D( map, uv );\n\tdiffuseColor *= vec4( keloTexToLinear( keloMapTexel.rgb ), keloMapTexel.a );\n#endif']
+      );
       // Each swap must still find its place in this three.js version (a changed chunk fails loudly here)
       const all = Object.keys(C).filter(k => typeof C[k] === 'string').map(k => C[k]).join('\n') +
         Object.values(THREE.ShaderLib).map(l => l.vertexShader + l.fragmentShader).join('\n');

@@ -286,7 +286,7 @@ function ambUpdatePeople(dt) {
         let walking = true;
         if (p.wait > 0) { p.wait -= dt; walking = false; }
         else if (ambSomeoneInTheWay(x, z, hx, hz, 1.6)) walking = false;
-        else if (typeof obstacleClearAt === 'function' && !obstacleClearAt(x + hx * 0.5, z + hz * 0.5, 0.2)) { p.dir *= -1; p.wait = 1 + (i % 2); walking = false; }
+        else if ((p.chk = (p.chk || 0) + 1) % 8 === 0 && typeof obstacleClearAt === 'function' && !obstacleClearAt(x + hx * 0.5, z + hz * 0.5, 0.2)) { p.dir *= -1; p.wait = 1 + (i % 2); walking = false; }
         else {
           p.u += p.dir * p.speed * dt / len;
           if (p.u > 1 || p.u < 0) { p.u = Math.max(0, Math.min(1, p.u)); p.dir *= -1; p.wait = 1.5 + (i % 3); }
@@ -411,7 +411,7 @@ function ambBuildPools() {
       const cv = document.createElement('canvas');
       cv.width = cv.height = 64;
       const ctx = cv.getContext('2d'), g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-      g.addColorStop(0, 'rgba(255,190,110,1)'); g.addColorStop(0.5, 'rgba(255,170,90,0.35)'); g.addColorStop(1, 'rgba(255,160,80,0)');
+      g.addColorStop(0, 'rgba(255,190,110,1)'); g.addColorStop(0.3, 'rgba(255,175,95,0.45)'); g.addColorStop(0.7, 'rgba(255,165,85,0.08)'); g.addColorStop(1, 'rgba(255,160,80,0)');
       ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 64);
       const geo = new THREE.PlaneGeometry(1, 1); geo.rotateX(-Math.PI / 2);
       const mat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
@@ -427,7 +427,7 @@ function ambBuildPools() {
 function ambUpdatePools() {
       if (!ambPools) return;
       const dark = typeof skyDarkness === 'function' ? skyDarkness() : 0;
-      ambPools.material.opacity = 0.32 * Math.max(0, dark - 0.25) / 0.75;
+      ambPools.material.opacity = 0.24 * Math.max(0, dark - 0.25) / 0.75;
       ambPools.visible = ambPools.material.opacity > 0.01;
     }
 

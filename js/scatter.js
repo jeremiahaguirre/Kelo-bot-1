@@ -108,6 +108,7 @@ function scatVaryTree(tree, sMin, sMax, lean) {
 // Replaces realism.js's updateGrassTufts: two rings of the same jittered grid, fine close in (innerCell)
 // and coarse further out (outerCell, bigger tufts), thinning toward the edge. Flowers share the spots.
 let scatFlowers = null;
+const scatGrassCentre = new THREE.Vector3();
 function scatFlowerGeometry() {
       const pos = [], col = [], sway = [], nor = [];
       // a thin stem (two crossed blades) and a five-petal head facing up
@@ -162,7 +163,9 @@ updateGrassTufts = function scatUpdateGrass() {
       const G = LOOK.grass, ci = G.innerCell, co = G.outerCell, Ri = Math.min(R, G.innerR);
       const cap = Math.ceil(Math.PI * Ri * Ri / (ci * ci) + Math.PI * Math.max(0, R * R - Ri * Ri) / (co * co) + 64);
       scatEnsureGrassMeshes(cap);
-      const tg = controls.target, cam = camera.position;
+      // centred between what the camera looks at and the ground under it (the foreground gets grass too)
+      const cam = camera.position, tgt = controls.target;
+      const tg = scatGrassCentre.set(tgt.x + (cam.x - tgt.x) * 0.4, 0, tgt.z + (cam.z - tgt.z) * 0.4);
       const far = cam.y - getAnalyticalGroundHeight(cam.x, cam.z) > 45;
       grassTufts.visible = !far;
       scatFlowers.visible = !far && Boolean(q.flowers);
@@ -204,7 +207,7 @@ updateGrassTufts = function scatUpdateGrass() {
             const hs = grassHash(gi, gj, 4 + layer * 10);
             qq.setFromAxisAngle(up, grassHash(gi, gj, 5 + layer * 10) * Math.PI * 2);
             if (flowerChance && kf < scatFlowers.userData.cap && grassHash(gi, gj, 8 + layer * 10) < flowerChance * (0.6 + 0.8 * Math.sin(x * 0.21 + z * 0.17) ** 2)) {
-              const fs = (0.32 + hs * 0.22) * (0.4 + 0.6 * fade) * sizeK;
+              const fs = (0.5 + hs * 0.3) * (0.4 + 0.6 * fade) * sizeK;
               m.compose(p.set(x, y - 0.01, z), qq, sc.set(fs, fs * (0.8 + hs * 0.5), fs));
               scatFlowers.setMatrixAt(kf, m);
               const pc = SCAT_PETALS[Math.floor(grassHash(Math.floor(x / 3), Math.floor(z / 3), 9) * SCAT_PETALS.length)];
@@ -214,7 +217,7 @@ updateGrassTufts = function scatUpdateGrass() {
               continue;
             }
             if (k >= grassTufts.userData.cap) continue;
-            const s = (0.24 + hs * 0.26) * (0.35 + 0.65 * fade) * sizeK;
+            const s = (0.28 + hs * 0.28) * (0.35 + 0.65 * fade) * sizeK;
             m.compose(p.set(x, y - 0.01, z), qq, sc.set(s * 1.4, s * (0.85 + 0.3 * grassHash(gi, gj, 6 + layer * 10)), s * 1.4));
             grassTufts.setMatrixAt(k, m);
             c.multiplyScalar(0.82 + grassHash(gi, gj, 6) * 0.4);

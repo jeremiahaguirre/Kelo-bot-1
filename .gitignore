@@ -2,3 +2,5 @@ node_modules/
 dist/
 # The phone app build (npm run build:web); made fresh from the repo files each time
 www/
+# The published build (npm run build:site); made fresh from the repo files each time
+_site/

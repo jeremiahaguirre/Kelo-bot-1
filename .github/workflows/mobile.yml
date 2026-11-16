@@ -25,6 +25,7 @@ on:
       - 'ios/**'
       - 'capacitor.config.json'
       - 'scripts/build-web.mjs'
+      - 'scripts/build-lib.mjs'
       - 'js/native.js'
       - 'css/native.css'
       - 'package.json'

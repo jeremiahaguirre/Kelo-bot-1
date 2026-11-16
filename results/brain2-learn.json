@@ -1,0 +1,62 @@
+[
+ {
+  "name": "learn: a failure becomes a lesson (why + fix)",
+  "pass": true,
+  "info": "{\"key\":\"testweld\",\"why\":\"I didn't have the right tools\",\"fix\":\"order the missing tool first and wait for it to arrive\",\"reason\":\"needs-tools\",\"at\":1794832797003,\"times\":1,\"worked\":1794832797005,\"saidAt\":1794832797004}"
+ },
+ {
+  "name": "learn: the same failing plan is not retried while nothing changed",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "learn: retried once something changed",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "learn: diary says \"Last time ..., so this time ...\"",
+  "pass": true,
+  "info": "[\"Dear Diary, It worked this time! Last time I didn't have the right tools, so I made sure to order the missing tool first and wait for it to arrive, and testweld went fine.\",\"Dear Diary, The last time I tried I didn't have the right tools, so this time I'll order the missing tool first and wait for it to arrive.\"]"
+ },
+ {
+  "name": "learn: notes when the different way worked",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "learn: prefers what worked",
+  "pass": true,
+  "info": "good 1.80 bad 0.30"
+ },
+ {
+  "name": "learn: learns WHEN it works (night vs day)",
+  "pass": true,
+  "info": "night 0.41 day 1.78 {\"k\":\"time:night\",\"v\":\"night\",\"good\":false,\"lift\":-0.4048280620157677}"
+ },
+ {
+  "name": "learn: picks the fix that worked before",
+  "pass": true,
+  "info": "{\"kind\":\"mail\",\"fix\":\"check the post office first\",\"why\":\"I didn't have the right tools\",\"reason\":\"needs-tools\",\"learned\":true}"
+ },
+ {
+  "name": "learn: goal step retried differently (fix step inserted)",
+  "pass": true,
+  "info": "research"
+ },
+ {
+  "name": "learn: a step that keeps failing is set aside, not repeated",
+  "pass": true,
+  "info": "[{\"do\":\"research\",\"s\":\"done\",\"tries\":1,\"fix\":true},{\"do\":\"flaky\",\"s\":\"skipped\",\"tries\":3,\"r\":\"learning\"}] null done"
+ },
+ {
+  "name": "learn: bounded in the save",
+  "pass": true,
+  "info": "{\"log\":60,\"keys\":40,\"lessons\":20,\"bytes\":24023}"
+ },
+ {
+  "name": "no page errors",
+  "pass": true,
+  "info": ""
+ }
+]

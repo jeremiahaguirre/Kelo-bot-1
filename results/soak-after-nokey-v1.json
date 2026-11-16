@@ -1,0 +1,121 @@
+{
+ "per": [
+  {
+   "day": 0,
+   "activities": 47,
+   "distinctActivities": 11,
+   "actKinds": {
+    "act:assembly": 1,
+    "task:build": 1,
+    "task:delivery": 2,
+    "decide:prompted": 23,
+    "task:goal": 6,
+    "act:browse": 2,
+    "act:project": 1,
+    "act:paint": 2,
+    "act:dig": 1,
+    "act:mail": 7,
+    "act:skill": 1
+   },
+   "longestSameActivityRun": 3,
+   "diary": 150,
+   "distinctDiary": 121,
+   "repeatedDiaryLines": 29,
+   "topDiaryRepeats": 8,
+   "topDiaryLine": "dear diary, walked to the post office to see what people sent (# waiting)."
+  },
+  {
+   "day": 1,
+   "activities": 58,
+   "distinctActivities": 8,
+   "actKinds": {
+    "task:goal": 2,
+    "act:reflect": 1,
+    "act:mail": 6,
+    "decide:prompted": 22,
+    "task:delivery": 20,
+    "task:painting": 1,
+    "act:paint": 3,
+    "act:skill": 3
+   },
+   "longestSameActivityRun": 6,
+   "diary": 106,
+   "distinctDiary": 68,
+   "repeatedDiaryLines": 38,
+   "topDiaryRepeats": 20,
+   "topDiaryLine": "dear diary, that request was settled."
+  },
+  {
+   "day": 2,
+   "activities": 21,
+   "distinctActivities": 7,
+   "actKinds": {
+    "act:dig": 1,
+    "task:delivery": 8,
+    "act:paint": 1,
+    "act:mail": 2,
+    "decide:prompted": 6,
+    "act:skill": 2,
+    "act:hobby": 1
+   },
+   "longestSameActivityRun": 4,
+   "diary": 36,
+   "distinctDiary": 26,
+   "repeatedDiaryLines": 10,
+   "topDiaryRepeats": 8,
+   "topDiaryLine": "dear diary, that request was settled."
+  }
+ ],
+ "goals": {
+  "open": [
+   {
+    "t": "Explore every corner of the valley",
+    "p": 0,
+    "s": "reading",
+    "b": null
+   },
+   {
+    "t": "Paint a series of the valley in gouache",
+    "p": 50,
+    "s": "self",
+    "b": null
+   }
+  ],
+  "history": [
+   {
+    "t": "Build a real picnic table",
+    "status": "done",
+    "source": "reading"
+   }
+  ]
+ },
+ "outcomes": {
+  "lessons": 2,
+  "keys": 10,
+  "prefs": {
+   "mail": "dislikes"
+  },
+  "bytes": 9053
+ },
+ "goalBytes": 3738,
+ "agendaDone": 18,
+ "gameDays": 2,
+ "sampleDiary": [
+  "Dear Diary, I can feel myself getting better at stargazing. I still wobble and second-guess every move, but it is starting to make sense.",
+  "Dear Diary, Walked to the post office to see what people sent (8 waiting).",
+  "Dear Diary, Honestly, the mail rarely goes well for me and leaves me grumpy. I'll do it less, or find a better way.",
+  "Dear Diary, I felt giddy, so I chose to invent a game with the wind-up frog, for the joy of it. It wasn't on any list. I came up with it myself.",
+  "Dear Diary, I felt stubborn, so I chose to build something around the umbrella, because it made him curious. It wasn't on any list. I came up with it myself.",
+  "Dear Diary, I felt brave, so I chose to build something around the bag of river clay, just because it felt right. It wasn't on any list. I came up with it mysel",
+  "Dear Diary, I put A bag of river clay, A wind-up frog on the Storehouse shelves. I like knowing where everything is.",
+  "Dear Diary, it was tidy-up time. I went through everything and I still want it all. Everything has its place.",
+  "Dear Diary, That request was settled.",
+  "Dear Diary, I spent a while on tricks. I'm getting better at it. (Tricks skill: 33/100)",
+  "Dear Diary, I spent a while on tricks. I'm getting better at it. (Tricks skill: 43/100)",
+  "Dear Diary, That request was settled."
+ ],
+ "key": false,
+ "errors": [],
+ "aiCalls": 0,
+ "aiTokPerCall": 0
+}

@@ -1,0 +1,137 @@
+{
+ "per": [
+  {
+   "day": 0,
+   "activities": 43,
+   "distinctActivities": 12,
+   "actKinds": {
+    "act:assembly": 1,
+    "task:build": 1,
+    "decide:free": 1,
+    "act:codewish": 2,
+    "task:delivery": 5,
+    "decide:prompted": 13,
+    "task:goal": 10,
+    "act:explore": 2,
+    "act:project": 2,
+    "act:mail": 4,
+    "act:reflect": 1,
+    "act:browse": 1
+   },
+   "longestSameActivityRun": 3,
+   "diary": 96,
+   "distinctDiary": 89,
+   "repeatedDiaryLines": 7,
+   "topDiaryRepeats": 4,
+   "topDiaryLine": "dear diary, it was tidy-up time. i went through everything and i still want it all. everything has its place."
+  },
+  {
+   "day": 1,
+   "activities": 87,
+   "distinctActivities": 13,
+   "actKinds": {
+    "task:goal": 27,
+    "act:reflect": 2,
+    "act:explore": 2,
+    "act:mail": 4,
+    "decide:prompted": 7,
+    "task:delivery": 4,
+    "act:browse": 12,
+    "routine": 1,
+    "act:print": 20,
+    "act:dispose": 1,
+    "decide:free": 1,
+    "act:dig": 2,
+    "act:garden": 4
+   },
+   "longestSameActivityRun": 3,
+   "diary": 71,
+   "distinctDiary": 64,
+   "repeatedDiaryLines": 7,
+   "topDiaryRepeats": 3,
+   "topDiaryLine": "dear diary, i feel brand new."
+  },
+  {
+   "day": 2,
+   "activities": 2,
+   "distinctActivities": 2,
+   "actKinds": {
+    "task:goal": 1,
+    "act:print": 1
+   },
+   "longestSameActivityRun": 1,
+   "diary": 4,
+   "distinctDiary": 4,
+   "repeatedDiaryLines": 0,
+   "topDiaryRepeats": 1,
+   "topDiaryLine": "dear diary, it worked this time! last time i didn't have the right tools, so i made sure to order the missing tool first"
+  }
+ ],
+ "goals": {
+  "open": [
+   {
+    "t": "Print a small collection of useful things",
+    "p": 0,
+    "s": "visitor",
+    "b": null
+   },
+   {
+    "t": "Become an expert on photos: teapot",
+    "p": 25,
+    "s": "reading",
+    "b": null
+   }
+  ],
+  "history": [
+   {
+    "t": "Explore every corner of the valley",
+    "status": "done",
+    "source": "reading"
+   },
+   {
+    "t": "Build a real treehouse platform",
+    "status": "done",
+    "source": "visitor"
+   },
+   {
+    "t": "Build a real doghouse",
+    "status": "done",
+    "source": "reading"
+   }
+  ]
+ },
+ "outcomes": {
+  "lessons": 2,
+  "keys": 13,
+  "prefs": {},
+  "bytes": 13516
+ },
+ "llm": {
+  "calls": 22,
+  "errors": [],
+  "nulls": 0,
+  "hasKey": 22
+ },
+ "goalBytes": 2976,
+ "agendaDone": 12,
+ "gameDays": 2,
+ "sampleDiary": [
+  "Dear Diary, The last time I tried I didn't have the right tools, so this time I'll order the missing tool first and wait for it to arrive.",
+  "Dear Diary, I went down for the mail. 2 things waiting, a bag of all-purpose fertilizer first.",
+  "Dear Diary, today: invent a game with pebbles. The lake was loud.",
+  "Dear Diary, today: paint the barn door pattern. It was quiet.",
+  "Dear Diary, I put A bag of all-purpose fertilizer, A watering can on the Storehouse shelves. I like knowing where everything is.",
+  "Dear Diary, The post office had something for me, starting with a watering can.",
+  "Dear Diary, Watering can from my human came through, so \"Get watering can\" is back on: next is wait for it to arrive.",
+  "Dear Diary, today: sketch the heron on the dock. I learned something small.",
+  "Dear Diary, It worked this time! Last time I didn't have the right tools, so I made sure to order the missing tool first and wait for it to arrive, and tending ",
+  "Dear Diary, I watered the peaches, the tomatoes, the carrots, the blueberries with my watering can, slowly at the base until the soil went dark. The soil was dr",
+  "Dear Diary, water fell out of the sky today, in drops too small to count. The ground went dark and shiny and puddles grew in the low spots. I think the clouds c",
+  "Dear Diary, tidy-up time. an oddly round pebble, A coil of rope: all staying. Everything has its place."
+ ],
+ "key": true,
+ "aiWarnings": [],
+ "errors": [],
+ "aiCalls": 100,
+ "aiTokPerCall": 1175
+}

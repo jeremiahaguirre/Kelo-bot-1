@@ -1,0 +1,32 @@
+[
+ {
+  "fixture": "hungry, apples in the Storehouse",
+  "promptTok": 5240,
+  "stateTok": 2492,
+  "relevantFactIn": true
+ },
+ {
+  "fixture": "night, has a telescope",
+  "promptTok": 5430,
+  "stateTok": 2624,
+  "relevantFactIn": true
+ },
+ {
+  "fixture": "parcel waiting at the post office",
+  "promptTok": 5374,
+  "stateTok": 2568,
+  "relevantFactIn": true
+ },
+ {
+  "fixture": "paused task he must get back to",
+  "promptTok": 5388,
+  "stateTok": 2582,
+  "relevantFactIn": true
+ },
+ {
+  "fixture": "visitor asks about the frozen lake",
+  "promptTok": 5395,
+  "stateTok": 2589,
+  "relevantFactIn": true
+ }
+]

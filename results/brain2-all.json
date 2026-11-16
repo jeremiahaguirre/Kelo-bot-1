@@ -1,0 +1,182 @@
+[
+ {
+  "name": "memory: hungry, apples in the Storehouse: the fact that matters is in the prompt",
+  "pass": true,
+  "info": "3930 tokens (state 1508)"
+ },
+ {
+  "name": "memory: hungry, apples in the Storehouse: untrusted text still fenced",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "memory: night, has a telescope: the fact that matters is in the prompt",
+  "pass": true,
+  "info": "3596 tokens (state 1527)"
+ },
+ {
+  "name": "memory: night, has a telescope: untrusted text still fenced",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "memory: parcel waiting at the post office: the fact that matters is in the prompt",
+  "pass": true,
+  "info": "4003 tokens (state 1523)"
+ },
+ {
+  "name": "memory: parcel waiting at the post office: untrusted text still fenced",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "memory: paused task he must get back to: the fact that matters is in the prompt",
+  "pass": true,
+  "info": "3993 tokens (state 1513)"
+ },
+ {
+  "name": "memory: paused task he must get back to: untrusted text still fenced",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "memory: visitor asks about the frozen lake: the fact that matters is in the prompt",
+  "pass": true,
+  "info": "3611 tokens (state 1543)"
+ },
+ {
+  "name": "memory: visitor asks about the frozen lake: untrusted text still fenced",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "memory: prompt under 4,500 tokens on every fixture",
+  "pass": true,
+  "info": "3930,3596,4003,3993,3611"
+ },
+ {
+  "name": "goals: picked from what the visitor said (source visitor)",
+  "pass": true,
+  "info": "[\"deep-dive:reading\",\"night-sky:visitor\",\"explore-valley:reading\"]"
+ },
+ {
+  "name": "goals: goal -> stages -> tasks, on the agenda as one task",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "goals: asks for the telescope through the Post Office",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "goals: blocked waiting for the delivery",
+  "pass": true,
+  "info": "telescope to arrive"
+ },
+ {
+  "name": "goals: delivery arrives, blocker clears, step done",
+  "pass": true,
+  "info": "progress 33%"
+ },
+ {
+  "name": "goals: season blocker (no planting in winter)",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "goals: registerGoalTemplate/registerGoalAction run a custom goal to the end",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "goals: the AI sees the goals",
+  "pass": true,
+  "info": "[mg-d] Grow something of my own (33%, stage 3/5 Plant, next: plant my seeds, waiting for the ground to thaw); [0-g7] Learn the night sky (33%, stage 3/4 Watch t"
+ },
+ {
+  "name": "goals: survives a reload at the same stage and progress",
+  "pass": true,
+  "info": "{\"before\":{\"id\":\"goal-mwjts3m0-g7\",\"stage\":2,\"p\":0.3333333333333333},\"after\":{\"stage\":2,\"p\":0.3333333333333333,\"agenda\":\"open\"}}"
+ },
+ {
+  "name": "learn: a failure becomes a lesson (why + fix)",
+  "pass": true,
+  "info": "{\"key\":\"testweld\",\"why\":\"I didn't have the right tools\",\"fix\":\"order the missing tool first and wait for it to arrive\",\"reason\":\"needs-tools\",\"at\":1794867608817,\"times\":1,\"worked\":1794867608817,\"saidAt\":1794867608817}"
+ },
+ {
+  "name": "learn: the same failing plan is not retried while nothing changed",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "learn: retried once something changed",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "learn: diary says \"Last time ..., so this time ...\"",
+  "pass": true,
+  "info": "[\"Dear Diary, It worked this time! Last time I didn't have the right tools, so I made sure to order the missing tool first and wait for it to arrive, and testweld went fine.\",\"Dear Diary, The last time I tried I didn't have the right tools, so this time I'll order the missing tool first and wait for it to arrive.\"]"
+ },
+ {
+  "name": "learn: notes when the different way worked",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "learn: prefers what worked",
+  "pass": true,
+  "info": "good 1.80 bad 0.30"
+ },
+ {
+  "name": "learn: learns WHEN it works (night vs day)",
+  "pass": true,
+  "info": "night 0.41 day 1.78 {\"k\":\"time:night\",\"v\":\"night\",\"good\":false,\"lift\":-0.4048280620157677}"
+ },
+ {
+  "name": "learn: picks the fix that worked before",
+  "pass": true,
+  "info": "{\"kind\":\"mail\",\"fix\":\"check the post office first\",\"why\":\"I didn't have the right tools\",\"reason\":\"needs-tools\",\"learned\":true}"
+ },
+ {
+  "name": "learn: goal step retried differently (fix step inserted)",
+  "pass": true,
+  "info": "research"
+ },
+ {
+  "name": "learn: a step that keeps failing is set aside, not repeated",
+  "pass": true,
+  "info": "[{\"do\":\"research\",\"s\":\"done\",\"tries\":1,\"fix\":true},{\"do\":\"flaky\",\"s\":\"skipped\",\"tries\":3,\"r\":\"learning\"}] null done"
+ },
+ {
+  "name": "learn: bounded in the save",
+  "pass": true,
+  "info": "{\"log\":60,\"keys\":40,\"lessons\":20,\"bytes\":24097}"
+ },
+ {
+  "name": "nokey: 40 decisions, at least 32 distinct",
+  "pass": true,
+  "info": "37 titles, 16 verbs"
+ },
+ {
+  "name": "nokey: 40 diary lines, all distinct",
+  "pass": true,
+  "info": "40"
+ },
+ {
+  "name": "nokey: never the same decision twice in a row",
+  "pass": true,
+  "info": ""
+ },
+ {
+  "name": "nokey: the moment matters (at night, night subjects come up)",
+  "pass": true,
+  "info": "Compose a song about the moon on the lake / Photograph the moon on the lake / Take apart the stars over the valley / Photograph the stars over the valley / Take a closer look at my telescope / Invent a game with my telescope"
+ },
+ {
+  "name": "no page errors",
+  "pass": true,
+  "info": ""
+ }
+]

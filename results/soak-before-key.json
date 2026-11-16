@@ -1,0 +1,102 @@
+{
+ "per": [
+  {
+   "day": 0,
+   "activities": 27,
+   "distinctActivities": 8,
+   "actKinds": {
+    "act:shopmaker": 1,
+    "task:delivery": 11,
+    "decide:prompted": 9,
+    "decide:free": 2,
+    "act:workshop": 1,
+    "routine": 1,
+    "act:dig": 1,
+    "act:mail": 1
+   },
+   "longestSameActivityRun": 6,
+   "diary": 58,
+   "distinctDiary": 51,
+   "repeatedDiaryLines": 7,
+   "topDiaryRepeats": 5,
+   "topDiaryLine": "dear diary, it was tidy-up time. i went through everything and i still want it all. everything has its place."
+  },
+  {
+   "day": 1,
+   "activities": 56,
+   "distinctActivities": 16,
+   "actKinds": {
+    "act:browse": 3,
+    "act:workshop": 1,
+    "decide:free": 5,
+    "act:landscape": 1,
+    "act:mail": 4,
+    "decide:prompted": 13,
+    "act:codewish": 1,
+    "task:delivery": 14,
+    "act:print": 3,
+    "act:dig": 4,
+    "act:dispose": 2,
+    "act:plant": 1,
+    "act:assembly": 1,
+    "task:build": 1,
+    "act:project": 1,
+    "act:garden": 1
+   },
+   "longestSameActivityRun": 5,
+   "diary": 116,
+   "distinctDiary": 95,
+   "repeatedDiaryLines": 21,
+   "topDiaryRepeats": 10,
+   "topDiaryLine": "dear diary, it was tidy-up time. i went through everything and i still want it all. everything has its place."
+  },
+  {
+   "day": 2,
+   "activities": 4,
+   "distinctActivities": 2,
+   "actKinds": {
+    "task:delivery": 3,
+    "act:garden": 1
+   },
+   "longestSameActivityRun": 3,
+   "diary": 9,
+   "distinctDiary": 9,
+   "repeatedDiaryLines": 0,
+   "topDiaryRepeats": 1,
+   "topDiaryLine": "dear diary, i didn't want to just guess at looking after plants, so i read up on it. plants wilt when their soil dries o"
+  }
+ ],
+ "goals": {
+  "open": [],
+  "history": []
+ },
+ "outcomes": null,
+ "llm": {
+  "calls": 29,
+  "errors": [],
+  "nulls": 0,
+  "hasKey": 29
+ },
+ "goalBytes": 2,
+ "agendaDone": 15,
+ "gameDays": 2,
+ "sampleDiary": [
+  "Dear Diary, A coil of rope arrived and is mine now.",
+  "Dear Diary, A box of structural lag screws arrived and is mine now.",
+  "Dear Diary, the peaches drooped today. The leaves hang down and the edges have gone brown and crisp, and the soil around it is pale and dusty. Living things nee",
+  "Dear Diary, I didn't want to just guess at looking after plants, so I read up on it. Plants wilt when their soil dries out: water slowly at the base when the to",
+  "Dear Diary, I put \"Get bag of all-purpose fertilizer\" on my list (For looking after plants I need a bag of all-purpose fertilizer to feed my plants when the soi",
+  "Dear Diary, water fell out of the sky today, in drops too small to count. The ground went dark and shiny and puddles grew in the low spots. I think the clouds c",
+  "Dear Diary, Bag of all-purpose fertilizer from my human came through, so \"Get bag of all-purpose fertilizer\" is back on: next is wait for it to arrive.",
+  "Dear Diary, I put \"Get umbrella\" on my list (Spring keeps raining on me. With an umbrella I could stay outside and listen to it. (I was in the middle of \"Rain\".",
+  "Dear Diary, That request was settled.",
+  "Dear Diary, A coil of rope arrived and is mine now.",
+  "Dear Diary, A box of structural lag screws arrived and is mine now.",
+  "Dear Diary, Umbrella from my human came through, so \"Get umbrella\" is back on: next is wait for it to arrive."
+ ],
+ "key": true,
+ "aiWarnings": [],
+ "errors": [],
+ "aiCalls": 106,
+ "aiTokPerCall": 1910
+}

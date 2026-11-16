@@ -1,0 +1,90 @@
+{
+ "per": [
+  {
+   "day": 0,
+   "activities": 55,
+   "distinctActivities": 9,
+   "actKinds": {
+    "act:shopmaker": 1,
+    "task:delivery": 20,
+    "decide:prompted": 20,
+    "act:workshop": 1,
+    "routine": 1,
+    "decide:free": 2,
+    "act:dig": 4,
+    "act:upgrade": 1,
+    "act:mail": 5
+   },
+   "longestSameActivityRun": 9,
+   "diary": 137,
+   "distinctDiary": 98,
+   "repeatedDiaryLines": 39,
+   "topDiaryRepeats": 11,
+   "topDiaryLine": "dear diary, that request was settled."
+  },
+  {
+   "day": 1,
+   "activities": 46,
+   "distinctActivities": 4,
+   "actKinds": {
+    "task:delivery": 22,
+    "decide:prompted": 20,
+    "act:skill": 2,
+    "act:mail": 2
+   },
+   "longestSameActivityRun": 9,
+   "diary": 84,
+   "distinctDiary": 69,
+   "repeatedDiaryLines": 15,
+   "topDiaryRepeats": 8,
+   "topDiaryLine": "dear diary, walked to the post office to see what people sent (# waiting)."
+  },
+  {
+   "day": 2,
+   "activities": 31,
+   "distinctActivities": 8,
+   "actKinds": {
+    "task:delivery": 11,
+    "act:skill": 5,
+    "act:project": 1,
+    "act:browse": 1,
+    "act:mail": 4,
+    "decide:prompted": 7,
+    "routine": 1,
+    "synth": 1
+   },
+   "longestSameActivityRun": 4,
+   "diary": 62,
+   "distinctDiary": 54,
+   "repeatedDiaryLines": 8,
+   "topDiaryRepeats": 4,
+   "topDiaryLine": "dear diary, walked to the post office to see what people sent (# waiting)."
+  }
+ ],
+ "goals": {
+  "open": [],
+  "history": []
+ },
+ "outcomes": null,
+ "goalBytes": 2,
+ "agendaDone": 16,
+ "gameDays": 2,
+ "sampleDiary": [
+  "Dear Diary, Cedar boards arrived and is mine now.",
+  "Dear Diary, it was tidy-up time. I went through everything and I still want it all. Everything has its place.",
+  "Dear Diary, Walked to the post office to see what people sent (1 waiting).",
+  "Dear Diary, Full propane tank from my human came through, so \"Get full propane tank\" is back on: next is wait for it to arrive.",
+  "Dear Diary, I felt quietly proud, so I chose to test the limits of the full propane tank, to leave something for the next visitor. It wasn't on any list. I came",
+  "Dear Diary, Thermos of hot cocoa from my human came through, so \"Get thermos of hot cocoa\" is back on: next is wait for it to arrive.",
+  "Dear Diary, I put A full propane tank on the Storehouse shelves. I like knowing where everything is.",
+  "Dear Diary, it was tidy-up time. I went through everything and I still want it all. Everything has its place.",
+  "Dear Diary, A full propane tank arrived and is mine now.",
+  "Dear Diary, A thermos of hot cocoa arrived and is mine now.",
+  "Dear Diary, the propane came, so I filled up the hot air balloon. Now it can actually go somewhere.",
+  "Dear Diary, carried my welding rig out to the western overlook at (-16.8, 4.5) and welded a multi-primitive geometric archway from scratch.\n[GEAR_REQUESTED]: Ar"
+ ],
+ "key": false,
+ "errors": [],
+ "aiCalls": 0,
+ "aiTokPerCall": 0
+}

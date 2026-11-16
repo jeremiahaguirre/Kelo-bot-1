@@ -1,0 +1,52 @@
+PASS memory: hungry, apples in the Storehouse: the fact that matters is in the prompt 3930 tokens (state 1508)
+PASS memory: hungry, apples in the Storehouse: untrusted text still fenced 
+PASS memory: night, has a telescope: the fact that matters is in the prompt 3596 tokens (state 1527)
+PASS memory: night, has a telescope: untrusted text still fenced 
+PASS memory: parcel waiting at the post office: the fact that matters is in the prompt 4003 tokens (state 1523)
+PASS memory: parcel waiting at the post office: untrusted text still fenced 
+PASS memory: paused task he must get back to: the fact that matters is in the prompt 3993 tokens (state 1513)
+PASS memory: paused task he must get back to: untrusted text still fenced 
+PASS memory: visitor asks about the frozen lake: the fact that matters is in the prompt 3611 tokens (state 1543)
+PASS memory: visitor asks about the frozen lake: untrusted text still fenced 
+MEMORY [{"fixture":"hungry, apples in the Storehouse","promptTok":3930,"stateTok":1508,"relevantFactIn":true},{"fixture":"night, has a telescope","promptTok":3596,"stateTok":1527,"relevantFactIn":true},{"fixture":"parcel waiting at the post office","promptTok":4003,"stateTok":1523,"relevantFactIn":true},{"fixture":"paused task he must get back to","promptTok":3993,"stateTok":1513,"relevantFactIn":true},{"fixture":"visitor asks about the frozen lake","promptTok":3611,"stateTok":1543,"relevantFactIn":true}]
+PASS memory: prompt under 4,500 tokens on every fixture 3930,3596,4003,3993,3611
+PASS goals: picked from what the visitor said (source visitor) ["deep-dive:reading","night-sky:visitor","explore-valley:reading"]
+PASS goals: goal -> stages -> tasks, on the agenda as one task 
+PASS goals: asks for the telescope through the Post Office 
+PASS goals: blocked waiting for the delivery telescope to arrive
+PASS goals: delivery arrives, blocker clears, step done progress 33%
+PASS goals: season blocker (no planting in winter) 
+PASS goals: registerGoalTemplate/registerGoalAction run a custom goal to the end 
+PASS goals: the AI sees the goals [mg-d] Grow something of my own (33%, stage 3/5 Plant, next: plant my seeds, waiting for the ground to thaw); [0-g7] Learn the night sky (33%, stage 3/4 Watch t
+GOAL DIARY [
+ "Dear Diary, Grow something of my own has to wait: the ground to thaw. I'll get back to it when it's possible.",
+ "Dear Diary, A new long goal, all my own: grow something of my own. 5 stages: read up, then get seeds, then plant, then look after them, then look back.",
+ "Dear Diary, I did it: build a big farm. It took 1 day. It feels quietly good to finish something I set out to do.",
+ "Dear Diary, What did build a big farm teach me? That the second try is always better.",
+ "Dear Diary, Till field 2: done. Build a big farm is about 67% of the way there, still on \"till\".",
+ "Dear Diary, One more piece of the bigger plan: till field 1. About 33% of the way there, still on \"till\"."
+]
+PASS goals: survives a reload at the same stage and progress {"before":{"id":"goal-mwjts3m0-g7","stage":2,"p":0.3333333333333333},"after":{"stage":2,"p":0.3333333333333333,"agenda":"open"}}
+PASS learn: a failure becomes a lesson (why + fix) {"key":"testweld","why":"I didn't have the right tools","fix":"order the missing tool first and wait for it to arrive","reason":"needs-tools","at":1794867608817,"times":1,"worked":1794867608817,"saidAt":1794867608817}
+PASS learn: the same failing plan is not retried while nothing changed 
+PASS learn: retried once something changed 
+PASS learn: diary says "Last time ..., so this time ..." ["Dear Diary, It worked this time! Last time I didn't have the right tools, so I made sure to order the missing tool first and wait for it to arrive, and testweld went fine.","Dear Diary, The last time I tried I didn't have the right tools, so this time I'll order the missing tool first and wait for it to arrive."]
+PASS learn: notes when the different way worked 
+PASS learn: prefers what worked good 1.80 bad 0.30
+PASS learn: learns WHEN it works (night vs day) night 0.41 day 1.78 {"k":"time:night","v":"night","good":false,"lift":-0.4048280620157677}
+PASS learn: picks the fix that worked before {"kind":"mail","fix":"check the post office first","why":"I didn't have the right tools","reason":"needs-tools","learned":true}
+PASS learn: goal step retried differently (fix step inserted) research
+PASS learn: a step that keeps failing is set aside, not repeated [{"do":"research","s":"done","tries":1,"fix":true},{"do":"flaky","s":"skipped","tries":3,"r":"learning"}] null done
+PASS learn: bounded in the save {"log":60,"keys":40,"lessons":20,"bytes":24097}
+LEARN AI k49: last time the test failed; next time check each part before testing again; k46: last time the test failed; next time check each part before testing again; k43: last time the test failed; next time check each part before testing again; k40: last time the test failed; next time check each part be
+PASS nokey: 40 decisions, at least 32 distinct 37 titles, 16 verbs
+PASS nokey: 40 diary lines, all distinct 40
+PASS nokey: never the same decision twice in a row 
+PASS nokey: the moment matters (at night, night subjects come up) Compose a song about the moon on the lake / Photograph the moon on the lake / Take apart the stars over the valley / Photograph the stars over the valley / Take a closer look at my telescope / Invent a game with my telescope
+NOKEY sample ["Redesign the plan for something of my own","Compose a song about the orchard after harvest","Write a poem about the plan for the night sky","Sketch his own footprints","Measure wind in the dry grass","Map the pass behind the Workshop","Take a closer look at my telescope","Photograph the mountain slope"] [
+ "Dear Diary, out of nowhere I felt like I had to redesign the plan for something of my own. Weather: clear. It isn't part of my goal (grow something of my own), but it gave me ideas for it.",
+ "Dear Diary, today I wanted to compose a song about the orchard after harvest, so I did. The autumn early morning was bright. It made me feel playful. It wasn't on any list.",
+ "Dear Diary, I caught myself wanting to write a poem about the plan for the night sky, and I let myself. Workshop looked different at this hour. My mind kept drifting back to my goal: learn the night sky. It wasn't on any list."
+]
+PASS no page errors 
+RESULT 36/36

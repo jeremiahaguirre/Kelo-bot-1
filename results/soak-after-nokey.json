@@ -1,0 +1,122 @@
+{
+ "per": [
+  {
+   "day": 0,
+   "activities": 28,
+   "distinctActivities": 8,
+   "actKinds": {
+    "routine": 1,
+    "task:delivery": 5,
+    "decide:prompted": 10,
+    "task:goal": 4,
+    "act:browse": 2,
+    "act:dig": 2,
+    "act:mail": 3,
+    "act:ask": 1
+   },
+   "longestSameActivityRun": 3,
+   "diary": 75,
+   "distinctDiary": 61,
+   "repeatedDiaryLines": 14,
+   "topDiaryRepeats": 2,
+   "topDiaryLine": "dear diary, i put \"get sturdy shovel\" on my list (i want to dig, but i have nothing to dig with. (i was in the middle of"
+  },
+  {
+   "day": 1,
+   "activities": 107,
+   "distinctActivities": 13,
+   "actKinds": {
+    "task:goal": 13,
+    "act:browse": 9,
+    "task:delivery": 34,
+    "decide:free": 1,
+    "act:workshop": 1,
+    "act:project": 1,
+    "act:reflect": 1,
+    "decide:prompted": 28,
+    "act:mail": 7,
+    "act:landscape": 3,
+    "act:dig": 1,
+    "act:skill": 4,
+    "act:print": 4
+   },
+   "longestSameActivityRun": 6,
+   "diary": 193,
+   "distinctDiary": 137,
+   "repeatedDiaryLines": 56,
+   "topDiaryRepeats": 7,
+   "topDiaryLine": "dear diary, it was tidy-up time. i went through everything and i still want it all. everything has its place."
+  },
+  {
+   "day": 2,
+   "activities": 35,
+   "distinctActivities": 8,
+   "actKinds": {
+    "task:goal": 7,
+    "act:garden": 1,
+    "task:delivery": 5,
+    "decide:prompted": 11,
+    "act:mail": 3,
+    "act:print": 6,
+    "act:codewish": 1,
+    "act:browse": 1
+   },
+   "longestSameActivityRun": 3,
+   "diary": 44,
+   "distinctDiary": 41,
+   "repeatedDiaryLines": 3,
+   "topDiaryRepeats": 3,
+   "topDiaryLine": "dear diary, back to \"get watering can\", right where i left off: pick it up at the post office."
+  }
+ ],
+ "goals": {
+  "open": [
+   {
+    "t": "Print a small collection of useful things",
+    "p": 0,
+    "s": "visitor",
+    "b": null
+   },
+   {
+    "t": "Grow something of my own",
+    "p": 71,
+    "s": "interest",
+    "b": "a new day for look after my plants"
+   }
+  ],
+  "history": [
+   {
+    "t": "Become an expert on barnard's express",
+    "status": "done",
+    "source": "reading"
+   }
+  ]
+ },
+ "outcomes": {
+  "lessons": 6,
+  "keys": 13,
+  "prefs": {},
+  "bytes": 13388
+ },
+ "goalBytes": 4054,
+ "agendaDone": 12,
+ "gameDays": 2,
+ "sampleDiary": [
+  "Dear Diary, I felt homesick for nowhere, so I chose to show off the pocket spectrometer, for the joy of it. It wasn't on any list. I came up with it myself.",
+  "Dear Diary, I felt restless, so I chose to study the full propane tank, to leave something for the next visitor. It wasn't on any list. I came up with it myself",
+  "Dear Diary, I put \"Get 100 m of copper wire\" on my list (I want to see what I could make with it. (I was in the middle of \"Study the full propane tank\".)). It h",
+  "Dear Diary, I felt playful, so I chose to take apart the watering can, for the joy of it. It wasn't on any list. I came up with it myself.",
+  "Dear Diary, the propane came, so I filled up the hot air balloon. Now it can actually go somewhere.",
+  "Dear Diary, I put A pocket spectrometer on the Storehouse shelves. I like knowing where everything is.",
+  "Dear Diary, The post office had 2 things for me, starting with a bowl of ramen.",
+  "Dear Diary, I felt unsure, so I chose to build something around the set of juggling balls, because nobody asked him to. It wasn't on any list. I came up with it",
+  "Dear Diary, I felt homesick for nowhere, so I chose to play with the bowl of ramen, because nobody asked him to. It wasn't on any list. I came up with it myself",
+  "Dear Diary, 100 m of copper wire from my human came through, so \"Get 100 m of copper wire\" is back on: next is wait for it to arrive.",
+  "Dear Diary, I used up the last of the bundle of mild steel stock (square tube, angle, flat bar and plate) welding. It's all gone now, and that's fine.",
+  "Dear Diary, I put A set of juggling balls on the Storehouse shelves. I like knowing where everything is."
+ ],
+ "key": false,
+ "errors": [],
+ "aiCalls": 0,
+ "aiTokPerCall": 0
+}

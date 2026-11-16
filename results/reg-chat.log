@@ -1,0 +1,18 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+> hi
+< Hi curiousWanderer! I'm found a workshop.  (9299ms)
+> How are you?
+< I feel good! Energy 80%, and my wonder is at 100%.  (8375ms)
+> What are you doing?
+< Right now: found a workshop.  (9759ms)
+> Where are you?
+< I'm at Workshop.  (8093ms)
+> What do you have?
+< Nothing yet. Everything I own comes through the post office.  (8776ms)
+> I saw a quokka at the zoo yesterday
+< I looked it up! "quokka": The quokka is a small macropod about the size of a domestic cat, found on islands off Western Australia. Now I understand what you meant, curiousWanderer.  (405975ms)
+> Did you know the lake is deep?
+< The lake is deep? I didn't know that! I'll remember it, curiousWanderer.  (11127ms)
+vocab: {"quokka":{"meaning":"The quokka is a small macropod about the size of a domestic cat, found on islands off Western Australia.","from":"Quokka","at":1794850007076}}
+unknown in "the lake is beautiful": []
+page errors: none

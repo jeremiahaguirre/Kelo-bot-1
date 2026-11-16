@@ -8,10 +8,11 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
-## Graphics "richer stylized" pass (branch `agent/graphics`, QA on `qa-results-graphics`): in progress
+## Graphics "richer stylized" pass (branch `agent/graphics`, QA on `qa-results-graphics`): done, waiting for merge
 - Owner: the game "still looks too raw", "bring it to life", richer stylized look, laptops first, every effect behind a quality setting.
 - New files: js/look.js (LOOK config: light, shadows, mist, grading, bloom, shafts, cloud shadows, ground; Low/Medium/High + first-run benchmark), js/scatter.js (trees joined per material with GPU sway and variety, grass + flowers, instanced valley flowers, contact shadows), js/ambience.js (air motes, chimney smoke, roof flags, townspeople, passing/parked cars, lamplight pools), js/surfacedetail.js (normal maps from the procedural finish textures).
-- Open: measurements and before/after shots, REPORT.md on qa-results-graphics, regressions (reload ui chat vehicle haul basement navtest).
+- Done: before/after shots and measurements (draw calls -9/-10/-12% over 8 views on Low/Medium/High), regressions reload ui chat vehicle haul basement clean, navtest identical to main. Report: qa-results-graphics/graphics/REPORT.md.
+- Open: frame rate on a real laptop GPU not measured (container has no GPU; the first-run benchmark picks the level on the device); height-fog patch must be redone in the Three.js upgrade (vFogDepth).
 
 ## North yard fixes (owner's annotated screenshot, 2026-11-12): branch agent/northyard, waiting for merge
 - Arrow 1 (drive through the range), arrow 2 (land inside the buildings), arrow 3 (road between the hall and the hangar): fixed (far lands sunk under the finer meshes; paved Pass Road, Yard Street, Hangar Lane, North Apron). Report: qa-results-northyard/REPORT.md.

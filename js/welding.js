@@ -82,10 +82,18 @@ const WELD_CONSUMABLES = {
   }
 };
 
+// The metal itself: every weld uses some stock (bar, tube, angle and plate), ordered like the gas and wire
+const WELD_STOCK = {
+  steel: { role: 'stock', re: /mild steel (bar|tube|stock|angle|plate)|steel (bar|tube|angle|square tube|flat bar)s?\b|steel stock bundle/i, ask: 'A bundle of mild steel stock (square tube, angle, flat bar and plate)', why: 'because every weld needs the steel itself: tube, angle, flat bar and plate to cut and fit' },
+  aluminium: { role: 'stock', re: /alumin\w* (bar|tube|stock|angle|plate)|alumin\w* stock bundle/i, ask: 'A bundle of 6061 aluminium stock (tube, angle and plate)', why: 'because the piece itself is aluminium' },
+  stainless: { role: 'stock', re: /stainless (steel )?(bar|tube|stock|angle|plate)|stainless stock bundle/i, ask: 'A bundle of 304 stainless steel stock (tube, angle and plate)', why: 'because the piece itself is stainless steel' }
+};
+if (typeof ITEM_KINDS !== 'undefined') ITEM_KINDS.unshift({ kind: 'weld stock', label: 'metal stock for welding', re: /(mild steel|alumin\w*|stainless( steel)?) stock|steel stock bundle/i, uses: ['build', 'weld'], per: 4, unit: 'welded pieces' });
+
 // One research trip per process (his first ever is MIG); the gear list is filled in for the metal at hand
 Object.entries(WELD_PROCESSES).forEach(([key, p]) => {
   if (typeof GROUND_JOBS === 'undefined') return;
-  GROUND_JOBS['weld_' + key] = { title: p.title, wiki: p.wiki, learned: p.learned, tools: WELD_SAFETY.slice(), materials: WELD_CONSUMABLES[key].steel.slice() };
+  GROUND_JOBS['weld_' + key] = { title: p.title, wiki: p.wiki, learned: p.learned, tools: WELD_SAFETY.slice(), materials: [...WELD_CONSUMABLES[key].steel, WELD_STOCK.steel] };
 });
 
 // Which process: his own TIG or stick welder if he was given one, otherwise the studio's MIG welder
@@ -111,7 +119,7 @@ function weldPlanFor(creation) {
       const job = GROUND_JOBS[key];
       job.title = `${WELD_PROCESSES[process].title} ${metal}`;
       job.tools = WELD_SAFETY.slice();
-      job.materials = WELD_CONSUMABLES[process][metal].slice();
+      job.materials = [...WELD_CONSUMABLES[process][metal], WELD_STOCK[metal]];
       return { process, metal, key, info: WELD_PROCESSES[process], consumables: job.materials };
     }
 

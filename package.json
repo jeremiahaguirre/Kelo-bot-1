@@ -9,7 +9,7 @@
   "private": true,
   "scripts": {
     "start": "electron .",
-    "dist:win": "electron-builder --win --publish never",
+    "dist:win": "npm run build:site && electron-builder --win --publish never",
     "build:web": "node scripts/build-web.mjs",
     "cap:sync": "npm run build:web && cap sync",
     "android:open": "npm run cap:sync && cap open android",
@@ -48,16 +48,18 @@
       "output": "dist"
     },
     "files": [
-      "index.html",
-      "shop.html",
-      "privacy.html",
-      "css/**",
-      "js/**",
-      "assets/**",
-      "brain/**",
+      {
+        "from": "_site",
+        "to": ".",
+        "filter": [
+          "**/*",
+          "!**/*.map",
+          "!README.md",
+          "!.nojekyll"
+        ]
+      },
       "desktop/**",
-      "package.json",
-      "!**/*.map"
+      "package.json"
     ],
     "win": {
       "target": [

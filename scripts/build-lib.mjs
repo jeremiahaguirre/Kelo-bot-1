@@ -9,7 +9,7 @@
 // or turned into a module, there is no eval, and the page's Content-Security-Policy does not change.
 
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -196,4 +196,103 @@ export function compileTailwind(srcRoot, outFile, scratchDir) {
 // The game's stylesheet imports Google Fonts; a build with local fonts drops that line
 export function dropGoogleFontsImport(styleFile) {
   writeFileSync(styleFile, swap(readFileSync(styleFile, 'utf8'), /@import url\('https:\/\/fonts\.googleapis\.com[^']*'\);\n?/, '', 'css/style.css'));
+}
+
+// --- HDR skies (Radiance .hdr, RGBE), shrunk for download ----------------------------------------
+// The three sky photos only light the world: js/realism.js blends them and three.js blurs the result
+// into its lighting environment (PMREM), so they never show as a picture. Half the width and height
+// (1024x512 -> 512x256) is a quarter of the pixels; each new pixel is the average of four in real
+// light units (not in the 8-bit RGBE code), so the total light and its colour stay the same. Same
+// file names and format, so the game code and any three.js version read them as before.
+
+export function readHdr(buf) {
+  let pos = 0;
+  const line = () => { const e = buf.indexOf(10, pos); const s = buf.toString('latin1', pos, e); pos = e + 1; return s; };
+  if (!line().startsWith('#?')) throw new Error('not a Radiance HDR file');
+  const header = [];
+  for (let l = line(); l !== ''; l = line()) header.push(l);
+  const res = line().match(/^-Y (\d+) \+X (\d+)$/);
+  if (!res) throw new Error('unsupported HDR orientation');
+  const h = +res[1], w = +res[2];
+  const rgbe = new Uint8Array(w * h * 4);
+  for (let y = 0; y < h; y++) {
+    const row = rgbe.subarray(y * w * 4, (y + 1) * w * 4);
+    if (w >= 8 && w < 32768 && buf[pos] === 2 && buf[pos + 1] === 2 && !(buf[pos + 2] & 0x80)) {
+      // New-style run-length encoding: each of the 4 channels separately
+      if (((buf[pos + 2] << 8) | buf[pos + 3]) !== w) throw new Error('bad HDR scanline');
+      pos += 4;
+      for (let c = 0; c < 4; c++) {
+        for (let x = 0; x < w;) {
+          let n = buf[pos++];
+          if (n > 128) { n -= 128; const v = buf[pos++]; while (n--) row[(x++) * 4 + c] = v; }
+          else while (n--) row[(x++) * 4 + c] = buf[pos++];
+        }
+      }
+    } else {
+      for (let x = 0; x < w; x++) for (let c = 0; c < 4; c++) row[x * 4 + c] = buf[pos++];
+    }
+  }
+  return { w, h, header, rgbe };
+}
+
+function writeHdr({ w, h, header, rgbe }) {
+  const out = [Buffer.from(`#?RADIANCE\n${header.join('\n')}\n\n-Y ${h} +X ${w}\n`, 'latin1')];
+  for (let y = 0; y < h; y++) {
+    const bytes = [2, 2, w >> 8, w & 255];
+    for (let c = 0; c < 4; c++) {
+      const ch = []; for (let x = 0; x < w; x++) ch.push(rgbe[(y * w + x) * 4 + c]);
+      for (let x = 0; x < w;) {
+        // a run of 3+ equal bytes, else a literal stretch up to the next run
+        let run = 1; while (x + run < w && run < 127 && ch[x + run] === ch[x]) run++;
+        if (run >= 3) { bytes.push(128 + run, ch[x]); x += run; continue; }
+        let n = 0;
+        while (x + n < w && n < 128 && !(x + n + 2 < w && ch[x + n] === ch[x + n + 1] && ch[x + n] === ch[x + n + 2])) n++;
+        bytes.push(n); for (let k = 0; k < n; k++) bytes.push(ch[x + k]); x += n;
+      }
+    }
+    out.push(Buffer.from(bytes));
+  }
+  return Buffer.concat(out);
+}
+
+const rgbeToFloat = (r, g, b, e) => { if (!e) return [0, 0, 0]; const f = Math.pow(2, e - 136); return [(r + 0.5) * f, (g + 0.5) * f, (b + 0.5) * f]; };
+function floatToRgbe(r, g, b, out, i) {
+  const m = Math.max(r, g, b);
+  if (m < 1e-32) { out[i] = out[i + 1] = out[i + 2] = out[i + 3] = 0; return; }
+  let e = Math.ceil(Math.log2(m)); let f = 256 / Math.pow(2, e);
+  if (m * f >= 255.5) { e++; f /= 2; }
+  out[i] = Math.min(255, Math.max(0, Math.round(r * f - 0.5)));
+  out[i + 1] = Math.min(255, Math.max(0, Math.round(g * f - 0.5)));
+  out[i + 2] = Math.min(255, Math.max(0, Math.round(b * f - 0.5)));
+  out[i + 3] = e + 128;
+}
+
+// Halves an .hdr file in place while it is wider than maxWidth. Returns [bytes before, bytes after].
+export function shrinkHdr(file, maxWidth = 512) {
+  const before = readFileSync(file);
+  let img = readHdr(before);
+  while (img.w > maxWidth && img.w % 2 === 0 && img.h % 2 === 0) {
+    const w = img.w / 2, h = img.h / 2, rgbe = new Uint8Array(w * h * 4);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      let r = 0, g = 0, b = 0;
+      for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) {
+        const i = ((y * 2 + dy) * img.w + x * 2 + dx) * 4, s = img.rgbe;
+        const [fr, fg, fb] = rgbeToFloat(s[i], s[i + 1], s[i + 2], s[i + 3]);
+        r += fr; g += fg; b += fb;
+      }
+      floatToRgbe(r / 4, g / 4, b / 4, rgbe, (y * w + x) * 4);
+    }
+    img = { w, h, header: img.header, rgbe };
+  }
+  const after = writeHdr(img);
+  writeFileSync(file, after);
+  return [before.length, after.length];
+}
+
+// Every .hdr in a folder; returns a line for the build log
+export function shrinkHdrFolder(dir, maxWidth = 512) {
+  if (!existsSync(dir)) return 'no HDR folder';
+  let a = 0, b = 0, n = 0;
+  for (const f of readdirSync(dir)) if (f.endsWith('.hdr')) { const [x, y] = shrinkHdr(join(dir, f), maxWidth); a += x; b += y; n++; }
+  return `shrank ${n} HDR skies from ${(a / 1048576).toFixed(2)} MB to ${(b / 1048576).toFixed(2)} MB`;
 }

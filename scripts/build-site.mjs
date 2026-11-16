@@ -7,7 +7,8 @@
 //   2. Tailwind is compiled once into css/tailwind.<hash>.css instead of the CDN script building it in
 //      the browser on every visit,
 //   3. the Phosphor icons and the fonts are local files instead of a script + Google Fonts,
-//   4. the Content-Security-Policy drops the CDNs no longer used (nothing new is allowed).
+//   4. the Content-Security-Policy drops the CDNs no longer used (nothing new is allowed),
+//   5. the HDR sky photos are shrunk to 512x256 (they only light the world; see shrinkHdr).
 // three.js and its add-ons in <head> are left exactly as index.html has them.
 //
 // Usage: npm run build:site   (then serve _site/, e.g. npx http-server _site)
@@ -15,7 +16,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync, renameSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { bundleGameScripts, compileTailwind, copy, dropGoogleFontsImport, shortHash, swap, vendorFonts, vendorPhosphor } from './build-lib.mjs';
+import { bundleGameScripts, compileTailwind, copy, dropGoogleFontsImport, shortHash, shrinkHdrFolder, swap, vendorFonts, vendorPhosphor } from './build-lib.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, process.env.KELO_SITE_DIR || '_site');
@@ -35,6 +36,7 @@ for (const file of OPTIONAL_FILES) if (existsSync(join(ROOT, file))) copy(join(R
 // GitHub Pages: serve the files as they are (no Jekyll)
 writeFileSync(join(OUT, '.nojekyll'), '');
 log('copied the game files');
+log(shrinkHdrFolder(join(OUT, 'assets', 'hdri')));
 
 // --- 2. Styles: compiled Tailwind, local icons and fonts ----------------------------------------
 const CSS = join(OUT, 'css');

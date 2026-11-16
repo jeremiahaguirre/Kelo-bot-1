@@ -87,6 +87,16 @@ He may change the world freely. He can never move or change the buildings, and h
   - Add restore purchases (required by Apple) and refunds (a revoked entitlement removes the skin and falls back to Classic).
 
 ## Recently shipped (on `main`, pushed)
+- **Owner gaps (branch `agent/gaps`)**: see tasks.md "Owner gaps from the cleanup audit".
+  - Shops: `MAKER_CAPS` (shopmaker.js) entries have `maxCm`, optional `run` (the garage runs on `migtig`), `forms: null` for the waterjet. Shops outside WORKSHOP_MACHINES are `MAKER_OUTSIDE_SHOPS` (weldstudio -> `makerWeldRun`, batchplant -> `makerCastRun` / `makerBatchRun` for ready-mix lines). Everything goes through `makerShopKnown/Missing/Ask/Run`. The wire EDM and the MIG/TIG welder got plans (`noSolo`). Castings cure a world day in the plant yard (`state.makerCastings`).
+  - Welding uses `WELD_STOCK` (steel/aluminium/stainless bundles, 4 pieces each) in every weld plan.
+  - Big builds: `bomFromReading(target, readings)` with `MAKER_FAMILIES`; `makerMarkBomLines(bom)` after every BOM in `researchBuild`.
+  - Food: `FOOD_RECIPES`, `answerFoodAsk`, `cookFoodOrder` at the stove; ingredients arrive as category `ingredient` and are not eaten as snacks.
+  - Foundations (assembly.js): `foundationNeedsPour`, `pourFoundation`, `foundationCuring`; shed template now pours 9 pier footings.
+  - Upgrades: `upgradeMaterialsFor`, `state.upgradePlans`, `buildPlannedUpgrade`, `upgradePlansTick`.
+  - Paint: `state.paintPlan.id`, `paintPlanRun(id)`.
+  - perf.js `perfInstances` sets `geometry.boundingBox` over all copies, as well as the sphere, because js/chunks.js files objects by `Box3.setFromObject`.
+  - Test hooks: `window.__keloShotHold = 'weld'|'cook'|'pour'` holds that moment for screenshots (`window.__keloShotHeld` says it is held).
 - **Design pass, polish only** (branch `agent/design`; DESIGN.md has the full token table and component patterns).
   - One token set: `:root --hud-*` at the top of css/style.css (neutral/accent/status ramps as RGB triplets, text roles, surfaces, borders, type scale `--hud-fs-3xs..4xl`, weights, spacing `--hud-s-*`, radii, two shadows, motion, z-layers). `#sideMenu --m-*` are aliases of them.
   - `js/twtheme.js` (after the Tailwind CDN script in index.html and shop.html; build-web.mjs requires it for the app's compiled Tailwind) maps Tailwind onto the tokens: slate + decorative hues (violet, purple, indigo, fuchsia, pink, teal, lime, stone, zinc) -> neutral; amber/yellow -> accent; emerald/green, rose/red, orange, sky/blue/cyan -> status; `text-slate-400/500/600` -> readable text tokens; text sizes, weights, radii, shadows, z-index too. New sizes `text-3xs` (10px) and `text-2xs` (11px) replaced the `text-[9-11px]` one-offs.

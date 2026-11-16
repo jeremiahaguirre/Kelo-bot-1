@@ -1306,7 +1306,7 @@ async function farmDoSurvey(t) {
       const best = results.filter(r => !r.problems.length).sort((a, b) => b.score - a.score)[0];
       if (!best) { farmDiary('No land for a farm', '🗺️', `I surveyed ${results.map(r => r.name).join(' and ')} but neither works: ${results.map(r => r.problems.join(', ')).join('; ')}.`); return 'no-site'; }
       const R = FARM_SITE_CANDIDATES.find(c => c.id === best.id);
-      F.site = { ...R, y: FARM_Y, surveyedAt: Date.now(), survey: results };
+      F.site = { ...R, y: best.y, surveyedAt: Date.now(), survey: results };
       // walk out to it: up the pass, through the north yard, onto the bench
       farmSay('Surveying the farm site', '🗺️', `Out past the north yard with the survey kit: ${best.ha} ha, about ${Math.round((best.cutM3 + best.fillM3) / 1000)}k m³ of earth to move, ${best.laneM} m of lane to Yard Street.`);
       farmBuildLand3D();
@@ -1345,7 +1345,7 @@ async function farmLandStep(key) {
           const done = Math.floor(L[prop] * sweeps + 1e-6);
           farmSay(key === 'clear' ? 'Clearing the farm site' : 'Grading the farm site', key === 'clear' ? '🌲' : '🚜', key === 'clear'
             ? 'Pushing over the pines and aspens with the dozer, bucking them with the saw, picking the glacier stones onto piles by the north fence.'
-            : `Cutting the knolls and filling the hollows to one level (${FARM_Y / FARM_U | 0} m above the yard), the grader trimming behind.`);
+            : `Cutting the knolls and filling the hollows to one level (${Math.round(farmSiteY() / FARM_U)} m above the north yard; the cut fills the hollows), the grader trimming behind.`);
           for (let i = done; i < sweeps; i++) {
             const z = S.maxZ - (i + 0.5) * D / sweeps;
             const a = { x: i % 2 ? S.maxX - 4 : S.minX + 4, z }, b = { x: i % 2 ? S.minX + 4 : S.maxX - 4, z };
@@ -1464,7 +1464,7 @@ function farmLookAt(dist = 1) {
       const cx = (S.minX + S.maxX) / 2, cz = (S.minZ + S.maxZ) / 2;
       state.cameraMode = 'none';
       camera.position.set(cx - 60 * dist, 120 * dist, S.maxZ + 140 * dist);
-      if (typeof controls !== 'undefined' && controls) { controls.target.set(cx, FARM_Y, cz + 20); controls.update(); } else camera.lookAt(cx, FARM_Y, cz);
+      if (typeof controls !== 'undefined' && controls) { controls.target.set(cx, farmSiteY(), cz + 20); controls.update(); } else camera.lookAt(cx, farmSiteY(), cz);
     }
 
 // --- Starting it on his own ------------------------------------------------------------------------

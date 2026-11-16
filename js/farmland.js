@@ -14,7 +14,7 @@ const FARM_SITE_CANDIDATES = [
   { id: 'east', name: 'the east benchland past the north yard', minX: 180, maxX: 500, minZ: -462, maxZ: -112 },
   { id: 'west', name: 'the west benchland past the runway field', minX: -500, maxX: -180, minZ: -462, maxZ: -112 }
 ];
-const FARM_Y = 6;            // graded level of the farm (ground the valley side of the hills)
+const FARM_Y = 6;            // the lowest level he would grade to (each site's own level is chosen by the survey: farmSiteY)
 const FARM_BLEND = 30;       // the cut and fill banks round it
 const FARM_GATE_DM = 10;     // the gate and the farm lane: 10 m in from the south fence
 const FARM_FIELD_ROAD_XM = 74;
@@ -34,6 +34,8 @@ function farmLanePoints() {
       return [[106, -106], [126, -108], [152, -117], [S.minX, gz]];
     }
 
+// The level a site is graded to: its own (cut balanced against fill), from the survey
+function farmSiteY() { const S = farmSite(); return S && Number.isFinite(S.y) ? S.y : FARM_Y; }
 function farmSite() { return (typeof state !== 'undefined' && state.farm && state.farm.site) || null; }
 function farmWorld(xm, dm) {
       const S = farmSite() || FARM_SITE_CANDIDATES[0];
@@ -125,7 +127,7 @@ function farmLandAt(x, z, base) {
         if (L.d < 14) {
           const start = S.id === 'west' ? 0 : 18;   // the first stretch is already the yard
           const t = farmSmooth((L.s - start) / Math.max(1, L.len - start));
-          const y = 0.05 + (FARM_Y - 0.05) * t;
+          const y = 0.05 + (farmSiteY() - 0.05) * t;
           const built = farmSmooth((F.lane * (L.len + 10) - L.s) / 10);
           const w = (1 - farmSmooth((L.d - 3) / 10)) * built * farmSmooth((L.s - start + 4) / 8);
           h = h + (y - h) * w;
@@ -135,7 +137,7 @@ function farmLandAt(x, z, base) {
       const w = farmGradeWeight(S, x, z, F.graded) * farmEdgeWeight(S, x, z);
       if (w > 0) {
         const swell = 0.18 * Math.sin(x * 0.019 + 1.1) * Math.cos(z * 0.017);
-        h = h + (FARM_Y + swell - h) * w;
+        h = h + (farmSiteY() + swell - h) * w;
       }
       return h - farmDitchDepth(S, x, z, F.drained);
     }
@@ -163,20 +165,26 @@ function farmSiteProblems(R) {
 // Survey a candidate: earth to move (m³, cut + fill to the farm's level), the steepest ground, the
 // distance to the nearest road; problems first
 function farmSurveySite(R) {
-      let cut = 0, fill = 0, steep = 0, mn = 1e9, mx = -1e9;
-      const cell = 16;
+      let steep = 0, mn = 1e9, mx = -1e9;
+      const cell = 16, ys = [];
       for (let x = R.minX + cell / 2; x < R.maxX; x += cell) for (let z = R.minZ + cell / 2; z < R.maxZ; z += cell) {
         const y = getAnalyticalGroundHeight(x, z);
-        mn = Math.min(mn, y); mx = Math.max(mx, y);
-        const dy = (y - FARM_Y) / FARM_U, a = (cell / FARM_U) ** 2;
-        if (dy > 0) cut += dy * a; else fill -= dy * a;
+        ys.push(y); mn = Math.min(mn, y); mx = Math.max(mx, y);
         steep = Math.max(steep, Math.abs(getAnalyticalGroundHeight(x + 4, z) - y) / 4);
       }
+      // The level that balances the cut against the fill (the mean), never below FARM_Y
+      const level = Math.max(FARM_Y, Math.round(ys.reduce((s, y) => s + y, 0) / ys.length * 10) / 10);
+      let cut = 0, fill = 0;
+      const a = (cell / FARM_U) ** 2;
+      ys.forEach(y => { const dy = (y - level) / FARM_U; if (dy > 0) cut += dy * a; else fill -= dy * a; });
       const lane = R.id === 'west' ? Math.hypot(R.maxX - 18, -128 + 106) : Math.hypot(R.minX - 106, -128 + 106);
       const problems = farmSiteProblems(R);
       const ha = farmHa(R.maxX - R.minX, R.maxZ - R.minZ);
-      return { id: R.id, name: R.name, ha: Math.round(ha * 10) / 10, cutM3: Math.round(cut), fillM3: Math.round(fill), reliefM: Math.round((mx - mn) / FARM_U), steep: Math.round(steep * 100) / 100,
-        laneM: Math.round(lane / FARM_U), problems, score: problems.length ? -1 : 1e7 / (cut + fill + 1) - lane / FARM_U * 2 };
+      // the lane has to climb from the yard (y 0.05) to the farm's level: steeper than 1 in 8 is no good for a loaded truck
+      const climb = (level - 0.05) / Math.max(1, lane);
+      if (climb > 0.3) problems.push('too steep a climb for the lane');
+      return { id: R.id, name: R.name, y: level, ha: Math.round(ha * 10) / 10, cutM3: Math.round(cut), fillM3: Math.round(fill), reliefM: Math.round((mx - mn) / FARM_U), steep: Math.round(steep * 100) / 100,
+        laneM: Math.round(lane / FARM_U), climb: Math.round(climb * 100) / 100, problems, score: problems.length ? -1 : 1e7 / (cut + fill + 1) - lane / FARM_U * 2 };
     }
 
 // --- Keeping other jobs off it (the shared gate, js/landscape.js) ----------------------------------

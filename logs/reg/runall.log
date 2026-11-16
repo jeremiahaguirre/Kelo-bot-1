@@ -1,0 +1,39 @@
+=== reload 12:32:18
+exit 0 0 FAIL lines; page errors: none
+=== chat 12:34:02
+exit 0 0 FAIL lines; page errors: none
+=== ui 12:42:35
+exit 0 0 FAIL lines; page errors: none
+=== water 12:44:59
+exit 0 0 FAIL lines; page errors: none
+=== gear 12:49:11
+exit 0 0 FAIL lines; page errors: none
+=== haul 12:53:01
+exit 0 0 FAIL lines; page errors: none
+=== vehicle 12:58:35
+exit 0 0 FAIL lines; page errors: none
+=== skills 12:59:30
+exit 0 0 FAIL lines; page errors: none
+=== printshop 13:11:32
+exit 0 0 FAIL lines; page errors: none
+=== skins 13:16:28
+exit 0 0 FAIL lines; page errors: none
+=== save 13:29:06
+dumped 9 keys 52 KB {"three":"128","pos":{"x":-1.1372799127937754,"z":-4.197754179566109},"diary":0,"mem":0,"inv":0,"edits":0,"skin":"classic","mood":"Found a Workshop"}
+page errors: none
+loaded {"three":"187","pos":{"x":10.98965074789974,"z":-3.96287081165434},"diary":0,"mem":0,"inv":0,"edits":0,"skin":"classic","mood":"Found a Workshop"} marker true
+page errors: none
+=== anim before 13:30:48
+exit 0
+classic: loaded=classic frames=9475 walked=6.34 arrived=true reach l=3.18cm r=2.46cm groups=0 eyesVisible=0/0 errors=0 (252s)
+  spot {"x":-47.5,"z":-0.5,"clear":2.2,"flat":0.09880949955239593,"sc":1.2499473698789103}
+aegis: loaded=aegis frames=9475 walked=6.34 arrived=true reach l=3.18cm r=2.46cm groups=8 eyesVisible=0/8 errors=0 (220s)
+=== anim after 13:43:10
+exit 0
+classic: loaded=classic frames=9475 walked=6.34 arrived=true reach l=2.66cm r=3.48cm groups=0 eyesVisible=0/0 errors=0 (140s)
+  spot {"x":-47.5,"z":-0.5,"clear":2.2,"flat":0.09880949955239593,"sc":1.2499473698789103}
+aegis: loaded=aegis frames=9475 walked=6.34 arrived=true reach l=2.66cm r=3.48cm groups=8 eyesVisible=0/8 errors=0 (146s)
+=== high 13:52:15
+page errors: none
+page errors: none
+=== ALL DONE 14:41:17

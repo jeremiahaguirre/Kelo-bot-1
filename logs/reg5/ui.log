@@ -1,0 +1,9 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+shot ui-d-main
+shot ui-d-talk
+shot ui-d-requests
+shot ui-d-diary
+shot ui-d-brain
+shot ui-d-world
+shot ui-d-settings
+page errors: none

@@ -1,0 +1,25 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+candidates: ["Phone stand (3D print file) @ $2.99","Little tugboat (3D print file) @ $2.99","Little heron (3D print file) @ $3.99"]
+refuse hammer: [
+  null,
+  "I only sell 3D print files of things people would enjoy or use, and my own paintings, in my shop. I haven't printed that one myself, so I don't know it prints well."
+]
+refuse gear: [
+  null,
+  'I only sell 3D print files of things people would enjoy or use, and my own paintings, in my shop. On its own it is just a test piece. Nobody needs that file.'
+]
+refuse concept: [
+  null,
+  `I only sell 3D print files of things people would enjoy or use, and my own paintings, in my shop. "statue of "buried treasure theory"" means a lot to me, but it isn't something people would find fun or useful to print.`
+]
+list stand at $50: true
+list next: true
+listings: [{"name":"Phone stand (3D print file)","price":3.99,"details":"STL file · about 26 g of PLA · prints in about 2.5 h","desc":"A phone stand for video calls and recipes. Fits most phones, even in a case. I printed it myself first to make sure it comes out well. STL file · about 26 g of PLA · prints in about 2.5 h."}]
+after sale: {"n":1,"sales":[1],"earned":3.99}
+stl: kelo1-phone-stand.stl solid phone-stand facets 28 endsolid phone-stand
+shot printshop-panel
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+shot printshop-site
+page errors: none

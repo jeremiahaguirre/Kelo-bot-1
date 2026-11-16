@@ -1,0 +1,15 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+no heli: I don't have a helicopter yet, Jeremiah. If you sent me one, I'd learn to use it properly.
+asked: Flying the helicopter
+shot skill-heli
+done: false {
+  skills: {},
+  speech: 'Lifting off!',
+  diary: 'Dear Diary, right beside the Workshop there is now a concrete batch plant and an asphalt plant, with a mixer truck parked in its bay. If I learn how they work, I can pour my own paths and pave my own ',
+  fuel: 91.3,
+  summary: 'no practised skills yet; given to you but never really practised: flying the helicopter'
+}
+list: No skills practised yet. Give him something to learn!
+weld goes to museum: true
+test piece: []
+page errors: none

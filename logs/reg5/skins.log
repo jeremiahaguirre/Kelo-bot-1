@@ -1,0 +1,70 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+PASS a new save starts with Classic only: {"owned":["classic"],"equipped":"classic","purchases":[]}
+PASS all ten card pictures drawn
+PASS nine locked cards
+PASS locked cards show a price: $2.99 · Legendary
+shot skins-ui-locked
+PASS preview opens for a locked skin
+PASS previewing does not change his look
+shot skins-ui-preview
+PASS Escape closes the preview
+PASS menu still open after Escape in the dialog
+PASS explorer: the mock sheet says "Dev mode: free unlock, no payment taken."
+shot skins-ui-buy-sheet
+PASS explorer: owned with a mock receipt
+PASS explorer: equipped (state, model and chip)
+PASS twirl: the mock sheet says "Dev mode: free unlock, no payment taken."
+PASS twirl: owned with a mock receipt
+PASS twirl: equipped (state, model and chip)
+PASS kitbot: the mock sheet says "Dev mode: free unlock, no payment taken."
+PASS cancelling the sheet grants nothing
+PASS kitbot: owned with a mock receipt
+PASS kitbot: equipped (state, model and chip)
+PASS marshmallow: the mock sheet says "Dev mode: free unlock, no payment taken."
+PASS marshmallow: owned with a mock receipt
+PASS marshmallow: equipped (state, model and chip)
+PASS spark: the mock sheet says "Dev mode: free unlock, no payment taken."
+PASS spark: owned with a mock receipt
+PASS spark: equipped (state, model and chip)
+PASS ember: the mock sheet says "Dev mode: free unlock, no payment taken."
+PASS ember: owned with a mock receipt
+PASS ember: equipped (state, model and chip)
+PASS aegis: the mock sheet says "Dev mode: free unlock, no payment taken."
+PASS aegis: owned with a mock receipt
+PASS aegis: equipped (state, model and chip)
+PASS nebula: the mock sheet says "Dev mode: free unlock, no payment taken."
+PASS nebula: owned with a mock receipt
+PASS nebula: equipped (state, model and chip)
+PASS clockwork: the mock sheet says "Dev mode: free unlock, no payment taken."
+PASS clockwork: owned with a mock receipt
+PASS clockwork: equipped (state, model and chip)
+PASS his diary notes each new look
+shot skins-ui-owned-equipped
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+PASS after reload: 10 owned, Explorer equipped and built: {"owned":["classic","explorer","twirl","kitbot","marshmallow","spark","ember","aegis","nebula","clockwork"],"eq":"explorer","built":"explorer","n":9}
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+PASS old save without skins loads as Classic: {"s":{"owned":["classic"],"equipped":"classic","purchases":[]},"built":"classic"}
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+PASS damaged save repaired (saved.skins = { owned: "x", equipped: "twirl", purchases: 5 };): {"s":{"owned":["classic"],"equipped":"classic","purchases":[]},"built":"classic"}
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+PASS damaged save repaired (saved.skins = { owned: ["classic", "bogus", "spark", "spark", 7], equipped: "bogus", purchases: [null, { id: "nope" }, { id: "spark", at: "x", priceCents: -5 }] };): {"s":{"owned":["classic","spark"],"equipped":"classic","purchases":[{"id":"spark","at":0,"priceCents":0,"currency":"USD","provider":"unknown","mock":true}]},"built":"classic"}
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+PASS damaged save repaired (saved.skins = { owned: ["classic"], equipped: "spark" };): {"s":{"owned":["classic"],"equipped":"classic","purchases":[]},"built":"classic"}
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+PASS damaged save repaired (saved.skins = "spark";): {"s":{"owned":["classic"],"equipped":"classic","purchases":[]},"built":"classic"}
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+PASS damaged save repaired (saved.skins = ["spark"];): {"s":{"owned":["classic"],"equipped":"classic","purchases":[]},"built":"classic"}
+PASS Settings shows dev unlock on by default
+PASS toggling it in Settings turns dev unlock off
+shot skins-settings-toggle
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+PASS dev unlock stays off after a reload
+PASS dev unlock off: no sheet, "Payments coming soon", nothing granted: {"sheet":false,"toast":"Payments coming soon"}
+PASS dev unlock off: buySkin() grants nothing: {"r":{"ok":false,"reason":"unavailable"},"owned":false}
+PASS the Skins note says payments are coming soon
+PASS Enter on a focused card opens its preview
+PASS focus returns to the card after closing
+PASS names are escaped
+PASS no GPU leaks: everything a skin used is disposed when he changes skin or a preview closes: {"geometries":2366,"notFreedGeo":0,"materials":725,"notFreedMat":0,"textures":33,"notFreedTex":0,"m0":{"geometries":902,"textures":55},"m1":{"geometries":1104,"textures":95}}
+skins result: all passed
+page errors: none

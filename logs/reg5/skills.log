@@ -1,0 +1,35 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+no heli: I don't have a helicopter yet, Jeremiah. If you sent me one, I'd learn to use it properly.
+asked: Flying the helicopter
+shot skill-heli
+done: true {
+  skills: {
+    'flying helicopter': {
+      label: 'flying the helicopter',
+      xp: 8,
+      level: 1,
+      sessions: 1,
+      firstAt: 1794850531904,
+      lastAt: 1794850531904
+    }
+  },
+  speech: 'Hold on—look at this wildflower growing near the west rocks! Its geometry is like a tiny geodesic dome.',
+  diary: 'Dear Diary, I stopped in the West Island Meadow and tilted my optical sensors at a dandelion clock. Even though my fullness was dipping, I couldn’t bear to walk past without counting its Fibonacci spi',
+  fuel: 82.5,
+  summary: 'flying the helicopter level 1'
+}
+list: 
+        
+          Lv1
+          
+            
+              Flying the helicopter
+              11% to Lv 2
+            
+            
+            1 session · last just now
+          
+        
+weld goes to museum: true
+test piece: []
+page errors: none

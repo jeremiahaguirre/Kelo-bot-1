@@ -1,0 +1,6 @@
+  spot {"x":-47.5,"z":-0.5,"clear":2.2,"flat":0.09880949955239593,"sc":1.2499473698789103}
+classic@warmup: loaded=classic frames=9475 walked=6.34 arrived=true reach l=2.66cm r=3.48cm groups=0 eyesVisible=0/0 errors=0 (412s)
+  spot {"x":-47.5,"z":-0.5,"clear":2.2,"flat":0.09880949955239593,"sc":1.2499473698789103}
+classic: loaded=classic frames=9475 walked=6.34 arrived=true reach l=2.66cm r=3.48cm groups=0 eyesVisible=0/0 errors=0 (384s)
+  spot {"x":-47.5,"z":-0.5,"clear":2.2,"flat":0.09880949955239593,"sc":1.2499473698789103}
+aegis: loaded=aegis frames=9475 walked=6.34 arrived=true reach l=2.66cm r=3.48cm groups=8 eyesVisible=0/8 errors=0 (393s)

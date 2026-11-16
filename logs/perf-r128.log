@@ -1,0 +1,8 @@
+console.error: Failed to load resource: the server responded with a status of 404 (Not Found)
+three 128
+PERF town {"calls":1347,"tris":307825,"js":18.9,"frame":2742.8,"p95":2926.5,"frames":5,"programs":47}
+PERF lake {"calls":42,"tris":176362,"js":7.2,"frame":1071.2,"p95":1095.5,"frames":5,"programs":47}
+PERF northyard {"calls":1297,"tris":308841,"js":15.3,"frame":3139.7,"p95":3262,"frames":5,"programs":49}
+PERF night {"calls":1394,"tris":271343,"js":19.7,"frame":2711.9,"p95":2809.9,"frames":5,"programs":49}
+PERF workshop {"calls":1150,"tris":297311,"js":16.7,"frame":3646.9,"p95":3891.4,"frames":5,"programs":50}
+page errors: none

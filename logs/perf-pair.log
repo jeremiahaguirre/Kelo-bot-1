@@ -1,0 +1,15 @@
+=== r128 perf 1 15:17:49
+PERF town {"calls":1312,"tris":308207,"js":19.1,"frame":2167,"p95":2299.8,"frames":5,"programs":48}
+PERF lake {"calls":41,"tris":176350,"js":4.5,"frame":914.7,"p95":967.9,"frames":5,"programs":48}
+PERF northyard {"calls":1261,"tris":308845,"js":15.4,"frame":2694.9,"p95":2749.8,"frames":5,"programs":50}
+PERF night {"calls":1491,"tris":307427,"js":11.9,"frame":2298.8,"p95":2425.5,"frames":5,"programs":50}
+PERF workshop {"calls":1150,"tris":297311,"js":12.6,"frame":3045,"p95":3168.4,"frames":5,"programs":51}
+page errors: none
+=== r187 perf 1 15:20:35
+PERF town {"calls":1304,"tris":299225,"js":16.9,"frame":2024.9,"p95":2042.5,"frames":5,"programs":41}
+PERF lake {"calls":35,"tris":170534,"js":3.8,"frame":899.4,"p95":955.7,"frames":5,"programs":42}
+PERF northyard {"calls":1291,"tris":302419,"js":14,"frame":2605.1,"p95":2628.8,"frames":5,"programs":47}
+PERF night {"calls":1451,"tris":298968,"js":12.1,"frame":2250.5,"p95":2328,"frames":5,"programs":47}
+PERF workshop {"calls":1161,"tris":292994,"js":12.5,"frame":2940.7,"p95":3029.5,"frames":5,"programs":48}
+page errors: none
+=== r128 perf 2 15:23:16

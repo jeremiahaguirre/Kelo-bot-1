@@ -493,11 +493,13 @@ const BOM_TEMPLATES = {
     subs: [
       { key: 'foundation', name: 'Foundation', weight: 0, stand: [0, 2.6],
         lines: [
-          ['Concrete deck blocks', 9, '', 'p'],
+          ['Ready-mix concrete for 9 pier footings (0.4 m³)', 1, 'load', 'p'],
+          ['8 in. cardboard concrete tube forms, 4 ft', 9, '', 'p'],
+          ['Galvanised skid anchor straps', 9, '', 'p'],
           ['Pressure-treated 4 × 4 skids, 10 ft', 3, '', 'p'],
           ['3/4 in. crushed gravel', 1, 'cu yd', 'c', 'fit']
         ],
-        steps: [['fit', 'shovel', 'Levelling a gravel pad and setting the deck blocks'], ['fit', 'level', 'Laying the skids level and parallel'], ['inspect', 'level', 'Checking level both ways']] },
+        steps: [['fit', 'shovel', 'Digging nine footing holes below the frost line and setting the tube forms'], ['fit', 'level', 'Setting the anchor straps into the wet footings'], ['inspect', 'level', 'Checking level both ways']] },
       { key: 'floor', name: 'Floor', weight: 0, stand: [0, 2.6],
         lines: [
           ['Pressure-treated 2 × 6 joists, 8 ft', 9, '', 'p'],

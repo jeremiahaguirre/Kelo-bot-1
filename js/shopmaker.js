@@ -49,7 +49,7 @@ const MAKER_KINDS = [
 ];
 
 // Did he make it himself? (a part, a piece of furniture, glass, a print...)
-const MAKER_MADE_RE = /\b(handmade|hand-made|hand-blown|turned|dovetailed|laser-cut|woodshop-made|home-built|homemade|shop-made)\b/i;
+const MAKER_MADE_RE = /\b(handmade|hand-made|hand-blown|turned|dovetailed|laser-cut|woodshop-made|home-built|homemade|shop-made|welded|cast concrete|wire-EDM-cut|garage-fabricated)\b/i;
 function makerIsHisOwn(name) {
       const n = String(name || '');
       if (!n) return false;
@@ -119,25 +119,92 @@ function makerRegisterKind(spec, names = []) {
     }
 
 // --- 3. What his shops can make ---------------------------------------------------------------------------
-// key: the WORKSHOP_MACHINES machine; mat: materials it works; forms: things it can make whole; part: the
-// made-name pattern for a product
+// key: the shop (a WORKSHOP_MACHINES machine, or one of MAKER_OUTSIDE_SHOPS); mat: materials it works;
+// forms: things it can make whole (null: it makes nothing whole); part: the made-name pattern for a product;
+// maxCm: the biggest thing it can make, from the real machine's build volume, bed, travel or swing;
+// run: the WORKSHOP_MACHINES key whose plan does the job when that differs from key.
 const MAKER_CAPS = [
-  { key: 'woodshop', mat: ['wood'], forms: /stool|chair|bench|table|desk|shel(f|ves)|bookcase|box|chest|cabinet|frame|rack|crate|birdhouse|caddy|organi[sz]er|holder|tray|toy|furniture|board|stand|legs?|seat|top|base|lid|door|drawer|panel/i,
+  { key: 'woodshop', mat: ['wood'], maxCm: 240, forms: /stool|chair|bench|table|desk|shel(f|ves)|bookcase|box|chest|cabinet|frame|rack|crate|birdhouse|caddy|organi[sz]er|holder|tray|toy|furniture|board|stand|legs?|seat|top|base|lid|door|drawer|panel/i,
     name: (noun, m) => `A handmade ${m || 'maple'} ${noun}`, wood: true },
-  { key: 'woodturning', mat: ['wood'], forms: /bowl|cup|mug|goblet|vase|spindle|handle|knob|candlestick|rolling pin|spinning top|base|finial/i,
+  { key: 'woodturning', mat: ['wood'], maxCm: 40, forms: /bowl|cup|mug|goblet|vase|spindle|handle|knob|candlestick|rolling pin|spinning top|base|finial/i,
     name: (noun, m) => `A turned ${m || 'cherry'} ${noun}`, wood: true },
-  { key: 'glassstudio', mat: ['glass'], forms: /vase|bowl|cup|mug|tumbler|goblet|ornament|paperweight|shade|lampshade|bottle|float|sculpture|marble|globe|dish/i,
+  { key: 'glassstudio', mat: ['glass'], maxCm: 45, forms: /vase|bowl|cup|mug|tumbler|goblet|ornament|paperweight|shade|lampshade|bottle|float|sculpture|marble|globe|dish/i,
     name: noun => `A hand-blown glass ${noun}` },
-  { key: 'fdm', mat: ['plastic'], forms: /bracket|clip|mount|stand|holder|hook|case|enclosure|knob|toy|figure|organi[sz]er|cup|planter|spinning top|whistle|gear|box|cover|caddy/i,
+  { key: 'fdm', mat: ['plastic'], maxCm: 25, forms: /bracket|clip|mount|stand|holder|hook|case|enclosure|knob|toy|figure|organi[sz]er|cup|planter|spinning top|whistle|gear|box|cover|caddy/i,
     name: noun => `An FDM-printed PLA ${noun}`, small: true },
-  { key: 'sla', mat: ['resin'], forms: /figure|figurine|miniature|ring|jewel|statue|lens|bust/i, name: noun => `An SLA-printed resin ${noun}`, small: true },
-  { key: 'avid4896', mat: ['wood', 'plywood'], forms: /sign|plaque|panel|puzzle|template|letters|cutout|shelf|board|coaster/i, name: noun => `An Avid-routed plywood ${noun}` },
-  { key: 'laser', mat: ['acrylic'], forms: /sign|panel|stand|box|ornament|coaster|cover|plaque/i, name: noun => `A laser-cut acrylic ${noun}` },
-  { key: 'haasvs1', mat: ['aluminium', 'steel'], forms: /bracket|plate|hub|knob|mount|bottle opener|block|part|spindle|pedal/i, name: (noun, m) => `A Haas-machined ${m === 'steel' ? 'steel' : 'aluminium'} ${noun}` },
-  { key: 'plasma', mat: ['steel'], forms: /gusset|bracket|sign|silhouette|plate|sculpture|fire pit|bracket|frame|stand|rack|hook/i, name: noun => `A plasma-cut steel ${noun}` },
-  { key: 'pcbline', mat: ['electronics'], forms: /radio|weather station|controller|console/i, name: noun => `A homemade ${noun}` },
-  { key: 'pcbmill', mat: ['electronics'], forms: /circuit|board|controller|pcb|electronics/i, name: noun => `A PCB-milled ${noun}` }
+  { key: 'sla', mat: ['resin'], maxCm: 18, forms: /figure|figurine|miniature|ring|jewel|statue|lens|bust/i, name: noun => `An SLA-printed resin ${noun}`, small: true },
+  // EOS Formiga P 110: 200 x 250 x 330 mm of nylon powder, no supports
+  { key: 'sls', mat: ['nylon', 'plastic'], maxCm: 33, forms: /hinge|clip|duct|bracket|housing|enclosure|gear|drone arm|lattice|snap|buckle|case|holder|grip|knob|chain|toy/i,
+    name: noun => `An SLS-printed nylon ${noun}`, small: true },
+  // HP Jet Fusion 5200: 380 x 284 x 380 mm
+  { key: 'mjf', mat: ['nylon', 'plastic'], maxCm: 38, forms: /pedal|gear|insole|housing|bracket|enclosure|clip|duct|lattice|handle|grip|case|manifold|orthotic/i,
+    name: noun => `An MJF-printed nylon ${noun}`, small: true },
+  // Stratasys J850: 490 x 390 x 200 mm, full colour and clear photopolymer
+  { key: 'polyjet', mat: ['resin', 'plastic'], maxCm: 49, forms: /prototype|model|figure|figurine|statue|bust|lens|enclosure|anatomical|miniature|sculpture|light pipe|mock-?up/i,
+    name: noun => `A PolyJet-printed photopolymer ${noun}`, small: true },
+  // Mcor paper LOM: an A4 sheet stack, 256 x 169 x 150 mm
+  { key: 'lom', mat: ['paper'], maxCm: 25, forms: /model|architectural|pattern|mold|mould|prototype|figurine|bust|terrain|map/i,
+    name: noun => `A LOM-built paper ${noun}`, small: true },
+  { key: 'avid4896', mat: ['wood', 'plywood'], maxCm: 240, forms: /sign|plaque|panel|puzzle|template|letters|cutout|shelf|board|coaster/i, name: noun => `An Avid-routed plywood ${noun}` },
+  { key: 'laser', mat: ['acrylic'], maxCm: 60, forms: /sign|panel|stand|box|ornament|coaster|cover|plaque/i, name: noun => `A laser-cut acrylic ${noun}` },
+  // The garage: its MIG/TIG welder and plasma table do vehicle fabrication (hitches, racks, bumpers)
+  { key: 'garage', run: 'migtig', mat: ['steel'], maxCm: 400, forms: /trailer hitch|hitch|exhaust|roll ?(bar|cage)|bumper|skid plate|tow bar|bull bar|roof rack|kart frame|go-?kart chassis|ladder rack|truck rack|trailer/i,
+    name: noun => `A garage-fabricated steel ${noun}` },
+  // The Welding Studio: steel sections and plate, cut, fitted and welded on a 4 x 8 ft table
+  { key: 'weldstudio', mat: ['steel', 'stainless', 'aluminium', 'metal'], maxCm: 300, outside: true,
+    forms: /bench|table|chair|stool|frame|rack|gate|grill|bbq|barbecue|fire pit|cart|stand|shel(f|ves)|planter|sculpture|railing|hook|bracket|box|bed frame|arch|trellis|wheelbarrow|mailbox|bike rack|coat rack|candle holder|workbench|sawhorse|ladder|frame|cage|basket|lantern|wind ?vane|weather ?vane|bird feeder|log rack|tool rack|anvil stand|tripod|easel/i,
+    name: (noun, m) => `A welded ${m === 'aluminium' ? 'aluminium' : m === 'stainless' ? 'stainless steel' : 'steel'} ${noun}` },
+  // The batch plant's ready-mix, cast in a form in the plant yard (it cures before it is moved)
+  { key: 'batchplant', mat: ['concrete'], maxCm: 250, outside: true,
+    forms: /bench|planter|stepping stones?|bird ?bath|paver|block|slab|post base|countertop|garden edging|bollard|pad|footing|pier|fire ring|\bpot\b|trough|statue base|steps?|bowl|sphere|table/i,
+    name: noun => `A cast concrete ${noun}` },
+  { key: 'haasvs1', mat: ['aluminium', 'steel'], maxCm: 50, forms: /bracket|plate|hub|knob|mount|bottle opener|block|part|spindle|pedal/i, name: (noun, m) => `A Haas-machined ${m === 'steel' ? 'steel' : 'aluminium'} ${noun}` },
+  { key: 'plasma', mat: ['steel'], maxCm: 120, forms: /gusset|bracket|sign|silhouette|plate|wall art|stencil|coaster|tag|cutout|plaque/i, name: noun => `A plasma-cut steel ${noun}` },
+  // Sodick wire EDM: 400 x 300 x 250 mm travel, cuts any conductive plate to a profile
+  { key: 'edm', mat: ['steel', 'stainless', 'aluminium', 'titanium', 'metal'], maxCm: 40, forms: /gear|punch|die|key\b|spline|sprocket|cam\b|bracket|tool|blade|bottle opener|template|plate|pawl|ratchet/i,
+    name: (noun, m) => `A wire-EDM-cut ${m === 'aluminium' ? 'aluminium' : m === 'titanium' ? 'titanium' : 'steel'} ${noun}`, small: true },
+  // EOS M 290: 250 x 250 x 325 mm of stainless powder
+  { key: 'dmls', mat: ['stainless', 'steel', 'metal'], maxCm: 32, forms: /nozzle|manifold|bracket|impeller|heat exchanger|valve|lattice|insert|turbine|gear|bottle opener|ring/i,
+    name: noun => `A DMLS-printed stainless ${noun}` , small: true },
+  // ExOne InnoventX: 160 x 65 x 65 mm
+  { key: 'binder', mat: ['stainless', 'steel', 'metal'], maxCm: 16, forms: /impeller|gear|sprocket|bracket|bushing|figurine|key|ring|bottle opener|small part/i,
+    name: noun => `A binder-jetted stainless ${noun}`, small: true },
+  // A wire-arc DED robot: big near-net shapes within the arm's reach, then machined
+  { key: 'ded', mat: ['stainless', 'steel', 'metal'], maxCm: 90, forms: /flange|blade|turbine|shaft|propeller|ring|nozzle|boss|large bracket/i,
+    name: noun => `A DED-built stainless ${noun}` },
+  // Arcam Q10: 200 x 200 x 180 mm of titanium
+  { key: 'ebm', mat: ['titanium'], maxCm: 20, forms: /implant|bracket|lattice|cup|cage|bike part|dropout|lug|ring|bottle opener/i,
+    name: noun => `An EBM-printed titanium ${noun}`, small: true },
+  // The support-removal waterjet only blasts PolyJet support away; it makes nothing whole
+  { key: 'waterjet', mat: ['resin'], maxCm: 49, forms: null, finishes: 'polyjet' },
+  { key: 'pcbline', mat: ['electronics'], maxCm: 30, forms: /radio|weather station|controller|console/i, name: noun => `A homemade ${noun}` },
+  { key: 'pcbmill', mat: ['electronics'], maxCm: 20, forms: /circuit|board|controller|pcb|electronics/i, name: noun => `A PCB-milled ${noun}` }
 ];
+
+// How big a thing is (its largest dimension in cm), from what it is: the too-big rule for each shop
+const MAKER_SIZES = [
+  [/\b(shed|cabin|house|garage|barn|boat|canoe|kayak|car|truck|trailer|plane|aircraft|bridge|greenhouse|gazebo|pergola|deck)\b/i, 450],
+  [/\b(arch|bed frame|workbench|bed|ladder|gate|railing|countertop|slab|pad|steps|bench|trellis)\b/i, 200],
+  [/\b(table|desk|bookcase|cabinet|chest|bird ?bath|fire pit|grill|bbq|barbecue|cart|wheelbarrow|coat rack|mailbox|bike rack|log rack|sawhorse|easel|propeller|chair|rack|bumper|roof rack|hitch|blade|bollard)\b/i, 110],
+  [/\b(stool|box|lamp|birdhouse|bird feeder|stepping stones?|planter|tray|caddy|sign|sculpture|statue|bust|shel(f|ves)|stand|crate|footstool|manifold|flange|panel|frame|lantern|trough|paver|block|board|turbine|prototype)\b/i, 45],
+  [/\b(cup|mug|tumbler|goblet|bracket|gear|impeller|bowl|vase|candle|handle|mount|holder|case|enclosure|hinge|pedal|sprocket|plaque|insole|implant|duct|plate|spindle|hub|nozzle|figure|figurine|whistle|toy|top|model)\b/i, 18],
+  [/\b(ring|jewel\w*|bead|key|clip|knob|button|insert|lens|marble|miniature|coaster|paperweight|ornament|bottle opener|hook|tag)\b/i, 6]
+];
+function makerSizeCm(noun) {
+      // The head noun decides ("trailer hitch" is a hitch, "bench vise" a vise), then the whole name
+      const n = String(noun || '').toLowerCase().replace(/\s*\(.*\)$/, '').trim();
+      const head = n.split(/\s+/).pop();
+      const hit = MAKER_SIZES.find(([re]) => re.test(head)) || MAKER_SIZES.find(([re]) => re.test(n));
+      return hit ? hit[1] : 30;
+    }
+function makerFits(cap, noun) { return !cap.maxCm || makerSizeCm(noun) <= cap.maxCm; }
+// One of the shop's forms, or one of the products its machine already lists (WORKSHOP_MACHINES makes:)
+function makerFormOk(cap, form) {
+      if (!cap || !cap.forms) return false;
+      if (cap.forms.test(form)) return true;
+      const def = typeof WORKSHOP_MACHINES !== 'undefined' && WORKSHOP_MACHINES[cap.run || cap.key];
+      return Boolean(def && Array.isArray(def.makes) && def.makes.some(re => re.test(String(form).toLowerCase())));
+    }
 
 // Materials and the words articles use for them; the ones with no shop are noted so he can say so
 const MAKER_MATERIALS = [
@@ -146,9 +213,13 @@ const MAKER_MATERIALS = [
   ['glass', /\b(?<!fibre|fiber)glass\b(?!es)/i],
   ['acrylic', /\b(acrylic|plexiglass|perspex)\b/i],
   ['resin', /\b(resin|photopolymer)\b/i],
+  ['nylon', /\b(nylon|polyamide|PA ?12)\b/i],
   ['plastic', /\b(plastics?|polymer|polypropylene|polyethylene|polystyrene|nylon|abs|pla)\b/i],
   ['aluminium', /\balumin(i)?um\b/i],
+  ['stainless', /\bstainless\b/i],
+  ['titanium', /\btitanium\b/i],
   ['steel', /\b(steel|iron|metal|metals|wrought)\b/i],
+  ['concrete', /\b(concrete|cement|cast stone)\b/i],
   ['electronics', /\b(electronic|circuit|transistor|microcontroller|integrated circuit)\b/i],
   ['ceramic', /\b(ceramic|porcelain|stoneware|earthenware|china|clay|pottery)\b/i],
   ['fabric', /\b(fabric|textile|cloth|leather|upholster\w*|canvas|cushion(ed|ing)?|wool|cotton)\b/i],
@@ -170,7 +241,129 @@ const MAKER_COMPONENTS = /\b(base|shade|lampshade|seat|legs?|top|frame|body|hand
 const MAKER_TOO_BIG = /\b(building|house|vehicle|car|truck|ship|aircraft|airplane|bridge|tower|engine|spacecraft|rocket|machine tool|locomotive)\b/i;
 
 function makerCap(key) { return MAKER_CAPS.find(c => c.key === key) || null; }
-function makerShopName(key) { const d = WORKSHOP_MACHINES[key]; return d ? (d.short || d.name) : key; }
+function makerShopName(key) {
+      const out = MAKER_OUTSIDE_SHOPS[key];
+      if (out) return out.short;
+      const d = WORKSHOP_MACHINES[key]; return d ? (d.short || d.name) : key;
+    }
+
+// --- Shops outside the Workshop's machine list: the Welding Studio and the concrete batch plant --------------
+// Each says whether he knows the trade, what he still needs (Post Office asks), and how a job runs.
+// missing(job) returns null while he still has to learn the trade, else [{ key, ask, kind: 'c'|'p' }].
+const MAKER_OUTSIDE_SHOPS = {
+  weldstudio: {
+    short: 'Welding Studio',
+    plan: job => (typeof weldPlanFor === 'function' ? weldPlanFor({ title: job.make || '', material: job.metal || '' }) : null),
+    known(job = {}) { const p = this.plan(job); return !p || jobKnown(p.key); },
+    learn(job = {}, label = 'Learning to Weld') { const p = this.plan(job); if (p) doWhenFree(() => researchJob(p.key, label), { key: `learn:${p.key}` }); },
+    missing(job = {}) {
+      const p = this.plan(job);
+      if (!p) return [];
+      if (!jobKnown(p.key)) return null;
+      return missingForJob(p.key).map(m => ({ key: m.ask, ask: m.ask, kind: m.kind === 'tool' ? 'p' : 'c', re: m.re }));
+    },
+    ask(job, missing, context) { const p = this.plan(job); if (p) groundworkReady(p.key, context); },
+    run: (job, label) => makerWeldRun(job, label)
+  },
+  batchplant: {
+    short: 'concrete batch plant',
+    known: () => typeof jobKnown === 'function' && jobKnown('batchPlant') && jobKnown('concretePour'),
+    learn(job, label = 'Learning the Concrete Plant') {
+      ['batchPlant', 'concretePour'].filter(k => !jobKnown(k)).slice(0, 1).forEach(k => doWhenFree(() => researchJob(k, label), { key: `learn:${k}` }));
+    },
+    missing() {
+      if (!this.known()) return null;
+      const out = [];
+      if (typeof readyMixName === 'function' && readyMixName()) return missingForJob('concretePour').map(m => ({ key: m.ask, ask: m.ask, kind: 'p', re: m.re }));
+      if (typeof findVehicle === 'function' && !findVehicle('mixer')) out.push({ key: 'mixer', ask: 'A concrete mixer truck', kind: 'p', re: /concrete mixer truck|cement mixer truck|ready.?mix truck|transit mixer/i });
+      if (typeof plantShortfall === 'function') plantShortfall('batch', 'pad').forEach(f => out.push({ key: f.key, ask: f.ask, kind: 'c', plant: true }));
+      missingForJob('batchPlant').concat(missingForJob('concretePour')).forEach(m => { if (!out.some(o => o.ask === m.ask)) out.push({ key: m.ask, ask: m.ask, kind: 'p', re: m.re }); });
+      return out;
+    },
+    ask(job, missing, context) {
+      if (typeof plantPreflight === 'function' && !readyMixName()) plantPreflight('batch', 'pad');
+      groundworkReady('concretePour', context);
+    },
+    // A ready-mix line on a build's parts list is batched for the pour, not cast in the yard
+    run: (job, label) => (/\bready-?mix\b/i.test(job.make || '') ? makerBatchRun(job, label) : makerCastRun(job, label))
+  }
+};
+
+// The WORKSHOP_MACHINES key that runs a shop's job (the garage's fabrication runs on its MIG/TIG welder)
+function makerRunKey(key) { const c = makerCap(key); return (c && c.run) || key; }
+function makerShopExists(key) { return Boolean(MAKER_OUTSIDE_SHOPS[key] || WORKSHOP_MACHINES[makerRunKey(key)]); }
+function makerShopKnown(key, job = {}) { const out = MAKER_OUTSIDE_SHOPS[key]; return out ? out.known(job) : machineKnown(makerRunKey(key)); }
+function makerShopLearn(key, job = {}, label = 'Learning a Shop for a Job') {
+      const out = MAKER_OUTSIDE_SHOPS[key];
+      if (out) return out.learn(job, label);
+      const k = makerRunKey(key);
+      doWhenFree(() => researchMachine(k, label), { key: `learn:${k}` });
+    }
+// What a shop still needs for this job: [{ key, ask, kind }] (null while the trade is still to learn)
+function makerShopMissing(key, job = {}) {
+      const out = MAKER_OUTSIDE_SHOPS[key];
+      if (out) return out.missing(job);
+      const def = WORKSHOP_MACHINES[makerRunKey(key)];
+      if (!def) return [];
+      if (!machineKnown(def.key)) return null;
+      return missingSupplies(def, job).map(k => { const s = WORKSHOP_SUPPLIES[k]; return { key: k, ask: s ? s.ask : k, kind: s && (s.kind === 'stock' || s.kind === 'consumable') ? 'c' : 'p', supply: k }; });
+    }
+function makerShopAsk(key, job, missing, context) {
+      const out = MAKER_OUTSIDE_SHOPS[key];
+      if (out) return out.ask(job, missing, context);
+      const def = WORKSHOP_MACHINES[makerRunKey(key)];
+      const keys = missing.map(m => m.supply).filter(Boolean);
+      if (def && keys.some(k => !supplyAwaited(k) && Date.now() - (workshopState().asked[k] || 0) > 2 * 3600000)) requestSupplies(def, keys, context);
+    }
+function makerShopAwaited(m) {
+      if (m.supply) return supplyAwaited(m.supply);
+      return state.requestsToUser.some(r => !r.fulfilled && r.requestedGear === m.ask) || state.mailbox.some(x => x.name === m.ask);
+    }
+function makerShopRun(key, job, label) {
+      const out = MAKER_OUTSIDE_SHOPS[key];
+      if (out) return out.run(job, label);
+      return runMachineJob(makerRunKey(key), job, label);
+    }
+
+// The wire EDM and the garage's MIG/TIG welder had no job of their own: now they make whole parts.
+// (noSolo: he only runs them for an order or a parts list, not on a whim.)
+if (typeof WORKSHOP_MACHINES !== 'undefined' && WORKSHOP_MACHINES.edm && !WORKSHOP_MACHINES.edm.plan) {
+  Object.assign(WORKSHOP_MACHINES.edm, {
+    emoji: '⚡', noSolo: true, wiki: ['Electrical discharge machining'],
+    learned: 'A wire EDM cuts any conductive metal with a thin brass wire and a stream of tiny sparks under deionised water. It follows the part\'s outline to a few microns, so it makes gears, punches, dies and keys from plate, with no force on the part.',
+    needs: ['edmWire', 'steelPlate', 'gloves', 'safetyGlasses'], words: [/\bedm\b|wire edm|spark erosion/i],
+    products: ['A wire-EDM-cut steel gear'],
+    plan(job) {
+      const key = 'edm', name = job.product || madeName('wire-EDM-cut', 'steel', job.make, this.products[0]);
+      return {
+        title: `Wire EDM cutting ${wsWhat(name)}`, product: name, speech: 'Plate clamped in the tank, wire threaded, and the water rises.',
+        stops: [
+          { key, act: async ctx => { await machineStep(ctx, 'Clamping the plate and threading the wire', 2200, null, 'Brass wire threaded top to bottom, the start hole drilled.'); useWorkshopSupply('steelPlate', 1, 'EDM'); useWorkshopSupply('gloves', 1, 'EDM'); return true; } },
+          postStop('edm', `Cutting ${wsWhat(name)} out of the plate`, 7000, POST_ANIMS.edm, { part: name, size: 0.14, consume: { edmWire: 1 }, speech: 'Thousands of sparks a second, each one taking a speck of steel.' })
+        ],
+        finish: () => { addMadeThing(name, 'wire EDM', { emoji: '⚡' }); machineSkill(key, 6); }
+      };
+    }
+  });
+}
+if (typeof WORKSHOP_MACHINES !== 'undefined' && WORKSHOP_MACHINES.migtig && !WORKSHOP_MACHINES.migtig.plan) {
+  Object.assign(WORKSHOP_MACHINES.migtig, {
+    emoji: '🔥', noSolo: true, wiki: ['Gas metal arc welding', 'Plasma cutting'],
+    learned: 'Vehicle fabrication: cut the steel on the plasma table, grind the edges, tack it square, then MIG weld it out, bolt it on and paint it.',
+    needs: ['steelPlate', 'plasmaKit', 'migWire', 'shieldGas', 'weldHelmet', 'gloves'],
+    plan(job) {
+      const name = job.product || `A garage-fabricated steel ${String(job.make || 'trailer hitch').replace(/^(an?|the)\s+/i, '')}`;
+      return {
+        title: `Fabricating ${wsWhat(name)}`, product: name, speech: 'Measure the vehicle, cut the steel, tack it, weld it.',
+        stops: [
+          { floor: 2, key: 'plasma', act: async ctx => { await machineStep(ctx, 'Plasma cutting the steel parts', 4000, null, 'Shade 5 lenses down. Brackets and plates out of the sheet.'); useWorkshopSupply('steelPlate', 1, 'Fabrication'); useWorkshopSupply('plasmaKit', 1, 'Fabrication'); return true; } },
+          { floor: 2, key: 'migtig', act: async ctx => { await machineStep(ctx, `Tacking and MIG welding ${wsWhat(name)}`, 6000, null, 'Tack, check square, tack, then weld it out.'); useWorkshopSupply('migWire', 1, 'Fabrication'); useWorkshopSupply('shieldGas', 1, 'Fabrication'); useWorkshopSupply('gloves', 1, 'Fabrication'); return true; } }
+        ],
+        finish: () => { addMadeThing(name, 'garage', { emoji: '🔥' }); machineSkill('garage', 6); }
+      };
+    }
+  });
+}
 
 // --- 4. Reading an article (no key needed) -----------------------------------------------------------------
 // Returns { noun, what, art, purposes, materials, whole: { shop, name } | null, parts: [...] | null, bought, decline }
@@ -205,17 +398,28 @@ function makerMaterialsIn(text) {
     }
 
 // The shop that can make a form from one of these materials (in the article's order of materials)
-function makerShopFor(form, materials) {
+function makerShopFor(form, materials, noun = form) {
       for (const m of materials) {
-        const cap = MAKER_CAPS.find(c => c.mat.includes(m) && c.forms.test(form) && WORKSHOP_MACHINES[c.key]);
+        const cap = MAKER_CAPS.find(c => c.mat.includes(m) && makerFormOk(c, form) && makerFits(c, noun) && makerShopExists(c.key));
         if (cap) return { cap, material: m };
       }
+      // Anything else made of steel that isn't too big: cut, fitted and welded in the Welding Studio
+      const metal = materials.find(m => ['steel', 'stainless', 'aluminium', 'metal'].includes(m));
+      const weld = makerCap('weldstudio');
+      if (metal && weld && makerFits(weld, noun) && !MAKER_TOO_BIG.test(noun) && makerShopExists('weldstudio')) return { cap: weld, material: metal === 'metal' ? 'steel' : metal };
       return null;
+    }
+
+// Can this shop really make the whole thing? (its forms, its size limit, and nothing too big)
+function makerShopCanWhole(cap, noun) {
+      return Boolean(cap && makerFormOk(cap, noun) && makerFits(cap, noun) && !MAKER_TOO_BIG.test(noun) && makerShopExists(cap.key));
     }
 
 function makerProductName(cap, noun, material, text = '') {
       const wood = cap.wood ? ((text.match(MAKER_WOODS) || [])[1] || '').toLowerCase() : '';
-      return cap.name(noun.replace(/^(an?|the)\s+/i, ''), cap.wood ? wood : material).replace(/\s+/g, ' ').slice(0, 70);
+      // "steel bench" on the weld studio is "A welded steel bench", not "A welded steel steel bench"
+      const bare = noun.replace(/^(an?|the)\s+/i, '').replace(/\b(stainless steel|steel|stainless|aluminium|aluminum|titanium|concrete|cement|glass|wooden|wood|plastic|nylon|resin|acrylic|plywood|paper|metal|iron)\s+/gi, '').trim() || noun;
+      return cap.name(bare, cap.wood ? wood : material).replace(/\s+/g, ' ').slice(0, 70);
     }
 
 function makerReadArticle(title, extract) {
@@ -226,7 +430,7 @@ function makerReadArticle(title, extract) {
       const purposes = art ? ['display'] : makerPurposesFrom(text, noun);
       const materials = makerMaterialsIn(text);
       const out = { noun, what, art, purposes, materials, whole: null, parts: null, bought: [], decline: null, source: 'article' };
-      if (MAKER_TOO_BIG.test(`${noun} ${what}`)) { out.decline = `a ${noun} is far bigger than anything my shops can make`; return out; }
+      if (MAKER_TOO_BIG.test(`${noun} ${what}`) || makerSizeCm(noun) > Math.max(...MAKER_CAPS.map(c => c.maxCm || 0))) { out.decline = `a ${noun} is far bigger than anything my shops can make`; out.tooBig = true; return out; }
       // Bought components the article names
       out.bought = MAKER_BOUGHT.filter(([, re]) => re.test(text)).map(([name, , qty, unit]) => ({ name, qty, unit }));
       // Components and what each is made of ("a wooden base", "a shade of glass", "base, often of wood or ceramic")
@@ -241,11 +445,11 @@ function makerReadArticle(title, extract) {
           if (mats.length && !pairs.some(p => p.comp === comp)) pairs.push({ comp, mats });
         }
       });
-      const makeable = pairs.map(p => ({ ...p, shop: makerShopFor(p.comp, p.mats) || makerShopFor(noun, p.mats) }));
+      const makeable = pairs.map(p => ({ ...p, shop: makerShopFor(p.comp, p.mats) || makerShopFor(noun, p.mats, noun) }));
       const shops = new Set(makeable.filter(p => p.shop).map(p => p.shop.cap.key));
       // One shop makes the whole thing: nothing bought, and every made component from that one shop
       if (!out.bought.length && shops.size <= 1 && makeable.every(p => p.shop)) {
-        const hit = makerShopFor(noun, materials.length ? materials : ['wood', 'plastic', 'glass']);
+        const hit = makerShopFor(noun, materials.length ? materials : ['wood', 'plastic', 'glass'], noun);
         if (hit && (!shops.size || shops.has(hit.cap.key))) {
           out.whole = { shop: hit.cap.key, material: hit.material, name: makerProductName(hit.cap, noun, hit.material, text) };
           return out;
@@ -273,7 +477,7 @@ function makerReadArticle(title, extract) {
 // With an AI key: the AI proposes, the same checks keep it honest. Null means "read it myself".
 async function makerAskAI(title, extract) {
       if (typeof hasLLMKey !== 'function' || !hasLLMKey() || typeof callLLMJSON !== 'function') return null;
-      const shops = MAKER_CAPS.filter(c => WORKSHOP_MACHINES[c.key]).map(c => `${c.key} (${makerShopName(c.key)}: ${c.mat.join('/')})`).join('; ');
+      const shops = MAKER_CAPS.filter(c => c.forms && makerShopExists(c.key)).map(c => `${c.key} (${makerShopName(c.key)}: ${c.mat.join('/')}, up to ${c.maxCm} cm)`).join('; ');
       const prompt = `MOMENT: you read about something and wonder if you can make it. Your shops: ${shops}.
 What you read: ${(typeof brainUntrusted === 'function' ? brainUntrusted(`${title}: ${String(extract).slice(0, 900)}`, 1000) : JSON.stringify(String(`${title}: ${String(extract).slice(0, 900)}`).slice(0, 1000)))}
 Work out what it is and whether your shops can make it. Return JSON:
@@ -290,7 +494,9 @@ Work out what it is and whether your shops can make it. Return JSON:
       const purposes = (Array.isArray(r.purposes) ? r.purposes : []).filter(p => MAKER_PURPOSES.includes(p));
       const out = { noun, what: '', art: Boolean(r.art), purposes: purposes.length ? purposes : ['display'], materials, whole: null, parts: null, bought: [], decline: null, source: 'ai' };
       const cap = makerCap(r.wholeShop);
-      if (cap && WORKSHOP_MACHINES[cap.key]) {
+      // The AI's whole-shop answer must fit that shop: one of its forms, within its size limit, not too big
+      if (cap && !makerShopCanWhole(cap, noun)) out.aiRejected = `${cap.key} can't make a whole ${noun}`;
+      if (cap && makerShopCanWhole(cap, noun)) {
         const m = materials.find(x => cap.mat.includes(x)) || cap.mat[0];
         out.whole = { shop: cap.key, material: m, name: makerProductName(cap, noun, m, extract) };
         return out;
@@ -299,7 +505,7 @@ Work out what it is and whether your shops can make it. Return JSON:
         out.parts = r.parts.slice(0, 10).map(p => {
           const c = makerCap(p && p.shop);
           return { name: String(p && p.name || 'part').slice(0, 60), qty: Math.max(1, Math.min(500, Number(p && p.qty) || 1)), unit: String(p && p.unit || '').slice(0, 10),
-            kind: /fast/i.test(p && p.kind) ? 'f' : /cons/i.test(p && p.kind) ? 'c' : 'p', make: c && WORKSHOP_MACHINES[c.key] ? c.key : null };
+            kind: /fast/i.test(p && p.kind) ? 'f' : /cons/i.test(p && p.kind) ? 'c' : 'p', make: c && c.forms && makerShopExists(c.key) ? c.key : null };
         });
         if (out.parts.some(p => p.make)) return out;
       }
@@ -321,7 +527,7 @@ function makerStartOrder(an, { from = null, url = null, visitor = null } = {}) {
       const open = s.makerOrders.find(o => o.status !== 'done' && o.name.toLowerCase() === name.toLowerCase());
       if (open) return open;
       makerRegisterKind({ noun: an.noun, purposes: an.purposes, art: an.art, from }, [name]);
-      const o = { id: 'mk-' + Date.now().toString(36), name, noun: an.noun, shop: an.whole.shop, status: 'waiting', from, url, visitor, at: Date.now(), purposes: an.purposes, art: an.art };
+      const o = { id: 'mk-' + Date.now().toString(36), name, noun: an.noun, shop: an.whole.shop, metal: an.whole.material || null, status: 'waiting', from, url, visitor, at: Date.now(), purposes: an.purposes, art: an.art };
       s.makerOrders.unshift(o);
       if (s.makerOrders.length > 20) s.makerOrders.length = 20;
       state.diaryEntries.unshift({ time: visitor ? `Asked by ${visitor}` : 'An Idea From NetNode', location: currentPlaceLabel(), mood: `🛠️ Planning ${wsWhat(name)}`.slice(0, 80),
@@ -335,21 +541,20 @@ function makerStartOrder(an, { from = null, url = null, visitor = null } = {}) {
 
 // Move an order on: learn the shop, ask for its missing supplies (Post Office), or make it
 function makerAdvance(o) {
-      if (!o || o.status === 'done' || o.status === 'making') return o && o.status;
-      const def = WORKSHOP_MACHINES[o.shop];
-      if (!def) { o.status = 'done'; o.failed = 'no such shop'; return o.status; }
-      const job = { make: o.noun, product: o.name };
-      if (!machineKnown(o.shop)) {
+      if (!o || o.status === 'done' || o.status === 'making' || o.status === 'curing') return o && o.status;
+      if (!makerShopExists(o.shop)) { o.status = 'done'; o.failed = 'no such shop'; return o.status; }
+      const job = { make: o.noun, product: o.name, metal: o.metal || null };
+      const missing = makerShopMissing(o.shop, job);
+      if (missing === null || !makerShopKnown(o.shop, job)) {
         o.status = 'learning';
-        if (!state.isBusy && !state.isBrowsing) doWhenFree(() => researchMachine(o.shop, 'Learning a Shop for a Job'), { key: `learn:${o.shop}` });
+        if (!state.isBusy && !state.isBrowsing) makerShopLearn(o.shop, job);
         return o.status;
       }
-      const missing = missingSupplies(def, job);
       if (missing.length) {
         o.status = 'waiting';
-        o.waitingFor = missing.slice();
+        o.waitingFor = missing.map(m => m.ask);
         // Ask once for what isn't asked for yet; otherwise just keep waiting (no speech every tick)
-        if (missing.some(k => !supplyAwaited(k) && Date.now() - (workshopState().asked[k] || 0) > 2 * 3600000)) requestSupplies(def, missing, `Making ${wsWhat(o.name)}`);
+        if (missing.some(m => !makerShopAwaited(m))) makerShopAsk(o.shop, job, missing, `Making ${wsWhat(o.name)}`);
         return o.status;
       }
       o.status = 'ready';
@@ -365,13 +570,160 @@ async function makerRunOrder(id) {
       makerJob = { product: o.name, order: o };
       let r = false;
       // A throw from the walk or the job must not leave the order in 'making' (nothing ever picks it up again)
-      try { r = await runMachineJob(o.shop, { make: o.noun, product: o.name }, o.visitor ? `Making it for ${o.visitor}` : 'Making Something I Read About'); }
+      try { r = await makerShopRun(o.shop, { make: o.noun, product: o.name, metal: o.metal || null, order: o.id }, o.visitor ? `Making it for ${o.visitor}` : 'Making Something I Read About'); }
       catch (e) { console.warn('Shop order failed', e); r = false; }
       finally { makerJob = null; }
+      if (r === 'curing') { o.status = 'curing'; savePersistentBrainState(); return r; }
       if (r === true && o.madeAt) { o.status = 'done'; savePersistentBrainState(); return true; }
       o.status = 'waiting';
       if (r === 'not-ready') makerAdvance(o);
       return r;
+    }
+
+// --- The Welding Studio as a shop: a real steel thing welded at the table, then into his Storehouse ------------
+async function makerWeldRun(job, label = 'Welding Something Real') {
+      if (typeof weldTheJob !== 'function') return false;
+      if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || (typeof workshopJobRunning !== 'undefined' && workshopJobRunning)) return false;
+      const creation = { title: plainItem(job.product || job.make || 'a steel piece'), material: job.metal || 'steel', x: 0, z: 0 };
+      if (typeof weldingReady === 'function' && !weldingReady(creation, label)) return 'not-ready';
+      const bench = TOWN_LOCATIONS.weld;
+      state.isBuilding = true;
+      let piece = null;
+      try {
+        state.currentLocKey = 'custom';
+        state.customPlaceName = bench.building;
+        state.targetPos = { x: bench.x, z: bench.z };
+        state.moodEmoji = '👨‍🏭';
+        state.moodTitle = `Welding ${wsWhat(job.product).replace(/\bwelded /, '')}`.slice(0, 80);
+        state.speechBubble = `Off to my Welding Studio: ${wsWhat(job.product)}, cut, fitted and welded from steel stock.`;
+        renderAllUI();
+        await waitForArrival(45000);
+        // The piece grows on the table as it is tacked and welded
+        piece = lifeSize(buildItemModel3D(job.product, { label: false }), 1);
+        const bx = WELD_TABLE_TOP.x, bz = WELD_TABLE_TOP.z - 0.3;
+        piece.position.set(bx, getAnalyticalGroundHeight(bx, bz) + 0.93, bz);
+        piece.scale.multiplyScalar(0.05);
+        const full = piece.scale.x / 0.05;
+        scene.add(piece);
+        const grow = k => { if (piece) piece.scale.setScalar(full * (0.05 + 0.95 * Math.min(1, k))); };
+        await weldTheJob(creation, grow);
+        grow(1);
+        // (screenshots: window.__keloShotHold = 'weld' keeps the finished piece on the table until cleared)
+        if (window.__keloShotHold === 'weld') { window.__keloShotHeld = 'weld'; for (let k = 0; k < 600 && window.__keloShotHold === 'weld'; k++) await new Promise(r => setTimeout(r, 500)); window.__keloShotHeld = null; }
+        if (typeof gainSkill === 'function') gainSkill('welding', 'welding', 6);
+        addMadeThing(job.product, 'Welding Studio', { emoji: '🔥' });
+        return true;
+      } finally {
+        if (piece && piece.parent) piece.parent.remove(piece);
+        state.isBuilding = false;
+        renderAllUI();
+      }
+    }
+
+// --- The batch plant as a shop: ready-mix cast in a form in the plant yard, then it cures ----------------
+// state.makerCastings: [{ id, order, product, noun, x, z, castAt }]; the form comes off after a world day
+async function makerCastRun(job, label = 'Casting Concrete') {
+      if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
+      if (typeof runBatchPlant !== 'function') return false;
+      if (!readyMixName()) {
+        const r = await runBatchPlant('pad', `For a cast concrete ${job.make}.`, label);
+        if (r !== true) return 'not-ready';
+      }
+      if (!groundworkReady('concretePour', label)) return 'not-ready';
+      state.isPracticing = true;
+      let mesh = null;
+      try {
+        const yard = plantSpot('batch', 'stockpile');
+        const spot = (typeof openGroundNear === 'function' && openGroundNear({ x: yard.x - 2.5, z: yard.z + 1.5 }, 0.8)) || { x: yard.x - 2.5, z: yard.z + 1.5 };
+        state.currentLocKey = 'aggregate_plant';
+        state.targetPos = { x: spot.x + 0.9, z: spot.z };
+        state.moodEmoji = '🧱';
+        renderAllUI();
+        await waitForArrival(60000);
+        state.botRotY = Math.atan2(spot.x - state.botPos.x, spot.z - state.botPos.z);
+        mesh = lifeSize(buildItemModel3D(job.product, { label: false }), 1);
+        mesh.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.material.color.set('#b9b6ae'); o.material.roughness = 0.95; o.material.metalness = 0; } });
+        mesh.position.set(spot.x, getAnalyticalGroundHeight(spot.x, spot.z), spot.z);
+        const full = mesh.scale.y;
+        mesh.scale.y = full * 0.02;
+        scene.add(mesh);
+        const steps = [['Oiling the form and setting it level', 'Form oil first, so the concrete lets go of it tomorrow.', 0],
+          ['Shovelling ready-mix into the form', 'In it goes, a layer at a time, rodded into the corners.', 0.7],
+          ['Tapping the form to bring the air out', 'Tap, tap, tap: the bubbles come up and the face fills in.', 0.95],
+          ['Striking it off and covering it to cure', 'Struck off flat, then a plastic sheet over it so it stays damp.', 1]];
+        for (const [title, say, h] of steps) {
+          state.moodTitle = title;
+          state.speechBubble = say;
+          if (typeof holdJobTool === 'function') holdJobTool(/shovel|spade/i, 'digging');
+          renderAllUI();
+          const y0 = mesh.scale.y / full;
+          const grow = k => { mesh.scale.y = full * Math.max(0.02, y0 + (h - y0) * k); };
+          if (typeof keloTween === 'function') await keloTween(2500, grow);
+          else { const t0 = Date.now(); while (Date.now() - t0 < 2500) { grow((Date.now() - t0) / 2500); await new Promise(r => setTimeout(r, 100)); } }
+        }
+        useReadyMixFor(`casting ${wsWhat(job.product)}`);
+        const s = makerState();
+        if (!Array.isArray(s.makerCastings)) s.makerCastings = [];
+        s.makerCastings.push({ id: 'cast-' + Date.now().toString(36), order: job.order || null, line: makerJob && makerJob.line || null, product: job.product, noun: job.make, x: spot.x, z: spot.z, castAt: Date.now() });
+        if (typeof gainSkill === 'function') gainSkill('pouring concrete', 'pouring concrete', 4);
+        state.diaryEntries.unshift({ time: label, location: 'his concrete plant', mood: `🧱 Cast ${wsWhat(job.product)}`.slice(0, 80), vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
+          text: `Dear Diary, I batched ready-mix at my own plant and cast ${wsWhat(job.product)} in a form in the yard. The form comes off tomorrow; then it keeps curing and gets stronger for weeks.` });
+        state.speechBubble = `Cast! The form comes off tomorrow, once it has set.`;
+        makerShowCastings();
+        savePersistentBrainState();
+        return 'curing';
+      } finally {
+        if (mesh && mesh.parent) mesh.parent.remove(mesh);
+        if (typeof setCarriedObject === 'function') setCarriedObject(null);
+        state.microPose = 'normal';
+        state.isPracticing = false;
+        renderAllUI();
+      }
+    }
+
+// Ready-mix for a build's footings or slab: one batch at his plant, loaded in the mixer truck for the pour
+async function makerBatchRun(job, label = 'Batching Concrete for a Build') {
+      if (typeof runBatchPlant !== 'function') return false;
+      const line = makerJob && makerJob.line;
+      const r = readyMixName() ? true : await runBatchPlant('pad', `For ${String(job.make || 'a foundation').toLowerCase()}.`, label);
+      if (r !== true) return 'not-ready';
+      const p = line && buildProjectById(line.project);
+      const l = p && p.bom.subs.flatMap(x => x.lines).find(x => x.id === line.id);
+      if (l) { l.got = l.qty; l.madeAt = Date.now(); }
+      if (p) { state.requestsToUser.forEach(q => { if (q.category === 'bomlist' && q.listProject === p.id) q.listRev = Date.now(); }); if (typeof renderBuildProjectsList === 'function') renderBuildProjectsList(); }
+      savePersistentBrainState();
+      return true;
+    }
+
+// The castings in their forms in the plant yard (rebuilt after a reload)
+const makerCastMeshes = {};
+function makerShowCastings() {
+      const list = (state.makerCastings || []);
+      Object.keys(makerCastMeshes).forEach(id => { if (!list.some(c => c.id === id)) { scene.remove(makerCastMeshes[id]); delete makerCastMeshes[id]; } });
+      list.forEach(c => {
+        if (makerCastMeshes[c.id] || typeof scene === 'undefined' || !scene) return;
+        const g = lifeSize(buildItemModel3D(c.product, { label: false }), 1);
+        g.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.material.color.set('#9d9a93'); o.material.roughness = 0.95; o.material.metalness = 0; } });
+        g.position.set(c.x, getAnalyticalGroundHeight(c.x, c.z), c.z);
+        scene.add(g);
+        makerCastMeshes[c.id] = g;
+      });
+    }
+
+// A day after casting: the form comes off and it's a real thing he owns
+function makerCastingTick() {
+      const s = makerState();
+      if (!Array.isArray(s.makerCastings) || !s.makerCastings.length || makerJob) return;
+      const day = typeof WORLD_DAY_MS === 'number' ? WORLD_DAY_MS : 43200000;
+      const c = s.makerCastings.find(x => Date.now() - x.castAt >= day);
+      if (!c) return;
+      s.makerCastings = s.makerCastings.filter(x => x !== c);
+      const o = c.order && s.makerOrders.find(x => x.id === c.order);
+      makerJob = { product: c.product, order: o || null, line: c.line || null };
+      try { addMadeThing(c.product, 'concrete batch plant', { emoji: '🧱' }); } finally { makerJob = null; }
+      if (o) o.status = 'done';
+      makerShowCastings();
+      savePersistentBrainState();
     }
 
 // --- 6. Parts lists: shop-made lines and the shops' supplies (js/bom.js, js/assembly.js) ---------------------
@@ -387,11 +739,8 @@ function makerStartPartsList(an, { from = null, url = null, visitor = null, read
       // The machines' missing supplies go on the list too
       const supplies = [];
       [...new Set(made.map(p => p.make))].forEach(k => {
-        const def = WORKSHOP_MACHINES[k];
-        if (!def) return;
-        missingSupplies(def, { make: an.noun }).forEach(sk => {
-          const s = WORKSHOP_SUPPLIES[sk];
-          if (s && !supplies.some(x => x.supply === sk)) supplies.push({ name: s.ask, qty: 1, unit: '', kind: s.kind === 'stock' || s.kind === 'consumable' ? 'c' : 'p', supply: sk, forShop: k });
+        (makerShopMissing(k, { make: an.noun }) || []).forEach(m => {
+          if (!supplies.some(x => x.name === m.ask)) supplies.push({ name: m.ask, qty: 1, unit: '', kind: m.kind, supply: m.supply || null, supplyAsk: m.supply ? null : m.ask, forShop: k });
         });
       });
       const electric = bought.some(b => /bulb|socket|cord|switch|batter|motor|speaker/i.test(b.name));
@@ -416,6 +765,7 @@ function makerStartPartsList(an, { from = null, url = null, visitor = null, read
         if (!src) return;
         if (src.make) { l.make = src.make; l.makeOn = makerShopName(src.make); l.product = src.product || null; }
         if (src.supply) { l.supply = src.supply; l.forShop = src.forShop; }
+        if (src.supplyAsk) { l.supplyAsk = src.supplyAsk; l.forShop = src.forShop; }
       });
       const p = { id: 'build-' + Date.now().toString(36), target: an.noun, why: visitor ? `${visitor} asked me to` : `I read about ${from || an.noun}`, status: 'gathering', startedAt: Date.now(),
         fromAI: an.source === 'ai', fromArticle: from, bom, readings: readings.map(r => r.title), tests: {}, parcels: 0, site: null };
@@ -439,9 +789,13 @@ function makerStartPartsList(an, { from = null, url = null, visitor = null, read
 function makerNextBuildPart() {
       const p = typeof activeBuild === 'function' ? activeBuild() : null;
       if (!p || p.status !== 'gathering') return null;
+      const next = typeof nextSubToBuild === 'function' ? nextSubToBuild(p) : null;
       for (const s of p.bom.subs) for (const l of s.lines) {
-        if (!l.make || l.got >= l.qty || l.making) continue;
-        if (!WORKSHOP_MACHINES[l.make]) continue;
+        if (!l.make || l.got >= l.qty || l.making || l.casting) continue;
+        // Ready-mix is batched only when it can be poured straight away: its sub-assembly is next and
+        // everything else for it is here (concrete sets in the drum in a couple of hours)
+        if (/\bready-?mix\b/i.test(l.name) && (s !== next || s.lines.some(o => o !== l && o.got < o.qty))) continue;
+        if (!makerShopExists(l.make)) continue;
         return { p, l };
       }
       return null;
@@ -454,7 +808,8 @@ async function makerMakeBuildPart(projectId, lineId) {
       l.making = true;
       makerJob = { product: l.product || `A ${l.name}`, line: { project: p.id, id: l.id } };
       try {
-        const r = await runMachineJob(l.make, { make: l.name, product: makerJob.product }, `Making a part for the ${p.bom.name.toLowerCase()}`);
+        const r = await makerShopRun(l.make, { make: l.name, product: makerJob.product }, `Making a part for the ${p.bom.name.toLowerCase()}`);
+        if (r === 'curing') l.casting = true;
         return r;
       } finally { l.making = false; makerJob = null; }
     }
@@ -517,6 +872,7 @@ if (typeof openPartsParcel === 'function') {
     if (p) {
       info.lines.forEach(([id]) => {
         const l = p.bom.subs.flatMap(s => s.lines).find(x => x.id === id);
+        if (l && l.supplyAsk && l.got < l.qty) { state.belongings.unshift({ name: l.supplyAsk, category: 'material', emoji: '📦', from: parcel.from }); state.unstoredItems.push(l.supplyAsk); return; }
         const s = l && l.supply && WORKSHOP_SUPPLIES[l.supply];
         if (!s || l.got >= l.qty) return;
         if (s.special === 'filament' && typeof addSpool === 'function') { state.belongings.unshift({ name: s.ask, category: 'material', emoji: '🧵', from: parcel.from }); addSpool(s.ask); }
@@ -978,7 +1334,7 @@ async function answerMakerAsk(ask, visitor) {
       let reply;
       if (r.route === 'shop') {
         const o = r.order, missing = o.waitingFor || [];
-        reply = `A ${name}? Yes, ${visitor}! That's a job for my ${makerShopName(o.shop)}, the whole thing. ${o.status === 'learning' ? `I'll read up on the ${makerShopName(o.shop)} first, then ask for its supplies.` : missing.length ? `I've asked for what it still needs (${missing.map(k => plainItem(WORKSHOP_SUPPLIES[k].ask).toLowerCase()).join(', ')}), and I'll make it when they come.` : 'Everything it needs is here, so I\'ll make it as soon as I\'m free.'}`;
+        reply = `A ${name}? Yes, ${visitor}! That's a job for my ${makerShopName(o.shop)}, the whole thing. ${o.status === 'learning' ? `I'll read up on the ${makerShopName(o.shop)} first, then ask for its supplies.` : missing.length ? `I've asked for what it still needs (${missing.map(a => plainItem(a).toLowerCase()).join(', ')}), and I'll make it when they come.` : 'Everything it needs is here, so I\'ll make it as soon as I\'m free.'}`;
       } else if (r.route === 'parts') {
         const made = r.an.parts.filter(p => p.make);
         reply = `A ${name}? Yes, ${visitor}! No single shop of mine makes the whole thing, so I wrote a parts list (it's in the Post tab). I'll make ${made.map(p => `the ${p.name.toLowerCase()} on my ${makerShopName(p.make)}`).join(' and ')} myself.`;
@@ -996,17 +1352,348 @@ async function answerMakerAsk(ask, visitor) {
 if (typeof parseUseRequest === 'function' && typeof answerUseRequest === 'function') {
   const baseParseUse = parseUseRequest, baseAnswerUse = answerUseRequest;
   parseUseRequest = function (message) {
+    // Food and drink go to his stove, before any shop or machine: "make me a sandwich", "cook us pancakes"
+    const fm = String(message || '').match(/\b(?:make|cook|bake|fix|prepare|brew|whip up|blend)\s+(?:me|us)\s+(?:an?|some|the)?\s*([a-z][a-z &-]{2,40}?)(?:\s+(?:please|for me|for us|now)\b|[.!?,]|$)/i);
+    if (fm && makerIsFood(fm[1])) return { candidate: { food: true }, food: { what: fm[1].trim() } };
     const first = baseParseUse(message);
     if (first && (first.workshop || first.candidate)) return first;
     const mk = parseMakerAsk(message);
+    if (mk && makerIsFood(mk.what)) return { candidate: { food: true }, food: mk };
     if (mk) return { candidate: { maker: true }, maker: mk };
     return first;
   };
   answerUseRequest = function (ask, visitor) {
+    if (ask && ask.food) return answerFoodAsk(ask.food, visitor);
     if (ask && ask.maker) return answerMakerAsk(ask.maker, visitor);
     return baseAnswerUse(ask, visitor);
   };
 }
+
+// --- 12. Big builds: machine-made lines, and plans read from the article when there is no key ----------
+// Lines of any big-build BOM (template, AI or article) that one of his shops can make whole are marked
+// "I'll make this on the <machine>" and made there; those shops' missing supplies go on the list too.
+// Raw stock (sheets, studs, tube by the foot), bought components and fasteners are never marked.
+const MAKER_STOCK_LINE = /\b(sheets?|tub(e|ing)|studs?|planks?|lumber|joists?|rafters?|plates?, \d|rod stock|bar stock|wire|cable|rope|fabric|dacron|cloth|\d+\s*(ft|feet|in\.?|mm|m)\b|\bft\b|cu yd|gal|rolls?|spools?|packs?|bags?|kits?|set of|bolts?|nuts?|screws?|nails?|rivets?|washers?|batter(y|ies)|motor|engine|propeller blank|tires?|wheels?|bearings?|chain|cylinder|gauge|instrument|magneto|carburet|radio|strings?|pickups?|tuners?)\b/i;
+function makerShopForLine(line) {
+      if (!line || line.kind !== 'p' || line.make) return null;
+      const n = String(line.name || '');
+      const concrete = /\b(ready-?mix|concrete)\b/i.test(n) && /\b(footings?|piers?|slab|pad|foundation)\b/i.test(n);
+      if (!concrete && (MAKER_STOCK_LINE.test(n) || MAKER_BOUGHT.some(([, re]) => re.test(n)))) return null;
+      const mats = makerMaterialsIn(n);
+      if (!mats.length) return null;
+      for (const m of mats) {
+        const cap = MAKER_CAPS.find(c => c.mat.includes(m) && makerFormOk(c, n) && makerFits(c, n) && makerShopExists(c.key));
+        if (cap) return { cap, material: m };
+      }
+      return null;
+    }
+
+function makerMarkBomLines(bom) {
+      if (!bom || !Array.isArray(bom.subs)) return 0;
+      let marked = 0;
+      const shops = new Set();
+      bom.subs.forEach(sub => sub.lines.forEach(l => {
+        const hit = makerShopForLine(l);
+        if (!hit) return;
+        l.make = hit.cap.key;
+        l.makeOn = makerShopName(hit.cap.key);
+        l.product = makerProductName(hit.cap, l.name.toLowerCase().replace(/\s*\(.*\)$/, ''), hit.material);
+        shops.add(hit.cap.key);
+        marked += 1;
+      }));
+      // Each marking shop's missing supplies go on the list, in the first sub-assembly that uses that shop
+      shops.forEach(k => {
+        const sub = bom.subs.find(x => x.lines.some(l => l.make === k));
+        (makerShopMissing(k, {}) || []).forEach((m, i) => {
+          if (bom.subs.some(x => x.lines.some(l => l.name === m.ask))) return;
+          sub.lines.push({ id: `${sub.key}-s${k}${i}`, name: m.ask, qty: 1, unit: '', kind: m.kind, step: null, got: 0, sent: 0, used: 0, stepAt: -1,
+            supply: m.supply || null, supplyAsk: m.supply ? null : m.ask, forShop: k });
+        });
+      });
+      return marked;
+    }
+
+// Part families: what a kind of big thing is made of, written as real sub-assemblies with quantities.
+// The family is picked from the thing's name and its article; the frame material from what the article says.
+const MAKER_FAMILIES = [
+  { key: 'structure', re: /\b(shed|gazebo|pergola|playhouse|greenhouse|cabin|hut|shelter|outbuilding|barn|kiosk|pavilion|deck|footbridge|treehouse|chicken coop|coop|sauna|bus shelter)\b/i, site: 'spot', emoji: '🏠', r: 3.4,
+    subs: w => [
+      { key: 'foundation', name: 'Foundation', lines: [['Ready-mix concrete for 6 pier footings (0.3 m³)', 1, 'load', 'p'], ['8 in. cardboard concrete tube forms, 4 ft', 6, '', 'p'], ['Galvanised post bases', 6, '', 'p'], ['1/2 in. anchor bolts with washers', 6, '', 'f']],
+        steps: [['fit', 'shovel', 'Digging the footing holes below the frost line'], ['fit', 'shovel', 'Pouring the concrete footings'], ['inspect', 'level', 'Checking the footings are level and square']] },
+      { key: 'frame', name: 'Frame', lines: [[w ? 'Pressure-treated 4 × 4 posts, 8 ft' : 'Steel 2 in. square tube, 20 ft', 6, '', 'p'], [w ? '2 × 6 beams and joists, 10 ft' : 'Steel 2 × 2 in. angle, 20 ft', 10, '', 'p'], ['Galvanised framing connectors', 24, '', 'p'], [w ? '3 in. structural screws' : '3/8 in. bolts with nuts', 200, '', 'f']],
+        steps: [['cut', 'saw', 'Cutting the posts and beams'], ['fit', 'drill', 'Standing the posts and fixing the beams'], ['inspect', 'level', 'Plumb and square']] },
+      { key: 'roof', name: 'Roof', lines: [['2 × 4 rafters, 8 ft', 12, '', 'p'], ['Corrugated metal roof panels, 8 ft', 6, '', 'p'], ['Roofing screws with washers', 150, '', 'f']],
+        steps: [['cut', 'saw', 'Cutting the rafters'], ['fit', 'drill', 'Fixing rafters and roof panels']] },
+      { key: 'walls', name: 'Walls and finish', lines: [['Cedar siding boards, 8 ft', 40, '', 'p'], ['Exterior wood stain', 2, 'gal', 'c'], ['2 in. siding nails', 600, '', 'f']],
+        steps: [['fit', 'hammer', 'Nailing on the siding'], ['paint', 'brush', 'Staining the outside'], ['inspect', null, 'A last look round']] }
+    ], tools: [['shovel', 'A post-hole shovel', 'the footing holes'], ['saw', 'A circular saw', 'cutting lumber'], ['drill', 'A cordless drill', 'screws and bolts'], ['level', 'A 4 ft level', 'plumb and level'], ['hammer', 'A framing hammer', 'nails'], ['brush', 'A paint brush', 'stain']],
+    skills: ['Framing', 'Pouring concrete footings'] },
+  { key: 'wheeled', re: /\b(cart|wagon|trailer|go-?kart|kart|soapbox|scooter|wheelbarrow|rickshaw|buggy|dolly|handcart|pedal car)\b/i, site: 'bench', emoji: '🛞', r: 1.5,
+    subs: w => [
+      { key: 'frame', name: 'Frame', lines: [[w ? 'Hardwood 2 × 4, 8 ft' : 'Mild steel 1 in. square tube, 20 ft', 2, '', 'p'], [w ? 'Steel corner brackets' : 'Steel gusset plates', 8, '', 'p'], [w ? '#10 x 2 in. wood screws' : 'ER70S-6 MIG wire', w ? 40 : 1, w ? '' : 'spool', w ? 'f' : 'c']],
+        steps: [['cut', 'saw', 'Cutting the frame members'], [w ? 'fit' : 'weld', w ? 'drill' : null, w ? 'Screwing the frame together' : 'Welding the frame square'], ['inspect', null, 'Checking it sits flat and square']] },
+      { key: 'wheels', name: 'Wheels and axles', lines: [['10 in. pneumatic wheels with bearings', 4, '', 'p'], ['5/8 in. steel axle rod, 3 ft', 2, '', 'p'], ['Axle bearing blocks', 4, '', 'p'], ['Cotter pins and washers', 8, '', 'f']],
+        steps: [['drill', 'drill', 'Drilling the axle mounts'], ['fit', 'wrench', 'Mounting the axles and wheels'], ['inspect', null, 'Spinning every wheel']] },
+      { key: 'deck', name: 'Deck and handle', lines: [['3/4 in. exterior plywood 4 × 4', 1, 'sheet', 'p'], ['Steel pull handle', 1, '', 'p'], ['1/4 in. carriage bolts with nuts', 12, '', 'f'], ['Exterior paint', 1, 'qt', 'c']],
+        steps: [['cut', 'saw', 'Cutting the deck'], ['bolt', 'wrench', 'Bolting on the deck and handle'], ['paint', 'brush', 'Painting it']] }
+    ], tools: [['saw', 'A circular saw', 'cutting'], ['drill', 'A cordless drill', 'holes'], ['wrench', 'A socket set', 'bolts'], ['brush', 'A paint brush', 'paint']], skills: ['Fabrication', 'Assembly'] },
+  { key: 'boat', re: /\b(raft|boat|canoe|kayak|dinghy|paddle ?board|punt|pontoon|skiff|rowboat|coracle)\b/i, site: 'beach', emoji: '🛶', r: 3,
+    subs: w => [
+      { key: 'hull', name: 'Hull', lines: [['1/4 in. marine plywood 4 × 8', 4, 'sheets', 'p'], ['Marine epoxy kit', 1, 'gal', 'c'], ['6 oz fibreglass tape, 50 yd', 1, 'roll', 'c'], ['Copper stitching wire', 1, 'roll', 'c']],
+        steps: [['cut', 'saw', 'Cutting the hull panels'], ['fit', null, 'Stitching the panels together'], ['glue', null, 'Taping and epoxying the seams'], ['sand', null, 'Fairing and sanding']] },
+      { key: 'fittings', name: 'Seats and fittings', lines: [['Cedar seat boards', 2, '', 'p'], ['Oarlocks or paddle cleats', 2, '', 'p'], ['Stainless screws', 40, '', 'f'], ['Marine varnish', 1, 'qt', 'c']],
+        steps: [['fit', 'drill', 'Fitting the seats'], ['paint', 'brush', 'Varnishing'], ['inspect', null, 'Checking every seam']] }
+    ], tools: [['saw', 'A jigsaw', 'the hull panels'], ['drill', 'A cordless drill', 'stitch holes'], ['brush', 'A varnish brush', 'varnish']], skills: ['Stitch-and-glue boatbuilding'] },
+  { key: 'flying', re: /\b(kite|glider|drone|quadcopter|model (air)?plane|hang glider|ornithopter|blimp)\b/i, site: 'bench', emoji: '🪁', r: 1.2,
+    subs: w => [
+      { key: 'frame', name: 'Frame', lines: [['Carbon fibre tube 8 mm, 1 m', 4, '', 'p'], ['Nylon tube connectors', 8, '', 'p'], ['Epoxy adhesive', 1, 'tube', 'c']],
+        steps: [['cut', null, 'Cutting the spars'], ['glue', null, 'Gluing the joints']] },
+      { key: 'skin', name: 'Covering and controls', lines: [['Ripstop nylon fabric', 2, 'yd', 'p'], ['Braided line', 1, 'spool', 'p'], ['Small hardware kit', 1, '', 'f']],
+        steps: [['cover', null, 'Covering the frame'], ['fit', null, 'Rigging the lines'], ['inspect', null, 'A test in the wind']] }
+    ], tools: [['scissors', 'Sharp scissors', 'the fabric']], skills: ['Light structures'] },
+  { key: 'device', re: /\b(robot|clock|radio|telescope|machine|device|instrument|amplifier|computer|console|camera|weather station|lamp|projector|synth\w*)\b/i, site: 'bench', emoji: '🤖', r: 1,
+    subs: w => [
+      { key: 'body', name: 'Body', lines: [['Aluminium enclosure panels', 4, '', 'p'], ['Aluminium mounting brackets', 6, '', 'p'], ['M3 screws and standoffs', 40, '', 'f']],
+        steps: [['drill', 'drill', 'Drilling the enclosure'], ['fit', 'driver', 'Mounting the brackets']] },
+      { key: 'electronics', name: 'Electronics', lines: [['Microcontroller board', 1, '', 'p'], ['Power supply 12 V', 1, '', 'p'], ['Hook-up wire kit', 1, '', 'c'], ['Solder', 1, 'spool', 'c']],
+        steps: [['solder', 'iron', 'Soldering the wiring'], ['wire', 'driver', 'Wiring it up'], ['inspect', null, 'Powering it up']] }
+    ], tools: [['drill', 'A cordless drill', 'holes'], ['driver', 'A screwdriver set', 'screws'], ['iron', 'A soldering iron', 'wiring']], skills: ['Electronics', 'Assembly'] },
+  { key: 'thing', re: /./, site: 'bench', emoji: '🛠️', r: 1.5,
+    subs: w => [
+      { key: 'body', name: 'Main body', lines: [[w ? 'Hardwood boards, 1 × 8 in., 8 ft' : 'Steel 1 in. square tube, 20 ft', 3, '', 'p'], [w ? 'Wooden mounting blocks' : 'Steel mounting brackets', 6, '', 'p'], [w ? '#8 wood screws' : '1/4 in. bolts with nuts', 60, '', 'f']],
+        steps: [['cut', 'saw', 'Cutting the parts to size'], ['fit', 'drill', 'Putting the body together'], ['inspect', null, 'Checking it is solid']] },
+      { key: 'finish', name: 'Fittings and finish', lines: [['Handles and fittings', 2, '', 'p'], ['Exterior finish', 1, 'qt', 'c']],
+        steps: [['fit', 'drill', 'Fitting the hardware'], ['paint', 'brush', 'Finishing it']] }
+    ], tools: [['saw', 'A saw', 'cutting'], ['drill', 'A cordless drill', 'holes and screws'], ['brush', 'A brush', 'the finish']], skills: ['Assembly'] }
+];
+
+// A bill of materials worked out from what he read (no AI, no template): the family's sub-assemblies,
+// plus any components the article names, made on his shops where they can be.
+function bomFromReading(target, readings = []) {
+      if (typeof normalizeBom !== 'function') return null;
+      const want = String(target || '').trim().toLowerCase();
+      if (!want) return null;
+      const text = readings.map(r => `${r.title}. ${r.extract || ''}`).join(' ');
+      const fam = MAKER_FAMILIES.find(f => f.re.test(want)) || MAKER_FAMILIES.find(f => f.key !== 'thing' && f.re.test(text.slice(0, 400))) || MAKER_FAMILIES[MAKER_FAMILIES.length - 1];
+      const mats = makerMaterialsIn(text);
+      const wood = !mats.length || mats.indexOf('wood') >= 0 && (mats.indexOf('steel') < 0 || mats.indexOf('wood') < mats.indexOf('steel'));
+      const subs = fam.subs(wood).map(s => ({ key: s.key, name: s.name, lines: s.lines.map(([name, qty, unit, kind]) => ({ name, qty, unit, kind })), steps: s.steps.map(([verb, tool, say]) => ({ verb, tool, say })) }));
+      // Components the article names that the family doesn't already have
+      const seen = new Set(subs.flatMap(s => s.lines.map(l => l.name.toLowerCase())));
+      const extra = [];
+      text.split(/[.;]/).forEach(sentence => {
+        const re = new RegExp(MAKER_COMPONENTS.source, 'gi');
+        let m;
+        while ((m = re.exec(sentence)) && extra.length < 4) {
+          const comp = m[1].toLowerCase();
+          if ([...seen].some(n => n.includes(comp))) continue;
+          const near = makerMaterialsIn(sentence.slice(Math.max(0, m.index - 30), m.index + comp.length + 45));
+          const mat = near[0] || (wood ? 'wood' : 'steel');
+          extra.push({ name: `${mat === 'wood' ? 'Wooden' : mat[0].toUpperCase() + mat.slice(1)} ${comp} for the ${want}`.slice(0, 70), qty: 1, unit: '', kind: 'p' });
+          seen.add(comp);
+        }
+      });
+      MAKER_BOUGHT.filter(([, re]) => re.test(text)).slice(0, 3).forEach(([name, , qty, unit]) => { if (!seen.has(name)) extra.push({ name, qty, unit, kind: 'p' }); });
+      if (extra.length) subs.push({ key: 'parts', name: 'Parts from the article', lines: extra, steps: [{ verb: 'fit', tool: 'drill', say: 'Fitting the parts the article describes' }, { verb: 'inspect', tool: null, say: 'Checking them against the article' }] });
+      const name = want.replace(/^\w/, c => c.toUpperCase());
+      return normalizeBom({
+        name, item: `A home-built ${want}`, emoji: fam.emoji, site: fam.site, r: fam.r, itemKind: fam.key === 'structure' ? null : 'thing',
+        summary: `a ${want} worked out from ${readings.length ? readings.map(r => r.title).join(', ') : 'what I know'}: ${subs.map(s => s.name.toLowerCase()).join(', ')}${wood ? ', mostly wood' : ', mostly steel'}`,
+        wiki: readings.map(r => r.title).slice(0, 3), subs,
+        tools: fam.tools.map(([key, nm, why]) => ({ key, name: nm, why })), skills: fam.skills.slice(),
+        tests: [{ key: 'use', name: `Using the ${want}`, how: 'It does its job, sturdy and safe' }],
+        fromReading: true
+      });
+    }
+
+// "Build me a table": when one of his shops can make the whole thing, it is a shop job, not a big build
+function makerWholeShopForAsk(target) {
+      const t = String(target || '').toLowerCase();
+      if (!t || (typeof bomTemplateFor === 'function' && bomTemplateFor(t))) return null;
+      const mats = makerMaterialsIn(t);
+      return MAKER_CAPS.find(c => makerShopCanWhole(c, t) && (!mats.length || mats.some(m => c.mat.includes(m)))) || null;
+    }
+
+// --- 13. Food and drink: "make me a sandwich" is cooking, not a shop job --------------------------------------
+// The ingredients come through the Post Office like any supply; he cooks it at his stove and the result is
+// a real food (or drink) item in his things. state.foodOrders: { id, dish, drink, ingredients: [{ ask, re }],
+// for, status: waiting|ready|cooking|done, at, madeName }
+const FOOD_RECIPES = [
+  [/sandwich|sub\b|hoagie/, 'sandwich', [['A loaf of whole-wheat sandwich bread', /sandwich bread|\bbread\b|\bloaf\b/i], ['A block of cheddar cheese', /cheddar|\bcheese\b/i], ['A pack of sliced ham', /\bham\b|turkey|salami/i], ['A head of lettuce', /lettuce/i], ['A jar of mustard', /mustard|mayo/i]]],
+  [/pancake|crepe|waffle/, 'pancakes', [['A bag of all-purpose flour', /\bflour\b/i], ['A carton of eggs', /\beggs?\b/i], ['A carton of milk', /\bmilk\b/i], ['A pound of butter', /\bbutter\b/i], ['A bottle of maple syrup', /maple syrup/i]]],
+  [/cookie|biscuit/, 'cookies', [['A bag of all-purpose flour', /\bflour\b/i], ['A pound of butter', /\bbutter\b/i], ['A bag of brown sugar', /\bsugar\b/i], ['A carton of eggs', /\beggs?\b/i], ['A bag of chocolate chips', /chocolate chips?/i]]],
+  [/cake|cupcake|muffin|brownie/, 'cake', [['A bag of all-purpose flour', /\bflour\b/i], ['A bag of sugar', /\bsugar\b/i], ['A carton of eggs', /\beggs?\b/i], ['A pound of butter', /\bbutter\b/i], ['A tin of baking powder', /baking powder/i]]],
+  [/pizza/, 'pizza', [['A bag of bread flour', /\bflour\b/i], ['A packet of dry yeast', /\byeast\b/i], ['A can of tomato sauce', /tomato sauce|passata/i], ['A ball of mozzarella', /mozzarella|\bcheese\b/i], ['A bottle of olive oil', /olive oil/i]]],
+  [/soup|stew|chowder/, 'soup', [['A carton of vegetable stock', /\bstock\b|broth/i], ['A bag of carrots', /carrots?/i], ['A bag of onions', /onions?/i], ['A bag of potatoes', /potato(es)?/i]]],
+  [/salad/, 'salad', [['A head of lettuce', /lettuce/i], ['A pint of cherry tomatoes', /tomato(es)?/i], ['A cucumber', /cucumber/i], ['A bottle of vinaigrette', /vinaigrette|dressing/i]]],
+  [/omelet|omelette|scrambled eggs|fried eggs?/, 'omelette', [['A carton of eggs', /\beggs?\b/i], ['A pound of butter', /\bbutter\b/i], ['A block of cheddar cheese', /cheddar|\bcheese\b/i]]],
+  [/pasta|spaghetti|noodles|mac(aroni)? (and|&) cheese/, 'pasta', [['A box of dried pasta', /pasta|spaghetti|noodles|macaroni/i], ['A jar of tomato pasta sauce', /pasta sauce|tomato sauce/i], ['A wedge of parmesan', /parmesan|\bcheese\b/i]]],
+  [/toast/, 'toast', [['A loaf of whole-wheat sandwich bread', /sandwich bread|\bbread\b|\bloaf\b/i], ['A pound of butter', /\bbutter\b/i], ['A jar of strawberry jam', /\bjam\b|marmalade|honey/i]]],
+  [/lemonade/, 'lemonade', [['A bag of lemons', /lemons?/i], ['A bag of sugar', /\bsugar\b/i]], true],
+  [/hot chocolate|cocoa/, 'hot chocolate', [['A tin of cocoa powder', /cocoa/i], ['A carton of milk', /\bmilk\b/i], ['A bag of sugar', /\bsugar\b/i]], true],
+  [/smoothie|milkshake|shake/, 'smoothie', [['A bunch of bananas', /bananas?/i], ['A bag of frozen berries', /berr(y|ies)/i], ['A tub of plain yogurt', /yogh?urt/i]], true],
+  [/coffee|latte|espresso/, 'coffee', [['A bag of ground coffee', /coffee/i], ['A carton of milk', /\bmilk\b/i]], true],
+  [/\btea\b|chai/, 'tea', [['A box of black tea bags', /\btea\b/i], ['A jar of honey', /honey/i]], true],
+  [/juice/, 'juice', [['A bag of oranges', /oranges?/i]], true]
+];
+// Ingredients an article can name, for food he has no recipe for (no AI key needed)
+const FOOD_INGREDIENT_WORDS = [['flour', 'A bag of all-purpose flour'], ['egg', 'A carton of eggs'], ['milk', 'A carton of milk'], ['butter', 'A pound of butter'], ['sugar', 'A bag of sugar'],
+  ['cheese', 'A block of cheddar cheese'], ['rice', 'A bag of long-grain rice'], ['bread', 'A loaf of whole-wheat sandwich bread'], ['tomato', 'A pint of cherry tomatoes'], ['onion', 'A bag of onions'],
+  ['potato', 'A bag of potatoes'], ['beans', 'A can of black beans'], ['chicken', 'A pack of chicken thighs'], ['beef', 'A pound of ground beef'], ['fish', 'A fillet of salmon'], ['noodle', 'A pack of noodles'],
+  ['oil', 'A bottle of olive oil'], ['garlic', 'A bulb of garlic'], ['tortilla', 'A pack of flour tortillas'], ['chocolate', 'A bar of dark chocolate'], ['lemon', 'A bag of lemons'], ['yeast', 'A packet of dry yeast']];
+const FOOD_DRINK_RE = /\b(drink|juice|lemonade|tea|coffee|latte|cocoa|hot chocolate|smoothie|milkshake|shake|soda|cider|punch|kombucha)\b/i;
+
+function makerIsFood(what) {
+      const w = String(what || '');
+      const food = ITEM_KINDS.find(k => k.kind === 'food'), drink = ITEM_KINDS.find(k => k.kind === 'drink');
+      return Boolean((food && food.re.test(w)) || (drink && drink.re.test(w)) || FOOD_DRINK_RE.test(w) || FOOD_RECIPES.some(([re]) => re.test(w)) || /\b(lunch|dinner|breakfast|supper|snack|treat|meal|omelet+e?)\b/i.test(w));
+    }
+
+function foodState() {
+      if (!Array.isArray(state.foodOrders)) state.foodOrders = [];
+      return state.foodOrders;
+    }
+
+// The ingredient list: a real recipe, or one read from the article about the dish, or the AI's
+async function foodRecipeFor(what) {
+      const w = String(what || '').toLowerCase().trim();
+      const hit = FOOD_RECIPES.find(([re]) => re.test(w));
+      if (hit) return { dish: w.replace(/^(a|an|some)\s+/, '') || hit[1], drink: Boolean(hit[3]), ingredients: hit[2].map(([ask, re]) => ({ ask, re: re.source })), from: 'recipe' };
+      if (typeof hasLLMKey === 'function' && hasLLMKey() && typeof callLLMJSON === 'function') {
+        try {
+          const dish = typeof brainUntrusted === 'function' ? brainUntrusted(w, 80) : JSON.stringify(w.slice(0, 80));
+          const r = await callLLMJSON([{ text: `MOMENT: a visitor asked you to make them some food or a drink: ${dish}. You need its real ingredients from the Post Office. Return JSON: {"drink": true|false, "ingredients": [2 to 6 shop items like "A bag of all-purpose flour"]}` }]);
+          if (r && Array.isArray(r.ingredients) && r.ingredients.length >= 2) {
+            return { dish: w, drink: Boolean(r.drink), from: 'ai', ingredients: r.ingredients.slice(0, 6).map(a => String(a).replace(/[<>]/g, '').slice(0, 60)).filter(Boolean)
+              .map(ask => ({ ask, re: escapeRegExp(ask.replace(/^(an?|some)\s+(\w+\s+of\s+)?/i, '').split(/\s+/).slice(-1)[0]) })) };
+          }
+        } catch (e) {}
+      }
+      const article = typeof makerFetchArticle === 'function' ? await makerFetchArticle(w.replace(/^\w/, c => c.toUpperCase())) : null;
+      const text = article ? String(article.extract || '').toLowerCase() : '';
+      let ings = FOOD_INGREDIENT_WORDS.filter(([word]) => new RegExp(`\\b${word}`).test(text)).slice(0, 6);
+      if (ings.length < 2) ings = FOOD_INGREDIENT_WORDS.filter(([word]) => ['flour', 'egg', 'butter', 'milk'].includes(word));
+      return { dish: w, drink: FOOD_DRINK_RE.test(w), from: article ? 'article' : 'basics', ingredients: ings.map(([word, ask]) => ({ ask, re: `\\b${word}` })) };
+    }
+
+function foodIngredientOwned(i) { return [...new Set(ownedItemNames())].find(n => new RegExp(i.re, 'i').test(n) && !/freshly made/i.test(n)) || null; }
+function foodReservedNames() {
+      const out = new Set();
+      foodState().filter(o => o.status !== 'done').forEach(o => o.ingredients.forEach(i => { const n = foodIngredientOwned(i); if (n) out.add(n); }));
+      return out;
+    }
+
+async function answerFoodAsk(ask, visitor) {
+      const what = String(ask.what || '').toLowerCase().replace(/^(a|an|some|the)\s+/, '');
+      const recipe = await foodRecipeFor(what);
+      const o = { id: 'food-' + Date.now().toString(36), dish: recipe.dish, drink: recipe.drink, ingredients: recipe.ingredients, for: visitor, status: 'waiting', at: Date.now(), from: recipe.from };
+      foodState().unshift(o);
+      if (state.foodOrders.length > 10) state.foodOrders.length = 10;
+      const missing = o.ingredients.filter(i => !foodIngredientOwned(i));
+      missing.forEach(i => addItemRequest(i.ask, 'ingredient', `To make ${visitor} ${/^[aeiou]/.test(o.dish) ? 'an' : 'a'} ${o.dish} I need ${plainItem(i.ask).toLowerCase()}.`, `Making ${o.dish} for ${visitor}`));
+      const reply = missing.length
+        ? `${/^[aeiou]/.test(o.dish) ? 'An' : 'A'} ${o.dish}? I'd love to, ${visitor}! That's a job for my stove, not my Workshop. I need ${missing.map(i => plainItem(i.ask).toLowerCase()).join(', ')}, so I asked at the Post Office. I'll make it as soon as they come.`
+        : `${/^[aeiou]/.test(o.dish) ? 'An' : 'A'} ${o.dish}? Coming up, ${visitor}! I have everything, so I'll make it at my stove as soon as I'm free.`;
+      if (typeof sayToVisitor === 'function') sayToVisitor(reply, visitor);
+      if (typeof recordVisitorMemory === 'function') recordVisitorMemory(visitor, `Asked me to make ${o.dish} (I said yes; it's a kitchen job).`);
+      foodAdvance(o);
+      savePersistentBrainState();
+      renderAllUI();
+      return 'food';
+    }
+
+function foodAdvance(o) {
+      if (!o || o.status === 'done' || o.status === 'cooking') return o && o.status;
+      if (o.ingredients.some(i => !foodIngredientOwned(i))) { o.status = 'waiting'; return o.status; }
+      o.status = 'ready';
+      doWhenFree(() => cookFoodOrder(o.id), { key: `cook:${o.id}`, maxWaitMs: 6 * 3600000 });
+      return o.status;
+    }
+
+async function cookFoodOrder(id) {
+      const o = foodState().find(x => x.id === id);
+      if (!o || o.status !== 'ready') return false;
+      if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
+      if (o.ingredients.some(i => !foodIngredientOwned(i))) { o.status = 'waiting'; return false; }
+      o.status = 'cooking';
+      state.isPracticing = true;
+      if (typeof buildStove3D === 'function' && typeof pastimeStoveGroup !== 'undefined' && !pastimeStoveGroup) buildStove3D();
+      const u = typeof pastimeStoveGroup !== 'undefined' && pastimeStoveGroup ? pastimeStoveGroup.userData : null;
+      try {
+        const st = PASTIME_SPOTS.stove;
+        state.currentLocKey = 'custom';
+        state.customPlaceName = 'the stove by his house';
+        state.targetPos = { x: st.x + 1.3, z: st.z };
+        state.moodEmoji = o.drink ? '🥤' : '🍳';
+        state.moodTitle = `Making ${o.dish} for ${o.for}`.slice(0, 80);
+        state.speechBubble = `Everything for the ${o.dish} came. Off to my stove.`;
+        renderAllUI();
+        await waitForArrival(60000);
+        if (typeof pastimeFace === 'function') pastimeFace(st.x, st.z);
+        if (u) { u.cooking = !o.drink || /hot|tea|coffee|cocoa/.test(o.dish); u.pan.visible = true; if (u.food) u.food.material.color.setHex(o.drink ? 0xfef3c7 : 0xd97706); }
+        state.microPose = 'procedural_custom';
+        state.proceduralMotion = { headPitch: 0.3, headYawSpeed: 0.8, headTiltAmp: 0.1, armWaveAmp: 0.25, armRaiseOffset: -0.9, bodyBounceAmp: 0.02, spinSpeed: 0, crouchOffset: 0, sparkBurst: false };
+        const used = [];
+        for (const i of o.ingredients) {
+          const n = foodIngredientOwned(i);
+          if (!n) continue;
+          state.moodTitle = `${o.drink ? 'Mixing' : 'Cooking'} ${o.dish}: ${plainItem(n).toLowerCase().replace(/^(a |an )?(bag|carton|pack|jar|loaf|block|head|tin|bottle|box|can|ball|pound|pint|bunch|tub|packet|wedge|bulb|fillet|bar) of /, '')}`.slice(0, 80);
+          state.speechBubble = `In goes the ${plainItem(n).toLowerCase().replace(/^(a |an )?(bag|carton|pack|jar|loaf|block|head|tin|bottle|box|can|ball|pound|pint|bunch|tub|packet|wedge|bulb|fillet|bar) of /, '')}.`;
+          renderAllUI();
+          await new Promise(r => setTimeout(r, 2200));
+          if (typeof isConsumableItem === 'function' && isConsumableItem(n)) useUpItem(n, 1, { quiet: true, why: `making ${o.dish}` });
+          else if (typeof forgetItem === 'function') forgetItem(n);   // a jar or a head of lettuce he has no serving count for: it all goes in
+          used.push(plainItem(n).toLowerCase());
+          // (screenshots: window.__keloShotHold = 'cook' keeps him at the stove until cleared)
+          if (window.__keloShotHold === 'cook') { window.__keloShotHeld = 'cook'; for (let k = 0; k < 600 && window.__keloShotHold === 'cook'; k++) await new Promise(r => setTimeout(r, 500)); window.__keloShotHeld = null; }
+        }
+        const made = `A freshly made ${o.dish}${o.for && o.for !== 'Kelo-1' ? ` for ${o.for}` : ''}`.slice(0, 70);
+        state.belongings.unshift({ name: made, category: o.drink ? 'drink' : 'food', emoji: o.drink ? '🥤' : '🥪', from: 'his own stove' });
+        state.unstoredItems.push(made);
+        o.status = 'done';
+        o.madeName = made;
+        o.madeAt = Date.now();
+        state.microPose = 'normal';
+        state.moodEmoji = '😋';
+        state.moodTitle = `Made ${o.dish} for ${o.for}`.slice(0, 80);
+        state.speechBubble = `${o.for}, your ${o.dish} is ready! Made with ${used.join(', ')}. It's waiting for you in my Storehouse.`;
+        state.chatLog.push({ sender: 'Kelo-1', text: state.speechBubble, time: 'Just now', isBot: true, at: Date.now() });
+        state.diaryEntries.unshift({ time: `Cooking for ${o.for}`, location: 'his stove', mood: `${o.drink ? '🥤' : '🍳'} Made ${o.dish}`.slice(0, 80), vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
+          text: `Dear Diary, ${o.for} asked me for ${/^[aeiou]/.test(o.dish) ? 'an' : 'a'} ${o.dish}. I don't make food in my Workshop: I got the ingredients through the Post Office (${used.join(', ')}) and made it at my stove. It's real food now, waiting in my Storehouse.` });
+        if (typeof bumpLifeStat === 'function') bumpLifeStat('mealsCooked');
+        showToast(`${o.drink ? '🥤' : '🍳'} Kelo-1 made ${o.dish} for ${o.for}`);
+        savePersistentBrainState();
+        return true;
+      } finally {
+        if (u) { u.cooking = false; u.pan.visible = false; }
+        if (o.status === 'cooking') o.status = 'ready';
+        if (state.microPose === 'procedural_custom') state.microPose = 'normal';
+        state.isPracticing = false;
+        renderAllUI();
+      }
+    }
+
+function foodTick() { foodState().forEach(o => { if (o.status === 'waiting' || (o.status === 'ready' && !state.isPracticing)) foodAdvance(o); }); }
+
+// Ingredients that come for a food order are kept for it: not eaten on arrival, not eaten as a snack
+if (typeof receiveItem === 'function') {
+  const baseReceiveItem = receiveItem;
+  receiveItem = function (name, category, from, note = '', extra = {}) {
+    const open = foodState().filter(o => o.status !== 'done');
+    if (open.some(o => o.ingredients.some(i => new RegExp(i.re, 'i').test(String(name || ''))))) category = 'ingredient';
+    return baseReceiveItem(name, category, from, note, extra);
+  };
+}
+if (typeof storedFoodName === 'function') {
+  const baseStoredFood = storedFoodName;
+  storedFoodName = function () {
+    const keep = foodReservedNames();
+    if (!keep.size) return baseStoredFood();
+    const names = [...new Set(ownedItemNames())].filter(n => !keep.has(n));
+    return names.find(n => usableFor(n, 'eat') && state.supplies && state.supplies[n.toLowerCase()]) || names.find(n => usableFor(n, 'eat')) || null;
+  };
+}
+if (typeof CATEGORY_ICONS !== 'undefined') CATEGORY_ICONS.ingredient = '🧂';
 
 // --- 11. The tick ------------------------------------------------------------------------------------------------
 function shopMakerChance() {
@@ -1029,9 +1716,12 @@ function makerTick() {
       const next = makerNextBuildPart();
       if (next && !makerJob && !workshopJobRunning) {
         const { p, l } = next;
-        if (!machineKnown(l.make)) doWhenFree(() => researchMachine(l.make, 'Learning a Shop for a Build'), { key: `learn:${l.make}` });
-        else if (!missingSupplies(WORKSHOP_MACHINES[l.make], { make: l.name }).length) doWhenFree(() => makerMakeBuildPart(p.id, l.id), { key: `part:${p.id}:${l.id}` });
+        const miss = makerShopMissing(l.make, { make: l.name });
+        if (miss === null || !makerShopKnown(l.make, { make: l.name })) makerShopLearn(l.make, { make: l.name }, 'Learning a Shop for a Build');
+        else if (!miss.length) doWhenFree(() => makerMakeBuildPart(p.id, l.id), { key: `part:${p.id}:${l.id}` });
       }
+      makerCastingTick();
+      foodTick();
     }
 
 function makerSummaryForAI() {
@@ -1046,6 +1736,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const s = makerState();
     Object.keys(s.makerKinds).forEach(makerRegisterRule);
     s.makerOrders.forEach(o => { if (o.status === 'making') o.status = 'waiting'; });
+    makerShowCastings();
     setInterval(makerTick, 10000);
   }, 800);
 });

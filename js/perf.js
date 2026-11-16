@@ -314,7 +314,9 @@ function perfInstances(geo, mat, places, opts = {}) {
         if (opts.colors) mesh.setColorAt(i, new THREE.Color(opts.colors[i]));
       });
       mesh.count = places.length;
-      if (places.length) g.boundingSphere = box.getBoundingSphere(new THREE.Sphere());
+      // The box too: Box3.setFromObject (js/chunks.js files objects by it) reads the geometry's bounding box,
+      // which would otherwise cover only one copy at the origin and put the whole set in the wrong chunk
+      if (places.length) { g.boundingSphere = box.getBoundingSphere(new THREE.Sphere()); g.boundingBox = box.clone(); }
       mesh.castShadow = Boolean(opts.castShadow);
       mesh.receiveShadow = Boolean(opts.receiveShadow);
       return mesh;

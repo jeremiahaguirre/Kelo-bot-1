@@ -1069,10 +1069,13 @@ function buildValleyScenery3D() {
 
       // Little flower patches and smooth boulders (decor only, small enough to walk past)
       const petalColors = [0xff5d8f, 0xffd23f, 0xffffff, 0xa78bfa, 0xff8c42];
+      const flowerSpots = [];
       for (let i = 0; i < 70; i++) {
         const x = (Math.random() - 0.5) * 60;
         const z = -10 + Math.random() * 17;
         if (!clearOf(x, z, 0.4)) continue;
+        // js/scatter.js draws them all as one instanced mesh
+        if (typeof scatValleyFlowers === 'function') { flowerSpots.push({ x, z, color: petalColors[i % petalColors.length] }); continue; }
         const gy = getAnalyticalGroundHeight(x, z);
         const flower = new THREE.Group();
         const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.3, 4), new THREE.MeshStandardMaterial({ color: 0x2f9e44 }));
@@ -1083,6 +1086,7 @@ function buildValleyScenery3D() {
         flower.position.set(x, gy, z);
         scene.add(flower);
       }
+      if (flowerSpots.length) scatValleyFlowers(flowerSpots);
       const rockMat = new THREE.MeshStandardMaterial({ color: 0x8d877d, roughness: 0.85 });
       if (typeof finishMaterial === 'function') finishMaterial(rockMat, 'stone');
       for (let i = 0; i < 14; i++) {

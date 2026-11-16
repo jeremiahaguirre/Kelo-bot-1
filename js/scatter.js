@@ -154,6 +154,7 @@ function scatEnsureGrassMeshes(cap) {
       };
       grassTufts = make(grassTuftGeometry(), cap, true);
       scatFlowers = make(scatFlowerGeometry(), Math.ceil(cap * 0.15), true);
+      grassTufts.userData.fx = 'grass'; scatFlowers.userData.fx = 'flowers';
       grassState.x = 1e9;
     }
 
@@ -265,6 +266,7 @@ function scatValleyFlowers(spots) {
       mesh.castShadow = false;
       mesh.receiveShadow = true;
       mesh.userData.noShadow = true;
+      mesh.userData.fx = 'valley flowers';
       scene.add(mesh);
       return mesh;
     }
@@ -342,7 +344,7 @@ function scatBuildContact() {
         const cap = spots.length + 64;
         scatContact = new THREE.InstancedMesh(geo, mat, cap);
         geo.setAttribute('contactStrength', new THREE.InstancedBufferAttribute(new Float32Array(cap), 1));
-        scatContact.userData = { cap, noShadow: true };
+        scatContact.userData = { cap, noShadow: true, fx: 'contact shadows' };
         scatContact.castShadow = scatContact.receiveShadow = false;
         scatContact.renderOrder = -1;
         scatContact.frustumCulled = false;

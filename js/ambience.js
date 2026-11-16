@@ -79,7 +79,7 @@ void main() {
       });
       ambAir = new THREE.Points(geo, mat);
       ambAir.frustumCulled = false;
-      ambAir.userData.noShadow = true;
+      ambAir.userData.noShadow = true; ambAir.userData.fx = 'air motes';
       scene.add(ambAir);
     }
 function ambAirLook() {
@@ -132,7 +132,7 @@ void main() {
         transparent: true, depthWrite: false
       });
       ambSmoke = new THREE.Points(geo, mat);
-      ambSmoke.userData.noShadow = true;
+      ambSmoke.userData.noShadow = true; ambSmoke.userData.fx = 'chimney smoke';
       scene.add(ambSmoke);
     }
 
@@ -194,6 +194,7 @@ function ambBuildFlags() {
         mast.add(pole, knob, cloth);
         ambFlags.add(mast);
       });
+      ambFlags.userData.fx = 'flags';
       if (typeof chunkDynamic !== 'undefined' && chunkDynamic.add) ambFlags.traverse(o => chunkDynamic.add(o));
       scene.add(ambFlags);
     }
@@ -269,6 +270,7 @@ function ambBuildPeople(n) {
         if (typeof chunkDynamic !== 'undefined' && chunkDynamic.add) chunkDynamic.add(m);
         scene.add(m);
       });
+      parts.forEach(m => { m.userData.fx = 'townspeople'; });
       ambPeopleMesh = parts;
     }
 const ambM = new THREE.Matrix4(), ambQ = new THREE.Quaternion(), ambE = new THREE.Euler(), ambP = new THREE.Vector3(), ambS = new THREE.Vector3(1, 1, 1), ambP2 = new THREE.Vector3();
@@ -359,6 +361,7 @@ function ambBuildCars(level) {
         const model = ambCarModel(0x2f6f9f);
         model.scale.setScalar(0.62);
         if (typeof chunkDynamic !== 'undefined' && chunkDynamic.add) model.traverse(o => chunkDynamic.add(o));
+        model.userData.fx = 'passing car';
         scene.add(model);
         ambCar = { model, x: MAIN_STREET.x0, dir: 1, wait: 8, lane: 1.05 };
       }
@@ -377,6 +380,7 @@ function ambBuildCars(level) {
         model.scale.setScalar(0.62);
         model.position.set(x, getIslandGroundHeight(x, z), z);
         model.rotation.y = rot;
+        model.userData.fx = 'parked cars';
         scene.add(model);
         const obstacle = typeof obstacleBox === 'function' ? obstacleBox(x, z, rot ? 0.6 : 1.2, rot ? 1.2 : 0.6, { ambCar: true }) : null;
         if (obstacle && typeof addObstacle === 'function') addObstacle(obstacle);
@@ -422,7 +426,7 @@ function ambBuildPools() {
       ambPools = new THREE.InstancedMesh(geo, mat, spots.length);
       const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
       spots.forEach(([x, z, r], i) => { m.compose(p.set(x, getIslandGroundHeight(x, z) + 0.04, z), q, s.set(r * 2, 1, r * 1.5)); ambPools.setMatrixAt(i, m); });
-      ambPools.userData.noShadow = true;
+      ambPools.userData.noShadow = true; ambPools.userData.fx = 'lamplight pools';
       ambPools.castShadow = ambPools.receiveShadow = false;
       ambPools.visible = false;
       if (typeof chunkDynamic !== 'undefined' && chunkDynamic.add) chunkDynamic.add(ambPools);

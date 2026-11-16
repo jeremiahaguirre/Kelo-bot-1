@@ -439,7 +439,7 @@ function applySkyForHour(hour, dayOfYear) {
       renderer.toneMappingExposure = L.exposure.base + L.exposure.night * s.night + L.exposure.dusk * s.dusk;
 
       // Haze: denser in the evening and at night
-      scene.fog.density = L.fog.base + L.fog.dusk * s.dusk + L.fog.night * s.night + L.fog.overcast * s.overcast;
+      scene.fog.density = (L.fog.base + L.fog.dusk * s.dusk + L.fog.night * s.night + L.fog.overcast * s.overcast) * (postComposer ? L.fog.postFactor : 1);
 
       // Stars and the moon hide behind rain clouds and snow
       if (starField) starField.material.opacity = s.night * (1 - s.overcast);
@@ -947,7 +947,10 @@ function setupPostProcessing() {
         postComposer = bloomPass = null;
         SKY_STATE.envKey = '';
       }
-      if (!renderer || !graphics().bloom || !THREE.EffectComposer || !THREE.UnrealBloomPass) return;
+      if (!renderer || !graphics().bloom || !THREE.EffectComposer || !THREE.UnrealBloomPass) {
+        if (typeof applyTimeOfDay === 'function' && skyMesh) applyTimeOfDay(); // back to the screen path's haze
+        return;
+      }
       renderer.getDrawingBufferSize(postSize);
       const target = new THREE.WebGLRenderTarget(postSize.x, postSize.y, { type: THREE.HalfFloatType, samples: 4 });
       postComposer = new THREE.EffectComposer(renderer, target);
@@ -957,6 +960,7 @@ function setupPostProcessing() {
       postComposer.addPass(bloomPass);
       postComposer.addPass(new THREE.OutputPass());
       resizePostProcessing();
+      if (typeof applyTimeOfDay === 'function') applyTimeOfDay(); // the haze density depends on the path
     }
 
 function resizePostProcessing() {

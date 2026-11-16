@@ -107,7 +107,10 @@ const KELO_LIGHTING = {
   // Image-based light from the HDR photos (assets/hdri): day, sunset and night gains
   envGains: [0.55, 0.5, 0.12],
   // Haze: exponential fog density
-  fog: { base: 0.0042, dusk: 0.0022, night: 0.002, overcast: 0.0045, nightColour: 0x0d1422 },
+  // postFactor: on High (post-processing) three r187 tone maps at the very end, so haze is blended before
+  // tone mapping and half-hazed hills come out lighter; this scales the density there so High keeps its
+  // r128 look (measured: north yard view, mean brightness 170 at 1.0, 137 for r128's High at about 0.65)
+  fog: { base: 0.0042, dusk: 0.0022, night: 0.002, overcast: 0.0045, nightColour: 0x0d1422, postFactor: 0.65 },
   // Sun shadows
   shadow: { bias: -0.00025, normalBias: 0.035 },
   // Glow around bright lights (High only). The threshold is in linear light before tone mapping

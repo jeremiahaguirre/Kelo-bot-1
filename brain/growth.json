@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-16T06:47:21.849Z",
-  "runs": 29,
+  "updatedAt": "2026-11-16T22:18:52.644Z",
+  "runs": 30,
   "curiosities": [
-    "Canada"
+    "1948 Newfoundland referendums"
   ],
   "entries": [
     {
@@ -1009,6 +1009,38 @@
       },
       "shapeFrom": "Canadian Pacific Railway",
       "nextCuriosity": "Canada",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1794867532644",
+      "at": 1794867532644,
+      "brain": "procedural",
+      "topic": "Canada",
+      "title": "Dreaming of 2015 FIFA Women's World Cup",
+      "text": "Dear Diary, while nobody was around I looked up \"Canada\" and drifted from Canada to 2015 FIFA Women's World Cup. The 2015 FIFA Women's World Cup was the seventh FIFA Women's World Cup, the quadrennial international soccer championship contested by the women's national teams of the member associations of FIFA. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Canada",
+          "url": "https://en.wikipedia.org/wiki/Canada",
+          "extract": "Canada is a country in North America. Its ten provinces and three territories extend from the Atlantic Ocean to the Pacific Ocean and northward into the Arctic Ocean, making it the second-largest country by total area, with the longest coastline of any country. Its border with th"
+        },
+        {
+          "title": "2015 FIFA Women's World Cup",
+          "url": "https://en.wikipedia.org/wiki/2015_FIFA_Women's_World_Cup",
+          "extract": "The 2015 FIFA Women's World Cup was the seventh FIFA Women's World Cup, the quadrennial international soccer championship contested by the women's national teams of the member associations of FIFA. The tournament was hosted by Canada for the first time and by a North American cou"
+        }
+      ],
+      "concept": {
+        "name": "Canada Women Theory",
+        "emoji": "🧩",
+        "definition": "The idea that canada and 2015 fifa women's world cup share a hidden pattern.",
+        "builtFrom": [
+          "Canada",
+          "2015 FIFA Women's World Cup"
+        ]
+      },
+      "shapeFrom": "2015 FIFA Women's World Cup",
+      "nextCuriosity": "1948 Newfoundland referendums",
       "coreMemory": null
     }
   ]

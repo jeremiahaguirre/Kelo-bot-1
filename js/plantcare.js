@@ -1006,7 +1006,7 @@ async function noticeWiltingPlant(t) {
       }
       const read = await researchJob('plantcare', 'A Wilting Plant');
       // Something else had him busy right then: he goes as soon as he's free
-      if (!read && !jobKnown('plantcare')) doWhenFree(() => researchJob('plantcare', 'A Wilting Plant'));
+      if (!read && !jobKnown('plantcare')) doWhenFree(() => researchJob('plantcare', 'A Wilting Plant'), { key: 'research-job:plantcare' });
       return read;
     }
 

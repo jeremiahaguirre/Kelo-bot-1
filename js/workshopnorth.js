@@ -748,6 +748,30 @@ if (typeof workshopSummaryForAI === 'function') {
 }
 
 // For the AI: what the north yard holds
+// A check that no ground is drawn inside the north yard's buildings: the highest point of every ground
+// mesh (the island, the outer lands, the north patch, the far lands) over a 1-unit grid in each
+// footprint, against its floor. { hall: { top, floor, ok, at }, hangar: {...}, ok }. (QA and the console.)
+function northYardGroundProbe(step = 1) {
+      const meshes = [terrainGroundMesh, northPatchMesh, farLandsMesh, scene.getObjectByName('outerLands')].filter(Boolean);
+      const vis = meshes.map(m => m.visible);
+      meshes.forEach(m => { m.visible = true; m.updateMatrixWorld(); });
+      const ray = new THREE.Raycaster(), down = new THREE.Vector3(0, -1, 0), o = new THREE.Vector3();
+      const out = { ok: true };
+      [['hall', GARAGE_HALL], ['hangar', NORTH_HANGAR]].forEach(([key, B]) => {
+        const floor = WORKSHOP_PAD_Y + 0.12, r = { top: -Infinity, floor, at: null, samples: 0 };
+        for (let x = B.x - B.w / 2 + 0.25; x <= B.x + B.w / 2 - 0.25; x += step) for (let z = B.z - B.d / 2 + 0.25; z <= B.z + B.d / 2 - 0.25; z += step) {
+          ray.set(o.set(x, 80, z), down);
+          const hit = ray.intersectObjects(meshes, false)[0];
+          r.samples++;
+          if (hit && hit.point.y > r.top) { r.top = +hit.point.y.toFixed(3); r.at = { x: +x.toFixed(2), z: +z.toFixed(2), mesh: hit.object.name || 'island' }; }
+        }
+        r.ok = r.top <= floor;
+        out[key] = r; out.ok = out.ok && r.ok;
+      });
+      meshes.forEach((m, i) => { m.visible = vis[i]; });
+      return out;
+    }
+
 function northYardSummaryForAI() {
       const free = northHangarBays('build').filter(b => !(state.buildProjects || []).some(p => p.site && p.site.bayKey === b.key && p.status !== 'finished' && p.status !== 'complete'));
       return `North yard (over the pass behind the Workshop): garage hall with 4 tall bays (drive-through for the pickup and trailer, service pit, heavy column lift, wash) for vehicles too big for door 1 and the car elevator; big hangar with build bays 3 and 4 (${free.length} free) and 3 parking bays. Runway field north of it: ${RUNWAY_FIELD.developed ? 'runway built' : 'undeveloped, kept clear'}.`;

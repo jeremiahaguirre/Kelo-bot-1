@@ -8,6 +8,11 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
+## North yard fixes (owner's annotated screenshot, 2026-11-12): branch agent/northyard, waiting for merge
+- Arrow 1 (drive through the range), arrow 2 (land inside the buildings), arrow 3 (road between the hall and the hangar): fixed (far lands sunk under the finer meshes; paved Pass Road, Yard Street, Hangar Lane, North Apron). Report: qa-results-northyard/REPORT.md.
+
+## Reference-photo paintings (branch `agent/refpaint`, not merged; QA on `qa-results-refpaint`)
+
 ## Reference-photo paintings (merged to `main`; QA on `qa-results-refpaint`)
 - Owner: "Enable Kelo on Netnode to search DuckDuckGo for live reference images rather than using pre-programmed paintings. Kelo should be able to paint directly from a single search result or creatively combine two different search results into one original painting."
 - Status: built and tested with stubbed network (scenario `refpaint` in qa/harness.js, plus qa/imagesearch-test.js). Merged and live.

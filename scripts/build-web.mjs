@@ -1,10 +1,10 @@
 // Builds www/, the copy of the game that goes inside the iOS and Android apps (Capacitor).
 //
 // The website (GitHub Pages) and the Windows app use the files in the repo root as they are, with
-// three.js, Tailwind, Phosphor icons and the fonts coming from CDNs. A phone app has to work
+// Tailwind, Phosphor icons and the fonts coming from CDNs (three.js is a local file everywhere). A phone app has to work
 // offline and pass store review, so this script:
 //   1. copies the game's own files into www/,
-//   2. puts local copies of three.js, OrbitControls, the Phosphor icons, the fonts and Capacitor's
+//   2. puts local copies of the Phosphor icons, the fonts and Capacitor's
 //      own scripts in www/js/vendor and www/css/vendor (all from npm, see package.json),
 //   3. compiles Tailwind into one static stylesheet (www/css/tailwind.css),
 //   4. rewrites www/index.html and www/shop.html to use those local files, with a strict
@@ -82,11 +82,13 @@ log('copied the game files');
 const VENDOR_JS = join(OUT, 'js', 'vendor');
 const VENDOR_CSS = join(OUT, 'css', 'vendor');
 
-// three.js r128 and its OrbitControls (the same versions the website loads)
-copy(need(join(NM, 'three', 'build', 'three.min.js')), join(VENDOR_JS, 'three.min.js'));
-copy(need(join(NM, 'three', 'examples', 'js', 'controls', 'OrbitControls.js')), join(VENDOR_JS, 'OrbitControls.js'));
-const threeVersion = JSON.parse(readFileSync(join(NM, 'three', 'package.json'), 'utf8')).version;
-if (threeVersion !== '0.128.0') throw new Error(`three ${threeVersion} is installed, but the game needs 0.128.0`);
+// three.js is already a local file (js/vendor/three/three-global.js, copied with js/ above); check that
+// it is there and matches package.json, so the app never ships a stale or missing copy
+{
+  const bundle = need(join(ROOT, 'js', 'vendor', 'three', 'three-global.js'), 'Run npm run vendor:three first.');
+  const want = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).devDependencies.three;
+  if (!readFileSync(bundle, 'utf8').slice(0, 300).includes(`(${want},`)) throw new Error(`js/vendor/three/three-global.js is not three ${want}: run npm run vendor:three`);
+}
 
 // Capacitor's bridge and the secure key storage plugin (plain scripts, no bundler needed)
 copy(need(join(NM, '@capacitor', 'core', 'dist', 'capacitor.js')), join(VENDOR_JS, 'capacitor', 'capacitor.js'));
@@ -126,7 +128,7 @@ for (const [family, styles] of FONTS) {
   }
 }
 writeFileSync(join(VENDOR_CSS, 'fonts', 'fonts.css'), fontsCss);
-log('vendored three.js, Capacitor, Phosphor icons and fonts');
+log('vendored Capacitor, Phosphor icons and fonts (three.js is in js/vendor/three already)');
 
 // --- 3. Tailwind, compiled once instead of generated in the browser -----------------------------
 // Same Tailwind version and theme as the website's CDN script, scanning every
@@ -161,8 +163,6 @@ const appStyles = [
     '<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />', page);
   html = swap(html, /<script src="https:\/\/cdn\.tailwindcss\.com\/[^"]*"><\/script>/, appStyles.join('\n  '), page);
   html = swap(html, /<script src="https:\/\/unpkg\.com\/@phosphor-icons\/web@[^"]*"><\/script>/, '<link rel="stylesheet" href="./css/vendor/phosphor/phosphor.css" />', page);
-  html = swap(html, /<script src="https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/three\.js\/r128\/three\.min\.js"><\/script>/, '<script src="./js/vendor/three.min.js"></script>', page);
-  html = swap(html, /<script src="https:\/\/cdn\.jsdelivr\.net\/npm\/three@0\.128\.0\/examples\/js\/controls\/OrbitControls\.js"><\/script>/, '<script src="./js/vendor/OrbitControls.js"></script>', page);
   html = swap(html, '<link rel="stylesheet" href="./css/style.css" />', '<link rel="stylesheet" href="./css/style.css" />\n  <link rel="stylesheet" href="./css/native.css" />', page);
   // The phone bridge (js/native.js) runs before the game's first script, so his memory is loaded
   // from the device before anything reads it

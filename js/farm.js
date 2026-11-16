@@ -293,8 +293,7 @@ function farmSendList(listKey, title, icon, question, lines) {
       req = { id: 'req-farm-' + listKey + '-' + Date.now().toString(36), category: 'joblist', farm: true, farmList: listKey, icon, urgency: 'Parts list',
         title: String(title).slice(0, 80), question, jobTask: (agendaGet('farm:main') || {}).id || null, lines: need, listRev: Date.now(), fulfilled: false, declined: false, userAnswer: '' };
       state.requestsToUser.unshift(req);
-      const t = agendaGet('farm:main');
-      if (t) t.data.reqIds = [...new Set([...(t.data.reqIds || []), req.id])];
+      [agendaGet('farm:main'), agendaOpenTasks().find(x => x.kind === 'farmseason')].filter(Boolean).forEach(t => { t.data.reqIds = [...new Set([...(t.data.reqIds || []), req.id])]; });
       showToast(`${icon} Kelo-1 sent you his farm list: ${title}`);
       savePersistentBrainState();
       return req;
@@ -1075,7 +1074,7 @@ async function farmRunSeason(t) {
     }
 function farmSpringCheck() { const F = state.farm; const doy = farmDayInfo(farmDayNow()).doy; const first = Math.min(...F.fields.map(f => FARM_CROPS[f.planned || f.crop || 'wheat'].window[0])); return doy >= first - 15 && doy <= 300; }
 function farmWindowCheck() { return state.farm.fields.some(f => f.planned && farmInWindow(f.planned)); }
-function farmInputsCheck() { return true; }
+function farmInputsCheck() { const F = state.farm; return ['urea', 'map', 'herbicide'].every(k => farmStock(k) > 0) || !F.fields.length; }
 function farmGrowCheck() { farmSimulate(); return state.farm.fields.some(f => farmOpWanted(f, 'harvest') || farmOpWanted(f, 'spray')) || !state.farm.fields.some(f => f.soil === 'seeded'); }
 // A walk along the field edges, a look at the crop (and a word about it)
 async function farmScout() {
@@ -1417,8 +1416,69 @@ async function farmLandStep(key) {
         return false;
       } finally { farmJobActive = false; }
     }
-agendaRegisterKind('farm', { label: 'farm', check: t => true, resume: t => farmRunPlan(t) });
-agendaRegisterKind('farmseason', { label: 'farm season', check: t => true, resume: t => farmRunSeason(t) });
+
+// What still stops a step (null: nothing, it can go on). The agenda's check asks this every few
+// seconds while a task waits, so a wait ends when what it waited for is really here, not before.
+function farmVehicleBlock(v) {
+      if (!v) return null;
+      const rule = knowHowRule(v.name);
+      if (rule && !state.knowHow[rule.key]) return { type: 'skill', label: `learning to drive the ${farmPlain(v.name).replace(/ with .*$/, '')}` };
+      const tank = (farmState().buildings.fueltank || {}).stage === 'done' && farmStock('diesel') > 40;
+      if (fuelLeft(v) <= 5 && !tank && !(typeof fuelCanFor === 'function' && fuelCanFor('diesel'))) return { type: 'supply', label: `diesel for the ${farmPlain(v.name).replace(/ with .*$/, '')}` };
+      return null;
+    }
+function farmPlanBlocker(t) {
+      const key = (FARM_PLAN[t.step] || [])[0], F = farmState();
+      if (!key) return null;
+      if (['clear', 'grade', 'drain', 'fence', 'lane'].includes(key)) {
+        for (const k of FARM_STEP_GEAR[key] || []) {
+          const v = typeof rwGearOwned === 'function' ? rwGearOwned(k) : null;
+          if (!v) return { type: 'delivery', label: `the ${({ dozer: 'bulldozer', grader: 'motor grader', excavator: 'excavator', truck: 'dump truck' })[k] || k}` };
+          const b = farmVehicleBlock(v); if (b) return b;
+        }
+        const sup = { drain: ['tile', 'culvert'], fence: ['posts', 'wire', 'gates'], lane: ['gravel'] }[key] || [];
+        for (const k of sup) if (farmStock(k) < 1 && F.land[{ drain: 'drained', fence: 'fenced', lane: 'lane' }[key]] < 1) return { type: 'delivery', label: `${FARM_SUPPLIES[k].label}` };
+        if (key === 'fence' && !hasItem(/post driver/i)) return { type: 'delivery', label: 'the fence post driver' };
+        return null;
+      }
+      if (key.startsWith('b:')) {
+        const k = key.slice(2), B = FARM_BUILDINGS[k], b = F.buildings[k] || { stage: 'planned' };
+        if (B.inside && (F.buildings[B.inside] || {}).stage !== 'done') return { type: 'machine', label: `the ${FARM_BUILDINGS[B.inside].label.toLowerCase()} to be finished first` };
+        if ((b.stage === 'planned' || b.stage === 'staked') && B.concrete && !farmPartsHere(k, true)) return { type: 'delivery', label: `the ready-mix and rebar for the ${B.label.toLowerCase()}` };
+        if (b.stage === 'curing' && !farmFoundationCured(k)) return { type: 'time', label: `the ${B.label.toLowerCase()} foundation to cure` };
+        if (['frame', 'walls', 'roof'].includes(b.stage) && !farmPartsHere(k)) return { type: 'delivery', label: `the parts for the ${B.label.toLowerCase()}` };
+        return null;
+      }
+      if (key === 'machinelist' && farmListRequest('machines') && !farmListDone('machines')) return { type: 'delivery', label: 'the tractor, the combine and the implements' };
+      if (key === 'inputlist' && farmListRequest('inputs-first') && !farmListDone('inputs-first')) return { type: 'delivery', label: 'the seed, fertilizer and fuel' };
+      return null;
+    }
+function farmSeasonBlocker(t) {
+      const key = (FARM_SEASON_STEPS[t.step] || [])[0], F = farmState();
+      farmSimulate();
+      const w = t.waitingFor;
+      if (['plough', 'disc', 'fertilize', 'seed', 'spray', 'harvest'].includes(key)) {
+        if (w && w.type === 'season' && !(key === 'seed' ? farmWindowCheck() : farmSpringCheck())) return w;
+        if (w && w.type === 'plant' && !farmGrowCheck()) return w;
+        const O = FARM_OPS[key];
+        const big = farmMachineOf('bigtractor');
+        const v = O.machine === 'combine' ? farmMachineOf('combine') : ((key === 'plough' || key === 'disc') && big) ? big : farmMachineOf('tractor');
+        if (!v) return { type: 'delivery', label: `the ${O.machine === 'combine' ? 'combine' : 'tractor'}` };
+        if (!F.owned[O.impl]) return { type: 'delivery', label: `the ${FARM_IMPLEMENTS[O.impl].label.toLowerCase()}` };
+        const b = farmVehicleBlock(v); if (b) return b;
+        if (key === 'seed') { const f = F.fields.find(x => farmOpWanted(x, 'seed') && farmInWindow(x.planned)); if (f && farmStock('seed_' + f.planned) < FARM_CROPS[f.planned].seed * farmFieldHa(f) * 0.98) return { type: 'supply', label: `${FARM_CROPS[f.planned].label.toLowerCase()} seed` }; }
+        if (w && w.type === 'supply' && /fertili|urea|MAP|herbicide|insecticide/i.test(w.label) && !farmInputsCheck()) return w;
+        return null;
+      }
+      if (key === 'grow') return farmGrowCheck() ? null : (w || { type: 'plant', label: 'the crops to ripen' });
+      if (key === 'dry') {
+        if (!F.buildings.dryer || F.buildings.dryer.stage !== 'done') return { type: 'machine', label: 'the grain dryer to be built' };
+        if (Object.values(F.wet).some(x => x.t > 0.01) && farmStock('propane') < 10) return { type: 'supply', label: 'propane for the dryer' };
+      }
+      return null;
+    }
+agendaRegisterKind('farm', { label: 'farm', check: t => { const b = farmPlanBlocker(t); return b ? { waitingFor: b } : true; }, resume: t => farmRunPlan(t) });
+agendaRegisterKind('farmseason', { label: 'farm season', check: t => { const b = farmSeasonBlocker(t); return b ? { waitingFor: b } : true; }, resume: t => farmRunSeason(t) });
 
 // --- For the AI and the Brain tab ---------------------------------------------------------------------
 function farmSummaryForAI() {

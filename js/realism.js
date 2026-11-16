@@ -1,8 +1,8 @@
 // Kelo-bot-1 — js/realism.js
 // Loaded after scene.js. Makes Kelo-1's valley look like real life:
 //   - real colour handling: every colour in the code is an ordinary (sRGB) colour, lighting is done in
-//     linear light, and filmic (ACES) tone mapping turns it into a picture
-//   - a physically based sky (js/vendor/Sky.js) lit by the sun from his own clock, with haze that matches
+//     linear light, and filmic (ACES) tone mapping turns it into a picture (set up in js/lighting.js)
+//   - a physically based sky (three.js's Sky add-on) lit by the sun from his own clock, with haze that matches
 //     it, soft clouds, stars and a moon
 //   - image-based lighting from real outdoor HDR photos (assets/hdri), blended for day, sunset and night
 //   - a lake with moving waves, sky reflections, a clear shallow edge and a line of foam
@@ -11,40 +11,9 @@
 //   - a Graphics setting (High / Balanced / Fast) saved on this device, which steps down by itself on
 //     slow computers and phones
 
-// --- 1. Colours: treat every colour as sRGB (what a colour picker shows) -------------------------
-// three.js r128 treats colours as linear light. With sRGB output that washes everything out, so the
-// built-in shaders are patched once here: material colours, vertex colours, emissive colours and colour
-// textures are converted from sRGB to linear before lighting. A material can opt out of converting its
-// colours (not its textures) with defines: { KELO_LINEAR_COLORS: '' } (glTF models store linear colours).
-(function useRealColours() {
-      const C = THREE.ShaderChunk;
-      C.common += `
-vec3 keloTexToLinear( vec3 c ) {
-	return mix( c * 0.0773993808, pow( c * 0.9478672986 + 0.0521327014, vec3( 2.4 ) ), step( 0.04045, c ) );
-}
-vec3 keloToLinear( vec3 c ) {
-	#ifdef KELO_LINEAR_COLORS
-	return c;
-	#else
-	return keloTexToLinear( c );
-	#endif
-}`;
-      const swaps = [
-        ['vec4 diffuseColor = vec4( diffuse, opacity );', 'vec4 diffuseColor = vec4( keloToLinear( diffuse ), opacity );'],
-        ['vec3 totalEmissiveRadiance = emissive;', 'vec3 totalEmissiveRadiance = keloToLinear( emissive );'],
-        ['texelColor = mapTexelToLinear( texelColor );', 'texelColor = vec4( keloTexToLinear( texelColor.rgb ), texelColor.a );'],
-        ['diffuseColor *= mapTexelToLinear( mapTexel );', 'diffuseColor *= vec4( keloTexToLinear( mapTexel.rgb ), mapTexel.a );'],
-        ['emissiveColor.rgb = emissiveMapTexelToLinear( emissiveColor ).rgb;', 'emissiveColor.rgb = keloTexToLinear( emissiveColor.rgb );'],
-        ['#ifdef USE_COLOR\n\tvColor *= color;\n#endif', '#ifdef USE_COLOR\n\tvColor *= color;\n\tvColor.rgb = keloToLinear( vColor.rgb );\n#endif'],
-        ['vColor.xyz *= instanceColor.xyz;', 'vColor.xyz *= keloToLinear( instanceColor.xyz );']
-      ];
-      const patch = (s) => swaps.reduce((out, [a, b]) => out.split(a).join(b), s);
-      Object.keys(C).forEach(k => { if (k !== 'common' && typeof C[k] === 'string') C[k] = patch(C[k]); });
-      Object.values(THREE.ShaderLib).forEach(lib => {
-        lib.vertexShader = patch(lib.vertexShader);
-        lib.fragmentShader = patch(lib.fragmentShader);
-      });
-    })();
+// --- 1. Colours ---------------------------------------------------------------------------------
+// Every colour in the code is an ordinary (sRGB) colour; js/lighting.js (loaded first) sets up the colour
+// handling and holds every lighting number (KELO_LIGHTING) this file uses.
 
 // --- 2. Graphics quality ------------------------------------------------------------------------
 const GRAPHICS_LEVELS = {
@@ -87,7 +56,7 @@ function applyGraphicsLevel() {
       if (!renderer) return;
       const q = graphics();
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q.pixelRatio));
-      renderer.shadowMap.type = q.softShadows ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
+      renderer.shadowMap.type = THREE.PCFShadowMap; // r186+: PCF is the soft one (shadow.radius below)
       if (sunLight) {
         sunLight.shadow.mapSize.set(q.shadowSize, q.shadowSize);
         if (sunLight.shadow.map) { sunLight.shadow.map.dispose(); sunLight.shadow.map = null; }
@@ -133,10 +102,9 @@ const SKY_STATE = {
 // Called by initDiorama3D right after the renderer is made
 function setupRealisticRenderer() {
       graphicsLevel = readGraphicsChoice();
-      renderer.outputEncoding = THREE.sRGBEncoding;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 0.62;
-      renderer.physicallyCorrectLights = true;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = keloToneMapping();
+      renderer.toneMappingExposure = KELO_LIGHTING.exposure.start;
       renderer.shadowMap.enabled = true;
       scene.background = null;
       realisticEnvironmentOn = true;
@@ -150,8 +118,8 @@ function finishRealisticWorld() {
       scene.add(sunLight.target);
       sunLight.shadow.camera.near = 1;
       sunLight.shadow.camera.far = 320;
-      sunLight.shadow.bias = -0.00025;
-      sunLight.shadow.normalBias = 0.035;
+      sunLight.shadow.bias = KELO_LIGHTING.shadow.bias;
+      sunLight.shadow.normalBias = KELO_LIGHTING.shadow.normalBias;
       applyGraphicsLevel();
       // Sparks and flying grit are round, soft and glowing, not flat squares
       const dot = roundPointTexture();
@@ -242,14 +210,19 @@ function buildRealisticSky() {
       skyMesh = new THREE.Sky();
       skyMesh.scale.setScalar(800);
       const u = skyMesh.material.uniforms;
+      u.cloudCoverage.value = 0; // the game draws its own clouds (section 6)
       u.skyGain = { value: 1 };
       u.skyTint = { value: new THREE.Color(0, 0, 0) };
       u.skyGrey = { value: 0 };
       // A gain to balance the sky against the lit ground, and a faint blue for starlit nights
-      skyMesh.material.fragmentShader = skyMesh.material.fragmentShader
-        .replace('uniform vec3 up;', 'uniform vec3 up;\n\t\tuniform float skyGain;\n\t\tuniform vec3 skyTint;\n\t\tuniform float skyGrey;')
+      // three r187's sky dropped r128's gamma lift (retColor); it is put back so the sky keeps its look and
+      // skyColourToward (section 5) stays exact
+      const skyFrag = skyMesh.material.fragmentShader;
+      if (!skyFrag.includes('uniform float time;') || !skyFrag.includes('gl_FragColor = vec4( texColor, 1.0 );')) console.error('realism.js: the Sky shader changed; sky patch not applied');
+      skyMesh.material.fragmentShader = skyFrag
+        .replace('uniform float time;', 'uniform float time;\n\t\tvarying float vSunfade;\n\t\tuniform float skyGain;\n\t\tuniform vec3 skyTint;\n\t\tuniform float skyGrey;')
         // Overcast (rain, falling snow): the blue drains to a soft grey of about the same brightness
-        .replace('gl_FragColor = vec4( retColor, 1.0 );', 'vec3 keloSky = retColor * skyGain;\n\t\tkeloSky = mix( keloSky, vec3( dot( keloSky, vec3( 0.3, 0.59, 0.11 ) ) * 0.92 ), skyGrey );\n\t\tgl_FragColor = vec4( keloSky + skyTint * ( 1.0 - 0.7 * max( direction.y, 0.0 ) ), 1.0 );');
+        .replace('gl_FragColor = vec4( texColor, 1.0 );', 'vec3 retColor = pow( texColor, vec3( 1.0 / ( 1.2 + ( 1.2 * vSunfade ) ) ) );\n\t\tvec3 keloSky = retColor * skyGain;\n\t\tkeloSky = mix( keloSky, vec3( dot( keloSky, vec3( 0.3, 0.59, 0.11 ) ) * 0.92 ), skyGrey );\n\t\tgl_FragColor = vec4( keloSky + skyTint * ( 1.0 - 0.7 * max( direction.y, 0.0 ) ), 1.0 );');
       skyMesh.material.fog = false;
       skyMesh.renderOrder = -10;
       skyMesh.frustumCulled = false;
@@ -329,8 +302,8 @@ const ENV_PHOTOS = { day: 'assets/hdri/quarry_01_1k.hdr', dusk: 'assets/hdri/ven
 const envPhotoTextures = { day: null, dusk: null, night: null };
 
 function loadEnvironmentPhotos() {
-      if (!THREE.RGBELoader) return;
-      const loader = new THREE.RGBELoader().setDataType(THREE.UnsignedByteType);
+      if (!THREE.HDRLoader) return;
+      const loader = new THREE.HDRLoader().setDataType(THREE.HalfFloatType);
       Object.entries(ENV_PHOTOS).forEach(([key, url]) => {
         loader.load(url, tex => {
           envPhotoTextures[key] = tex;
@@ -342,7 +315,7 @@ function loadEnvironmentPhotos() {
 
 function buildEnvScene() {
       envScene = new THREE.Scene();
-      const blank = new THREE.DataTexture(new Uint8Array([0, 0, 0, 128]), 1, 1);
+      const blank = new THREE.DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1);
       blank.needsUpdate = true;
       envSphere = new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), new THREE.ShaderMaterial({
         side: THREE.BackSide,
@@ -359,13 +332,12 @@ function buildEnvScene() {
           uniform sampler2D dayMap; uniform sampler2D duskMap; uniform sampler2D nightMap;
           uniform vec3 weights; uniform vec3 gains; uniform float spin;
           varying vec3 vDir;
-          vec3 rgbe( vec4 t ) { return t.rgb * exp2( t.a * 255.0 - 128.0 ); }
           void main() {
             vec3 d = normalize( vDir );
             vec2 uv = vec2( atan( d.z, d.x ) * RECIPROCAL_PI2 + 0.5 + spin, asin( clamp( d.y, -1.0, 1.0 ) ) * RECIPROCAL_PI + 0.5 );
-            vec3 c = rgbe( texture2D( dayMap, uv ) ) * weights.x * gains.x
-                   + rgbe( texture2D( duskMap, uv ) ) * weights.y * gains.y
-                   + rgbe( texture2D( nightMap, uv ) ) * weights.z * gains.z;
+            vec3 c = texture2D( dayMap, uv ).rgb * weights.x * gains.x
+                   + texture2D( duskMap, uv ).rgb * weights.y * gains.y
+                   + texture2D( nightMap, uv ).rgb * weights.z * gains.z;
             gl_FragColor = linearToOutputTexel( vec4( min( c, vec3( 60.0 ) ), 1.0 ) );
           }`
       }));
@@ -399,7 +371,7 @@ function updateEnvironment() {
         u.weights.value.set(s.day * (1 - s.dusk), s.dusk, s.night);
         // Measured: the photos' skies average about 1.16 (day), 0.82 (sunset) and 0.28 (night). These
         // gains make the sky light about a fifth of direct sun by day, and starlight dim at night.
-        u.gains.value.set(0.55, 0.5, 0.12);
+        u.gains.value.fromArray(KELO_LIGHTING.envGains);
         const old = envTarget;
         envTarget = pmremGenerator.fromScene(envScene, 0, 0.1, 200);
         if (old) old.dispose();
@@ -433,14 +405,15 @@ function applySkyForHour(hour, dayOfYear) {
       // Sky shader: clearer air at noon, more haze and colour when the sun is low
       const u = skyMesh.material.uniforms;
       u.sunPosition.value.copy(s.sunDir);
-      u.turbidity.value = 2.2 + 3.5 * s.dusk;
-      u.rayleigh.value = 2.2 + 1.0 * s.dusk;
-      u.mieCoefficient.value = 0.003 + 0.004 * s.dusk;
-      u.mieDirectionalG.value = 0.82;
-      u.skyGain.value = 0.75; // keeps the sky blue overhead instead of washing out to white
-      u.skyTint.value.setRGB(0.004, 0.007, 0.018).multiplyScalar(s.night);
+      const L = KELO_LIGHTING, sky = L.sky;
+      u.turbidity.value = sky.turbidity[0] + sky.turbidity[1] * s.dusk;
+      u.rayleigh.value = sky.rayleigh[0] + sky.rayleigh[1] * s.dusk;
+      u.mieCoefficient.value = sky.mie[0] + sky.mie[1] * s.dusk;
+      u.mieDirectionalG.value = sky.mieDirectionalG;
+      u.skyGain.value = sky.gain; // keeps the sky blue overhead instead of washing out to white
+      u.skyTint.value.fromArray(sky.nightTint).multiplyScalar(s.night);
       s.overcast = skyOvercast();
-      u.skyGrey.value = 0.85 * s.overcast;
+      u.skyGrey.value = sky.overcastGrey * s.overcast;
 
       // The sun by day; the moon (cool and dim) at night. One light does both, so shadows always work.
       const sunUp = sm(-0.03, 0.05, s.sinElev);
@@ -450,22 +423,23 @@ function applySkyForHour(hour, dayOfYear) {
         s.lightDir.normalize();
         // Low sun shines through more air: warmer and weaker
         const high = sm(0.0, 0.5, s.sinElev);
-        sunLight.color.setRGB(1.0, 0.62 + 0.34 * high, 0.36 + 0.55 * high);
-        sunLight.intensity = 4.6 * sunUp * (0.3 + 0.7 * high);
+        const lo = L.sun.lowColour, hi = L.sun.highColour;
+        sunLight.color.setRGB(lo[0] + (hi[0] - lo[0]) * high, lo[1] + (hi[1] - lo[1]) * high, lo[2] + (hi[2] - lo[2]) * high);
+        sunLight.intensity = L.sun.intensity * sunUp * (0.3 + 0.7 * high);
       } else {
         s.lightDir.copy(MOON_DIR);
-        sunLight.color.setRGB(0.55, 0.65, 0.95);
-        sunLight.intensity = 0.36 * s.night; // moonlight: enough to read the shapes of the valley
+        sunLight.color.fromArray(L.moon.colour);
+        sunLight.intensity = L.moon.intensity * s.night; // moonlight: enough to read the shapes of the valley
       }
       // Sky light from above and bounce from the grass below (the HDR environment does most of this)
-      hemiLight.color.setRGB(0.55, 0.68, 0.9);
-      hemiLight.groundColor.setRGB(0.22, 0.2, 0.14);
-      hemiLight.intensity = 0.02 + 0.12 * s.day + 0.035 * s.night;
+      hemiLight.color.fromArray(L.hemi.sky);
+      hemiLight.groundColor.fromArray(L.hemi.ground);
+      hemiLight.intensity = L.hemi.base + L.hemi.day * s.day + L.hemi.night * s.night;
       // Exposure: the eye adapts a little to the dark
-      renderer.toneMappingExposure = 0.6 + 0.5 * s.night + 0.1 * s.dusk;
+      renderer.toneMappingExposure = L.exposure.base + L.exposure.night * s.night + L.exposure.dusk * s.dusk;
 
       // Haze: denser in the evening and at night
-      scene.fog.density = 0.0042 + 0.0022 * s.dusk + 0.002 * s.night + 0.0045 * s.overcast;
+      scene.fog.density = L.fog.base + L.fog.dusk * s.dusk + L.fog.night * s.night + L.fog.overcast * s.overcast;
 
       // Stars and the moon hide behind rain clouds and snow
       if (starField) starField.material.opacity = s.night * (1 - s.overcast);
@@ -482,7 +456,7 @@ function skyDarkness() {
 // --- 5. Haze that matches the sky ------------------------------------------------------------------
 // The same sky model as the shader, worked out here for the horizon in the direction the camera looks,
 // then tone mapped the same way, so distant hills fade into exactly the sky behind them.
-const skyScratch = { r: 0, g: 0, b: 0 };
+const skyScratch = { r: 0, g: 0, b: 0, lr: 0, lg: 0, lb: 0 };
 function skyColourToward(dx, dy, dz, out) {
       const u = skyMesh.material.uniforms, sun = SKY_STATE.sunDir;
       const EE = 1000, cutoff = 1.6110731556870734, steep = 1.5;
@@ -511,7 +485,9 @@ function skyColourToward(dx, dy, dz, out) {
       // the same overcast grey as the sky shader
       const grey = u.skyGrey ? u.skyGrey.value : 0, lum = (res[0] * 0.3 + res[1] * 0.59 + res[2] * 0.11) * 0.92;
       for (let i = 0; i < 3; i++) res[i] = res[i] + (lum - res[i]) * grey + tints[i] * (1 - 0.7 * Math.max(dy, 0));
-      // ACES filmic, as three.js r128 does it, then sRGB
+      // Linear, before tone mapping (the haze colour when post-processing tone maps at the end)
+      out.lr = res[0]; out.lg = res[1]; out.lb = res[2];
+      // ACES filmic, as three.js does it (the same formula in r128 and r187), then sRGB
       const e = renderer.toneMappingExposure / 0.6;
       const r = res[0] * e, gg = res[1] * e, b = res[2] * e;
       const ir = 0.59719 * r + 0.35458 * gg + 0.04823 * b, ig = 0.07600 * r + 0.90834 * gg + 0.01566 * b, ib = 0.02840 * r + 0.13383 * gg + 0.83777 * b;
@@ -600,7 +576,8 @@ function updateCloudLight() {
 
 // --- 7. Every frame ---------------------------------------------------------------------------------
 const fogScratch = new THREE.Color();
-const NIGHT_FOG = new THREE.Color(0x0d1422);
+const NIGHT_FOG = new THREE.Color(KELO_LIGHTING.fog.nightColour);
+const NIGHT_FOG_LINEAR = NIGHT_FOG.clone().convertSRGBToLinear();
 const camForward = new THREE.Vector3();
 const shadowSnapL = new THREE.Vector3(), shadowSnapX = new THREE.Vector3(), shadowSnapY = new THREE.Vector3(), shadowSnapC = new THREE.Vector3();
 let frameCounter = 0;
@@ -619,11 +596,13 @@ function updateRealism(t, dt) {
         if (camForward.lengthSq() < 1e-6) camForward.set(0, 0, -1);
         camForward.normalize();
         skyColourToward(camForward.x * 0.995, 0.1, camForward.z * 0.995, skyScratch);
-        fogScratch.setRGB(skyScratch.r, skyScratch.g, skyScratch.b);
-        // With post-processing the haze is mixed before the final sRGB step
+        // Drawn straight out, fog is mixed into the finished (tone mapped, sRGB) picture, so it is the
+        // sky's finished colour. With post-processing (High) it is mixed before OutputPass tone maps,
+        // so it is the sky's colour before tone mapping.
+        if (postComposer) fogScratch.setRGB(skyScratch.lr, skyScratch.lg, skyScratch.lb);
+        else fogScratch.setRGB(skyScratch.r, skyScratch.g, skyScratch.b);
         // After dark the haze is a deep night blue, not the sky model's leftover glow
-        if (SKY_STATE.night > 0) fogScratch.lerp(NIGHT_FOG, SKY_STATE.night);
-        if (postComposer) fogScratch.convertSRGBToLinear();
+        if (SKY_STATE.night > 0) fogScratch.lerp(postComposer ? NIGHT_FOG_LINEAR : NIGHT_FOG, SKY_STATE.night);
         scene.fog.color.copy(fogScratch);
       }
       // Shadows follow what the camera looks at, snapped to whole shadow-map texels so they don't crawl.
@@ -637,7 +616,7 @@ function updateRealism(t, dt) {
         scam.right = scam.top = range;
         scam.updateProjectionMatrix();
         // Bias in texels: the same acne protection at every size
-        sunLight.shadow.normalBias = 0.035 * range / 40;
+        sunLight.shadow.normalBias = KELO_LIGHTING.shadow.normalBias * range / 40;
       }
       const snap = (range * 2) / q.shadowSize;
       // Centred a little beyond the target, where more of the visible ground is (camForward is the
@@ -845,7 +824,7 @@ function makeRealisticTerrainMaterial() {
       const loader = new THREE.TextureLoader();
       const uniforms = {};
       Object.entries(TERRAIN_TEXTURE_FILES).forEach(([k, url]) => {
-        const tex = loader.load(url);
+        const tex = keloPictureTexture(loader.load(url));
         tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
         TERRAIN_TEXTURES[k] = tex;
         uniforms[k + 'Map'] = { value: tex };
@@ -854,7 +833,6 @@ function makeRealisticTerrainMaterial() {
       });
       const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
       mat.defines = { KELO_DETAIL: graphics().terrainDetail };
-      mat.extensions = { derivatives: true };
       mat.userData.keloTerrain = true;
       mat.onBeforeCompile = (shader) => {
         Object.assign(shader.uniforms, uniforms);
@@ -868,7 +846,7 @@ varying vec3 vKeloN;
 varying vec3 vKeloRaw;
 uniform sampler2D grassMap; uniform sampler2D dirtMap; uniform sampler2D rockMap; uniform sampler2D sandMap; uniform sampler2D snowMap;
 uniform vec3 grassMean; uniform vec3 dirtMean; uniform vec3 rockMean; uniform vec3 sandMean; uniform vec3 snowMean;
-vec3 keloTex( sampler2D m, vec2 uv ) { return keloTexToLinear( texture2D( m, uv ).rgb ); }
+vec3 keloTex( sampler2D m, vec2 uv ) { return texture2D( m, uv ).rgb; } // sRGB textures: the GPU decodes them
 // A texture at two scales (turned against each other), so the repeat doesn't show
 vec3 keloTex2( sampler2D m, vec2 uv ) {
 	vec3 a = keloTex( m, uv );
@@ -949,39 +927,28 @@ function applySkyPreset(idx) {
     }
 
 // --- 12. Post-processing (High only): a soft glow around bright lights -----------------------------
-// The scene is drawn into an off-screen picture (already tone mapped, still linear), bloom is added,
-// and a last pass turns it into sRGB for the screen. On Balanced and Fast it's drawn straight out.
+// The scene is drawn into an off-screen picture in linear light (not yet tone mapped), bloom is added,
+// and OutputPass tone maps it and turns it into sRGB for the screen. On Balanced and Fast it's drawn
+// straight out.
 let postComposer = null, bloomPass = null;
 const postSize = new THREE.Vector2();
-const SRGB_OUT_SHADER = {
-  uniforms: { tDiffuse: { value: null } },
-  vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-  fragmentShader: `uniform sampler2D tDiffuse; varying vec2 vUv;
-    void main() {
-      vec4 c = texture2D( tDiffuse, vUv );
-      vec3 s = mix( c.rgb * 12.92, 1.055 * pow( max( c.rgb, vec3( 0.0 ) ), vec3( 1.0 / 2.4 ) ) - 0.055, step( 0.0031308, c.rgb ) );
-      gl_FragColor = vec4( s, 1.0 );
-    }`
-};
 
 function setupPostProcessing() {
       if (postComposer) {
-        postComposer.renderTarget1.dispose();
-        postComposer.renderTarget2.dispose();
+        postComposer.dispose();
         if (bloomPass) bloomPass.dispose();
         postComposer = bloomPass = null;
+        SKY_STATE.envKey = '';
       }
       if (!renderer || !graphics().bloom || !THREE.EffectComposer || !THREE.UnrealBloomPass) return;
       renderer.getDrawingBufferSize(postSize);
-      const opts = { format: THREE.RGBAFormat, type: renderer.capabilities.isWebGL2 ? THREE.HalfFloatType : THREE.UnsignedByteType };
-      const target = renderer.capabilities.isWebGL2 && THREE.WebGLMultisampleRenderTarget
-        ? new THREE.WebGLMultisampleRenderTarget(postSize.x, postSize.y, opts)
-        : new THREE.WebGLRenderTarget(postSize.x, postSize.y, opts);
+      const target = new THREE.WebGLRenderTarget(postSize.x, postSize.y, { type: THREE.HalfFloatType, samples: 4 });
       postComposer = new THREE.EffectComposer(renderer, target);
       postComposer.addPass(new THREE.RenderPass(scene, camera));
-      bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(postSize.x / 2, postSize.y / 2), 0.22, 0.55, 0.88);
+      const B = KELO_LIGHTING.bloom;
+      bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(postSize.x / 2, postSize.y / 2), B.strength, B.radius, B.threshold);
       postComposer.addPass(bloomPass);
-      postComposer.addPass(new THREE.ShaderPass(SRGB_OUT_SHADER));
+      postComposer.addPass(new THREE.OutputPass());
       resizePostProcessing();
     }
 

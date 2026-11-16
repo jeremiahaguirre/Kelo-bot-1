@@ -215,10 +215,9 @@ function surfaceTexture(kind) {
       const colour = make(), bump = make();
       const seed = [...kind].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7);
       SURFACE_PAINTERS[kind](colour.getContext('2d'), bump.getContext('2d'), S, seededRandom(seed));
-      const map = new THREE.CanvasTexture(colour);
-      // Painted colours pass straight through, like the hex colours of every other model
-      map.encoding = typeof renderer !== 'undefined' && renderer && renderer.outputEncoding === THREE.sRGBEncoding ? THREE.sRGBEncoding : THREE.LinearEncoding;
+      const map = new THREE.CanvasTexture(colour); // a picture: sRGB, like the hex colours of every other model
       const bumpMap = new THREE.CanvasTexture(bump);
+      bumpMap.colorSpace = THREE.NoColorSpace; // heights, not colours
       [map, bumpMap].forEach(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; });
       SURFACE_TEXTURES[kind] = { map, bumpMap };
       return SURFACE_TEXTURES[kind];

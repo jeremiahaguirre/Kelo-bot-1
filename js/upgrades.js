@@ -226,7 +226,7 @@ function upgradeMat(color, opts = {}) {
     }
 
 function upgradeLightScale() {
-      return typeof renderer !== 'undefined' && renderer && renderer.physicallyCorrectLights ? 5.5 : 1;
+      return KELO_LIGHTING.lamps.upgradeScale;
     }
 
 // A lamp: a bulb that glows, plus a real point light while the budget allows
@@ -262,7 +262,6 @@ function upgradeSignTexture(text, bg, fg) {
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(text, 256, 84);
       const tex = new THREE.CanvasTexture(c);
-      if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
       return tex;
     }
 

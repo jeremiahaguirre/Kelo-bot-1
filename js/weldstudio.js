@@ -309,8 +309,7 @@ function buildWeldingStudio3D() {
 function updateWeldingStudio(t) {
       if (!weldStudio) return;
       const dark = typeof skyDarkness === 'function' ? skyDarkness() : 0;
-      const physical = renderer && renderer.physicallyCorrectLights;
-      weldStudio.shopLight.intensity = (0.4 + 1.6 * dark) * (physical ? 5 : 0.6);
+      weldStudio.shopLight.intensity = (0.4 + 1.6 * dark) * KELO_LIGHTING.lamps.weldShop;
       weldStudio.glow.emissiveIntensity = 0.4 + 1.4 * dark;
       if (typeof updateWeldingRigAfterPose === 'function' && updateWeldingRigAfterPose(t)) return; // the rig drives the flare itself
       const arcOn = typeof forgeArcLight !== 'undefined' && forgeArcLight && forgeArcLight.intensity > 0;

@@ -484,7 +484,7 @@ function photoFrameModel(thumbDataUrl) {
       frame.position.y = 0.2;
       const g = group(frame);
       if (thumbDataUrl) {
-        const tex = new THREE.TextureLoader().load(thumbDataUrl);
+        const tex = keloPictureTexture(new THREE.TextureLoader().load(thumbDataUrl));
         const pic = new THREE.Mesh(new THREE.PlaneGeometry(0.36, 0.28), new THREE.MeshBasicMaterial({ map: tex }));
         pic.position.set(0, 0.2, 0.025);
         g.add(pic);

@@ -164,7 +164,7 @@ function initDiorama3D() {
       renderer.setSize(w, h);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.shadowMap.type = THREE.PCFShadowMap; // soft with shadow.radius (PCFSoftShadowMap left in r186)
       // Real colours, filmic tone mapping, physical light and the Graphics level (js/realism.js)
       if (typeof setupRealisticRenderer === 'function') setupRealisticRenderer();
       container.appendChild(renderer.domElement);
@@ -177,7 +177,7 @@ function initDiorama3D() {
       controls.minDistance = 4;
       controls.maxDistance = 160;
 
-      clock = new THREE.Clock();
+      clock = keloMakeClock();
 
       hemiLight = new THREE.HemisphereLight(AMBIANCE_PRESETS[0].hemiSky, AMBIANCE_PRESETS[0].hemiGround, 0.8);
       scene.add(hemiLight);
@@ -196,7 +196,7 @@ function initDiorama3D() {
       scene.add(sunLight);
 
       // The welding arc: blue-white, right above the table
-      forgeArcLight = new THREE.PointLight(0xa8d4ff, 0, 9);
+      forgeArcLight = new THREE.PointLight(0xa8d4ff, 0, 9, KELO_LIGHTING.lamps.forgeArc.decay);
       forgeArcLight.position.set(-1.2, 1.35, -8.0);
       scene.add(forgeArcLight);
 
@@ -1606,7 +1606,7 @@ function buildCreationGroup(creation) {
         crystal.userData.finish = 'glow';
         crystal.position.y = 0.65;
         crystal.userData.spin = true;
-        const light = new THREE.PointLight(col, renderer.physicallyCorrectLights ? 5 : 0.9, 6);
+        const light = new THREE.PointLight(col, KELO_LIGHTING.lamps.streetLamp.intensity, KELO_LIGHTING.lamps.streetLamp.distance, KELO_LIGHTING.lamps.streetLamp.decay);
         light.position.y = 0.8;
         g.add(base, crystal, light);
       } else if (archetype === 'botanical_totem') {
@@ -2410,6 +2410,16 @@ function keloSimRestore() {
       s.shown = null;
     }
 
+// The scene clock: seconds since the world started (three's Clock is deprecated since r183; this keeps its
+// fields, which the QA tools set to start runs at the same time)
+function keloMakeClock() {
+      return {
+        startTime: performance.now(), oldTime: performance.now(), elapsedTime: 0,
+        getElapsedTime() { const now = performance.now(); this.elapsedTime += (now - this.oldTime) / 1000; this.oldTime = now; return this.elapsedTime; },
+        getDelta() { const now = performance.now(), d = (now - this.oldTime) / 1000; this.oldTime = now; this.elapsedTime += d; return d; }
+      };
+    }
+
 function animateDiorama() {
       requestAnimationFrame(animateDiorama);
       const t = clock.getElapsedTime();
@@ -2592,7 +2602,7 @@ function animateDiorama() {
           keloGroup.rotation.set(0, state.currentLocKey === 'weld' ? Math.PI : state.botRotY, 0);
           weldingSparks.visible = keloWeldPose(t);
           if (miningDebrisParticles) miningDebrisParticles.visible = false;
-          forgeArcLight.intensity = (1.5 + Math.random() * 2.0) * (renderer.physicallyCorrectLights ? 6 : 1);
+          forgeArcLight.intensity = (1.5 + Math.random() * 2.0) * KELO_LIGHTING.lamps.forgeArc.intensity;
 
           const sparkOriginX = state.currentLocKey === 'weld' ? -1.2 : state.botPos.x;
           const sparkOriginZ = state.currentLocKey === 'weld' ? -8.2 : state.botPos.z;

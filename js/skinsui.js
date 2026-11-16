@@ -59,9 +59,12 @@ function drawKeloFigure(fig, yaw, canvas, ss = 2, view = {}) {
       const S = skinStudio();
       const W = canvas.width, H = canvas.height, RW = Math.round(W * ss), RH = Math.round(H * ss);
       if (!S.rt || S.rt.width !== RW || S.rt.height !== RH) {
-        if (S.rt) S.rt.dispose();
-        S.rt = new THREE.WebGLRenderTarget(RW, RH, { depthBuffer: true });
-        S.rt.texture.encoding = renderer.outputEncoding;
+        if (S.rt) { S.rt.dispose(); S.rtOut.dispose(); }
+        // three r187 draws into a render target in linear light without tone mapping; OutputPass then
+        // tone maps it and writes sRGB, the same picture the world gets on screen
+        S.rt = new THREE.WebGLRenderTarget(RW, RH, { depthBuffer: true, type: THREE.HalfFloatType });
+        S.rtOut = new THREE.WebGLRenderTarget(RW, RH, { depthBuffer: false });
+        if (!S.outPass) S.outPass = new THREE.OutputPass();
       }
       S.scene.environment = (typeof scene !== 'undefined' && scene && scene.environment) || null;
       if (fig.group.parent !== S.scene) S.scene.add(fig.group);
@@ -84,9 +87,10 @@ function drawKeloFigure(fig, yaw, canvas, ss = 2, view = {}) {
       renderer.setClearColor(0x000000, 0);
       renderer.clear(true, true, true);
       renderer.render(S.scene, S.cam);
+      S.outPass.render(renderer, S.rtOut, S.rt);
       const n = RW * RH * 4;
       if (!_skinPx.buf || _skinPx.buf.length !== n) _skinPx.buf = new Uint8Array(n);
-      renderer.readRenderTargetPixels(S.rt, 0, 0, RW, RH, _skinPx.buf);
+      renderer.readRenderTargetPixels(S.rtOut, 0, 0, RW, RH, _skinPx.buf);
       renderer.setRenderTarget(prevTarget);
       renderer.setClearColor(prevClear, prevAlpha);
       renderer.shadowMap.autoUpdate = prevShadow;

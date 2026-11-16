@@ -18,12 +18,14 @@ function modelThumbnail(key, buildModel) {
       if (!thumbRenderer) {
         thumbRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
         thumbRenderer.setSize(192, 192);
-        if (typeof renderer !== 'undefined' && renderer) thumbRenderer.outputEncoding = renderer.outputEncoding;
+        thumbRenderer.outputColorSpace = THREE.SRGBColorSpace;
         // Same filmic look as the world (js/realism.js), a little brighter for small pictures
         if (typeof renderer !== 'undefined' && renderer) { thumbRenderer.toneMapping = renderer.toneMapping; thumbRenderer.toneMappingExposure = 0.85; }
         thumbScene = new THREE.Scene();
-        thumbScene.add(new THREE.HemisphereLight(0xffffff, 0x8a6a4a, 1.0));
-        const sun = new THREE.DirectionalLight(0xffffff, 0.9);
+        // (r128 lit this small renderer in its legacy mode, which multiplied these lights by pi; three
+        // r187 has only physically based light, so the pi is written in to keep the same pictures)
+        thumbScene.add(new THREE.HemisphereLight(0xffffff, 0x8a6a4a, 1.0 * Math.PI));
+        const sun = new THREE.DirectionalLight(0xffffff, 0.9 * Math.PI);
         sun.position.set(2, 4, 3);
         thumbScene.add(sun);
         thumbCamera = new THREE.PerspectiveCamera(32, 1, 0.01, 100);

@@ -596,10 +596,9 @@ function updateHouseLights(instant) {
       const target = night ? 1 : 0;
       L.level = instant ? target : L.level + (target - L.level) * 0.35;
       if (Math.abs(L.level - target) < 0.02) L.level = target;
-      // Physically based lights (js/realism.js) need real-world strengths: a warm room lamp and a porch lantern
-      const k = typeof renderer !== 'undefined' && renderer && renderer.physicallyCorrectLights ? 7 : 1;
-      L.roomLight.intensity = 1.5 * k * L.level;
-      L.porchLight.intensity = 1.1 * k * L.level;
+      // Physically based lights need real-world strengths: a warm room lamp and a porch lantern (js/lighting.js)
+      L.roomLight.intensity = KELO_LIGHTING.lamps.houseRoom * L.level;
+      L.porchLight.intensity = KELO_LIGHTING.lamps.housePorch * L.level;
       L.glassMat.emissiveIntensity = 0.75 * L.level;
       L.shadeMat.emissiveIntensity = 0.05 + 0.9 * L.level;
       L.lanternGlow.emissiveIntensity = 0.1 + 1.4 * L.level;

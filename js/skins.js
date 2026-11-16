@@ -107,7 +107,6 @@ function skinStarTexture() {
       }
       const t = new THREE.CanvasTexture(c);
       t.wrapS = t.wrapT = THREE.RepeatWrapping;
-      t.encoding = THREE.sRGBEncoding;
       return t;
     }
 const skinNow = () => performance.now() / 1000;

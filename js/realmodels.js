@@ -145,27 +145,13 @@ function normaliseRealModel(root, entry) {
       return out;
     }
 
-// Colour textures should be decoded the way the main renderer outputs colour, so the real models
-// sit naturally beside the drawn ones whether the renderer works in linear or sRGB.
+// glTF colours are linear, while the game's shaders read every colour as sRGB (js/lighting.js), so a
+// loaded model's materials opt out of that conversion. Its colour textures are already marked sRGB by
+// GLTFLoader, so the GPU decodes them.
 function matchRendererEncoding(material) {
-      const want = typeof renderer !== 'undefined' && renderer && renderer.outputEncoding === THREE.sRGBEncoding ? THREE.sRGBEncoding : THREE.LinearEncoding;
-      // glTF colours are linear; a renderer that writes linear colour shows them as if they were sRGB, too dark
-      if (want === THREE.LinearEncoding) {
-        if (material.color) material.color.convertLinearToSRGB();
-        if (material.emissive) material.emissive.convertLinearToSRGB();
-      } else if (typeof realisticEnvironmentOn !== 'undefined' && realisticEnvironmentOn) {
-        // js/realism.js reads every colour as sRGB; glTF colours are already linear, so they opt out
-        material.defines = Object.assign({}, material.defines, { KELO_LINEAR_COLORS: '' });
-        material.needsUpdate = true;
-      }
-      ['map', 'emissiveMap'].forEach(k => {
-        const tex = material[k];
-        if (tex && tex.encoding !== want) {
-          tex.encoding = want;
-          tex.needsUpdate = true;
-          material.needsUpdate = true;
-        }
-      });
+      material.defines = Object.assign({}, material.defines, { KELO_LINEAR_COLORS: '' });
+      ['map', 'emissiveMap'].forEach(k => { const tex = material[k]; if (tex && tex.colorSpace !== THREE.SRGBColorSpace) { tex.colorSpace = THREE.SRGBColorSpace; tex.needsUpdate = true; } });
+      material.needsUpdate = true;
     }
 
 // A copy of a loaded model with its own materials (so fading or tinting one copy leaves the rest alone)

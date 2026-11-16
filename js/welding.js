@@ -1293,7 +1293,7 @@ function updateWeldArc(dt) {
         if (typeof forgeArcLight !== 'undefined' && forgeArcLight) {
           forgeArcLight.position.copy(seam).add(_weldV.set(0, 0.12, 0.1));
           forgeArcLight.color.setHex(0xb8dcff);
-          forgeArcLight.intensity = (2 + Math.random() * 2.2) * (renderer && renderer.physicallyCorrectLights ? 6 : 1);
+          forgeArcLight.intensity = (2 + Math.random() * 2.2) * KELO_LIGHTING.lamps.forgeArc.intensity;
         }
         // New sparks shoot out of the puddle
         // (up to six a 60 fps frame: 360 a second, at any frame rate)

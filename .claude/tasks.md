@@ -8,6 +8,11 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
+## Build step for laptop speed (branch `agent/buildstep`, results on `qa-results-buildstep`), IN PROGRESS
+- Owner approved a small build step. `npm run build:site` makes `_site/` (one minified hashed game script + source map, compiled Tailwind, local icons/fonts, HDR skies 512x256); the repo root stays the plain-files dev mode. Phone build (`build:web`) bundles too; Windows app packs `_site/`; `.github/workflows/pages.yml` publishes Pages once Settings -> Pages -> Source is "GitHub Actions". Guide: docs/BUILD.md.
+- Leave three.js loading to `agent/threejs` (head scripts untouched). Models already webp + quantized; Draco/meshopt need WebAssembly, blocked by the strict CSP.
+- Open: before/after numbers, regressions on built + dev, REPORT.md.
+
 ## North yard fixes (owner's annotated screenshot, 2026-11-12): branch agent/northyard, waiting for merge
 - Arrow 1 (drive through the range), arrow 2 (land inside the buildings), arrow 3 (road between the hall and the hangar): fixed (far lands sunk under the finer meshes; paved Pass Road, Yard Street, Hangar Lane, North Apron). Report: qa-results-northyard/REPORT.md.
 

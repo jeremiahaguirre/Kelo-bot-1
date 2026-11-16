@@ -19,7 +19,8 @@ const LOOK = {
   // Sun colour when it is low: multiplied into the sun colour realism.js works out (golden hour)
   golden: { sun: [1.06, 0.9, 0.72], hemiWarm: [1.08, 0.96, 0.84], exposureLift: 0.14 },
   // Shadows: blur radius (PCF soft) per level, and how dark shade may get (the hemisphere light floor)
-  shadow: { radius: { high: 3.2, balanced: 2.4, fast: 1 }, hemiFloor: 0.03 },
+  // (three.js r128's PCF filter spreads its 9 taps by this radius; its 'PCF soft' filter ignores radius)
+  shadow: { radius: { high: 2.6, balanced: 2.0, fast: 1 }, hemiFloor: 0.03 },
   // Valley mist: thicker low down. density is per unit of distance; falloff per unit of height above base
   mist: { base: -0.2, falloff: 0.42, day: 0.0015, dawn: 0.008, dusk: 0.0035, night: 0.004, rain: 0.006, max: 0.4 },
   // Colour grading (display space). Tints are multipliers; split toning adds to shadows/highlights.
@@ -174,6 +175,8 @@ function lookSyncFog(dt) {
       applyGraphicsLevel = function () {
         origApply.apply(this, arguments);
         if (sunLight) sunLight.shadow.radius = LOOK.shadow.radius[graphicsLevel] || 1;
+        // softer edges come from the widened PCF taps, so every level uses the PCF filter
+        if (renderer.shadowMap.type !== THREE.PCFShadowMap) { renderer.shadowMap.type = THREE.PCFShadowMap; renderer.shadowMap.needsUpdate = true; }
         if (typeof lookApplyLevelExtras === 'function') lookApplyLevelExtras();
       };
     })();

@@ -396,6 +396,41 @@ function ambUpdateCar(dt) {
       if (!blocked) m.userData.ambWheels.forEach(w => { w.rotation.y -= 3.2 * dt / (0.36 * 0.62); });
     }
 
+// --- 5b. Warm pools of lamplight in front of the buildings after dark ---------------------------
+// The wall lamps (bldKit bulbs) glow; this lays their light on the ground: one instanced mesh of soft
+// additive patches, faded in with the dark (no real lights, so it costs no shading).
+let ambPools = null;
+function ambBuildPools() {
+      if (ambPools) { scene.remove(ambPools); ambPools.geometry.dispose(); ambPools = null; }
+      const spots = [];
+      if (typeof TOWN_BUILDINGS !== 'undefined') Object.values(TOWN_BUILDINGS).forEach(b => spots.push([b.x, b.z + b.d / 2 + 1.3, 3.4]));
+      if (typeof HOUSE !== 'undefined') spots.push([HOUSE.x, HOUSE.z + HOUSE.d / 2 + 2.4, 3.6]);
+      if (typeof STOREHOUSE !== 'undefined') spots.push([STOREHOUSE.x, STOREHOUSE.z + STOREHOUSE.d / 2 + 1.4, 3.4]);
+      if (typeof MUSEUM !== 'undefined') spots.push([MUSEUM.x, MUSEUM.z + MUSEUM.d / 2 + 1.6, 3.8]);
+      if (!spots.length) return;
+      const cv = document.createElement('canvas');
+      cv.width = cv.height = 64;
+      const ctx = cv.getContext('2d'), g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      g.addColorStop(0, 'rgba(255,190,110,1)'); g.addColorStop(0.5, 'rgba(255,170,90,0.35)'); g.addColorStop(1, 'rgba(255,160,80,0)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 64);
+      const geo = new THREE.PlaneGeometry(1, 1); geo.rotateX(-Math.PI / 2);
+      const mat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
+      ambPools = new THREE.InstancedMesh(geo, mat, spots.length);
+      const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
+      spots.forEach(([x, z, r], i) => { m.compose(p.set(x, getIslandGroundHeight(x, z) + 0.04, z), q, s.set(r * 2, 1, r * 1.5)); ambPools.setMatrixAt(i, m); });
+      ambPools.userData.noShadow = true;
+      ambPools.castShadow = ambPools.receiveShadow = false;
+      ambPools.visible = false;
+      if (typeof chunkDynamic !== 'undefined' && chunkDynamic.add) chunkDynamic.add(ambPools);
+      scene.add(ambPools);
+    }
+function ambUpdatePools() {
+      if (!ambPools) return;
+      const dark = typeof skyDarkness === 'function' ? skyDarkness() : 0;
+      ambPools.material.opacity = 0.32 * Math.max(0, dark - 0.25) / 0.75;
+      ambPools.visible = ambPools.material.opacity > 0.01;
+    }
+
 // --- 6. Each frame and the level ---------------------------------------------------------------
 const ambWant = { air: -1, life: -1, smoke: null, flags: null };
 function ambApplyLevel() {
@@ -404,6 +439,7 @@ function ambApplyLevel() {
       if (ambWant.air !== q.airParticles) { ambWant.air = q.airParticles; ambBuildAir(q.airParticles || 0); }
       if (ambWant.smoke !== Boolean(q.smoke)) { ambWant.smoke = Boolean(q.smoke); if (q.smoke) ambBuildSmoke(); else if (ambSmoke) ambSmoke.visible = false; }
       if (ambWant.flags !== Boolean(q.flags)) { ambWant.flags = Boolean(q.flags); if (q.flags) ambBuildFlags(); else if (ambFlags) { scene.remove(ambFlags); ambFlags = null; } }
+      if (!ambPools) ambBuildPools();
       if (ambWant.life !== (q.townLife || 0)) {
         ambWant.life = q.townLife || 0;
         ambBuildPeople(ambWant.life ? (ambWant.life >= 2 ? LOOK.life.people : 3) : 0);
@@ -443,6 +479,7 @@ function ambFrame(now) {
         u.smokeAmt.value = (season === 'Winter' ? 0.6 : season === 'Summer' ? 0.22 : 0.4) + 0.2 * Math.max(s.dusk, s.night);
       }
       ambUpdateFlags();
+      ambUpdatePools();
       ambUpdatePeople(dt);
       ambUpdateCar(dt);
     }

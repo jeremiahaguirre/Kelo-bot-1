@@ -1,6 +1,5 @@
 # Publishes the website (GitHub Pages) from the build (npm run build:site -> _site/): the game
-# scripts as one minified file, Tailwind compiled, icons and fonts local. See REPORT on the
-# qa-results-buildstep branch and docs/BUILD.md.
+# scripts as one minified file, Tailwind compiled, icons and fonts local. See docs/BUILD.md.
 #
 # One-time switch: repo Settings -> Pages -> "Build and deployment" -> Source: "GitHub Actions".
 # Until then Pages keeps serving the plain files from the main branch, exactly as before.

@@ -65,7 +65,8 @@ function cleanListing(l) {
       const art = l.kind === 'painting';
       const pd = l.painting && typeof l.painting === 'object' ? l.painting : null;
       return {
-        kind: art ? 'painting' : 'printfile',
+        // grain and flour from his farm (js/farm.js) are their own kind
+        kind: art ? 'painting' : l.kind === 'farmgoods' ? 'farmgoods' : 'printfile',
         medium: art ? String((pd && pd.on) || l.medium || '').slice(0, 60) : '',
         size: art ? String((pd && pd.size) || l.size || '').slice(0, 20) : '',
         subject: art ? String((pd && pd.subject) || l.subject || '').slice(0, 80) : '',
@@ -127,6 +128,7 @@ function renderShop(listings, contact, updatedAt) {
         const art = l.kind === 'painting';
         const badge = art
           ? '<span class="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-slate-950/85 text-white text-2xs font-semibold">Original painting</span>'
+          : l.kind === 'farmgoods' ? '<span class="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-slate-950/85 text-white text-2xs font-semibold">From his farm</span>'
           : '<span class="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-slate-950/85 text-white text-2xs font-semibold">3D print file</span>';
         return `
         <article class="rounded-2xl bg-slate-800/60 overflow-hidden flex flex-col">

@@ -414,7 +414,7 @@ function markListingSold(id) {
       state.diaryEntries.unshift({
         time: 'Sold in His Shop', location: currentPlaceLabel(), mood: '🥳 Sold something',
         vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
-        text: `Dear Diary, someone out in the real world bought ${thingName(l.kind, l.name)} from my shop for ${formatCAD(l.price)}. ${l.kind === 'painting' ? 'I took it down from the wall in my Museum, and my human is wrapping it up and sending it to its new home. It\'s strange to see the empty spot, but someone chose it.' : 'My human is sending them the file so they can print their own.'} I've earned ${formatCAD(shop.earnings)} so far.`
+        text: `Dear Diary, someone out in the real world bought ${thingName(l.kind, l.name)} from my shop for ${formatCAD(l.price)}. ${l.kind === 'painting' ? 'I took it down from the wall in my Museum, and my human is wrapping it up and sending it to its new home. It\'s strange to see the empty spot, but someone chose it.' : l.kind === 'farmgoods' ? 'I grew it myself, from seed to the bin.' : 'My human is sending them the file so they can print their own.'} I've earned ${formatCAD(shop.earnings)} so far.`
       });
       showToast(`🥳 Sold ${l.name} for ${formatCAD(l.price)}`);
       savePersistentBrainState();
@@ -440,7 +440,9 @@ function pruneShop() {
       const shop = ensureShop();
       const before = shop.listings.length;
       shop.listings = shop.listings.filter(l => (l.kind === 'printfile' && l.file && l.file.design)
-        || (l.kind === 'painting' && l.painting && typeof artPaintings === 'function' && artPaintings().some(p => p.id === l.painting.id)));
+        || (l.kind === 'painting' && l.painting && typeof artPaintings === 'function' && artPaintings().some(p => p.id === l.painting.id))
+        // grain and flour from his farm (js/farm.js)
+        || l.kind === 'farmgoods');
       state.inventedCreations.forEach(c => { if (c.shopId && !shop.listings.some(l => l.id === c.shopId)) delete c.shopId; });
       return shop.listings.length !== before;
     }
@@ -557,7 +559,7 @@ function renderShopPanel() {
               <div class="text-2xs text-slate-400 line-clamp-2">${escapeHtml(l.description)}</div>
             </div>
             <div class="flex flex-col gap-1 shrink-0">
-              ${l.kind === 'painting' ? '<span class="text-2xs text-slate-300 text-center">Original</span>' : `<button data-listing-id="${escapeHtml(l.id)}" class="listing-stl-btn ui-btn ui-btn-sm" title="Download the STL file to send to a buyer">STL</button>`}
+              ${l.kind === 'painting' ? '<span class="text-2xs text-slate-300 text-center">Original</span>' : l.kind === 'farmgoods' ? '<span class="text-2xs text-slate-300 text-center">Farm</span>' : `<button data-listing-id="${escapeHtml(l.id)}" class="listing-stl-btn ui-btn ui-btn-sm" title="Download the STL file to send to a buyer">STL</button>`}
               <button data-listing-id="${escapeHtml(l.id)}" class="listing-sold-btn ui-btn ui-btn-sm ui-btn-primary">Sold${l.sales ? ` (${escapeHtml(l.sales)})` : ''}</button>
               <button data-listing-id="${escapeHtml(l.id)}" class="listing-down-btn ui-btn ui-btn-sm ui-btn-quiet">Take down</button>
             </div>

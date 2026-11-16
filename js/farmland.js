@@ -364,7 +364,7 @@ function farmGroundColour(c, x, y, z) {
       return c;
     }
 function farmSinkOldGround() {
-      const C = farmCoverage(), m = 3;
+      const C = farmCoverage(), m = 4;
       const meshes = [typeof farLandsMesh !== 'undefined' ? farLandsMesh : null, typeof northPatchMesh !== 'undefined' ? northPatchMesh : null, scene.getObjectByName('outerLands')].filter(Boolean);
       meshes.forEach(mesh => {
         if (farmSunk.has(mesh)) return;
@@ -372,7 +372,10 @@ function farmSinkOldGround() {
         let n = 0;
         for (let i = 0; i < pos.count; i++) {
           const x = pos.getX(i) + mesh.position.x, z = pos.getZ(i) + mesh.position.z;
-          if (x > C.minX + m && x < C.maxX - m && z > C.minZ + m && z < C.maxZ - m) { pos.setY(i, pos.getY(i) - 80); n++; }
+          if (!(x > C.minX && x < C.maxX && z > C.minZ && z < C.maxZ)) continue;
+          // deep under it inside; just under its edge band, so no steep sliver pokes up through the seam
+          const edge = Math.min(x - C.minX, C.maxX - x, z - C.minZ, C.maxZ - z);
+          pos.setY(i, pos.getY(i) - (edge > m ? 80 : 0.5 * edge / m + 0.05)); n++;
         }
         if (n) { pos.needsUpdate = true; mesh.geometry.computeVertexNormals(); mesh.geometry.computeBoundingSphere(); }
         farmSunk.add(mesh);

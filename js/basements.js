@@ -596,17 +596,33 @@ function buildTrench(cut) {
     }
 
 // --- The camera: while he is inside and the camera is following him, it moves round to look in
-// (and down into the cutaway), then goes back to where it was. While he is down a basement it does
-// that in every view but his own eyes and a Workshop visit, unless someone is moving the view
-// themselves just then (a basement can't be seen from up on the ground).
-const tripCam = { on: false, offset: null, releaseUntil: 0, lastMs: 0, lastF: null, lastAim: 0, err: Infinity, userAt: 0 };
+// (and down into the cutaway), then goes back to where it was. A free view (Explore) that was on
+// him when the trip began gets the same while he is down a basement (it can't be seen from up on
+// the ground), until someone moves the view themselves. Views the viewer picked for somewhere else
+// (Bird's-eye, Valley, House, Cafes, the Storehouse view), his eyes and a Workshop visit stay theirs.
+const tripCam = { on: false, offset: null, releaseUntil: 0, lastMs: 0, lastF: null, lastAim: 0, err: Infinity, userAt: 0, tripDoor: null, tripAt: 0, watching: false };
 
 // Does the trip camera place the camera this frame? (js/explore.js steps aside when it does)
 function basementCamClaims() {
+      const claims = tripCamClaimsNow();
+      // (another view took over: the trip camera isn't on any more)
+      if (!claims) tripCam.on = false;
+      return claims;
+    }
+
+function tripCamClaimsNow() {
       const mode = state.cameraMode, trip = indoorTrip;
-      if (mode === 'follow') return trip.active || tripCam.on || Date.now() < tripCam.releaseUntil;
-      if (mode === 'eyes' || mode === 'visit') return false;
-      if (Date.now() - tripCam.userAt < 6000) return false;
+      if (trip.active && trip.site && tripCam.tripDoor !== trip.door) {
+        // A new trip: was the view on him (or near the building) as it began?
+        tripCam.tripDoor = trip.door;
+        tripCam.tripAt = Date.now();
+        const o = trip.site.group.position;
+        tripCam.watching = mode === 'follow' || Math.hypot(controls.target.x - o.x, controls.target.z - o.z) < 40;
+      }
+      const own = trip.active || tripCam.on || Date.now() < tripCam.releaseUntil;
+      if (mode === 'follow') return own;
+      if (mode === 'eyes' || mode === 'visit' || mode === 'bird' || CAMERA_PRESET_VIEWS[mode]) return false;
+      if (!tripCam.watching || tripCam.userAt >= tripCam.tripAt) return false;
       if (typeof exploreCam !== 'undefined' && exploreCam.fly && !exploreCam.fly.follow) return false;
       return (trip.active && trip.cutLevel > 0) || tripCam.on || Date.now() < tripCam.releaseUntil;
     }

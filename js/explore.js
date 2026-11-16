@@ -240,6 +240,8 @@ function exploreCameraUpdate() {
       // Walking into the Storehouse or the Museum (and in every view while he is down a basement):
       // js/basements.js looks in through the cutaway. A flight back to him ends there, as it would
       // aim at him underground from up over the roof.
+      // (a key, a held button or the joystick moving the view takes it back, like a drag)
+      if (typeof basementCamClaims === 'function' && basementCamClaims() && exploreHeldInputAny()) exploreTakeOver('move');
       if (typeof basementCamClaims === 'function' && basementCamClaims()) {
         if (exploreCam.fly) exploreCam.fly = null;
         exploreCam.driving = false;
@@ -430,6 +432,14 @@ function exploreBuildingHeightAt(blds, x, z) {
     }
 
 // Keys, the joystick and held buttons
+// Is a key, a held on-screen button or the joystick moving the view right now?
+function exploreHeldInputAny() {
+      const k = exploreCam.keys, h = exploreCam.held, s = exploreCam.stick;
+      return Boolean(k.KeyW || k.ArrowUp || h.up || k.KeyS || k.ArrowDown || h.down || k.KeyD || k.ArrowRight || h.right
+        || k.KeyA || k.ArrowLeft || h.left || k.KeyQ || h.turnLeft || k.KeyE || h.turnRight || k.Equal || k.NumpadAdd || h.zoomIn
+        || k.Minus || k.NumpadSubtract || h.zoomOut || k.KeyR || h.tiltUp || k.KeyF || h.tiltDown || s.x || s.y);
+    }
+
 function exploreApplyHeldInput(dt) {
       const k = exploreCam.keys, h = exploreCam.held, s = exploreCam.stick, g = exploreCam.goal;
       let fwd = (k.KeyW || k.ArrowUp || h.up ? 1 : 0) - (k.KeyS || k.ArrowDown || h.down ? 1 : 0) - s.y;

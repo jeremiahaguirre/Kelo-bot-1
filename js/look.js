@@ -17,16 +17,16 @@
 // --- 1. The look config ------------------------------------------------------------------------------
 const LOOK = {
   // Sun colour when it is low: multiplied into the sun colour realism.js works out (golden hour)
-  golden: { sun: [1.06, 0.9, 0.72], hemiWarm: [1.08, 0.96, 0.84], exposureLift: 0.05 },
+  golden: { sun: [1.06, 0.9, 0.72], hemiWarm: [1.08, 0.96, 0.84], exposureLift: 0.14 },
   // Shadows: blur radius (PCF soft) per level, and how dark shade may get (the hemisphere light floor)
   shadow: { radius: { high: 3.2, balanced: 2.4, fast: 1 }, hemiFloor: 0.03 },
   // Valley mist: thicker low down. density is per unit of distance; falloff per unit of height above base
-  mist: { base: -0.2, falloff: 0.34, day: 0.0035, dawn: 0.022, dusk: 0.014, night: 0.009, rain: 0.012, max: 0.55 },
+  mist: { base: -0.2, falloff: 0.42, day: 0.0015, dawn: 0.008, dusk: 0.0035, night: 0.004, rain: 0.006, max: 0.4 },
   // Colour grading (display space). Tints are multipliers; split toning adds to shadows/highlights.
   grade: {
     contrast: 1.06, saturation: 1.1, vignette: 0.2,
     day: { tint: [1.0, 1.0, 0.985], shadows: [-0.006, 0.0, 0.012], highlights: [0.012, 0.006, -0.008] },
-    dusk: { tint: [1.07, 0.98, 0.86], shadows: [0.01, -0.004, 0.02], highlights: [0.03, 0.01, -0.02] },
+    dusk: { tint: [1.1, 0.99, 0.84], shadows: [0.01, -0.004, 0.02], highlights: [0.03, 0.01, -0.02] },
     night: { tint: [0.9, 0.96, 1.1], shadows: [-0.004, 0.0, 0.018], highlights: [0.0, 0.0, 0.0] }
   },
   bloom: { strength: 0.26, radius: 0.5, threshold: 0.84, nightStrength: 0.42 },
@@ -381,6 +381,36 @@ vec3 keloTex( sampler2D m, vec2 uv )`)
       };
     })();
 
+// --- 6b. The lake: sun glitter and a brighter shore line ------------------------------------------
+// Adds to realism.js's water shader: sparkles where the moving ripples tilt toward the sun (strong at
+// golden hour), and a wider, whiter band of foam where the water meets the beach.
+const LOOK_WATER_U = { lookSunDir: { value: new THREE.Vector3(0, 1, 0) }, lookSunCol: { value: new THREE.Color(1, 1, 1) }, lookGlitter: { value: 0 } };
+(function lookHookWater() {
+      if (typeof makeRealisticWaterMaterial !== 'function') return;
+      const orig = makeRealisticWaterMaterial;
+      makeRealisticWaterMaterial = function () {
+        const mat = orig.apply(this, arguments);
+        const prev = mat.onBeforeCompile;
+        mat.onBeforeCompile = (shader) => {
+          prev(shader);
+          Object.assign(shader.uniforms, LOOK_WATER_U);
+          shader.fragmentShader = 'uniform vec3 lookSunDir; uniform vec3 lookSunCol; uniform float lookGlitter;\n' + shader.fragmentShader
+            .replace('keloFoam = max( keloFoam, keloLap * 0.55 );', `keloFoam = max( keloFoam, keloLap * 0.55 );
+	// a soft white band right at the beach
+	keloFoam = max( keloFoam, ( 1.0 - smoothstep( 0.0, 0.05, keloDepth ) ) * 0.55 * smoothstep( 0.3, 0.6, keloRipple ) );`)
+            .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+	if ( lookGlitter > 0.001 ) {
+		vec3 kV = normalize( cameraPosition - vKeloW );
+		vec3 kGN = normalize( vec3( keloWave.x * 0.5, 1.0, keloWave.y * 0.5 ) );
+		float kG = pow( max( dot( reflect( - kV, kGN ), lookSunDir ), 0.0 ), 900.0 );
+		float kSp = step( 0.82, texture2D( waterNormals, vKeloW.xz * 0.6 + vec2( waterTime * 0.05, waterTime * 0.03 ) ).b );
+		totalEmissiveRadiance += keloToLinear( lookSunCol ) * kG * kSp * lookGlitter * ( 1.0 - keloShallow ) * ( 1.0 - keloFoam );
+	}`);
+        };
+        return mat;
+      };
+    })();
+
 // --- 7. Each frame -----------------------------------------------------------------------------------
 let lookTime = 0;
 function lookFrame(now) {
@@ -391,6 +421,9 @@ function lookFrame(now) {
       lookUpdateFinal();
       const s = SKY_STATE, q = graphics();
       LOOK_GROUND_U.keloTime.value = lookTime;
+      LOOK_WATER_U.lookSunDir.value.copy(s.sunDir);
+      if (sunLight) LOOK_WATER_U.lookSunCol.value.copy(sunLight.color);
+      LOOK_WATER_U.lookGlitter.value = s.sinElev > 0 ? (6 + 30 * s.dusk) * s.day * (1 - (s.overcast || 0)) * (q.groundBlend > 0 ? 1 : 0) : 0;
       LOOK_GROUND_U.keloCloudAmt.value = q.cloudShadows ? LOOK.cloudShadow.strength * s.day * (1 - 0.6 * s.dusk) * (1 - 0.7 * (s.overcast || 0)) : 0;
       if (typeof windShown !== 'undefined' && windShown) {
         const a = windShown.angle || 0, sp = 0.6 + (windShown.s || 0.3);

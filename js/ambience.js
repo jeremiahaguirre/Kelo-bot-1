@@ -222,9 +222,9 @@ function ambRoutes() {
       return [
         [[-30, z - hw - 0.7], [12, z - hw - 0.7]],
         [[10, z + hw + 0.7], [-28, z + hw + 0.7]],
-        [[-26, 6.6], [7, 6.6]],
+        [[-26, 5.4], [7, 5.4]],
         [[-16, z + hw + 0.9], [6, z + hw + 0.9]],
-        [[4, 6.9], [-22, 6.9]],
+        [[4, 5.8], [-22, 5.8]],
         [[-6, z - hw - 1.0], [-32, z - hw - 1.0]]
       ];
     }
@@ -292,6 +292,7 @@ function ambUpdatePeople(dt) {
           if (p.u > 1 || p.u < 0) { p.u = Math.max(0, Math.min(1, p.u)); p.dir *= -1; p.wait = 1.5 + (i % 3); }
         }
         const y = getIslandGroundHeight(x, z);
+        if (y < 0.06 && walking) { p.dir *= -1; p.wait = 1; }
         p.walkT = (p.walkT || 0) + (walking ? dt * p.speed * 5.2 : 0);
         const sw = walking ? Math.sin(p.walkT) : 0;
         const yaw = Math.atan2(hx, hz) + (p.wait > 0 ? Math.sin(AMB_U.ambTime.value * 0.4 + i) * 0.6 : 0);

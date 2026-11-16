@@ -13,6 +13,7 @@
 // To change the three.js version: edit "three" in package.json, then `npm run vendor:three`.
 
 import * as THREE_NS from 'three';
+import { FileLoader } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
@@ -32,5 +33,36 @@ const THREE = Object.assign({}, THREE_NS, {
   EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, OutputPass,
   CopyShader, LuminosityHighPassShader
 });
+
+// The Windows app opens the game from file:// (Electron's loadFile). Since r155 three's FileLoader
+// (used by GLTFLoader and HDRLoader) reads files with fetch(), which Chromium refuses for file: URLs;
+// r128 used XMLHttpRequest, which works there. So for file: URLs only, read with XMLHttpRequest again.
+const fetchLoad = FileLoader.prototype.load;
+FileLoader.prototype.load = function keloFileLoad(url, onLoad, onProgress, onError) {
+  const full = new URL((this.path || '') + url, document.baseURI).href;
+  if (!full.startsWith('file:')) return fetchLoad.call(this, url, onLoad, onProgress, onError);
+  const resolved = this.manager.resolveURL(full);
+  const manager = this.manager;
+  manager.itemStart(resolved);
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', resolved, true);
+  xhr.responseType = this.responseType === 'arraybuffer' || this.responseType === 'blob' || this.responseType === 'document' ? this.responseType : 'text';
+  if (this.mimeType && xhr.overrideMimeType) xhr.overrideMimeType(this.mimeType);
+  xhr.onprogress = e => { if (onProgress) onProgress(e); };
+  xhr.onload = () => {
+    // file: answers with status 0 when it worked
+    if (xhr.status !== 0 && (xhr.status < 200 || xhr.status >= 300)) { xhr.onerror(); return; }
+    let data = xhr.response;
+    if (this.responseType === 'json') { try { data = JSON.parse(data); } catch (e) { if (onError) onError(e); manager.itemError(resolved); manager.itemEnd(resolved); return; } }
+    if (onLoad) onLoad(data);
+    manager.itemEnd(resolved);
+  };
+  xhr.onerror = () => {
+    if (onError) onError(new Error(`FileLoader: could not read ${resolved}`));
+    manager.itemError(resolved);
+    manager.itemEnd(resolved);
+  };
+  xhr.send(null);
+};
 
 window.THREE = THREE;

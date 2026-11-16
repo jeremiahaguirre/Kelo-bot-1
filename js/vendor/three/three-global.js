@@ -37778,6 +37778,7 @@ return { OutputPass };
 })();
 __kelo3[18] = (function () {
 'use strict';
+const { FileLoader } = __kelo3[1];
 const { OrbitControls } = __kelo3[2];
 const { GLTFLoader } = __kelo3[5];
 const { HDRLoader } = __kelo3[6];
@@ -37795,6 +37796,32 @@ OrbitControls, GLTFLoader, HDRLoader, Sky,
 EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, OutputPass,
 CopyShader, LuminosityHighPassShader
 });
+const fetchLoad = FileLoader.prototype.load;
+FileLoader.prototype.load = function keloFileLoad(url, onLoad, onProgress, onError) {
+const full = new URL((this.path || '') + url, document.baseURI).href;
+if (!full.startsWith('file:')) return fetchLoad.call(this, url, onLoad, onProgress, onError);
+const resolved = this.manager.resolveURL(full);
+const manager = this.manager;
+manager.itemStart(resolved);
+const xhr = new XMLHttpRequest();
+xhr.open('GET', resolved, true);
+xhr.responseType = this.responseType === 'arraybuffer' || this.responseType === 'blob' || this.responseType === 'document' ? this.responseType : 'text';
+if (this.mimeType && xhr.overrideMimeType) xhr.overrideMimeType(this.mimeType);
+xhr.onprogress = e => { if (onProgress) onProgress(e); };
+xhr.onload = () => {
+if (xhr.status !== 0 && (xhr.status < 200 || xhr.status >= 300)) { xhr.onerror(); return; }
+let data = xhr.response;
+if (this.responseType === 'json') { try { data = JSON.parse(data); } catch (e) { if (onError) onError(e); manager.itemError(resolved); manager.itemEnd(resolved); return; } }
+if (onLoad) onLoad(data);
+manager.itemEnd(resolved);
+};
+xhr.onerror = () => {
+if (onError) onError(new Error(`FileLoader: could not read ${resolved}`));
+manager.itemError(resolved);
+manager.itemEnd(resolved);
+};
+xhr.send(null);
+};
 window.THREE = THREE;
 return {  };
 })();})();

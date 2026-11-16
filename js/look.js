@@ -32,7 +32,7 @@ const LOOK = {
   },
   bloom: { strength: 0.26, radius: 0.5, threshold: 0.84, nightStrength: 0.42 },
   // Light shafts from the sun when it is low (High): screen-space rays from the bright sky
-  shafts: { strength: 0.42, samples: 24, decay: 0.955, threshold: 0.62, length: 0.55 },
+  shafts: { strength: 0.42, samples: 24, decay: 0.955, threshold: 0.8, length: 0.55 },
   // Shadows of the clouds drifting over the ground
   cloudShadow: { strength: 0.2, scale: 0.011, speed: 0.9 },
   // Ground blending
@@ -204,12 +204,15 @@ void main() {
 	if ( shaftAmount > 0.002 ) {
 		// march toward the sun on screen, adding up bright sky (geometry in between blocks it)
 		vec2 dir = ( shaftSun - vUv ) * ( ${LOOK.shafts.length.toFixed(3)} / float( ${LOOK.shafts.samples} ) );
-		vec2 p = vUv;
+		// a different start along the ray for each pixel, so small bright specks don't print dotted copies
+		vec2 p = vUv + dir * fract( sin( dot( gl_FragCoord.xy, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
 		float w = 1.0, acc = 0.0;
 		for ( int i = 0; i < ${LOOK.shafts.samples}; i++ ) {
 			p += dir;
 			vec3 s = texture2D( tDiffuse, clamp( p, 0.001, 0.999 ) ).rgb;
-			acc += smoothstep( ${LOOK.shafts.threshold.toFixed(3)}, 1.0, max( s.r, max( s.g, s.b ) ) ) * w;
+			// only the bright, pale sky counts (not lit rock or roofs)
+			float sl = max( s.r, max( s.g, s.b ) ), sn = min( s.r, min( s.g, s.b ) );
+			acc += smoothstep( ${LOOK.shafts.threshold.toFixed(3)}, 1.0, sl ) * smoothstep( 0.25, 0.6, sn / max( sl, 0.001 ) ) * w;
 			w *= ${LOOK.shafts.decay.toFixed(3)};
 		}
 		vec2 dd = ( vUv - shaftSun ) * vec2( aspect, 1.0 );

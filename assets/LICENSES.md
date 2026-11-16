@@ -5,7 +5,7 @@ Every file in `assets/models/` comes from the Khronos glTF Sample Assets collect
 CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) asks for credit, which is given here; CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) needs none, but the authors are listed anyway.
 
 All of them were changed for the game: animations, lights and variants removed, glass turned into see-through blending,
-material extensions that three.js r128 can't draw (sheen, specular, iridescence, volume...) folded into the base colour or dropped,
+material extensions the game didn't draw when they were made with three.js r128 (sheen, specular, iridescence, volume...) folded into the base colour or dropped,
 meshes simplified and quantized, and textures shrunk (at most 512 px, 256 px for the chess set) and saved as WebP.
 
 | File | Size | Sample asset (source) | Author | Licence | Used for |
@@ -42,8 +42,10 @@ Total: 18.3 MB.
 
 ## Code
 
-`js/vendor/GLTFLoader.js` is three.js r128's `examples/js/loaders/GLTFLoader.js`, unchanged, from the npm package `three@0.128.0`.
-MIT License, Copyright © 2010-2021 three.js authors (https://github.com/mrdoob/three.js/blob/r128/LICENSE).
+`js/vendor/three/three-global.js` is three.js r187 (npm package `three@0.187.0`) with its `examples/jsm` add-ons
+OrbitControls, GLTFLoader, HDRLoader, Sky, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass, OutputPass and the
+shaders they use, joined unchanged into one script by `scripts/vendor-three.mjs` (comments and indentation trimmed).
+MIT License, Copyright © 2010-2026 three.js authors (https://github.com/mrdoob/three.js/blob/dev/LICENSE).
 
 ## Sky, water and ground (js/realism.js)
 | File | What it is | Source | Licence |
@@ -54,6 +56,4 @@ MIT License, Copyright © 2010-2021 three.js authors (https://github.com/mrdoob/
 | `textures/waternormals.jpg` | Tiling water ripple normal map | three.js repo, `examples/textures/waternormals.jpg` (tag r128) | MIT (three.js) |
 | `textures/terrain/grass.jpg`, `dirt.jpg`, `rock.jpg`, `sand.jpg`, `snow.jpg` | Tiling ground textures | Generated for this project by `scripts/terrain-textures.py` | CC0 1.0 |
 
-The three.js add-on scripts in `js/vendor/` (RGBELoader, Sky, EffectComposer, RenderPass, ShaderPass,
-UnrealBloomPass, CopyShader, LuminosityHighPassShader) are copied unchanged from the npm package
-`three@0.128.0` (`examples/js/`), MIT licence, copyright 2010-2021 three.js authors.
+The sky, HDR loader and post-processing add-ons are part of `js/vendor/three/three-global.js` (see Code above).

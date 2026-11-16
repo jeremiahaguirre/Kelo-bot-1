@@ -91,7 +91,8 @@ Kelo-bot-1/
 ├── css/style.css
 ├── css/native.css       # Phone apps only: keeps the UI clear of the notch and home bar
 ├── js/                # Listed in the order index.html loads them
-│   ├── vendor/GLTFLoader.js # three.js r128's glTF loader (loaded right after three.js)
+│   ├── vendor/three/three-global.js # three.js r187 + its add-ons in one local file, sets window.THREE (built by scripts/vendor-three.mjs from js/three-global.mjs)
+│   ├── lighting.js      # Colour handling and every lighting number (KELO_LIGHTING): sun, sky, haze, exposure, lamps, bloom (loaded first)
 │   ├── native.js        # Phone apps only (added by the www build before agent.js): device storage, secure keys, back button
 │   ├── agent.js         # State, decision engine, AI providers, requests (loaded first)
 │   ├── loopguard.js     # Keeps him out of decision loops: no 3-in-a-row, cooldowns for blocked jobs, no repeated plans
@@ -175,7 +176,6 @@ Kelo-bot-1/
 │   ├── plantmodels.js   # The plant in 3D: batch plant, asphalt plant, mixer truck, concrete pours, hover labels, built only when the camera is near
 │   ├── menuui.js        # The menu's Diary and Brain tabs: diary filters and paging, the Brain dashboard, search and section counts (loaded last)
 │   ├── shop.js          # The shop website itself (shop.html)
-│   └── vendor/          # The other three.js r128 add-ons (Sky, RGBELoader, bloom post-processing), kept in the repo
 ├── assets/
 │   ├── models/          # Real-world 3D models (.glb) of everyday things
 │   ├── hdri/            # HDR sky photos that light the world by day, at sunset and at night

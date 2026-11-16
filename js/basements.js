@@ -13,8 +13,15 @@
 // The basement rooms, the stairs and the cutaway are only built while he is down there.
 
 const INDOOR_WALK_SPEED = 1.8;
-// The glass elevator in the stairwell shaft: much quicker than walking 16 steps a floor
-const ELEVATOR_SPEED = 2.6;     // units a second (about 1.3 seconds a floor)
+// The glass elevator in the stairwell shaft: quicker than walking 16 steps a floor, slow enough to
+// watch him ride it (world units a second, so the big Storehouse rides at the same pace)
+const ELEVATOR_SPEED = 2.0;
+const ELEVATOR_MIN_MS = 2200;   // even one short floor takes a couple of seconds
+// One drawn frame moves a ride on by at most this much of its time, so a slow or stalled frame
+// slows it down instead of jumping him several units at once; with no frames at all for a while
+// (a hidden tab) a timer keeps it going by the clock
+const TRIP_RIDE_FRAME_MS = 70;
+const TRIP_RIDE_STALL_MS = 3000;
 const ELEVATOR_CAR_R = 0.66;
 
 // Everything about each building that the trips need, in the building's own coordinates
@@ -122,7 +129,8 @@ function routeInsideWith(site, a, b, room) {
 // --- The scripted walk, driven by the animation loop -----------------------------------------
 const indoorTrip = {
   active: false, site: null, pos: null, rotY: 0, path: null, speed: INDOOR_WALK_SPEED, resolve: null,
-  pose: null, crouch: 0, crouchTarget: 0, lastT: null, walkStarted: 0, cutLevel: 0, ride: null, rideTail: 0
+  pose: null, crouch: 0, crouchTarget: 0, lastT: null, walkStarted: 0, cutLevel: 0, ride: null, rideTail: 0,
+  rideView: null, door: null
 };
 
 // Called by scene.js every frame. Returns true while he is inside on a trip (scene.js then leaves
@@ -196,23 +204,25 @@ function tripWalk(points, speed = INDOOR_WALK_SPEED) {
 const tripPause = ms => new Promise(r => setTimeout(r, ms));
 
 // --- Elevator rides ------------------------------------------------------------------------------
-// A ride is worked out from the clock in the frame that draws it (updateIndoorTrip, before he is
-// placed): apply(e, t) moves the car and puts him (and a vehicle) on it, so they move together
-// exactly, every frame, at any frame rate. e eases in and out with no jolt at either end. When the
-// frames stop (a hidden tab) a timer keeps it going. holdIf(t) true freezes it there (pictures).
+// A ride is worked out in the frame that draws it (updateIndoorTrip, before he is placed): apply(e, t)
+// moves the car and puts him (and a vehicle) on it, so they move together exactly, every frame. e
+// eases in and out with no jolt at either end. Each frame moves the ride on by the time since the
+// last one (at most TRIP_RIDE_FRAME_MS); when the frames stop (a hidden tab) a timer keeps it going.
+// holdIf(t) true freezes it there (pictures).
 function tripRideEase(t) {
       return t * t * t * (t * (t * 6 - 15) + 10);
     }
 
 function tripRide(ms, apply, holdIf = null) {
       return new Promise(resolve => {
-        const ride = { start: performance.now(), ms: Math.max(1, ms), apply, holdIf, resolve, lastFrame: 0, done: false };
+        const now = performance.now();
+        const ride = { elapsed: 0, lastNow: now, ms: Math.max(1, ms), apply, holdIf, resolve, lastFrame: now, done: false };
         if (indoorTrip.ride) tripRideStep(indoorTrip.ride, Infinity);
         indoorTrip.ride = ride;
-        tripRideStep(ride, ride.start);
+        tripRideStep(ride, now);
         const timer = () => {
           if (ride.done) return;
-          if (performance.now() - ride.lastFrame > 150) tripRideStep(ride, performance.now());
+          if (performance.now() - ride.lastFrame > TRIP_RIDE_STALL_MS) tripRideStep(ride, performance.now());
           if (!ride.done) setTimeout(timer, 50);
         };
         setTimeout(timer, 50);
@@ -221,20 +231,22 @@ function tripRide(ms, apply, holdIf = null) {
 
 function tripRideStep(ride, now, fromFrame) {
       if (ride.done) return;
-      if (fromFrame) ride.lastFrame = now;
-      let t = Math.min(1, Math.max(0, (now - ride.start) / ride.ms));
-      if (!indoorTrip.active) t = 1;
-      if (t < 1 && ride.holdIf && ride.holdIf(t)) {
-        // frozen: the clock starts again from here
-        t = ride.heldT === undefined ? (ride.heldT = t) : ride.heldT;
-        ride.start = now - t * ride.ms;
-      } else ride.heldT = undefined;
+      let step = Math.max(0, now - ride.lastNow);
+      ride.lastNow = now;
+      if (fromFrame) { ride.lastFrame = now; step = Math.min(step, TRIP_RIDE_FRAME_MS); }
+      let t = Math.min(1, ride.elapsed / ride.ms);
+      if (now === Infinity || !indoorTrip.active) t = 1;
+      // (frozen: it waits where it is)
+      else if (!(t < 1 && ride.holdIf && ride.holdIf(t))) {
+        ride.elapsed += step;
+        t = Math.min(1, ride.elapsed / ride.ms);
+      }
       try { ride.apply(tripRideEase(t), t); } catch (e) { console.warn('elevator ride', e); }
       if (t >= 1) {
         ride.done = true;
         // (the last stretch may have been moved by the timer between frames: the next frame still
         // counts as riding, so it isn't smoothed over as a jump)
-        if (indoorTrip.ride === ride) { indoorTrip.ride = null; indoorTrip.rideTail = 2; }
+        if (indoorTrip.ride === ride) { indoorTrip.ride = null; indoorTrip.rideTail = 2; indoorTrip.rideView = null; }
         ride.resolve();
       }
     }
@@ -417,17 +429,24 @@ async function elevatorRide(site, fromLevel, toLevel) {
       const car = basementBuilt && basementBuilt.elevator ? basementBuilt.elevator.userData.car : null;
       const h = site.hatch;
       const y0 = levelFloorY(site, fromLevel), y1 = levelFloorY(site, toLevel);
-      // Step into the middle of the car
+      // Step into the middle of the car and look out through the glass at the cutaway (not at the
+      // call panel beside the doorway)
       await tripWalk([siteToWorld(site, h.x, h.z, y0)]);
-      tripFace(siteToWorld(site, stairEntry(site).x, stairEntry(site).z, y0));
+      tripFace(siteToWorld(site, h.x, h.z + 4, y0));
       await tripPause(350);
-      const dist = Math.abs(y1 - y0), ms = Math.max(400, dist / ELEVATOR_SPEED * 1000);
+      // The view settles on him in the car before it moves (at most a couple of seconds)
+      for (let i = 0; i < 40 && !tripCamSettled(); i++) await tripPause(50);
       const base = site.group.position.y, k = siteScale(site);
+      const ms = Math.max(ELEVATOR_MIN_MS, Math.abs(y1 - y0) * k / ELEVATOR_SPEED * 1000);
+      // (what the trip camera trails behind, basementCameraUpdate)
+      const view = { from: base + y0 * k, to: base + y1 * k, t: 0 };
       // (the car's floor top is at its group's y, so he stands exactly on it)
-      await tripRide(ms * 1.25, e => {
+      await tripRide(ms, (e, t) => {
         const y = y0 + (y1 - y0) * e;
         if (car) car.position.y = y;
         if (indoorTrip.pos) indoorTrip.pos.y = base + y * k;
+        view.t = t;
+        indoorTrip.rideView = view;
       });
       await tripPause(300);
     }
@@ -577,11 +596,28 @@ function buildTrench(cut) {
     }
 
 // --- The camera: while he is inside and the camera is following him, it moves round to look in
-// (and down into the cutaway), then goes back to where it was
-const tripCam = { on: false, offset: null, releaseUntil: 0, lastMs: 0, lastY: null };
+// (and down into the cutaway), then goes back to where it was. While he is down a basement it does
+// that in every view but his own eyes and a Workshop visit, unless someone is moving the view
+// themselves just then (a basement can't be seen from up on the ground).
+const tripCam = { on: false, offset: null, releaseUntil: 0, lastMs: 0, lastF: null, lastAim: 0, err: Infinity, userAt: 0 };
+
+// Does the trip camera place the camera this frame? (js/explore.js steps aside when it does)
+function basementCamClaims() {
+      const mode = state.cameraMode, trip = indoorTrip;
+      if (mode === 'follow') return trip.active || tripCam.on || Date.now() < tripCam.releaseUntil;
+      if (mode === 'eyes' || mode === 'visit') return false;
+      if (Date.now() - tripCam.userAt < 6000) return false;
+      if (typeof exploreCam !== 'undefined' && exploreCam.fly && !exploreCam.fly.follow) return false;
+      return (trip.active && trip.cutLevel > 0) || tripCam.on || Date.now() < tripCam.releaseUntil;
+    }
+
+// Has the trip camera come to rest on him (or isn't it moving the camera at all)?
+function tripCamSettled() {
+      return !tripCam.on || tripCam.err < 0.6 || performance.now() - tripCam.lastMs > 500;
+    }
 
 function basementCameraUpdate() {
-      if (state.cameraMode !== 'follow' || !keloGroup) { tripCam.on = false; return false; }
+      if (!keloGroup || !basementCamClaims()) { tripCam.on = false; tripCam.lastF = null; return false; }
       // Eased by time, so it moves at the same pace however fast the frames come
       const now = performance.now();
       const dt = tripCam.lastMs ? Math.min(0.5, (now - tripCam.lastMs) / 1000) : 1 / 60;
@@ -591,30 +627,46 @@ function basementCameraUpdate() {
       if (trip.active && trip.site) {
         if (!tripCam.on) { tripCam.on = true; tripCam.offset = camera.position.clone().sub(controls.target); }
         const o = trip.site.group.position, k = keloGroup.position;
+        // The height the view goes by: his feet, except on an elevator ride, where it trails behind
+        // the car (worked out from the ride itself, so it is smooth at any frame rate) and he is seen
+        // riding down (or up) the picture before the view follows him and settles as the car stops
+        const root = trip.pos ? trip.pos.y : k.y;
+        let f = root;
+        const rv = trip.rideView;
+        if (trip.ride && rv) {
+          const lag = rv.from + (rv.to - rv.from) * tripRideEase(Math.max(0, (rv.t - 0.22) / 0.78));
+          const far = trip.cutLevel ? trip.site.d * siteScale(trip.site) / 2 + trip.site.cutFlat * 0.9 : 8;
+          const most = Math.min(2.6, far * 0.22);
+          f = root + Math.max(-most, Math.min(most, lag - root));
+        }
+        // (the view tips part of the way after him, so he stays well inside the picture)
+        const aim = f + (root - f) * 0.3;
         let target, pos;
         if (trip.cutLevel) {
           // Down in the pit in front of the building, looking straight into the cut-open floors
           const site = trip.site, sk = siteScale(site);
-          target = new THREE.Vector3(k.x * 0.5 + o.x * 0.5, k.y + 1.3, o.z);
-          pos = new THREE.Vector3(o.x + site.w * sk * 0.08, Math.max(k.y + 2.0, trip.cutBottom + 1.4), o.z + site.d * sk / 2 + site.cutFlat * 0.9);
+          target = new THREE.Vector3(k.x * 0.5 + o.x * 0.5, aim + 1.3, o.z);
+          pos = new THREE.Vector3(o.x + site.w * sk * 0.08, Math.max(f + 2.0, trip.cutBottom + 1.4), o.z + site.d * sk / 2 + site.cutFlat * 0.9);
         } else {
           const dist = trip.site.camDist * (trip.site.key === 'storehouse' ? siteScale(trip.site) * 0.8 : 1);
-          target = new THREE.Vector3(k.x * 0.6 + o.x * 0.4, k.y + 1.2, k.z * 0.6 + o.z * 0.4);
+          target = new THREE.Vector3(k.x * 0.6 + o.x * 0.4, aim + 1.2, k.z * 0.6 + o.z * 0.4);
           pos = target.clone().add(new THREE.Vector3(dist * 0.16, dist * 0.7, dist));
         }
-        // Riding an elevator: the camera rides up and down with him, in the same frame (no lag
-        // that swings the view and catches up after); only the rest is eased
-        if ((trip.ride || trip.rideTail > 0) && tripCam.lastY !== null) {
-          const dy = k.y - tripCam.lastY;
-          camera.position.y += dy;
-          controls.target.y += dy;
+        // Riding an elevator: the view's height moves with f in the same frame (no swing that
+        // catches up after); only the rest is eased
+        if ((trip.ride || trip.rideTail > 0) && tripCam.lastF !== null) {
+          camera.position.y += f - tripCam.lastF;
+          controls.target.y += aim - tripCam.lastAim;
         }
-        tripCam.lastY = k.y;
+        tripCam.lastF = f;
+        tripCam.lastAim = aim;
         controls.target.lerp(target, ease(4));
         camera.position.lerp(pos, ease(2.2));
+        tripCam.err = camera.position.distanceTo(pos);
         return true;
       }
-      tripCam.lastY = null;
+      tripCam.lastF = null;
+      tripCam.err = Infinity;
       if (tripCam.on) { tripCam.on = false; tripCam.releaseUntil = Date.now() + 2500; }
       if (Date.now() < tripCam.releaseUntil && tripCam.offset) {
         const target = new THREE.Vector3(keloGroup.position.x, keloGroup.position.y + 1.6, keloGroup.position.z);
@@ -623,6 +675,12 @@ function basementCameraUpdate() {
         return true;
       }
       return false;
+    }
+
+// Where he is saved while on a trip into the Storehouse or the Museum: at its door (the trip itself
+// isn't saved), so a reload never finds him sunk into a floor or down a basement
+function indoorTripSaveSpot() {
+      return indoorTrip.active && indoorTrip.door ? { x: indoorTrip.door.x, z: indoorTrip.door.z } : null;
     }
 
 // --- Moving a thing between his hands and its place ------------------------------------------
@@ -772,7 +830,7 @@ async function runIndoorTrip(siteKey, jobs) {
       try {
         Object.assign(indoorTrip, {
           active: true, site, pos: { x: state.botPos.x, y: getIslandGroundHeight(state.botPos.x, state.botPos.z), z: state.botPos.z },
-          rotY: state.botRotY, path: null, pose: null, crouch: 0, crouchTarget: 0, lastT: null
+          rotY: state.botRotY, path: null, pose: null, crouch: 0, crouchTarget: 0, lastT: null, door: { x: outside.x, z: outside.z }
         });
         roofs.forEach(r => { r.material.opacity = 0.12; });
         await tripWalk([outside, ...site.walkIn.map(p => siteToWorld(site, p.x, p.z, p.y))]);
@@ -785,12 +843,15 @@ async function runIndoorTrip(siteKey, jobs) {
           if (job.mode === 'place' && job.carry && typeof setCarriedObject === 'function') setCarriedObject(job.carry());
           if (want !== level) {
             const entry = stairEntry(site);
-            await tripWalk(routeInside(site, cur, entry).map(p => atFloor(p, level)));
             if (!basementBuilt) {
-              // (whatever he brings down isn't on the books yet, so its place is still empty)
+              // Opened as he sets off for the elevator, so the view is down in the cutaway, with
+              // everything drawn once already, well before the car moves (whatever he brings down
+              // isn't on the books yet, so its place is still empty)
               buildBasements(site, deepest);
               setEarthCut(site, deepest);
+              try { renderer.compile(scene, camera); } catch (e) { /* drawn on the next frame anyway */ }
             }
+            await tripWalk(routeInside(site, cur, entry).map(p => atFloor(p, level)));
             tripMood(`Taking the elevator to ${site.key === 'museum' ? 'the lower gallery' : 'basement'} B${want}`, `${job.what || 'It'} ${job.mode === 'take' ? 'is down' : 'goes'} on B${want}. Elevator, please!`);
             await elevatorRide(site, level, want);
             await tripWalk([atFloor(entry, want)]);
@@ -800,9 +861,18 @@ async function runIndoorTrip(siteKey, jobs) {
           }
           if (job.stand) await tripWalk(routeInside(site, cur, job.stand).map(p => atFloor(p, level)));
           if (job.stand) cur = job.stand;
-          if (job.mode === 'place' && job.slot) await placeJob(site, job, temps);
-          else if (job.mode === 'take' && job.slot) await takeJob(site, job);
-          else { await tripPause(1200); job.done = true; }
+          // (one thing going wrong never cuts the trip short: he still rides back up and walks out,
+          // and finishSkippedJobs does what this one didn't)
+          try {
+            if (job.mode === 'place' && job.slot) await placeJob(site, job, temps);
+            else if (job.mode === 'take' && job.slot) await takeJob(site, job);
+            else { await tripPause(1200); job.done = true; }
+          } catch (e) {
+            console.warn('indoor job', e);
+            indoorTrip.pose = null;
+            indoorTrip.crouchTarget = 0;
+            if (typeof clearKeloReach === 'function') clearKeloReach();
+          }
         }
         if (level > 0) {
           const entry = stairEntry(site);
@@ -829,6 +899,7 @@ async function runIndoorTrip(siteKey, jobs) {
         if (hold) hold();
         indoorTrip.active = false;
         indoorTrip.site = null;
+        indoorTrip.door = null;
         indoorTrip.pose = null;
         indoorTrip.crouch = 0;
         state.basementDepth = 0;

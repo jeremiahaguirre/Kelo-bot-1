@@ -156,6 +156,8 @@ function exploreKeloSpot(out = new THREE.Vector3()) {
 // Any touch, drag, key or button: cancel a flight, and leave Follow if the view is being moved
 function exploreTakeOver(kind) {
       exploreCam.lastInput = Date.now();
+      // (someone moving the view keeps it, even while he is down a basement, js/basements.js)
+      if (typeof tripCam !== 'undefined') tripCam.userAt = Date.now();
       exploreHideSpotMenu();
       if (state.cameraMode === 'eyes' || state.cameraMode === 'visit') return;   // his eyes and a Workshop visit stay put
       const mode = state.cameraMode;
@@ -235,12 +237,16 @@ function exploreCameraUpdate() {
       // Walking round the Workshop as a visitor (js/shopvisit.js) places it too
       if (typeof shopVisitFrame === 'function' && shopVisitFrame(dt)) { exploreCam.driving = false; return true; }
 
+      // Walking into the Storehouse or the Museum (and in every view while he is down a basement):
+      // js/basements.js looks in through the cutaway. A flight back to him ends there, as it would
+      // aim at him underground from up over the roof.
+      if (typeof basementCamClaims === 'function' && basementCamClaims()) {
+        if (exploreCam.fly) exploreCam.fly = null;
+        exploreCam.driving = false;
+        return false;
+      }
       if (!exploreCam.fly) {
-        if (mode === 'follow') {
-          // Walking into the Storehouse or the Museum: js/basements.js looks in through the cutaway
-          const indoors = (typeof indoorTrip !== 'undefined' && indoorTrip.active) || (typeof tripCam !== 'undefined' && Date.now() < tripCam.releaseUntil);
-          if (indoors) { exploreCam.driving = false; return false; }
-        } else if (mode !== 'explore') {
+        if (mode !== 'follow' && mode !== 'explore') {
           exploreCam.driving = false;
           return false;
         }
@@ -348,6 +354,7 @@ function exploreCameraUpdate() {
 
       // Optional: drift back to Kelo-1 after a while with nobody touching anything
       if (exploreCam.prefs.autoReturn && state.cameraMode === 'explore' && !exploreCam.fly
+        && !(typeof indoorTrip !== 'undefined' && indoorTrip.active)
         && Date.now() - exploreCam.lastInput > EXPLORE_IDLE_MS && !document.getElementById('keloViewer')
         && !document.body.classList.contains('menu-open')) {
         exploreFlyToKelo();

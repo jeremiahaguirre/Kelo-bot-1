@@ -366,7 +366,7 @@ function goalStep(g) {
       // The loop guard says not now (it just failed the same way and nothing changed): a short wait instead.
       // Once a fix step has been done, something HAS changed, so he tries again
       const fixDone = task.fixed && g.stages[g.stage].tasks.some(x => x.isFix && x.fixFor === task.do && x.status !== 'todo');
-      if (typeof canTry === 'function' && !canTry(key) && task.tries > 0 && !(fixDone && !(typeof activityCoolingDown === 'function' && activityCoolingDown(key)))) { goalBlock(g, { type: 'time', label: `a better moment for ${label}`, until: Date.now() + 6 * 60000 }, { quiet: true }); return 'waiting'; }
+      if (!task.isFix && typeof canTry === 'function' && !canTry(key) && task.tries > 0 && !(fixDone && !(typeof activityCoolingDown === 'function' && activityCoolingDown(key)))) { goalBlock(g, { type: 'time', label: `a better moment for ${label}`, until: Date.now() + 6 * 60000 }, { quiet: true }); return 'waiting'; }
       goalRunning = g.id;
       task.tries++;
       g.lastWorkAt = Date.now();
@@ -412,6 +412,8 @@ function goalAfterStep(g, task, label, r) {
       // Didn't start (busy, nothing to do): try again a little later without counting it against him
       if (r === false || r === null) { task.tries = Math.max(0, task.tries - 1); goalBlock(g, { type: 'time', label: `another go at ${label}`, until: Date.now() + 4 * 60000 }, { quiet: true }); return; }
       task.lastResult = String(r).slice(0, 30);
+      // A fix that didn't work is set aside at once: he goes back to the step itself, and remembers
+      if (task.isFix) { task.status = 'skipped'; goalLog(g, `The fix (${label}) didn't help`); goalTouch(g); return; }
       if (task.tries >= GOAL_STEP_TRIES) {
         const why = (typeof OUTCOME_REASONS !== 'undefined' && OUTCOME_REASONS[r] && OUTCOME_REASONS[r].why) || `it kept not working (${String(r).replace(/-/g, ' ')})`;
         task.status = 'skipped';

@@ -13,7 +13,8 @@
 // (keloToLinear, patched into three's shader chunks below). A material whose colours are already linear
 // (glTF models) opts out with defines: { KELO_LINEAR_COLORS: '' }.
 // Pictures (textures used as colour maps) are marked colorSpace = SRGBColorSpace, so the GPU decodes
-// them; every CanvasTexture is a picture and starts out marked (data textures stay linear).
+// them; every CanvasTexture is a picture and starts out marked (data textures stay linear). The ground's
+// photo textures are the exception: realism.js decodes them in its own shader (much faster on software GL).
 // Lighting happens in linear light, physically based (three's only mode since r155: light intensities
 // in candela / lux-like units, point lights fade with decay 2 unless a light says otherwise), then the
 // picture is tone mapped (ACES filmic) and written out as sRGB (renderer.outputColorSpace).

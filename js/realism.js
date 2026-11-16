@@ -824,7 +824,10 @@ function makeRealisticTerrainMaterial() {
       const loader = new THREE.TextureLoader();
       const uniforms = {};
       Object.entries(TERRAIN_TEXTURE_FILES).forEach(([k, url]) => {
-        const tex = keloPictureTexture(loader.load(url));
+        // Kept linear and decoded in the shader (keloTex): the same picture as a GPU-decoded sRGB texture,
+        // but software GL (SwiftShader, Chrome's fallback without a GPU) samples sRGB textures far slower,
+        // and the ground fills most of the screen (measured: town view 5.4 s -> 3.8 s per frame there)
+        const tex = loader.load(url);
         tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
         TERRAIN_TEXTURES[k] = tex;
         uniforms[k + 'Map'] = { value: tex };
@@ -846,7 +849,7 @@ varying vec3 vKeloN;
 varying vec3 vKeloRaw;
 uniform sampler2D grassMap; uniform sampler2D dirtMap; uniform sampler2D rockMap; uniform sampler2D sandMap; uniform sampler2D snowMap;
 uniform vec3 grassMean; uniform vec3 dirtMean; uniform vec3 rockMean; uniform vec3 sandMean; uniform vec3 snowMean;
-vec3 keloTex( sampler2D m, vec2 uv ) { return texture2D( m, uv ).rgb; } // sRGB textures: the GPU decodes them
+vec3 keloTex( sampler2D m, vec2 uv ) { return keloTexToLinear( texture2D( m, uv ).rgb ); } // sRGB picture stored linear (see above)
 // A texture at two scales (turned against each other), so the repeat doesn't show
 vec3 keloTex2( sampler2D m, vec2 uv ) {
 	vec3 a = keloTex( m, uv );

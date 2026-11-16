@@ -328,7 +328,9 @@ async function researchBuild(target, why = '', originLabel = 'Decided to Build S
       }
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping) return false;
       const tplKey = bomTemplateFor(want);
-      if (!tplKey && !(typeof hasLLMKey === 'function' && hasLLMKey())) {
+      // No template and no AI key: he still reads about it at NetNode and works out a parts list from
+      // what he reads (bomFromReading, js/shopmaker.js); only something far too big is refused
+      if (!tplKey && !(typeof hasLLMKey === 'function' && hasLLMKey()) && typeof bomFromReading !== 'function') {
         state.speechBubble = `I couldn't find proper plans for ${aName(want)} on my own. I know how to build ${Object.values(BOM_TEMPLATES).map(t => t.name.toLowerCase()).join(', ')}.`;
         renderAllUI();
         return 'no-plans';
@@ -357,10 +359,16 @@ async function researchBuild(target, why = '', originLabel = 'Decided to Build S
         state.moodTitle = 'Writing the bill of materials';
         state.speechBubble = 'Now the bill of materials: every tube, rivet and bolt, counted.';
         renderAllUI();
+        if (!tplKey && !readings.length && typeof lookUpAnywhere === 'function') {
+          try { const a = await lookUpAnywhere(want); if (a && a.extract) readings.push({ title: a.title || want, url: a.url || '', extract: a.extract }); } catch (e) {}
+        }
         let bom = await bomFromAI(want, why, readings);
         const fromAI = Boolean(bom);
         if (!bom && tplKey) bom = bomFromTemplate(tplKey);
+        if (!bom && typeof bomFromReading === 'function') bom = bomFromReading(want, readings);
         if (!bom) { state.speechBubble = `I couldn't work out a trustworthy parts list for ${aName(want)}.`; renderAllUI(); return 'no-plans'; }
+        // Parts one of his shops can make are marked "I'll make this on the <machine>" (js/shopmaker.js)
+        if (typeof makerMarkBomLines === 'function') makerMarkBomLines(bom);
         const p = { id: 'build-' + Date.now().toString(36), target: want, why: String(why || '').slice(0, 200), status: 'gathering', startedAt: Date.now(), fromAI, bom,
           readings: readings.map(r => r.title), tests: {}, parcels: 0, site: null };
         if (!state.buildProjects) state.buildProjects = [];
@@ -627,6 +635,93 @@ function subReadiness(p, sub) {
       return { ok: true };
     }
 
+// --- Concrete foundations: footings and slabs are poured from ready-mix (his batch plant, or delivered),
+// poured visibly at the site, and cure (CONCRETE_CURE_DAYS, js/plants.js) before anything is built on them.
+const FOUNDATION_SUB_RE = /foundation|footing|slab|\bpad\b|\bbase\b|piers?/i;
+const FOUNDATION_MIX_RE = /\bready-?mix\b|\bconcrete (for|footings?|piers?|slab|mix)\b|\bbags? of (concrete|cement)\b|\bconcrete mix\b/i;
+function foundationNeedsPour(sub) {
+      return Boolean(sub && FOUNDATION_SUB_RE.test(`${sub.key} ${sub.name}`) && sub.lines.some(l => FOUNDATION_MIX_RE.test(l.name)));
+    }
+function foundationPourOf(p) {
+      const sub = p.bom.subs.find(x => x.pourId);
+      return sub ? (state.concretePours || []).find(c => c.id === sub.pourId) || null : null;
+    }
+// Still curing? Then nothing goes on top yet. Returns the pour while it cures, else null.
+function foundationCuring(p, sub) {
+      const pour = foundationPourOf(p);
+      if (!pour || !sub || sub.pourId === pour.id) return null;
+      return pour.stage === 'cured' ? null : pour;
+    }
+
+// Pour the footings or slab at the site: the forms, the pour from the mixer truck (or barrow), screed, cure
+async function pourFoundation(p, sub, site) {
+      const mix = typeof readyMixName === 'function' ? readyMixName() : null;
+      const bagLine = sub.lines.find(l => /\bbags? of (concrete|cement)|concrete mix\b/i.test(l.name) && l.got >= l.qty);
+      if (!mix && !bagLine) {
+        // The load set in the drum or was used: it has to be batched (or delivered) again
+        sub.lines.filter(l => FOUNDATION_MIX_RE.test(l.name) && /ready-?mix/i.test(l.name)).forEach(l => { l.got = 0; l.madeAt = null; l.casting = false; });
+        state.speechBubble = `The ready-mix for the ${subProse(sub.name)} isn't here (concrete only stays workable a couple of hours). I'll batch a fresh load.`;
+        renderAllUI();
+        return false;
+      }
+      const r = Math.max(1.2, (p.bom.r || 3) * 0.9);
+      const ang = site.rotY || 0;
+      const pour = { id: typeof newEditId === 'function' ? newEditId('pour') : 'pour-' + Date.now().toString(36), type: 'concrete', kind: 'pad',
+        x: Math.round((site.x - Math.cos(ang) * r / 2) * 10) / 10, z: Math.round((site.z + Math.sin(ang) * r / 2) * 10) / 10,
+        toX: Math.round((site.x + Math.cos(ang) * r / 2) * 10) / 10, toZ: Math.round((site.z - Math.sin(ang) * r / 2) * 10) / 10,
+        w: Math.round(r * 10) / 10, at: Date.now(), stage: 'forms', why: `The ${subProse(sub.name)} for my ${p.bom.name.toLowerCase()}`, forBuild: p.id,
+        mix: mix ? ((plantStateOf('batch').loads || [])[0] || {}).mix || 'ready-mix' : 'bagged concrete', wc: 0.5 };
+      if (!Array.isArray(state.concretePours)) state.concretePours = [];
+      state.concretePours.push(pour);
+      const truck = typeof findVehicle === 'function' ? findVehicle('mixer') : null;
+      try {
+        if (mix && truck && typeof driveVehicle === 'function' && typeof readyToOperate === 'function' && readyToOperate(truck.name, truck, { quiet: true })) {
+          await driveVehicle(truck, { x: site.x + 4.5, z: site.z - 2.4 }, 'Driving the mixer truck to the footings');
+        }
+        const stages = [['forms', 'Setting the forms', 'Forms set level and staked, and the rebar in.'], ['pouring', 'Pouring the concrete', mix ? 'Down the chute, spread into every corner.' : 'Mixing the bags in the barrow and shovelling it in.'], ['screeded', 'Screeding it level', 'Struck off level and floated. Now it has to cure.']];
+        for (const [stage, title, say] of stages) {
+          if (typeof holdJobTool === 'function') holdJobTool(stage === 'screeded' ? /screed|bull float|concrete float|level/i : /shovel|spade/i, 'digging');
+          state.moodTitle = `${p.bom.name} ${subProse(sub.name)}: ${title.toLowerCase()}`.slice(0, 80);
+          state.speechBubble = say;
+          if (stage === 'pouring' && truck) truck.pouring = true;
+          renderAllUI();
+          for (let i = 1; i <= 4; i++) {
+            pour.stage = stage;
+            if (typeof renderConcretePour === 'function') renderConcretePour(stage === 'forms' ? { ...pour } : pour, stage === 'forms' ? 0 : stage === 'pouring' ? i / 4 : 1);
+            // He works from outside the forms, along one long side
+            const len = Math.hypot(pour.toX - pour.x, pour.toZ - pour.z) || 1, ux = (pour.toX - pour.x) / len, uz = (pour.toZ - pour.z) / len, off = pour.w / 2 + 0.7;
+            const t = (i - 0.5) / 4;
+            const spot = { x: pour.x + (pour.toX - pour.x) * t - uz * off, z: pour.z + (pour.toZ - pour.z) * t + ux * off };
+            state.targetPos = typeof openGroundNear === 'function' ? (openGroundNear(spot, 0.5) || spot) : spot;
+            await waitForArrival(15000);
+            state.botRotY = Math.atan2(pour.x + (pour.toX - pour.x) * t - state.botPos.x, pour.z + (pour.toZ - pour.z) * t - state.botPos.z);
+            // (screenshots: window.__keloShotHold = 'pour' holds the pour half-way until cleared)
+            if (stage === 'pouring' && i === 2 && window.__keloShotHold === 'pour') { window.__keloShotHeld = 'pour'; for (let k = 0; k < 600 && window.__keloShotHold === 'pour'; k++) await new Promise(res => setTimeout(res, 500)); window.__keloShotHeld = null; }
+            await sleepPace(700);
+          }
+          if (truck) truck.pouring = false;
+        }
+        pour.stage = 'curing';
+        pour.pouredAt = Date.now();
+        if (typeof renderConcretePour === 'function') renderConcretePour(pour, 1);
+        if (mix) useReadyMixFor(`the ${subProse(sub.name)} of my ${p.bom.name.toLowerCase()}`);
+        sub.pourId = pour.id;
+        sub.pouredAt = pour.pouredAt;
+        if (typeof gainSkill === 'function') gainSkill('pouring concrete', 'pouring concrete', 5);
+        state.diaryEntries.unshift({ time: 'Pouring a Foundation', location: site.name || currentPlaceLabel(), mood: `🧱 Poured the ${subProse(sub.name)}`.slice(0, 80), vitals: typeof needsVitalsText === 'function' ? needsVitalsText() : '',
+          text: `Dear Diary, I poured the ${subProse(sub.name)} for my ${p.bom.name.toLowerCase()} with ${mix ? 'ready-mix from my own batch plant' : 'bagged concrete'}: forms, rebar, pour, screed. Nothing goes on top until it has cured for ${CONCRETE_CURE_DAYS} days.` });
+        savePersistentBrainState();
+        return true;
+      } catch (e) {
+        console.warn('foundation pour', e);
+        state.concretePours = state.concretePours.filter(c => c !== pour);
+        if (typeof removeConcretePourMesh === 'function') removeConcretePourMesh(pour.id);
+        return false;
+      } finally {
+        if (truck) truck.pouring = false;
+      }
+    }
+
 async function buildNextSubAssembly(id, originLabel = 'Building Something Big') {
       const p = buildProjectById(id);
       if (!p || p.status !== 'gathering' || assemblyJobRunning) return false;
@@ -636,6 +731,12 @@ async function buildNextSubAssembly(id, originLabel = 'Building Something Big') 
       if (!ready.ok) {
         if (ready.why === 'tools') askForLists(p);
         return ready.why === 'tools' ? 'needs-tools' : 'needs-parts';
+      }
+      // A foundation that is still curing holds up everything that goes on it
+      const curing = foundationCuring(p, sub);
+      if (curing) {
+        p.waitingOn = `the concrete cures (${concretePourAge(curing).toFixed(1)} of ${CONCRETE_CURE_DAYS} days)`;
+        return 'curing';
       }
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || state.isCollectingMail) return false;
       assemblyJobRunning = true;
@@ -655,6 +756,11 @@ async function buildNextSubAssembly(id, originLabel = 'Building Something Big') 
         await waitForArrival(90000);
         const face = buildSiteToWorld(site, 0, 0);
         state.botRotY = Math.atan2(face.x - state.botPos.x, face.z - state.botPos.z);
+        // Footings or a slab: poured for real before the rest of this sub-assembly
+        if (foundationNeedsPour(sub) && !sub.pourId && typeof renderConcretePour === 'function') {
+          const poured = await pourFoundation(p, sub, site);
+          if (!poured) return 'needs-parts';
+        }
         const n = sub.steps.length;
         for (let i = sub.stepsDone; i < n; i++) {
           const step = sub.steps[i];
@@ -740,6 +846,12 @@ function weightAndBalance(bom) {
 async function runBuildTests(id, originLabel = 'Inspecting the Build') {
       const p = buildProjectById(id);
       if (!p || p.status !== 'testing' || assemblyJobRunning) return false;
+      // A foundation that is still curing holds up everything that goes on it
+      const curing = foundationCuring(p, sub);
+      if (curing) {
+        p.waitingOn = `the concrete cures (${concretePourAge(curing).toFixed(1)} of ${CONCRETE_CURE_DAYS} days)`;
+        return 'curing';
+      }
       if (state.isBusy || state.isBuilding || state.isPracticing || state.isSleeping || state.isCollectingMail) return false;
       assemblyJobRunning = true;
       state.isPracticing = true;
@@ -1447,6 +1559,8 @@ function parseBuildRequest(message) {
       const b = m.match(/\b(?:build|make|construct)\b(?:\s+(?:me|us|yourself))?\s+(?:an?|the|your own|a real)?\s*([a-z][a-z -]{2,40})/i);
       if (b) {
         const target = b[1].replace(/\b(from scratch|please|for me|yourself|today|now)\b.*$/i, '').trim();
+        // A thing one of his shops makes whole ("build me a table") is a shop job, not a big build
+        if (typeof makerWholeShopForAsk === 'function' && makerWholeShopForAsk(target)) return null;
         if (bomTemplateFor(target) || (typeof hasLLMKey === 'function' && hasLLMKey() && /\b(plane|kart|car|boat|canoe|kayak|shed|house|drone|guitar|bike|bicycle|cabin|trailer|robot|telescope|furniture|table)\b/i.test(target))) return { target };
       }
       return null;

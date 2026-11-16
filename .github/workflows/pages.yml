@@ -1,0 +1,65 @@
+# Publishes the website (GitHub Pages) from the build (npm run build:site -> _site/): the game
+# scripts as one minified file, Tailwind compiled, icons and fonts local. See docs/BUILD.md.
+#
+# One-time switch: repo Settings -> Pages -> "Build and deployment" -> Source: "GitHub Actions".
+# Until then Pages keeps serving the plain files from the main branch, exactly as before.
+name: Publish website
+
+on:
+  push:
+    branches: [main]
+  # Kelo-1's dreams commit brain/growth.json with the workflow token, which starts no other
+  # workflow; publish again after each dream so the site has his latest growth
+  workflow_run:
+    workflows: ['Kelo-1 dreams']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  # The website build doesn't need Electron's 100 MB download
+  ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build the site
+        run: npm run build:site
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

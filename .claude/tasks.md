@@ -8,10 +8,16 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
-## Brain 2 (branch `agent/brain2`, results on `qa-results-brain2`): IN PROGRESS
+## Brain 2 (branch `agent/brain2`, results on `qa-results-brain2`): merged to main by the parent session; final checks and REPORT.md in progress
 - Owner's four items: (1) relevance-ranked decision context within a token budget (js/brainrank.js), (2) long goals goal -> stages -> tasks with blockers, reload resume, `registerGoalTemplate` API for agent/farm (js/goals.js, js/goaltemplates.js, GOALS.md), (3) learning from results (js/outcomes.js: lessons, no same failing plan, retry differently, learns when things work, which fix works, likes/dislikes; diary lines), (4) better no-key brain (js/procbrain.js).
 - Owner added: "make him super adaptable through real learning" (context-aware outcome stats, decay, exploration, learned fixes, favourites).
 - Tests: qa/brain2.js (memory/goals/learn/nokey/reload), qa/soak.js (2 game days, KEY=0/1, seeded), qa/brain.js, harness regressions. Numbers in REPORT.md on qa-results-brain2.
+
+## Build step for laptop speed (branch `agent/buildstep`, results on `qa-results-buildstep`), done, waiting for merge
+- Owner approved a small build step. `npm run build:site` makes `_site/` (one minified hashed game script + source map, compiled Tailwind, local icons/fonts, HDR skies 512x256); the repo root stays the plain-files dev mode. Phone build (`build:web`) bundles too; Windows app packs `_site/`; `.github/workflows/pages.yml` publishes Pages once Settings -> Pages -> Source is "GitHub Actions". Guide: docs/BUILD.md.
+- Leave three.js loading to `agent/threejs` (head scripts untouched). Models already webp + quantized; Draco/meshopt need WebAssembly, blocked by the strict CSP.
+- Measured (2x CPU, 40 Mbit/s, software GL): world ready 8.2 s -> 3.5 s, DOMContentLoaded 5.0 -> 1.0 s, 7.5 -> 3.6 MB, 140 -> 34 requests. Regressions reload/ui/chat/vehicle/haul/basement pass built and dev. REPORT.md on qa-results-buildstep.
+- Open: owner switches Pages source to GitHub Actions after merge; 3 of 10 built loads had a slow first frame in the software-GL container (WebGL context/shader compile), unverified on a real GPU; Windows installer and phones not run here.
 
 ## North yard fixes (owner's annotated screenshot, 2026-11-12): branch agent/northyard, waiting for merge
 - Arrow 1 (drive through the range), arrow 2 (land inside the buildings), arrow 3 (road between the hall and the hangar): fixed (far lands sunk under the finer meshes; paved Pass Road, Yard Street, Hangar Lane, North Apron). Report: qa-results-northyard/REPORT.md.

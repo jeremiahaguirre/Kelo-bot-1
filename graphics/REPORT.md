@@ -100,7 +100,7 @@ Frame time with each effect off and on, alternated twice (SwiftShader, so a fill
 
 ## Regressions
 
-All on the merged branch, no page errors: `reload` (pit persists), `ui` (all menus, Settings shows Low / Medium / High), `chat`, `vehicle`, `haul` (4 loads tipped), `basement` (museum and storehouse). `navtest`: the same numbers as main's last recorded run, path for path (max jerk 0.044 to 6.697, no frames under ground or inside buildings).
+All on the merged branch, no page errors: `reload` (pit persists), `ui` (all menus, Settings shows Low / Medium / High), `chat`, `vehicle`, `haul` (4 loads tipped), `basement` (museum and storehouse). After merging `main` fa95c3f (the build step): `npm run build:site` passes (109 scripts bundled, the top-level name check passes with the four new files) and `reload` on the built `_site/` has no page errors. `navtest`: the same numbers as main's last recorded run, path for path (max jerk 0.044 to 6.697, no frames under ground or inside buildings).
 
 ## Screenshots
 

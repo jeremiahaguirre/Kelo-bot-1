@@ -97,7 +97,8 @@ async function pickUpMail(originLabel = 'Checking the Mail') {
       if (state.mailbox.length === 0 || state.isCollectingMail || state.isBusy || state.isBuilding || state.isPracticing) return false;
       state.isCollectingMail = true;
       try {
-        directKeloToActivity('post_office', `Walked to the post office to see what people sent (${state.mailbox.length} waiting).`, originLabel);
+        { const n = state.mailbox.length, first = state.mailbox[0], what = first ? (first.kind === 'message' ? `a letter from ${first.from}` : first.name ? String(first.name).slice(0, 40).toLowerCase() : `a parcel from ${first.from}`) : 'my mail';
+        directKeloToActivity('post_office', pick([`Walked to the post office to see what people sent (${n} waiting).`, `Off to the post office: ${what}${n > 1 ? ` and ${n - 1} more` : ''} waiting for me.`, `The post office had ${n === 1 ? 'something' : `${n} things`} for me, starting with ${what}.`, `I went down for the mail. ${n === 1 ? 'Just one' : `${n} things`} waiting, ${what} first.`]), originLabel); }
         await waitForArrival();
         // Each parcel leaves the mailbox only as he opens it: a reload or an error mid-trip keeps the rest waiting
         const parcels = state.mailbox.slice(0, MAX_PARCELS_PER_TRIP);

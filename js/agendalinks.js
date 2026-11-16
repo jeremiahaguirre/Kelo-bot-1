@@ -241,7 +241,7 @@ agendaRegisterKind('delivery', {
   },
   resume: async t => {
     const req = (state.requestsToUser || []).find(r => r.id === t.data.reqId);
-    if (!req) { agendaDone(t.id, 'That request was settled.'); return true; }
+    if (!req) { agendaDone(t.id, pick([`"${t.title}" is settled, one way or another. One less thing to wait for.`, `I stopped waiting on "${t.title.toLowerCase()}": that request is closed now.`, `"${t.title}" is off my list. Whatever came of it, I'm not waiting any more.`])); return true; }
     if (req.declined) { agendaAbandon(t.id, `my human said no to ${agendaPlainAsk(req.requestedGear || req.title)}, so I'll make do without it`); return true; }
     const src = req.requestedGear ? [agendaReSource(req.requestedGear)] : [];
     if (!req.requestedGear || agendaItemsOwned(src)) { agendaDone(t.id, `${req.requestedGear ? req.requestedGear.replace(/^./, c => c.toUpperCase()) : 'It'} arrived and is mine now.`); return true; }

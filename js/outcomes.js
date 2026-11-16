@@ -244,7 +244,8 @@ function outcomeContextFactor(key, ctx = outcomeContext()) {
 // He notices what he enjoys and what he doesn't (once each), and it shapes what he picks
 function outcomeNoticePreference(key, s) {
       const o = outcomeState();
-      if (s.n < 4 || o.prefs[key]) return;
+      // (chores like the mail or tidying are just chores: no likes or dislikes)
+      if (s.n < 4 || o.prefs[key] || ['mail', 'garden', 'dispose', 'ask', 'reflect', 'tidy'].includes(key)) return;
       const rate = s.ok / s.n;
       if (s.mood >= 3 && rate >= 0.6) { o.prefs[key] = 'likes'; outcomeDiary(`I've noticed something about myself: I really enjoy ${outcomeLabel(key)}. It usually works out and it lifts my mood.`, `💛 I like ${outcomeLabel(key)}`); }
       else if (s.mood <= -3 || rate <= 0.25) { o.prefs[key] = 'dislikes'; outcomeDiary(`Honestly, ${outcomeLabel(key)} rarely goes well for me${s.mood <= -3 ? ' and leaves me grumpy' : ''}. I'll do it less, or find a better way.`, `🌧️ Not my favourite: ${outcomeLabel(key)}`); }

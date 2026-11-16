@@ -82,7 +82,7 @@ function iceStepBlocked(p) {
         state.speechBubble = state.knowsIceRule
           ? "I won't step on the ice until I've checked how thick it is."
           : "The lake has gone hard and white. I'm not stepping on it until I know it holds.";
-        if (!state.isPracticing && !state.isBusy) doWhenFree(() => iceOuting('At the Edge of the Ice'));
+        if (!state.isPracticing && !state.isBusy) doWhenFree(() => iceOuting('At the Edge of the Ice'), { key: 'ice-outing' });
       }
       return true;
     }
@@ -447,7 +447,7 @@ async function firstLookAtIce(originLabel) {
         });
         savePersistentBrainState();
         renderAllUI();
-        doWhenFree(() => researchIce());
+        doWhenFree(() => researchIce(), { key: 'research-ice' });
         return true;
       } finally {
         state.isPracticing = false;
@@ -489,7 +489,7 @@ async function researchIce(originLabel = 'Reading About Ice') {
         showToast('🧊 Kelo-1 learned how to test lake ice');
         savePersistentBrainState();
         renderAllUI();
-        doWhenFree(() => testTheIce());
+        doWhenFree(() => testTheIce(), { key: 'test-ice' });
         return true;
       } finally {
         state.isBusy = false;
@@ -550,7 +550,7 @@ async function testTheIce(originLabel = 'Testing the Ice') {
           await new Promise(r => setTimeout(r, 2500));
           savePersistentBrainState();
           state.isPracticing = false;
-          doWhenFree(() => walkOnIce(firstTime ? 'First Steps on the Ice' : 'Out on the Ice'));
+          doWhenFree(() => walkOnIce(firstTime ? 'First Steps on the Ice' : 'Out on the Ice'), { key: 'walk-ice' });
         } else {
           state.moodEmoji = '⚠️';
           state.moodTitle = `Only ${cm} cm of ice`;

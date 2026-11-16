@@ -1,0 +1,14 @@
+  • electron-builder  version=26.17.0 os=6.18.44-fc-v470
+  • loaded configuration  file=package.json ("build" field)
+  • executing @electron/rebuild  electronVersion=44.11.2 arch=x64 buildFromSource=false workspaceRoot=/home/user/Kelo-bot-1 projectDir=./ appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=linux arch=x64 electron=44.11.2 appOutDir=dist/linux-unpacked
+  • downloaded      label=electron progress=100%
+  • downloaded electron zip extracted successfully  output=/home/user/Kelo-bot-1/dist/linux-unpacked
+  • searching for node modules  pm=npm searchDir=/home/user/Kelo-bot-1
+  • no node modules found in collection, trying next search directory  pm=npm searchDir=/home/user/Kelo-bot-1
+  • searching for node modules  pm=traversal searchDir=/home/user/Kelo-bot-1
+  • using manual traversal of node_modules to build dependency tree
+  • no node modules found in collection, trying next search directory  pm=traversal searchDir=/home/user/Kelo-bot-1
+  • no node modules returned while searching directories  searchDirectories=[""]

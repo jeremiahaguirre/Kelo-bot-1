@@ -1,0 +1,55 @@
+dev head order: style.css , style.css , style.css , style.css , style.css , style.css , style.css , STYLE(18290)
+built, tailwind last head order: style.css , fonts.css , phosphor.css , tailwind.0b30b83d79.css , kelo.27519c5b5a.js
+built, tailwind first head order: tailwind.0b30b83d79.css , style.css , fonts.css , phosphor.css , kelo.27519c5b5a.js
+   closed#270:DIV#hudStatus.hud-panel pointer-events-auto sv-stats-card width dev: 296.938px built(tailwind last): 300.328px
+   closed#271:DIV.hud-status-row width dev: 274.938px built(tailwind last): 278.328px
+   closed#273:P#worldClockText.hud-clock width dev: 227.953px built(tailwind last): 231.344px
+   closed#274:DIV.hud-needs-wrap width dev: 274.938px built(tailwind last): 278.328px
+   closed#275:BUTTON#hudNeedsBtn.hud-needs hud-hit width dev: 270.938px built(tailwind last): 274.328px
+   closed#276:SPAN.hud-meter width dev: 36.8125px built(tailwind last): 37.375px
+   closed#278:SPAN.hud-meter-track width dev: 20.8125px built(tailwind last): 21.375px
+   closed#279:SPAN#hudHealthBar.hud-meter-fill width dev: 16.6406px built(tailwind last): 17.0938px
+   closed#280:SPAN.hud-meter width dev: 36.8281px built(tailwind last): 37.3906px
+   closed#282:SPAN.hud-meter-track width dev: 20.8281px built(tailwind last): 21.3906px
+   closed#283:SPAN#hudFullnessBar.hud-meter-fill width dev: 14.5781px built(tailwind last): 14.9688px
+   closed#284:SPAN.hud-meter width dev: 36.8125px built(tailwind last): 37.3906px
+   closed#286:SPAN.hud-meter-track width dev: 20.8125px built(tailwind last): 21.3906px
+   closed#287:SPAN#hudWaterBar.hud-meter-fill width dev: 16.6406px built(tailwind last): 17.1094px
+   closed#288:SPAN.hud-meter width dev: 36.8281px built(tailwind last): 37.3906px
+   closed#290:SPAN.hud-meter-track width dev: 20.8281px built(tailwind last): 21.3906px
+   closed#291:SPAN#hudHappyBar.hud-meter-fill width dev: 14.5781px built(tailwind last): 14.9688px
+   closed#292:SPAN.hud-meter width dev: 36.8281px built(tailwind last): 37.3906px
+   closed#294:SPAN.hud-meter-track width dev: 20.8281px built(tailwind last): 21.3906px
+   closed#295:SPAN#hudWonderBar.hud-meter-fill width dev: 18.7344px built(tailwind last): 19.25px
+   closed#296:SPAN.hud-meter width dev: 36.8281px built(tailwind last): 37.3906px
+   closed#298:SPAN.hud-meter-track width dev: 20.8281px built(tailwind last): 21.3906px
+   closed#299:SPAN#hudCalmBar.hud-meter-fill width dev: 12.4844px built(tailwind last): 12.8281px
+   closed#392:BUTTON.talk-link-btn width dev: 211.953px built(tailwind last): 212.234px
+   closed#717:svg.[object SVGAnimatedString] color dev: rgb(203, 213, 225) built(tailwind last): rgb(138, 153, 174)
+DEV vs built(tailwind last): 22823 element states compared, 354 differ, 6512 not matched {"width":292,"color":3,"font-size":2,"font-weight":2,"line-height":2,"height":33,"text-align":1,"cursor":1,"opacity":10,"margin-top":16,"margin-left":2,"transform":1,"background-color":3}
+   closed#117:SPAN.hud-map-title sr-only left dev: 151px built(tailwind first): 150px
+   closed#270:DIV#hudStatus.hud-panel pointer-events-auto sv-stats-card width dev: 296.938px built(tailwind first): 300.328px
+   closed#271:DIV.hud-status-row width dev: 274.938px built(tailwind first): 278.328px
+   closed#273:P#worldClockText.hud-clock width dev: 227.953px built(tailwind first): 231.344px
+   closed#274:DIV.hud-needs-wrap width dev: 274.938px built(tailwind first): 278.328px
+   closed#275:BUTTON#hudNeedsBtn.hud-needs hud-hit width dev: 270.938px built(tailwind first): 274.328px
+   closed#276:SPAN.hud-meter width dev: 36.8125px built(tailwind first): 37.375px
+   closed#278:SPAN.hud-meter-track width dev: 20.8125px built(tailwind first): 21.375px
+   closed#279:SPAN#hudHealthBar.hud-meter-fill width dev: 16.6406px built(tailwind first): 17.0938px
+   closed#280:SPAN.hud-meter width dev: 36.8281px built(tailwind first): 37.3906px
+   closed#282:SPAN.hud-meter-track width dev: 20.8281px built(tailwind first): 21.3906px
+   closed#283:SPAN#hudFullnessBar.hud-meter-fill width dev: 14.5781px built(tailwind first): 14.9688px
+   closed#284:SPAN.hud-meter width dev: 36.8125px built(tailwind first): 37.3906px
+   closed#286:SPAN.hud-meter-track width dev: 20.8125px built(tailwind first): 21.3906px
+   closed#287:SPAN#hudWaterBar.hud-meter-fill width dev: 16.6406px built(tailwind first): 17.1094px
+   closed#288:SPAN.hud-meter width dev: 36.8281px built(tailwind first): 37.3906px
+   closed#290:SPAN.hud-meter-track width dev: 20.8281px built(tailwind first): 21.3906px
+   closed#291:SPAN#hudHappyBar.hud-meter-fill width dev: 14.5781px built(tailwind first): 14.9688px
+   closed#292:SPAN.hud-meter width dev: 36.8281px built(tailwind first): 37.3906px
+   closed#294:SPAN.hud-meter-track width dev: 20.8281px built(tailwind first): 21.3906px
+   closed#295:SPAN#hudWonderBar.hud-meter-fill width dev: 18.7344px built(tailwind first): 19.25px
+   closed#296:SPAN.hud-meter width dev: 36.8281px built(tailwind first): 37.3906px
+   closed#298:SPAN.hud-meter-track width dev: 20.8281px built(tailwind first): 21.3906px
+   closed#299:SPAN#hudCalmBar.hud-meter-fill width dev: 12.4844px built(tailwind first): 12.8281px
+   closed#327:I.ph-bold ph-gear-six text-xl line-height dev: 26px built(tailwind first): 20px
+DEV vs built(tailwind first): 22823 element states compared, 637 differ, 7511 not matched {"left":1,"width":264,"line-height":219,"height":190,"top":13,"bottom":12,"font-size":39,"color":12,"font-weight":2,"text-align":1,"cursor":1,"margin-top":9,"background-color":15,"border-top-color":8,"margin-left":1,"opacity":7}

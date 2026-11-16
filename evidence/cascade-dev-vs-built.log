@@ -1,0 +1,28 @@
+dev head order: style.css , style.css , style.css , style.css , style.css , style.css , style.css , STYLE(18325)
+built, tailwind last head order: style.css , fonts.css , phosphor.css , tailwind.0b30b83d79.css , kelo.c1ce6f28b7.js
+   closed:#hudStatus.hud-panel pointer-events-auto sv-stats-card width dev: 296.938px built: 300.328px
+   closed:#hudStatus>DIV:0.hud-status-row width dev: 274.938px built: 278.328px
+   closed:#worldClockText.hud-clock width dev: 227.953px built: 231.344px
+   closed:#hudStatus>DIV:1.hud-needs-wrap width dev: 274.938px built: 278.328px
+   closed:#hudNeedsBtn.hud-needs hud-hit width dev: 270.938px built: 274.328px
+   closed:#hudNeedsBtn>SPAN:0.hud-meter width dev: 36.8125px built: 37.375px
+   closed:#hudNeedsBtn>SPAN:0>SPAN:1.hud-meter-track width dev: 20.8125px built: 21.375px
+   closed:#hudHealthBar.hud-meter-fill width dev: 16.6406px built: 17.0938px
+   closed:#hudNeedsBtn>SPAN:1.hud-meter width dev: 36.8281px built: 37.3906px
+   closed:#hudNeedsBtn>SPAN:1>SPAN:1.hud-meter-track width dev: 20.8281px built: 21.3906px
+   closed:#hudFullnessBar.hud-meter-fill width dev: 14.5781px built: 14.9688px
+   closed:#hudNeedsBtn>SPAN:2.hud-meter width dev: 36.8125px built: 37.3906px
+   closed:#hudNeedsBtn>SPAN:2>SPAN:1.hud-meter-track width dev: 20.8125px built: 21.3906px
+   closed:#hudWaterBar.hud-meter-fill width dev: 16.6406px built: 17.1094px
+   closed:#hudNeedsBtn>SPAN:3.hud-meter width dev: 36.8281px built: 37.3906px
+   closed:#hudNeedsBtn>SPAN:3>SPAN:1.hud-meter-track width dev: 20.8281px built: 21.3906px
+   closed:#hudHappyBar.hud-meter-fill width dev: 14.5781px built: 14.9688px
+   closed:#hudNeedsBtn>SPAN:4.hud-meter width dev: 36.8281px built: 37.3906px
+   closed:#hudNeedsBtn>SPAN:4>SPAN:1.hud-meter-track width dev: 20.8281px built: 21.3906px
+   closed:#hudWonderBar.hud-meter-fill width dev: 20.8281px built: 19.25px
+   closed:#hudNeedsBtn>SPAN:5.hud-meter width dev: 36.8281px built: 37.3906px
+   closed:#hudNeedsBtn>SPAN:5>SPAN:1.hud-meter-track width dev: 20.8281px built: 21.3906px
+   closed:#hudCalmBar.hud-meter-fill width dev: 12.4844px built: 12.8281px
+   closed:#chatMessagesBox>DIV:0>DIV:3>BUTTON:1.talk-link-btn width dev: 211.953px built: 212.234px
+   closed:#toastContainer.fixed left-1/2 -translate-x-1/2 z-50 flex flex-col width dev: 341.453px built: 440px
+DEV vs built: 22837 element states compared, 307 differ, 1390 not matched {"width":266,"height":34,"transform":1,"right":1,"bottom":1,"margin-left":1,"opacity":9}

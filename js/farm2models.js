@@ -185,7 +185,7 @@ function farm2ImplementModel(key) {
         fCyl(0.75 * U, 0.75 * U, 0.4 * U, 18, paint, -3.0 * U, 0.85 * U, 0, g, 'z');
         const fan = new THREE.Group(); fan.position.set(-3.25 * U, 0.85 * U, 0);
         for (let i = 0; i < 6; i++) { const blade = fBox(0.03 * U, 0.6 * U, 0.12 * U, dark, 0, 0.3 * U, 0, null); const hold = new THREE.Group(); hold.rotation.x = i / 6 * Math.PI * 2; hold.add(blade); fan.add(hold); }
-        g.add(fan); parts.blower = fan;
+        g.add(fan); farmJoin(fan); parts.blower = fan;
         [-0.65, 0.65].forEach(z => wheel(0.35, 0.18, -2.0, z));
         const mist = new THREE.Mesh(new THREE.SphereGeometry(1.4 * U, 10, 8), new THREE.MeshBasicMaterial({ color: 0xe8f4f8, transparent: true, opacity: 0.22, depthWrite: false }));
         mist.scale.set(0.5, 0.9, 1.6); mist.position.set(-3.6 * U, 1.2 * U, 0); mist.visible = false; g.add(mist); parts.mist = mist;
@@ -202,12 +202,12 @@ function farm2ImplementModel(key) {
         for (let i = 0; i < 4; i++) {
           const z = -W / 2 + (i + 0.5) * W / 4, rotor = new THREE.Group(); rotor.position.set(-1.2 * U, 0.55 * U, z);
           for (let k = 0; k < 6; k++) { const arm = fBox(0.6 * U, 0.04 * U, 0.04 * U, paint, 0.3 * U, 0, 0, null); const h = new THREE.Group(); h.rotation.y = k / 6 * Math.PI * 2; h.add(arm); const tine = fBox(0.03 * U, 0.4 * U, 0.03 * U, steel, 0.6 * U, -0.2 * U, 0, null); h.add(tine); rotor.add(h); }
-          rotor.rotation.x = 0.15; rotor.userData.spinY = i % 2 ? 1 : -1; g.add(rotor); parts.spinners.push(rotor);
+          rotor.rotation.x = 0.15; rotor.userData.spinY = i % 2 ? 1 : -1; g.add(rotor); farmJoin(rotor); parts.spinners.push(rotor);
           wheel(0.2, 0.08, -1.2, z / U);
         }
       } else if (key === 'rake') {
         fRod([0, 0.5 * U, 0], [-3.4 * U, 0.6 * U, 0], 0.07 * U, paint, g);
-        [-1, 1].forEach(s => { fRod([-0.6 * U, 0.65 * U, 0], [-3.6 * U, 0.65 * U, s * W / 2], 0.06 * U, paint, g); for (let i = 0; i < 4; i++) { const t = (i + 0.5) / 4; const rw = new THREE.Group(); rw.position.set((-0.6 - 3.0 * t) * U, 0.6 * U, s * W / 2 * t); const ring = new THREE.Mesh(new THREE.TorusGeometry(0.6 * U, 0.03 * U, 4, 16), steel); rw.add(ring); for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; const tn = fBox(0.03 * U, 0.25 * U, 0.03 * U, steel, Math.cos(a) * 0.72 * U, Math.sin(a) * 0.72 * U, 0, null); tn.rotation.z = a - Math.PI / 2; rw.add(tn); } rw.rotation.y = s * 0.6; rw.userData.wheelRadius = 0.6 * U; g.add(rw); } });
+        [-1, 1].forEach(s => { fRod([-0.6 * U, 0.65 * U, 0], [-3.6 * U, 0.65 * U, s * W / 2], 0.06 * U, paint, g); for (let i = 0; i < 4; i++) { const t = (i + 0.5) / 4; const rw = new THREE.Group(); rw.position.set((-0.6 - 3.0 * t) * U, 0.6 * U, s * W / 2 * t); const ring = new THREE.Mesh(new THREE.TorusGeometry(0.6 * U, 0.03 * U, 4, 16), steel); rw.add(ring); for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; const tn = fBox(0.03 * U, 0.25 * U, 0.03 * U, steel, Math.cos(a) * 0.72 * U, Math.sin(a) * 0.72 * U, 0, null); tn.rotation.z = a - Math.PI / 2; rw.add(tn); } rw.rotation.y = s * 0.6; rw.userData.wheelRadius = 0.6 * U; g.add(rw); farmJoin(rw); } });
         wheel(0.3, 0.15, -3.6, 0);
       } else if (key === 'baler' || key === 'squarebaler') {
         const sq = key === 'squarebaler';
@@ -238,7 +238,8 @@ function farm2ImplementModel(key) {
         fCyl(0.25 * U, 0.25 * U, 0.3 * U, 12, farmMat(0x2b6aa0, { roughness: 0.5 }), 0.65 * U, 0.6 * U, 0, g, 'z');
       }
       g.userData.key = key;
-      return g;
+      // static parts joined per material (moving parts carry userData and stay separate)
+      return farmJoin(g);
     }
 if (typeof farmImplementModel === 'function') {
   const farm2OrigImplModel = farmImplementModel;

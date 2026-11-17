@@ -244,7 +244,7 @@ function farmDayInfo(d) {
       if (season === 'Spring' && typeof rainForHour === 'function') for (let h = 0; h < 24; h++) if (rainForHour(Math.floor(d) * 24 + h)) rainH++;
       // Summer thunderstorms and autumn rain the game's sky doesn't show: a little, now and then
       const hash = typeof windHash === 'function' ? windHash(9100003 + Math.floor(d)) : 0.5;
-      if (season === 'Summer' && hash < 0.12) rainH += 3;
+      if (season === 'Summer' && hash < 0.2) rainH += 3;
       if (season === 'Autumn' && hash < 0.22) rainH += 4;
       return { doy: doy0 + 1, season, heat, rainH, frozen: season === 'Winter' || doy0 + 1 > 300 || doy0 + 1 < 85 };
     }
@@ -285,7 +285,7 @@ function farmFieldDay(f, d) {
       const w = farmDayInfo(d);
       // Soil water: rain in, evaporation and the crop's use out (more in the heat, more with a big canopy)
       const canopy = f.soil === 'seeded' ? Math.min(1, f.g * 1.6) : 0;
-      f.m = Math.max(0.05, Math.min(1, f.m + w.rainH * 0.018 - (0.004 + 0.016 * w.heat) * (0.6 + canopy) + (w.frozen ? 0.006 : 0)));
+      f.m = Math.max(0.05, Math.min(1, f.m + w.rainH * 0.018 - (0.003 + 0.011 * w.heat) * (0.5 + canopy * 0.7) + (w.frozen ? 0.006 : 0)));
       // Snowmelt tops the soil up in early spring
       if (w.doy >= 80 && w.doy <= 100) f.m = Math.min(0.85, f.m + 0.012);
       // Weeds come up from the seed bank whenever the soil is warm, slower under a crop
@@ -310,7 +310,9 @@ function farmFieldDay(f, d) {
       const mf = f.m < 0.12 ? 0.1 : f.m < 0.3 ? 0.1 + 0.9 * (f.m - 0.12) / 0.18 : f.m > 0.92 ? 0.6 : 1;
       const needN = c.n * f.g, nf = f.n <= 0 ? 0.4 : Math.min(1.1, 0.5 + 0.6 * Math.min(1, f.n / Math.max(30, c.n - needN)));
       const hf = 1 - 0.5 * f.p;
-      const rate = (0.35 + 0.65 * w.heat) * mf * nf * hf;
+      // Development runs on heat (growing degree days); drought and hunger only hurry it a little at the
+      // end. What stress takes is the yield (yp below), as in a real field.
+      const rate = (0.35 + 0.65 * w.heat) * (0.85 + 0.15 * Math.min(1, mf * nf * hf));
       const dg = rate / c.days * 1.15;
       f.g = Math.min(1, f.g + dg);
       // The crop takes up nitrogen as it grows

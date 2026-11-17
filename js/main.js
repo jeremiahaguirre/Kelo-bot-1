@@ -7,7 +7,7 @@ let escapeClosedOverlay = false;
 window.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   escapeClosedOverlay = Boolean(document.getElementById('keloViewer')
-    || document.querySelector('#codeViewerModal:not(.hidden), #aiConfigModal:not(.hidden), #exploreHelp:not(.hidden), #explorePlaces:not(.hidden)'));
+    || document.querySelector('#codeViewerModal:not(.hidden), #aiConfigModal:not(.hidden), #freshWorldModal:not(.hidden), #exploreHelp:not(.hidden), #explorePlaces:not(.hidden)'));
 }, true);
 
 // Write text only when it changed (no layout work, no screen-reader repeats)
@@ -861,16 +861,31 @@ window.addEventListener('DOMContentLoaded', () => {
     modalReturnFocus[id] = null;
     if (back && back.isConnected && typeof back.focus === 'function' && back.offsetParent !== null) back.focus({ preventScroll: true });
   };
-  ['codeViewerModal', 'aiConfigModal'].forEach(id => {
+  ['codeViewerModal', 'aiConfigModal', 'freshWorldModal'].forEach(id => {
     document.getElementById(id)?.addEventListener('click', (e) => {
       if (e.target.id === id) closeModal(id);
     });
   });
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') ['codeViewerModal', 'aiConfigModal'].forEach(closeModal);
+    if (e.key === 'Escape') ['codeViewerModal', 'aiConfigModal', 'freshWorldModal'].forEach(closeModal);
   });
   document.getElementById('btnCloseCodeModal')?.addEventListener('click', () => closeModal('codeViewerModal'));
   document.getElementById('btnCloseAIConfigModal')?.addEventListener('click', () => closeModal('aiConfigModal'));
+
+  // Menu > World > "Start the world over": asks first, then empties the Museum, the Storehouse and
+  // the map (freshWorldReset in js/agent.js), saves, and reloads so the world is built again clean
+  document.getElementById('btnFreshWorld')?.addEventListener('click', () => {
+    openModal('freshWorldModal');
+    document.getElementById('btnFreshWorldCancel')?.focus({ preventScroll: true });
+  });
+  ['btnFreshWorldCancel', 'btnFreshWorldClose'].forEach(id => document.getElementById(id)?.addEventListener('click', () => closeModal('freshWorldModal')));
+  document.getElementById('btnFreshWorldConfirm')?.addEventListener('click', () => {
+    if (typeof freshWorldReset !== 'function') return;
+    freshWorldReset();
+    savePersistentBrainStateNow();
+    showToast('↺ Starting the world over…');
+    setTimeout(() => location.reload(), 400);
+  });
 
   // AI Brain settings: optional Gemini and Anthropic keys, kept only in this browser's localStorage
   const updateBrainButtonText = () => {

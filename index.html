@@ -742,6 +742,11 @@
           <ul id="skinsGrid" class="skins-grid" aria-labelledby="skinsTitle"></ul>
           <p id="skinsNote" class="ui-note"></p>
         </section>
+        <section class="ui-card" aria-labelledby="freshWorldTitle">
+          <h3 id="freshWorldTitle" class="ui-section-title">Start the world over</h3>
+          <p class="ui-note">Empties his Museum and his Storehouse and clears everything he has built or changed on the map, including the farm. His diary, memories, skills, vehicles and your settings stay. Only on this device.</p>
+          <button id="btnFreshWorld" type="button" class="ui-btn ui-btn-danger"><i class="ph-bold ph-arrow-counter-clockwise" data-hud-emoji="↺" aria-hidden="true"></i><span>Start the world over…</span></button>
+        </section>
         <div id="tryItPanel" class="space-y-3"></div>
       </div>
 
@@ -827,6 +832,23 @@
         <button id="btnCloseCodeModal" class="ui-btn ui-btn-sm">Close</button>
       </div>
       <pre id="modalCodeContent" class="p-4 rounded-2xl bg-slate-950 text-xs font-mono text-slate-200 overflow-x-auto max-h-96"></pre>
+    </div>
+  </div>
+
+<div id="freshWorldModal" class="hidden ui-dialog" role="alertdialog" aria-modal="true" aria-labelledby="freshWorldModalTitle" aria-describedby="freshWorldModalText">
+    <div class="ui-dialog-panel max-w-md">
+      <div class="ui-dialog-head">
+        <h3 id="freshWorldModalTitle" class="ui-dialog-title">Start the world over?</h3>
+        <button id="btnFreshWorldClose" class="ui-icon-btn" aria-label="Cancel"><i class="ph-bold ph-x" data-hud-emoji="✕" aria-hidden="true"></i></button>
+      </div>
+      <section class="ui-dialog-section">
+        <p id="freshWorldModalText" class="text-sm text-slate-200"><strong>You will lose this progress:</strong> everything in his Museum, everything on his Storehouse shelves, and everything he has built or changed on the map (builds, roads, landscaping, plantings, holes and the farm). This can't be undone.</p>
+        <p class="ui-note">Kept: his diary, memories, skills, vehicles, looks and your settings and keys. Only this device is affected.</p>
+      </section>
+      <div class="ui-dialog-foot">
+        <button id="btnFreshWorldCancel" class="ui-btn">Keep everything</button>
+        <button id="btnFreshWorldConfirm" class="ui-btn ui-btn-danger">Yes, start over</button>
+      </div>
     </div>
   </div>
 

@@ -615,7 +615,7 @@ function exploreBindKeys() {
         if (exploreTyping(e) || e.ctrlKey || e.metaKey || e.altKey) return;
         if (document.getElementById('keloViewer')) return; // the arrows page through the viewer
         // A dialog open over the Workshop visit gets the keys first (Escape closes it, not the visit)
-        const dialogOpen = document.querySelector('#aiConfigModal:not(.hidden), #codeViewerModal:not(.hidden), #exploreHelp:not(.hidden)');
+        const dialogOpen = document.querySelector('#aiConfigModal:not(.hidden), #codeViewerModal:not(.hidden), #freshWorldModal:not(.hidden), #exploreHelp:not(.hidden)');
         if (dialogOpen && e.code === 'Escape') { exploreShowHelp(false); return; }
         if (state.cameraMode === 'visit' && !dialogOpen && typeof shopVisitKey === 'function' && shopVisitKey(e)) { e.stopPropagation(); return; }
         if (e.key === '?') { exploreShowHelp(true); return; }

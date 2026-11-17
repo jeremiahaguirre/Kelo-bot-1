@@ -1437,6 +1437,13 @@ const FRESH_WORLD_KEY = 'kelo1_fresh_world_2026_11_17';
 
 function freshWorldOnce() {
       try { if (keloStore.getItem(FRESH_WORLD_KEY)) return; } catch (e) { return; }
+      freshWorldReset();
+      try { keloStore.setItem(FRESH_WORLD_KEY, String(Date.now())); } catch (e) {}
+      savePersistentBrainStateNow();
+    }
+
+// The same reset, on demand: Menu > World > "Start the world over" (js/main.js asks first)
+function freshWorldReset() {
       const fresh = (k, v) => { if (Object.prototype.hasOwnProperty.call(state, k)) state[k] = v; };
       // The Museum: his sculptures and creations, and his paintings
       fresh('inventedCreations', []);
@@ -1477,8 +1484,6 @@ function freshWorldOnce() {
         state.goals.list = state.goals.list.filter(g => !(g && farmGoals.has(g.id)));
         if (state.agenda && Array.isArray(state.agenda.tasks)) state.agenda.tasks = state.agenda.tasks.filter(t => !(t && t.kind === 'goal' && t.data && farmGoals.has(t.data.goalId)));
       }
-      try { keloStore.setItem(FRESH_WORLD_KEY, String(Date.now())); } catch (e) {}
-      savePersistentBrainStateNow();
     }
 
 // Moment-to-moment flags and things stored elsewhere; everything else in state is saved

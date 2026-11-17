@@ -521,7 +521,7 @@ Object.assign(FARM_IMPLEMENTS, {
   tiller: { stage2: true, label: 'Rotary tiller', ask: 'A 1.8 m rotary tiller', re: /rotary tiller/i, widthM: 1.8, kmh: 4, needHp: 35, op: 'till' },
   planter: { stage2: true, label: 'Vegetable planter', ask: 'A 2-row vegetable planter with seed plates and a potato cup unit', re: /vegetable planter/i, widthM: 1.8, kmh: 5, needHp: 30, op: 'plant' },
   cultivator: { stage2: true, label: 'Row cultivator', ask: 'A 2-row S-tine cultivator with finger weeders', re: /row cultivator|S-tine cultivator/i, widthM: 1.8, kmh: 6, needHp: 25, op: 'cultivate' },
-  digger: { stage2: true, label: 'Root digger', ask: 'A 1-row potato and carrot digger with a shaker chain', re: /potato .*digger|root digger/i, widthM: 1.8, kmh: 4, needHp: 40, op: 'dig' },
+  digger: { stage2: true, label: 'Root lifter', ask: 'A 1-row potato and carrot lifter with a shaker chain', re: /carrot lifter|root lifter/i, widthM: 1.8, kmh: 4, needHp: 40, op: 'dig' },
   airblast: { stage2: true, label: 'Orchard sprayer', ask: 'A 600 L trailed airblast orchard sprayer', re: /airblast/i, widthM: 3.5, kmh: 6, needHp: 40, op: 'orchardspray' },
   mower: { stage2: true, label: 'Mower-conditioner', ask: 'A 3.2 m disc mower-conditioner', re: /mower-?conditioner/i, widthM: 3.2, kmh: 12, needHp: 80, op: 'mow' },
   tedder: { stage2: true, label: 'Hay tedder', ask: 'A 4-rotor hay tedder, 5.2 m', re: /hay tedder/i, widthM: 5.2, kmh: 12, needHp: 40, op: 'ted' },

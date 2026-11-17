@@ -95,6 +95,9 @@ function farm2Chores() {
       const X = farm2State(), F = farmState(), d = farmDayNow(), w = farmDayInfo(d), doy = w.doy, yr = worldNow().year, day = Math.floor(d);
       const out = [], add = (score, key, label, run) => out.push({ score, key, label, run });
       const cattle = farm2Cattle(), B = farm2FeedBudget(d);
+      // a machine of his he can't drive yet: he learns it first (nothing on the plots happens without it)
+      const unlearned = state.vehicles.find(v => FARM_VEHICLE_KINDS.has((vehicleTypeFor(v.name) || {}).kind) && knowHowRule(v.name) && !state.knowHow[knowHowRule(v.name).key]);
+      if (unlearned) add(72, 'learn', `Learn to drive the ${farmPlain(unlearned.name).replace(/ with .*$/, '')}`, () => farm2Learn(unlearned));
       // the animals: feed and water first
       if (cattle.length && B.bunkDays < 1.2) add(B.bunkDays < 0.5 ? 100 : 66 - B.bunkDays * 5, 'feedcattle', 'Mix and feed the cattle ration', farm2FeedCattle);
       if (X.flock.n && B.feederDays < 2) add(B.feederDays < 0.7 ? 95 : 60, 'feedhens', 'Grind layer mash and fill the hen feeder', farm2FeedHens);
@@ -216,6 +219,15 @@ function farm2YearSummary(year) {
       const X = farm2State(), H = (X.hayLog || []).filter(h => h.bales);
       const veg = (X.harvests || []).filter(h => h.year === year).map(h => `${Math.round(h.kg)} kg ${h.crop}`).join(', ');
       return `${X.births.filter(b => b).length} calves born so far, ${farm2Cattle().length} cattle and ${X.flock.n} hens now; hay: ${H.map(h => `${h.bales} ${h.kind}`).join(', ') || 'none baled yet'}; plots: ${veg || 'nothing dug yet'}; the mixed farm has earned ${farm2Money(X.earned || 0)}.`;
+    }
+
+async function farm2Learn(v) {
+      // (the chore lock marks him busy; learning at NetNode wants him free)
+      state.isPracticing = false;
+      const ok = await learnToUse(v.name, 'Learning the Farm Machines');
+      state.isPracticing = true;
+      const rule = knowHowRule(v.name);
+      return ok || (rule && state.knowHow[rule.key]) ? true : { type: 'skill', label: `learning to drive the ${farmPlain(v.name)}` };
     }
 
 // --- Feeding: his own hay and grain, mixed -------------------------------------------------------------------------

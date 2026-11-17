@@ -188,6 +188,9 @@ function exploreFlyTo(dest) {
       if (!exploreCam.ready) return;
       if (!exploreCam.driving || !exploreCam.cur) exploreSyncFromCamera();
       exploreCam.lastInput = Date.now();
+      // Flying to a place the viewer picked (a Place, Bird's-eye, the map) is the viewer taking the
+      // view: the basement trip camera must not pull it back when the flight lands (js/basements.js)
+      if (!dest.follow && typeof tripCam !== 'undefined') tripCam.userAt = Date.now();
       exploreHideSpotMenu();
       const from = exploreCopy(exploreCam.cur);
       const target = dest.follow ? exploreKeloSpot() : new THREE.Vector3(dest.x, 0, dest.z);

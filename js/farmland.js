@@ -639,7 +639,7 @@ function farmBuildStakes() {
       if (!S || !F.surveyed) return;
       const spots = [[S.minX, S.minZ], [S.minX, S.maxZ], [S.maxX, S.minZ], [S.maxX, S.maxZ]];
       Object.keys(FARM_BUILDINGS).forEach(k => {
-        if (FARM_BUILDINGS[k].inside) return;
+        if (FARM_BUILDINGS[k].inside || (FARM_BUILDINGS[k].stage2 && !(F.mixed && F.mixed.laidOut))) return;
         const st = (F.buildings[k] || {}).stage;
         if (st && st !== 'staked') return;
         const r = farmBuildingRect(k);

@@ -635,8 +635,8 @@ function farmStripZ(f, n, i) { return f.z1 - (i + 0.5) * (f.z1 - f.z0) / n; }
 async function farmWorkField(f, opKey) {
       const O = FARM_OPS[opKey], I = FARM_IMPLEMENTS[O.impl], F = farmState();
       const big = farmMachineOf('bigtractor');
-      const v = O.machine === 'combine' ? farmMachineOf('combine') : ((opKey === 'plough' || opKey === 'disc') && big) ? big : farmMachineOf('tractor');
-      if (!v) return { type: 'delivery', label: `the ${O.machine === 'combine' ? 'combine' : 'tractor'}` };
+      const v = O.machine === 'combine' ? farmMachineOf('combine') : O.machine === 'compact' ? (farmMachineOf('compact') || farmMachineOf('tractor')) : ((opKey === 'plough' || opKey === 'disc') && big) ? big : farmMachineOf('tractor');
+      if (!v) return { type: 'delivery', label: `the ${O.machine === 'combine' ? 'combine' : O.machine === 'compact' ? 'compact tractor' : 'tractor'}` };
       if (!F.owned[O.impl]) return { type: 'delivery', label: `the ${I.label.toLowerCase()}` };
       if (!(await farmFuelUp(v))) return farmFuelUp.why || { type: 'supply', label: `diesel for the ${farmPlain(v.name).replace(/ with .*$/, '')}` };
       const ha = farmFieldHa(f);
@@ -657,7 +657,7 @@ async function farmWorkField(f, opKey) {
         seed: `${FARM_CROPS[f.crop] ? FARM_CROPS[f.crop].variety : 'Seed'} at ${FARM_CROPS[f.crop] ? FARM_CROPS[f.crop].seed : ''} kg a hectare, 2.5 cm deep, packed in.`,
         spray: f.pest ? `${f.pest} in the ${f.name.toLowerCase()}: insecticide at label rate, booms low, no wind.` : 'Booms out, 24 m wide, nozzles low: the weeds before they shade the crop.',
         harvest: `Combining the ${FARM_CROPS[f.crop] ? FARM_CROPS[f.crop].label.toLowerCase() : 'grain'}: reel turning, header just off the ground.`
-      }[opKey]);
+      }[opKey] || (O.say ? O.say(f) : ''));
       const workK = Math.max(0.35, Math.min(1, I.kmh / 22));
       try {
         const k = farmFastK();
@@ -1466,7 +1466,7 @@ function farmSeasonBlocker(t) {
         if (w && w.type === 'plant' && !farmGrowCheck()) return w;
         const O = FARM_OPS[key];
         const big = farmMachineOf('bigtractor');
-        const v = O.machine === 'combine' ? farmMachineOf('combine') : ((key === 'plough' || key === 'disc') && big) ? big : farmMachineOf('tractor');
+        const v = O.machine === 'combine' ? farmMachineOf('combine') : O.machine === 'compact' ? (farmMachineOf('compact') || farmMachineOf('tractor')) : ((key === 'plough' || key === 'disc') && big) ? big : farmMachineOf('tractor');
         if (!v) return { type: 'delivery', label: `the ${O.machine === 'combine' ? 'combine' : 'tractor'}` };
         if (!F.owned[O.impl]) return { type: 'delivery', label: `the ${FARM_IMPLEMENTS[O.impl].label.toLowerCase()}` };
         const b = farmVehicleBlock(v); if (b) return b;

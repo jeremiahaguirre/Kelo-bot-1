@@ -397,3 +397,209 @@ function farmTakeGrain(crop, t) {
       b.t = Math.round((b.t - got) * 1000) / 1000;
       return got;
     }
+
+// =====================================================================================================
+// Stage 2: orchard and vegetables, livestock, hay and feed. The same registries, extended in place, so
+// the field passes, the parts lists, the buildings and the store read them like stage 1's. Everything
+// marked `stage2: true` belongs to the mixed-farm plan (js/farm2.js) and stays out of stage 1's lists.
+// The numbers are for a small irrigated mixed farm in the BC Interior (Kelowna), 2026 prices in CAD.
+// =====================================================================================================
+
+// --- Orchard, vegetable and hay crops --------------------------------------------------------------
+// Orchard: bearFrom/fullAt: years after planting a tree starts to bear / is in full crop; kgTree: a
+// mature tree's crop; bloom: day of year; window: picking window; keepDays: in the cooler.
+// Vegetables run through the same field model as grain (days, window, seed per ha, yield t/ha, n).
+// Hay is a perennial stand: days = regrowth from one cut to the next, yield = t/ha of hay per cut.
+Object.assign(FARM_CROPS, {
+  apple: {
+    use: 'orchard', label: 'Apples', emoji: '🍎', variety: 'Ambrosia on M9 rootstock (tall-spindle, high density)',
+    bearFrom: 2, fullAt: 4, kgTree: 18, bloom: 125, window: [258, 292], keepDays: 150, price: 1.6, perKgRetail: true,
+    pests: { name: 'codling moth', window: [150, 230], chance: 0.03 }, colour: { green: 0x4f7f2c, ripe: 0xc0392b, blossom: 0xf6e8ee }
+  },
+  cherry: {
+    use: 'orchard', label: 'Cherries', emoji: '🍒', variety: 'Sweetheart on Gisela 5',
+    bearFrom: 3, fullAt: 5, kgTree: 14, bloom: 112, window: [192, 214], keepDays: 14, price: 4.5, perKgRetail: true,
+    pests: { name: 'cherry fruit fly', window: [170, 205], chance: 0.035 }, colour: { green: 0x3f6f28, ripe: 0x7a0f1d, blossom: 0xffffff }
+  },
+  potato: {
+    use: 'vegetable', label: 'Potatoes', emoji: '🥔', variety: 'Yukon Gold (seed potatoes, cut and suberized)',
+    days: 95, window: [115, 152], seed: 2000, seedUnit: 'kg', yield: 30, n: 150, keepDays: 180, water: 1.1,
+    stages: [[0, 'planted', 'bare'], [0.12, 'emerged', 'sprout'], [0.3, 'vining', 'leafy'], [0.55, 'flowering', 'flower'], [0.85, 'vines dying back', 'turning'], [1, 'ready to dig', 'ripe']],
+    colour: { green: 0x3f7a2e, ripe: 0x8a7a45 }, pests: { name: 'Colorado potato beetle', window: [160, 210], chance: 0.03 }
+  },
+  carrot: {
+    use: 'vegetable', label: 'Carrots', emoji: '🥕', variety: 'Bolero (Nantes type)',
+    days: 80, window: [110, 175], seed: 3, seedUnit: 'kg', yield: 45, n: 100, keepDays: 120, water: 1,
+    stages: [[0, 'sown', 'bare'], [0.12, 'emerged', 'sprout'], [0.35, 'true leaves', 'leafy'], [0.7, 'roots sizing', 'head'], [1, 'ready to lift', 'ripe']],
+    colour: { green: 0x4f9a35, ripe: 0x4f8a35 }, pests: { name: 'carrot rust fly', window: [150, 200], chance: 0.02 }
+  },
+  squash: {
+    use: 'vegetable', label: 'Butternut squash', emoji: '🎃', variety: 'Waltham butternut',
+    days: 100, window: [140, 162], seed: 4, seedUnit: 'kg', yield: 25, n: 110, keepDays: 90, water: 1.2,
+    stages: [[0, 'sown', 'bare'], [0.1, 'emerged', 'sprout'], [0.3, 'running vines', 'leafy'], [0.5, 'flowering', 'flower'], [0.75, 'fruit sizing', 'turning'], [1, 'cured on the vine', 'ripe']],
+    colour: { green: 0x3d7a2a, ripe: 0xd9a03a }, pests: { name: 'squash bugs', window: [170, 220], chance: 0.02 }
+  },
+  bean: {
+    use: 'vegetable', label: 'Green beans', emoji: '🫛', variety: 'Provider bush bean',
+    days: 58, window: [140, 185], seed: 110, seedUnit: 'kg', yield: 9, n: 40, keepDays: 7, water: 1,
+    stages: [[0, 'sown', 'bare'], [0.12, 'emerged', 'sprout'], [0.4, 'bushy', 'leafy'], [0.65, 'flowering', 'flower'], [1, 'pods ready', 'ripe']],
+    colour: { green: 0x4a8f32, ripe: 0x4a8f32 }, pests: { name: 'bean leaf beetles', window: [170, 215], chance: 0.02 }
+  },
+  hay: {
+    use: 'hay', label: 'Alfalfa-grass hay', emoji: '🌿', variety: 'Alfalfa and orchardgrass mix (60/40)',
+    days: 40, window: [110, 165], seed: 18, seedUnit: 'kg', yield: 2.9, n: 0, cuts: 3, mowMoisture: 78, baleMoisture: 18,
+    stages: [[0, 'seeded', 'bare'], [0.1, 'regrowing', 'sprout'], [0.4, 'vegetative', 'leafy'], [0.8, 'early bud', 'head'], [1, 'first flower: cut now', 'ripe']],
+    colour: { green: 0x5a9a3a, ripe: 0x6f9a45 }
+  }
+});
+
+FARM_FIELD_USES.orchard = { label: 'orchard', ops: ['prune', 'orchardspray', 'thin', 'pick'] };
+FARM_FIELD_USES.vegetable = { label: 'vegetables', ops: ['till', 'plant', 'irrigate', 'cultivate', 'dig', 'pack'] };
+FARM_FIELD_USES.hay = { label: 'hay', ops: ['mow', 'ted', 'rake', 'bale', 'haul'] };
+FARM_FIELD_USES.pasture = { label: 'pasture', ops: ['graze', 'water'] };
+
+// --- Livestock -------------------------------------------------------------------------------------------
+// kg: grown weight; hayKg / grainKg: daily ration (as fed); waterL a day; gestation days; milkPeak L a
+// day (dairy), lactation and dry days; lay: eggs per hen-day at peak (hens); grazeKgDM: what one
+// takes from the pasture a day when it is out; price: what one costs to buy (CAD)
+Object.assign(FARM_ANIMALS, {
+  dairy: { label: 'Jersey dairy cow', short: 'cow', emoji: '🐄', breed: 'Jersey', kg: 450, hayKg: 11, grainKg: 5, waterL: 70, grazeKgDM: 12,
+    gestation: 279, milkPeak: 24, lactation: 305, dry: 60, calfKg: 25, price: 2900, building: 'stalls', products: ['milk'], ask: 'A bred Jersey dairy cow (second lactation, due in spring)' },
+  beef: { label: 'Black Angus cow', short: 'cow', emoji: '🐂', breed: 'Angus', kg: 600, hayKg: 12, grainKg: 0, waterL: 55, grazeKgDM: 13,
+    gestation: 283, calfKg: 35, sellDays: 540, sellKg: 560, price: 3400, building: 'stalls', products: ['beef'], ask: 'A bred Black Angus cow (cow-calf pair later, due in spring)' },
+  hen: { label: 'ISA Brown laying hen', short: 'hen', emoji: '🐔', breed: 'ISA Brown', kg: 2, feedKg: 0.115, waterL: 0.25, lay: 0.88,
+    price: 28, building: 'coop', products: ['eggs'], ask: 'Point-of-lay ISA Brown hens (20 weeks)' }
+});
+// Each grown animal's daily ration is mixed from his own hay and grain (js/farm2.js): the TMR for the
+// cattle (hay + rolled corn and wheat + mineral), layer mash for the hens (ground corn and wheat + premix)
+const FARM_FEED = {
+  tmr: { label: 'cattle TMR', hay: 0.66, corn: 0.22, wheat: 0.1, mineral: 0.02 },
+  layer: { label: 'layer mash', corn: 0.55, wheat: 0.2, premix: 0.17, oyster: 0.08 }
+};
+
+// --- Stage 2 buildings (the same staged build: foundation, frame, walls, roof) -------------------------
+Object.assign(FARM_BUILDINGS, {
+  packshed: {
+    stage2: true, label: 'Packing shed and cooler', emoji: '📦', at: [11, 88], w: 10, d: 8, rot: 0, concrete: 12, foundation: 'A sloped wash-floor slab with a trench drain',
+    parts: [['Steel building kit 10 × 8 m, insulated', 1, 'p'], ['Walk-in cooler 3 × 4 m (insulated panels, 1.5 hp condensing unit)', 1, 'p'],
+      ['Vegetable barrel washer, 2 hp', 1, 'p'], ['Stainless triple sink and spray nozzle', 1, 'p'], ['Packing table and roller conveyor 4 m', 1, 'p'],
+      ['Bench scale 60 kg (legal for trade)', 1, 'p'], ['Trench drain 6 m', 1, 'p'], ['Rebar 15M × 20 ft', 30, 'p'], ['Ready-mix concrete 30 MPa (m³)', 12, 'c']]
+  },
+  hayshed: {
+    stage2: true, label: 'Hay shed', emoji: '🌾', at: [31, 90], w: 16, d: 8, rot: 0, concrete: 3, foundation: 'Twelve post footings',
+    parts: [['Pressure-treated pole 6 × 6 in × 20 ft', 12, 'p'], ['Prefab truss 8 m span', 9, 'p'], ['Purlin 2×4 × 16 ft', 40, 'p'],
+      ['29-gauge steel roofing sheet × 4.9 m', 30, 'p'], ['Gravel pad 15 t (under the bales)', 1, 'p'], ['Ready-mix concrete 30 MPa (m³)', 3, 'c']]
+  },
+  coop: {
+    stage2: true, label: 'Chicken coop', emoji: '🐔', at: [44, 104], w: 6, d: 4, rot: 0, concrete: 0,
+    parts: [['Pressure-treated skid 4×6 × 20 ft', 2, 'p'], ['SPF stud 2×4 × 8 ft', 60, 'p'], ['Plywood 1/2 in 4×8', 22, 'p'], ['Metal roof panel 8 ft', 8, 'p'],
+      ['Nest box bank, 10 holes', 1, 'p'], ['Roost bars and droppings board', 1, 'p'], ['Automatic pop door with light sensor', 1, 'p'],
+      ['Hanging feeder 20 kg and heated waterer', 1, 'p'], ['Coop light on a timer (14 h day)', 1, 'p'], ['Welded-wire run fence 30 m and posts', 1, 'p']]
+  },
+  milkhouse: {
+    stage2: true, label: 'Milk house and robot milker', emoji: '🥛', at: [65, 58], w: 8, d: 8, rot: 0, concrete: 16, foundation: 'Milk-house slab with a floor drain',
+    parts: [['Voluntary milking robot, single box (with cow ID collars)', 1, 'p'], ['Bulk milk tank 1000 L with cooling', 1, 'p'],
+      ['Batch pasteurizer 100 L', 1, 'p'], ['Bottle filler and capper', 1, 'p'], ['Stainless wash sinks and a 180 L hot-water tank', 1, 'p'],
+      ['Steel building kit 8 × 8 m, insulated', 1, 'p'], ['Rebar 15M × 20 ft', 36, 'p'], ['Ready-mix concrete 30 MPa (m³)', 16, 'c']]
+  },
+  stalls: {
+    stage2: true, label: 'Barn stalls and feed alley', emoji: '🐄', at: [50, 52], w: 14, d: 24, rot: 0, inside: 'barn', concrete: 0,
+    parts: [['Free-stall loop, galvanized', 12, 'p'], ['Rubber stall mat 4 × 6 ft', 12, 'p'], ['Self-locking headlock, 5 head', 3, 'p'],
+      ['Frost-free automatic waterer, 2 hole', 2, 'p'], ['Calving pen gates 12 ft', 4, 'p'], ['Feed bunk liner, 12 m', 1, 'p']]
+  },
+  well: {
+    stage2: true, label: 'Well and pump house', emoji: '💧', at: [40, 98], w: 3, d: 3, rot: 0, concrete: 2, foundation: 'Pump-house pad',
+    parts: [['Drilled well, 60 m, cased (driller)', 1, 'p'], ['Submersible pump 2 hp, 40 L/min', 1, 'p'], ['Pressure tank 300 L', 1, 'p'],
+      ['Drip irrigation manifold: filter, valves, timer', 1, 'p'], ['Frost-free yard hydrant', 3, 'p'], ['PEX water line 1 in (100 m roll)', 3, 'p'], ['Ready-mix concrete 30 MPa (m³)', 2, 'c']]
+  }
+});
+const FARM2_BUILD_ORDER = ['well', 'packshed', 'hayshed', 'coop', 'stalls', 'milkhouse'];
+
+// --- Stage 2 machines and implements -------------------------------------------------------------------
+FARM_MACHINES.compact = { kind: 'farmcompact', label: 'Compact tractor', ask: 'A 55 hp compact utility tractor with front loader and 3-point hitch', re: /compact utility tractor|\b55 hp\b/i, hp: 55, tankL: 70, lph: 7, speed: 1.0, emoji: '🚜', stage2: true };
+Object.assign(FARM_IMPLEMENTS, {
+  tiller: { stage2: true, label: 'Rotary tiller', ask: 'A 1.8 m rotary tiller', re: /rotary tiller/i, widthM: 1.8, kmh: 4, needHp: 35, op: 'till' },
+  planter: { stage2: true, label: 'Vegetable planter', ask: 'A 2-row vegetable planter with seed plates and a potato cup unit', re: /vegetable planter/i, widthM: 1.8, kmh: 5, needHp: 30, op: 'plant' },
+  cultivator: { stage2: true, label: 'Row cultivator', ask: 'A 2-row S-tine cultivator with finger weeders', re: /row cultivator|S-tine cultivator/i, widthM: 1.8, kmh: 6, needHp: 25, op: 'cultivate' },
+  digger: { stage2: true, label: 'Root digger', ask: 'A 1-row potato and carrot digger with a shaker chain', re: /potato .*digger|root digger/i, widthM: 1.8, kmh: 4, needHp: 40, op: 'dig' },
+  airblast: { stage2: true, label: 'Orchard sprayer', ask: 'A 600 L trailed airblast orchard sprayer', re: /airblast/i, widthM: 3.5, kmh: 6, needHp: 40, op: 'orchardspray' },
+  mower: { stage2: true, label: 'Mower-conditioner', ask: 'A 3.2 m disc mower-conditioner', re: /mower-?conditioner/i, widthM: 3.2, kmh: 12, needHp: 80, op: 'mow' },
+  tedder: { stage2: true, label: 'Hay tedder', ask: 'A 4-rotor hay tedder, 5.2 m', re: /hay tedder/i, widthM: 5.2, kmh: 12, needHp: 40, op: 'ted' },
+  rake: { stage2: true, label: 'Wheel rake', ask: 'An 8-wheel V hay rake', re: /hay rake|wheel rake/i, widthM: 6.4, kmh: 12, needHp: 30, op: 'rake' },
+  baler: { stage2: true, label: 'Round baler', ask: 'A 4 × 5 ft round baler with net wrap', re: /round baler/i, widthM: 6.4, kmh: 9, needHp: 70, op: 'bale' },
+  squarebaler: { stage2: true, label: 'Small square baler', ask: 'A small square baler with a bale thrower', re: /square baler/i, widthM: 6.4, kmh: 7, needHp: 50, op: 'balesq' },
+  balewagon: { stage2: true, label: 'Hay wagon', ask: 'A 9 m flat hay wagon and a bale spear for the loader', re: /hay wagon|bale spear/i, widthM: 0, kmh: 15, needHp: 40, op: 'haulhay' },
+  mixer: { stage2: true, label: 'TMR mixer', ask: 'A 7 m³ vertical TMR feed mixer wagon with a scale', re: /TMR|feed mixer/i, widthM: 0, kmh: 10, needHp: 70, op: 'mix' },
+  rollermill: { stage2: true, label: 'Roller and hammer mill', ask: 'A 5 hp grain roller mill and hammer mill', re: /roller mill|hammer mill/i, widthM: 0, kmh: 0, needHp: 0, op: 'grind' }
+});
+// Field operations of stage 2 (the same strip passes as stage 1; js/farm.js farmWorkField)
+Object.assign(FARM_OPS, {
+  till: { label: 'Tilling', verb: 'till', impl: 'tiller', machine: 'compact', soil: 'harrowed', lpha: 30, emoji: '🟫', say: f => `Rotary tiller down: the ${f.name.toLowerCase()} turned into a fine seedbed, beds 1.8 m wide.` },
+  plant: { label: 'Planting', verb: 'plant', impl: 'planter', machine: 'compact', soil: 'seeded', lpha: 8, emoji: '🌱', say: f => `${FARM_CROPS[f.crop] ? FARM_CROPS[f.crop].variety : 'Seed'} going in, two rows to a bed, drip tape laid with it.` },
+  cultivate: { label: 'Cultivating', verb: 'cultivate', impl: 'cultivator', machine: 'compact', soil: null, lpha: 6, emoji: '🌿', say: f => `S-tines between the rows, finger weeders in the row: the weeds in the ${f.name.toLowerCase()} uprooted while they are small.` },
+  dig: { label: 'Digging', verb: 'dig', impl: 'digger', machine: 'compact', soil: 'stubble', lpha: 25, emoji: '🧺', say: f => `The digger lifts the ${FARM_CROPS[f.crop] ? FARM_CROPS[f.crop].label.toLowerCase() : 'roots'} onto the shaker chain; I pick them into the bins behind.` },
+  orchardspray: { label: 'Orchard spraying', verb: 'spray', impl: 'airblast', machine: 'compact', soil: null, lpha: 10, emoji: '💨', say: () => 'Airblast sprayer down every alley, fan on, nozzles only on the tree side. Low drift, no wind.' },
+  mow: { label: 'Mowing hay', verb: 'mow', impl: 'mower', machine: 'tractor', soil: null, lpha: 9, emoji: '🌿', say: f => `Mowing the ${f.name.toLowerCase()} at first flower: the conditioner rolls crimp the stems so they dry as fast as the leaves.` },
+  ted: { label: 'Tedding', verb: 'ted', impl: 'tedder', machine: 'tractor', soil: null, lpha: 4, emoji: '🌀', say: () => 'Tedder rotors spinning: the swaths fluffed and spread out to dry in the sun.' },
+  rake: { label: 'Raking', verb: 'rake', impl: 'rake', machine: 'tractor', soil: null, lpha: 3, emoji: '〰️', say: () => 'The wheel rake rolls the dry hay into windrows for the baler.' },
+  bale: { label: 'Round baling', verb: 'bale', impl: 'baler', machine: 'tractor', soil: null, lpha: 8, emoji: '🟤', say: () => 'Pickup down on the windrow, the chamber filling: net wrap, tailgate up, and out rolls a 4 × 5 ft bale.' },
+  balesq: { label: 'Square baling', verb: 'bale', impl: 'squarebaler', machine: 'tractor', soil: null, lpha: 7, emoji: '🟫', say: () => 'Small squares, tied with two strings, thrown into the wagon behind.' }
+});
+
+// --- Stage 2 supplies (the ledger) --------------------------------------------------------------------------
+Object.assign(FARM_SUPPLIES, {
+  trees_apple: { label: 'apple trees', ask: 'Bare-root Ambrosia apple trees on M9, 2-year feathered (bundle of 25)', unit: '', per: 25, stage2: true },
+  trees_cherry: { label: 'cherry trees', ask: 'Bare-root Sweetheart cherry trees on Gisela 5 (bundle of 10)', unit: '', per: 10, stage2: true },
+  trellis: { label: 'trellis posts and wire', ask: 'Orchard trellis: 3 m treated posts, 12.5 ga high-tensile wire, anchors (per 30 m row)', unit: 'rows', per: 1, stage2: true },
+  guards: { label: 'tree guards and stakes', ask: 'Spiral tree guards and bamboo stakes (bundle of 50)', unit: '', per: 50, stage2: true },
+  seed_potato: { label: 'seed potatoes', ask: 'Certified Yukon Gold seed potatoes (50 lb sack)', unit: 'kg', per: 22.7, stage2: true },
+  seed_carrot: { label: 'carrot seed', ask: 'Bolero carrot seed, pelleted (1 kg)', unit: 'kg', per: 1, stage2: true },
+  seed_squash: { label: 'squash seed', ask: 'Waltham butternut squash seed (500 g)', unit: 'kg', per: 0.5, stage2: true },
+  seed_bean: { label: 'bean seed', ask: 'Provider bush bean seed (25 kg)', unit: 'kg', per: 25, stage2: true },
+  seed_hay: { label: 'hay seed', ask: 'Alfalfa and orchardgrass hay seed mix (25 kg bag)', unit: 'kg', per: 25, stage2: true },
+  compost: { label: 'compost', ask: 'Screened compost, 10 m³ load', unit: 'm³', per: 10, stage2: true },
+  driptape: { label: 'drip tape', ask: 'Drip tape 8 mil, 30 cm emitters (2300 m roll)', unit: 'm', per: 2300, stage2: true },
+  netwrap: { label: 'bale net wrap', ask: 'Round-bale net wrap (roll, about 350 bales)', unit: 'bales', per: 350, stage2: true },
+  twine: { label: 'baler twine', ask: 'Small square baler twine (2 balls, about 400 bales)', unit: 'bales', per: 400, stage2: true },
+  mineral: { label: 'cattle mineral', ask: 'Beef and dairy mineral 2:1 with selenium (25 kg bag)', unit: 'kg', per: 25, stage2: true },
+  premix: { label: 'layer premix', ask: 'Layer protein premix 36% (25 kg bag)', unit: 'kg', per: 25, stage2: true },
+  oyster: { label: 'oyster shell', ask: 'Oyster shell grit (25 kg bag)', unit: 'kg', per: 25, stage2: true },
+  vetkit: { label: 'vet supplies', ask: 'Livestock vet kit: thermometer, calving chains, iodine, electrolytes, syringes', unit: 'kits', per: 1, stage2: true },
+  bedding: { label: 'bedding', ask: 'Wood-shaving bedding (bulk, 10 m³)', unit: 'm³', per: 10, stage2: true },
+  cartons: { label: 'egg cartons', ask: 'Egg cartons, dozen size (case of 200)', unit: '', per: 200, stage2: true },
+  bottles: { label: 'milk bottles', ask: 'Glass milk bottles 1 L with caps (case of 120)', unit: '', per: 120, stage2: true },
+  boxes: { label: 'produce boxes and bags', ask: 'Produce boxes, mesh bags and clamshells (mixed case of 300)', unit: '', per: 300, stage2: true },
+  hay_bought: { label: 'bought hay', ask: 'Grass-alfalfa round bales from a neighbour, delivered (10 bales, 4.5 t)', unit: 'bales', per: 10, stage2: true }
+});
+
+// --- Prices at the stand and on the website (CAD, 2026) ---------------------------------------------------
+Object.assign(FARM_RETAIL, {
+  apple: { label: '2 kg bag of Ambrosia apples', kg: 2, price: 8, produce: 'apple' },
+  cherry: { label: '1 kg clamshell of Sweetheart cherries', kg: 1, price: 12, produce: 'cherry' },
+  potato: { label: '4.5 kg (10 lb) bag of Yukon Gold potatoes', kg: 4.5, price: 9, produce: 'potato' },
+  carrot: { label: '1 kg bag of Bolero carrots', kg: 1, price: 4, produce: 'carrot' },
+  squash: { label: 'Butternut squash (about 1.2 kg)', kg: 1.2, price: 4.5, produce: 'squash' },
+  bean: { label: '500 g of green beans', kg: 0.5, price: 5, produce: 'bean' },
+  eggs: { label: 'A dozen free-run brown eggs', dozen: 1, price: 7, produce: 'eggs' },
+  milk: { label: '1 L glass bottle of cream-top whole milk (pasteurized)', litres: 1, price: 4.5, produce: 'milk' },
+  beef: { label: 'A quarter of grass-fed Angus beef (about 55 kg, cut and wrapped)', kg: 55, price: 820, produce: 'beef' },
+  hay: { label: 'A small square bale of alfalfa-grass hay', bales: 1, price: 12, produce: 'hay' }
+});
+
+// --- Where stage 2 goes on the farm (local metres, as the buildings: x from the gate side, d north) -----
+// The north-west of the steading was left empty in stage 1 for this. The north field becomes hay.
+const FARM2_LAYOUT = {
+  orchard: { x0: 7, x1: 36, d0: 104, d1: 156, rowM: 3.5, rows: { apple: 11, cherry: 3 }, treeM: { apple: 1.2, cherry: 2.5 } },
+  plots: [
+    { id: 'v1', name: 'Potato plot', crop: 'potato', x0: 7, x1: 36, d0: 160, d1: 172 },
+    { id: 'v2', name: 'Carrot plot', crop: 'carrot', x0: 7, x1: 36, d0: 174, d1: 186 },
+    { id: 'v3', name: 'Squash plot', crop: 'squash', x0: 7, x1: 36, d0: 188, d1: 200 },
+    { id: 'v4', name: 'Bean plot', crop: 'bean', x0: 7, x1: 36, d0: 202, d1: 213 }
+  ],
+  hayField: 'f3',
+  pasture: { x0: 40, x1: 72, d0: 112, d1: 212, gateX: 46 },
+  pen: { x0: 60, x1: 72, d0: 36, d1: 52 },
+  run: { x0: 47.5, x1: 56, d0: 100, d1: 108 }
+};
+// A small fixed herd and flock (what this land can feed): the plan's livestock list
+const FARM2_STOCKING = { dairy: 3, beef: 3, hen: 30 };

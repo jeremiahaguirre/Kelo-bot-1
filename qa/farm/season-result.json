@@ -1,0 +1,121 @@
+{
+ "farm": "farm at the east benchland past the north yard, 4.4 ha (200 × 219 m); land cleared 100%, graded 100%, fenced 100%; buildings done: machine shed, fuel tank, grain bins, grain dryer and auger, big barn, farmhouse, workshop corner, farm stand; fields: south field stubble, middle field stubble, north field stubble; bins: 1.1 t canola, 1.4 t wheat, 3.8 t corn; flour 380 kg; earned $0; home: town",
+ "harvests": [
+  {
+   "field": "North field",
+   "crop": "corn",
+   "t": 4.27,
+   "ha": 0.78,
+   "tPerHa": 5.48,
+   "moisture": 25,
+   "day": 317,
+   "year": 2
+  },
+  {
+   "field": "South field",
+   "crop": "wheat",
+   "t": 1.88,
+   "ha": 0.78,
+   "tPerHa": 2.41,
+   "moisture": 17.9,
+   "day": 281,
+   "year": 2
+  },
+  {
+   "field": "Middle field",
+   "crop": "canola",
+   "t": 1.09,
+   "ha": 0.78,
+   "tPerHa": 1.4,
+   "moisture": 11.9,
+   "day": 275,
+   "year": 2
+  }
+ ],
+ "bins": {
+  "canola": {
+   "t": 1.05,
+   "m": 9
+  },
+  "wheat": {
+   "t": 1.41,
+   "m": 14.5
+  },
+  "corn": {
+   "t": 3.79,
+   "m": 15.5
+  }
+ },
+ "flour": 380,
+ "earnings": 0,
+ "listings": [
+  "10 kg bag of stone-ground whole-wheat flour (Kelo-1's farm) $24",
+  "3 t of grain corn from his farm $735",
+  "1 t of spring wheat from his farm $310",
+  "0.5 t of canola from his farm $345"
+ ],
+ "log": [
+  "Listed 3 t corn on the website",
+  "Listed 1 t wheat on the website",
+  "Listed 0.5 t canola on the website",
+  "Milled my own flour",
+  "Dried 3.8 t of corn",
+  "Dried 1.8 t of wheat",
+  "Dried 1.1 t of canola",
+  "Harvested the north field",
+  "Harvesting done: North field",
+  "Harvested the south field",
+  "Harvesting done: South field",
+  "Harvested the middle field",
+  "Harvesting done: Middle field",
+  "Spraying done: South field",
+  "Spraying done: North field",
+  "Spraying done: North field",
+  "Spraying done: Middle field",
+  "Spraying done: South field",
+  "Spraying done: Middle field",
+  "Seeded the north field",
+  "Seeding done: North field",
+  "Seeded the middle field",
+  "Seeding done: Middle field",
+  "Seeded the south field",
+  "Seeding done: South field",
+  "Spreading fertilizer done: North field",
+  "Spreading fertilizer done: Middle field",
+  "Spreading fertilizer done: South field",
+  "Disc harrowing done: North field",
+  "Disc harrowing done: Middle field",
+  "Disc harrowing done: South field",
+  "Ploughing done: North field",
+  "Ploughing done: Middle field",
+  "Ploughing done: South field",
+  "Planned the farm year",
+  "The farm is built",
+  "Kit arrived: 1 t of wheat seed, 1 t of urea 46-0-0, 1 t of MAP 11-52-0",
+  "My machines are here",
+  "Kit arrived: 180 hp row-crop tractor with 3-point hitch and PTO, combine harvester, class 7 (rotary), tandem-axle grain truck with a 20 ft box and roll tarp",
+  "Finished the farm stand"
+ ],
+ "diary": [
+  "🌾 Took on Grow this year's grain (year 2)",
+  "🌾 Finished Grow this year's grain (year 1)",
+  "🫓 Milled my own flour",
+  "🌾 Working on Grow this year's grain (year 1)",
+  "🌾 Harvested the north field",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Harvested the south field",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Harvested the middle field",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Paused Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌱 Seeded the north field"
+ ],
+ "lists": [
+  "Farm list: seed, fertilizer and fuel: 10 lines",
+  "Farm list: machines and implements: 11 lines"
+ ]
+}

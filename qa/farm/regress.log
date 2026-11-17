@@ -1,0 +1,35 @@
+=== reload
+after reload {"d":1,"pin":true,"ground":"-1.38","rim":"0.20"}
+page errors: none
+=== ui
+shot ui-d-requests
+shot ui-d-diary
+shot ui-d-brain
+shot ui-d-world
+shot ui-d-settings
+page errors: none
+=== chat
+< I looked it up! "quokka": The quokka is a small macropod about the size of a domestic cat, found on islands off Western Australia. Now I understand what you meant, curiousWanderer.  (394369ms)
+> Did you know the lake is deep?
+< The lake is deep? I didn't know that! I'll remember it, curiousWanderer.  (6926ms)
+vocab: {"quokka":{"meaning":"The quokka is a small macropod about the size of a domestic cat, found on islands off Western Australia.","from":"Quokka","at":1794870986786}}
+unknown in "the lake is beautiful": []
+page errors: none
+=== vehicle
+vehicle disposed false {"vehicles":["Dump truck","Excavator"],"tools":["Dump truck","Excavator","A sturdy shovel"],"meshes":2}
+shot vehicle-after
+page errors: none
+=== haul
+shot haul-tipping
+hauled 4
+{"dirtDisposed":4,"load":0,"speech":"Tipped 4.0 loads of dirt into the Disposal Pit."}
+shot haul-after
+page errors: none
+=== basement
+put away: false deepest went: 0.0 { level: 0, title: 'Found a Workshop', depthNow: 0 }
+after reload: {"belongings":71,"levels":1}
+museum: {"sculptures":20,"paintings":11,"levels":2,"next":2,"summary":"20 sculptures and 11 paintings, over 3 floors"}
+shot basement-museum
+shot basement-storehouse
+page errors: none
+REGRESS DONE

@@ -1,0 +1,43 @@
+=== reload
+after reload {"d":1,"pin":true,"ground":"-1.38","rim":"0.20"}
+page errors: none
+=== ui
+shot ui-d-brain
+shot ui-d-world
+shot ui-d-settings
+page errors: none
+=== chat
+< The lake is deep? I didn't know that! I'll remember it, curiousWanderer.  (3566ms)
+vocab: {"quokka":{"meaning":"The quokka is a small macropod about the size of a domestic cat, found on islands off Western Australia.","from":"Quokka","at":1794895386678}}
+unknown in "the lake is beautiful": []
+page errors: none
+=== vehicle
+vehicle disposed false {"vehicles":["Dump truck","Excavator"],"tools":["Dump truck","Excavator","A sturdy shovel"],"meshes":2}
+shot vehicle-after
+page errors: none
+=== haul
+hauled 4
+{"dirtDisposed":4,"load":0,"speech":"Tipped 4.0 loads of dirt into the Disposal Pit."}
+shot haul-after
+page errors: none
+=== basement
+museum: {"sculptures":20,"paintings":11,"levels":2,"next":2,"summary":"20 sculptures and 11 paintings, over 3 floors"}
+shot basement-museum
+shot basement-storehouse
+page errors: none
+=== goals
+{"tpl":true,"act":true,"stages":["The land","The buildings","Machines, seed and fuel","The first season"]}
+goal {"id":"goal-mwkapa4d-74","title":"Build a big mechanized farm","agendaId":"task-mwkapa4d-zj"}
+{"farmTask":"Build a big mechanized farm","step":0,"goals":[["Build a big mechanized farm","waiting",0]],"adoptDup":1}
+page errors: none
+=== oldsave
+{"farm":["v","startedAt","goalRef","site","surveyed","land","buildings","fields","stock","owned","bins","wet","flour","sold","earnings","stand","home","hitch","log","lastDay","harvests","plan","unloading","cartUnloading","drying"],"started":0,"site":null,"diary":24,"vehicles":0,"panel":"not started","offFarm":null,"offTown":"NetNode Cyber Cafe"}
+{"task":"Build a big mechanized farm","steps":20}
+page errors: none
+=== perf
+PERF wt-main {"town":{"calls":833,"tris":223135},"workshop":{"calls":382,"tris":205590},"northyard":{"calls":83,"tris":167102}}
+PERF Kelo-bot-1 {"town":{"calls":809,"tris":221651},"workshop":{"calls":441,"tris":217365},"northyard":{"calls":74,"tris":168592}}
+=== midsummer
+drawcalls 15-midsummer {"crops":{"calls":41,"tris":201236},"crops2":{"calls":52,"tris":261380},"crops3":{"calls":40,"tris":214650},"fieldsover":{"calls":51,"tris":199524}}
+page errors: none
+FINALCHECK DONE

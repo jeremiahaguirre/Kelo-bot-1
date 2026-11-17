@@ -1426,6 +1426,59 @@ function loadPersistentBrainState() {
       if (typeof ensureSupplies === 'function') ensureSupplies();
       // Anything he added in town earlier moves out (js/town.js)
       if (typeof tidyTown === 'function') tidyTown();
+      freshWorldOnce();
+    }
+
+// One-time reset asked for by the owner (2026-11-17): every browser starts again with an empty Museum,
+// an empty Storehouse and a map with none of his builds. Everything else he has (diary, memories,
+// skills, know-how, vehicles, skins, money, settings) is kept. It runs once per device: the stamp
+// below is saved on its own key, so later loads leave his new things alone.
+const FRESH_WORLD_KEY = 'kelo1_fresh_world_2026_11_17';
+
+function freshWorldOnce() {
+      try { if (keloStore.getItem(FRESH_WORLD_KEY)) return; } catch (e) { return; }
+      const fresh = (k, v) => { if (Object.prototype.hasOwnProperty.call(state, k)) state[k] = v; };
+      // The Museum: his sculptures and creations, and his paintings
+      fresh('inventedCreations', []);
+      fresh('murals', []);
+      // The Storehouse: everything that sits on its shelves (the same things js/storehouse.js shelves).
+      // Vehicles parked outside, a set-up 3D printer and the welding studio's kit are not on the shelves
+      // and stay his.
+      const offShelf = n => typeof n === 'string' && (
+        (typeof vehicleTypeFor === 'function' && vehicleTypeFor(n)) ||
+        (typeof wreckPieceAtCrash === 'function' && wreckPieceAtCrash(n)) ||
+        (typeof isSetUpMachine === 'function' && isSetUpMachine(n)) ||
+        (typeof keptAtWeldStudio === 'function' && keptAtWeldStudio(n)));
+      fresh('toolInventory', (state.toolInventory || []).filter(offShelf));
+      fresh('toys', []);
+      fresh('belongings', (state.belongings || []).filter(b => b && offShelf(b.name)));
+      fresh('unstoredItems', []);
+      fresh('storeCopies', []);
+      // The map: everything he built or changed out there (landscaping, roads, plantings, dug holes,
+      // fills, poured concrete, finished builds, upgrades and the farm), back to the untouched valley
+      fresh('worldEdits', []);
+      fresh('concretePours', []);
+      fresh('roadworks', {});
+      fresh('landFills', []);
+      fresh('buildProjects', []);
+      fresh('pendingBuilds', []);
+      fresh('projects', []);
+      fresh('worldUpgrades', []);
+      fresh('plantings', []);
+      fresh('digSites', []);
+      if (typeof farmDefaultState === 'function') state.farm = farmDefaultState();
+      // Plans that pointed at those builds would now point at nothing, so they go too
+      if (state.agenda && Array.isArray(state.agenda.tasks)) {
+        state.agenda.tasks = state.agenda.tasks.filter(t => !(t && (/^farm/.test(String(t.ref || '')) || /^farm/.test(String(t.kind || '')) || t.kind === 'build' || t.kind === 'project' || t.kind === 'roadwork')));
+        if (state.agenda.focusId && !state.agenda.tasks.some(t => t.id === state.agenda.focusId)) state.agenda.focusId = null;
+      }
+      if (state.goals && Array.isArray(state.goals.list)) {
+        const farmGoals = new Set(state.goals.list.filter(g => g && g.template === 'farm').map(g => g.id));
+        state.goals.list = state.goals.list.filter(g => !(g && farmGoals.has(g.id)));
+        if (state.agenda && Array.isArray(state.agenda.tasks)) state.agenda.tasks = state.agenda.tasks.filter(t => !(t && t.kind === 'goal' && t.data && farmGoals.has(t.data.goalId)));
+      }
+      try { keloStore.setItem(FRESH_WORLD_KEY, String(Date.now())); } catch (e) {}
+      savePersistentBrainStateNow();
     }
 
 // Moment-to-moment flags and things stored elsewhere; everything else in state is saved

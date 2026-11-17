@@ -439,3 +439,9 @@ Every file starts with a header comment saying what it does; this is the short v
 3. A kayak that actually sits on the kayak rack when he owns one, and a dog for the doghouse (a code wish).
 
 Make sure everything looks right when it is built, removed or invented. Check each change with a screenshot.
+
+## Brain 2 (agent/brain2)
+- `js/brainrank.js`: `brainRankContext(trigger, budget)` ranks diary/core memories/mail/tasks/skills/lessons/places/things/feature lines against `brainSituation()`; `generateLLMDecision` sends a core + the ranked lines + a "not shown" line; optional schema fields gated by `offer` (code DSL 30% or when the trigger is about code).
+- `js/goals.js` + `js/goaltemplates.js`: `state.goals {list, history, lastPickAt}`; each goal is an agenda task kind 'goal' (ref `goal:<id>`); `goalStep` is its resume; blockers via `goalBlock`/`goalBlockerOver`; quiet waits carry `waitingFor.quiet` (agendaReady writes no diary then). API in GOALS.md.
+- `js/outcomes.js`: `state.outcomes {log, stats, lessons, ctx, fixes, prefs}`; hooked in loopguard `tryActivity`/`canTry` and agent `canTryKey`; `outcomeFavouriteNow()` early in the life tick.
+- `js/procbrain.js`: `smartProceduralDecision` is called first by `generateProceduralDecision` (which now accepts context.verb/subject/revisit/raw).

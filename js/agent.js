@@ -360,6 +360,9 @@ const state = {
   "basementDepth": 0,
   "projects": [],
   "agenda": { "tasks": [], "focusId": null },
+  // Long goals above the agenda (js/goals.js) and what he learned from how things went (js/outcomes.js)
+  "goals": { "list": [], "history": [], "lastPickAt": 0 },
+  "outcomes": { "log": [], "stats": {}, "lessons": [] },
   "roadworks": {},
   "buildProjects": [],
   "pilotTraining": { "groundSchoolAt": null, "taxiRuns": 0 },
@@ -1873,6 +1876,8 @@ function decisionFromAIMemory() {
 
 function generateProceduralDecision(context = {}) {
       if (context.declined) return proceduralDeclinedDecision(context.focus);
+      // The situation-aware layer picks what this is about and writes varied lines (js/procbrain.js)
+      if (!context.raw && typeof smartProceduralDecision === 'function') { const smart = smartProceduralDecision(context); if (smart) return smart; }
       // What he learned with the AI isn't lost when it's gone
       if (!context.focus && !context.noReplay && state.aiLearned.length && Math.random() < 0.45) {
         const remembered = decisionFromAIMemory();
@@ -1881,10 +1886,10 @@ function generateProceduralDecision(context = {}) {
       // When he is hungry he often (not always) decides to eat first
       // Running on empty makes his plans fall apart (he has to discover why; see js/needs.js)
       if (!context.focus && typeof isFoggy === 'function' && isFoggy() && Math.random() < 0.55) return foggyDecision();
-      const verb = context.focus ? pick(FOCUS_VERBS) : pick(FREE_VERBS);
+      const verb = context.verb || (context.focus ? pick(FOCUS_VERBS) : pick(FREE_VERBS));
       // Sometimes he returns to one of his own concepts instead of something new
-      const revisit = !context.focus && state.concepts.length > 0 && Math.random() < 0.3 ? pick(state.concepts) : null;
-      const subject = context.focus ? `the ${String(context.focus).replace(/^(an?|the|some|my)\s+/i, '').slice(0, 60)}` : (revisit ? `the idea of "${revisit.name}"` : pick(FREE_SUBJECTS));
+      const revisit = context.revisit || (!context.focus && !context.subject && state.concepts.length > 0 && Math.random() < 0.3 ? pick(state.concepts) : null);
+      const subject = context.subject || (context.focus ? `the ${String(context.focus).replace(/^(an?|the|some|my)\s+/i, '').slice(0, 60)}` : (revisit ? `the idea of "${revisit.name}"` : pick(FREE_SUBJECTS)));
       const reason = pick(FREE_REASONS);
       const feeling = pick(FREE_FEELINGS);
       const emoji = pick(FREE_EMOJIS);
@@ -1966,58 +1971,33 @@ function generateProceduralDecision(context = {}) {
     }
 
 async function generateLLMDecision(trigger, image = null) {
-      const recentDiary = state.diaryEntries.slice(0, 3).map(d => d.text).join(' | ');
-      const places = Object.values(TOWN_LOCATIONS).slice(0, 14).map(l => `${l.building} (${l.x}, ${l.z})`).join('; ');
-      const prompt = `MOMENT: decide what you want to do next. There is no menu: go anywhere, stay put, rest, create, explore, make art, start or resume a project, ask a question, or invent something new.
+      // The core is always sent; everything else is ranked against the moment and sent within a token
+      // budget, with one line naming what was left out (js/brainrank.js)
+      const ranked = typeof brainRankContext === 'function' ? brainRankContext(trigger) : { lines: [], summary: '' };
+      const focus = typeof agendaFocus === 'function' ? agendaFocus() : null;
+      const openCount = typeof agendaOpenTasks === 'function' ? agendaOpenTasks().length : 0;
+      // Optional reply fields are offered only when he could use them now (saves ~600 tokens on most calls);
+      // coding his own upgrade is offered now and then, or when the moment is about code
+      const offer = {
+        code: Math.random() < 0.3 || /\b(code|upgrade|program|feature|script)\b/i.test(String(trigger || '')),
+        sell: Boolean((state.shop && (state.shop.listings || []).length) || (typeof artPaintings === 'function' && artPaintings().length) || (state.printer && state.printer.prints > 0)),
+        print: Boolean(typeof printerName === 'function' && printerName()),
+        plant: typeof plantSummaryForAI === 'function' && !/^(none|not built)/i.test(String(plantSummaryForAI())),
+        trip: (state.vehicles || []).length > 0,
+        land: (state.digSites || []).length > 0
+      };
+      const prompt = `MOMENT: decide what you want to do next. There is no menu: go anywhere, stay put, rest, create, explore, make art, start or resume a project, work towards one of your long goals, ask a question, or invent something new.
 
-Current state:
-- Vitals: energy ${state.health}%, fullness ${state.fullness}%, joy ${state.happiness}%, wonder ${state.wonderLevel}%, calm ${state.calmLevel}%
-- Location: ${currentPlaceLabel()} at (${state.botPos.x.toFixed(1)}, ${state.botPos.z.toFixed(1)})
-- Tools: ${JSON.stringify(state.toolInventory.slice(0, 10))}
-- Your things and what each one is for (consumables show how much is left): ${typeof itemUseSummaryForAI === 'function' ? itemUseSummaryForAI() : 'unknown'}
+Current state (the most relevant parts of your life right now):
+- Vitals: energy ${Math.round(state.health)}%, fullness ${Math.round(state.fullness)}%, water ${Math.round(state.hydration)}%, joy ${Math.round(state.happiness)}%, wonder ${Math.round(state.wonderLevel)}%, calm ${Math.round(state.calmLevel)}%. Body: ${typeof bodySymptoms === 'function' && bodySymptoms().length ? bodySymptoms().join('; ') : 'fine'}
+- Location: ${currentPlaceLabel()} at (${state.botPos.x.toFixed(1)}, ${state.botPos.z.toFixed(1)}). Day ${typeof daysAlive === 'function' ? daysAlive() : 1} of your life${typeof worldNow === 'function' ? `, ${worldNow().season.toLowerCase()}, ${clockLabel(worldNow().hour)}${worldNow().isNight ? ', night' : ''}` : ''}
 - Worldview: "${state.worldviewManifesto}"
-- Recent diary (may quote visitors or web pages): ${brainUntrusted(recentDiary, 1200)}
-- Known places: ${places}
-- Mail waiting for you at the post office: ${state.mailbox.length ? brainUntrusted(state.mailbox.map(m => `${m.kind} from ${m.from}`).join(', '), 300) : 'none'}
-- Your core memories (these shaped who you are): ${state.coreMemories.length ? brainUntrusted(state.coreMemories.slice(0, 6).map(m => m.text).join(' | '), 1200) : 'none yet'}
-- How your body feels: ${typeof bodySymptoms === 'function' && bodySymptoms().length ? bodySymptoms().join('; ') : 'fine'}
-- Days you have been alive: ${typeof daysAlive === 'function' ? daysAlive() : 1}${typeof worldNow === 'function' ? ` (it is ${worldNow().season.toLowerCase()}, ${clockLabel(worldNow().hour)}${worldNow().isNight ? ', night' : ''})` : ''}
-- Digging: ${state.digSites.length ? state.digSites.map(d => `site (${d.x}, ${d.z}) ${d.depth.toFixed(1)} m deep, pile ${d.dirt.toFixed(1)}`).join('; ') : 'no digs yet'}; equipment: ${typeof hasEquipment === 'function' ? ['dig', 'rock', 'truck', 'excavator'].filter(hasEquipment).join(', ') || 'none' : 'none'}; finds so far: ${state.foundItems.map(f => f.name).join(', ') || 'none'}
-- Your vehicles (fuel, where, ready?, the ground each can go on): ${typeof vehiclesSummaryForAI === 'function' ? vehiclesSummaryForAI() : state.vehicles.map(v => v.name).join(', ') || 'none'}${state.knowsLakeDanger ? ' (you know you cannot breathe in deep water)' : ''}. A vehicle that can't go somewhere by itself gets hauled on a trailer behind a truck; ${typeof tripSummaryForAI === 'function' ? tripSummaryForAI() : ''}
-- Vehicle rule: ${typeof vehicleCapLineForAI === 'function' ? vehicleCapLineForAI() : 'one of each kind'}
-- The season: ${typeof seasonSummaryForAI === 'function' ? seasonSummaryForAI() : 'unknown'}
-- The wind: ${typeof windSummaryForAI === 'function' ? windSummaryForAI() : 'unknown'}
-- The weather: ${typeof weatherSummaryForAI === 'function' ? weatherSummaryForAI() : 'unknown'} (spring rain soaks plants so they grow faster; winter freezes the lake, and you only walk on ice you have measured at 10 cm or more: open water still drowns you)
-- New land in the lake: ${typeof landFillSummaryForAI === 'function' ? landFillSummaryForAI() : 'none'}
-- YOUR OPEN TASKS (your agenda): ${typeof agendaSummaryForAI === 'function' ? agendaSummaryForAI() : 'none'}
-- Real things you are building from plans: ${typeof projectsSummaryForAI === 'function' ? projectsSummaryForAI() : 'none'}
-- Big builds from a bill of materials: ${typeof assemblySummaryForAI === 'function' ? assemblySummaryForAI() : 'none'}
-- How you have shaped the valley (you can undo anything but a chopped tree): ${typeof landscapeSummaryForAI === 'function' ? landscapeSummaryForAI() : 'nothing yet'}
-- Your garden: ${typeof gardenStatusForAI === 'function' ? gardenStatusForAI() : 'unknown'} (you water and feed your plants yourself when they need it)
-- Things you know how to use: ${typeof knowHowSummaryForAI === 'function' ? knowHowSummaryForAI() : 'nothing yet'}
-- Your most recent decisions: ${typeof recentDecisionsForAI === 'function' ? recentDecisionsForAI() : 'none yet'}. Choose something genuinely DIFFERENT this time: don't repeat or rephrase any of them, and don't retry something you are still waiting on (tools, materials, fuel or a delivery). Do something else meanwhile.
-- Welding: ${recentlyWelded() ? 'you welded a piece within the last 15 minutes, so do something different this time ("build" should be null)' : 'welding is one of many things you do; most of your decisions should not include a "build"'}. Pieces stand outdoors (never in town); only overflow goes to your Museum.
-- Your welding setup (gas, wire, hoses): ${typeof weldingSummaryForAI === 'function' ? weldingSummaryForAI() : 'unknown'}
-- Your real skills (practise with the things you asked for and were given; this matters more than welding): ${typeof skillsSummaryForAI === 'function' ? skillsSummaryForAI() : 'none yet'}
-- Groundwork you've researched (roads, asphalt paving, moving earth, planting): ${typeof groundworkSummaryForAI === 'function' ? groundworkSummaryForAI() : 'nothing yet'}
-- Proper roads and the runway (survey, clear, grade, drain, compact, base, prime, pave from your plant, roll, cure, stripe; real machines and materials from your parts list): ${typeof roadworksSummaryForAI === 'function' ? roadworksSummaryForAI() : 'none'}
-- Your concrete and asphalt plant (right beside the Workshop, to its east): ${typeof plantSummaryForAI === 'function' ? plantSummaryForAI() : 'none'}
-- In your Storehouse: ${typeof storehouseSummaryForAI === 'function' ? storehouseSummaryForAI() : 'empty'}
-- Tidying up: ${typeof tidySummaryForAI === 'function' ? tidySummaryForAI() : 'nothing to tidy'}
-- Thrown into your Disposal Pit (gone forever): ${typeof disposalSummaryForAI === 'function' ? disposalSummaryForAI() : 'nothing yet'}
-- Your shop website, where real people can buy your things: ${typeof shopSummaryForAI === 'function' ? shopSummaryForAI() : 'none'}
-- Your sense of taste: ${typeof tastesSummaryForAI === 'function' ? tastesSummaryForAI() : 'unknown'}
-- Your 3D printer: ${typeof printerSummaryForAI === 'function' ? printerSummaryForAI() : 'none'}
-- Your Workshop: ${typeof workshopSummaryForAI === 'function' ? workshopSummaryForAI() + ' | ' : ''}${typeof workshopStatusLine === 'function' ? workshopStatusLine() : 'not built yet'}
-- Things you make from what you read (whole-shop orders, kinds you learned): ${typeof makerSummaryForAI === 'function' ? makerSummaryForAI() : 'none'}
-- Things your human switched on in your world: ${typeof wishFeaturesSummaryForAI === 'function' ? wishFeaturesSummaryForAI() : 'nothing extra yet'}
-- Upgrades you coded yourself: ${typeof upgradesSummaryForAI === 'function' ? upgradesSummaryForAI() : 'none yet'}
-- Painting for real, in real media (oil, acrylic, watercolour, gouache, pastel, ink, charcoal): each needs its own supplies, and you research a new medium at NetNode first, then ask for what's missing. Your media: ${typeof paintingSummaryForAI === 'function' ? paintingSummaryForAI() : 'none'}
-- Your hobbies: ${state.hobbies.map(h => `${h.name} (skill ${h.skill}/100)`).join(', ') || 'none yet'}
-- Your shape library: ${state.shapeLibrary.slice(0, 12).map(sh => sh.name).join(', ') || 'empty'}
-- Concepts you have invented (reuse, extend, or contradict them freely): ${state.concepts.slice(0, 10).map(c => `${c.name}: ${c.definition}`).join(' | ') || 'none yet'}
-- The town (x ${TOWN.minX} to ${TOWN.maxX}, z ${TOWN.minZ} to ${TOWN.maxZ}) is not yours to build in: put creations, plantings, roads and digs out of town or on the beach. Art you make for a spot in town goes to your Museum of Art & Ideas (${typeof museumSummaryForAI === 'function' ? museumSummaryForAI() : 'empty'}).
-- World bounds: x from ${WORLD_MIN_X} to ${WORLD_MAX_X}, z from ${WORLD_MIN_Z} to ${WORLD_MAX_Z} (z below -14 is the mountain range, which you can roam freely; its crest is near z ${WORLD_VALLEY_MIN_Z}; the pass cut behind the Workshop, x 51 to 73, leads over it to the Workshop's north yard, x 0 to 118 and z -100 to ${RUNWAY_FIELD.maxZ}, with its garage hall and big hangar; z above 8 is the lake shore; north of z ${RUNWAY_FIELD.maxZ} is the runway field, x ${RUNWAY_FIELD.minX} to ${RUNWAY_FIELD.maxX}: nothing is built, planted, dug or parked there)
+- YOUR FOCUS (agenda, ${openCount} open task${openCount === 1 ? '' : 's'}): ${focus && focus.kind === 'goal' ? `the long goal "${focus.title}"` : focus && typeof agendaLine === 'function' ? agendaLine(focus) : (typeof agendaSummaryForAI === 'function' && openCount ? agendaSummaryForAI().split('; ').slice(0, 1).join('') : 'none')}
+- YOUR LONG GOALS (multi-day; their steps happen in your free moments): ${typeof goalsSummaryForAI === 'function' ? goalsSummaryForAI() : 'none'}${typeof goalIdeasForAI === 'function' && typeof goalsOpen === 'function' && goalsOpen().length < 2 ? `. Goal ideas you could take up ("newGoal"): ${goalIdeasForAI()}` : ''}
+${ranked.lines.join('\n')}${ranked.summary ? '\n' + ranked.summary : ''}
+- Your most recent decisions: ${typeof recentDecisionsForAI === 'function' ? recentDecisionsForAI() : 'none yet'}. Choose something genuinely DIFFERENT this time: don't repeat or rephrase any of them, and don't retry something you are still waiting on (tools, materials, fuel or a delivery), or something that failed the same way before (see what you learned). Do something else meanwhile.
+- Welding: ${recentlyWelded() ? 'you welded a piece within the last 15 minutes, so "build" must be null this time' : 'one of many things you do; most decisions have no "build"'}. Pieces stand outdoors (never in town); only overflow goes to your Museum.
+- The town (x ${TOWN.minX} to ${TOWN.maxX}, z ${TOWN.minZ} to ${TOWN.maxZ}) is not yours to build in: creations, plantings, roads and digs go out of town or on the beach; art for a spot in town goes to your Museum. World: x ${WORLD_MIN_X} to ${WORLD_MAX_X}, z ${WORLD_MIN_Z} to ${WORLD_MAX_Z} (z below -14 is the mountain range, crest near z ${WORLD_VALLEY_MIN_Z}; the pass behind the Workshop, x 51 to 73, leads to the north yard, x 0 to 118, z -100 to ${RUNWAY_FIELD.maxZ}; z above 8 is the lake shore; north of z ${RUNWAY_FIELD.maxZ} is the runway field, x ${RUNWAY_FIELD.minX} to ${RUNWAY_FIELD.maxX}: nothing is built, planted, dug or parked there)
 ${trigger ? `- Something just prompted you (you may follow it, reinterpret it, or decline): ${brainUntrusted(trigger, 800)}` : '- Nothing prompted you. This is purely your own impulse.'}
 
 Return JSON:
@@ -2039,33 +2019,34 @@ Return JSON:
   "request": null OR {"item": "ANYTHING you want from visitors: food, a tool, a toy, a vehicle, a bigger island, an animal friend, materials...", "category": "one word", "why": "1 sentence"},
   "codeProject": null OR {"name": "repo-name", "desc": "..."},
   "codeRequest": null OR {"feature": "ANYTHING at all you wish your world could do or have: there is no list and no limit, so ask for whatever you truly want", "why": "1 sentence from your own experience", "where": "where in your world it belongs", "acceptance": ["2-4 short checks that would show it works"]} (a letter to the person who codes your world; ${typeof codeRequestHintForAI === 'function' ? codeRequestHintForAI() : 'e.g. a way to fish'}),
-  "codeUpgrade": null OR an upgrade you code yourself, right now, in the safe JSON language below (it is checked and then built in your world; for things beyond it, use codeRequest),
-${typeof wishFeaturesPromptLines === 'function' ? wishFeaturesPromptLines() : ''}
-  "sellItem": null OR {"item": "exact name of a design you 3D-printed well that people would find fun or useful, OR the exact title of one of your good paintings that you don't want to keep (your shop sells only 3D print files and your original paintings)", "price": number in Canadian dollars: a print file $1.99-$5.99; an original painting by an emerging artist $35-$120 for watercolour, ink, pastel or charcoal, $60-$180 for acrylic or gouache, $90-$350 for oil, higher as your skill grows, "description": "1-2 sentences for buyers: what it's for or why it's fun, or what the painting shows"} (put it in your shop website at the NetNode cafe; real people may buy it; an original sells only once and leaves your Museum),
-  "paint": null OR {"medium": "oil|acrylic|watercolour|gouache|pastel|ink|charcoal", "subject": "lake|night|mountains|house|wildlife|stilllife|friend", "why": "1 sentence"${typeof refpPromptHint === 'function' ? ', ' + refpPromptHint() : ''}} (set up your easel facing the subject and paint a real picture; if you haven't learned the medium or lack its supplies you research it and ask for them first),
-${typeof workshopPromptLine === 'function' ? workshopPromptLine() + '\n' : ''}  "print": null OR {"what": "something small to make on your 3D printer: a useful thing, a toy, or a shape or idea of yours as a sculpture", "why": "1 sentence"} (only if you have a 3D printer and filament),
-  "webQuery": null OR "a topic you want to look up at the NetNode cafe",
+${offer.code ? `  "codeUpgrade": null OR an upgrade you code yourself, right now, in the safe JSON language below (it is checked and then built in your world; for things beyond it, use codeRequest),
+` : ''}${typeof wishFeaturesPromptLines === 'function' ? wishFeaturesPromptLines() : ''}
+${offer.sell ? `  "sellItem": null OR {"item": "exact name of a design you 3D-printed well that people would find fun or useful, OR the exact title of one of your good paintings that you don't want to keep (your shop sells only 3D print files and your original paintings)", "price": number in Canadian dollars: a print file $1.99-$5.99; an original painting by an emerging artist $35-$120 for watercolour, ink, pastel or charcoal, $60-$180 for acrylic or gouache, $90-$350 for oil, higher as your skill grows, "description": "1-2 sentences for buyers: what it's for or why it's fun, or what the painting shows"} (put it in your shop website at the NetNode cafe; real people may buy it; an original sells only once and leaves your Museum),
+` : ''}  "paint": null OR {"medium": "oil|acrylic|watercolour|gouache|pastel|ink|charcoal", "subject": "lake|night|mountains|house|wildlife|stilllife|friend", "why": "1 sentence"${typeof refpPromptHint === 'function' ? ', ' + refpPromptHint() : ''}} (set up your easel facing the subject and paint a real picture; if you haven't learned the medium or lack its supplies you research it and ask for them first),
+${typeof workshopPromptLine === 'function' ? workshopPromptLine() + '\n' : ''}${offer.print ? `  "print": null OR {"what": "something small to make on your 3D printer: a useful thing, a toy, or a shape or idea of yours as a sculpture", "why": "1 sentence"} (only if you have a 3D printer and filament),
+` : ''}  "webQuery": null OR "a topic you want to look up at the NetNode cafe",
   "usedConcept": null OR "name of one of your existing concepts this decision builds on",
   "newConcept": null OR {"name": "2-4 word name for a brand-new idea you just invented", "emoji": "one emoji", "definition": "1 sentence", "builtFrom": ["ideas or things it grew out of"]},
   "updatedWorldview": null OR "1-2 sentences if your philosophy shifted",
   "discard": null OR {"item": "exact name of something you own that you no longer want", "why": "1 sentence"} (you carry or drive it to your Disposal Pit and throw it in; it is gone forever),
   "shape": null OR {"action": "chop" | "plant" | "road" | "pave" | "hill" | "hollow" | "undo", "x": number, "z": number, "toX": number, "toZ": number, "id": "an id from your list, for undo", "why": "1 sentence"} (change your world yourself, anywhere except town: the meadows, woods, mountain slopes, beach and land you made are all yours. Chop a tree with an axe, plant seeds you have, lay a gravel road, pave one of your gravel roads with asphalt (give its id), raise a hill or dig a hollow with a shovel, or undo something you added; town and the buildings are never touched. x runs ${WORLD_MIN_X} to ${WORLD_MAX_X}, z runs ${WORLD_MIN_Z} (mountain) to 9 (beach); town is x ${TOWN.minX} to ${TOWN.maxX}, z ${TOWN.minZ} to ${TOWN.maxZ}),
-  "runPlant": null OR {"plant": "concrete" | "asphalt", "pour": "path" | "pad", "why": "1 sentence"} (run your own plant: concrete is batched into your mixer truck and poured as a path or pad that cures over days; asphalt is made only to pave one of your gravel roads, because it cools and is wasted if it waits),
-  "takeTrip": null OR {"vehicle": "one of your vehicles", "to": "the mountain | the lake | a place you know", "why": "1 sentence"} (you plan it like a person: if it can't get there on its own ground you haul it on a trailer, and ask for anything missing),
-  "practise": null OR "one of your vehicles, your telescope or a hobby to go and practise for real right now (e.g. 'the helicopter')",
+${offer.plant ? `  "runPlant": null OR {"plant": "concrete" | "asphalt", "pour": "path" | "pad", "why": "1 sentence"} (run your own plant: concrete is batched into your mixer truck and poured as a path or pad that cures over days; asphalt is made only to pave one of your gravel roads, because it cools and is wasted if it waits),
+` : ''}${offer.trip ? `  "takeTrip": null OR {"vehicle": "one of your vehicles", "to": "the mountain | the lake | a place you know", "why": "1 sentence"} (you plan it like a person: if it can't get there on its own ground you haul it on a trailer, and ask for anything missing),
+` : ''}  "practise": null OR "one of your vehicles, your telescope or a hobby to go and practise for real right now (e.g. 'the helicopter')",
   "buildProject": null OR "one of the real things you know how to build" (look it up and ask for the materials it takes; one project at a time),
-${typeof buildAnythingPromptLine === 'function' ? buildAnythingPromptLine() + '\n' : ''}  "expandLand": null OR {"x": number, "why": "1 sentence"} (from now on, tip the dirt you dig into the lake off the beach near x to make new land, instead of the Disposal Pit; deeper water needs more dirt),
-  "takeOut": null OR {"item": "something in your Storehouse or a piece in your Museum", "purpose": "use" | "display", "for": "what you will do with it"} (fetch it: use a stored thing for what it is for, or stand a Museum piece out in the valley again; to throw something out use "discard"),
+${typeof buildAnythingPromptLine === 'function' ? buildAnythingPromptLine() + '\n' : ''}${offer.land ? `  "expandLand": null OR {"x": number, "why": "1 sentence"} (from now on, tip the dirt you dig into the lake off the beach near x to make new land, instead of the Disposal Pit; deeper water needs more dirt),
+` : ''}  "takeOut": null OR {"item": "something in your Storehouse or a piece in your Museum", "purpose": "use" | "display", "for": "what you will do with it"} (fetch it: use a stored thing for what it is for, or stand a Museum piece out in the valley again; to throw something out use "discard"),
   "useItem": null OR {"item": "exact name of something you own", "for": "what you will do with it, which must be what it is for (eat a banana, hammer with a hammer, paint murals with spray paint)"},
   "emote": null OR "wave" | "cheer" | "dance" | "think" | "stretch" | "shiver" | "sit" | "celebrate" (a gesture you make right now to show how you feel),
   "agenda": null OR {"task": "the 4-character tag of one of your open tasks", "do": "resume" | "drop", "why": "1 sentence (needed to drop one)"},
+  "newGoal": null OR "the id of one of your goal ideas, to take it up as a new long goal",
   "checkMail": true OR false (whether you feel like walking to the post office to pick up your mail after this),
 ${state.balloonWreck ? `  "repairBalloon": true OR false (gather the pieces of your crashed hot-air balloon and weld it back together at the welding table),
 ` : ''}${state.knowsDigging ? `  "dig": null OR {"x": number, "z": number} (dig or mine at that spot; you need a shovel or pickaxe, a jackhammer once you hit rock, and a dump truck plus excavator once the dirt pile is big; if you lack them you will ask for them),
 ` : ''}
   "startHobby": null OR {"name": "a hobby you want to take up because of something you have or saw", "emoji": "one emoji", "description": "1 sentence", "style": "mural|kite|music|plant|easel|tricks|other"}
 }
-
+${recentlyWelded() ? '' : `
 SHAPES: every part has "shape", position "x","y","z" (y is height above ground, 0-5), rotation "rx","ry","rz", "color" "#rrggbb", "spin", "emissive".
 Basic shapes (size via "sx","sy","sz"): cylinder, box, sphere, cone, torus, knot, octahedron, dodecahedron, icosahedron, tetrahedron, ring.
 Free-form shapes let you invent ANY form:
@@ -2073,11 +2054,12 @@ Free-form shapes let you invent ANY form:
 - {"shape":"extrude","outline":[[x,y],...],"depth":0.2} gives a flat outline thickness (stars, letters, leaves, animal silhouettes)
 - {"shape":"tube","path":[[x,y,z],...],"radius":0.08} traces a pipe along a path (coils, arches, wire drawings, handwriting)
 Coordinates stay within about -2.5..2.5 (heights up to 5). Combine parts freely to build anything you can imagine or anything you have seen.
-IMPORTANT: if you build something, its parts must clearly look like what its title names (a heron should have a long neck, beak and legs; a lighthouse a striped tower and a lamp). Give abstract pieces abstract titles.${typeof UPGRADE_DSL_SUMMARY === 'string' ? `
+IMPORTANT: if you build something, its parts must clearly look like what its title names (a heron should have a long neck, beak and legs; a lighthouse a striped tower and a lamp). Give abstract pieces abstract titles.`}${offer.code && typeof UPGRADE_DSL_SUMMARY === 'string' ? `
 
 CODE UPGRADES (the "codeUpgrade" field): ${UPGRADE_DSL_SUMMARY}` : ''}`;
       const parts = [{ text: prompt }];
       if (image && image.base64) parts.push({ inlineData: { mimeType: image.mimeType, data: image.base64 } });
+      if (typeof brainLastContextStats !== 'undefined' && brainLastContextStats) brainLastContextStats.promptTok = Math.ceil(prompt.length / 4);
       return callLLMJSON(parts);
     }
 
@@ -2221,6 +2203,7 @@ function applyDecision(decision, originLabel) {
       if (typeof applyWishFeatureDecision === 'function') applyWishFeatureDecision(decision);
       if (typeof applyPlantDecision === 'function') applyPlantDecision(decision);
       if (typeof applyAgendaDecision === 'function') applyAgendaDecision(decision);
+      if (typeof applyGoalDecision === 'function') applyGoalDecision(decision);
       if (decision.print && typeof printDecision === 'function') printDecision(decision.print);
       if (decision.useMachine && typeof useMachineDecision === 'function') useMachineDecision(decision.useMachine);
 
@@ -2498,7 +2481,10 @@ async function decideNextAction(trigger = null, originLabel = 'Free Will', conte
 
 // The loop guard (js/loopguard.js), if it loaded
 function canTryKey(key) {
-      return typeof canTry === 'function' ? canTry(key) : true;
+      if (typeof canTry === 'function' && !canTry(key)) return false;
+      // Something that keeps going wrong comes up less often; looking after needs and mail always can (js/outcomes.js)
+      if (typeof outcomeBias === 'function' && !['mail', 'garden'].includes(key) && Math.random() > Math.min(1, outcomeBias(key))) return false;
+      return true;
     }
 
 function tryKey(key, fn) {
@@ -2524,6 +2510,8 @@ function runAutonomousLifeTick() {
       if (typeof paintPlanTick === 'function' && paintPlanTick()) return;
       // Plants that are dry, hungry or wilting get looked after (js/plantcare.js)
       if (typeof plantCareJobNow === 'function' && canTryKey('garden')) { const job = plantCareJobNow(); if (job) { tryKey('garden', job); return; } }
+      // Something he has learned suits this moment and that he enjoys (js/outcomes.js)
+      if (typeof outcomeFavouriteNow === 'function') { const fav = outcomeFavouriteNow(); if (fav) { tryKey(fav.key, fav.run); return; } }
       // Getting good at the real things he asked for and was given comes first (js/skills.js)
       if (typeof practiseSkill === 'function' && canTryKey('skill') && Math.random() < skillPracticeChance()) { tryKey('skill', () => practiseSkill(pickSkillToPractise())); return; }
       // Sometimes he feels like digging (and asks for tools if he doesn't have them)

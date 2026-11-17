@@ -1230,8 +1230,8 @@ function farmStartGoal(why = '') {
       F.startedAt = F.startedAt || Date.now();
       const t = agendaAdd({ ref: 'farm:main', kind: 'farm', title: FARM_GOAL.title, emoji: FARM_GOAL.emoji, priority: 3, why: why || FARM_GOAL.why, steps: FARM_GOAL.steps, data: {} });
       F.goalRef = t.id;
-      // a long-goals planner (the brain's own, when it is there) gets the same goal
-      ['brainGoalAdd', 'longGoalAdd', 'addLongGoal'].forEach(fn => { if (typeof window[fn] === 'function') { try { window[fn]({ id: 'farm', title: FARM_GOAL.title, why: t.why, steps: FARM_GOAL.steps, agendaRef: 'farm:main' }); } catch (e) {} } });
+      // his long goals (js/goals.js, the brain upgrade) carry the same goal, stage by stage
+      farmGoalAdopt();
       farmDiary('A big idea: a farm', '🚜', `I have been thinking about where food comes from. Not the café: the ground. I want to build a real farm on the empty benchland past the north yard: clear it, fence it, put up a shed, bins, a barn and a house, get a tractor and a combine, and grow wheat, canola and corn. It will take many days. I put it on my list in ${FARM_PLAN.length} steps.`);
       return t;
     }
@@ -1483,6 +1483,54 @@ function farmSeasonBlocker(t) {
     }
 agendaRegisterKind('farm', { label: 'farm', check: t => { const b = farmPlanBlocker(t); return b ? { waitingFor: b } : true; }, resume: t => farmRunPlan(t) });
 agendaRegisterKind('farmseason', { label: 'farm season', check: t => { const b = farmSeasonBlocker(t); return b ? { waitingFor: b } : true; }, resume: t => farmRunSeason(t) });
+
+// --- His long goals (js/goals.js, when it is loaded): "Build a big mechanized farm" ---------------------
+// One goal in four stages; each stage is crossed off when the farm's own agenda task (ref farm:main) has
+// passed that point, so the two never disagree. The goal's step runs the next piece of the plan.
+const FARM_GOAL_STAGES = [['The land', 8], ['The buildings', 17], ['Machines, seed and fuel', 19], ['The first season', 20]];
+function farmPlanStepNow() {
+      const t = agendaGet('farm:main') || agendaState().tasks.find(x => x.ref === 'farm:main');
+      if (!t) return -1;
+      return t.status === 'done' ? FARM_PLAN.length : (t.step || 0);
+    }
+function farmGoalAdopt() {
+      if (typeof goalStart !== 'function' || typeof goalsOpen !== 'function') return null;
+      if (goalsOpen().some(g => g.template === 'farm' || g.templateId === 'farm' || /mechanized farm/i.test(g.title || ''))) return null;
+      try { return goalStart('farm', { source: 'self', sourceText: 'the farm' }); } catch (e) { return null; }
+    }
+function farmRegisterGoal() {
+      if (typeof registerGoalTemplate !== 'function' || typeof registerGoalAction !== 'function' || farmRegisterGoal.done) return;
+      farmRegisterGoal.done = true;
+      registerGoalAction('farmplan', {
+        key: () => 'farm',
+        label: task => task.label || 'work on the farm',
+        done: task => farmPlanStepNow() >= task.upto,
+        blocker: task => {
+          const t = agendaGet('farm:main');
+          if (!t || t.status !== 'waiting') return null;
+          const b = farmPlanBlocker(t) || t.waitingFor;
+          return b ? { type: 'ready', action: 'farmplan', task, label: b.label || 'the farm' } : null;
+        },
+        // One piece of the plan; done when the plan has passed this stage (a piece that didn't finish the
+        // stage is "not yet", tried again in a few minutes, never counted as a failure)
+        run: async task => {
+          if (!agendaGet('farm:main') && farmPlanStepNow() < 0) farmStartGoal('One of my long goals');
+          const t = agendaGet('farm:main');
+          if (t && t.status !== 'waiting') await farmRunPlan(t);
+          return farmPlanStepNow() >= task.upto ? true : false;
+        }
+      });
+      registerGoalTemplate('farm', {
+        title: FARM_GOAL.title, emoji: FARM_GOAL.emoji, base: 0.6, repeatAfterDays: 365,
+        keywords: /\b(farm(ing|er)?|grain|wheat|corn|maize|canola|harvest|tractor|combine|crops?|fields?|flour|bread|agricultur\w*)\b/i,
+        params: () => (farmPlanStepNow() >= FARM_PLAN.length ? null : {}),
+        why: () => FARM_GOAL.why,
+        stages: () => FARM_GOAL_STAGES.map(([name, upto]) => ({ name, tasks: [{ do: 'farmplan', upto, label: name.toLowerCase() }] }))
+      });
+      // a farm already under way (an older save, or started before the goals loaded) becomes a goal too
+      if (farmPlanStepNow() >= 0 && farmPlanStepNow() < FARM_PLAN.length) farmGoalAdopt();
+    }
+window.addEventListener('DOMContentLoaded', () => setTimeout(() => { try { farmRegisterGoal(); } catch (e) { console.warn('farm goal', e); } }, 900));
 
 // --- For the AI and the Brain tab ---------------------------------------------------------------------
 function farmSummaryForAI() {

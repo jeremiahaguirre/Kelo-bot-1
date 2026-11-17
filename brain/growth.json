@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-17T08:07:59.301Z",
-  "runs": 31,
+  "updatedAt": "2026-11-17T21:04:37.480Z",
+  "runs": 32,
   "curiosities": [
-    "1865 Newfoundland general election"
+    "1832 Newfoundland general election"
   ],
   "entries": [
     {
@@ -1079,6 +1079,46 @@
       "shapeFrom": "1836 Newfoundland general election",
       "nextCuriosity": "1865 Newfoundland general election",
       "coreMemory": null
+    },
+    {
+      "id": "dream-1794949477480",
+      "at": 1794949477480,
+      "brain": "procedural",
+      "topic": "1865 Newfoundland general election",
+      "title": "Dreaming of 1971 Newfoundland general election",
+      "text": "Dear Diary, while nobody was around I looked up \"1865 Newfoundland general election\" and drifted from 1865 Newfoundland general election to 1873 Newfoundland general election to 1971 Newfoundland general election. The 1971 Newfoundland general election was held on 28 October 1971 to elect members of the 35th General Assembly of Newfoundland. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "1865 Newfoundland general election",
+          "url": "https://en.wikipedia.org/wiki/1865_Newfoundland_general_election",
+          "extract": "The 1865 Newfoundland general election was held on November 7, 1865 to elect members of the 9th General Assembly of Newfoundland in the Newfoundland Colony. The Conservative Party led by Frederick Carter formed the government. Following the resignation of premier Hugh Hoyles, Car"
+        },
+        {
+          "title": "1873 Newfoundland general election",
+          "url": "https://en.wikipedia.org/wiki/1873_Newfoundland_general_election",
+          "extract": "The 1873 Newfoundland general election was held on November 8, 1873 to elect members of the 11th General Assembly of Newfoundland in the Colony of Newfoundland. The Anti-Confederates led by Charles Fox Bennett formed the government. Having largely abandoned Confederation with Can"
+        },
+        {
+          "title": "1971 Newfoundland general election",
+          "url": "https://en.wikipedia.org/wiki/1971_Newfoundland_general_election",
+          "extract": "The 1971 Newfoundland general election was held on 28 October 1971 to elect members of the 35th General Assembly of Newfoundland. It resulted in a hung parliament as, with the support of the Labrador Party's lone MHA, the Smallwood government had the support of 21 MHAs compared t"
+        }
+      ],
+      "concept": {
+        "name": "Newfoundland Newfoundland Loop",
+        "emoji": "🧩",
+        "definition": "The idea that 1865 newfoundland general election and 1971 newfoundland general election share a hidden pattern.",
+        "builtFrom": [
+          "1865 Newfoundland general election",
+          "1971 Newfoundland general election"
+        ]
+      },
+      "shapeFrom": "1971 Newfoundland general election",
+      "nextCuriosity": "1832 Newfoundland general election",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about Bonnington (sternwheeler). SS Bonnington was a sternwheel steamboat that ran on the Arrow Lakes in British Columbia from 1911 to 1931. It still makes me curious.",
+        "emoji": "🌙"
+      }
     }
   ]
 }

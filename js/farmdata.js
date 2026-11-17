@@ -569,6 +569,7 @@ Object.assign(FARM_SUPPLIES, {
   cartons: { label: 'egg cartons', ask: 'Egg cartons, dozen size (case of 200)', unit: '', per: 200, stage2: true },
   bottles: { label: 'milk bottles', ask: 'Glass milk bottles 1 L with caps (case of 120)', unit: '', per: 120, stage2: true },
   boxes: { label: 'produce boxes and bags', ask: 'Produce boxes, mesh bags and clamshells (mixed case of 300)', unit: '', per: 300, stage2: true },
+  layerfeed: { label: 'bought layer ration', ask: 'Complete layer ration 16% (pallet of 20 × 25 kg bags)', unit: 'kg', per: 500, stage2: true },
   hay_bought: { label: 'bought hay', ask: 'Grass-alfalfa round bales from a neighbour, delivered (10 bales, 4.5 t)', unit: 'bales', per: 10, stage2: true }
 });
 

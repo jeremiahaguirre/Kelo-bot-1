@@ -287,7 +287,17 @@ async function farm2FeedHens() {
       const X = farm2State(), n = X.flock.n, kg = Math.round(n * FARM_ANIMALS.hen.feedKg * 14);
       const corn = ((farmState().bins.corn || {}).t || 0) * 1000, wheat = ((farmState().bins.wheat || {}).t || 0) * 1000;
       if (farmStock('premix') < kg * FARM_FEED.layer.premix * 0.5) { farm2SupplyOrder(['premix', 'oyster'], 'The hens\' premix is nearly gone'); }
-      if (corn + wheat < kg * 0.5) return { type: 'supply', label: 'corn or wheat for the layer mash' };
+      // no grain of his own left for mash: bought layer ration instead (ordered when it runs low)
+      if (corn + wheat < kg * 0.5) {
+        if (farmStock('layerfeed') < kg) farm2SupplyOrder(['layerfeed'], 'The bins are empty and the hens need feed');
+        if (farmStock('layerfeed') < 1) return { type: 'supply', label: 'layer ration for the hens' };
+        await farmGo(farm2Spot('coop', 1), 240000);
+        const got = farmUse('layerfeed', kg);
+        farmSay('Filling the hen feeder', '🐔', `My own grain is gone, so it is bought layer ration this time: ${Math.round(got)} kg in the feeder.`);
+        await farmPause(2500);
+        X.feeder = Math.round((X.feeder + got) * 10) / 10;
+        return true;
+      }
       const mill = farmState().owned.rollermill;
       await farmGo(farm2Spot('workshop', 0, -3), 240000);
       farmSay('Grinding layer mash', '🐔', mill ? `${Math.round(kg * 0.55)} kg corn and ${Math.round(kg * 0.2)} kg wheat through the hammer mill, the premix and oyster shell mixed in.` : 'No mill yet: cracking the grain by hand and mixing in the premix.');
@@ -641,6 +651,8 @@ async function farm2FeedReview() {
       if (b.grainShortKg > 0) decisions.push(`keep all the corn and wheat for feed (still ${Math.round(b.grainShortKg / 100) / 10} t short: the cows get more hay instead)`);
       else decisions.push(`keep ${Math.round(farm2GrainReserveT('corn') * 10) / 10} t of corn and ${Math.round(farm2GrainReserveT('wheat') * 10) / 10} t of wheat back from sale for feed`);
       if (farmStock('mineral') < dem.tmr * b.days * FARM_FEED.tmr.mineral) { farm2SupplyOrder(['mineral'], 'Mineral for the winter'); decisions.push('order mineral'); }
+      // the hens eat grain too: when the bins won't last the winter, a pallet of layer ration goes on the list now
+      if (X.flock.n && b.grainShortKg > 0 && farmStock('layerfeed') < X.flock.n * FARM_ANIMALS.hen.feedKg * 60) { farm2SupplyOrder(['layerfeed'], 'Not enough of my own grain for the hens this winter'); decisions.push('buy layer ration for the hens'); }
       if (X.flock.n && farmStock('premix') < X.flock.n * FARM_ANIMALS.hen.feedKg * b.days * FARM_FEED.layer.premix) { farm2SupplyOrder(['premix', 'oyster'], 'Premix for the hens\' winter'); decisions.push('order layer premix'); }
       farmSay('The winter feed budget', '📋', `${lines.join('. ')}. So: ${decisions.join('; ')}.`);
       await farmPause(3000);

@@ -1,0 +1,470 @@
+[0s] farm step 0 "Read up on running a grain farm" open (day 0, doy 322)
+snap m-01-farm-0
+[4s] farm step 1 "Survey and choose the farm site" active (day 0, doy 322)
+snap m-02-farm-1
+[16s] farm step 2 "Send the land and fencing list" active (day 0, doy 322)
+snap m-03-farm-2
+[16s] farm step 3 "Clear the trees and stones" active (day 0, doy 322)
+snap m-04-farm-3
+[16s] farm step 3 "Clear the trees and stones" waiting waiting: the bulldozer (day 0, doy 322)
+[17s] farm step 3 "Clear the trees and stones" waiting waiting: learning to drive the crawler bulldozer (day 0, doy 322)
+[22s] farm step 3 "Clear the trees and stones" waiting waiting: diesel for the crawler bulldozer (day 0, doy 322)
+[32s] farm step 3 "Clear the trees and stones" open (day 0, doy 322)
+[62s] farm step 4 "Grade the land level" active (day 0, doy 322)
+snap m-05-farm-4
+[62s] farm step 4 "Grade the land level" waiting waiting: diesel for the crawler bulldozer (day 0, doy 322)
+[64s] farm step 4 "Grade the land level" waiting waiting: learning to drive the motor grader (day 0, doy 322)
+[77s] farm step 4 "Grade the land level" open (day 0, doy 322)
+[114s] farm step 5 "Dig the drainage ditches" active (day 0, doy 322)
+snap m-06-farm-5
+[114s] farm step 5 "Dig the drainage ditches" waiting waiting: learning to drive the excavator (day 0, doy 322)
+[126s] farm step 5 "Dig the drainage ditches" waiting waiting: diesel for the excavator (day 0, doy 322)
+[135s] farm step 5 "Dig the drainage ditches" open (day 0, doy 322)
+[149s] farm step 6 "Fence the farm and hang the gate" active (day 0, doy 322)
+snap m-07-farm-6
+[245s] farm step 7 "Build the farm lane" active (day 0, doy 322)
+snap m-08-farm-7
+[245s] farm step 7 "Build the farm lane" waiting waiting: learning to drive the dump truck (day 0, doy 322)
+[267s] farm step 7 "Build the farm lane" waiting waiting: diesel for the dump truck (day 0, doy 322)
+[276s] farm step 7 "Build the farm lane" open (day 0, doy 322)
+[304s] farm step 8 "Send the building materials list" active (day 0, doy 322)
+snap m-09-farm-8
+[304s] farm step 9 "Build the machine shed" active (day 0, doy 322)
+snap m-10-farm-9
+[304s] farm step 9 "Build the machine shed" waiting waiting: the ready-mix and rebar for the machine shed (day 0, doy 322)
+[310s] farm step 9 "Build the machine shed" open (day 0, doy 322)
+[330s] farm step 9 "Build the machine shed" active (day 0, doy 322)
+[330s] farm step 9 "Build the machine shed" waiting waiting: the machine shed foundation to cure (day 0, doy 322)
+[342s] farm step 9 "Build the machine shed" open (day 7, doy 329)
+[355s] farm step 9 "Build the machine shed" active (day 7, doy 329)
+[369s] farm step 10 "Set up the fuel tank" active (day 7, doy 329)
+snap m-11-farm-10
+[381s] farm step 10 "Set up the fuel tank" waiting waiting: the fuel tank foundation to cure (day 7, doy 329)
+[381s] farm step 10 "Set up the fuel tank" open (day 14, doy 336)
+[385s] farm step 10 "Set up the fuel tank" active (day 14, doy 336)
+[394s] farm step 11 "Put up the grain bins" active (day 14, doy 336)
+snap m-12-farm-11
+[411s] farm step 11 "Put up the grain bins" waiting waiting: the grain bins foundation to cure (day 14, doy 336)
+[411s] farm step 11 "Put up the grain bins" open (day 21, doy 343)
+[416s] farm step 11 "Put up the grain bins" active (day 21, doy 343)
+[428s] farm step 12 "Build the grain dryer and auger" active (day 21, doy 343)
+snap m-13-farm-12
+[439s] farm step 12 "Build the grain dryer and auger" waiting waiting: the grain dryer and auger foundation to cure (day 21, doy 343)
+[439s] farm step 12 "Build the grain dryer and auger" open (day 28, doy 350)
+[443s] farm step 12 "Build the grain dryer and auger" active (day 28, doy 350)
+[451s] farm step 13 "Raise the big barn" active (day 28, doy 350)
+snap m-14-farm-13
+[466s] farm step 13 "Raise the big barn" waiting waiting: the big barn foundation to cure (day 28, doy 350)
+[466s] farm step 13 "Raise the big barn" open (day 35, doy 357)
+[475s] farm step 13 "Raise the big barn" active (day 35, doy 357)
+snap latest
+[489s] farm step 14 "Build the farmhouse" active (day 35, doy 357)
+snap m-15-farm-14
+[502s] farm step 14 "Build the farmhouse" waiting waiting: the farmhouse foundation to cure (day 35, doy 357)
+[502s] farm step 14 "Build the farmhouse" open (day 42, doy 364)
+[507s] farm step 14 "Build the farmhouse" active (day 42, doy 364)
+[516s] farm step 15 "Fit out the workshop corner" active (day 42, doy 364)
+snap m-16-farm-15
+[530s] farm step 16 "Build the farm stand" active (day 42, doy 364)
+snap m-17-farm-16
+[544s] farm step 17 "Send the machines list" active (day 42, doy 364)
+snap m-18-farm-17
+[544s] farm step 17 "Send the machines list" waiting waiting: the tractor, the combine and the implements (day 42, doy 364)
+[545s] farm step 17 "Send the machines list" open (day 42, doy 364)
+[545s] farm step 18 "Order seed, fertilizer and fuel" active (day 42, doy 364)
+snap m-19-farm-18
+[545s] farm step 18 "Order seed, fertilizer and fuel" waiting waiting: the seed, fertilizer and fuel (day 42, doy 364)
+[546s] farm step 18 "Order seed, fertilizer and fuel" open (day 42, doy 364)
+[546s] farm step 19 "Start the first growing season" active (day 42, doy 364)
+snap m-20-farm-19
+[547s] farmseason step 0 "Plan the rotation" open (day 42, doy 364)
+snap m-21-farmseason-0
+[547s] farmseason step 1 "Plough the fields" active (day 42, doy 364)
+snap m-22-farmseason-1
+[547s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 42, doy 364)
+[547s] farmseason step 1 "Plough the fields" waiting waiting: learning to drive the 180 hp row-crop tractor (day 43, doy 365)
+[562s] farmseason step 1 "Plough the fields" open (day 43, doy 365)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 43, doy 365)
+[562s] farmseason step 1 "Plough the fields" open (day 44, doy 1)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 44, doy 1)
+[562s] farmseason step 1 "Plough the fields" open (day 45, doy 2)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 45, doy 2)
+[562s] farmseason step 1 "Plough the fields" open (day 46, doy 3)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 46, doy 3)
+[562s] farmseason step 1 "Plough the fields" open (day 47, doy 4)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 47, doy 4)
+[562s] farmseason step 1 "Plough the fields" open (day 48, doy 5)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 48, doy 5)
+[562s] farmseason step 1 "Plough the fields" open (day 49, doy 6)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 49, doy 6)
+[562s] farmseason step 1 "Plough the fields" open (day 50, doy 7)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 50, doy 7)
+[562s] farmseason step 1 "Plough the fields" open (day 51, doy 8)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 51, doy 8)
+[562s] farmseason step 1 "Plough the fields" open (day 52, doy 9)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 52, doy 9)
+[562s] farmseason step 1 "Plough the fields" open (day 53, doy 10)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 53, doy 10)
+[562s] farmseason step 1 "Plough the fields" open (day 54, doy 11)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 54, doy 11)
+[562s] farmseason step 1 "Plough the fields" open (day 55, doy 12)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 55, doy 12)
+[562s] farmseason step 1 "Plough the fields" open (day 56, doy 13)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 56, doy 13)
+[562s] farmseason step 1 "Plough the fields" open (day 57, doy 14)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 57, doy 14)
+[562s] farmseason step 1 "Plough the fields" open (day 58, doy 15)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 58, doy 15)
+[562s] farmseason step 1 "Plough the fields" open (day 59, doy 16)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 59, doy 16)
+[562s] farmseason step 1 "Plough the fields" open (day 60, doy 17)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 60, doy 17)
+[562s] farmseason step 1 "Plough the fields" open (day 61, doy 18)
+[562s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 61, doy 18)
+[562s] farmseason step 1 "Plough the fields" open (day 62, doy 19)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 62, doy 19)
+[563s] farmseason step 1 "Plough the fields" open (day 63, doy 20)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 63, doy 20)
+[563s] farmseason step 1 "Plough the fields" open (day 64, doy 21)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 64, doy 21)
+[563s] farmseason step 1 "Plough the fields" open (day 65, doy 22)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 65, doy 22)
+[563s] farmseason step 1 "Plough the fields" open (day 66, doy 23)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 66, doy 23)
+[563s] farmseason step 1 "Plough the fields" open (day 67, doy 24)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 67, doy 24)
+[563s] farmseason step 1 "Plough the fields" open (day 68, doy 25)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 68, doy 25)
+[563s] farmseason step 1 "Plough the fields" open (day 69, doy 26)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 69, doy 26)
+[563s] farmseason step 1 "Plough the fields" open (day 70, doy 27)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 70, doy 27)
+[563s] farmseason step 1 "Plough the fields" open (day 71, doy 28)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 71, doy 28)
+[563s] farmseason step 1 "Plough the fields" open (day 72, doy 29)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 72, doy 29)
+[563s] farmseason step 1 "Plough the fields" open (day 73, doy 30)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 73, doy 30)
+[563s] farmseason step 1 "Plough the fields" open (day 74, doy 31)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 74, doy 31)
+[563s] farmseason step 1 "Plough the fields" open (day 75, doy 32)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 75, doy 32)
+[563s] farmseason step 1 "Plough the fields" open (day 76, doy 33)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 76, doy 33)
+[563s] farmseason step 1 "Plough the fields" open (day 77, doy 34)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 77, doy 34)
+[563s] farmseason step 1 "Plough the fields" open (day 78, doy 35)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 78, doy 35)
+[563s] farmseason step 1 "Plough the fields" open (day 79, doy 36)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 79, doy 36)
+[563s] farmseason step 1 "Plough the fields" open (day 80, doy 37)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 80, doy 37)
+[563s] farmseason step 1 "Plough the fields" open (day 81, doy 38)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 81, doy 38)
+[563s] farmseason step 1 "Plough the fields" open (day 82, doy 39)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 82, doy 39)
+[563s] farmseason step 1 "Plough the fields" open (day 83, doy 40)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 83, doy 40)
+[563s] farmseason step 1 "Plough the fields" open (day 84, doy 41)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 84, doy 41)
+[563s] farmseason step 1 "Plough the fields" open (day 85, doy 42)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 85, doy 42)
+[563s] farmseason step 1 "Plough the fields" open (day 86, doy 43)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 86, doy 43)
+[563s] farmseason step 1 "Plough the fields" open (day 87, doy 44)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 87, doy 44)
+[563s] farmseason step 1 "Plough the fields" open (day 88, doy 45)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 88, doy 45)
+[563s] farmseason step 1 "Plough the fields" open (day 89, doy 46)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 89, doy 46)
+[563s] farmseason step 1 "Plough the fields" open (day 90, doy 47)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 90, doy 47)
+[563s] farmseason step 1 "Plough the fields" open (day 91, doy 48)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 91, doy 48)
+[563s] farmseason step 1 "Plough the fields" open (day 92, doy 49)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 92, doy 49)
+[563s] farmseason step 1 "Plough the fields" open (day 93, doy 50)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 93, doy 50)
+[563s] farmseason step 1 "Plough the fields" open (day 94, doy 51)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 94, doy 51)
+[563s] farmseason step 1 "Plough the fields" open (day 95, doy 52)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 95, doy 52)
+[563s] farmseason step 1 "Plough the fields" open (day 96, doy 53)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 96, doy 53)
+[563s] farmseason step 1 "Plough the fields" open (day 97, doy 54)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 97, doy 54)
+[563s] farmseason step 1 "Plough the fields" open (day 98, doy 55)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 98, doy 55)
+[563s] farmseason step 1 "Plough the fields" open (day 99, doy 56)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 99, doy 56)
+[563s] farmseason step 1 "Plough the fields" open (day 100, doy 57)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 100, doy 57)
+[563s] farmseason step 1 "Plough the fields" open (day 101, doy 58)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 101, doy 58)
+[563s] farmseason step 1 "Plough the fields" open (day 102, doy 59)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 102, doy 59)
+[563s] farmseason step 1 "Plough the fields" open (day 103, doy 60)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 103, doy 60)
+[563s] farmseason step 1 "Plough the fields" open (day 104, doy 61)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 104, doy 61)
+[563s] farmseason step 1 "Plough the fields" open (day 105, doy 62)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 105, doy 62)
+[563s] farmseason step 1 "Plough the fields" open (day 106, doy 63)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 106, doy 63)
+[563s] farmseason step 1 "Plough the fields" open (day 107, doy 64)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 107, doy 64)
+[563s] farmseason step 1 "Plough the fields" open (day 108, doy 65)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 108, doy 65)
+[563s] farmseason step 1 "Plough the fields" open (day 109, doy 66)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 109, doy 66)
+[563s] farmseason step 1 "Plough the fields" open (day 110, doy 67)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 110, doy 67)
+[563s] farmseason step 1 "Plough the fields" open (day 111, doy 68)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 111, doy 68)
+[563s] farmseason step 1 "Plough the fields" open (day 112, doy 69)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 112, doy 69)
+[563s] farmseason step 1 "Plough the fields" open (day 113, doy 70)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 113, doy 70)
+[563s] farmseason step 1 "Plough the fields" open (day 114, doy 71)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 114, doy 71)
+[563s] farmseason step 1 "Plough the fields" open (day 115, doy 72)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 115, doy 72)
+[563s] farmseason step 1 "Plough the fields" open (day 116, doy 73)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 116, doy 73)
+[563s] farmseason step 1 "Plough the fields" open (day 117, doy 74)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 117, doy 74)
+[563s] farmseason step 1 "Plough the fields" open (day 118, doy 75)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 118, doy 75)
+[563s] farmseason step 1 "Plough the fields" open (day 119, doy 76)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 119, doy 76)
+[563s] farmseason step 1 "Plough the fields" open (day 120, doy 77)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 120, doy 77)
+[563s] farmseason step 1 "Plough the fields" open (day 121, doy 78)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 121, doy 78)
+[563s] farmseason step 1 "Plough the fields" open (day 122, doy 79)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 122, doy 79)
+[563s] farmseason step 1 "Plough the fields" open (day 123, doy 80)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 123, doy 80)
+[563s] farmseason step 1 "Plough the fields" open (day 124, doy 81)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 124, doy 81)
+[563s] farmseason step 1 "Plough the fields" open (day 125, doy 82)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 125, doy 82)
+[563s] farmseason step 1 "Plough the fields" open (day 126, doy 83)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 126, doy 83)
+[563s] farmseason step 1 "Plough the fields" open (day 127, doy 84)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: field work (the ground is frozen) (day 127, doy 84)
+[563s] farmseason step 1 "Plough the fields" open (day 128, doy 85)
+[563s] farmseason step 1 "Plough the fields" waiting waiting: spring (the planting window opens day 105) (day 128, doy 85)
+[563s] farmseason step 1 "Plough the fields" open (day 135, doy 92)
+[615s] farmseason step 1 "Plough the fields" active (day 135, doy 92)
+[615s] farmseason step 1 "Plough the fields" waiting waiting: spring (the planting window opens day 110) (day 135, doy 92)
+[615s] farmseason step 1 "Plough the fields" open (day 142, doy 99)
+[651s] farmseason step 1 "Plough the fields" active (day 142, doy 99)
+[651s] farmseason step 1 "Plough the fields" waiting waiting: spring (the planting window opens day 125) (day 142, doy 99)
+[651s] farmseason step 1 "Plough the fields" open (day 149, doy 106)
+[651s] farmseason step 1 "Plough the fields" waiting waiting: spring (the planting window opens day 125) (day 149, doy 106)
+[651s] farmseason step 1 "Plough the fields" open (day 156, doy 113)
+[688s] farmseason step 1 "Plough the fields" active (day 156, doy 113)
+[688s] farmseason step 2 "Disc harrow the seedbed" active (day 156, doy 113)
+snap m-23-farmseason-2
+[756s] farmseason step 3 "Spread fertilizer" active (day 156, doy 113)
+snap m-24-farmseason-3
+[806s] farmseason step 4 "Seed the crops" active (day 156, doy 113)
+snap m-25-farmseason-4
+[844s] farmseason step 4 "Seed the crops" waiting waiting: the planting window (day 156, doy 113)
+[844s] farmseason step 4 "Seed the crops" open (day 163, doy 120)
+[844s] farmseason step 4 "Seed the crops" waiting waiting: the planting window (day 163, doy 120)
+[844s] farmseason step 4 "Seed the crops" open (day 170, doy 127)
+[844s] farmseason step 4 "Seed the crops" waiting waiting: field work (it is raining) (day 170, doy 127)
+[844s] farmseason step 4 "Seed the crops" open (day 171, doy 128)
+[865s] farmseason step 4 "Seed the crops" active (day 171, doy 128)
+[865s] farmseason step 5 "Spray weeds and pests" active (day 171, doy 128)
+snap m-26-farmseason-5
+[865s] farmseason step 6 "Watch the crops grow" active (day 171, doy 128)
+snap m-27-farmseason-6
+[870s] farmseason step 6 "Watch the crops grow" waiting waiting: the crops to ripen (day 171, doy 128)
+[870s] farmseason step 6 "Watch the crops grow" open (day 186, doy 143)
+[870s] farmseason step 5 "Spray weeds and pests" active (day 186, doy 143)
+[870s] farmseason step 5 "Spray weeds and pests" waiting waiting: spraying weather (it is raining) (day 186, doy 143)
+[870s] farmseason step 5 "Spray weeds and pests" open (day 187, doy 144)
+[889s] farmseason step 5 "Spray weeds and pests" active (day 187, doy 144)
+[889s] farmseason step 6 "Watch the crops grow" active (day 187, doy 144)
+[892s] farmseason step 6 "Watch the crops grow" waiting waiting: the crops to ripen (day 187, doy 144)
+[892s] farmseason step 6 "Watch the crops grow" open (day 190, doy 147)
+[892s] farmseason step 5 "Spray weeds and pests" active (day 190, doy 147)
+[893s] farmseason step 5 "Spray weeds and pests" waiting waiting: spraying weather (it is raining) (day 190, doy 147)
+[893s] farmseason step 5 "Spray weeds and pests" open (day 191, doy 148)
+[893s] farmseason step 5 "Spray weeds and pests" waiting waiting: spraying weather (it is raining) (day 191, doy 148)
+[893s] farmseason step 5 "Spray weeds and pests" open (day 192, doy 149)
+[908s] farmseason step 5 "Spray weeds and pests" active (day 192, doy 149)
+[908s] farmseason step 6 "Watch the crops grow" active (day 192, doy 149)
+[913s] farmseason step 6 "Watch the crops grow" waiting waiting: the crops to ripen (day 192, doy 149)
+[913s] farmseason step 6 "Watch the crops grow" open (day 201, doy 158)
+[913s] farmseason step 5 "Spray weeds and pests" active (day 201, doy 158)
+[931s] farmseason step 6 "Watch the crops grow" active (day 201, doy 158)
+[936s] farmseason step 6 "Watch the crops grow" waiting waiting: the crops to ripen (day 201, doy 158)
+[936s] farmseason step 6 "Watch the crops grow" open (day 219, doy 176)
+[936s] farmseason step 5 "Spray weeds and pests" active (day 219, doy 176)
+[955s] farmseason step 6 "Watch the crops grow" active (day 219, doy 176)
+[959s] farmseason step 6 "Watch the crops grow" waiting waiting: the crops to ripen (day 219, doy 176)
+[960s] farmseason step 6 "Watch the crops grow" open (day 240, doy 197)
+[960s] farmseason step 5 "Spray weeds and pests" active (day 240, doy 197)
+snap latest
+[979s] farmseason step 6 "Watch the crops grow" active (day 240, doy 197)
+[984s] farmseason step 6 "Watch the crops grow" waiting waiting: the crops to ripen (day 240, doy 197)
+[984s] farmseason step 6 "Watch the crops grow" open (day 261, doy 218)
+[984s] farmseason step 7 "Harvest" active (day 261, doy 218)
+snap m-28-farmseason-7
+[984s] farmseason step 7 "Harvest" waiting waiting: learning to drive the combine harvester, class 7 (rotary) (day 261, doy 218)
+[1000s] farmseason step 7 "Harvest" open (day 261, doy 218)
+[1047s] farmseason step 7 "Harvest" active (day 261, doy 218)
+[1047s] farmseason step 7 "Harvest" waiting waiting: the crops to ripen (day 261, doy 218)
+[1047s] farmseason step 7 "Harvest" open (day 279, doy 236)
+[1086s] farmseason step 7 "Harvest" active (day 279, doy 236)
+[1086s] farmseason step 7 "Harvest" waiting waiting: the crops to ripen (day 279, doy 236)
+[1086s] farmseason step 7 "Harvest" open (day 303, doy 260)
+[1123s] farmseason step 7 "Harvest" active (day 303, doy 260)
+[1123s] farmseason step 8 "Dry and store the grain" active (day 303, doy 260)
+snap m-29-farmseason-8
+[1131s] farmseason step 9 "Sell grain and mill flour" active (day 303, doy 260)
+snap m-30-farmseason-9
+[1138s] farmseason step 0 "Plan the rotation" open (day 303, doy 260)
+SEASON DONE
+snap final
+{
+ "farm": "farm at the east benchland past the north yard, 4.4 ha (200 × 219 m); land cleared 100%, graded 100%, fenced 100%; buildings done: machine shed, fuel tank, grain bins, grain dryer and auger, big barn, farmhouse, workshop corner, farm stand; fields: south field stubble, middle field stubble, north field stubble; bins: 1.2 t canola, 1 t wheat, 4.7 t corn; flour 380 kg; earned $0; home: town; MIXED FARM: not started (you could grow a mixed farm on the empty north-west of your farm: orchard, vegetables, cows, hens and hay)",
+ "harvests": [
+  {
+   "field": "North field",
+   "crop": "corn",
+   "t": 5.34,
+   "ha": 0.78,
+   "tPerHa": 6.86,
+   "moisture": 25.8,
+   "day": 303,
+   "year": 2
+  },
+  {
+   "field": "South field",
+   "crop": "wheat",
+   "t": 1.41,
+   "ha": 0.78,
+   "tPerHa": 1.81,
+   "moisture": 17.1,
+   "day": 279,
+   "year": 2
+  },
+  {
+   "field": "Middle field",
+   "crop": "canola",
+   "t": 1.22,
+   "ha": 0.78,
+   "tPerHa": 1.57,
+   "moisture": 12.4,
+   "day": 261,
+   "year": 2
+  }
+ ],
+ "bins": {
+  "canola": {
+   "t": 1.17,
+   "m": 9
+  },
+  "wheat": {
+   "t": 0.97,
+   "m": 14.5
+  },
+  "corn": {
+   "t": 4.69,
+   "m": 15.499999999999998
+  }
+ },
+ "flour": 380,
+ "earnings": 0,
+ "listings": [
+  "10 kg bag of stone-ground whole-wheat flour (Kelo-1's farm) $24",
+  "4 t of grain corn from his farm $980",
+  "0.5 t of spring wheat from his farm $155",
+  "0.5 t of canola from his farm $345"
+ ],
+ "log": [
+  "Listed 4 t corn on the website",
+  "Listed 0.5 t wheat on the website",
+  "Listed 0.5 t canola on the website",
+  "Milled my own flour",
+  "Dried 4.7 t of corn",
+  "Dried 1.4 t of wheat",
+  "Dried 1.2 t of canola",
+  "Harvested the north field",
+  "Harvesting done: North field",
+  "Harvested the south field",
+  "Harvesting done: South field",
+  "Harvested the middle field",
+  "Harvesting done: Middle field",
+  "Fuelled combine harvester, class 7 (rotary): 950 L",
+  "Spraying done: North field",
+  "Spraying done: North field",
+  "Spraying done: Middle field",
+  "Spraying done: Middle field",
+  "Spraying done: Middle field",
+  "Seeded the north field",
+  "Seeding done: North field",
+  "Seeded the middle field",
+  "Seeding done: Middle field",
+  "Seeded the south field",
+  "Seeding done: South field",
+  "Spreading fertilizer done: North field",
+  "Spreading fertilizer done: Middle field",
+  "Spreading fertilizer done: South field",
+  "Disc harrowing done: North field",
+  "Disc harrowing done: Middle field",
+  "Disc harrowing done: South field",
+  "Ploughing done: North field",
+  "Ploughing done: Middle field",
+  "Ploughing done: South field",
+  "Fuelled 180 hp row-crop tractor with 3-point hitch and PTO: 390 L",
+  "Planned the farm year",
+  "The farm is built",
+  "Kit arrived: 1 t of wheat seed, 1 t of urea 46-0-0, 1 t of MAP 11-52-0",
+  "My machines are here",
+  "Kit arrived: 180 hp row-crop tractor with 3-point hitch and PTO, combine harvester, class 7 (rotary), tandem-axle grain truck with a 20 ft box and roll tarp"
+ ],
+ "diary": [
+  "🌾 Took on Grow this year's grain (year 2)",
+  "🌾 Finished Grow this year's grain (year 1)",
+  "🫓 Milled my own flour",
+  "🌾 Working on Grow this year's grain (year 1)",
+  "🌾 Harvested the north field",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Harvested the south field",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Harvested the middle field",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Working on Grow this year's grain (year 1)",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Working on Grow this year's grain (year 1)",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Working on Grow this year's grain (year 1)",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Working on Grow this year's grain (year 1)",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Working on Grow this year's grain (year 1)",
+  "🌾 Picked back up Grow this year's grain (year 1)"
+ ],
+ "lists": [
+  "Farm list: seed, fertilizer and fuel: 10 lines",
+  "Farm list: machines and implements: 11 lines",
+  "Farm list: the buildings: 60 lines"
+ ]
+}
+page errors: none

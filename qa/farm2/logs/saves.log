@@ -1,0 +1,21 @@
+=== pre-save-prefarm-true
+LOADED {"diary":29,"vehicles":0,"farmStarted":false,"farmKeys":25,"mixedKeys":26,"mixedStarted":false,"ready":false,"farmPlan":"none","season":null,"fields":0,"bins":"","panel":"not started","panel2":"","summary":"no farm yet (you could build a big grain farm on the benchland past the north yard: it is a long project on your agenda)"}
+page errors: none
+=== pre-save-prefarm
+LOADED {"diary":32,"vehicles":0,"farmStarted":false,"farmKeys":25,"mixedKeys":26,"mixedStarted":false,"ready":false,"farmPlan":"none","season":null,"fields":0,"bins":"","panel":"not started","panel2":"","summary":"no farm yet (you could build a big grain farm on the benchland past the north yard: it is a long project on your agenda)"}
+page errors: none
+=== pre-s1
+LOADED {"diary":40,"vehicles":10,"farmStarted":true,"farmKeys":26,"mixedKeys":26,"mixedStarted":false,"ready":true,"farmPlan":"done","season":"Grow this year's grain (year 1)","fields":3,"bins":"","panel":"growing","panel2":"Mixed farm (stage 2): not started.🐄 Suggest an orchard, vegetables and animals","summary":"farm at the east benchland past the north yard, 4.4 ha (200 × 219 m); land cleared 100%, graded 100%, fenced 100%; buildings done: machine shed, fuel tank, grain bins, grain dryer and auger, big barn,"}
+START2 {"title":"Grow a mixed farm: orchard, vegetables, livestock and hay","steps":17,"goals":["Become an expert on how to use a dump truck","Build a big mechanized farm"]}
+STEP {"step":0,"status":"open","wait":null,"out":false,"why":{"farmBusy":null,"busy":true,"prac":false,"sleep":false}}
+STEP {"step":1,"status":"active","wait":null,"out":true,"why":{"farmBusy":null,"busy":false,"prac":false,"sleep":false}}
+STEP {"step":2,"status":"active","wait":null,"out":true,"why":{"farmBusy":null,"busy":false,"prac":false,"sleep":false}}
+page errors: none
+=== pre-s1f
+LOADED {"diary":40,"vehicles":10,"farmStarted":true,"farmKeys":30,"mixedKeys":26,"mixedStarted":false,"ready":true,"farmPlan":"done","season":"Grow this year's grain (year 2)","fields":3,"bins":"0.9 t canola, 0.9 t wheat, 3.8 t corn","panel":"growing","panel2":"Mixed farm (stage 2): not started.🐄 Suggest an orchard, vegetables and animals","summary":"farm at the east benchland past the north yard, 4.4 ha (200 × 219 m); land cleared 100%, graded 100%, fenced 100%; buildings done: machine shed, fuel tank, grain bins, grain dryer and auger, big barn,"}
+START2 {"title":"Grow a mixed farm: orchard, vegetables, livestock and hay","steps":17,"goals":["Become an expert on how to use a dump truck","Build a big mechanized farm"]}
+STEP {"step":0,"status":"open","wait":null,"out":false,"why":{"farmBusy":null,"busy":true,"prac":false,"sleep":false}}
+STEP {"step":1,"status":"active","wait":null,"out":true,"why":{"farmBusy":null,"busy":false,"prac":false,"sleep":false}}
+STEP {"step":2,"status":"active","wait":null,"out":true,"why":{"farmBusy":null,"busy":false,"prac":true,"sleep":false}}
+page errors: none
+SAVES DONE

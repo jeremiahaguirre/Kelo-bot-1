@@ -1,0 +1,406 @@
+JUMPED (test fed the animals while skipping) {"n":127,"year":5,"doy":261,"herd":26,"hens":30,"age":3.4835616778919327,"bearing":[1,0.6666666666666666]}
+[1s] farmmixed step 0 "Spring: prune, plant the plots, calving" open (day 1399, doy 261, y5)
+snap m-01-farmmixed-0
+[2s] farmmixed step 1 "Summer: hay, water, weeds, cherries" active | last chore: Walk through the herd: condition, feet, eyes (day 1400, doy 262, y5)
+snap m-02-farmmixed-1
+[8s] farmmixed step 1 "Summer: hay, water, weeds, cherries" active | last chore: Grind layer mash and fill the hen feeder (day 1400, doy 262, y5)
+[11s] farmmixed step 1 "Summer: hay, water, weeds, cherries" active | last chore: Treat Daisy's heifer calf (pinkeye) (day 1401, doy 263, y5)
+[25s] farmmixed step 1 "Summer: hay, water, weeds, cherries" active | last chore: Mix and feed the cattle ration (day 1401, doy 263, y5)
+[29s] farmmixed step 1 "Summer: hay, water, weeds, cherries" active | last chore: Treat Midnight's bull calf (foot rot) (day 1402, doy 264, y5)
+[31s] farmmixed step 1 "Summer: hay, water, weeds, cherries" active | last chore: Pasteurize and bottle the milk (day 1403, doy 265, y5)
+[46s] farmmixed step 1 "Summer: hay, water, weeds, cherries" active | last chore: Mix and feed the cattle ration (day 1403, doy 265, y5)
+[58s] farmmixed step 1 "Summer: hay, water, weeds, cherries" active | last chore: Pick the apples (day 1404, doy 266, y5)
+snap c-07-pick
+STOPON reached
+snap final
+{
+ "status": {
+  "plan": 17,
+  "year": "Run the mixed farm (year 2)",
+  "orchard": {
+   "apple": 242,
+   "cherry": 30
+  },
+  "plots": [
+   [
+    "v1",
+    null,
+    "sod",
+    0,
+    99
+   ],
+   [
+    "v2",
+    null,
+    "sod",
+    0,
+    99
+   ],
+   [
+    "v3",
+    null,
+    "sod",
+    0,
+    99
+   ],
+   [
+    "v4",
+    null,
+    "sod",
+    0,
+    99
+   ],
+   [
+    "f3",
+    null,
+    "sod",
+    0,
+    99
+   ]
+  ],
+  "hay": {
+   "round": 0,
+   "square": 0,
+   "q": 0.8,
+   "loose": 0
+  },
+  "herd": [
+   [
+    "Daisy",
+    "dairy",
+    "cow",
+    450,
+    null,
+    1454
+   ],
+   [
+    "Clover",
+    "dairy",
+    "cow",
+    450,
+    null,
+    1454
+   ],
+   [
+    "Buttercup",
+    "dairy",
+    "cow",
+    450,
+    null,
+    1454
+   ],
+   [
+    "Ruby",
+    "beef",
+    "cow",
+    600,
+    null,
+    1470
+   ],
+   [
+    "Midnight",
+    "beef",
+    "cow",
+    600,
+    null,
+    1470
+   ],
+   [
+    "Sable",
+    "beef",
+    "cow",
+    600,
+    null,
+    1470
+   ],
+   [
+    "Daisy II",
+    "dairy",
+    "cow",
+    363,
+    null,
+    1465
+   ],
+   [
+    "Clover II",
+    "dairy",
+    "cow",
+    363,
+    null,
+    1465
+   ],
+   [
+    "Buttercup's bull calf",
+    "dairy",
+    "calf",
+    473,
+    null,
+    null
+   ],
+   [
+    "Ruby's bull calf",
+    "beef",
+    "calf",
+    630,
+    null,
+    null
+   ],
+   [
+    "Midnight's bull calf",
+    "beef",
+    "calf",
+    630,
+    null,
+    null
+   ],
+   [
+    "Sable's bull calf",
+    "beef",
+    "calf",
+    630,
+    null,
+    null
+   ],
+   [
+    "Daisy II",
+    "dairy",
+    "cow",
+    363,
+    null,
+    1465
+   ],
+   [
+    "Clover's bull calf",
+    "dairy",
+    "calf",
+    473,
+    null,
+    null
+   ],
+   [
+    "Buttercup II",
+    "dairy",
+    "cow",
+    363,
+    null,
+    1465
+   ],
+   [
+    "Ruby II",
+    "beef",
+    "cow",
+    508,
+    null,
+    1477
+   ],
+   [
+    "Midnight's bull calf",
+    "beef",
+    "calf",
+    630,
+    null,
+    null
+   ],
+   [
+    "Sable II",
+    "beef",
+    "cow",
+    508,
+    null,
+    1477
+   ],
+   [
+    "Daisy's heifer calf",
+    "dairy",
+    "calf",
+    257,
+    null,
+    null
+   ],
+   [
+    "Clover's bull calf",
+    "dairy",
+    "calf",
+    257,
+    null,
+    null
+   ],
+   [
+    "Buttercup's heifer calf",
+    "dairy",
+    "calf",
+    257,
+    null,
+    null
+   ],
+   [
+    "Daisy II's bull calf",
+    "dairy",
+    "calf",
+    248,
+    null,
+    null
+   ],
+   [
+    "Clover II's heifer calf",
+    "dairy",
+    "calf",
+    248,
+    null,
+    null
+   ],
+   [
+    "Ruby's bull calf",
+    "beef",
+    "calf",
+    347,
+    null,
+    null
+   ],
+   [
+    "Midnight's heifer calf",
+    "beef",
+    "calf",
+    347,
+    null,
+    null
+   ],
+   [
+    "Sable's bull calf",
+    "beef",
+    "calf",
+    347,
+    null,
+    null
+   ]
+  ],
+  "hens": 30,
+  "nest": 156,
+  "tank": 0,
+  "store": {
+   "milk": 48.27,
+   "apple": 1229.63
+  },
+  "bunk": 360.3,
+  "feeder": 34.2,
+  "earned": 0,
+  "budget": null,
+  "last": {
+   "key": "milk",
+   "label": "Pasteurize and bottle the milk",
+   "day": 1404,
+   "ok": true
+  }
+ },
+ "chores": {
+  "healthcheck": 2,
+  "feedhens": 2,
+  "sick": 4,
+  "feedcattle": 4,
+  "milk": 2,
+  "pick:apple": 1,
+  "pick": 1
+ },
+ "log": [
+  "d1401 Ordered 35 round bales of hay: Only 0 days of hay left in the shed",
+  "d128 30 isa brown laying hens arrived",
+  "d128 3 black angus cows arrived",
+  "d128 3 jersey dairy cows arrived",
+  "d0 The north field leaves the grain rotation: it will be hay"
+ ],
+ "farmlog": [
+  "Bottled 27 L of milk",
+  "Picked the apples",
+  "Fed the cattle 593 kg",
+  "Bottled 22 L of milk",
+  "Treated Sable's bull calf for pinkeye",
+  "Treated Midnight's bull calf for foot rot",
+  "Ordered 35 round bales of hay: Only 0 days of hay left in the shed",
+  "Fed the cattle 593 kg",
+  "Midnight's bull calf is sick: foot rot",
+  "Treated Daisy's heifer calf for pinkeye",
+  "Daisy's heifer calf is sick: pinkeye",
+  "Sable's bull calf is sick: pinkeye",
+  "Clover is sick: lameness",
+  "Daisy's heifer calf is sick: foot rot",
+  "Buttercup is sick: mastitis",
+  "Ruby is sick: pinkeye",
+  "Buttercup's heifer calf is sick: pinkeye",
+  "Ruby is sick: foot rot",
+  "Midnight's bull calf is sick: pinkeye",
+  "Buttercup's heifer calf is sick: foot rot",
+  "Sable is sick: pinkeye",
+  "Clover II's heifer calf is sick: pinkeye",
+  "Clover II is sick: mastitis",
+  "Daisy is sick: lameness",
+  "Midnight's heifer calf is sick: foot rot",
+  "Sable's bull calf is sick: foot rot",
+  "Midnight's heifer calf is sick: foot rot",
+  "Ruby is sick: foot rot",
+  "Buttercup's heifer calf is sick: pinkeye",
+  "Clover II's heifer calf is sick: foot rot",
+  "Midnight's heifer calf is sick: pinkeye",
+  "Daisy II is sick: lameness",
+  "Sable's bull calf is sick: pinkeye",
+  "Daisy is sick: lameness",
+  "Sable's heifer calf is sick: foot rot",
+  "Buttercup's heifer calf is sick: pinkeye",
+  "Daisy's heifer calf is sick: pinkeye",
+  "Sable's bull calf is sick: scours",
+  "Buttercup's heifer calf is sick: scours",
+  "Daisy's heifer calf is sick: scours"
+ ],
+ "diary": [
+  "🍎 Picked the apples",
+  "🐄 The mixed farm is set up",
+  "🐄 Finished Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Took on Run the mixed farm (year 2)",
+  "🐄 My cows and hens came home",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🌳 Planted the orchard",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🚜 The mixed-farm machines are here",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🪵 Fenced the pasture",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🥛 Finished the milk house and robot milker",
+  "🎓 carpentry: level 3",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🧱 Poured the milk house and robot milker foundation",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Finished the barn stalls and feed alley",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐔 Finished the chicken coop",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🌾 Finished the hay shed",
+  "🎓 carpentry: level 2",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🧱 Poured the hay shed foundation",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "📦 Finished the packing shed and cooler",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🧱 Poured the packing shed and cooler foundation"
+ ],
+ "lists": [
+  "Farm list: hay for the cattle: 1 lines",
+  "Farm list: cows, hens and their supplies: 12 lines",
+  "Farm list: seed for the plots and the hay: 6 lines",
+  "Farm list: fruit trees and trellis: 6 lines",
+  "Farm list: compact tractor and implements: 17 lines",
+  "Farm list: mixed-farm buildings and fence: 50 lines"
+ ],
+ "summary": "orchard 242 apple / 30 cherry trees (in leaf); plots: potato plot sod, carrot plot sod, squash plot sod, bean plot sod; hay field: 0% grown, 0 cuts this year; hay in shed 0 round + 0 square (0.2 t, 63.7 t short for winter); 7 dairy cows, 5 beef cows, 14 calves, 30 hens; bunk 1.2 days; sick: none; store: 48 milk, 1230 apple; next chore: Collect, wash and pack the eggs",
+ "listings": [],
+ "earnings": 0
+}
+page errors: none

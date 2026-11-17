@@ -1,0 +1,305 @@
+{
+ "status": {
+  "plan": 17,
+  "year": "Run the mixed farm (year 2)",
+  "orchard": {
+   "apple": 242,
+   "cherry": 30
+  },
+  "plots": [
+   [
+    "v1",
+    "potato",
+    "seeded",
+    96,
+    42
+   ],
+   [
+    "v2",
+    null,
+    "stubble",
+    0,
+    39
+   ],
+   [
+    "v3",
+    "squash",
+    "seeded",
+    67,
+    67
+   ],
+   [
+    "v4",
+    null,
+    "stubble",
+    0,
+    41
+   ],
+   [
+    "f3",
+    "hay",
+    "seeded",
+    17,
+    30
+   ]
+  ],
+  "hay": {
+   "round": 34,
+   "square": 0,
+   "q": 0.88,
+   "loose": 93.5
+  },
+  "fieldBales": {
+   "round": 0,
+   "square": 83,
+   "q": 1,
+   "field": "f3"
+  },
+  "herd": [
+   [
+    "Daisy",
+    "dairy",
+    "cow",
+    450,
+    null,
+    505
+   ],
+   [
+    "Clover",
+    "dairy",
+    "cow",
+    450,
+    null,
+    514
+   ],
+   [
+    "Buttercup",
+    "dairy",
+    "cow",
+    450,
+    null,
+    523
+   ],
+   [
+    "Midnight",
+    "beef",
+    "cow",
+    600,
+    null,
+    518
+   ],
+   [
+    "Sable",
+    "beef",
+    "cow",
+    600,
+    null,
+    527
+   ],
+   [
+    "Ruby's heifer calf",
+    "beef",
+    "calf",
+    149,
+    null,
+    null
+   ],
+   [
+    "Clover's heifer calf",
+    "dairy",
+    "calf",
+    100,
+    null,
+    null
+   ],
+   [
+    "Midnight's bull calf",
+    "beef",
+    "calf",
+    140,
+    null,
+    null
+   ],
+   [
+    "Sable's bull calf",
+    "beef",
+    "calf",
+    131,
+    null,
+    null
+   ]
+  ],
+  "hens": 30,
+  "nest": 51,
+  "tank": 60.9,
+  "store": {
+   "eggs": 83.41,
+   "milk": 90.56,
+   "bean": 98.89,
+   "carrot": 782.46
+  },
+  "bunk": 244.2,
+  "feeder": 7.95,
+  "earned": 3858.5,
+  "budget": [
+   "buy 3 round bales from a neighbour",
+   "keep all the corn and wheat for feed (still 4.5 t short: the cows get more hay instead)",
+   "order mineral",
+   "order layer premix"
+  ],
+  "last": {
+   "key": "feedcattle",
+   "label": "Mix and feed the cattle ration",
+   "day": 255,
+   "ok": true
+  }
+ },
+ "chores": {
+  "water:v1": 1,
+  "water": 4,
+  "milk": 30,
+  "water:v2": 1,
+  "feedhens": 4,
+  "water:v4": 1,
+  "feedcattle": 12,
+  "eggs": 26,
+  "healthcheck": 14,
+  "sell": 12,
+  "water:v3": 1,
+  "harvest:v4": 1,
+  "harvest": 2,
+  "harvest:v2": 1,
+  "mow": 2,
+  "ted": 2,
+  "rake": 2,
+  "budget": 2,
+  "bale": 2
+ },
+ "log": [
+  "d253 Feed budget: buy 3 round bales from a neighbour; keep all the corn and wheat for feed (still 4.5 t short: the cows get more hay instead); order mineral; order layer premix",
+  "d253 Ordered 3 round bales of hay: The winter feed budget is short",
+  "d210 Feed budget: sell Ruby, the oldest open cow, rather than buy 32 bales; buy 24 round bales; keep all the corn and wheat for feed (still 4.1 t short: the cows get more hay instead); order mineral; order",
+  "d210 Ordered 24 round bales of hay: The winter feed budget is still short",
+  "d183 Could not plant the squash plot: waiting for dry weather to plant",
+  "d130 Feed budget: buy 12 round bales from a neighbour; think about a second hay field next year; keep 1 t of corn and 0.4 t of wheat back from sale for feed; order mineral",
+  "d130 Ordered 10 round bales of hay: Only 0 days of hay left in the shed",
+  "d129 Could not learn to drive the 55 hp compact utility tractor: waiting for learning to drive the 55 hp compact utility tractor with front loader and 3-point hitch",
+  "d128 30 isa brown laying hens arrived",
+  "d128 3 black angus cows arrived",
+  "d128 3 jersey dairy cows arrived",
+  "d0 The north field leaves the grain rotation: it will be hay"
+ ],
+ "farmlog": [
+  "Fed the cattle 223 kg",
+  "Square baling done: North field",
+  "Bottled 0 L of milk",
+  "Worked out the winter feed",
+  "Feed budget: buy 3 round bales from a neighbour; keep all the corn and wheat for feed (still 4.5 t short: the cows get more hay instead); order mineral; order layer premix",
+  "Ordered 3 round bales of hay: The winter feed budget is short",
+  "Raking done: North field",
+  "Tedding done: North field",
+  "Bottled 0 L of milk",
+  "Mowing hay done: North field",
+  "Fed the cattle 222 kg",
+  "Bottled 0 L of milk",
+  "Bottled 0 L of milk",
+  "Fed the cattle 220 kg",
+  "Bottled 0 L of milk",
+  "Listed 10 × 1 kg bag of Bolero carrots on the website",
+  "Bottled 0 L of milk",
+  "Fed the cattle 219 kg",
+  "Bottled 0 L of milk",
+  "Harvested the carrot plot",
+  "Digging done: Carrot plot",
+  "Harvested 813 kg carrots from the carrot plot",
+  "Listed 6 × 500 g of green beans on the website",
+  "Harvested the bean plot",
+  "Digging done: Bean plot",
+  "Harvested 203 kg green beans from the bean plot",
+  "Bottled 0 L of milk",
+  "Fed the cattle 243 kg",
+  "Bottled 120 L of milk",
+  "Kit arrived: 120 of milk bottles",
+  "Bottled 0 L of milk",
+  "Fed the cattle 242 kg",
+  "Bottled 0 L of milk",
+  "Bottled 0 L of milk",
+  "Fed the cattle 241 kg",
+  "Bottled 0 L of milk",
+  "Bottled 0 L of milk",
+  "Fed the cattle 240 kg",
+  "Bottled 0 L of milk",
+  "Kit arrived: 200 of egg cartons"
+ ],
+ "diary": [
+  "📋 Worked out the winter feed",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🥕 Harvested the carrot plot",
+  "🫛 Harvested the bean plot",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🪶 Write a poem about the sturdy shovel",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "✨ Things are buried here",
+  "🐄 Paused Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🌾 Hay in the shed",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "📋 Worked out the winter feed",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🎃 Planted the squash plot",
+  "🐄 Picked back up Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Picked back up Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🫛 Planted the bean plot",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐮 Buttercup had a calf",
+  "🐮 Sable had a calf",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🥔 Planted the potato plot",
+  "🐮 Clover had a calf",
+  "🐮 Midnight had a calf",
+  "🥕 Planted the carrot plot",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🌿 Sowed the north field to hay"
+ ],
+ "lists": [
+  "Farm list: supplies for the animals: 2 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: hay for the cattle: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 2 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: hay for the cattle: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: hay for the cattle: 1 lines",
+  "Farm list: cows, hens and their supplies: 12 lines",
+  "Farm list: seed for the plots and the hay: 6 lines",
+  "Farm list: fruit trees and trellis: 6 lines",
+  "Farm list: compact tractor and implements: 17 lines",
+  "Farm list: mixed-farm buildings and fence: 50 lines"
+ ],
+ "summary": "orchard 242 apple / 30 cherry trees (in leaf); plots: potato plot potato vines dying back, carrot plot stubble, squash plot squash flowering, bean plot stubble; hay field: 17% grown, 2 cuts this year; hay in shed 34 round + 0 square (15.6 t, 1.1 t short for winter); 3 dairy cows, 2 beef cows, 4 calves, 30 hens; bunk 2.9 days; sick: none; store: 83 eggs, 91 milk, 99 bean, 782 carrot; next chore: Collect, wash and pack the eggs",
+ "listings": [
+  "10 × 1 kg bag of Bolero carrots (Kelo-1's farm) $40",
+  "6 × 500 g of green beans (Kelo-1's farm) $30",
+  "6 × 1 L glass bottle of cream-top whole milk (pasteurized) (Kelo-1's farm) $27",
+  "6 × dozen free-run brown eggs (Kelo-1's farm) $42"
+ ],
+ "earnings": 4518.5
+}

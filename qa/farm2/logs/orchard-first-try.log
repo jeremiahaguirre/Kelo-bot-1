@@ -1,0 +1,54 @@
+=== prune
+JUMPED (test fed the animals while skipping) {"n":108,"year":5,"doy":71,"herd":26,"hens":30,"age":2.963013733510908,"bearing":[0.6666666666666666,0.3333333333333333]}
+[1s] farmmixed step 0 "Spring: prune, plant the plots, calving" open (day 1209, doy 71, y5)
+snap m-01-farmmixed-0
+[4s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 1210, doy 72, y5)
+snap c-01-healthcheck
+snap m-02-farmmixed-3
+[69s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 1210, doy 72, y5)
+snap c-02-feedcattle
+[97s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Grind layer mash and fill the hen feeder (day 1211, doy 73, y5)
+snap c-03-feedhens
+[160s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 1211, doy 73, y5)
+[176s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Check Sable II's new calf (day 1212, doy 74, y5)
+snap c-04-newborn
+snap c-04-newborn
+[246s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 1213, doy 75, y5)
+[262s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Check Midnight's new calf (day 1214, doy 76, y5)
+[334s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 1215, doy 77, y5)
+[351s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Check Clover's new calf (day 1216, doy 78, y5)
+[424s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 1217, doy 79, y5)
+[440s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Check Midnight's new calf (day 1218, doy 80, y5)
+[440s] farmmixed step 0 "Spring: prune, plant the plots, calving" open | last chore: Check Midnight's new calf (day 1218, doy 80, y5)
+[442s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Check Ruby's new calf (day 1219, doy 81, y5)
+[508s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 1219, doy 81, y5)
+snap latest
+[525s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Check Buttercup's new calf (day 1220, doy 82, y5)
+[594s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 1221, doy 83, y5)
+[610s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Check Sable's new calf (day 1222, doy 84, y5)
+[641s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Grind layer mash and fill the hen feeder (day 1222, doy 84, y5)
+[656s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Check Midnight's new calf (day 1223, doy 85, y5)
+[723s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 1223, doy 85, y5)
+[738s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Check Ruby's new calf (day 1224, doy 86, y5)
+[810s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 1225, doy 87, y5)
+[827s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Check Daisy's new calf (day 1226, doy 88, y5)
+[893s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 1226, doy 88, y5)
+[911s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 1227, doy 89, y5)
+snap c-05-milk
+[979s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 1227, doy 89, y5)
+snap latest
+[1302s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Treat Midnight's heifer calf (foot rot) (day 1231, doy 93, y5)
+snap c-06-sick
+[1306s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 1232, doy 94, y5)
+[1319s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 1232, doy 94, y5)
+snap c-07-eggs
+[1326s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Work out the winter feed budget (day 1233, doy 95, y5)
+snap c-08-budget
+STEPS FAILED page.evaluate: Target page, context or browser has been closed
+    at Object.ev (/home/user/qa/farm2/run.js:45:27)
+    at runStep (/home/user/qa/farm2/cycle2.js:41:27)
+    at module.exports (/home/user/qa/farm2/cycle2.js:96:21)
+    at async /home/user/qa/farm2/run.js:50:9
+page errors: [
+  'steps: page.evaluate: Target page, context or browser has been closed'
+]

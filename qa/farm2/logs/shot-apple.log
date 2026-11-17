@@ -1,0 +1,5 @@
+drawcalls apple {"calls":1,"tris":1}
+shot 06-apples-y5-apple
+drawcalls orchard2 {"calls":1,"tris":1}
+shot 06-apples-y5-orchard2
+page errors: none

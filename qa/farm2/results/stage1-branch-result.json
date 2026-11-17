@@ -1,0 +1,136 @@
+{
+ "farm": "farm at the east benchland past the north yard, 4.4 ha (200 × 219 m); land cleared 100%, graded 100%, fenced 100%; buildings done: machine shed, fuel tank, grain bins, grain dryer and auger, big barn, farmhouse, workshop corner, farm stand; fields: south field stubble, middle field stubble, north field stubble; bins: 0.7 t canola, 1 t wheat, 3.4 t corn; flour 380 kg; earned $0; home: town; MIXED FARM: not started (you could grow a mixed farm on the empty north-west of your farm: orchard, vegetables, cows, hens and hay)",
+ "harvests": [
+  {
+   "field": "North field",
+   "crop": "corn",
+   "t": 3.81,
+   "ha": 0.78,
+   "tPerHa": 4.89,
+   "moisture": 25.1,
+   "day": 305,
+   "year": 2
+  },
+  {
+   "field": "South field",
+   "crop": "wheat",
+   "t": 1.4,
+   "ha": 0.78,
+   "tPerHa": 1.8,
+   "moisture": 17.9,
+   "day": 266,
+   "year": 2
+  },
+  {
+   "field": "Middle field",
+   "crop": "canola",
+   "t": 0.75,
+   "ha": 0.78,
+   "tPerHa": 0.96,
+   "moisture": 11.1,
+   "day": 263,
+   "year": 2
+  }
+ ],
+ "bins": {
+  "canola": {
+   "t": 0.73,
+   "m": 9
+  },
+  "wheat": {
+   "t": 0.95,
+   "m": 14.500000000000002
+  },
+  "corn": {
+   "t": 3.38,
+   "m": 15.5
+  }
+ },
+ "flour": 380,
+ "earnings": 0,
+ "listings": [
+  "10 kg bag of stone-ground whole-wheat flour (Kelo-1's farm) $24",
+  "3 t of grain corn from his farm $735",
+  "0.5 t of spring wheat from his farm $155"
+ ],
+ "log": [
+  "Listed 3 t corn on the website",
+  "Listed 0.5 t wheat on the website",
+  "Milled my own flour",
+  "Dried 3.4 t of corn",
+  "Dried 1.3 t of wheat",
+  "Dried 0.7 t of canola",
+  "Harvested the north field",
+  "Harvesting done: North field",
+  "Harvested the south field",
+  "Harvesting done: South field",
+  "Harvested the middle field",
+  "Harvesting done: Middle field",
+  "Fuelled combine harvester, class 7 (rotary): 950 L",
+  "Spraying done: South field",
+  "Spraying done: North field",
+  "Seeded the north field",
+  "Seeding done: North field",
+  "Seeded the middle field",
+  "Seeding done: Middle field",
+  "Seeded the south field",
+  "Seeding done: South field",
+  "Spreading fertilizer done: North field",
+  "Spreading fertilizer done: Middle field",
+  "Spreading fertilizer done: South field",
+  "Disc harrowing done: North field",
+  "Disc harrowing done: Middle field",
+  "Disc harrowing done: South field",
+  "Ploughing done: North field",
+  "Ploughing done: Middle field",
+  "Ploughing done: South field",
+  "Fuelled 180 hp row-crop tractor with 3-point hitch and PTO: 390 L",
+  "Planned the farm year",
+  "The farm is built",
+  "Kit arrived: 1 t of wheat seed, 1 t of urea 46-0-0, 1 t of MAP 11-52-0",
+  "My machines are here",
+  "Kit arrived: 180 hp row-crop tractor with 3-point hitch and PTO, combine harvester, class 7 (rotary), tandem-axle grain truck with a 20 ft box and roll tarp",
+  "Finished the farm stand",
+  "Finished the workshop corner",
+  "Keeping my house in town",
+  "Finished the farmhouse"
+ ],
+ "diary": [
+  "🌾 Took on Grow this year's grain (year 2)",
+  "🌾 Finished Grow this year's grain (year 1)",
+  "🫓 Milled my own flour",
+  "🌾 Working on Grow this year's grain (year 1)",
+  "🌾 Harvested the north field",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Harvested the south field",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Harvested the middle field",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Working on Grow this year's grain (year 1)",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Working on Grow this year's grain (year 1)",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Working on Grow this year's grain (year 1)",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌱 Seeded the north field",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)",
+  "🌱 Seeded the middle field",
+  "🌱 Seeded the south field",
+  "🌾 Picked back up Grow this year's grain (year 1)",
+  "🌾 Waiting on Grow this year's grain (year 1)"
+ ],
+ "lists": [
+  "Farm list: seed, fertilizer and fuel: 10 lines",
+  "Farm list: machines and implements: 11 lines",
+  "Farm list: the buildings: 60 lines",
+  "Farm list: the land, fence and lane: 13 lines"
+ ]
+}

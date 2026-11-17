@@ -1,0 +1,9 @@
+drawcalls plots {"calls":1,"tris":1}
+shot 02-plots-summer-plots
+drawcalls plots2 {"calls":1,"tris":1}
+shot 02-plots-summer-plots2
+drawcalls pasture2 {"calls":1,"tris":1}
+shot 02-plots-summer-pasture2
+drawcalls over {"calls":1,"tris":1}
+shot 02-plots-summer-over
+page errors: none

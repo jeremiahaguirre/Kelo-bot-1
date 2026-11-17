@@ -1,0 +1,729 @@
+[0s] farmmixed step 3 "Winter: feed, milk, plan next year" paused | last chore: Walk through the herd: condition, feet, eyes (day 400, doy 357, y2)
+snap c-01-healthcheck
+snap m-02-farmmixed-3
+[0s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Grind layer mash and fill the hen feeder (day 400, doy 357, y2)
+snap c-02-feedhens
+[10s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 401, doy 358, y2)
+snap c-03-milk
+[42s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 401, doy 358, y2)
+snap c-04-feedcattle
+[43s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 402, doy 359, y2)
+snap c-05-eggs
+[45s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 402, doy 359, y2)
+[54s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 402, doy 359, y2)
+snap c-06-sell
+[62s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 403, doy 360, y2)
+[82s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 403, doy 360, y2)
+[82s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Grind layer mash and fill the hen feeder (day 404, doy 361, y2)
+[87s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 404, doy 361, y2)
+[90s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 404, doy 361, y2)
+[90s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: layer ration for the hens | last chore: Collect, wash and pack the eggs (day 405, doy 362, y2)
+[93s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Collect, wash and pack the eggs (day 405, doy 362, y2)
+[97s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 405, doy 362, y2)
+[102s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 406, doy 363, y2)
+[107s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 406, doy 363, y2)
+[139s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 406, doy 363, y2)
+[143s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 407, doy 364, y2)
+[144s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Work out the winter feed budget (day 407, doy 364, y2)
+snap c-07-budget
+[144s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: layer ration for the hens | last chore: Work out the winter feed budget (day 408, doy 365, y2)
+[148s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Work out the winter feed budget (day 408, doy 365, y2)
+[151s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 408, doy 365, y2)
+[154s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 408, doy 365, y2)
+[159s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 409, doy 1, y3)
+[172s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 409, doy 1, y3)
+[176s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Grind layer mash and fill the hen feeder (day 410, doy 2, y3)
+[179s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 410, doy 2, y3)
+[182s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 410, doy 2, y3)
+[186s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 411, doy 3, y3)
+[199s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 411, doy 3, y3)
+[203s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 412, doy 4, y3)
+[206s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Treat Daisy (mastitis) (day 412, doy 4, y3)
+snap c-08-sick
+[207s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 412, doy 4, y3)
+[210s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 413, doy 5, y3)
+[213s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 413, doy 5, y3)
+[213s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Walk through the herd: condition, feet, eyes (day 414, doy 6, y3)
+[213s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Walk through the herd: condition, feet, eyes (day 414, doy 6, y3)
+[215s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 415, doy 7, y3)
+[229s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 415, doy 7, y3)
+[233s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 415, doy 7, y3)
+[238s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 416, doy 8, y3)
+[241s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 416, doy 8, y3)
+[243s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 417, doy 9, y3)
+[256s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 417, doy 9, y3)
+[260s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 417, doy 9, y3)
+[260s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Collect, wash and pack the eggs (day 418, doy 10, y3)
+[260s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Collect, wash and pack the eggs (day 418, doy 10, y3)
+[263s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 419, doy 11, y3)
+[266s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 419, doy 11, y3)
+[271s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 419, doy 11, y3)
+[274s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 420, doy 12, y3)
+[276s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 420, doy 12, y3)
+[289s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 421, doy 13, y3)
+[293s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 421, doy 13, y3)
+[293s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Collect, wash and pack the eggs (day 421, doy 13, y3)
+[294s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Collect, wash and pack the eggs (day 422, doy 14, y3)
+[297s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 422, doy 14, y3)
+[300s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Grind layer mash and fill the hen feeder (day 423, doy 15, y3)
+[313s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 423, doy 15, y3)
+[317s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 424, doy 16, y3)
+[320s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 424, doy 16, y3)
+[324s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 424, doy 16, y3)
+[326s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 425, doy 17, y3)
+[340s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 425, doy 17, y3)
+[344s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 426, doy 18, y3)
+[347s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 426, doy 18, y3)
+[347s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Pasteurize and bottle the milk (day 426, doy 18, y3)
+[347s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Pasteurize and bottle the milk (day 427, doy 19, y3)
+[350s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 427, doy 19, y3)
+[355s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 428, doy 20, y3)
+[358s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 428, doy 20, y3)
+[372s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 428, doy 20, y3)
+[376s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 429, doy 21, y3)
+[379s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 429, doy 21, y3)
+[379s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Collect, wash and pack the eggs (day 430, doy 22, y3)
+[379s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Collect, wash and pack the eggs (day 430, doy 22, y3)
+[383s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 431, doy 23, y3)
+[396s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 431, doy 23, y3)
+[400s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 431, doy 23, y3)
+[405s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 432, doy 24, y3)
+[408s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 432, doy 24, y3)
+[410s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 433, doy 25, y3)
+[413s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 433, doy 25, y3)
+[413s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Collect, wash and pack the eggs (day 433, doy 25, y3)
+[413s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Collect, wash and pack the eggs (day 434, doy 26, y3)
+[426s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 434, doy 26, y3)
+[431s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 435, doy 27, y3)
+[434s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 435, doy 27, y3)
+[438s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 435, doy 27, y3)
+[441s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 436, doy 28, y3)
+[443s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 436, doy 28, y3)
+[456s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 437, doy 29, y3)
+[460s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Grind layer mash and fill the hen feeder (day 437, doy 29, y3)
+[461s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 437, doy 29, y3)
+[461s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Collect, wash and pack the eggs (day 438, doy 30, y3)
+[461s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Collect, wash and pack the eggs (day 438, doy 30, y3)
+[465s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 439, doy 31, y3)
+[478s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 439, doy 31, y3)
+[482s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 440, doy 32, y3)
+snap latest
+[485s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 440, doy 32, y3)
+[496s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Prune the apple trees (day 440, doy 32, y3)
+snap c-10-prune
+[502s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Prune the cherry trees (day 441, doy 33, y3)
+[506s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 441, doy 33, y3)
+[509s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 442, doy 34, y3)
+[511s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 442, doy 34, y3)
+[525s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 442, doy 34, y3)
+[528s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 443, doy 35, y3)
+[533s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 443, doy 35, y3)
+[533s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Collect, wash and pack the eggs (day 444, doy 36, y3)
+[534s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Collect, wash and pack the eggs (day 444, doy 36, y3)
+[537s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 444, doy 36, y3)
+[539s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 445, doy 37, y3)
+[552s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 445, doy 37, y3)
+[556s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 446, doy 38, y3)
+[559s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 446, doy 38, y3)
+[562s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 446, doy 38, y3)
+[562s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Stock the stand and list produce on the website (day 447, doy 39, y3)
+[562s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Stock the stand and list produce on the website (day 447, doy 39, y3)
+[575s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 448, doy 40, y3)
+[580s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 448, doy 40, y3)
+[583s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 449, doy 41, y3)
+[587s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 449, doy 41, y3)
+[590s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 449, doy 41, y3)
+[590s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Walk through the herd: condition, feet, eyes (day 450, doy 42, y3)
+[590s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Walk through the herd: condition, feet, eyes (day 450, doy 42, y3)
+[592s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 451, doy 43, y3)
+[605s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 451, doy 43, y3)
+[609s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Grind layer mash and fill the hen feeder (day 451, doy 43, y3)
+[610s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 452, doy 44, y3)
+[614s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 452, doy 44, y3)
+[617s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 453, doy 45, y3)
+[630s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 453, doy 45, y3)
+[634s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 453, doy 45, y3)
+[637s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 454, doy 46, y3)
+[639s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 454, doy 46, y3)
+[639s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Pasteurize and bottle the milk (day 455, doy 47, y3)
+[639s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Pasteurize and bottle the milk (day 455, doy 47, y3)
+[642s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 456, doy 48, y3)
+[655s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 456, doy 48, y3)
+[659s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 456, doy 48, y3)
+[661s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 457, doy 49, y3)
+[663s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 457, doy 49, y3)
+[666s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 458, doy 50, y3)
+[666s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Collect, wash and pack the eggs (day 458, doy 50, y3)
+[666s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Collect, wash and pack the eggs (day 459, doy 51, y3)
+[679s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 459, doy 51, y3)
+[683s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 460, doy 52, y3)
+[686s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 460, doy 52, y3)
+[689s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 461, doy 53, y3)
+[702s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 461, doy 53, y3)
+[706s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 461, doy 53, y3)
+[709s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 462, doy 54, y3)
+[709s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Walk through the herd: condition, feet, eyes (day 462, doy 54, y3)
+[711s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Walk through the herd: condition, feet, eyes (day 463, doy 55, y3)
+[712s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Pasteurize and bottle the milk (day 463, doy 55, y3)
+[715s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 463, doy 55, y3)
+[720s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 464, doy 56, y3)
+[733s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 464, doy 56, y3)
+[737s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Grind layer mash and fill the hen feeder (day 465, doy 57, y3)
+[738s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 465, doy 57, y3)
+[741s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 465, doy 57, y3)
+[741s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Walk through the herd: condition, feet, eyes (day 466, doy 58, y3)
+[741s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Walk through the herd: condition, feet, eyes (day 466, doy 58, y3)
+[744s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 467, doy 59, y3)
+[758s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 467, doy 59, y3)
+[762s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 468, doy 60, y3)
+[762s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Order seed and supplies for the year (day 468, doy 60, y3)
+snap c-12-seedorder
+[765s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 468, doy 60, y3)
+[765s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Walk through the herd: condition, feet, eyes (day 469, doy 61, y3)
+[766s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Walk through the herd: condition, feet, eyes (day 469, doy 61, y3)
+[769s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 470, doy 62, y3)
+[782s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 470, doy 62, y3)
+[786s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 470, doy 62, y3)
+[786s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Stock the stand and list produce on the website (day 471, doy 63, y3)
+[786s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Stock the stand and list produce on the website (day 471, doy 63, y3)
+[791s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 472, doy 64, y3)
+[804s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 472, doy 64, y3)
+[808s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 473, doy 65, y3)
+[811s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 473, doy 65, y3)
+[815s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 473, doy 65, y3)
+[815s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Stock the stand and list produce on the website (day 474, doy 66, y3)
+[815s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Stock the stand and list produce on the website (day 475, doy 67, y3)
+[829s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 475, doy 67, y3)
+[833s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 476, doy 68, y3)
+[837s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 476, doy 68, y3)
+[840s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 476, doy 68, y3)
+[840s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Walk through the herd: condition, feet, eyes (day 477, doy 69, y3)
+[840s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Walk through the herd: condition, feet, eyes (day 477, doy 69, y3)
+[843s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 478, doy 70, y3)
+[856s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 478, doy 70, y3)
+[860s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Grind layer mash and fill the hen feeder (day 478, doy 70, y3)
+[860s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Grind layer mash and fill the hen feeder (day 479, doy 71, y3)
+[860s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Grind layer mash and fill the hen feeder (day 479, doy 71, y3)
+[861s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 480, doy 72, y3)
+[866s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 480, doy 72, y3)
+[868s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 481, doy 73, y3)
+[882s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 481, doy 73, y3)
+[886s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 481, doy 73, y3)
+[886s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Collect, wash and pack the eggs (day 482, doy 74, y3)
+[886s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Collect, wash and pack the eggs (day 483, doy 75, y3)
+[899s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 483, doy 75, y3)
+[903s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 484, doy 76, y3)
+[907s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 484, doy 76, y3)
+[910s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Walk through the herd: condition, feet, eyes (day 484, doy 76, y3)
+[910s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Walk through the herd: condition, feet, eyes (day 485, doy 77, y3)
+[910s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Walk through the herd: condition, feet, eyes (day 485, doy 77, y3)
+[913s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 486, doy 78, y3)
+[927s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Mix and feed the cattle ration (day 486, doy 78, y3)
+[927s] farmmixed step 3 "Winter: feed, milk, plan next year" waiting waiting: the next chore on the mixed farm | last chore: Mix and feed the cattle ration (day 486, doy 78, y3)
+[927s] farmmixed step 3 "Winter: feed, milk, plan next year" open | last chore: Mix and feed the cattle ration (day 487, doy 79, y3)
+[930s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Collect, wash and pack the eggs (day 487, doy 79, y3)
+[935s] farmmixed step 3 "Winter: feed, milk, plan next year" active | last chore: Stock the stand and list produce on the website (day 488, doy 80, y3)
+[935s] farmmixed step 0 "Spring: prune, plant the plots, calving" open | last chore: Stock the stand and list produce on the website (day 488, doy 80, y3)
+snap m-12-farmmixed-0
+[938s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Walk through the herd: condition, feet, eyes (day 489, doy 81, y3)
+[951s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 489, doy 81, y3)
+[955s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 489, doy 81, y3)
+[955s] farmmixed step 0 "Spring: prune, plant the plots, calving" waiting waiting: the next chore on the mixed farm | last chore: Collect, wash and pack the eggs (day 490, doy 82, y3)
+[955s] farmmixed step 0 "Spring: prune, plant the plots, calving" open | last chore: Collect, wash and pack the eggs (day 490, doy 82, y3)
+[960s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Stock the stand and list produce on the website (day 491, doy 83, y3)
+[964s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 491, doy 83, y3)
+snap latest
+[968s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Walk through the herd: condition, feet, eyes (day 491, doy 83, y3)
+[968s] farmmixed step 0 "Spring: prune, plant the plots, calving" waiting waiting: the next chore on the mixed farm | last chore: Walk through the herd: condition, feet, eyes (day 492, doy 84, y3)
+[968s] farmmixed step 0 "Spring: prune, plant the plots, calving" open | last chore: Walk through the herd: condition, feet, eyes (day 492, doy 84, y3)
+[981s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 493, doy 85, y3)
+[985s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Grind layer mash and fill the hen feeder (day 493, doy 85, y3)
+[986s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 494, doy 86, y3)
+[999s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 494, doy 86, y3)
+[1003s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Stock the stand and list produce on the website (day 494, doy 86, y3)
+[1006s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Walk through the herd: condition, feet, eyes (day 495, doy 87, y3)
+[1009s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 495, doy 87, y3)
+[1009s] farmmixed step 0 "Spring: prune, plant the plots, calving" waiting waiting: the next chore on the mixed farm | last chore: Collect, wash and pack the eggs (day 496, doy 88, y3)
+[1009s] farmmixed step 0 "Spring: prune, plant the plots, calving" open | last chore: Collect, wash and pack the eggs (day 497, doy 89, y3)
+[1022s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 497, doy 89, y3)
+[1026s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 497, doy 89, y3)
+[1030s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Stock the stand and list produce on the website (day 498, doy 90, y3)
+[1033s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Walk through the herd: condition, feet, eyes (day 498, doy 90, y3)
+[1033s] farmmixed step 0 "Spring: prune, plant the plots, calving" waiting waiting: the next chore on the mixed farm | last chore: Walk through the herd: condition, feet, eyes (day 499, doy 91, y3)
+[1033s] farmmixed step 0 "Spring: prune, plant the plots, calving" open | last chore: Walk through the herd: condition, feet, eyes (day 499, doy 91, y3)
+[1037s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 499, doy 91, y3)
+[1037s] farmmixed step 0 "Spring: prune, plant the plots, calving" waiting waiting: the next chore on the mixed farm | last chore: Collect, wash and pack the eggs (day 500, doy 92, y3)
+[1037s] farmmixed step 0 "Spring: prune, plant the plots, calving" open | last chore: Collect, wash and pack the eggs (day 500, doy 92, y3)
+[1049s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 501, doy 93, y3)
+[1053s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 501, doy 93, y3)
+[1058s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Stock the stand and list produce on the website (day 502, doy 94, y3)
+[1061s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Walk through the herd: condition, feet, eyes (day 502, doy 94, y3)
+[1061s] farmmixed step 0 "Spring: prune, plant the plots, calving" waiting waiting: the next chore on the mixed farm | last chore: Walk through the herd: condition, feet, eyes (day 502, doy 94, y3)
+[1061s] farmmixed step 0 "Spring: prune, plant the plots, calving" open | last chore: Walk through the herd: condition, feet, eyes (day 503, doy 95, y3)
+[1074s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 503, doy 95, y3)
+[1078s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Move Daisy to the calving pen (day 504, doy 96, y3)
+snap c-13-calving
+[1081s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 504, doy 96, y3)
+[1086s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Stock the stand and list produce on the website (day 504, doy 96, y3)
+[1086s] farmmixed step 0 "Spring: prune, plant the plots, calving" waiting waiting: the next chore on the mixed farm | last chore: Stock the stand and list produce on the website (day 505, doy 97, y3)
+[1086s] farmmixed step 0 "Spring: prune, plant the plots, calving" open | last chore: Stock the stand and list produce on the website (day 505, doy 97, y3)
+[1089s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Check Daisy's new calf (day 506, doy 98, y3)
+snap c-14-newborn
+[1102s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 506, doy 98, y3)
+[1107s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 507, doy 99, y3)
+[1110s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Grind layer mash and fill the hen feeder (day 507, doy 99, y3)
+[1123s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Till the carrot plot (day 507, doy 99, y3)
+snap c-16-till
+[1125s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 508, doy 100, y3)
+[1128s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 508, doy 100, y3)
+[1143s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 509, doy 101, y3)
+[1147s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 509, doy 101, y3)
+[1150s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Walk through the herd: condition, feet, eyes (day 509, doy 101, y3)
+[1152s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Stock the stand and list produce on the website (day 510, doy 102, y3)
+[1156s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 510, doy 102, y3)
+[1156s] farmmixed step 0 "Spring: prune, plant the plots, calving" waiting waiting: the next chore on the mixed farm | last chore: Pasteurize and bottle the milk (day 511, doy 103, y3)
+[1157s] farmmixed step 0 "Spring: prune, plant the plots, calving" open | last chore: Pasteurize and bottle the milk (day 511, doy 103, y3)
+[1171s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 511, doy 103, y3)
+[1185s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Till the potato plot (day 512, doy 104, y3)
+[1189s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Move Clover to the calving pen (day 512, doy 104, y3)
+[1191s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 513, doy 105, y3)
+[1194s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 513, doy 105, y3)
+[1197s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Sell Daisy's bull calf (day 513, doy 105, y3)
+snap c-18-sellcalf
+[1200s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Stock the stand and list produce on the website (day 514, doy 106, y3)
+[1213s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 514, doy 106, y3)
+[1217s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Check Clover's new calf (day 515, doy 107, y3)
+[1218s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 515, doy 107, y3)
+[1221s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 515, doy 107, y3)
+[1225s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Walk through the herd: condition, feet, eyes (day 516, doy 108, y3)
+[1225s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Move Midnight to the calving pen (day 516, doy 108, y3)
+[1238s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 517, doy 109, y3)
+[1243s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 517, doy 109, y3)
+[1246s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 517, doy 109, y3)
+[1250s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Stock the stand and list produce on the website (day 518, doy 110, y3)
+[1253s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Check Midnight's new calf (day 518, doy 110, y3)
+[1253s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Plant the carrot plot (day 519, doy 111, y3)
+snap c-20-plant
+[1255s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 519, doy 111, y3)
+[1269s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 519, doy 111, y3)
+[1273s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 520, doy 112, y3)
+[1273s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Grind layer mash and fill the hen feeder (day 520, doy 112, y3)
+[1278s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Stock the stand and list produce on the website (day 521, doy 113, y3)
+[1280s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Move Buttercup to the calving pen (day 521, doy 113, y3)
+[1282s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 521, doy 113, y3)
+[1285s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 522, doy 114, y3)
+[1298s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 522, doy 114, y3)
+[1302s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Sell Clover's bull calf (day 523, doy 115, y3)
+[1303s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Check Buttercup's new calf (day 523, doy 115, y3)
+[1305s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 523, doy 115, y3)
+[1317s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Plant the potato plot (day 524, doy 116, y3)
+[1320s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 524, doy 116, y3)
+[1323s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Walk through the herd: condition, feet, eyes (day 525, doy 117, y3)
+[1337s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 525, doy 117, y3)
+[1341s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Move Sable to the calving pen (day 525, doy 117, y3)
+[1342s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 526, doy 118, y3)
+[1355s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Plant the carrot plot (day 526, doy 118, y3)
+[1358s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 527, doy 119, y3)
+[1361s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Check Sable's new calf (day 527, doy 119, y3)
+[1362s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 527, doy 119, y3)
+[1376s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 528, doy 120, y3)
+[1380s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 528, doy 120, y3)
+[1387s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Turn the herd out on the pasture (day 529, doy 121, y3)
+snap c-22-moveherd
+[1390s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 529, doy 121, y3)
+[1394s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Stock the stand and list produce on the website (day 529, doy 121, y3)
+[1399s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Walk through the herd: condition, feet, eyes (day 530, doy 122, y3)
+[1400s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 530, doy 122, y3)
+[1400s] farmmixed step 0 "Spring: prune, plant the plots, calving" waiting waiting: the next chore on the mixed farm | last chore: Collect, wash and pack the eggs (day 531, doy 123, y3)
+[1400s] farmmixed step 0 "Spring: prune, plant the plots, calving" open | last chore: Collect, wash and pack the eggs (day 531, doy 123, y3)
+[1403s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 532, doy 124, y3)
+[1406s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 532, doy 124, y3)
+[1413s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Bring the herd in to the barn (day 532, doy 124, y3)
+[1417s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Stock the stand and list produce on the website (day 533, doy 125, y3)
+[1421s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 533, doy 125, y3)
+[1435s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 534, doy 126, y3)
+[1439s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Grind layer mash and fill the hen feeder (day 534, doy 126, y3)
+[1440s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 534, doy 126, y3)
+[1443s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Walk through the herd: condition, feet, eyes (day 535, doy 127, y3)
+[1445s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 535, doy 127, y3)
+snap latest
+[1448s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Stock the stand and list produce on the website (day 536, doy 128, y3)
+[1462s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 536, doy 128, y3)
+[1477s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Till the squash plot (day 536, doy 128, y3)
+[1490s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Till the bean plot (day 537, doy 129, y3)
+[1494s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 537, doy 129, y3)
+[1497s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 538, doy 130, y3)
+snap final
+{
+ "status": {
+  "plan": 17,
+  "year": "Run the mixed farm (year 3)",
+  "orchard": {
+   "apple": 242,
+   "cherry": 30
+  },
+  "plots": [
+   [
+    "v1",
+    "potato",
+    "seeded",
+    11,
+    97
+   ],
+   [
+    "v2",
+    "carrot",
+    "seeded",
+    11,
+    97
+   ],
+   [
+    "v3",
+    null,
+    "harrowed",
+    0,
+    100
+   ],
+   [
+    "v4",
+    null,
+    "harrowed",
+    0,
+    100
+   ],
+   [
+    "f3",
+    "hay",
+    "seeded",
+    92,
+    97
+   ]
+  ],
+  "hay": {
+   "round": 10,
+   "square": 0,
+   "q": 0.96,
+   "loose": 405.5
+  },
+  "fieldBales": {
+   "round": 0,
+   "square": 0,
+   "q": 1,
+   "field": "f3"
+  },
+  "herd": [
+   [
+    "Daisy",
+    "dairy",
+    "cow",
+    450,
+    null,
+    null
+   ],
+   [
+    "Clover",
+    "dairy",
+    "cow",
+    450,
+    null,
+    null
+   ],
+   [
+    "Buttercup",
+    "dairy",
+    "cow",
+    450,
+    null,
+    null
+   ],
+   [
+    "Midnight",
+    "beef",
+    "cow",
+    600,
+    null,
+    null
+   ],
+   [
+    "Sable",
+    "beef",
+    "cow",
+    600,
+    null,
+    null
+   ],
+   [
+    "Ruby's heifer calf",
+    "beef",
+    "calf",
+    445,
+    null,
+    null
+   ],
+   [
+    "Clover's heifer calf",
+    "dairy",
+    "calf",
+    311,
+    null,
+    null
+   ],
+   [
+    "Midnight's bull calf",
+    "beef",
+    "calf",
+    436,
+    null,
+    null
+   ],
+   [
+    "Sable's bull calf",
+    "beef",
+    "calf",
+    426,
+    null,
+    null
+   ],
+   [
+    "Midnight's heifer calf",
+    "beef",
+    "calf",
+    56,
+    null,
+    null
+   ],
+   [
+    "Buttercup's heifer calf",
+    "dairy",
+    "calf",
+    36,
+    null,
+    null
+   ],
+   [
+    "Sable's heifer calf",
+    "beef",
+    "calf",
+    47,
+    null,
+    null
+   ]
+  ],
+  "hens": 18,
+  "nest": 15,
+  "tank": 67.5,
+  "store": {
+   "eggs": 104.09,
+   "milk": 83.73,
+   "bean": 0.08,
+   "carrot": 0.08,
+   "potato": 0.08,
+   "squash": 0.08
+  },
+  "bunk": 228.5,
+  "feeder": 23.02,
+  "earned": 7756.5,
+  "budget": [
+   "buy 1 round bales from a neighbour",
+   "keep all the corn and wheat for feed (still 3.2 t short: the cows get more hay instead)",
+   "order mineral",
+   "order layer premix"
+  ],
+  "last": {
+   "key": "sell",
+   "label": "Stock the stand and list produce on the website",
+   "day": 538,
+   "ok": true
+  }
+ },
+ "chores": {
+  "healthcheck": 86,
+  "feedhens": 26,
+  "milk": 100,
+  "feedcattle": 100,
+  "eggs": 156,
+  "sell": 82,
+  "budget": 4,
+  "sick": 2,
+  "prune:apple": 1,
+  "prune": 2,
+  "prune:cherry": 1,
+  "seedorder": 2,
+  "calving": 10,
+  "newborn": 10,
+  "till:v2": 1,
+  "till": 4,
+  "till:v1": 1,
+  "sellcalf": 4,
+  "plant:v2": 2,
+  "plant": 3,
+  "plant:v1": 1,
+  "moveherd": 4,
+  "till:v3": 1,
+  "till:v4": 1
+ },
+ "log": [
+  "d518 Could not plant the carrot plot: waiting for dry weather to plant",
+  "d407 Feed budget: buy 1 round bales from a neighbour; keep all the corn and wheat for feed (still 3.2 t short: the cows get more hay instead); order mineral; order layer premix",
+  "d407 Ordered 1 round bales of hay: The winter feed budget is short",
+  "d403 Could not grind layer mash and fill the hen feeder: waiting for layer ration for the hens",
+  "d400 Could not grind layer mash and fill the hen feeder: waiting for layer ration for the hens",
+  "d397 Could not grind layer mash and fill the hen feeder: waiting for corn or wheat for the layer mash",
+  "d389 Could not grind layer mash and fill the hen feeder: waiting for corn or wheat for the layer mash",
+  "d381 Could not grind layer mash and fill the hen feeder: waiting for corn or wheat for the layer mash",
+  "d373 Could not grind layer mash and fill the hen feeder: waiting for corn or wheat for the layer mash",
+  "d364 Could not grind layer mash and fill the hen feeder: waiting for corn or wheat for the layer mash",
+  "d356 Could not grind layer mash and fill the hen feeder: waiting for corn or wheat for the layer mash",
+  "d348 Could not grind layer mash and fill the hen feeder: waiting for corn or wheat for the layer mash",
+  "d340 Could not grind layer mash and fill the hen feeder: waiting for corn or wheat for the layer mash",
+  "d252 Feed budget: buy 3 round bales from a neighbour; keep all the corn and wheat for feed (still 4.5 t short: the cows get more hay instead); order mineral; order layer premix",
+  "d252 Ordered 3 round bales of hay: The winter feed budget is short",
+  "d210 Feed budget: sell Ruby, the oldest open cow, rather than buy 32 bales; buy 24 round bales; keep all the corn and wheat for feed (still 4.1 t short: the cows get more hay instead); order mineral; order",
+  "d210 Ordered 24 round bales of hay: The winter feed budget is still short",
+  "d183 Could not plant the squash plot: waiting for dry weather to plant",
+  "d130 Feed budget: buy 12 round bales from a neighbour; think about a second hay field next year; keep 1 t of corn and 0.4 t of wheat back from sale for feed; order mineral",
+  "d130 Ordered 10 round bales of hay: Only 0 days of hay left in the shed",
+  "d129 Could not learn to drive the 55 hp compact utility tractor: waiting for learning to drive the 55 hp compact utility tractor with front loader and 3-point hitch",
+  "d128 30 isa brown laying hens arrived",
+  "d128 3 black angus cows arrived",
+  "d128 3 jersey dairy cows arrived",
+  "d0 The north field leaves the grain rotation: it will be hay"
+ ],
+ "farmlog": [
+  "Bottled 0 L of milk",
+  "Tilling done: Bean plot",
+  "Tilling done: Squash plot",
+  "Fed the cattle 309 kg",
+  "Bottled 0 L of milk",
+  "Fed the cattle 308 kg",
+  "Bottled 0 L of milk",
+  "Herd in for winter",
+  "Bottled 0 L of milk",
+  "Bottled 0 L of milk",
+  "Herd out on pasture",
+  "Fed the cattle 306 kg",
+  "Bottled 0 L of milk",
+  "Sable had a calf",
+  "Sable calved: a heifer calf",
+  "Planted the carrot plot",
+  "Planting done: Carrot plot",
+  "Bottled 0 L of milk",
+  "Fed the cattle 303 kg",
+  "Planted the potato plot",
+  "Planting done: Potato plot",
+  "Bottled 0 L of milk",
+  "Buttercup had a calf",
+  "Buttercup calved: a heifer calf",
+  "Fed the cattle 295 kg",
+  "Bottled 0 L of milk",
+  "Fed the cattle 294 kg",
+  "Bottled 0 L of milk",
+  "Frost in the cherry bloom",
+  "Could not plant the carrot plot: waiting for dry weather to plant",
+  "Midnight had a calf",
+  "Midnight calved: a heifer calf",
+  "Bottled 21 L of milk",
+  "Fed the cattle 291 kg",
+  "Bottled 80 L of milk",
+  "Clover had a calf",
+  "Fed the cattle 290 kg",
+  "Clover calved: a bull calf",
+  "Bottled 35 L of milk",
+  "Tilling done: Potato plot"
+ ],
+ "diary": [
+  "🐄 Waiting on Run the mixed farm (year 3)",
+  "🐮 Sable had a calf",
+  "🥕 Planted the carrot plot",
+  "🥔 Planted the potato plot",
+  "🐮 Buttercup had a calf",
+  "🐮 Midnight had a calf",
+  "🐮 Clover had a calf",
+  "🐄 Waiting on Run the mixed farm (year 3)",
+  "🐮 Daisy had a calf",
+  "🐄 Waiting on Run the mixed farm (year 3)",
+  "🐄 Waiting on Run the mixed farm (year 3)",
+  "🐄 Waiting on Run the mixed farm (year 3)",
+  "🐄 Waiting on Run the mixed farm (year 3)",
+  "🐄 Waiting on Run the mixed farm (year 3)",
+  "🐄 Waiting on Run the mixed farm (year 3)",
+  "🐄 Waiting on Run the mixed farm (year 3)",
+  "🐄 Took on Run the mixed farm (year 3)",
+  "🐄 A year on the mixed farm",
+  "🐄 Finished Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🎓 orcharding: level 1",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)",
+  "🐄 Waiting on Run the mixed farm (year 2)"
+ ],
+ "lists": [
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: seed and supplies (year 3): 4 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 2 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: hay for the cattle: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 2 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: hay for the cattle: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 2 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: hay for the cattle: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: supplies for the animals: 1 lines",
+  "Farm list: hay for the cattle: 1 lines",
+  "Farm list: cows, hens and their supplies: 12 lines",
+  "Farm list: seed for the plots and the hay: 6 lines",
+  "Farm list: fruit trees and trellis: 6 lines",
+  "Farm list: compact tractor and implements: 17 lines",
+  "Farm list: mixed-farm buildings and fence: 50 lines"
+ ],
+ "summary": "orchard 242 apple / 30 cherry trees (in bloom); plots: potato plot potato planted, carrot plot carrot sown, squash plot harrowed, bean plot harrowed; hay field: 92% grown, 0 cuts this year; hay in shed 10 round + 0 square (5.1 t, enough); 3 dairy cows, 2 beef cows, 7 calves, 18 hens; bunk 2 days; sick: none; store: 104 eggs, 84 milk, 0 bean, 0 carrot, 0 potato, 0 squash; next chore: Walk through the herd: condition, feet, eyes",
+ "listings": [
+  "8 × Butternut squash (about 1.2 kg) (Kelo-1's farm) $36",
+  "4 × 4.5 kg (10 lb) bag of Yukon Gold potatoes (Kelo-1's farm) $36",
+  "20 × small square bale of alfalfa-grass hay (Kelo-1's farm) $240",
+  "6 × 500 g of green beans (Kelo-1's farm) $30",
+  "10 × 1 kg bag of Bolero carrots (Kelo-1's farm) $40",
+  "6 × 1 L glass bottle of cream-top whole milk (pasteurized) (Kelo-1's farm) $27",
+  "6 × dozen free-run brown eggs (Kelo-1's farm) $42"
+ ],
+ "earnings": 8438.5
+}
+page errors: none

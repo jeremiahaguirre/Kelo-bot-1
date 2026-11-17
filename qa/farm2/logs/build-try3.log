@@ -1,0 +1,261 @@
+farm1 {"site":"east","buildings":8,"vehicles":["A 180 hp row-crop tractor with 3-point hitch and PTO","A combine harvester, class 7 (rotary)","A tandem-axle grain truck with a 20 ft box and roll tarp","A crawler bulldozer with a six-way blade","A motor grader with a 14 ft moldboard","A single-drum vibratory soil compactor","A tandem vibratory asphalt roller","A tracked asphalt paver with a heated screed","A dump truck","An excavator"],"fields":3}
+[1s] farm2 step 0 "Read up on orchards, market gardens, livestock and hay" open (day 0, doy 322, y1)
+snap m-01-farm2-0
+[6s] farm2 step 1 "Lay out the orchard, plots, pasture and hay field" active (day 0, doy 322, y1)
+snap m-02-farm2-1
+[20s] farm2 step 2 "Send the list for the new buildings and the pasture fence" active (day 0, doy 322, y1)
+snap m-03-farm2-2
+[20s] farm2 step 3 "Drill the well and build the pump house" active (day 0, doy 322, y1)
+snap m-04-farm2-3
+[20s] farm2 step 3 "Drill the well and build the pump house" waiting waiting: the ready-mix and rebar for the well and pump house (day 0, doy 322, y1)
+[21s] farm2 step 3 "Drill the well and build the pump house" open (day 0, doy 322, y1)
+[61s] farm2 step 3 "Drill the well and build the pump house" active (day 0, doy 322, y1)
+[61s] farm2 step 3 "Drill the well and build the pump house" waiting waiting: the well and pump house foundation to cure (day 0, doy 322, y1)
+[61s] farm2 step 3 "Drill the well and build the pump house" open (day 7, doy 329, y1)
+[66s] farm2 step 3 "Drill the well and build the pump house" active (day 7, doy 329, y1)
+[79s] farm2 step 4 "Build the packing shed and cooler" active (day 7, doy 329, y1)
+snap m-05-farm2-4
+[100s] farm2 step 4 "Build the packing shed and cooler" waiting waiting: the packing shed and cooler foundation to cure (day 7, doy 329, y1)
+[101s] farm2 step 4 "Build the packing shed and cooler" open (day 14, doy 336, y1)
+[109s] farm2 step 4 "Build the packing shed and cooler" active (day 14, doy 336, y1)
+[125s] farm2 step 5 "Put up the hay shed" active (day 14, doy 336, y1)
+snap m-06-farm2-5
+[147s] farm2 step 5 "Put up the hay shed" waiting waiting: the hay shed foundation to cure (day 14, doy 336, y1)
+[148s] farm2 step 5 "Put up the hay shed" open (day 21, doy 343, y1)
+[152s] farm2 step 5 "Put up the hay shed" active (day 21, doy 343, y1)
+[163s] farm2 step 6 "Build the chicken coop" active (day 21, doy 343, y1)
+snap m-07-farm2-6
+[175s] farm2 step 7 "Fit stalls into the barn" active (day 21, doy 343, y1)
+snap m-08-farm2-7
+[197s] farm2 step 8 "Build the milk house" active (day 21, doy 343, y1)
+snap m-09-farm2-8
+[208s] farm2 step 8 "Build the milk house" waiting waiting: the milk house and robot milker foundation to cure (day 21, doy 343, y1)
+[208s] farm2 step 8 "Build the milk house" open (day 28, doy 350, y1)
+[212s] farm2 step 8 "Build the milk house" active (day 28, doy 350, y1)
+[221s] farm2 step 9 "Fence the pasture and set the water tank" active (day 28, doy 350, y1)
+snap m-10-farm2-9
+[233s] farm2 step 10 "Send the list for the compact tractor and the implements" active (day 28, doy 350, y1)
+snap m-11-farm2-10
+[233s] farm2 step 10 "Send the list for the compact tractor and the implements" waiting waiting: the compact tractor and the implements (day 28, doy 350, y1)
+[235s] farm2 step 10 "Send the list for the compact tractor and the implements" open (day 28, doy 350, y1)
+[235s] farm2 step 11 "Order the fruit trees and the trellis" active (day 28, doy 350, y1)
+snap m-12-farm2-11
+[235s] farm2 step 12 "Plant the orchard" active (day 28, doy 350, y1)
+snap m-13-farm2-12
+[235s] farm2 step 12 "Plant the orchard" waiting waiting: the apple trees (day 28, doy 350, y1)
+[236s] farm2 step 12 "Plant the orchard" open (day 28, doy 350, y1)
+[236s] farm2 step 12 "Plant the orchard" waiting waiting: planting time for bare-root trees (early spring or late autumn) (day 28, doy 350, y1)
+[236s] farm2 step 12 "Plant the orchard" open (day 128, doy 85, y2)
+[254s] farm2 step 13 "Order seed for the plots and the hay" active (day 128, doy 85, y2)
+snap m-14-farm2-13
+[254s] farm2 step 14 "Order the cows and the hens" active (day 128, doy 85, y2)
+snap m-15-farm2-14
+[254s] farm2 step 15 "Bring the animals home" active (day 128, doy 85, y2)
+snap m-16-farm2-15
+[254s] farm2 step 15 "Bring the animals home" waiting waiting: the cows and the hens (day 128, doy 85, y2)
+[256s] farm2 step 15 "Bring the animals home" open (day 128, doy 85, y2)
+[261s] farm2 step 16 "Start the first year of the mixed farm" active (day 128, doy 85, y2)
+snap m-17-farm2-16
+[261s] farmmixed step 0 "Spring: prune, plant the plots, calving" open (day 128, doy 85, y2)
+snap m-18-farmmixed-0
+PLAN DONE
+snap final
+{
+ "status": {
+  "plan": 17,
+  "year": "Run the mixed farm (year 2)",
+  "orchard": {
+   "apple": 242,
+   "cherry": 30
+  },
+  "plots": [
+   [
+    "v1",
+    null,
+    "sod",
+    0,
+    85
+   ],
+   [
+    "v2",
+    null,
+    "sod",
+    0,
+    85
+   ],
+   [
+    "v3",
+    null,
+    "sod",
+    0,
+    85
+   ],
+   [
+    "v4",
+    null,
+    "sod",
+    0,
+    85
+   ],
+   [
+    "f3",
+    null,
+    "sod",
+    0,
+    85
+   ]
+  ],
+  "hay": {
+   "round": 0,
+   "square": 0,
+   "q": 0.8
+  },
+  "herd": [
+   [
+    "Daisy",
+    "dairy",
+    "cow",
+    450,
+    null,
+    146
+   ],
+   [
+    "Clover",
+    "dairy",
+    "cow",
+    450,
+    null,
+    155
+   ],
+   [
+    "Buttercup",
+    "dairy",
+    "cow",
+    450,
+    null,
+    164
+   ],
+   [
+    "Ruby",
+    "beef",
+    "cow",
+    600,
+    null,
+    146
+   ],
+   [
+    "Midnight",
+    "beef",
+    "cow",
+    600,
+    null,
+    155
+   ],
+   [
+    "Sable",
+    "beef",
+    "cow",
+    600,
+    null,
+    164
+   ]
+  ],
+  "hens": 30,
+  "nest": 0,
+  "tank": 0,
+  "store": {},
+  "bunk": 126,
+  "feeder": 13.8,
+  "earned": 0,
+  "budget": null
+ },
+ "chores": {},
+ "log": [
+  "d128 30 isa brown laying hens arrived",
+  "d128 3 black angus cows arrived",
+  "d128 3 jersey dairy cows arrived",
+  "d0 The north field leaves the grain rotation: it will be hay"
+ ],
+ "farmlog": [
+  "The mixed farm is set up",
+  "My cows and hens came home",
+  "Kit arrived: 90.8 kg of seed potatoes, 1 kg of carrot seed, 0.5 kg of squash seed",
+  "30 isa brown laying hens arrived",
+  "3 black angus cows arrived",
+  "3 jersey dairy cows arrived",
+  "Kit arrived: 50 kg of cattle mineral, 100 kg of layer premix, 25 kg of oyster shell",
+  "Planted the orchard",
+  "Kit arrived: 250 of apple trees, 30 of cherry trees, 14 rows of trellis posts and wire",
+  "The mixed-farm machines are here",
+  "Kit arrived: 55 hp compact utility tractor with front loader and 3-point hitch, 1.8 m rotary tiller, 2-row vegetable planter with seed plates and a potato cup unit",
+  "Fenced the pasture",
+  "Finished the milk house and robot milker",
+  "Poured the milk house and robot milker foundation",
+  "Finished the barn stalls and feed alley",
+  "Finished the chicken coop",
+  "Finished the hay shed",
+  "Poured the hay shed foundation",
+  "Finished the packing shed and cooler",
+  "Poured the packing shed and cooler foundation",
+  "Finished the well and pump house",
+  "Poured the well and pump house foundation",
+  "Kit arrived: 1 × Drilled well, 60 m, cased, 1 × Submersible pump 2 hp, 40 L/min, 1 × Pressure tank 300 L",
+  "Laid out the mixed farm",
+  "The north field leaves the grain rotation: it will be hay",
+  "The next part of the farm",
+  "A big idea: a farm"
+ ],
+ "diary": [
+  "🐄 The mixed farm is set up",
+  "🐄 Finished Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Took on Run the mixed farm (year 2)",
+  "🐄 My cows and hens came home",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🌳 Planted the orchard",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🚜 The mixed-farm machines are here",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🪵 Fenced the pasture",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🥛 Finished the milk house and robot milker",
+  "🎓 carpentry: level 3",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🧱 Poured the milk house and robot milker foundation",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Finished the barn stalls and feed alley",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐔 Finished the chicken coop",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🌾 Finished the hay shed",
+  "🎓 carpentry: level 2",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🌀 Test the limits of the pair of snowshoes",
+  "🪶 Take a closer look at the pair of cross-country skis",
+  "🧭 Show off the snowmobile",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🧱 Poured the hay shed foundation",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "📦 Finished the packing shed and cooler",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay"
+ ],
+ "lists": [
+  "Farm list: cows, hens and their supplies: 12 lines",
+  "Farm list: seed for the plots and the hay: 6 lines",
+  "Farm list: fruit trees and trellis: 6 lines",
+  "Farm list: compact tractor and implements: 17 lines",
+  "Farm list: mixed-farm buildings and fence: 50 lines"
+ ],
+ "summary": "orchard 242 apple / 30 cherry trees (dormant); plots: potato plot sod, carrot plot sod, squash plot sod, bean plot sod; hay field: 0% grown, 0 cuts this year; hay in shed 0 round + 0 square (0.1 t, 5.4 t short for winter); 3 dairy cows, 3 beef cows, 0 calves, 30 hens; bunk 1.5 days; sick: none; store: empty; next chore: Walk through the herd: condition, feet, eyes",
+ "listings": [],
+ "earnings": 0
+}
+page errors: none

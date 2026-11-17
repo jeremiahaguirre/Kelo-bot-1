@@ -1,0 +1,13 @@
+PERF setup fast yard {"calls":876,"tris":497887,"frames":9}
+PERF setup fast orchard {"calls":174,"tris":398917,"frames":12}
+PERF setup fast pen {"calls":1103,"tris":498512,"frames":9}
+PERF setup fast over {"calls":287,"tris":450673,"frames":11}
+PERF setup balanced yard {"calls":1313,"tris":534453,"frames":6}
+PERF setup balanced orchard {"calls":380,"tris":440083,"frames":8}
+PERF setup balanced pen {"calls":1184,"tris":531612,"frames":6}
+PERF setup balanced over {"calls":347,"tris":500064,"frames":7}
+PERF setup high yard {"calls":1350,"tris":545819,"frames":6}
+PERF setup high orchard {"calls":451,"tris":457818,"frames":6}
+PERF setup high pen {"calls":1262,"tris":554507,"frames":5}
+PERF setup high over {"calls":362,"tris":515261,"frames":7}
+page errors: none

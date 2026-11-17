@@ -1,0 +1,54 @@
+[0s] farmmixed step 0 "Spring: prune, plant the plots, calving" open (day 129, doy 86, y2)
+snap m-01-farmmixed-0
+[3s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Walk through the herd: condition, feet, eyes (day 129, doy 86, y2)
+snap c-01-healthcheck
+[68s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 130, doy 87, y2)
+snap c-02-feedcattle
+[85s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 130, doy 87, y2)
+snap c-03-milk
+[99s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 130, doy 87, y2)
+snap c-04-eggs
+[106s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Work out the winter feed budget (day 131, doy 88, y2)
+snap c-05-budget
+[165s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 131, doy 88, y2)
+[193s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Grind layer mash and fill the hen feeder (day 131, doy 88, y2)
+snap c-06-feedhens
+[193s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Order seed and supplies for the year (day 132, doy 89, y2)
+snap c-07-seedorder
+[208s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 132, doy 89, y2)
+[222s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 133, doy 90, y2)
+[285s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 133, doy 90, y2)
+[298s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Stock the stand and list produce on the website (day 133, doy 90, y2)
+snap c-08-sell
+[312s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Walk through the herd: condition, feet, eyes (day 134, doy 91, y2)
+[317s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 134, doy 91, y2)
+[330s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 134, doy 91, y2)
+[330s] farmmixed step 0 "Spring: prune, plant the plots, calving" waiting waiting: the next chore on the mixed farm | last chore: Collect, wash and pack the eggs (day 135, doy 92, y2)
+[336s] farmmixed step 0 "Spring: prune, plant the plots, calving" open | last chore: Collect, wash and pack the eggs (day 135, doy 92, y2)
+[398s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 135, doy 92, y2)
+[398s] farmmixed step 0 "Spring: prune, plant the plots, calving" waiting waiting: the next chore on the mixed farm | last chore: Mix and feed the cattle ration (day 136, doy 93, y2)
+[398s] farmmixed step 0 "Spring: prune, plant the plots, calving" open | last chore: Mix and feed the cattle ration (day 136, doy 93, y2)
+[416s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 137, doy 94, y2)
+[485s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 137, doy 94, y2)
+snap latest
+[499s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 137, doy 94, y2)
+[521s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Stock the stand and list produce on the website (day 138, doy 95, y2)
+[537s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 138, doy 95, y2)
+[543s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Walk through the herd: condition, feet, eyes (day 138, doy 95, y2)
+[543s] farmmixed step 0 "Spring: prune, plant the plots, calving" waiting waiting: the next chore on the mixed farm | last chore: Walk through the herd: condition, feet, eyes (day 139, doy 96, y2)
+[543s] farmmixed step 0 "Spring: prune, plant the plots, calving" open | last chore: Walk through the herd: condition, feet, eyes (day 139, doy 96, y2)
+[559s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 140, doy 97, y2)
+[622s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Mix and feed the cattle ration (day 140, doy 97, y2)
+[639s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Pasteurize and bottle the milk (day 140, doy 97, y2)
+[655s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Stock the stand and list produce on the website (day 141, doy 98, y2)
+[678s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Collect, wash and pack the eggs (day 141, doy 98, y2)
+[678s] farmmixed step 0 "Spring: prune, plant the plots, calving" active | last chore: Till the carrot plot (day 141, doy 98, y2)
+snap c-09-till
+STEPS FAILED page.evaluate: Target page, context or browser has been closed
+    at Object.ev (/home/user/qa/farm2/run.js:45:27)
+    at runStep (/home/user/qa/farm2/cycle2.js:41:27)
+    at module.exports (/home/user/qa/farm2/cycle2.js:76:21)
+    at async /home/user/qa/farm2/run.js:50:9
+page errors: [
+  'steps: page.evaluate: Target page, context or browser has been closed'
+]

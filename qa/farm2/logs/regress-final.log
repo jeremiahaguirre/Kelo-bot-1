@@ -1,0 +1,31 @@
+=== reload
+after reload {"d":1,"pin":true,"ground":"-1.38","rim":"0.20"}
+page errors: none
+=== ui
+shot ui-d-diary
+shot ui-d-brain
+shot ui-d-world
+shot ui-d-settings
+page errors: none
+=== chat
+> Did you know the lake is deep?
+< The lake is deep? Thank you for telling me that, curiousWanderer. I'll think about it.  (5042ms)
+vocab: {"quokka":{"meaning":"The quokka is a small macropod about the size of a domestic cat, found on islands off Western Australia.","from":"Quokka","at":1794938779754}}
+unknown in "the lake is beautiful": []
+page errors: none
+=== vehicle
+vehicle disposed false {"vehicles":["Dump truck","Excavator"],"tools":["Dump truck","Excavator","A sturdy shovel"],"meshes":2}
+shot vehicle-after
+page errors: none
+=== haul
+hauled 4
+{"dirtDisposed":0,"load":0,"speech":"Splash! The dirt sinks under the water. That patch is 7% filled: about 13 more truckloads before it breaks the surface."}
+shot haul-after
+page errors: none
+=== basement
+after reload: {"belongings":71,"levels":1}
+museum: {"sculptures":20,"paintings":11,"levels":2,"next":2,"summary":"20 sculptures and 11 paintings, over 3 floors"}
+shot basement-museum
+shot basement-storehouse
+page errors: none
+REGRESS DONE

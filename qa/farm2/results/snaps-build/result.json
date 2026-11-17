@@ -1,0 +1,198 @@
+{
+ "status": {
+  "plan": 17,
+  "year": "Run the mixed farm (year 2)",
+  "orchard": {
+   "apple": 242,
+   "cherry": 30
+  },
+  "plots": [
+   [
+    "v1",
+    null,
+    "sod",
+    0,
+    85
+   ],
+   [
+    "v2",
+    null,
+    "sod",
+    0,
+    85
+   ],
+   [
+    "v3",
+    null,
+    "sod",
+    0,
+    85
+   ],
+   [
+    "v4",
+    null,
+    "sod",
+    0,
+    85
+   ],
+   [
+    "f3",
+    null,
+    "sod",
+    0,
+    85
+   ]
+  ],
+  "hay": {
+   "round": 0,
+   "square": 0,
+   "q": 0.8
+  },
+  "herd": [
+   [
+    "Daisy",
+    "dairy",
+    "cow",
+    450,
+    null,
+    146
+   ],
+   [
+    "Clover",
+    "dairy",
+    "cow",
+    450,
+    null,
+    155
+   ],
+   [
+    "Buttercup",
+    "dairy",
+    "cow",
+    450,
+    null,
+    164
+   ],
+   [
+    "Ruby",
+    "beef",
+    "cow",
+    600,
+    null,
+    146
+   ],
+   [
+    "Midnight",
+    "beef",
+    "cow",
+    600,
+    null,
+    155
+   ],
+   [
+    "Sable",
+    "beef",
+    "cow",
+    600,
+    null,
+    164
+   ]
+  ],
+  "hens": 30,
+  "nest": 0,
+  "tank": 0,
+  "store": {},
+  "bunk": 126,
+  "feeder": 13.8,
+  "earned": 0,
+  "budget": null
+ },
+ "chores": {},
+ "log": [
+  "d128 30 isa brown laying hens arrived",
+  "d128 3 black angus cows arrived",
+  "d128 3 jersey dairy cows arrived",
+  "d0 The north field leaves the grain rotation: it will be hay"
+ ],
+ "farmlog": [
+  "The mixed farm is set up",
+  "My cows and hens came home",
+  "Kit arrived: 90.8 kg of seed potatoes, 1 kg of carrot seed, 0.5 kg of squash seed",
+  "30 isa brown laying hens arrived",
+  "3 black angus cows arrived",
+  "3 jersey dairy cows arrived",
+  "Kit arrived: 50 kg of cattle mineral, 100 kg of layer premix, 25 kg of oyster shell",
+  "Planted the orchard",
+  "Kit arrived: 250 of apple trees, 30 of cherry trees, 14 rows of trellis posts and wire",
+  "The mixed-farm machines are here",
+  "Kit arrived: 55 hp compact utility tractor with front loader and 3-point hitch, 1.8 m rotary tiller, 2-row vegetable planter with seed plates and a potato cup unit",
+  "Fenced the pasture",
+  "Finished the milk house and robot milker",
+  "Poured the milk house and robot milker foundation",
+  "Finished the barn stalls and feed alley",
+  "Finished the chicken coop",
+  "Finished the hay shed",
+  "Poured the hay shed foundation",
+  "Finished the packing shed and cooler",
+  "Poured the packing shed and cooler foundation",
+  "Finished the well and pump house",
+  "Poured the well and pump house foundation",
+  "Kit arrived: 1 × Drilled well, 60 m, cased, 1 × Submersible pump 2 hp, 40 L/min, 1 × Pressure tank 300 L",
+  "Laid out the mixed farm",
+  "The north field leaves the grain rotation: it will be hay",
+  "The next part of the farm",
+  "A big idea: a farm"
+ ],
+ "diary": [
+  "🐄 The mixed farm is set up",
+  "🐄 Finished Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Took on Run the mixed farm (year 2)",
+  "🐄 My cows and hens came home",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🌳 Planted the orchard",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🚜 The mixed-farm machines are here",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🪵 Fenced the pasture",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🥛 Finished the milk house and robot milker",
+  "🎓 carpentry: level 3",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🧱 Poured the milk house and robot milker foundation",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Finished the barn stalls and feed alley",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐔 Finished the chicken coop",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🌾 Finished the hay shed",
+  "🎓 carpentry: level 2",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🔭 Play with the pair of snowshoes",
+  "🗺️ Invent a game with the pair of cross-country skis",
+  "🪨 Find the perfect spot for the snowmobile",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🧱 Poured the hay shed foundation",
+  "🐄 Working on Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "📦 Finished the packing shed and cooler",
+  "🐄 Picked back up Grow a mixed farm: orchard, vegetables, livestock and hay",
+  "🐄 Waiting on Grow a mixed farm: orchard, vegetables, livestock and hay"
+ ],
+ "lists": [
+  "Farm list: cows, hens and their supplies: 12 lines",
+  "Farm list: seed for the plots and the hay: 6 lines",
+  "Farm list: fruit trees and trellis: 6 lines",
+  "Farm list: compact tractor and implements: 17 lines",
+  "Farm list: mixed-farm buildings and fence: 50 lines"
+ ],
+ "summary": "orchard 242 apple / 30 cherry trees (dormant); plots: potato plot sod, carrot plot sod, squash plot sod, bean plot sod; hay field: 0% grown, 0 cuts this year; hay in shed 0 round + 0 square (0.1 t, 5.4 t short for winter); 3 dairy cows, 3 beef cows, 0 calves, 30 hens; bunk 1.5 days; sick: none; store: empty; next chore: Walk through the herd: condition, feet, eyes",
+ "listings": [],
+ "earnings": 0
+}

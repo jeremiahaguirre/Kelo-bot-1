@@ -1473,7 +1473,7 @@ function freshWorldOnce() {
         if (state.agenda.focusId && !state.agenda.tasks.some(t => t.id === state.agenda.focusId)) state.agenda.focusId = null;
       }
       if (state.goals && Array.isArray(state.goals.list)) {
-        const farmGoals = new Set(state.goals.list.filter(g => g && g.template === 'farm').map(g => g.id));
+        const farmGoals = new Set(state.goals.list.filter(g => g && (g.template === 'farm' || g.template === 'farm2')).map(g => g.id));
         state.goals.list = state.goals.list.filter(g => !(g && farmGoals.has(g.id)));
         if (state.agenda && Array.isArray(state.agenda.tasks)) state.agenda.tasks = state.agenda.tasks.filter(t => !(t && t.kind === 'goal' && t.data && farmGoals.has(t.data.goalId)));
       }

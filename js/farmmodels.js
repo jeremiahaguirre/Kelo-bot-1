@@ -499,7 +499,7 @@ function farmBlades(count, h, w, hex, lean = 0.25, spread = 0.5, seed = 1) {
       const out = [];
       for (let i = 0; i < count; i++) {
         const a = (i / count) * Math.PI * 2 + seed, r = spread * (0.3 + 0.7 * ((i * 37 % 10) / 10));
-        const p = new THREE.PlaneGeometry(w, h, 1, 2);
+        const p = new THREE.PlaneGeometry(w, h, 1, 1);
         p.translate(0, h / 2, 0);
         const pa = p.attributes.position;
         for (let k = 0; k < pa.count; k++) { const y = pa.getY(k); pa.setX(k, pa.getX(k) + Math.sin(a) * lean * y * y / h); }
@@ -519,7 +519,7 @@ function farmClumpGeometry(crop, look) {
       const head = (n, h, hex, r = 0.05, len = 0.14, spread = 0.45) => {
         for (let i = 0; i < n; i++) {
           const a = i * 2.39996, rr = spread * Math.sqrt((i + 0.5) / n) * U;
-          const g = new THREE.CylinderGeometry(r * U * 0.6, r * U, len * U, 5); g.translate(Math.cos(a) * rr, h * U + Math.sin(i * 1.7) * 0.05 * U, Math.sin(a) * rr);
+          const g = new THREE.CylinderGeometry(r * U * 0.6, r * U, len * U, 4, 1, true); g.translate(Math.cos(a) * rr, h * U + Math.sin(i * 1.7) * 0.05 * U, Math.sin(a) * rr);
           parts.push(farmColGeo(g, hex));
         }
       };
@@ -529,11 +529,11 @@ function farmClumpGeometry(crop, look) {
         const col = look === 'ripe' ? 0xc4a46a : look === 'turning' ? 0xa7a253 : green;
         // two plants per clump (rows 76 cm, ~8 plants/m²)
         [[-0.35, 0], [0.35, 0.2]].forEach(([dx, dz], j) => {
-          const stalk = new THREE.CylinderGeometry(0.012 * U, 0.02 * U, H * U, 5); stalk.translate(dx * U, H * U / 2, dz * U); parts.push(farmColGeo(stalk, col));
-          farmBlades(look === 'sprout' ? 3 : 7, H * 0.55 * U, 0.09 * U, col, 0.6, 0.05 * U, j * 1.3).forEach(g => { g.translate(dx * U, H * 0.15 * U, dz * U); parts.push(g); });
+          const stalk = new THREE.CylinderGeometry(0.012 * U, 0.02 * U, H * U, 4, 1, true); stalk.translate(dx * U, H * U / 2, dz * U); parts.push(farmColGeo(stalk, col));
+          farmBlades(look === 'sprout' ? 3 : 5, H * 0.55 * U, 0.09 * U, col, 0.6, 0.05 * U, j * 1.3).forEach(g => { g.translate(dx * U, H * 0.15 * U, dz * U); parts.push(g); });
           if (look === 'head' || look === 'turning' || look === 'ripe') {
-            const tas = new THREE.ConeGeometry(0.06 * U, 0.35 * U, 5); tas.translate(dx * U, (H + 0.15) * U, dz * U); parts.push(farmColGeo(tas, look === 'head' ? 0xc8b86a : 0x9c8456));
-            const ear = new THREE.CylinderGeometry(0.035 * U, 0.03 * U, 0.25 * U, 6); ear.rotateZ(0.4); ear.translate((dx + 0.06) * U, H * 0.5 * U, dz * U); parts.push(farmColGeo(ear, look === 'ripe' ? 0xb39060 : 0x8fae4a));
+            const tas = new THREE.ConeGeometry(0.06 * U, 0.35 * U, 4, 1, true); tas.translate(dx * U, (H + 0.15) * U, dz * U); parts.push(farmColGeo(tas, look === 'head' ? 0xc8b86a : 0x9c8456));
+            const ear = new THREE.CylinderGeometry(0.035 * U, 0.03 * U, 0.25 * U, 4, 1, true); ear.rotateZ(0.4); ear.translate((dx + 0.06) * U, H * 0.5 * U, dz * U); parts.push(farmColGeo(ear, look === 'ripe' ? 0xb39060 : 0x8fae4a));
           }
         });
       } else if (crop === 'canola') {
@@ -542,16 +542,16 @@ function farmClumpGeometry(crop, look) {
         if (look === 'sprout' || look === 'leafy') {
           for (let i = 0; i < (look === 'sprout' ? 4 : 7); i++) { const a = i * 2.4, r = (0.1 + (i % 3) * 0.15) * U; const leaf = new THREE.CircleGeometry((look === 'sprout' ? 0.05 : 0.13) * U, 6); leaf.rotateX(-Math.PI / 2 + 0.5); leaf.rotateY(a); leaf.translate(Math.cos(a) * r, H * U, Math.sin(a) * r); leaf.computeVertexNormals(); parts.push(farmColGeo(leaf, col)); }
         } else {
-          farmBlades(8, H * U, 0.03 * U, col, 0.15, 0.4 * U, 0.7).forEach(g => parts.push(g));
+          farmBlades(6, H * U, 0.03 * U, col, 0.15, 0.4 * U, 0.7).forEach(g => parts.push(g));
           // the yellow flower cloud, then the pods
-          for (let i = 0; i < 7; i++) { const a = i * 2.4, r = (0.08 + (i % 4) * 0.12) * U; const top = new THREE.IcosahedronGeometry((look === 'flower' ? 0.17 : 0.12) * U, 0); top.scale(1, 0.6, 1); top.translate(Math.cos(a) * r, (H - 0.05) * U, Math.sin(a) * r); parts.push(farmColGeo(top, look === 'flower' ? 0xf2d21b : col)); }
+          for (let i = 0; i < 6; i++) { const a = i * 2.4, r = (0.08 + (i % 4) * 0.12) * U; const top = new THREE.OctahedronGeometry((look === 'flower' ? 0.17 : 0.12) * U, 0); top.scale(1, 0.6, 1); top.translate(Math.cos(a) * r, (H - 0.05) * U, Math.sin(a) * r); parts.push(farmColGeo(top, look === 'flower' ? 0xf2d21b : col)); }
         }
       } else {
         // wheat (~300 heads/m²: drawn as a tuft of tillers and a few heads)
         const H = { sprout: 0.1, leafy: 0.35, head: 0.85, turning: 0.88, ripe: 0.85 }[look] || 0.1;
         const col = look === 'ripe' ? ripe : look === 'turning' ? 0xb7b45a : green;
-        farmBlades(look === 'sprout' ? 6 : 12, H * U, 0.04 * U, col, look === 'ripe' ? 0.3 : 0.2, 0.5 * U, 0.2).forEach(g => parts.push(g));
-        if (look === 'head' || look === 'turning' || look === 'ripe') head(12, H - 0.08, look === 'head' ? 0x8fa54a : look === 'turning' ? 0xc9b86a : 0xd8b55a);
+        farmBlades(look === 'sprout' ? 5 : 8, H * U, 0.04 * U, col, look === 'ripe' ? 0.3 : 0.2, 0.5 * U, 0.2).forEach(g => parts.push(g));
+        if (look === 'head' || look === 'turning' || look === 'ripe') head(7, H - 0.08, look === 'head' ? 0x8fa54a : look === 'turning' ? 0xc9b86a : 0xd8b55a);
       }
       const geo = farmJoinGeos(parts);
       if (typeof markSway === 'function') markSway(geo, 0, 1.2 * U, 0.6);

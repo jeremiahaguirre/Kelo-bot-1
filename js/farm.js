@@ -831,7 +831,7 @@ function farmRecolourSoil(f, mesh) {
       col.needsUpdate = true;
     }
 // The crop clumps: full density near the camera, a few further out (the soil carries the colour)
-const FARM_CROP_NEAR = 46, FARM_CROP_MID = 150;
+const FARM_CROP_NEAR = 40, FARM_CROP_MID = 150;
 function farmCropMeshFor(f) {
       const M = farmFieldMeshes[f.id];
       const st = farmCropStage(f);

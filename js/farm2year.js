@@ -99,6 +99,8 @@ function farm2Chores() {
       if (X.flock.n && B.feederDays < 2) add(95 - B.feederDays * 5, 'feedhens', 'Grind layer mash and fill the hen feeder', farm2FeedHens);
       const sick = X.herd.find(a => a.sick);
       if (sick) add(90, 'sick', `Treat ${sick.name} (${sick.sick})`, () => farm2Treat(sick));
+      // (a birth he missed by days is past checking: the calf is up and about by then)
+      X.births.forEach(b => { if (!b.checked && d - b.day > 5) b.checked = true; });
       const newborn = X.births.find(b => !b.checked);
       if (newborn) add(84, 'newborn', `Check ${newborn.dam}'s new calf`, () => farm2CheckCalf(newborn));
       const dueSoon = farm2Adults('dairy').concat(farm2Adults('beef')).find(a => a.due != null && a.due - d < 2 && !a.inPen);
@@ -153,6 +155,9 @@ function farm2Chores() {
       // calves and steers: dairy bull calves go to a neighbour at a week; beef steers at about 18 months
       const bull = X.herd.find(a => a.calf && a.kind === 'dairy' && a.sex === 'm' && d - a.born >= 7);
       if (bull) add(38, 'sellcalf', `Sell ${bull.name}`, () => farm2SellCalf(bull));
+      // the barn has twelve stalls: past that, the youngest grown heifer (or the oldest cow) is sold
+      const grown = X.herd.filter(a => !a.calf);
+      if (grown.length > FARM2_STALLS) add(41, 'sellcow', 'Sell a cow: the stalls are full', farm2SellSurplus);
       const steer = X.herd.find(a => a.calf && a.kind === 'beef' && a.sex === 'm' && d - a.born >= FARM_ANIMALS.beef.sellDays && a.kg >= FARM_ANIMALS.beef.sellKg * 0.9);
       if (steer) add(42, 'beef', `Send ${steer.name} for beef`, () => farm2Beef(steer));
       return out.sort((a, b) => b.score - a.score);
@@ -567,6 +572,20 @@ async function farm2SellCalf(a) {
       farm2Earn(260, `${a.name} (dairy bull calf)`);
       X.sales.unshift({ day: Math.floor(farmDayNow()), what: a.name, price: 260 });
       farm2Remove([a.id]);
+      return true;
+    }
+const FARM2_STALLS = 12;
+async function farm2SellSurplus() {
+      const X = farm2State(), grown = X.herd.filter(a => !a.calf), d = farmDayNow();
+      const pick = grown.filter(a => d - a.born < 3 * DAYS_PER_YEAR).sort((a, b) => b.born - a.born)[0] || grown.sort((a, b) => a.born - b.born)[0];
+      if (!pick) return true;
+      await farmGo(farm2PenSpot(), 240000);
+      const price = pick.kind === 'dairy' ? 2600 : 2200;
+      farmSay(`Selling ${pick.name}`, '🐄', `Twelve stalls and ${grown.length} grown cattle: ${pick.name} goes to a neighbour's herd, bred and sound.`);
+      await farmPause(2000);
+      farm2Earn(price, `${pick.name} (${FARM_ANIMALS[pick.kind].breed}, sold to a neighbour)`);
+      X.sales.unshift({ day: Math.floor(d), what: pick.name, price });
+      farm2Remove([pick.id]);
       return true;
     }
 async function farm2Beef(a) {

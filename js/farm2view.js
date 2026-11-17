@@ -382,6 +382,8 @@ window.addEventListener('DOMContentLoaded', () => {
       setInterval(() => {
         try {
           farm2IdeaTick();
+          // a plan under way joins his long goals once he has room for another (js/goals.js keeps two open)
+          if (Math.random() < 0.08 && farm2PlanStepNow() >= 0 && farm2PlanStepNow() < FARM2_PLAN.length) farm2GoalAdopt();
           if (farm2Started()) { farm2Simulate(); if (Math.random() < 0.25) { farm2State().plots.forEach(p => farmRefreshFieldLook(p, true)); farm2Refresh3D(); } }
           renderFarm2Panel();
         } catch (e) { console.warn('farm2 tick', e); }

@@ -25,9 +25,18 @@ function farm2VertexMat() {
       if (!farm2VCMat) farm2VCMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.82, metalness: 0.02 });
       return farm2VCMat;
     }
+// Instanced meshes that carry a colour per instance get their own material: three.js r128 builds the shader
+// per material, and one compiled first for an uncoloured mesh would ignore the instance colours
+let farm2TintMatCache = null;
+function farm2TintMat() {
+      if (!farm2TintMatCache) farm2TintMatCache = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0.02 });
+      return farm2TintMatCache;
+    }
 function farm2Instanced(geo, max, name, mat = null) {
       const im = new THREE.InstancedMesh(geo, mat || farm2VertexMat(), Math.max(1, max));
       im.name = name; im.count = 0; im.castShadow = false; im.receiveShadow = true;
+      // (every mesh on the tint material has its colour buffer from the start, so they all share one shader)
+      if (mat && mat === farm2TintMatCache) im.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1, max) * 3).fill(1), 3);
       if (typeof chunkDynamic !== 'undefined') chunkDynamic.add(im);
       return im;
     }
@@ -310,10 +319,10 @@ function farm2TreeGeometries() {
       const trunk = farmJoinGeos(tp);
       // the canopy: a narrow cone of leafy lumps (white: the instance colour tints it by crop and season)
       const can = [];
-      for (let i = 0; i < 7; i++) { const t = i / 6, r = (0.55 - t * 0.35) * U, a = i * 2.4; can.push(farm2Ellipsoid(r, r * 0.8, r, 0xffffff, Math.cos(a) * 0.15 * U, (0.9 + t * 2.0) * U, Math.sin(a) * 0.15 * U, 6)); }
+      for (let i = 0; i < 8; i++) { const t = i / 7, r = (0.42 - t * 0.27) * U, a = i * 2.4; can.push(farm2Ellipsoid(r, r * 0.75, r * 0.85, 0xffffff, Math.cos(a) * 0.12 * U, (0.95 + t * 2.0) * U, Math.sin(a) * 0.12 * U, 6)); }
       const canopy = farmJoinGeos(can);
       const fr = [], bl = [];
-      for (let i = 0; i < 14; i++) { const t = (i * 0.37) % 1, a = i * 2.39996, r = (0.5 - t * 0.3) * U; fr.push(farm2Part(new THREE.IcosahedronGeometry(0.07 * U, 0), 0xffffff, Math.cos(a) * r, (1.0 + t * 1.8) * U, Math.sin(a) * r)); }
+      for (let i = 0; i < 14; i++) { const t = (i * 0.37) % 1, a = i * 2.39996, r = (0.5 - t * 0.3) * U; fr.push(farm2Part(new THREE.IcosahedronGeometry(0.045 * U, 0), 0xffffff, Math.cos(a) * r, (1.0 + t * 1.8) * U, Math.sin(a) * r)); }
       for (let i = 0; i < 18; i++) { const t = (i * 0.29) % 1, a = i * 2.1, r = (0.5 - t * 0.3) * U; bl.push(farm2Part(new THREE.OctahedronGeometry(0.11 * U, 0), 0xffffff, Math.cos(a) * r, (1.0 + t * 1.9) * U, Math.sin(a) * r)); }
       farm2TreeGeos = { trunk, canopy, fruit: farmJoinGeos(fr), blossom: farmJoinGeos(bl) };
       return farm2TreeGeos;

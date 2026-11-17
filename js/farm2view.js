@@ -69,7 +69,7 @@ function farm2BuildOrchard() {
       farm2V.orchard = g; farm2Group.add(g);
       if (!spots.length && !X.orchard.trellisRows) return;
       const G = farm2TreeGeometries(), n = spots.length;
-      const trunk = farm2Instanced(G.trunk, n, 'farm2Trunks'), canopy = farm2Instanced(G.canopy, n, 'farm2Canopy'), fruit = farm2Instanced(G.fruit, n, 'farm2Fruit'), bloom = farm2Instanced(G.blossom, n, 'farm2Blossom');
+      const trunk = farm2Instanced(G.trunk, n, 'farm2Trunks'), canopy = farm2Instanced(G.canopy, n, 'farm2Canopy', farm2TintMat()), fruit = farm2Instanced(G.fruit, n, 'farm2Fruit', farm2TintMat()), bloom = farm2Instanced(G.blossom, n, 'farm2Blossom', farm2TintMat());
       [trunk, canopy].forEach(m => { m.castShadow = lv.treeShadows; });
       const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), c = new THREE.Color(), pts = [];
       let nf = 0, nb = 0, nc = 0;
@@ -112,7 +112,7 @@ function farm2BuildHay() {
         const stage = S ? S.stage : 'swath', n = stage === 'windrow' ? Math.max(1, Math.round((H.z1 - H.z0) / (FARM_IMPLEMENTS.rake.widthM * U))) : (S ? S.n : op.n) || 20;
         const rows = [];
         for (let i = 0; i < n; i++) { if (!S && !(op.done[i])) continue; rows.push(H.z1 - (i + 0.5) * (H.z1 - H.z0) / n); }
-        const segs = Math.floor((H.x1 - H.x0 - 4) / 4), im = farm2Instanced(G.row, rows.length * segs, 'farm2Swath'), pts = [];
+        const segs = Math.floor((H.x1 - H.x0 - 4) / 4), im = farm2Instanced(G.row, rows.length * segs, 'farm2Swath', farm2TintMat()), pts = [];
         const wide = { swath: [0.9, 0.22], tedded: [1.7, 0.07], windrow: [0.75, 0.42] }[stage] || [0.9, 0.2];
         const dry = S ? Math.max(0, Math.min(1, (78 - S.m) / 60)) : 0;
         c.setHex(0x6f9a3a).lerp(new THREE.Color(0xc9b26a), dry);

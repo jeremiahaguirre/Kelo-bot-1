@@ -1499,6 +1499,12 @@ function savePersistentBrainStateNow() {
         const snapshot = {};
         const apart = new Set(BRAIN_PARTS.flatMap(p => p.fields));
         Object.keys(state).forEach(k => { if (!TRANSIENT_STATE_KEYS.has(k) && !apart.has(k)) snapshot[k] = state[k]; });
+        // Partway through a trip into the Storehouse or the Museum he is saved at its door (js/basements.js)
+        const door = typeof indoorTripSaveSpot === 'function' ? indoorTripSaveSpot() : null;
+        if (door) {
+          snapshot.botPos = door;
+          if (typeof getIslandGroundHeight === 'function') snapshot.botAltitudeY = getIslandGroundHeight(door.x, door.z);
+        }
         snapshot.giftLog = state.giftLog.slice(0, 30).map(({ thumb, ...rest }) => rest);
         // Listing pictures go in their own key
         const pictures = {};

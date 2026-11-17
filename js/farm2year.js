@@ -630,7 +630,7 @@ async function farm2FeedReview() {
         const cows = farm2Adults('beef').concat(farm2Adults('dairy'));
         if (b.hayShortKg > dem.hay * 120 && cows.length > 2) {
           const cull = cows.filter(a => a.kind === 'beef').sort((a, c) => (a.calved == null) - (c.calved == null) || a.born - c.born)[0] || cows[0];
-          decisions.push(`sell ${cull.name}, the oldest open cow, rather than buy ${bales} bales`);
+          decisions.push(`sell ${cull.name}, ${cull.due == null ? 'the oldest open cow' : 'my oldest beef cow'}, rather than buy ${bales} bales`);
           farm2Earn(1900, `${cull.name} (cow sold before winter)`); X.sales.unshift({ day: d, what: cull.name, price: 1900 }); farm2Remove([cull.id]);
           const left = farm2FeedBudget();
           if (left.hayShortKg > 0) { farm2OrderHay(Math.ceil(left.hayShortKg / 450), 'The winter feed budget is still short'); decisions.push(`buy ${Math.ceil(left.hayShortKg / 450)} round bales`); }

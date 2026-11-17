@@ -147,8 +147,9 @@ function farm2AnimalsArrive(kind, qty) {
       if (kind === 'hen') { X.flock.n += qty; if (X.flock.since == null) X.flock.since = d; X.feeder = Math.max(X.feeder, qty * FARM_ANIMALS.hen.feedKg * 4); }
       else for (let i = 0; i < qty; i++) {
         // bred cows, due in the spring (calving from day ~90 of the year)
+        // (bought in the spring itself: they are close to calving, a few weeks apart)
         let toSpring = (92 + i * 6 - doy + DAYS_PER_YEAR) % DAYS_PER_YEAR;
-        if (toSpring < 25) toSpring += DAYS_PER_YEAR;
+        if (toSpring < 25 || toSpring > 330) toSpring = 18 + i * 9;
         const a = farm2NewAnimal(kind, { due: d + Math.min(toSpring, FARM_ANIMALS[kind].gestation - 30) });
         if (kind === 'dairy') a.calved = d - 200 - i * 20;   // second lactation, still milking
         X.herd.push(a);

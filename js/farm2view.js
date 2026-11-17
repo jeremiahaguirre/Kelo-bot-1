@@ -22,9 +22,12 @@ function farm2Rects() {
 
 let farm2Group = null;
 const farm2V = { orchard: null, orchardSig: '', hay: null, haySig: '', fences: null, fenceSig: '', anim: null, sprites: new Map(), lastAnim: 0, trough: null };
+// Instanced groups have their instances far from their own origin: keep them out of the chunk system
+// (js/chunks.js files a static object under its middle) so the renderer's own culling handles them
+function farm2Dyn(root) { if (typeof chunkDynamic !== 'undefined') root.traverse(o => chunkDynamic.add(o)); return root; }
 function farm2Ensure3D() {
       if (typeof farmGroup === 'undefined' || !farmGroup || !farmSite()) return false;
-      if (!farm2Group) { farm2Group = new THREE.Group(); farm2Group.name = 'farm2'; farmGroup.add(farm2Group); }
+      if (!farm2Group) { farm2Group = new THREE.Group(); farm2Group.name = 'farm2'; farm2Dyn(farm2Group); farmGroup.add(farm2Group); }
       else if (farm2Group.parent !== farmGroup) farmGroup.add(farm2Group);
       return true;
     }
@@ -85,12 +88,14 @@ function farm2BuildOrchard() {
       });
       trunk.count = n; canopy.count = nc; fruit.count = nf; bloom.count = nb;
       [trunk, canopy, fruit, bloom].forEach(im => { im.instanceMatrix.needsUpdate = true; if (im.instanceColor) im.instanceColor.needsUpdate = true; farm2Bounds(im, pts, 4); g.add(im); });
+      farm2Dyn(g);
       // the trellis: a post every 10 m, three wires
       if (X.orchard.trellisRows) {
         const L = FARM2_LAYOUT.orchard, runs = [];
         for (let r = 0; r < X.orchard.trellisRows; r++) { const dm = L.d0 + 1.75 + r * L.rowM, a = farmWorld(L.x0 + 0.5, dm), b = farmWorld(L.x1 - 0.5, dm); runs.push([a.x, a.z, b.x, b.z]); }
         g.add(farm2FenceMesh(runs, { postM: 10, h: 3, strands: [0.9, 1.8, 2.7], postColour: 0x6a5a48, wireK: 0.5 }));
       }
+      farm2Dyn(g);
     }
 
 // --- Hay: swaths, windrows, bales on the field and the stack in the shed ------------------------------------------------
@@ -132,6 +137,7 @@ function farm2BuildHay() {
         for (let i = 0; i < sn; i++) { const col = i % 4, row = Math.floor(i / 4) % 6, lvl = Math.floor(i / 24); const x = r.x + sx * (r.hw - 0.7 * U - col * 0.95 * U), z = r.z - r.hd + 0.5 * U + row * 0.5 * U; m.compose(p.set(x, y0 + lvl * 0.37 * U, z), q.identity(), s.set(1, 1, 1)); sim.setMatrixAt(i, m); pts.push(p.clone()); }
         rim.count = rn; sim.count = sn; [rim, sim].forEach(im => { im.instanceMatrix.needsUpdate = true; farm2Bounds(im, pts, 3); g.add(im); });
       }
+      farm2Dyn(g);
     }
 
 // --- Fences: the pasture (as far as it is built), the hen run, the water tank ------------------------------------------------
@@ -158,6 +164,7 @@ function farm2BuildFences() {
         for (let i = 0; i < 4; i++) rr.push([c[i].x, c[i].z, c[i + 1].x, c[i + 1].z]);
         g.add(farm2FenceMesh(rr, { postM: 2, h: 1.5, strands: [0.2, 0.5, 0.8, 1.1, 1.4], wireColour: 0xb8bcc0, wireK: 1.2 }));
       }
+      farm2Dyn(g);
     }
 
 // --- Animals: where each one is, walking, grazing, lying (not saved: they wander from where they are) --------------------------

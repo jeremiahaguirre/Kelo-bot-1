@@ -303,7 +303,10 @@ let farm2TreeGeos = null;
 function farm2TreeGeometries() {
       if (farm2TreeGeos) return farm2TreeGeos;
       const U = FARM_U;
-      const trunk = farmJoinGeos([farm2CylG(0.05 * U, 0.08 * U, 2.8 * U, 6, 0x5a4330, 0, 1.4 * U, 0), farm2CylG(0.015 * U, 0.015 * U, 3.0 * U, 4, 0xb8a27a, 0.1 * U, 1.5 * U, 0)]);
+      // trunk and leader, a bamboo stake, and short feathered limbs (bare in winter, under the leaves in summer)
+      const tp = [farm2CylG(0.035 * U, 0.07 * U, 2.8 * U, 6, 0x5a4330, 0, 1.4 * U, 0), farm2CylG(0.015 * U, 0.015 * U, 3.0 * U, 4, 0xb8a27a, 0.1 * U, 1.5 * U, 0)];
+      for (let i = 0; i < 9; i++) { const a = i * 2.39996, h = (0.7 + i * 0.2) * U, L = (0.55 - i * 0.04) * U; const b = new THREE.CylinderGeometry(0.008 * U, 0.018 * U, L, 4); b.translate(0, L / 2, 0); b.rotateZ(-1.15); b.rotateY(a); tp.push(farm2Part(b, 0x6a5038, 0, h, 0)); }
+      const trunk = farmJoinGeos(tp);
       // the canopy: a narrow cone of leafy lumps (white: the instance colour tints it by crop and season)
       const can = [];
       for (let i = 0; i < 7; i++) { const t = i / 6, r = (0.55 - t * 0.35) * U, a = i * 2.4; can.push(farm2Ellipsoid(r, r * 0.8, r, 0xffffff, Math.cos(a) * 0.15 * U, (0.9 + t * 2.0) * U, Math.sin(a) * 0.15 * U, 6)); }

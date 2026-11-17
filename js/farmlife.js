@@ -109,6 +109,9 @@ function farm2PlotDay(f, d) {
       const X = farm2State(), w = farmDayInfo(d);
       if (f.use === 'hay') return farm2HayDay(f, d);
       farmFieldDay(f, d);
+      // what a vegetable crop really drinks on a hot Okanagan day (beyond the grain model's soil loss): up to
+      // ~5 mm a day under a full canopy, so the beds dry out in July without the drip
+      if (f.crop && f.soil === 'seeded' && !w.frozen) { const C0 = FARM_CROPS[f.crop] || {}; f.m = Math.max(0.05, f.m - 0.04 * w.heat * Math.min(1, 0.3 + f.g) * (C0.water || 1)); }
       // drip: the valve open tops the beds up; the crop drinks more in the heat
       if (X.irrigating[f.id] && !w.frozen && farm2Done('well')) {
         const C = FARM_CROPS[f.crop] || {};
@@ -125,8 +128,10 @@ function farm2PlotDay(f, d) {
 function farm2HayDay(f, d) {
       const C = FARM_CROPS.hay, w = farmDayInfo(d);
       const canopy = f.soil === 'seeded' ? Math.min(1, f.g * 1.4) : 0;
-      f.m = Math.max(0.05, Math.min(1, f.m + w.rainH * 0.018 - (0.003 + 0.011 * w.heat) * (0.5 + canopy * 0.7) + (w.frozen ? 0.006 : 0)));
+      f.m = Math.max(0.05, Math.min(1, f.m + w.rainH * 0.018 - (0.003 + 0.011 * w.heat) * (0.5 + canopy * 0.7) - 0.03 * w.heat * canopy + (w.frozen ? 0.006 : 0)));
       if (w.doy >= 80 && w.doy <= 100) f.m = Math.min(0.85, f.m + 0.012);
+      // the well waters the hay too (a hand-move line), when it is dry and growing
+      if (farm2Done('well') && f.m < 0.3 && !w.frozen && f.soil === 'seeded') f.m += 0.03;
       if (f.soil === 'seeded' && !w.frozen) {
         const mf = f.m < 0.12 ? 0.15 : f.m < 0.3 ? 0.15 + 0.85 * (f.m - 0.12) / 0.18 : 1;
         // establishing in its first summer: slower

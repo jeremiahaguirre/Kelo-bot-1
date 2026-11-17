@@ -8,6 +8,11 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
+## Farm stage 1: land, buildings, grain (branch `agent/farm`, results on `qa-results-farm`) — DONE, merged to main (2026-11-17)
+- Owner's ask: a big mechanized farm from scratch (land, buildings, machines, grain), designed for stage 2 (orchard, vegetables, livestock, hay, feed) on another machine.
+- Built: js/farmdata.js (registries + `state.farm` + crop sim), js/farmland.js (site, grading, ditches, lane, fence, paths), js/farmmodels.js (models, instanced crops), js/farm.js (agenda goal "Build the farm", lists, buildings, field work, harvest, dryer, sales, flour, diary, Brain-tab Farm panel).
+- Verified: whole cycle in fast time (build, plough to harvest, dry, bins, flour, website, truck sale), old save loads, goals API, regressions reload/ui/chat/vehicle/haul/basement clean, build passes, draw calls measured. See REPORT.md and shots/ on qa-results-farm.
+- Open: real GPU/phone untested; big tractor not exercised; lane not in KELO_ROADS; stand sign text; minimap pins; stage 2 (orchard, livestock, hay).
 ## Graphics "richer stylized" pass (branch `agent/graphics`, QA on `qa-results-graphics`): merged to main
 - Owner: the game "still looks too raw", "bring it to life", richer stylized look, laptops first, every effect behind a quality setting.
 - New files: js/look.js (LOOK config: light, shadows, mist, grading, bloom, shafts, cloud shadows, ground; Low/Medium/High + first-run benchmark), js/scatter.js (trees joined per material with GPU sway and variety, grass + flowers, instanced valley flowers, contact shadows), js/ambience.js (air motes, chimney smoke, roof flags, townspeople, passing/parked cars, lamplight pools), js/surfacedetail.js (normal maps from the procedural finish textures).

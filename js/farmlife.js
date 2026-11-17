@@ -94,7 +94,8 @@ function farm2OrchardDay(d) {
           if (B.pest) { B.p = Math.min(1, B.p + 0.03); B.fruitKg = Math.max(0, B.fruitKg * (1 - B.p * 0.006)); }
           // past the window the fruit drops; frost finishes what is left
           if (w.doy > C.window[1] + 4) { const drop = B.fruitKg * 0.03; B.fruitKg -= drop; B.droppedKg = (B.droppedKg || 0) + drop; }
-          if (w.frozen && w.doy > 290) { B.droppedKg = (B.droppedKg || 0) + B.fruitKg; B.fruitKg = 0; B.ripe = false; }
+          // two weeks past the window what is left has dropped or rotted; frost finishes the rest
+          if ((w.frozen && w.doy > 290) || w.doy > C.window[1] + 14) { B.droppedKg = (B.droppedKg || 0) + B.fruitKg; B.fruitKg = 0; B.ripe = false; }
           B.fruitKg = Math.round(B.fruitKg * 10) / 10;
         }
       });

@@ -6,6 +6,7 @@
 // Field passes on the plots and the hay field use stage 1's farmWorkField (js/farm.js): the same strips,
 // hitching, fuel and parking. What each pass does to a plot is farm2OpDone below.
 
+const FARM2_PLURAL = { apple: 'apples', cherry: 'cherries' };
 const FARM2_YEAR_STEPS = [['spring', 'Spring: prune, plant the plots, calving'], ['summer', 'Summer: hay, water, weeds, cherries'], ['autumn', 'Autumn: apples, dig, feed up for winter'], ['winter', 'Winter: feed, milk, plan next year']];
 function farm2SeasonIndex(d = farmDayNow()) { const s = farmDayInfo(d).season; return { Spring: 0, Summer: 1, Autumn: 2, Winter: 3 }[s]; }
 function farm2StartYear(why = '') {
@@ -95,8 +96,8 @@ function farm2Chores() {
       const out = [], add = (score, key, label, run) => out.push({ score, key, label, run });
       const cattle = farm2Cattle(), B = farm2FeedBudget(d);
       // the animals: feed and water first
-      if (cattle.length && B.bunkDays < 1.2) add(100 - B.bunkDays * 10, 'feedcattle', 'Mix and feed the cattle ration', farm2FeedCattle);
-      if (X.flock.n && B.feederDays < 2) add(95 - B.feederDays * 5, 'feedhens', 'Grind layer mash and fill the hen feeder', farm2FeedHens);
+      if (cattle.length && B.bunkDays < 1.2) add(B.bunkDays < 0.5 ? 100 : 66 - B.bunkDays * 5, 'feedcattle', 'Mix and feed the cattle ration', farm2FeedCattle);
+      if (X.flock.n && B.feederDays < 2) add(B.feederDays < 0.7 ? 95 : 60, 'feedhens', 'Grind layer mash and fill the hen feeder', farm2FeedHens);
       const sick = X.herd.find(a => a.sick);
       if (sick) add(90, 'sick', `Treat ${sick.name} (${sick.sick})`, () => farm2Treat(sick));
       // (a birth he missed by days is past checking: the calf is up and about by then)
@@ -106,8 +107,8 @@ function farm2Chores() {
       const dueSoon = farm2Adults('dairy').concat(farm2Adults('beef')).find(a => a.due != null && a.due - d < 2 && !a.inPen);
       if (dueSoon) add(80, 'calving', `Move ${dueSoon.name} to the calving pen`, () => farm2CalvingPen(dueSoon));
       // milk and eggs
-      if (X.tankL >= 120 || (X.tankL > 20 && (X.tankDays || 0) >= 2)) add(64 + Math.min(14, (X.tankDays || 0) * 4), 'milk', 'Pasteurize and bottle the milk', farm2BottleMilk);
-      if (X.flock.nestEggs >= 36 || (X.flock.nestEggs >= 12 && day - (X.lastEggs || 0) >= 2)) add(60 + Math.min(10, day - (X.lastEggs || day)), 'eggs', 'Collect, wash and pack the eggs', farm2CollectEggs);
+      if (X.tankL >= 120 || (X.tankL > 20 && (X.tankDays || 0) >= 2)) add((X.tankDays || 0) >= 2 || X.tankL > 800 ? 78 : 45, 'milk', 'Pasteurize and bottle the milk', farm2BottleMilk);
+      if (X.flock.nestEggs >= 36 || (X.flock.nestEggs >= 12 && day - (X.lastEggs || 0) >= 2)) add(day - (X.lastEggs || day) >= 2 || X.flock.nestEggs >= 120 ? 58 : 40, 'eggs', 'Collect, wash and pack the eggs', farm2CollectEggs);
       // herd out on grass in the season, back to the pen for winter
       if (cattle.length && X.pasture.fenced >= 1) {
         const want = farm2GrazingSeason(d) && X.pasture.kg > 300 * farm2PastureHa();
@@ -117,7 +118,7 @@ function farm2Chores() {
       // the hay chain
       farm2ClaimHayField();
       const H = farm2HayField();
-      if (H && H.soil !== 'seeded' && !H.op && ((doy >= 105 && doy <= 165) || (doy >= 215 && doy <= 240)) && !w.frozen) add(56, 'sowhay', `Sow the ${H.name.toLowerCase()} to hay`, () => farm2SowHay(H));
+      if (H && H.soil !== 'seeded' && !H.op && ((doy >= 105 && doy <= 165) || (doy >= 215 && doy <= 240)) && !w.frozen) add(64, 'sowhay', `Sow the ${H.name.toLowerCase()} to hay`, () => farm2SowHay(H));
       if (H && H.soil === 'seeded') {
         const S = H.swath;
         if (!S && !w.frozen && doy < 275 && (H.g >= 0.97 || (H.g >= 0.8 && doy >= 245)) && (H.cutsThisYear || 0) < FARM_CROPS.hay.cuts && !(X.fieldBales && (X.fieldBales.round + X.fieldBales.square) > 0)) add(70, 'mow', `Mow the ${H.name.toLowerCase()}`, () => farm2Pass(H, 'mow'));
@@ -129,8 +130,8 @@ function farm2Chores() {
       // the plots
       farm2Veg().forEach(p => {
         const C = FARM_CROPS[p.plan || p.planned], win = C && C.window;
-        if (!p.crop && C && !w.frozen && doy >= win[0] - 12 && doy <= win[1] && p.soil !== 'harrowed' && p.soil !== 'seeded') add(50, 'till:' + p.id, `Till the ${p.name.toLowerCase()}`, () => farm2Pass(p, 'till'));
-        if (!p.crop && C && p.soil === 'harrowed' && doy >= win[0] && doy <= win[1] && !w.frozen) add(55, 'plant:' + p.id, `Plant the ${p.name.toLowerCase()}`, () => farm2Plant(p));
+        if (!p.crop && C && !w.frozen && doy >= win[0] - 12 && doy <= win[1] && p.soil !== 'harrowed' && p.soil !== 'seeded') add(60, 'till:' + p.id, `Till the ${p.name.toLowerCase()}`, () => farm2Pass(p, 'till'));
+        if (!p.crop && C && p.soil === 'harrowed' && doy >= win[0] && doy <= win[1] && !w.frozen) add(63, 'plant:' + p.id, `Plant the ${p.name.toLowerCase()}`, () => farm2Plant(p));
         if (p.crop && p.soil === 'seeded') {
           if (p.m < 0.35 && !X.irrigating[p.id] && farm2Done('well') && !w.frozen) add(66, 'water:' + p.id, `Open the drip on the ${p.name.toLowerCase()}`, () => farm2Irrigate(p, true));
           if (p.w > 0.22 && p.g < 0.65) add(46 + p.w * 20, 'weed:' + p.id, `Cultivate the weeds in the ${p.name.toLowerCase()}`, () => farm2Pass(p, 'cultivate'));
@@ -144,8 +145,8 @@ function farm2Chores() {
         const Bk = O.blocks[c];
         if (!O.planted[c]) return;
         if (doy >= 32 && doy <= 105 && Bk.prunedYear !== yr && farm2TreeAge(c) > 0.4) add(44, 'prune:' + c, `Prune the ${c} trees`, () => farm2Prune(c));
-        if (Bk.pest && Bk.p > 0.05 && Bk.fruitKg > 0) add(64, 'spray:' + c, `Spray the ${c}s for ${Bk.pest}`, () => farm2SprayOrchard(c));
-        if (Bk.ripe && Bk.fruitKg > 3) add(c === 'cherry' ? 82 : 74, 'pick:' + c, `Pick the ${c}s`, () => farm2Pick(c));
+        if (Bk.pest && Bk.p > 0.05 && Bk.fruitKg > 0) add(64, 'spray:' + c, `Spray the ${FARM2_PLURAL[c]} for ${Bk.pest}`, () => farm2SprayOrchard(c));
+        if (Bk.ripe && Bk.fruitKg > 3 && doy <= FARM_CROPS[c].window[1] + 8) add(c === 'cherry' ? 82 : 74, 'pick:' + c, `Pick the ${FARM2_PLURAL[c]}`, () => farm2Pick(c));
       });
       // selling and the books
       const stock = Object.keys(X.store).filter(k => farm2StoreHas(k) >= (FARM_RETAIL[k] ? (FARM_RETAIL[k].kg || 1) * 4 : 4));
@@ -532,23 +533,23 @@ async function farm2Prune(crop) {
       await farm2OrchardRows(crop, () => farmPause(800));
       B.prunedYear = worldNow().year;
       if (typeof gainSkill === 'function') gainSkill('orcharding', 'orcharding', 3);
-      farmLog(`Pruned the ${crop}s`);
+      farmLog(`Pruned the ${crop} trees`);
       return true;
     }
 async function farm2SprayOrchard(crop) {
       const X = farm2State(), B = X.orchard.blocks[crop];
-      if (farmStock('insecticide') < 0.5) { farm2SupplyOrder(['insecticide'], `${B.pest} in the ${crop}s and no spray left`); return { type: 'supply', label: 'insecticide for the orchard' }; }
+      if (farmStock('insecticide') < 0.5) { farm2SupplyOrder(['insecticide'], `${B.pest} in the ${FARM2_PLURAL[crop]} and no spray left`); return { type: 'supply', label: 'insecticide for the orchard' }; }
       const r = await farm2Pass(farm2OrchardField(), 'orchardspray');
       if (r !== true) return r;
       farmUse('insecticide', 0.6);
-      farmDiary(`Sprayed the ${crop}s`, '💨', `${B.pest} had got into the ${crop}s (${Math.round(B.p * 100)}% pressure). One airblast pass down every alley at label rate, in the still of the early morning.`);
+      farmDiary(`Sprayed the ${FARM2_PLURAL[crop]}`, '💨', `${B.pest} had got into the ${FARM2_PLURAL[crop]} (${Math.round(B.p * 100)}% pressure). One airblast pass down every alley at label rate, in the still of the early morning.`);
       B.pest = null; B.p = 0; B.sprays = (B.sprays || 0) + 1; B.sprayedYear = worldNow().year;
       return true;
     }
 async function farm2Pick(crop) {
       const X = farm2State(), B = X.orchard.blocks[crop], C = FARM_CROPS[crop];
       if (!hasItem(/tripod ladder|picking bag/i)) return { type: 'delivery', label: 'the orchard ladder and picking bags' };
-      farmSay(`Picking ${crop}s`, C.emoji, crop === 'apple' ? 'Picking bag on, the ladder against the trellis, each apple lifted and twisted so the stem stays on. Into the bins.' : 'Cherries picked with the stems on, straight into lugs, into the cooler within the hour.');
+      farmSay(`Picking ${FARM2_PLURAL[crop]}`, C.emoji, crop === 'apple' ? 'Picking bag on, the ladder against the trellis, each apple lifted and twisted so the stem stays on. Into the bins.' : 'Cherries picked with the stems on, straight into lugs, into the cooler within the hour.');
       if (typeof holdJobTool === 'function') holdJobTool(/picking bag|basket|bucket/i, 'normal');
       const total = B.fruitKg;
       await farm2OrchardRows(crop, () => farmPause(900));
@@ -559,7 +560,7 @@ async function farm2Pick(crop) {
       await farmPause(2500);
       farm2StoreAdd(crop, kg);
       X.fruitLog = X.fruitLog || []; X.fruitLog.unshift({ crop, kg, day: Math.floor(farmDayNow()), year: worldNow().year }); if (X.fruitLog.length > 20) X.fruitLog.length = 20;
-      farmDiary(`Picked the ${crop}s`, C.emoji, `${kg} kg of ${C.label.toLowerCase()} from ${X.orchard.planted[crop]} trees in their ${Math.floor(farm2TreeAge(crop) + 1)}${['st', 'nd', 'rd'][Math.floor(farm2TreeAge(crop))] || 'th'} year. ${B.prunedYear === worldNow().year ? 'Pruned in the winter, and it shows.' : 'I never got to pruning them this winter; the fruit is smaller.'}`);
+      farmDiary(`Picked the ${FARM2_PLURAL[crop]}`, C.emoji, `${kg} kg of ${C.label.toLowerCase()} from ${X.orchard.planted[crop]} trees in their ${Math.floor(farm2TreeAge(crop) + 1)}${['st', 'nd', 'rd'][Math.floor(farm2TreeAge(crop))] || 'th'} year. ${B.prunedYear === worldNow().year ? 'Pruned in the winter, and it shows.' : 'I never got to pruning them this winter; the fruit is smaller.'}`);
       return true;
     }
 

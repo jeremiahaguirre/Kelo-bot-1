@@ -289,7 +289,7 @@ function farmFieldDay(f, d) {
       // Snowmelt tops the soil up in early spring
       if (w.doy >= 80 && w.doy <= 100) f.m = Math.min(0.85, f.m + 0.012);
       // Weeds come up from the seed bank whenever the soil is warm, slower under a crop
-      if (!w.frozen && w.heat > 0.25) f.w = Math.min(1, f.w + 0.008 * w.heat * (1 - canopy * 0.6) * (f.soil === 'ploughed' ? 0.3 : 1));
+      if (!w.frozen && w.heat > 0.25) f.w = Math.min(1, f.w + 0.008 * w.heat * (1 - canopy * 0.85) * (f.soil === 'ploughed' ? 0.3 : 1));
       if (w.frozen) f.w = Math.max(0.05, f.w - 0.01);
       // Nitrogen: a little is released from the soil each warm day
       if (!w.frozen) f.n = Math.min(220, f.n + 0.15 * w.heat);

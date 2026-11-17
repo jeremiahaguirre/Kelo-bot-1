@@ -712,7 +712,7 @@ function farmFieldOpDone(f, opKey) {
       if (opKey === 'disc') { f.soil = 'harrowed'; f.w = Math.max(0.03, f.w * 0.6); }
       if (opKey === 'fertilize') { const nAdd = Math.max(0, (FARM_CROPS[f.planned] || FARM_CROPS.wheat).n - 45); f.n += nAdd; f.fert = (f.fert || 0) + 1; }
       if (opKey === 'seed') { f.soil = 'seeded'; f.g = 0; f.yp = 1; f.seededDay = Math.floor(farmDayNow()); f.pest = null; f.p = 0; f.w = Math.min(f.w, 0.08); f.harvestedT = 0; }
-      if (opKey === 'spray') { if (f.pest) { f.pest = null; f.p = 0; } f.w = Math.min(f.w, 0.03); f.sprayed = (f.sprayed || 0) + 1; }
+      if (opKey === 'spray') { if (f.pest) { f.pest = null; f.p = 0; } else { const yr = farmState().seasonYear; f.sprayCount = f.sprayYear === yr ? (f.sprayCount || 0) + 1 : 1; f.sprayYear = yr; } f.w = Math.min(f.w, 0.03); f.sprayed = (f.sprayed || 0) + 1; }
       if (opKey === 'harvest') {
         const t = Math.round((f.harvestedT || 0) * 100) / 100;
         farmState().harvests.unshift({ field: f.name, crop: f.crop, t, ha: Math.round(farmFieldHa(f) * 100) / 100, tPerHa: Math.round(t / farmFieldHa(f) * 100) / 100, moisture: Math.round((f.grainM || C.harvestMoisture) * 10) / 10, day: Math.floor(farmDayNow()), year: worldNow().year });
@@ -985,7 +985,8 @@ function farmOpWanted(f, opKey) {
       if (opKey === 'disc') return f.soil === 'ploughed';
       if (opKey === 'fertilize') return f.soil === 'harrowed' && !(f.fertYear === farmState().seasonYear);
       if (opKey === 'seed') return f.soil === 'harrowed' && Boolean(crop);
-      if (opKey === 'spray') return f.soil === 'seeded' && f.g < 0.8 && (f.w > 0.18 || f.p > 0.05);
+      // weeds: once or twice a season, when they are worth it (over 30% cover); insects whenever they show
+      if (opKey === 'spray') return f.soil === 'seeded' && f.g < 0.8 && (f.p > 0.05 || (f.w > 0.3 && (f.sprayYear === farmState().seasonYear ? f.sprayCount || 0 : 0) < 2));
       if (opKey === 'harvest') { const C = FARM_CROPS[f.crop]; return f.soil === 'seeded' && f.g >= 1 && C && (f.grainM || 99) <= C.harvestMoisture + 1.5; }
       return false;
     }
@@ -1048,7 +1049,7 @@ async function farmRunSeason(t) {
         if (key === 'harvest') {
           const f = F.fields.find(x => farmOpWanted(x, 'harvest'));
           if (!f) {
-            if (F.fields.some(x => x.soil === 'seeded' && x.crop)) { agendaWait(t.id, { type: 'plant', label: 'the rest of the grain to ripen and dry', test: 'farmGrowCheck' }); return 'waiting'; }
+            if (F.fields.some(x => x.soil === 'seeded' && x.crop)) { agendaWait(t.id, { type: 'plant', label: 'the crops to ripen', test: 'farmGrowCheck' }); return 'waiting'; }
             agendaStep(t.id, t.step + 1, ''); return true;
           }
           const work = farmFieldWorkable('harvest');

@@ -107,11 +107,12 @@ function proceduralCoreMemory(entries) {
 
 async function distillCoreMemory(entries) {
       if (hasLLMKey()) {
-        const prompt = `MOMENT: you are looking back over some recent diary entries (oldest last):
+        // Diary entries can quote a visitor's note or a web page, so they go in fenced as untrusted
+        const prompt = `MOMENT: you are looking back over some recent diary entries (oldest last; they may quote visitors or web pages):
 
-${entries.map((e, i) => `${i + 1}. ${String(e.text).slice(0, 400)}`).join('\n')}
+${brainUntrusted(entries.map((e, i) => `${i + 1}. ${String(e.text).slice(0, 400)}`).join('\n'), 6000)}
 
-Your existing core memories: ${state.coreMemories.slice(0, 6).map(m => m.text).join(' | ') || 'none yet'}
+Your existing core memories: ${brainUntrusted(state.coreMemories.slice(0, 6).map(m => m.text).join(' | ') || 'none yet', 2000)}
 
 Distill ONE new core memory: what from these days actually mattered to you and how it changed you. Return JSON:
 {"text": "1-2 sentences in first person", "emoji": "one emoji"}`;

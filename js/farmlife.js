@@ -48,7 +48,7 @@ function farm2Hash(n) { return typeof windHash === 'function' ? windHash(n) : ((
 // Bearing: none before bearFrom years, a ramp to full crop at fullAt
 function farm2TreeAge(crop, d = farmDayNow()) { const pd = farm2State().orchard.plantedDay[crop]; return Number.isFinite(pd) ? Math.max(0, (d - pd) / DAYS_PER_YEAR) : 0; }
 function farm2Bearing(crop, d = farmDayNow()) {
-      const C = FARM_CROPS[crop], age = Math.floor(farm2TreeAge(crop, d) + 0.25);
+      const C = FARM_CROPS[crop], age = Math.floor(farm2TreeAge(crop, d) + 0.6);   // its 2nd summer counts as year 2
       if (!farm2State().orchard.planted[crop] || age < C.bearFrom) return 0;
       return Math.min(1, (age - C.bearFrom + 1) / (C.fullAt - C.bearFrom + 1));
     }

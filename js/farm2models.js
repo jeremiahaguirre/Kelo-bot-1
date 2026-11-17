@@ -412,3 +412,19 @@ function farm2FenceMesh(runs, opts = {}) {
       wm.count = n; farm2Bounds(wm, v3); g.add(wm);
       return g;
     }
+
+// The soil under a vegetable or hay crop takes the crop's green from afar (stage 1 tints flowering crops canola
+// yellow; potatoes and beans flower white, so their beds stay green)
+if (typeof farmSoilColourAt === 'function') {
+  const farm2OrigSoilColour = farmSoilColourAt;
+  farmSoilColourAt = function (c, f, x, z) {
+      const C = f && FARM_CROPS[f.crop];
+      if (!C || C.use === 'grain' || !C.use) return farm2OrigSoilColour(c, f, x, z);
+      const save = f.crop; f.crop = null;
+      try { farm2OrigSoilColour(c, f, x, z); } finally { f.crop = save; }
+      if (farmStripLook(f, x, z) !== 'seeded' || farmHarvestedAt(f, x, z)) return c;
+      const st = farmCropStage(f), canopy = Math.min(0.8, Math.max(0, (f.g - 0.05) * 1.5));
+      c.lerp(new THREE.Color(st && st.look === 'ripe' ? C.colour.ripe : C.colour.green), canopy);
+      return c;
+    };
+}

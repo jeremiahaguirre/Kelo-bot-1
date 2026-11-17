@@ -321,7 +321,7 @@ function farm2FeedBudget(d = farmDayNow()) {
       const grainNeed = dem.grain * days + hens * 0.75;
       const corn = ((farmState().bins.corn || {}).t || 0) * 1000, wheat = ((farmState().bins.wheat || {}).t || 0) * 1000;
       const hayHave = farm2HayKg() + X.bunk * FARM_FEED.tmr.hay;
-      const H = farm2HayField(), cutsLeft = H && doy < 250 ? Math.max(0, (FARM_CROPS.hay.cuts - (H.cutsThisYear || 0))) : 0;
+      const H = farm2HayField(), cutsLeft = H && H.soil === 'seeded' && doy < 250 ? Math.max(0, (FARM_CROPS.hay.cuts - (H.cutsThisYear || 0))) : 0;
       const hayComing = H ? cutsLeft * FARM_CROPS.hay.yield * farmFieldHa(H) * 1000 * 0.85 : 0;
       return { days, hayNeedKg: Math.round(hayNeed), hayHaveKg: Math.round(hayHave), hayComingKg: Math.round(hayComing), hayShortKg: Math.max(0, Math.round(hayNeed - hayHave - hayComing)),
         grainNeedKg: Math.round(grainNeed), grainHaveKg: Math.round(corn + wheat), grainShortKg: Math.max(0, Math.round(grainNeed - corn - wheat)),

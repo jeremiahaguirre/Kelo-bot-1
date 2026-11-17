@@ -548,7 +548,8 @@ async function farmBuildStep(key) {
       if (!farmPartsHere(key)) return { type: 'delivery', label: `the parts for the ${B.label.toLowerCase()}` };
       const S = FARM_STAGE_SAY[b.stage];
       if (S) {
-        const r = farmBuildingRect(key);
+        // (fitting out inside a closed building: he works from round the building it is in)
+        const r = farmBuildingRect(B.inside && B.inside !== 'shed' ? B.inside : key);
         farmSay(`${B.label}: ${S.title}`, '🔨', S.say(B));
         if (typeof holdJobTool === 'function') holdJobTool(S.tool, 'normal');
         const corners = [[-1, 1], [1, 1], [1, -1], [-1, -1]];
@@ -1428,7 +1429,11 @@ function farmVehicleBlock(v) {
       const rule = knowHowRule(v.name);
       if (rule && !state.knowHow[rule.key]) return { type: 'skill', label: `learning to drive the ${farmPlain(v.name).replace(/ with .*$/, '')}` };
       const tank = (farmState().buildings.fueltank || {}).stage === 'done' && farmStock('diesel') > 40;
-      if (fuelLeft(v) <= 5 && !tank && !(typeof fuelCanFor === 'function' && fuelCanFor('diesel'))) return { type: 'supply', label: `diesel for the ${farmPlain(v.name).replace(/ with .*$/, '')}` };
+      if (fuelLeft(v) <= 5 && !tank && !(typeof fuelCanFor === 'function' && fuelCanFor('diesel'))) {
+        // ask (again): a wait on diesel with no request open would never end (requestFuel skips it if one is open)
+        if (typeof requestFuel === 'function') requestFuel('diesel', `The ${farmPlain(v.name)} is out of diesel and the farm has no fuel tank yet.`);
+        return { type: 'supply', label: `diesel for the ${farmPlain(v.name).replace(/ with .*$/, '')}` };
+      }
       return null;
     }
 function farmPlanBlocker(t) {

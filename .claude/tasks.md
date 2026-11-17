@@ -8,6 +8,12 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
+## Graphics "richer stylized" pass (branch `agent/graphics`, QA on `qa-results-graphics`): merged to main
+- Owner: the game "still looks too raw", "bring it to life", richer stylized look, laptops first, every effect behind a quality setting.
+- New files: js/look.js (LOOK config: light, shadows, mist, grading, bloom, shafts, cloud shadows, ground; Low/Medium/High + first-run benchmark), js/scatter.js (trees joined per material with GPU sway and variety, grass + flowers, instanced valley flowers, contact shadows), js/ambience.js (air motes, chimney smoke, roof flags, townspeople, passing/parked cars, lamplight pools), js/surfacedetail.js (normal maps from the procedural finish textures).
+- Done: before/after shots and measurements (draw calls -9/-10/-12% over 8 views on Low/Medium/High), regressions reload ui chat vehicle haul basement clean, navtest identical to main. Report: qa-results-graphics/graphics/REPORT.md.
+- Open: frame rate on a real laptop GPU not measured (container has no GPU; the first-run benchmark picks the level on the device); height-fog patch must be redone in the Three.js upgrade (vFogDepth).
+
 ## Build step for laptop speed (branch `agent/buildstep`, results on `qa-results-buildstep`), DONE, live on main (fa95c3f)
 - Owner approved a small build step. `npm run build:site` makes `_site/` (one minified hashed game script + source map, compiled Tailwind, local icons/fonts, HDR skies 512x256); the repo root stays the plain-files dev mode. Phone build (`build:web`) bundles too; Windows app packs `_site/`; `.github/workflows/pages.yml` publishes Pages once Settings -> Pages -> Source is "GitHub Actions". Guide: docs/BUILD.md.
 - Leave three.js loading to `agent/threejs` (head scripts untouched). Models already webp + quantized; Draco/meshopt need WebAssembly, blocked by the strict CSP.

@@ -24,3 +24,16 @@ shoulder, elbow and chest angles and the hip height are kept, one cycle each, re
 | turning on the spot | 69_16 | turn in place |
 | setting off | 69_01 | walk forward |
 | stopping | 16_33 | slow walk, stop |
+
+## Graphics pass (2026-11): textures, figures and effects
+
+Everything added by the "richer stylized" graphics pass is original and drawn by the game's own code
+at runtime; no outside images, models or sounds were added:
+
+- Normal maps for siding, brick, stucco, shingles, metal roofs, panels, wood, bark and stone
+  (`js/surfacedetail.js`) are computed from the game's own procedural finish textures (`js/materials.js`).
+- Ground blending, cloud shadows, valley mist, colour grading, light shafts and lake glitter are shader
+  code (`js/look.js`); grass, flowers and contact shadows are generated geometry and canvas gradients
+  (`js/scatter.js`).
+- The townspeople, cars, roof pennants (an original design in the town's colours), chimney smoke, air
+  motes and lamplight pools are simple shapes and canvas drawings made in `js/ambience.js`.

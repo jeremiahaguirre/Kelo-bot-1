@@ -8,10 +8,11 @@ Each helper agent works in its own git worktree at `/home/user/wt/<name>` on bra
 - If the worktree is gone, the branch may still exist locally; otherwise redo the task from this description.
 - Merge each branch into `main`, run the regression tests (reload, chat, water, gear, haul, skills, printshop), look at the screenshots, then push.
 
-## Farm stage 1: land, buildings, grain (branch `agent/farm`, results on `qa-results-farm`) — IN PROGRESS
+## Farm stage 1: land, buildings, grain (branch `agent/farm`, results on `qa-results-farm`) — DONE, waiting for merge (2026-11-17)
 - Owner's ask: a big mechanized farm from scratch (land, buildings, machines, grain), designed for stage 2 (orchard, vegetables, livestock, hay, feed) on another machine.
 - Built: js/farmdata.js (registries + `state.farm` + crop sim), js/farmland.js (site, grading, ditches, lane, fence, paths), js/farmmodels.js (models, instanced crops), js/farm.js (agenda goal "Build the farm", lists, buildings, field work, harvest, dryer, sales, flour, diary, Brain-tab Farm panel).
-- Testing: qa/farm/cycle.js (whole cycle in fast time), snapshots -> shots.js at DSF 2; regressions still to run. See REPORT.md on qa-results-farm.
+- Verified: whole cycle in fast time (build, plough to harvest, dry, bins, flour, website, truck sale), old save loads, goals API, regressions reload/ui/chat/vehicle/haul/basement clean, build passes, draw calls measured. See REPORT.md and shots/ on qa-results-farm.
+- Open: real GPU/phone untested; big tractor not exercised; lane not in KELO_ROADS; stand sign text; minimap pins; stage 2 (orchard, livestock, hay).
 
 ## Build step for laptop speed (branch `agent/buildstep`, results on `qa-results-buildstep`), DONE, live on main (fa95c3f)
 - Owner approved a small build step. `npm run build:site` makes `_site/` (one minified hashed game script + source map, compiled Tailwind, local icons/fonts, HDR skies 512x256); the repo root stays the plain-files dev mode. Phone build (`build:web`) bundles too; Windows app packs `_site/`; `.github/workflows/pages.yml` publishes Pages once Settings -> Pages -> Source is "GitHub Actions". Guide: docs/BUILD.md.

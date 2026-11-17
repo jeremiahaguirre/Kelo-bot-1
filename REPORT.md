@@ -77,6 +77,13 @@ Everything under "Verified" was run, measured or seen in a screenshot. Anything 
 
 **Re-checked on the final code commit (f64380d)**: the harness regressions (reload, ui, chat, vehicle, haul, basement) all report "page errors: none" (`logs/regress-final.log`). The stage-1 `qa/farm/cycle.js` reaches SEASON DONE with no page errors (`logs/stage1-branch-cycle-f64380d.log`). `npm run build:site` passes. The save checks, the 1.5-year run and the perf numbers below are from 4679886/7faadd9; the only later code changes are the plot soil tint and the hens' bought layer ration.
 
+Harness reload, ui, chat, vehicle, haul and basement on 4ad2da7: all "page errors: none" (`logs/regress-4ad2da7.log`); `npm run build:site` passes.
+
+**Fresh-world reset from main (2039156), merged at 3b574ee** (`logs/saves-after-reset.log`, `qa/farm2/fresh.js`):
+- **Stage-2 save:** a save from the year run, made before the reset, loads with no page errors. The reset runs once (its stamp is set), and the farm and the mixed farm come back empty (0 fields, 0 plots, 0 animals, 0 trees). No `farm*` agenda tasks are left, and the stage-1 plan can start again (20 steps).
+- **Goal fix (4ad2da7):** main's reset dropped only `farm` long goals, so I extended it to `farm2`. A copy of the save with a `farm2` goal added loses that goal and its agenda task.
+- **The four older saves:** all load with no page errors. On the two stage-1 saves the reset clears the farm as intended, so the mixed-farm start step of my test script has nothing to start; that step fails in the test only.
+
 **Saves** (`logs/saves.log`, final code), all with no page errors:
 - Pre-farm save (made on main before the farm merge, d9492f8): loads, all 26 diary entries kept, empty farm and mixed-farm state, panel "not started".
 - Main save with an unstarted stage-1 farm: loads, 29 entries kept.

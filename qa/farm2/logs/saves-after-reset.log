@@ -1,0 +1,17 @@
+=== pre-save-prefarm-true
+LOADED {"diary":27,"vehicles":0,"farmStarted":false,"farmKeys":25,"mixedKeys":26,"mixedStarted":false,"ready":false,"farmPlan":"none","season":null,"fields":0,"bins":"","panel":"not started","panel2":"","summary":"no farm yet (you could build a big grain farm on the benchland past the north yard: it is a long project on your agenda)"}
+page errors: none
+=== pre-save-prefarm
+LOADED {"diary":30,"vehicles":0,"farmStarted":false,"farmKeys":25,"mixedKeys":26,"mixedStarted":false,"ready":false,"farmPlan":"none","season":null,"fields":0,"bins":"","panel":"not started","panel2":"","summary":"no farm yet (you could build a big grain farm on the benchland past the north yard: it is a long project on your agenda)"}
+page errors: none
+=== pre-s1
+LOADED {"diary":40,"vehicles":10,"farmStarted":false,"farmKeys":25,"mixedKeys":26,"mixedStarted":false,"ready":false,"farmPlan":"none","season":null,"fields":0,"bins":"","panel":"not started","panel2":"","summary":"no farm yet (you could build a big grain farm on the benchland past the north yard: it is a long project on your agenda)"}
+START2 null
+STEPS FAILED page.evaluate: TypeError: Cannot read properties of null (reading 'step')
+page errors: [
+=== pre-s1f
+LOADED {"diary":40,"vehicles":10,"farmStarted":false,"farmKeys":25,"mixedKeys":26,"mixedStarted":false,"ready":false,"farmPlan":"none","season":null,"fields":0,"bins":"","panel":"not started","panel2":"","summary":"no farm yet (you could build a big grain farm on the benchland past the north yard: it is a long project on your agenda)"}
+START2 null
+STEPS FAILED page.evaluate: TypeError: Cannot read properties of null (reading 'step')
+page errors: [
+SAVES DONE

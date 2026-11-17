@@ -156,6 +156,8 @@ function exploreKeloSpot(out = new THREE.Vector3()) {
 // Any touch, drag, key or button: cancel a flight, and leave Follow if the view is being moved
 function exploreTakeOver(kind) {
       exploreCam.lastInput = Date.now();
+      // (someone moving the view keeps it, even while he is down a basement, js/basements.js)
+      if (typeof tripCam !== 'undefined') tripCam.userAt = Date.now();
       exploreHideSpotMenu();
       if (state.cameraMode === 'eyes' || state.cameraMode === 'visit') return;   // his eyes and a Workshop visit stay put
       const mode = state.cameraMode;
@@ -186,6 +188,9 @@ function exploreFlyTo(dest) {
       if (!exploreCam.ready) return;
       if (!exploreCam.driving || !exploreCam.cur) exploreSyncFromCamera();
       exploreCam.lastInput = Date.now();
+      // Flying to a place the viewer picked (a Place, Bird's-eye, the map) is the viewer taking the
+      // view: the basement trip camera must not pull it back when the flight lands (js/basements.js)
+      if (!dest.follow && typeof tripCam !== 'undefined') tripCam.userAt = Date.now();
       exploreHideSpotMenu();
       const from = exploreCopy(exploreCam.cur);
       const target = dest.follow ? exploreKeloSpot() : new THREE.Vector3(dest.x, 0, dest.z);
@@ -235,12 +240,18 @@ function exploreCameraUpdate() {
       // Walking round the Workshop as a visitor (js/shopvisit.js) places it too
       if (typeof shopVisitFrame === 'function' && shopVisitFrame(dt)) { exploreCam.driving = false; return true; }
 
+      // Walking into the Storehouse or the Museum (and in every view while he is down a basement):
+      // js/basements.js looks in through the cutaway. A flight back to him ends there, as it would
+      // aim at him underground from up over the roof.
+      // (a key, a held button or the joystick moving the view takes it back, like a drag)
+      if (typeof basementCamClaims === 'function' && basementCamClaims() && exploreHeldInputAny()) exploreTakeOver('move');
+      if (typeof basementCamClaims === 'function' && basementCamClaims()) {
+        if (exploreCam.fly) exploreCam.fly = null;
+        exploreCam.driving = false;
+        return false;
+      }
       if (!exploreCam.fly) {
-        if (mode === 'follow') {
-          // Walking into the Storehouse or the Museum: js/basements.js looks in through the cutaway
-          const indoors = (typeof indoorTrip !== 'undefined' && indoorTrip.active) || (typeof tripCam !== 'undefined' && Date.now() < tripCam.releaseUntil);
-          if (indoors) { exploreCam.driving = false; return false; }
-        } else if (mode !== 'explore') {
+        if (mode !== 'follow' && mode !== 'explore') {
           exploreCam.driving = false;
           return false;
         }
@@ -348,6 +359,7 @@ function exploreCameraUpdate() {
 
       // Optional: drift back to Kelo-1 after a while with nobody touching anything
       if (exploreCam.prefs.autoReturn && state.cameraMode === 'explore' && !exploreCam.fly
+        && !(typeof indoorTrip !== 'undefined' && indoorTrip.active)
         && Date.now() - exploreCam.lastInput > EXPLORE_IDLE_MS && !document.getElementById('keloViewer')
         && !document.body.classList.contains('menu-open')) {
         exploreFlyToKelo();
@@ -423,6 +435,14 @@ function exploreBuildingHeightAt(blds, x, z) {
     }
 
 // Keys, the joystick and held buttons
+// Is a key, a held on-screen button or the joystick moving the view right now?
+function exploreHeldInputAny() {
+      const k = exploreCam.keys, h = exploreCam.held, s = exploreCam.stick;
+      return Boolean(k.KeyW || k.ArrowUp || h.up || k.KeyS || k.ArrowDown || h.down || k.KeyD || k.ArrowRight || h.right
+        || k.KeyA || k.ArrowLeft || h.left || k.KeyQ || h.turnLeft || k.KeyE || h.turnRight || k.Equal || k.NumpadAdd || h.zoomIn
+        || k.Minus || k.NumpadSubtract || h.zoomOut || k.KeyR || h.tiltUp || k.KeyF || h.tiltDown || s.x || s.y);
+    }
+
 function exploreApplyHeldInput(dt) {
       const k = exploreCam.keys, h = exploreCam.held, s = exploreCam.stick, g = exploreCam.goal;
       let fwd = (k.KeyW || k.ArrowUp || h.up ? 1 : 0) - (k.KeyS || k.ArrowDown || h.down ? 1 : 0) - s.y;

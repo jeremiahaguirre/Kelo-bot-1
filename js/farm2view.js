@@ -143,7 +143,8 @@ function farm2BuildHay() {
 // --- Fences: the pasture (as far as it is built), the hen run, the water tank ------------------------------------------------
 function farm2BuildFences() {
       const X = farm2State(), coop = farm2Done('coop');
-      const sig = `${Math.round(X.pasture.fenced * 4)}|${coop}`;
+      const stalls = farm2Done('stalls');
+      const sig = `${Math.round(X.pasture.fenced * 4)}|${coop}|${stalls}`;
       if (sig === farm2V.fenceSig) return;
       farm2V.fenceSig = sig;
       if (farm2V.fences) farm2Group.remove(farm2V.fences);
@@ -158,6 +159,11 @@ function farm2BuildFences() {
         const tank = fCyl(1.1 * FARM_U * 0.6, 1.1 * FARM_U * 0.6, 0.6 * FARM_U, 18, farmMat(FARM_PAINT.galv, { metalness: 0.6, roughness: 0.4 }), t.x, getAnalyticalGroundHeight(t.x, t.z) + 0.3 * FARM_U, t.z, g);
         fCyl(1.0 * FARM_U * 0.6, 1.0 * FARM_U * 0.6, 0.02, 18, farmMat(0x5b7f95, { roughness: 0.1 }), t.x, getAnalyticalGroundHeight(t.x, t.z) + 0.55 * FARM_U, t.z, g);
         tank.name = 'farm2Trough';
+      }
+      // the barnyard pen beside the barn (built with the stalls): board fence, a gate on the north side
+      if (stalls) {
+        const R = FARM2_LAYOUT.pen, c = [[R.x0, R.d0], [R.x1, R.d0], [R.x1, R.d1], [R.x0, R.d1]].map(([a, b]) => farmWorld(a, b)), gate = farmWorld((R.x0 + R.x1) / 2, R.d1);
+        g.add(farm2FenceMesh([[c[0].x, c[0].z, c[1].x, c[1].z], [c[1].x, c[1].z, c[2].x, c[2].z], [c[2].x, c[2].z, c[3].x, c[3].z]], { postM: 2.4, h: 1.4, strands: [0.45, 0.9, 1.3], postColour: 0x7a5a3a, wireColour: 0x9a7a52, wireK: 4, gaps: [{ x: gate.x, z: gate.z, r: 2.6 }] }));
       }
       if (coop) {
         const R = FARM2_LAYOUT.run, c = [[R.x0, R.d0], [R.x0, R.d1], [R.x1, R.d1], [R.x1, R.d0], [R.x0, R.d0]].map(([a, b]) => farmWorld(a, b)), rr = [];

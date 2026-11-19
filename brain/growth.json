@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-18T20:41:30.219Z",
-  "runs": 34,
+  "updatedAt": "2026-11-19T07:39:16.234Z",
+  "runs": 35,
   "curiosities": [
-    "1874 Newfoundland general election"
+    "1861 Newfoundland general election"
   ],
   "entries": [
     {
@@ -1187,6 +1187,43 @@
       },
       "shapeFrom": "1865 Newfoundland general election",
       "nextCuriosity": "1874 Newfoundland general election",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1795073956234",
+      "at": 1795073956234,
+      "brain": "procedural",
+      "topic": "1874 Newfoundland general election",
+      "title": "Dreaming of 42nd General Assembly of Newfoundland",
+      "text": "Dear Diary, while nobody was around I looked up \"1874 Newfoundland general election\" and drifted from 1874 Newfoundland general election to 11th General Assembly of Newfoundland to 42nd General Assembly of Newfoundland. The members of the 42nd General Assembly of Newfoundland were elected in the Newfoundland general election held in May 1993. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "1874 Newfoundland general election",
+          "url": "https://en.wikipedia.org/wiki/1874_Newfoundland_general_election",
+          "extract": "The 1874 Newfoundland general election was held on November 7, 1874 to elect members of the 12th General Assembly of Newfoundland in the Colony of Newfoundland. The Conservative Party led by Frederick Carter formed the government. The Anti-Confederate government of Charles Fox Be"
+        },
+        {
+          "title": "11th General Assembly of Newfoundland",
+          "url": "https://en.wikipedia.org/wiki/11th_General_Assembly_of_Newfoundland",
+          "extract": "The members of the 11th General Assembly of Newfoundland were elected in the Newfoundland general election held in November 1873. The general assembly sat from February 1874 to Fall 1874."
+        },
+        {
+          "title": "42nd General Assembly of Newfoundland",
+          "url": "https://en.wikipedia.org/wiki/42nd_General_Assembly_of_Newfoundland",
+          "extract": "The members of the 42nd General Assembly of Newfoundland were elected in the Newfoundland general election held in May 1993. The general assembly sat from May 20, 1993 to January 29, 1996."
+        }
+      ],
+      "concept": {
+        "name": "Newfoundland Newfoundland Principle",
+        "emoji": "💡",
+        "definition": "The idea that 1874 newfoundland general election and 42nd general assembly of newfoundland share a hidden pattern.",
+        "builtFrom": [
+          "1874 Newfoundland general election",
+          "42nd General Assembly of Newfoundland"
+        ]
+      },
+      "shapeFrom": "42nd General Assembly of Newfoundland",
+      "nextCuriosity": "1861 Newfoundland general election",
       "coreMemory": null
     }
   ]

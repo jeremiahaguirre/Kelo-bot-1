@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-19T07:39:16.234Z",
-  "runs": 35,
+  "updatedAt": "2026-11-19T20:48:14.499Z",
+  "runs": 36,
   "curiosities": [
-    "1861 Newfoundland general election"
+    "1873 Newfoundland general election"
   ],
   "entries": [
     {
@@ -1225,6 +1225,46 @@
       "shapeFrom": "42nd General Assembly of Newfoundland",
       "nextCuriosity": "1861 Newfoundland general election",
       "coreMemory": null
+    },
+    {
+      "id": "dream-1795121294499",
+      "at": 1795121294499,
+      "brain": "procedural",
+      "topic": "1861 Newfoundland general election",
+      "title": "Dreaming of 1923 Newfoundland general election",
+      "text": "Dear Diary, while nobody was around I looked up \"1861 Newfoundland general election\" and drifted from 1861 Newfoundland general election to 1919 Newfoundland general election to 1923 Newfoundland general election. The 1923 Newfoundland general election was held on May 3, 1923 to elect members of the 25th General Assembly of Newfoundland in the Dominion of Newfoundland. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "1861 Newfoundland general election",
+          "url": "https://en.wikipedia.org/wiki/1861_Newfoundland_general_election",
+          "extract": "The 1861 Newfoundland general election was held on May 2, 1861 to elect the members of the 8th General Assembly of Newfoundland in the Newfoundland Colony. It was triggered following the forced resignation of Premier John Kent by Governor Alexander Bannerman after Kent accused Ba"
+        },
+        {
+          "title": "1919 Newfoundland general election",
+          "url": "https://en.wikipedia.org/wiki/1919_Newfoundland_general_election",
+          "extract": "The 1919 Newfoundland general election was held on November 3, 1919 to elect members of the 24th General Assembly of Newfoundland in the Dominion of Newfoundland. The Liberal Reform Party, an alliance between the Liberals led by Richard Squires and the Fishermen's Protective Unio"
+        },
+        {
+          "title": "1923 Newfoundland general election",
+          "url": "https://en.wikipedia.org/wiki/1923_Newfoundland_general_election",
+          "extract": "The 1923 Newfoundland general election was held on May 3, 1923 to elect members of the 25th General Assembly of Newfoundland in the Dominion of Newfoundland. The Liberal Reform Party, an alliance between the Liberals led by Richard Squires and the Fishermen's Protective Union of "
+        }
+      ],
+      "concept": {
+        "name": "Newfoundland Newfoundland Theory",
+        "emoji": "🌙",
+        "definition": "The idea that 1861 newfoundland general election and 1923 newfoundland general election share a hidden pattern.",
+        "builtFrom": [
+          "1861 Newfoundland general election",
+          "1923 Newfoundland general election"
+        ]
+      },
+      "shapeFrom": "1923 Newfoundland general election",
+      "nextCuriosity": "1873 Newfoundland general election",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about 1865 Newfoundland general election. The 1865 Newfoundland general election was held on November 7, 1865 to elect members of the 9th General Assembly of Newfoundland in the Newfoundland Colony. I keep coming back to it.",
+        "emoji": "🌙"
+      }
     }
   ]
 }

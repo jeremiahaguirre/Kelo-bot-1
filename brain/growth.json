@@ -1,11 +1,9 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-19T20:48:14.499Z",
-  "runs": 36,
-  "curiosities": [
-    "1873 Newfoundland general election"
-  ],
+  "updatedAt": "2026-11-20T07:30:04.351Z",
+  "runs": 37,
+  "curiosities": [],
   "entries": [
     {
       "id": "dream-1793689119348",
@@ -1265,6 +1263,43 @@
         "text": "I remember a quiet night dreaming about 1865 Newfoundland general election. The 1865 Newfoundland general election was held on November 7, 1865 to elect members of the 9th General Assembly of Newfoundland in the Newfoundland Colony. I keep coming back to it.",
         "emoji": "🌙"
       }
+    },
+    {
+      "id": "dream-1795159804350",
+      "at": 1795159804350,
+      "brain": "procedural",
+      "topic": "1873 Newfoundland general election",
+      "title": "Dreaming of 1949 Newfoundland general election",
+      "text": "Dear Diary, while nobody was around I looked up \"1873 Newfoundland general election\" and drifted from 1873 Newfoundland general election to 1893 Newfoundland general election to 1949 Newfoundland general election. The 1949 Newfoundland general election was held on 27 May 1949 to elect members of the 29th General Assembly of Newfoundland. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "1873 Newfoundland general election",
+          "url": "https://en.wikipedia.org/wiki/1873_Newfoundland_general_election",
+          "extract": "The 1873 Newfoundland general election was held on November 8, 1873 to elect members of the 11th General Assembly of Newfoundland in the Colony of Newfoundland. The Anti-Confederates led by Charles Fox Bennett formed the government. Having largely abandoned Confederation with Can"
+        },
+        {
+          "title": "1893 Newfoundland general election",
+          "url": "https://en.wikipedia.org/wiki/1893_Newfoundland_general_election",
+          "extract": "The 1893 Newfoundland general election was held on November 6, 1893 to elect members of the 17th General Assembly of Newfoundland in Newfoundland Colony. Although the Liberals won the majority of seats, the Conservative party filed petitions against 15 elected Liberals and one In"
+        },
+        {
+          "title": "1949 Newfoundland general election",
+          "url": "https://en.wikipedia.org/wiki/1949_Newfoundland_general_election",
+          "extract": "The 1949 Newfoundland general election was held on 27 May 1949 to elect members of the 29th General Assembly of Newfoundland. It was the first general election held since Newfoundland joined Canadian Confederation on 31 March 1949 and the first Newfoundland-wide election of any k"
+        }
+      ],
+      "concept": {
+        "name": "Newfoundland Newfoundland Craft",
+        "emoji": "🌀",
+        "definition": "The idea that 1873 newfoundland general election and 1949 newfoundland general election share a hidden pattern.",
+        "builtFrom": [
+          "1873 Newfoundland general election",
+          "1949 Newfoundland general election"
+        ]
+      },
+      "shapeFrom": "1949 Newfoundland general election",
+      "nextCuriosity": "1861 Newfoundland general election",
+      "coreMemory": null
     }
   ]
 }

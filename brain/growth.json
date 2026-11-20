@@ -1,9 +1,11 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-20T07:30:04.351Z",
-  "runs": 37,
-  "curiosities": [],
+  "updatedAt": "2026-11-20T20:31:56.586Z",
+  "runs": 38,
+  "curiosities": [
+    "Across the Universe (message)"
+  ],
   "entries": [
     {
       "id": "dream-1793689119348",
@@ -1299,6 +1301,43 @@
       },
       "shapeFrom": "1949 Newfoundland general election",
       "nextCuriosity": "1861 Newfoundland general election",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1795206716586",
+      "at": 1795206716586,
+      "brain": "procedural",
+      "topic": "Theremin",
+      "title": "Dreaming of 2026 New Year Honours",
+      "text": "Dear Diary, while nobody was around I looked up \"Theremin\" and drifted from Theremin to Bill Bailey to 2026 New Year Honours. \nThe 2026 New Year Honours are appointments by King Charles III among the 15 Commonwealth realms to various orders and honours to recognise and reward good works by citizens of those countries. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Theremin",
+          "url": "https://en.wikipedia.org/wiki/Theremin",
+          "extract": "The theremin is an electronic musical instrument controlled without physical contact by the performer. It is named after its inventor, Leon Theremin, who patented the device in 1928."
+        },
+        {
+          "title": "Bill Bailey",
+          "url": "https://en.wikipedia.org/wiki/Bill_Bailey",
+          "extract": "Mark Robert \"Bill\" Bailey is an English musician, comedian, actor and television presenter. He is known for his role as Manny in the sitcom Black Books (2000–2004), and for his regular appearances on the panel shows Never Mind the Buzzcocks, Have I Got News for You, and QI, as we"
+        },
+        {
+          "title": "2026 New Year Honours",
+          "url": "https://en.wikipedia.org/wiki/2026_New_Year_Honours",
+          "extract": "\nThe 2026 New Year Honours are appointments by King Charles III among the 15 Commonwealth realms to various orders and honours to recognise and reward good works by citizens of those countries. The New Year Honours are awarded as part of the New Year celebrations at the start of "
+        }
+      ],
+      "concept": {
+        "name": "Theremin Honours Loop",
+        "emoji": "🌀",
+        "definition": "The idea that theremin and 2026 new year honours share a hidden pattern.",
+        "builtFrom": [
+          "Theremin",
+          "2026 New Year Honours"
+        ]
+      },
+      "shapeFrom": "2026 New Year Honours",
+      "nextCuriosity": "Across the Universe (message)",
       "coreMemory": null
     }
   ]

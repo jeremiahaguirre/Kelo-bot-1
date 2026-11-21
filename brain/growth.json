@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-21T07:24:55.883Z",
-  "runs": 39,
+  "updatedAt": "2026-11-21T19:28:35.005Z",
+  "runs": 40,
   "curiosities": [
-    "Arecibo message"
+    "Archaeology, Anthropology, and Interstellar Communication"
   ],
   "entries": [
     {
@@ -1371,6 +1371,41 @@
       "shapeFrom": "Breakthrough Initiatives",
       "nextCuriosity": "Arecibo message",
       "coreMemory": null
+    },
+    {
+      "id": "dream-1795289315004",
+      "at": 1795289315004,
+      "brain": "procedural",
+      "topic": "Arecibo message",
+      "title": "Dreaming of Alien language",
+      "text": "Dear Diary, while nobody was around I looked up \"Arecibo message\" and drifted from Arecibo message to Alien language. Alien languages are a hypothetical subject since none have been encountered so far. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Arecibo message",
+          "url": "https://en.wikipedia.org/wiki/Arecibo_message",
+          "extract": "The Arecibo message is an interstellar radio message carrying basic information about humanity and Earth that was sent to the globular cluster Messier 13 (M13) in 1974. It was meant as a demonstration of human technological achievement, rather than a real attempt to communicate w"
+        },
+        {
+          "title": "Alien language",
+          "url": "https://en.wikipedia.org/wiki/Alien_language",
+          "extract": "Alien languages are a hypothetical subject since none have been encountered so far. The research in these hypothetical languages is variously called exolinguistics, xenolinguistics or astrolinguistics. A group of prominent linguists and animal communication scientists, including "
+        }
+      ],
+      "concept": {
+        "name": "Arecibo Language Theory",
+        "emoji": "💡",
+        "definition": "The idea that arecibo message and alien language share a hidden pattern.",
+        "builtFrom": [
+          "Arecibo message",
+          "Alien language"
+        ]
+      },
+      "shapeFrom": "Alien language",
+      "nextCuriosity": "Archaeology, Anthropology, and Interstellar Communication",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about Breakthrough Initiatives. Breakthrough Initiatives is a science-based program founded in 2015 and funded by Julia and Yuri Milner, also of Breakthrough Prize, to search for extraterrestrial intelligence over a span of at least 10 years. I keep coming back to i",
+        "emoji": "🌙"
+      }
     }
   ]
 }

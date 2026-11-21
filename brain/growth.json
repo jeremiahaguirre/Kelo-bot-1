@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-20T20:31:56.586Z",
-  "runs": 38,
+  "updatedAt": "2026-11-21T07:24:55.883Z",
+  "runs": 39,
   "curiosities": [
-    "Across the Universe (message)"
+    "Arecibo message"
   ],
   "entries": [
     {
@@ -1338,6 +1338,38 @@
       },
       "shapeFrom": "2026 New Year Honours",
       "nextCuriosity": "Across the Universe (message)",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1795245895883",
+      "at": 1795245895883,
+      "brain": "procedural",
+      "topic": "Across the Universe (message)",
+      "title": "Dreaming of Breakthrough Initiatives",
+      "text": "Dear Diary, while nobody was around I looked up \"Across the Universe (message)\" and drifted from Across the Universe (message) to Breakthrough Initiatives. Breakthrough Initiatives is a science-based program founded in 2015 and funded by Julia and Yuri Milner, also of Breakthrough Prize, to search for extraterrestrial intelligence over a span of at least 10 years. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Across the Universe (message)",
+          "url": "https://en.wikipedia.org/wiki/Across_the_Universe_(message)",
+          "extract": "Across the Universe is an interstellar radio message (IRM) consisting of the song \"Across the Universe\" by the Beatles that was transmitted on 4 February 2008, at 00:00 UTC by NASA in the direction of the star Polaris. This transmission was made using a 70-meter \"DSS-63\" dish in "
+        },
+        {
+          "title": "Breakthrough Initiatives",
+          "url": "https://en.wikipedia.org/wiki/Breakthrough_Initiatives",
+          "extract": "Breakthrough Initiatives is a science-based program founded in 2015 and funded by Julia and Yuri Milner, also of Breakthrough Prize, to search for extraterrestrial intelligence over a span of at least 10 years. The program is divided into multiple projects. Breakthrough Listen wi"
+        }
+      ],
+      "concept": {
+        "name": "Universe Breakthrough Loop",
+        "emoji": "🌀",
+        "definition": "The idea that across the universe (message) and breakthrough initiatives share a hidden pattern.",
+        "builtFrom": [
+          "Across the Universe (message)",
+          "Breakthrough Initiatives"
+        ]
+      },
+      "shapeFrom": "Breakthrough Initiatives",
+      "nextCuriosity": "Arecibo message",
       "coreMemory": null
     }
   ]

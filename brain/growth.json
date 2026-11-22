@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-21T19:28:35.005Z",
-  "runs": 40,
+  "updatedAt": "2026-11-22T07:05:36.917Z",
+  "runs": 41,
   "curiosities": [
-    "Archaeology, Anthropology, and Interstellar Communication"
+    "Anthropology"
   ],
   "entries": [
     {
@@ -1406,6 +1406,43 @@
         "text": "I remember a quiet night dreaming about Breakthrough Initiatives. Breakthrough Initiatives is a science-based program founded in 2015 and funded by Julia and Yuri Milner, also of Breakthrough Prize, to search for extraterrestrial intelligence over a span of at least 10 years. I keep coming back to i",
         "emoji": "🌙"
       }
+    },
+    {
+      "id": "dream-1795331136916",
+      "at": 1795331136916,
+      "brain": "procedural",
+      "topic": "Archaeology, Anthropology, and Interstellar Communication",
+      "title": "Dreaming of The Observer",
+      "text": "Dear Diary, while nobody was around I looked up \"Archaeology, Anthropology, and Interstellar Communication\" and drifted from Archaeology, Anthropology, and Interstellar Communication to Dennis Overbye to The Observer. The Observer is a British newspaper published on Sundays. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Archaeology, Anthropology, and Interstellar Communication",
+          "url": "https://en.wikipedia.org/wiki/Archaeology%2C_Anthropology%2C_and_Interstellar_Communication",
+          "extract": "Archaeology, Anthropology, and Interstellar Communication is a 2014 collection of essays edited by Douglas Vakoch and published by NASA. The book is focused on the role that the humanities and social sciences, in particular anthropology and archaeology, play in the search for ext"
+        },
+        {
+          "title": "Dennis Overbye",
+          "url": "https://en.wikipedia.org/wiki/Dennis_Overbye",
+          "extract": " \nDennis Overbye is an American science writer specializing in physics and cosmology and was the cosmic affairs correspondent for The New York Times."
+        },
+        {
+          "title": "The Observer",
+          "url": "https://en.wikipedia.org/wiki/The_Observer",
+          "extract": "The Observer is a British newspaper published on Sundays. First published in 1791, it is the world's oldest Sunday newspaper."
+        }
+      ],
+      "concept": {
+        "name": "Communication Observer Theory",
+        "emoji": "🌙",
+        "definition": "The idea that archaeology, anthropology, and interstellar communication and the observer share a hidden pattern.",
+        "builtFrom": [
+          "Archaeology, Anthropology, and Interstellar Communication",
+          "The Observer"
+        ]
+      },
+      "shapeFrom": "The Observer",
+      "nextCuriosity": "Anthropology",
+      "coreMemory": null
     }
   ]
 }

@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-22T07:05:36.917Z",
-  "runs": 41,
+  "updatedAt": "2026-11-22T19:50:15.536Z",
+  "runs": 42,
   "curiosities": [
-    "Anthropology"
+    "ABC-CLIO"
   ],
   "entries": [
     {
@@ -1442,6 +1442,43 @@
       },
       "shapeFrom": "The Observer",
       "nextCuriosity": "Anthropology",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1795377015536",
+      "at": 1795377015536,
+      "brain": "procedural",
+      "topic": "Anthropology",
+      "title": "Dreaming of African traditional religions",
+      "text": "Dear Diary, while nobody was around I looked up \"Anthropology\" and drifted from Anthropology to Afterlife to African traditional religions. The beliefs and practices of African people are highly diverse and include various ethnic religions. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Anthropology",
+          "url": "https://en.wikipedia.org/wiki/Anthropology",
+          "extract": "Anthropology is the scientific study of humanity that crosses biology and sociology, concerned with human behavior, human biology, cultures, societies, and linguistics, in both the present and past, including archaic humans. Social anthropology studies patterns of behavior, while"
+        },
+        {
+          "title": "Afterlife",
+          "url": "https://en.wikipedia.org/wiki/Afterlife",
+          "extract": "The afterlife or life after death is a speculation concerning existence after death, in which the essential part of an individual's stream of consciousness or identity continues to exist after the death of their physical body. The surviving essential aspect varies between belief "
+        },
+        {
+          "title": "African traditional religions",
+          "url": "https://en.wikipedia.org/wiki/African_traditional_religions",
+          "extract": "The beliefs and practices of African people are highly diverse and include various ethnic religions. Generally, these traditions are oral rather than scriptural and are passed down from one generation to another through narratives, songs, myths, and festivals. They include belief"
+        }
+      ],
+      "concept": {
+        "name": "Anthropology Traditional Theory",
+        "emoji": "🧩",
+        "definition": "The idea that anthropology and african traditional religions share a hidden pattern.",
+        "builtFrom": [
+          "Anthropology",
+          "African traditional religions"
+        ]
+      },
+      "shapeFrom": "African traditional religions",
+      "nextCuriosity": "ABC-CLIO",
       "coreMemory": null
     }
   ]

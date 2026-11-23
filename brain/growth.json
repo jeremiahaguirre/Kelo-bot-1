@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-22T19:50:15.536Z",
-  "runs": 42,
+  "updatedAt": "2026-11-23T07:52:47.803Z",
+  "runs": 43,
   "curiosities": [
-    "ABC-CLIO"
+    "Greenwood Press, Inc."
   ],
   "entries": [
     {
@@ -1479,6 +1479,38 @@
       },
       "shapeFrom": "African traditional religions",
       "nextCuriosity": "ABC-CLIO",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1795420367802",
+      "at": 1795420367802,
+      "brain": "procedural",
+      "topic": "ABC-CLIO",
+      "title": "Dreaming of Bloomsbury Publishing",
+      "text": "Dear Diary, while nobody was around I looked up \"ABC-CLIO\" and drifted from ABC-Clio to Bloomsbury Publishing. Bloomsbury Publishing plc is a British worldwide publishing house of fiction and non-fiction. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "ABC-Clio",
+          "url": "https://en.wikipedia.org/wiki/ABC-Clio",
+          "extract": "ABC-Clio, LLC is an American publishing company for academic reference works and periodicals primarily on topics such as history and social sciences for educational and public library settings. Since 2021, ABC-Clio and its suite of imprints are collectively imprints of British pu"
+        },
+        {
+          "title": "Bloomsbury Publishing",
+          "url": "https://en.wikipedia.org/wiki/Bloomsbury_Publishing",
+          "extract": "Bloomsbury Publishing plc is a British worldwide publishing house of fiction and non-fiction. Bloomsbury's head office is located on Bedford Square in Bloomsbury, an area of the London Borough of Camden. It has a US publishing office located in New York City, an India publishing "
+        }
+      ],
+      "concept": {
+        "name": "Abc-clio Bloomsbury Craft",
+        "emoji": "🧩",
+        "definition": "The idea that abc-clio and bloomsbury publishing share a hidden pattern.",
+        "builtFrom": [
+          "ABC-Clio",
+          "Bloomsbury Publishing"
+        ]
+      },
+      "shapeFrom": "Bloomsbury Publishing",
+      "nextCuriosity": "Greenwood Press, Inc.",
       "coreMemory": null
     }
   ]

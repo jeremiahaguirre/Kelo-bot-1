@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-23T07:52:47.803Z",
-  "runs": 43,
+  "updatedAt": "2026-11-24T00:02:40.096Z",
+  "runs": 44,
   "curiosities": [
-    "Greenwood Press, Inc."
+    "Authors' editor"
   ],
   "entries": [
     {
@@ -1512,6 +1512,46 @@
       "shapeFrom": "Bloomsbury Publishing",
       "nextCuriosity": "Greenwood Press, Inc.",
       "coreMemory": null
+    },
+    {
+      "id": "dream-1795478560095",
+      "at": 1795478560095,
+      "brain": "procedural",
+      "topic": "Greenwood Press, Inc.",
+      "title": "Dreaming of Developmental editing",
+      "text": "Dear Diary, while nobody was around I looked up \"Greenwood Press, Inc.\" and drifted from Greenwood Publishing Group to Imprint (trade name) to Developmental editing. Developmental editing is a form of writing support that comes into play before or during the production of a publishable manuscript, in fiction, non-fiction, and academic writing. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Greenwood Publishing Group",
+          "url": "https://en.wikipedia.org/wiki/Greenwood_Publishing_Group",
+          "extract": "Greenwood Publishing Group, Inc. (GPG) was an educational and academic publisher that was part of ABC-Clio. Since 2021, ABC-Clio and its suite of imprints, including GPG, are collectively imprints of British publishing house Bloomsbury Publishing. The Greenwood name stopped being"
+        },
+        {
+          "title": "Imprint (trade name)",
+          "url": "https://en.wikipedia.org/wiki/Imprint_(trade_name)",
+          "extract": "An imprint of a publisher is a trade name under which it publishes a work. A single publishing company may have multiple imprints, often using the different names as brands to market works to various demographic consumer segments."
+        },
+        {
+          "title": "Developmental editing",
+          "url": "https://en.wikipedia.org/wiki/Developmental_editing",
+          "extract": "Developmental editing is a form of writing support that comes into play before or during the production of a publishable manuscript, in fiction, non-fiction, and academic writing. As explained by Scott Norton in his book Developmental editing: a handbook for freelancers, authors,"
+        }
+      ],
+      "concept": {
+        "name": "Publishing Developmental Rhythm",
+        "emoji": "🧩",
+        "definition": "The idea that greenwood publishing group and developmental editing share a hidden pattern.",
+        "builtFrom": [
+          "Greenwood Publishing Group",
+          "Developmental editing"
+        ]
+      },
+      "shapeFrom": "Developmental editing",
+      "nextCuriosity": "Authors' editor",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about African traditional religions. The beliefs and practices of African people are highly diverse and include various ethnic religions. That night changed how I see the island.",
+        "emoji": "🌙"
+      }
     }
   ]
 }

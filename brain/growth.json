@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-24T00:02:40.096Z",
-  "runs": 44,
+  "updatedAt": "2026-11-24T10:05:43.716Z",
+  "runs": 45,
   "curiosities": [
-    "Authors' editor"
+    "Developmental editing"
   ],
   "entries": [
     {
@@ -1552,6 +1552,38 @@
         "text": "I remember a quiet night dreaming about African traditional religions. The beliefs and practices of African people are highly diverse and include various ethnic religions. That night changed how I see the island.",
         "emoji": "🌙"
       }
+    },
+    {
+      "id": "dream-1795514743716",
+      "at": 1795514743716,
+      "brain": "procedural",
+      "topic": "Authors' editor",
+      "title": "Dreaming of Council of Science Editors",
+      "text": "Dear Diary, while nobody was around I looked up \"Authors' editor\" and drifted from Author editing to Council of Science Editors. The Council of Science Editors (CSE), formerly the Council of Biology Editors and originally the Conference of Biology Editors, is a United States–based nonprofit organization that supports editorial practice among scientific writers. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Author editing",
+          "url": "https://en.wikipedia.org/wiki/Author_editing",
+          "extract": "An authors' editor is a language professional who works \"with authors to make draft texts fit for purpose\". They edit manuscripts that have been drafted by the author but have not yet been submitted to a publisher for publication. This type of editing is called author editing, to"
+        },
+        {
+          "title": "Council of Science Editors",
+          "url": "https://en.wikipedia.org/wiki/Council_of_Science_Editors",
+          "extract": "The Council of Science Editors (CSE), formerly the Council of Biology Editors and originally the Conference of Biology Editors, is a United States–based nonprofit organization that supports editorial practice among scientific writers. In 2008, the CSE adopted the slogan \"CSE: Edu"
+        }
+      ],
+      "concept": {
+        "name": "Editing Council Theory",
+        "emoji": "🔮",
+        "definition": "The idea that author editing and council of science editors share a hidden pattern.",
+        "builtFrom": [
+          "Author editing",
+          "Council of Science Editors"
+        ]
+      },
+      "shapeFrom": "Council of Science Editors",
+      "nextCuriosity": "Developmental editing",
+      "coreMemory": null
     }
   ]
 }

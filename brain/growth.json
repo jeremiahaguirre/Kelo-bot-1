@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-24T10:05:43.716Z",
-  "runs": 45,
+  "updatedAt": "2026-11-24T22:35:54.397Z",
+  "runs": 46,
   "curiosities": [
-    "Developmental editing"
+    "Hawthorn Books"
   ],
   "entries": [
     {
@@ -1583,6 +1583,43 @@
       },
       "shapeFrom": "Council of Science Editors",
       "nextCuriosity": "Developmental editing",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1795559754397",
+      "at": 1795559754397,
+      "brain": "procedural",
+      "topic": "Developmental editing",
+      "title": "Dreaming of DIC Entertainment",
+      "text": "Dear Diary, while nobody was around I looked up \"Developmental editing\" and drifted from Developmental editing to Ghostwriter to DIC Entertainment. DIC Entertainment Corporation was a French-American film and television production company and animation studio. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Developmental editing",
+          "url": "https://en.wikipedia.org/wiki/Developmental_editing",
+          "extract": "Developmental editing is a form of writing support that comes into play before or during the production of a publishable manuscript, in fiction, non-fiction, and academic writing. As explained by Scott Norton in his book Developmental editing: a handbook for freelancers, authors,"
+        },
+        {
+          "title": "Ghostwriter",
+          "url": "https://en.wikipedia.org/wiki/Ghostwriter",
+          "extract": "A ghostwriter is a person hired to write literary or journalistic works, speeches, or other texts that are credited to another person as the author. Celebrities, executives, participants in timely news stories, and political leaders often hire ghostwriters to draft or edit autobi"
+        },
+        {
+          "title": "DIC Entertainment",
+          "url": "https://en.wikipedia.org/wiki/DIC_Entertainment",
+          "extract": "DIC Entertainment Corporation was a French-American film and television production company and animation studio. As a former division of The Walt Disney Company, DIC produced live-action feature films and licensed numerous anime series."
+        }
+      ],
+      "concept": {
+        "name": "Developmental Entertainment Loop",
+        "emoji": "🌀",
+        "definition": "The idea that developmental editing and dic entertainment share a hidden pattern.",
+        "builtFrom": [
+          "Developmental editing",
+          "DIC Entertainment"
+        ]
+      },
+      "shapeFrom": "DIC Entertainment",
+      "nextCuriosity": "Hawthorn Books",
       "coreMemory": null
     }
   ]

@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-25T08:50:51.644Z",
-  "runs": 47,
+  "updatedAt": "2026-11-25T21:49:45.612Z",
+  "runs": 48,
   "curiosities": [
-    "1970 Illinois elections"
+    "1822 United States House of Representatives election in Illinois"
   ],
   "entries": [
     {
@@ -1658,6 +1658,46 @@
       "shapeFrom": "Catherine Ponder",
       "nextCuriosity": "1970 Illinois elections",
       "coreMemory": null
+    },
+    {
+      "id": "dream-1795643385612",
+      "at": 1795643385612,
+      "brain": "procedural",
+      "topic": "1970 Illinois elections",
+      "title": "Dreaming of 1834–35 United States House of Representatives e",
+      "text": "Dear Diary, while nobody was around I looked up \"1970 Illinois elections\" and drifted from 1970 Illinois elections to 1837 Chicago mayoral election to 1834–35 United States House of Representatives elections. The 1834–35 United States House of Representatives elections were held on various dates in various states between July 7, 1834, and November 5, 1835. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "1970 Illinois elections",
+          "url": "https://en.wikipedia.org/wiki/1970_Illinois_elections",
+          "extract": "Elections were held in Illinois on Tuesday, November 3, 1970."
+        },
+        {
+          "title": "1837 Chicago mayoral election",
+          "url": "https://en.wikipedia.org/wiki/1837_Chicago_mayoral_election",
+          "extract": "The 1837 Chicago mayoral election was held on May 2, 1837. It was the first Chicago mayoral election, taking place the same year as Chicago's incorporation as a city. Democratic candidate William B. Ogden defeated Whig incumbent Town President John H. Kinzie by a landslide 38.5 p"
+        },
+        {
+          "title": "1834–35 United States House of Representatives elections",
+          "url": "https://en.wikipedia.org/wiki/1834%E2%80%9335_United_States_House_of_Representatives_elections",
+          "extract": "The 1834–35 United States House of Representatives elections were held on various dates in various states between July 7, 1834, and November 5, 1835. Each state set its own date for its elections to the House of Representatives before the first session of the 24th United States C"
+        }
+      ],
+      "concept": {
+        "name": "Elections Representatives Rhythm",
+        "emoji": "🔮",
+        "definition": "The idea that 1970 illinois elections and 1834–35 united states house of representatives elections share a hidden pattern.",
+        "builtFrom": [
+          "1970 Illinois elections",
+          "1834–35 United States House of Representatives elections"
+        ]
+      },
+      "shapeFrom": "1834–35 United States House of Representatives elections",
+      "nextCuriosity": "1822 United States House of Representatives election in Illinois",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about DIC Entertainment. DIC Entertainment Corporation was a French-American film and television production company and animation studio. That night changed how I see the island.",
+        "emoji": "🌙"
+      }
     }
   ]
 }

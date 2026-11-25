@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-24T22:35:54.397Z",
-  "runs": 46,
+  "updatedAt": "2026-11-25T08:50:51.644Z",
+  "runs": 47,
   "curiosities": [
-    "Hawthorn Books"
+    "1970 Illinois elections"
   ],
   "entries": [
     {
@@ -1620,6 +1620,43 @@
       },
       "shapeFrom": "DIC Entertainment",
       "nextCuriosity": "Hawthorn Books",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1795596651644",
+      "at": 1795596651644,
+      "brain": "procedural",
+      "topic": "Hawthorn Books",
+      "title": "Dreaming of Catherine Ponder",
+      "text": "Dear Diary, while nobody was around I looked up \"Hawthorn Books\" and drifted from Hawthorn Books to W. Clement Stone to Catherine Ponder. Catherine Ponder is an American minister and founder of Unity Church Worldwide, affiliated with the Unity Church, and author of several New Thought books focused mainly on the theme of prosperity. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "Hawthorn Books",
+          "url": "https://en.wikipedia.org/wiki/Hawthorn_Books",
+          "extract": "Hawthorn Books was an American publishing firm located in New York City that operated from 1952 to 1977. Originally founded as a subsidiary of Prentice-Hall, Hawthorn Books went out of business after its publishing assets were acquired by E. P. Dutton."
+        },
+        {
+          "title": "W. Clement Stone",
+          "url": "https://en.wikipedia.org/wiki/W._Clement_Stone",
+          "extract": "William Clement Stone was an American businessman, philanthropist and New Thought self-help book author."
+        },
+        {
+          "title": "Catherine Ponder",
+          "url": "https://en.wikipedia.org/wiki/Catherine_Ponder",
+          "extract": "Catherine Ponder is an American minister and founder of Unity Church Worldwide, affiliated with the Unity Church, and author of several New Thought books focused mainly on the theme of prosperity."
+        }
+      ],
+      "concept": {
+        "name": "Hawthorn Catherine Craft",
+        "emoji": "🌙",
+        "definition": "The idea that hawthorn books and catherine ponder share a hidden pattern.",
+        "builtFrom": [
+          "Hawthorn Books",
+          "Catherine Ponder"
+        ]
+      },
+      "shapeFrom": "Catherine Ponder",
+      "nextCuriosity": "1970 Illinois elections",
       "coreMemory": null
     }
   ]

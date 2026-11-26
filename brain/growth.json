@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-26T08:36:26.561Z",
-  "runs": 49,
+  "updatedAt": "2026-11-26T21:42:51.723Z",
+  "runs": 50,
   "curiosities": [
-    "1800–1801 United States House of Representatives elections in Massachusetts"
+    "1788–1789 United States House of Representatives elections in Massachusetts"
   ],
   "entries": [
     {
@@ -1734,6 +1734,38 @@
       },
       "shapeFrom": "1806–07 United States Senate elections",
       "nextCuriosity": "1800–1801 United States House of Representatives elections in Massachusetts",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1795729371723",
+      "at": 1795729371723,
+      "brain": "procedural",
+      "topic": "1800–1801 United States House of Representatives elections in Massachusetts",
+      "title": "Dreaming of 1794–95 United States House of Representatives e",
+      "text": "Dear Diary, while nobody was around I looked up \"1800–1801 United States House of Representatives elections in Massachusetts\" and drifted from 1800–01 United States House of Representatives elections to 1794–95 United States House of Representatives elections. The 1794–95 United States House of Representatives elections were held on various dates in various states between August 25, 1794, and September 5, 1795 (Kentucky). I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "1800–01 United States House of Representatives elections",
+          "url": "https://en.wikipedia.org/wiki/1800%E2%80%9301_United_States_House_of_Representatives_elections",
+          "extract": "The 1800–01 United States House of Representatives elections were held on various dates in various states between April 29, 1800, and August 1, 1801. Each state set its own date for its elections to the House of Representatives before the first session of the 7th United States Co"
+        },
+        {
+          "title": "1794–95 United States House of Representatives elections",
+          "url": "https://en.wikipedia.org/wiki/1794%E2%80%9395_United_States_House_of_Representatives_elections",
+          "extract": "The 1794–95 United States House of Representatives elections were held on various dates in various states between August 25, 1794, and September 5, 1795 (Kentucky). Each state set its own date for its elections to the House of Representatives before the first session of the 4th U"
+        }
+      ],
+      "concept": {
+        "name": "Representatives Representatives Loop",
+        "emoji": "🧩",
+        "definition": "The idea that 1800–01 united states house of representatives elections and 1794–95 united states house of representatives elections share a hidden pattern.",
+        "builtFrom": [
+          "1800–01 United States House of Representatives elections",
+          "1794–95 United States House of Representatives elections"
+        ]
+      },
+      "shapeFrom": "1794–95 United States House of Representatives elections",
+      "nextCuriosity": "1788–1789 United States House of Representatives elections in Massachusetts",
       "coreMemory": null
     }
   ]

@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-25T21:49:45.612Z",
-  "runs": 48,
+  "updatedAt": "2026-11-26T08:36:26.561Z",
+  "runs": 49,
   "curiosities": [
-    "1822 United States House of Representatives election in Illinois"
+    "1800–1801 United States House of Representatives elections in Massachusetts"
   ],
   "entries": [
     {
@@ -1698,6 +1698,43 @@
         "text": "I remember a quiet night dreaming about DIC Entertainment. DIC Entertainment Corporation was a French-American film and television production company and animation studio. That night changed how I see the island.",
         "emoji": "🌙"
       }
+    },
+    {
+      "id": "dream-1795682186561",
+      "at": 1795682186561,
+      "brain": "procedural",
+      "topic": "1822 United States House of Representatives election in Illinois",
+      "title": "Dreaming of 1806–07 United States Senate elections",
+      "text": "Dear Diary, while nobody was around I looked up \"1822 United States House of Representatives election in Illinois\" and drifted from 1822–23 United States House of Representatives elections to 1813 Georgia's at-large congressional district special election to 1806–07 United States Senate elections. The 1806–07 United States Senate elections were held on various dates in various states. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "1822–23 United States House of Representatives elections",
+          "url": "https://en.wikipedia.org/wiki/1822%E2%80%9323_United_States_House_of_Representatives_elections",
+          "extract": "The 1822–23 United States House of Representatives elections were held on various dates in various states between July 1, 1822, and August 14, 1823. Each state set its own date for its elections to the House of Representatives before the first session of the 18th United States Co"
+        },
+        {
+          "title": "1813 Georgia's at-large congressional district special election",
+          "url": "https://en.wikipedia.org/wiki/1813_Georgia's_at-large_congressional_district_special_election",
+          "extract": "A special election was held in Georgia's at-large congressional district on December 13, 1813 to fill a vacancy left by the resignation of William W. Bibb (DR) on November 6, 1813, after being elected to the Senate."
+        },
+        {
+          "title": "1806–07 United States Senate elections",
+          "url": "https://en.wikipedia.org/wiki/1806%E2%80%9307_United_States_Senate_elections",
+          "extract": "The 1806–07 United States Senate elections were held on various dates in various states. As these U.S. Senate elections were prior to the ratification of the Seventeenth Amendment in 1913, senators were chosen by state legislatures. Senators were elected over a wide range of time"
+        }
+      ],
+      "concept": {
+        "name": "Representatives Elections Principle",
+        "emoji": "🔮",
+        "definition": "The idea that 1822–23 united states house of representatives elections and 1806–07 united states senate elections share a hidden pattern.",
+        "builtFrom": [
+          "1822–23 United States House of Representatives elections",
+          "1806–07 United States Senate elections"
+        ]
+      },
+      "shapeFrom": "1806–07 United States Senate elections",
+      "nextCuriosity": "1800–1801 United States House of Representatives elections in Massachusetts",
+      "coreMemory": null
     }
   ]
 }

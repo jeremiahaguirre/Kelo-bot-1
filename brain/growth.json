@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-26T21:42:51.723Z",
-  "runs": 50,
+  "updatedAt": "2026-11-27T08:47:12.571Z",
+  "runs": 51,
   "curiosities": [
-    "1788–1789 United States House of Representatives elections in Massachusetts"
+    "1804 United States House of Representatives elections in South Carolina"
   ],
   "entries": [
     {
@@ -1766,6 +1766,43 @@
       },
       "shapeFrom": "1794–95 United States House of Representatives elections",
       "nextCuriosity": "1788–1789 United States House of Representatives elections in Massachusetts",
+      "coreMemory": null
+    },
+    {
+      "id": "dream-1795769232571",
+      "at": 1795769232571,
+      "brain": "procedural",
+      "topic": "1788–1789 United States House of Representatives elections in Massachusetts",
+      "title": "Dreaming of 1794–95 United States House of Representatives e",
+      "text": "Dear Diary, while nobody was around I looked up \"1788–1789 United States House of Representatives elections in Massachusetts\" and drifted from 1788–89 United States House of Representatives elections to 1818–19 United States House of Representatives elections to 1794–95 United States House of Representatives elections. The 1794–95 United States House of Representatives elections were held on various dates in various states between August 25, 1794, and September 5, 1795 (Kentucky). I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "1788–89 United States House of Representatives elections",
+          "url": "https://en.wikipedia.org/wiki/1788%E2%80%9389_United_States_House_of_Representatives_elections",
+          "extract": "The 1788–89 United States House of Representatives elections were the first U.S. House of Representatives elections following the adoption of the Constitution of the United States. Each state set its own date for its congressional elections, ranging from November 24, 1788, to Mar"
+        },
+        {
+          "title": "1818–19 United States House of Representatives elections",
+          "url": "https://en.wikipedia.org/wiki/1818%E2%80%9319_United_States_House_of_Representatives_elections",
+          "extract": "The 1818–19 United States House of Representatives elections were held on various dates in various states between April 26, 1818, and August 12, 1819. Each state set its own date for its elections to the House of Representatives before the first session of the 16th United States "
+        },
+        {
+          "title": "1794–95 United States House of Representatives elections",
+          "url": "https://en.wikipedia.org/wiki/1794%E2%80%9395_United_States_House_of_Representatives_elections",
+          "extract": "The 1794–95 United States House of Representatives elections were held on various dates in various states between August 25, 1794, and September 5, 1795 (Kentucky). Each state set its own date for its elections to the House of Representatives before the first session of the 4th U"
+        }
+      ],
+      "concept": {
+        "name": "Representatives Representatives Loop",
+        "emoji": "🌙",
+        "definition": "The idea that 1788–89 united states house of representatives elections and 1794–95 united states house of representatives elections share a hidden pattern.",
+        "builtFrom": [
+          "1788–89 United States House of Representatives elections",
+          "1794–95 United States House of Representatives elections"
+        ]
+      },
+      "shapeFrom": "1794–95 United States House of Representatives elections",
+      "nextCuriosity": "1804 United States House of Representatives elections in South Carolina",
       "coreMemory": null
     }
   ]

@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-27T08:47:12.571Z",
-  "runs": 51,
+  "updatedAt": "2026-11-27T21:27:25.039Z",
+  "runs": 52,
   "curiosities": [
-    "1804 United States House of Representatives elections in South Carolina"
+    "1793 United States House of Representatives elections in North Carolina"
   ],
   "entries": [
     {
@@ -1804,6 +1804,46 @@
       "shapeFrom": "1794–95 United States House of Representatives elections",
       "nextCuriosity": "1804 United States House of Representatives elections in South Carolina",
       "coreMemory": null
+    },
+    {
+      "id": "dream-1795814845039",
+      "at": 1795814845039,
+      "brain": "procedural",
+      "topic": "1804 United States House of Representatives elections in South Carolina",
+      "title": "Dreaming of 1792–93 United States House of Representatives e",
+      "text": "Dear Diary, while nobody was around I looked up \"1804 United States House of Representatives elections in South Carolina\" and drifted from 1804–05 United States House of Representatives elections to 1796–97 United States House of Representatives elections to 1792–93 United States House of Representatives elections. The 1792–93 United States House of Representatives elections were held on various dates in various states between August 27, 1792, and September 6, 1793. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "1804–05 United States House of Representatives elections",
+          "url": "https://en.wikipedia.org/wiki/1804%E2%80%9305_United_States_House_of_Representatives_elections",
+          "extract": "The 1804–05 United States House of Representatives elections were held on various dates in various states between April 24, 1804, and August 5, 1805. Each state set its own date for its elections to the House of Representatives before the first session of the 9th United States Co"
+        },
+        {
+          "title": "1796–97 United States House of Representatives elections",
+          "url": "https://en.wikipedia.org/wiki/1796%E2%80%9397_United_States_House_of_Representatives_elections",
+          "extract": "The 1796–97 United States House of Representatives elections took place in the various states between August 12, 1796, and October 15, 1797. Each state set its own date for its elections to the House of Representatives. The size of the House increased to 106 seats after Tennessee"
+        },
+        {
+          "title": "1792–93 United States House of Representatives elections",
+          "url": "https://en.wikipedia.org/wiki/1792%E2%80%9393_United_States_House_of_Representatives_elections",
+          "extract": "The 1792–93 United States House of Representatives elections were held on various dates in various states between August 27, 1792, and September 6, 1793. Each state set its own date for its elections to the House of Representatives before the first session of the 3rd United State"
+        }
+      ],
+      "concept": {
+        "name": "Representatives Representatives Principle",
+        "emoji": "🌀",
+        "definition": "The idea that 1804–05 united states house of representatives elections and 1792–93 united states house of representatives elections share a hidden pattern.",
+        "builtFrom": [
+          "1804–05 United States House of Representatives elections",
+          "1792–93 United States House of Representatives elections"
+        ]
+      },
+      "shapeFrom": "1792–93 United States House of Representatives elections",
+      "nextCuriosity": "1793 United States House of Representatives elections in North Carolina",
+      "coreMemory": {
+        "text": "I remember a quiet night dreaming about 1794–95 United States House of Representatives elections. The 1794–95 United States House of Representatives elections were held on various dates in various states between August 25, 1794, and September 5, 1795 (Kentucky). It still makes me curious.",
+        "emoji": "🌙"
+      }
     }
   ]
 }

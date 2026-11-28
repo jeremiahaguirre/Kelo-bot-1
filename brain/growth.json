@@ -1,10 +1,10 @@
 {
   "format": "kelo1-growth",
   "version": 1,
-  "updatedAt": "2026-11-27T21:27:25.039Z",
-  "runs": 52,
+  "updatedAt": "2026-11-28T08:03:43.064Z",
+  "runs": 53,
   "curiosities": [
-    "1793 United States House of Representatives elections in North Carolina"
+    "1790and 1792 United States House of Representatives elections in Massachusetts"
   ],
   "entries": [
     {
@@ -1844,6 +1844,38 @@
         "text": "I remember a quiet night dreaming about 1794–95 United States House of Representatives elections. The 1794–95 United States House of Representatives elections were held on various dates in various states between August 25, 1794, and September 5, 1795 (Kentucky). It still makes me curious.",
         "emoji": "🌙"
       }
+    },
+    {
+      "id": "dream-1795853023064",
+      "at": 1795853023064,
+      "brain": "procedural",
+      "topic": "1793 United States House of Representatives elections in North Carolina",
+      "title": "Dreaming of 1792 United States House of Representatives elec",
+      "text": "Dear Diary, while nobody was around I looked up \"1793 United States House of Representatives elections in North Carolina\" and drifted from 1792–93 United States House of Representatives elections to 1792 United States House of Representatives election in Delaware. The 1792 United States House of Representatives election in Delaware was held on October 2, 1792. I keep turning it over in my head.",
+      "read": [
+        {
+          "title": "1792–93 United States House of Representatives elections",
+          "url": "https://en.wikipedia.org/wiki/1792%E2%80%9393_United_States_House_of_Representatives_elections",
+          "extract": "The 1792–93 United States House of Representatives elections were held on various dates in various states between August 27, 1792, and September 6, 1793. Each state set its own date for its elections to the House of Representatives before the first session of the 3rd United State"
+        },
+        {
+          "title": "1792 United States House of Representatives election in Delaware",
+          "url": "https://en.wikipedia.org/wiki/1792_United_States_House_of_Representatives_election_in_Delaware",
+          "extract": "The 1792 United States House of Representatives election in Delaware was held on October 2, 1792. The former Continental Congressman John Vining chose not to run for reelection and was followed by John Patten."
+        }
+      ],
+      "concept": {
+        "name": "Representatives Representatives Theory",
+        "emoji": "🔮",
+        "definition": "The idea that 1792–93 united states house of representatives elections and 1792 united states house of representatives election in delaware share a hidden pattern.",
+        "builtFrom": [
+          "1792–93 United States House of Representatives elections",
+          "1792 United States House of Representatives election in Dela"
+        ]
+      },
+      "shapeFrom": "1792 United States House of Representatives election in Delaware",
+      "nextCuriosity": "1790and 1792 United States House of Representatives elections in Massachusetts",
+      "coreMemory": null
     }
   ]
 }
